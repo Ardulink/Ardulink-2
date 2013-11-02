@@ -1,0 +1,13 @@
+Version 0.1.0 20131027
+
+- Native ALProtocol implementation
+- Sketch to handle ALProtocol
+- Ability to install other protocols
+- Connection Panel swing component to discover serial ports and to connect to Arduino
+- Connection Status swing component to show connection status
+- Digital Pin Status swing component to show pin's digital read status (HIGH, LOW)
+- Key Press Controller swing component to send to Arduino info about key press events
+- Power With Modulation Controller swing component to send to Arduino commands about PWM pins
+- Switch Controller swing component to send to Arduino commands to write digital pin's status (HIGH, LOW)
+- Ready Console application to manage each swing component and drive Arduino board
+- Link to Arduino by USB connection

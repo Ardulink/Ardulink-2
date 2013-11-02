@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<project name="Make Deploy Zip" default="pack">
+
+	<target name="init">
+		<mkdir dir="build" />
+		<mkdir dir="build/classes" />
+		<mkdir dir="dist" />
+	</target>
+
+	<target name="copy" depends="init">
+		<copy todir="build/classes">
+			<fileset dir="../Ardulink/bin"/>
+		</copy>
+	</target>
+
+	<target name="compress" depends="copy">
+		<jar destfile="build/ardulink.jar" basedir="build/classes" />
+	</target>
+
+	<target name="pack" depends="compress">
+		<mkdir dir="dist/pack/ardulink" />
+		<copy todir="dist/pack/ardulink">
+			<fileset dir="rootfolder"/>
+		</copy>
+		<copy todir="dist/pack/ardulink/lib" file="build/ardulink.jar" />
+		<zip destfile="dist/ardulink.zip" basedir="dist/pack" />
+	</target>
+
+	<target name="clean">
+		<delete dir="build" />
+		<delete dir="dist" />
+	</target>
+
+</project>
