@@ -34,6 +34,7 @@ import org.zu.ardulink.event.IncomingMessageEvent;
  * 
  * 
  * @author Luciano Zu
+ * @adsense
  *
  */
 public class ALProtocol implements IProtocol {
