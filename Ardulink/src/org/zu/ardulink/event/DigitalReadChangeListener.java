@@ -18,6 +18,13 @@ limitations under the License.
 
 package org.zu.ardulink.event;
 
+/**
+ * [ardulinktitle]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface DigitalReadChangeListener {
 	
 	public static final int ALL_PINS = -1;

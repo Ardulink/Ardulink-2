@@ -18,6 +18,15 @@ limitations under the License.
 
 package org.zu.ardulink.event;
 
+/**
+ * [ardulinktitle]
+ * Event raised when arduino send message about a digital pin change value.
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DigitalReadChangeEvent extends IncomingMessageEvent {
 
 	public DigitalReadChangeEvent() {

@@ -29,16 +29,58 @@ import org.zu.ardulink.event.IncomingMessageEvent;
 
 
 /**
+ * [ardulinktitle]
  * This class implements the native Arduino Link protocol.
  * With this class you are able to send messages to Arduino.
  * 
+ * Message are in the format:
+ * 
+ * alp://<request or response>/<variable data>?id=<numeric message id>
+ * 
+ * where
+ * requests from ardulink to arduino are: 
+ * kprs - Key Pressed
+ * ppin - Power Pin Intensity
+ * ppsw - Power Pin Switch
+ * srld - Start Listening Digital Pin
+ * spld - Stop Listening Digital Pin
+ * srla - Start Listening Analog Pin
+ * spla - Stop Listening Analog Pin
+ * 
+ * requests from ardulink to arduino are:
+ * ared - Analog Pin Read
+ * dred - Digital Pin Read
+ * 
+ * responses are:
+ * rply - reply message
+ * 
+ * ?id=<numeric message id> is not mandatory (for requests). If is supplied then a asynchronous
+ * rply response will send from arduino. Otherwise arduino will not send a response.
+ * 
+ * Each message from ardulink to arduino terminate with a \n
+ * 
+ * See methods about variable data.
+ * 
+ * Variable data:
+ * alp://kprs/chr<char pressed>cod<key code>loc<key location>mod<key modifiers>mex<key modifiers>?id=<message id>
+ * alp://ppin/<pin>/<intensity>?id=<message id>      intensity:0-255
+ * alp://ppsw/<pin>/<power>?id=<message id>          power:0-1
+ * alp://srld/<pin>?id=<message id>
+ * alp://spld/<pin>?id=<message id>
+ * alp://srla/<pin>?id=<message id>
+ * alp://spla/<pin>?id=<message id>
+ * alp://ared/<pin>/<intensity>                      intensity:0-1023
+ * alp://dred/<pin>/<power>                          power:0-1
+ * alp://rply/ok|ko?id=<message id>
  * 
  * @author Luciano Zu
- * @adsense
- *
+ * 
+ * [adsense]
  */
 public class ALProtocol implements IProtocol {
 
+	public static final String NAME = "ArdulinkProtocol";
+	
 	private static Logger logger = Logger.getLogger(ALProtocol.class.getName());
 	private static long nextId = 1;
 	
@@ -46,22 +88,9 @@ public class ALProtocol implements IProtocol {
 
 	@Override
 	public String getProtocolName() {
-		return "ArdulinkProtocol";
+		return NAME;
 	}
 
-	/**
-	 * It send a message that terminate with a \n. The message is in this format:
-	 * 
-	 * alp://kprs/chr<char pressed>cod<key code>loc<key location>mod<key modifiers>mex<key modifiers>?id=<message id>
-	 * 
-	 * @param link
-	 * @param keychar
-	 * @param keycode
-	 * @param keylocation
-	 * @param keymodifiers
-	 * @param keymodifiersex
-	 * @return MessageInfo with messageid and result true if message is sent
-	 */
 	@Override
 	public MessageInfo sendKeyPressEvent(Link link, char keychar, int keycode, int keylocation, int keymodifiers, int keymodifiersex) {
 		return sendKeyPressEvent(link, keychar, keycode, keylocation, keymodifiers, keymodifiersex, null);

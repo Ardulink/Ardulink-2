@@ -37,6 +37,13 @@ import javax.swing.event.ListSelectionListener;
 
 import org.zu.ardulink.Link;
 
+/**
+ * [ardulinktitle]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ConnectionPanel extends JPanel {
 
 	/**

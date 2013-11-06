@@ -32,6 +32,13 @@ import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.facility.UtilityModel;
 import org.zu.ardulink.protocol.IProtocol;
 
+/**
+ * [ardulinktitle]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class SwitchController extends JPanel {
 
 	/**

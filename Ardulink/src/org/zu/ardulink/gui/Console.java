@@ -41,6 +41,13 @@ import org.zu.ardulink.Link;
 
 import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 
+/**
+ * [ardulinktitle]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class Console extends JFrame {
 
 	/**

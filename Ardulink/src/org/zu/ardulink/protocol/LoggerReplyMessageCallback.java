@@ -20,6 +20,14 @@ package org.zu.ardulink.protocol;
 
 import java.util.logging.Logger;
 
+/**
+ * [ardulinktitle]
+ * A simple ReplyMessageCallback implementation just to log MessageInfo values.
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * @see ReplyMessageCallback
+ * [adsense]
+ *
+ */
 public class LoggerReplyMessageCallback implements ReplyMessageCallback {
 
 	private static Logger logger = Logger.getLogger(LoggerReplyMessageCallback.class.getName());

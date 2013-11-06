@@ -27,6 +27,13 @@ import org.zu.ardulink.event.ConnectionEvent;
 import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DisconnectionEvent;
 
+/**
+ * [ardulinktitle]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ConnectionStatus extends JPanel implements ConnectionListener{
 
 	/**

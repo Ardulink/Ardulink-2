@@ -18,6 +18,14 @@ limitations under the License.
 
 package org.zu.ardulink.event;
 
+/**
+ * [ardulinktitle]
+ * ConnectionListener interface
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface ConnectionListener {
 	
 	public void connected(ConnectionEvent e);

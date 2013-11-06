@@ -1,6 +1,7 @@
 package gnu.io.net;
 
 /**
+ * [ardulinktitle]
  * An instance of a class implementing this interface has to be passed to the
  * constructor of {@link gnu.io.net.Network}. It will be used by {@link gnu.io.net.Network} to
  * forward received messages, write to a log and take action when the connection
@@ -9,6 +10,8 @@ package gnu.io.net;
  * @see gnu.io.net.Network#Network(int, Network_iface, int)
  * 
  * @author Raphael Blatter (raphael@blatter.sg)
+ * 
+ * [adsense]
  */
 public interface Network_iface {
 	/**

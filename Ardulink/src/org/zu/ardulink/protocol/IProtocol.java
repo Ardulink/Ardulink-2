@@ -22,18 +22,21 @@ import org.zu.ardulink.Link;
 import org.zu.ardulink.event.IncomingMessageEvent;
 
 /**
- * This interface defines all the messages that can be sent to the Arduino and provides a method to analyze all messages from Arduino.
- * 
- * Messages allowed:
- * 
- * Send a Key press event
- * Send a request to set PWM pins to a given intensity between 0 and 255 (0V up to 5V)
- * Send a request to set a pin HIGH or LOW
+ * [ardulinktitle]
+ * This interface defines all the messages that can be sent to the Arduino
+ * and provides a method to analyze all messages from Arduino.
  * 
  * For each message sent the caller can set a callback class. In this way the caller can know asynchronously if 
- * a message has been processed by Arduino.
+ * a message has been processed by Arduino board.
+ * If callback class is not setted (or is null) then arduino should not send a reply message because caller
+ * is not interested in replies.
  * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * @see ProtocolHandler
+ * @see Link
+ * @see ALProtocol
+ * 
+ * [adsense]
  *
  */
 public interface IProtocol {
@@ -60,7 +63,7 @@ public interface IProtocol {
 	
 	/**
 	 * Sends the request to set a PWM type pin to a certain intensity. Values must be between 0 and 255.
-	 * Arduino shoud perform an analogWrite(pin, intensity)
+	 * Arduino should perform an analogWrite(pin, intensity)
 	 * @param link
 	 * @param pin
 	 * @param intensity
@@ -70,7 +73,7 @@ public interface IProtocol {
 	
 	/**
 	 * Sends the request to set a pin to HIGH or LOW power.
-	 * Arduino shoud perform a digitalWrite(pin, power)
+	 * Arduino should perform a digitalWrite(pin, power)
 	 * @param link
 	 * @param pin
 	 * @param power
@@ -93,7 +96,7 @@ public interface IProtocol {
 
 	/**
 	 * Sends the request to set a PWM type pin to a certain intensity. Values must be between 0 and 255.
-	 * Arduino shoud perform an analogWrite(pin, intensity)
+	 * Arduino should perform an analogWrite(pin, intensity)
 	 * @param link
 	 * @param pin
 	 * @param intensity
@@ -104,7 +107,7 @@ public interface IProtocol {
 	
 	/**
 	 * Sends the request to set a pin to HIGH or LOW power.
-	 * Arduino shoud perform a digitalWrite(pin, power)
+	 * Arduino should perform a digitalWrite(pin, power)
 	 * @param link
 	 * @param pin
 	 * @param power
@@ -114,8 +117,10 @@ public interface IProtocol {
 	public MessageInfo sendPowerPinSwitch(Link link, int pin, int power, ReplyMessageCallback callback);
 
 	/**
-	 * When a message arrives from Arduino, DefaultNetworkInterfaceImpl call this method that parses message and
+	 * When a message arrives from Arduino, NetworkInterfaceImpl and Link classes call this method that parses message and
 	 * returns a specific event. If message arrived is a reply message then null is returned and a callback action is taken.
+	 * Otherwise the caller take specific action based on specific IncomingMessage.
+	 * i.e. if a AnalogReadChangeEvent is raised then the caller fire the event to all the listeners.
 	 * @param realMsg
 	 * @return IncomingMessageEvent dependent from message parsed, null if message is a reply message.
 	 */

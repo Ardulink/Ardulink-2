@@ -35,6 +35,13 @@ import org.zu.ardulink.event.DigitalReadChangeEvent;
 import org.zu.ardulink.event.DigitalReadChangeListener;
 import org.zu.ardulink.gui.facility.UtilityModel;
 
+/**
+ * [ardulinktitle]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DigitalPinStatus extends JPanel implements DigitalReadChangeListener {
 
 

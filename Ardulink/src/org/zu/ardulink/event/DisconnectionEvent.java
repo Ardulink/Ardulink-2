@@ -20,6 +20,14 @@ package org.zu.ardulink.event;
 
 import java.util.Date;
 
+/**
+ * [ardulinktitle]
+ * Event raised when Network disconnection occurs.
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DisconnectionEvent {
 	private String networkId = null;
 	private Date timestamp = new Date();

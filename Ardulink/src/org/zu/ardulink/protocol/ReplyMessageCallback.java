@@ -18,6 +18,14 @@ limitations under the License.
 
 package org.zu.ardulink.protocol;
 
+/**
+ * [ardulinktitle]
+ * An interface to manage reply message from arduino.
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * @see Link
+ * [adsense]
+ *
+ */
 public interface ReplyMessageCallback {
 	
 	public void replyInfo(MessageInfo messageInfo);

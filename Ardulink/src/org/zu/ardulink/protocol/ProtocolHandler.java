@@ -22,6 +22,21 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * [ardulinktitle]
+ * Class to manage the protocol available set. With this class you can install (and set as preferred) a new protocol for ardulink.
+ * For instance you can supply a Firmata protocol implementation and install it.
+ * A protocol for Ardulink must implements IProtocol interface.
+ * 
+ * At the moment the only ready protocol is ALProtocol (Ardulink Protocol)
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * @see IProtocol
+ * @see ALProtocol
+ * 
+ * [adsense]
+ *
+ */
 public class ProtocolHandler {
 	
 	private static IProtocol currentProtocolImplementation = null;
@@ -33,18 +48,33 @@ public class ProtocolHandler {
 		currentProtocolImplementation = alProtocol;
 	}
 
+	/**
+	 * @return the current selected protocol (the preferred one)
+	 */
 	public static IProtocol getCurrentProtocolImplementation() {
 		return currentProtocolImplementation;
 	}
 
+	/**
+	 * @param implementationName
+	 * @return return the protocol implementation called implementationName (if installed)
+	 */
 	public static IProtocol getProtocolImplementation(String implementationName) {
 		return installedProtocolImplementations.get(implementationName);
 	}
 
+	/**
+	 * @return all available protocol implementation
+	 */
 	public static Set<String> getInstalledProtocolImplementationNames() {
 		return installedProtocolImplementations.keySet();
 	}
 
+	/**
+	 * Select a protocol. Set it as preferred.
+	 * @param implementationName
+	 * @return true if protocol is found, if is returned false then remain valid the last selected protocol.
+	 */
 	public static boolean setCurrentProtocolImplementation(String implementationName) {
 		boolean retvalue = false;
 		IProtocol selected = installedProtocolImplementations.get(implementationName);
@@ -55,6 +85,11 @@ public class ProtocolHandler {
 		return retvalue;
 	}
 	
+	/**
+	 * Install a protocol.
+	 * @param protocol
+	 * @return
+	 */
 	public static boolean installProtocolImplementation(IProtocol protocol) {
 		boolean retvalue = false;
 		if(protocol != null) {

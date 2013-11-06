@@ -38,6 +38,13 @@ import javax.swing.event.ChangeListener;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.facility.UtilityModel;
 
+/**
+ * [ardulinktitle]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class PWMController extends JPanel {
 
 	/**

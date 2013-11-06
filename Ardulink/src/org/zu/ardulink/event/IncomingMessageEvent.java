@@ -20,6 +20,15 @@ package org.zu.ardulink.event;
 
 import org.zu.ardulink.protocol.IProtocol;
 
+/**
+ * [ardulinktitle]
+ * Abstract class with info about message incoming to ardulink from arduino board.
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public abstract class IncomingMessageEvent {
 	
 	public static final int UNDEFINED_PIN = -1;

@@ -20,6 +20,14 @@ package org.zu.ardulink.event;
 
 import java.util.Date;
 
+/**
+ * [ardulinktitle]
+ * Event raised when Network connection occurs.
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ConnectionEvent {
 	private String networkId = null;
 	private String portName = null;

@@ -39,11 +39,15 @@ import org.zu.ardulink.event.DisconnectionEvent;
 import org.zu.ardulink.event.IncomingMessageEvent;
 
 /**
- * Implements the Raphael Blatter's Network interface to integrate RXTX library with Ardulink http://www.ardulink.org/.
+ * [ardulinktitle]
+ * Implements the Raphael Blatter's Network interface (a little modified) to integrate RXTX
+ * library with Ardulink http://www.ardulink.org/.
  * 
- * This class has methods to manage events.
+ * This class implements other methods to manage events about messages from arduino board.
  * 
- * @author Luciano Zu
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
  *
  */
 public class NetworkInterfaceImpl implements Network_iface {
@@ -56,10 +60,21 @@ public class NetworkInterfaceImpl implements Network_iface {
 	private Map<Integer, Set<AnalogReadChangeListener>> analogReadChangeListeners = Collections.synchronizedMap(new HashMap<Integer, Set<AnalogReadChangeListener>>());
 	private Map<Integer, Set<DigitalReadChangeListener>> digitalReadChangeListeners = Collections.synchronizedMap(new HashMap<Integer, Set<DigitalReadChangeListener>>());
 
+	/**
+	 * Register a ConnectionListener to receive events about connection status.
+	 * @param connectionListener
+	 * @return true if this set did not already contain the specified connectionListener
+	 * @see Link
+	 */
 	public boolean addConnectionListener(ConnectionListener connectionListener) {
 		return connectionListeners.add(connectionListener);
 	}
 
+	/**
+	 * Remove a ConnectionListener from the event notification set.
+	 * @param connectionListener
+	 * @return
+	 */
 	public boolean removeConnectionListener(ConnectionListener connectionListener) {
 		return connectionListeners.remove(connectionListener);
 	}
@@ -73,6 +88,14 @@ public class NetworkInterfaceImpl implements Network_iface {
 		this.link = link;
 	}
 
+	/**
+	 * Register an AnalogReadChangeListener to receive events about analog pin change state.
+	 * With this method ardulink is able to receive information from arduino board
+	 * Call a startListenAnalogPin.
+	 * @param listener
+	 * @return true if this set did not already contain the specified AnalogReadChangeListener
+	 * @see Link
+	 */
 	public boolean addAnalogReadChangeListener(AnalogReadChangeListener listener) {
 		boolean retvalue = false;
 		int pinListening = listener.getPinListening();
@@ -83,7 +106,7 @@ public class NetworkInterfaceImpl implements Network_iface {
 				analogReadChangeListeners.put(pinListening, pinListeningSet);
 			}
 			retvalue = pinListeningSet.add(listener);
-			if(pinListeningSet.size() == 1  && pinListening != AnalogReadChangeListener.ALL_PINS) {
+			if(pinListening != AnalogReadChangeListener.ALL_PINS) {
 				link.startListenAnalogPin(pinListening);
 			}
 		}
@@ -91,6 +114,13 @@ public class NetworkInterfaceImpl implements Network_iface {
 		return retvalue;
 	}
 
+	/**
+	 * Remove a AnalogReadChangeListener from the event notification set.
+	 * Call a stopListenAnalogPin if this is the last remove element.
+	 * @param listener
+	 * @return true if this set contained the specified AnalogReadChangeListener
+	 * @see Link
+	 */
 	public boolean removeAnalogReadChangeListener(AnalogReadChangeListener listener) {
 		boolean retvalue = true;
 		int pinListening = listener.getPinListening();
@@ -106,7 +136,15 @@ public class NetworkInterfaceImpl implements Network_iface {
 		
 		return retvalue;
 	}
-		
+
+	/**
+	 * Register an DigitalReadChangeListener to receive events about digital pin change state.
+	 * With this method ardulink is able to receive information from arduino board
+	 * Call a startListenAnalogPin.
+	 * @param listener
+	 * @return true if this set did not already contain the specified DigitalReadChangeListener
+	 * @see NetworkInterfaceImpl
+	 */
 	public boolean addDigitalReadChangeListener(DigitalReadChangeListener listener) {
 		boolean retvalue = false;
 		int pinListening = listener.getPinListening();
@@ -125,6 +163,13 @@ public class NetworkInterfaceImpl implements Network_iface {
 		return retvalue;
 	}
 
+	/**
+	 * Remove a DigitalReadChangeListener from the event notification set.
+	 * Call a stopListenDigitalPin if this is the last remove element.
+	 * @param listener
+	 * @return true if this set contained the specified DigitalReadChangeListener
+	 * @see NetworkInterfaceImpl
+	 */
 	public boolean removeDigitalReadChangeListener(DigitalReadChangeListener listener) {
 		boolean retvalue = true;
 		int pinListening = listener.getPinListening();
@@ -146,6 +191,11 @@ public class NetworkInterfaceImpl implements Network_iface {
 		logger.info(text);
 	}
 
+	/**
+	 * Method invoked by Raphael Blatter's Network class.
+	 * This method call the Link.parseMessage method and if the IncomingMessageEvent is not null fire the event
+	 * to the listeners.
+	 */
 	@Override
 	public void parseInput(String id, int numBytes, int[] message) {
 		logger.fine("Message from Arduino has arrived.");

@@ -11,6 +11,7 @@ import java.util.Vector;
 import org.zu.ardulink.Link;
 
 /**
+ * [ardulinktitle]
  * Used to simplify communication over a Serial port. Using the RXTX-library
  * (rxtx.qbang.org), one connection per instance of this class can be handled.
  * In addition to handling a connection, information about the available Serial
@@ -26,6 +27,8 @@ import org.zu.ardulink.Link;
  * 
  * @author Raphael Blatter (raphael@blatter.sg)
  * @author heavily using code examples from the RXTX-website (rxtx.qbang.org)
+ * 
+ * [adsense]
  */
 public class Network {
 	

@@ -18,8 +18,26 @@ limitations under the License.
 
 package org.zu.ardulink.gui.facility;
 
+/**
+ * [ardulinktitle]
+ * This class has utility methods for GUI components
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class UtilityModel {
 	
+	/**
+	 * Generate a String array containing all string between a given range.
+	 * i.e.
+	 * 
+	 * generateModelForCombo(2,4) generates {"2", "3", "4"}
+	 * 
+	 * @param minValue
+	 * @param maxValue
+	 * @return the string array
+	 */
 	public static String[] generateModelForCombo(int minValue, int maxValue) {
 		String[] retvalue = null;
 

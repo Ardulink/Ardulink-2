@@ -18,6 +18,13 @@ limitations under the License.
 
 package org.zu.ardulink.protocol;
 
+/**
+ * [ardulinktitle]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class MessageInfo {
 	private boolean sent = false;
 	private long messageID = IProtocol.UNDEFINED_ID;
@@ -29,6 +36,11 @@ public class MessageInfo {
 	public MessageInfo() {
 	}
 	
+	/**
+	 * 
+	 * @param result
+	 * @param messageID
+	 */
 	public MessageInfo(boolean result, long messageID) {
 		this.sent = result;
 		this.messageID = messageID;

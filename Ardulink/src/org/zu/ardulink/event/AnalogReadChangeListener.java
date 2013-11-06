@@ -18,6 +18,14 @@ limitations under the License.
 
 package org.zu.ardulink.event;
 
+/**
+ * [ardulinktitle]
+ * AnalogReadChangeListener interface
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface AnalogReadChangeListener {
 	
 	public static final int ALL_PINS = -1;
