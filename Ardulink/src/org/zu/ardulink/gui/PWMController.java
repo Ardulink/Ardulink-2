@@ -37,6 +37,7 @@ import javax.swing.event.ChangeListener;
 
 import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.facility.UtilityModel;
+import java.awt.Dimension;
 
 /**
  * [ardulinktitle]
@@ -65,6 +66,7 @@ public class PWMController extends JPanel {
 	 * Create the panel.
 	 */
 	public PWMController() {
+		setPreferredSize(new Dimension(195, 260));
 		setLayout(null);
 		
 		powerSlider = new JSlider();

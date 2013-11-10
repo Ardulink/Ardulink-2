@@ -36,6 +36,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.zu.ardulink.Link;
+import java.awt.Dimension;
 
 /**
  * [ardulinktitle]
@@ -58,6 +59,7 @@ public class ConnectionPanel extends JPanel {
 	 * Create the panel.
 	 */
 	public ConnectionPanel() {
+		setPreferredSize(new Dimension(240, 275));
 		setLayout(null);
 		
 		JLabel connectionPortLabel = new JLabel("Connection Port:");

@@ -31,6 +31,7 @@ import javax.swing.JToggleButton;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.facility.UtilityModel;
 import org.zu.ardulink.protocol.IProtocol;
+import java.awt.Dimension;
 
 /**
  * [ardulinktitle]
@@ -53,6 +54,7 @@ public class SwitchController extends JPanel {
 	 * Create the panel.
 	 */
 	public SwitchController() {
+		setPreferredSize(new Dimension(125, 75));
 		setLayout(null);
 		pinComboBox = new JComboBox();
 		pinComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(3, 13)));
