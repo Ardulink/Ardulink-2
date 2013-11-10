@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<project name="Add HTML fragments to Javadoc" default="modify">
+
+	<target name="modify">
+		<replace dir="generated/doc" token="[adsense]">
+			  <replacevalue><![CDATA[<br/><br/><script type="text/javascript">
+			  	document.write('<s'+'cript type="text/javascript" src="http://ad.altervista.org/js2.ad/size=336X280/r='+new Date().getTime()+'"><\/s'+'cript>');
+			  	</script>
+			  	]]>
+			  </replacevalue>
+		</replace>
+		<replace dir="generated/doc" token="[ardulinktitle]">
+			  <replacevalue><![CDATA[<h3>Ardulink - <a href="http://www.ardulink.org/" target="_parent">return to homepage</a></h3>]]></replacevalue>
+		</replace>
+	</target>
+
+
+	<target name="clean">
+		<delete dir="generated/doc" />
+	</target>
+
+</project>
