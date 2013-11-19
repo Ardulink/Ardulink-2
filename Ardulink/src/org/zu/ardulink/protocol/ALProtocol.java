@@ -29,50 +29,50 @@ import org.zu.ardulink.event.IncomingMessageEvent;
 
 
 /**
- * [ardulinktitle]
- * This class implements the native Arduino Link protocol.
- * With this class you are able to send messages to Arduino.
- * 
- * Message are in the format:
- * 
- * alp://<request or response>/<variable data>?id=<numeric message id>
- * 
- * where
- * requests from ardulink to arduino are: 
- * kprs - Key Pressed
- * ppin - Power Pin Intensity
- * ppsw - Power Pin Switch
- * srld - Start Listening Digital Pin
- * spld - Stop Listening Digital Pin
- * srla - Start Listening Analog Pin
- * spla - Stop Listening Analog Pin
- * 
- * requests from ardulink to arduino are:
- * ared - Analog Pin Read
- * dred - Digital Pin Read
- * 
- * responses are:
- * rply - reply message
- * 
- * ?id=<numeric message id> is not mandatory (for requests). If is supplied then a asynchronous
- * rply response will send from arduino. Otherwise arduino will not send a response.
- * 
- * Each message from ardulink to arduino terminate with a \n
- * 
- * See methods about variable data.
- * 
- * Variable data:
- * alp://kprs/chr<char pressed>cod<key code>loc<key location>mod<key modifiers>mex<key modifiers>?id=<message id>
- * alp://ppin/<pin>/<intensity>?id=<message id>      intensity:0-255
- * alp://ppsw/<pin>/<power>?id=<message id>          power:0-1
- * alp://srld/<pin>?id=<message id>
- * alp://spld/<pin>?id=<message id>
- * alp://srla/<pin>?id=<message id>
- * alp://spla/<pin>?id=<message id>
- * alp://ared/<pin>/<intensity>                      intensity:0-1023
- * alp://dred/<pin>/<power>                          power:0-1
- * alp://rply/ok|ko?id=<message id>
- * 
+ * [ardulinktitle] [ardulinkversion]
+ * This class implements the native Arduino Link protocol.<br/>
+ * With this class you are able to send messages to Arduino.<br/>
+ * <br/>
+ * Message are in the format:<br/>
+ * <br/>
+ * alp://&lt;request or response&gt;/&lt;variable data&gt;?id=&lt;numeric message id&gt;<br/>
+ * <br/>
+ * where<br/>
+ * requests from ardulink to arduino are: <br/>
+ * kprs - Key Pressed<br/>
+ * ppin - Power Pin Intensity<br/>
+ * ppsw - Power Pin Switch<br/>
+ * srld - Start Listening Digital Pin<br/>
+ * spld - Stop Listening Digital Pin<br/>
+ * srla - Start Listening Analog Pin<br/>
+ * spla - Stop Listening Analog Pin<br/>
+ * <br/>
+ * requests from arduino to ardulink are:<br/>
+ * ared - Analog Pin Read<br/>
+ * dred - Digital Pin Read<br/>
+ * <br/>
+ * responses (only from arduino) are:<br/>
+ * rply - reply message<br/>
+ * <br/>
+ * ?id=&lt;numeric message id&gt; is not mandatory (for requests). If is supplied then a asynchronous<br/>
+ * rply response will send from arduino. Otherwise arduino will not send a response.<br/>
+ * <br/>
+ * Each message from ardulink to arduino terminate with a \n<br/>
+ * <br/>
+ * See methods about variable data.<br/>
+ * <br/>
+ * Variable data:<br/>
+ * alp://kprs/chr&lt;char pressed&gt;cod&lt;key code&gt;loc&lt;key location&gt;mod&lt;key modifiers&gt;mex&lt;key modifiers&gt;?id=&lt;message id&gt;<br/>
+ * alp://ppin/&lt;pin&gt;/&lt;intensity&gt;?id=&lt;message id&gt;      intensity:0-255<br/>
+ * alp://ppsw/&lt;pin&gt;/&lt;power&gt;?id=&lt;message id&gt;          power:0-1<br/>
+ * alp://srld/&lt;pin&gt;?id=&lt;message id&gt;<br/>
+ * alp://spld/&lt;pin&gt;?id=&lt;message id&gt;<br/>
+ * alp://srla/&lt;pin&gt;?id=&lt;message id&gt;<br/>
+ * alp://spla/&lt;pin&gt;?id=&lt;message id&gt;<br/>
+ * alp://ared/&lt;pin&gt;/&lt;intensity&gt;                      intensity:0-1023<br/>
+ * alp://dred/&lt;pin&gt;/&lt;power&gt;                          power:0-1<br/>
+ * alp://rply/ok|ko?id=&lt;message id&gt;<br/>
+ * <br/>
  * @author Luciano Zu
  * 
  * [adsense]

@@ -28,9 +28,11 @@ import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DisconnectionEvent;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
+ * This component listens for connection or disconnection events showing the state of a Link in the GUI.
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
- * 
+ * @see Link
+ * @see ConnectionListener
  * [adsense]
  *
  */
@@ -42,6 +44,8 @@ public class ConnectionStatus extends JPanel implements ConnectionListener{
 	private static final long serialVersionUID = 6630818070505677116L;
 
 	private JLabel lblStatelabel;
+	
+	private Link link = null;
 	
 	private static final String CONNECTED = "connected";
 	private static final String DISCONNECTED = "disconnected";
@@ -61,7 +65,14 @@ public class ConnectionStatus extends JPanel implements ConnectionListener{
 		lblStatelabel.setIcon(DISCONNECTED_ICON);
 		add(lblStatelabel);
 
-		Link.getDefaultInstance().addConnectionListener(this);
+		link = Link.getDefaultInstance();
+		link.addConnectionListener(this);
+	}
+
+	public void setLink(Link link) {
+		this.link.removeConnectionListener(this);
+		this.link = link;
+		this.link.addConnectionListener(this);
 	}
 
 	@Override

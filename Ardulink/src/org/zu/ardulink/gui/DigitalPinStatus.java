@@ -36,9 +36,11 @@ import org.zu.ardulink.event.DigitalReadChangeListener;
 import org.zu.ardulink.gui.facility.UtilityModel;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
+ * This class implements the DigitalReadChangeListener interface and is able to listen
+ * events coming from arduino board about digital pin state change.
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
- * 
+ * @DigitalReadChangeListener
  * [adsense]
  *
  */
@@ -54,6 +56,8 @@ public class DigitalPinStatus extends JPanel implements DigitalReadChangeListene
 	private JToggleButton tglbtnSensor;
 	private JComboBox pinComboBox;
 	private JLabel lblPin;
+	
+	private Link link = Link.getDefaultInstance();
 	
 	private static final String HIGH = "High";
 	private static final String LOW = "Low";
@@ -91,7 +95,7 @@ public class DigitalPinStatus extends JPanel implements DigitalReadChangeListene
 		tglbtnSensor.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if(e.getStateChange() == ItemEvent.SELECTED) {
-					Link.getDefaultInstance().addDigitalReadChangeListener((DigitalReadChangeListener)tglbtnSensor.getParent());
+					link.addDigitalReadChangeListener((DigitalReadChangeListener)tglbtnSensor.getParent());
 					
 					tglbtnSensor.setText("Sensor on");
 					pinComboBox.setEnabled(false);
@@ -100,7 +104,7 @@ public class DigitalPinStatus extends JPanel implements DigitalReadChangeListene
 					
 					
 				} else if(e.getStateChange() == ItemEvent.DESELECTED) {
-					Link.getDefaultInstance().removeDigitalReadChangeListener((DigitalReadChangeListener)tglbtnSensor.getParent());
+					link.removeDigitalReadChangeListener((DigitalReadChangeListener)tglbtnSensor.getParent());
 					
 					tglbtnSensor.setText("Sensor off");
 					pinComboBox.setEnabled(true);
@@ -132,4 +136,15 @@ public class DigitalPinStatus extends JPanel implements DigitalReadChangeListene
 	public void setPin(int pin) {
 		pinComboBox.setSelectedItem("" + pin);
 	}
+
+	public void setLink(Link link) {
+		this.link.removeDigitalReadChangeListener((DigitalReadChangeListener)tglbtnSensor.getParent());
+		tglbtnSensor.setText("Sensor off");
+		pinComboBox.setEnabled(true);
+
+		lblStatelabel.setEnabled(false);
+		this.link = link;
+	}
+	
+	
 }

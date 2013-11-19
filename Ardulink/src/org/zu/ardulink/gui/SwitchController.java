@@ -34,7 +34,9 @@ import org.zu.ardulink.protocol.IProtocol;
 import java.awt.Dimension;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
+ * This class can manage digital arduino pins sending specific messages to
+ * the arduino board.
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
@@ -49,6 +51,8 @@ public class SwitchController extends JPanel {
 
 	private JComboBox pinComboBox;
 	private JToggleButton switchToggleButton;
+	
+	private Link link = Link.getDefaultInstance();
 
 	/**
 	 * Create the panel.
@@ -57,6 +61,7 @@ public class SwitchController extends JPanel {
 		setPreferredSize(new Dimension(125, 75));
 		setLayout(null);
 		pinComboBox = new JComboBox();
+		// TODO definire un metodo per poter cambiare l'insieme dei pin controllabili. In questo modo si può lavorare anche con schede diverse da Arduino UNO
 		pinComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(3, 13)));
 		pinComboBox.setSelectedItem("3");
 		pinComboBox.setBounds(66, 11, 47, 22);
@@ -75,13 +80,13 @@ public class SwitchController extends JPanel {
 					switchToggleButton.setText("On");
 					
 					int pin = Integer.parseInt((String)pinComboBox.getSelectedItem());
-					Link.getDefaultInstance().sendPowerPinSwitch(pin, IProtocol.POWER_HIGH);
+					link.sendPowerPinSwitch(pin, IProtocol.POWER_HIGH);
 				} else if(e.getStateChange() == ItemEvent.DESELECTED) {
 					
 					switchToggleButton.setText("Off");
 					
 					int pin = Integer.parseInt((String)pinComboBox.getSelectedItem());
-					Link.getDefaultInstance().sendPowerPinSwitch(pin, IProtocol.POWER_LOW);
+					link.sendPowerPinSwitch(pin, IProtocol.POWER_LOW);
 				}
 			}
 		});
@@ -89,7 +94,15 @@ public class SwitchController extends JPanel {
 		add(switchToggleButton);
 	}
 	
+	/**
+	 * Set the pin to control
+	 * @param pin
+	 */
 	public void setPin(int pin) {
 		pinComboBox.setSelectedItem("" + pin);
+	}
+
+	public void setLink(Link link) {
+		this.link = link;
 	}
 }

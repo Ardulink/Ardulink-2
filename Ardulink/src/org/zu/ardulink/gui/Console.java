@@ -42,7 +42,10 @@ import org.zu.ardulink.Link;
 import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
+ * This is the ready ardulink console a complete SWING application to manage an Arduino board.
+ * Console has several tabs with all ready arduino components. Each tab is able to
+ * do a specific action sending or listening for messages to arduino or from arduino board.
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
@@ -58,7 +61,9 @@ public class Console extends JFrame {
 	private JPanel contentPane;
 	private JTabbedPane tabbedPane;
 	private JPanel keyControlPanel;
-	private ConnectionPanel parameterConnectionPanel;
+	private SerialConnectionPanel parameterConnectionPanel;
+	
+	private Link link = Link.getDefaultInstance();
 	
 	private static Logger logger = Logger.getLogger(Console.class.getName());
 	
@@ -118,7 +123,7 @@ public class Console extends JFrame {
 					try {
 						int baudRate = Integer.parseInt(baudRateS);
 						
-						boolean connected = Link.getDefaultInstance().connect(comPort, baudRate);
+						boolean connected = link.connect(comPort, baudRate);
 						logger.info("Connection status: " + connected);
 					}
 					catch(Exception ex) {
@@ -132,13 +137,13 @@ public class Console extends JFrame {
 		JButton btnDisconnect = new JButton("Disconnect");
 		btnDisconnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				boolean connected = !Link.getDefaultInstance().disconnect();
+				boolean connected = !link.disconnect();
 				logger.info("Connection status: " + connected);
 			}
 		});
 		connectPanel.add(btnDisconnect);
 		
-		parameterConnectionPanel = new ConnectionPanel();
+		parameterConnectionPanel = new SerialConnectionPanel();
 		configurationPanel.add(parameterConnectionPanel, BorderLayout.CENTER);
 		parameterConnectionPanel.setLayout(null);
 		
@@ -293,5 +298,9 @@ public class Console extends JFrame {
 			}
 		});
 
+	}
+
+	public void setLink(Link link) {
+		this.link = link;
 	}
 }

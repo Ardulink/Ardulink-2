@@ -39,7 +39,7 @@ import org.zu.ardulink.event.DisconnectionEvent;
 import org.zu.ardulink.event.IncomingMessageEvent;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
  * Implements the Raphael Blatter's Network interface (a little modified) to integrate RXTX
  * library with Ardulink http://www.ardulink.org/.
  * 
@@ -57,9 +57,10 @@ public class NetworkInterfaceImpl implements Network_iface {
 	private Link link;
 
 	private Set<ConnectionListener> connectionListeners = Collections.synchronizedSet(new HashSet<ConnectionListener>());
+	private Set<RawDataListener> rawDataListeners = Collections.synchronizedSet(new HashSet<RawDataListener>());
 	private Map<Integer, Set<AnalogReadChangeListener>> analogReadChangeListeners = Collections.synchronizedMap(new HashMap<Integer, Set<AnalogReadChangeListener>>());
 	private Map<Integer, Set<DigitalReadChangeListener>> digitalReadChangeListeners = Collections.synchronizedMap(new HashMap<Integer, Set<DigitalReadChangeListener>>());
-
+	
 	/**
 	 * Register a ConnectionListener to receive events about connection status.
 	 * @param connectionListener
@@ -74,9 +75,30 @@ public class NetworkInterfaceImpl implements Network_iface {
 	 * Remove a ConnectionListener from the event notification set.
 	 * @param connectionListener
 	 * @return
+	 * @see Link
 	 */
 	public boolean removeConnectionListener(ConnectionListener connectionListener) {
 		return connectionListeners.remove(connectionListener);
+	}
+	
+	/**
+	 * Register a RawDataListener to receive data from Arduino.
+	 * @param rawDataListener
+	 * @return true if this set did not already contain the specified rawDataListener
+	 * @see Link
+	 */
+	public boolean addRawDataListener(RawDataListener rawDataListener) {
+		return rawDataListeners.add(rawDataListener);
+	}
+
+	/**
+	 * Remove a RawDataListener from the data notification set.
+	 * @param rawDataListener
+	 * @return
+	 * @see Link
+	 */
+	public boolean removeRawDataListener(RawDataListener rawDataListener) {
+		return rawDataListeners.remove(rawDataListener);
 	}
 	
 	private Iterator<ConnectionListener> getConnectionListenersIterator() {
@@ -199,6 +221,7 @@ public class NetworkInterfaceImpl implements Network_iface {
 	@Override
 	public void parseInput(String id, int numBytes, int[] message) {
 		logger.fine("Message from Arduino has arrived.");
+		fireDataToRawDataListener(id, numBytes, message);
 		int[] realMsg = Arrays.copyOf(message, numBytes);
 		// String msg = new String(message, 0, numBytes);
 		// logger.fine(msg);
@@ -209,6 +232,13 @@ public class NetworkInterfaceImpl implements Network_iface {
 			} else if(event instanceof DigitalReadChangeEvent) {
 				fireDigitalReadChangeEvent((DigitalReadChangeEvent)event);
 			}
+		}
+	}
+
+	private void fireDataToRawDataListener(String id, int numBytes, int[] message) {
+		Iterator<RawDataListener> it = rawDataListeners.iterator();
+		while(it.hasNext()) {
+			it.next().parseInput(id, numBytes, message);
 		}
 	}
 

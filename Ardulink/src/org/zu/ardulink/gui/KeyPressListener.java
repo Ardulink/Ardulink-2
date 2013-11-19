@@ -26,15 +26,17 @@ import javax.swing.JLabel;
 import org.zu.ardulink.Link;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
+ * Class used by KeyPressController class to capture key press events.
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
- * 
+ * @see KeyPressController
  * [adsense]
  *
  */
 public class KeyPressListener extends KeyAdapter {
 
 	private JLabel guiInteractionLabel = null;
+	private Link link = Link.getDefaultInstance();
 	
 	public JLabel getGuiInteractionLabel() {
 		return guiInteractionLabel;
@@ -53,7 +55,7 @@ public class KeyPressListener extends KeyAdapter {
 	public void keyPressed(KeyEvent e) {
 		keyPressedGUIInteraction(e);
 		
-		Link.getDefaultInstance().sendKeyPressEvent(e.getKeyChar(), e.getKeyCode(), e.getKeyLocation(), e.getModifiers(), e.getModifiersEx());
+		link.sendKeyPressEvent(e.getKeyChar(), e.getKeyCode(), e.getKeyLocation(), e.getModifiers(), e.getModifiersEx());
 	}
 	
 	@Override
@@ -89,6 +91,8 @@ public class KeyPressListener extends KeyAdapter {
 		}
 	}
 
-
+	public void setLink(Link link) {
+		this.link = link;
+	}
 
 }

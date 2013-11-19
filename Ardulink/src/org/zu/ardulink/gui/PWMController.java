@@ -40,7 +40,10 @@ import org.zu.ardulink.gui.facility.UtilityModel;
 import java.awt.Dimension;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
+ * This class can manage power with modulation arduino pins sending specific messages to
+ * the arduino board. It has many components to ensure maximum flexibility in the
+ * management of these pins.
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
@@ -61,6 +64,8 @@ public class PWMController extends JPanel {
 	private JComboBox maxValueComboBox;
 	private JComboBox minValueComboBox;
 	private JComboBox pinComboBox;
+	
+	private Link link = Link.getDefaultInstance();
 	
 	/**
 	 * Create the panel.
@@ -86,6 +91,7 @@ public class PWMController extends JPanel {
 		add(lblPowerPin);
 		
 		pinComboBox = new JComboBox();
+		// TODO definire un metodo per poter cambiare l'insieme dei pin controllabili. In questo modo si può lavorare anche con schede diverse da Arduino UNO
 		pinComboBox.setModel(new DefaultComboBoxModel(new String[] {"3", "5", "6", "9", "10", "11"}));
 		pinComboBox.setSelectedItem("11");
 		pinComboBox.setBounds(65, 36, 55, 22);
@@ -183,7 +189,7 @@ public class PWMController extends JPanel {
 			        progressBar.setValue((int)progress);
 			        
 			        int pin = Integer.parseInt((String)pinComboBox.getSelectedItem());
-			        Link.getDefaultInstance().sendPowerPinIntensity(pin, powerValue);
+			        link.sendPowerPinIntensity(pin, powerValue);
 			    }
 			}
 		});
@@ -219,8 +225,16 @@ public class PWMController extends JPanel {
 		});
 
 	}
-		
+	
+	/**
+	 * Set the pin to control
+	 * @param pin
+	 */
 	public void setPin(int pin) {
 		pinComboBox.setSelectedItem("" + pin);
 	}
+
+	public void setLink(Link link) {
+		this.link = link;
+	}	
 }

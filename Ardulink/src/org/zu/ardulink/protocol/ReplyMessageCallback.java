@@ -19,7 +19,7 @@ limitations under the License.
 package org.zu.ardulink.protocol;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
  * An interface to manage reply message from arduino.
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * @see Link

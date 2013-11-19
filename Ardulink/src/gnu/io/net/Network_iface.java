@@ -1,7 +1,7 @@
 package gnu.io.net;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
  * An instance of a class implementing this interface has to be passed to the
  * constructor of {@link gnu.io.net.Network}. It will be used by {@link gnu.io.net.Network} to
  * forward received messages, write to a log and take action when the connection

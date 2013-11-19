@@ -21,7 +21,7 @@ package org.zu.ardulink.event;
 import org.zu.ardulink.protocol.IProtocol;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
  * Abstract class with info about message incoming to ardulink from arduino board.
  * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/

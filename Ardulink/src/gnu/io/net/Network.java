@@ -1,17 +1,23 @@
 package gnu.io.net;
 
-import gnu.io.*;
+import gnu.io.CommPortIdentifier;
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.SerialPort;
+import gnu.io.UnsupportedCommOperationException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 import org.zu.ardulink.Link;
+import org.zu.ardulink.connection.Connection;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
  * Used to simplify communication over a Serial port. Using the RXTX-library
  * (rxtx.qbang.org), one connection per instance of this class can be handled.
  * In addition to handling a connection, information about the available Serial
@@ -28,9 +34,11 @@ import org.zu.ardulink.Link;
  * @author Raphael Blatter (raphael@blatter.sg)
  * @author heavily using code examples from the RXTX-website (rxtx.qbang.org)
  * 
+ * Luciano has added Connection implementation interface to allow multiple connections.
+ * 
  * [adsense]
  */
-public class Network {
+public class Network implements Connection {
 	
 	public static final String DEFAULT_NETWORK_NAME = Link.DEFAULT_LINK_NAME; // Added from Luciano Zu
 	
@@ -144,9 +152,11 @@ public class Network {
 	 * 
 	 * @return A {@link Vector} containing {@link String}s showing all available
 	 *         Serial ports.
+	 *         
+	 * Luciano Zu has modified return type from Vector to List
 	 */
 	@SuppressWarnings("unchecked")
-	public Vector<String> getPortList() {
+	public List<String> getPortList() {
 		Enumeration<CommPortIdentifier> portList;
 		Vector<String> portVect = new Vector<String>();
 		portList = CommPortIdentifier.getPortIdentifiers();
@@ -303,22 +313,24 @@ public class Network {
 	 */
 	public boolean disconnect() {
 		boolean disconn = true;
-		end = true;
-		try {
-			reader.join();
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-			disconn = false;
+		if(connected) {
+			end = true;
+			try {
+				reader.join();
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+				disconn = false;
+			}
+			try {
+				outputStream.close();
+				inputStream.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+				disconn = false;
+			}
+			serialPort.close();
+			connected = false;
 		}
-		try {
-			outputStream.close();
-			inputStream.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			disconn = false;
-		}
-		serialPort.close();
-		connected = false;
 		contact.networkDisconnected(id);
 		contact.writeLog(id, "connection disconnected");
 		return disconn;
@@ -416,5 +428,43 @@ public class Network {
 			temp = 0;
 		number = (byte) temp;
 		return number;
+	}
+
+	/*
+	 * Method added by Luciano Zu - Ardulink
+	 */
+	@Override
+	public boolean connect(Object... params) {
+		String portName = null;
+		Integer baudRate = null;
+		if(params == null || params.length < 1) {
+			throw new RuntimeException("This connection accepts a String port name and a Integer baud rate. Only the port name is mandatory. Null or zero arguments passed.");
+		}
+		if(!(params[0] instanceof String)) {
+			throw new RuntimeException("This connection accepts a String port name and a Integer baud rate. Only the port name is mandatory. First argument was not a String");
+		} else {
+			portName =(String)params[0]; 
+		}
+		if(params.length > 1 && !(params[1] instanceof Integer)) {
+			throw new RuntimeException("This connection accepts a String port name and a Integer baud rate. Only the port name is mandatory. Second argument was not an Integer");
+		} else {
+			baudRate = (Integer)params[1];
+		}
+
+		boolean retvalue = false;
+		if(baudRate == null) {
+			retvalue = connect(portName);
+		} else {
+			retvalue = connect(portName, baudRate);
+		}
+		return retvalue;
+	}
+
+	/*
+	 * Method added by Luciano Zu - Ardulink
+	 */
+	@Override
+	public void setConnectionContact(Network_iface connectionContact) {
+		contact = connectionContact;
 	}
 }

@@ -16,25 +16,10 @@ limitations under the License.
 @author Luciano Zu
 */
 
-package org.zu.ardulink.event;
+package org.zu.ardulink;
 
-/**
- * [ardulinktitle] [ardulinkversion]
- * Event raised when arduino send message about an analog pin change value.
- * 
- * @author Luciano Zu project Ardulink http://www.ardulink.org/
- * 
- * [adsense]
- *
- */
-public class AnalogReadChangeEvent extends IncomingMessageEvent {
-
-	public AnalogReadChangeEvent() {
-		super();
-	}
-
-	public AnalogReadChangeEvent(int pin, int value, String incomingMessage) {
-		super(pin, value, incomingMessage);
-	}
+public interface RawDataListener {
 	
+	public void parseInput(String id, int numBytes, int[] message);
+
 }

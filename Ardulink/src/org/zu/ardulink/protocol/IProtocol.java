@@ -22,7 +22,7 @@ import org.zu.ardulink.Link;
 import org.zu.ardulink.event.IncomingMessageEvent;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
  * This interface defines all the messages that can be sent to the Arduino
  * and provides a method to analyze all messages from Arduino.
  * 

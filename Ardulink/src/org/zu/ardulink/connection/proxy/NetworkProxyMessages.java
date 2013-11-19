@@ -16,25 +16,14 @@ limitations under the License.
 @author Luciano Zu
 */
 
-package org.zu.ardulink.event;
+package org.zu.ardulink.connection.proxy;
 
-/**
- * [ardulinktitle] [ardulinkversion]
- * Event raised when arduino send message about an analog pin change value.
- * 
- * @author Luciano Zu project Ardulink http://www.ardulink.org/
- * 
- * [adsense]
- *
- */
-public class AnalogReadChangeEvent extends IncomingMessageEvent {
+public interface NetworkProxyMessages {
+	public static final String NUMBER_OF_PORTS = "NUMBER_OF_PORTS=";
+	public static final String OK = "OK";
+	public static final String KO = "KO";
 
-	public AnalogReadChangeEvent() {
-		super();
-	}
-
-	public AnalogReadChangeEvent(int pin, int value, String incomingMessage) {
-		super(pin, value, incomingMessage);
-	}
-	
+	public static final String STOP_SERVER_CMD = "ardulink:networkproxyserver:stop_server";
+	public static final String GET_PORT_LIST_CMD = "ardulink:networkproxyserver:get_port_list";
+	public static final String CONNECT_CMD = "ardulink:networkproxyserver:connect";
 }

@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
  * Class to manage the protocol available set. With this class you can install (and set as preferred) a new protocol for ardulink.
  * For instance you can supply a Firmata protocol implementation and install it.
  * A protocol for Ardulink must implements IProtocol interface.

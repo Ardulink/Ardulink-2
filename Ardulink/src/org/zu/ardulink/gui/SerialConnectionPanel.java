@@ -39,13 +39,15 @@ import org.zu.ardulink.Link;
 import java.awt.Dimension;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
+ * This component is Able to search for serial ports connected to the Arduino and select one.
+ * You can also specify a baud rate.
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *
  */
-public class ConnectionPanel extends JPanel {
+public class SerialConnectionPanel extends JPanel {
 
 	/**
 	 * 
@@ -58,7 +60,7 @@ public class ConnectionPanel extends JPanel {
 	/**
 	 * Create the panel.
 	 */
-	public ConnectionPanel() {
+	public SerialConnectionPanel() {
 		setPreferredSize(new Dimension(240, 275));
 		setLayout(null);
 		
@@ -115,7 +117,7 @@ public class ConnectionPanel extends JPanel {
 				}
 			}
 		});
-		discoverButton.setIcon(new ImageIcon(ConnectionPanel.class.getResource("/org/zu/ardulink/gui/icons/search_icon.png")));
+		discoverButton.setIcon(new ImageIcon(SerialConnectionPanel.class.getResource("/org/zu/ardulink/gui/icons/search_icon.png")));
 		discoverButton.setToolTipText("Discover");
 		discoverButton.setBounds(198, 105, 32, 32);
 		add(discoverButton);
@@ -148,10 +150,16 @@ public class ConnectionPanel extends JPanel {
 		}
 	}
 
+	/**
+	 * @return the connection port name selected or set
+	 */
 	public String getConnectionPort() {
 		return connectionPortTextField.getText();
 	}
 
+	/**
+	 * @return the baud rate set
+	 */
 	//TODO if not numeric take default from Link class.
 	public String getBaudRate() {
 		return baudRateTextField.getText();

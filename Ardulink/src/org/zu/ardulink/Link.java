@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.zu.ardulink.connection.Connection;
 import org.zu.ardulink.event.AnalogReadChangeListener;
 import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DigitalReadChangeListener;
@@ -37,7 +38,7 @@ import org.zu.ardulink.protocol.ProtocolHandler;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
  * This class represents the connection between the computer and the Arduino board.
  * At the moment the connection is only a serial connection to USB.
  * Any java class must use this class to communicate with Arduino. 
@@ -71,9 +72,7 @@ public class Link {
 	}
 	
 	private NetworkInterfaceImpl networkInterface = new NetworkInterfaceImpl(this);
-	private Network network = null;
-	private String connectedPortName = null;
-	private int connectedBaudRate = DEFAULT_BAUDRATE;
+	private Connection connection = null;
 	private String name;
 	
 	private LoggerReplyMessageCallback loggerCallback = new LoggerReplyMessageCallback();
@@ -126,12 +125,57 @@ public class Link {
 		return link;
 	}
 
+	/**
+	 * Creates a Link instance with a specific name and a specific connection (default is serial connection)
+	 * @param linkName
+	 * @param connection
+	 * @return Link created
+	 */
+	public static Link createInstance(String linkName, Connection connection) {
+		return createInstance(linkName, ProtocolHandler.getCurrentProtocolImplementation().getProtocolName(), connection);
+	}
+
+	/**
+	 * Creates a Link instance with a specific name and a specific protocol and a specific connection (default is serial connection)
+	 * @param linkName
+	 * @param protocolName
+	 * @param connection
+	 * @return Link created
+	 */
+	public static Link createInstance(String linkName, String protocolName, Connection connection) {
+		Link link = getInstance(linkName);
+		if(link == null) {
+			IProtocol protocol = ProtocolHandler.getProtocolImplementation(protocolName);
+			link = new Link(linkName, protocol, connection);
+			links.put(linkName, link);
+		} else {
+			throw new RuntimeException("Instance " + linkName + " already created.");
+		}
+		return link;
+	}
+	
+	public static Link destroyInstance(String linkName) {
+		Link retvalue = links.remove(linkName);
+		if(retvalue != null) {
+			retvalue.disconnect();
+			retvalue.connection = null;
+			retvalue.protocol = null;
+		}
+		return retvalue; 
+	}
+
 	private Link(String linkName, IProtocol protocol) {
-		this.network = new Network(linkName, networkInterface);
+		this.connection = new Network(linkName, networkInterface);
 		this.name = linkName;
 		this.protocol = protocol;
 	}
 	
+	private Link(String linkName, IProtocol protocol, Connection connection) {
+		this.connection = connection;
+		this.name = linkName;
+		this.protocol = protocol;
+	}
+
 	/**
 	 * Connects to Arduino board.
 	 * @param portName the port name
@@ -149,15 +193,12 @@ public class Link {
 	 * @see Network
 	 */
 	public boolean connect(String portName, int baudRate) {
-		if(network.isConnected()) {
-			network.disconnect();
+		if(connection.isConnected()) {
+			connection.disconnect();
 		}
 		
-		boolean retvalue = network.connect(portName, baudRate);
-		if(retvalue == true) {
-			connectedPortName = portName;
-			connectedBaudRate = baudRate;
-		}
+		boolean retvalue = connection.connect(portName, baudRate);
+
 		return retvalue;
 	}
 
@@ -167,7 +208,7 @@ public class Link {
 	 * @see Network
 	 */
 	public List<String> getPortList() {
-		return network.getPortList();
+		return connection.getPortList();
 	}
 
 	/**
@@ -176,11 +217,9 @@ public class Link {
 	 */
 	public boolean disconnect() {
 		boolean retvalue = false;
-		if(network.isConnected()) {
-			retvalue = network.disconnect();
-			connectedPortName = null;
-			connectedBaudRate = DEFAULT_BAUDRATE;
-		}
+		// if(connection.isConnected()) {
+			retvalue = connection.disconnect();
+		// }
 
 		return retvalue;
 	}
@@ -190,7 +229,7 @@ public class Link {
 	 * @see Network
 	 */
 	public boolean isConnected() {
-		return network.isConnected();
+		return connection.isConnected();
 	}
 
 	/**
@@ -200,7 +239,7 @@ public class Link {
 	 * @see Network
 	 */
 	public boolean writeSerial(String message) {
-		return network.writeSerial(message);
+		return connection.writeSerial(message);
 	}
 
 	/**
@@ -211,7 +250,7 @@ public class Link {
 	 * @see Network
 	 */
 	public boolean writeSerial(int numBytes, int[] message) {
-		return network.writeSerial(numBytes, message);
+		return connection.writeSerial(numBytes, message);
 	}
 	
 	/**
@@ -234,6 +273,26 @@ public class Link {
 		return networkInterface.removeConnectionListener(connectionListener);
 	}
 	
+	/**
+	 * Register a RawDataListener to receive data from Arduino.
+	 * @param rawDataListener
+	 * @return true if this set did not already contain the specified rawDataListener
+	 * @see NetworkInterfaceImpl
+	 */
+	public boolean addRawDataListener(RawDataListener rawDataListener) {
+		return networkInterface.addRawDataListener(rawDataListener);
+	}
+
+	/**
+	 * Remove a RawDataListener from the data notification set.
+	 * @param rawDataListener
+	 * @return
+	 * @see NetworkInterfaceImpl
+	 */
+	public boolean removeRawDataListener(RawDataListener rawDataListener) {
+		return networkInterface.removeRawDataListener(rawDataListener);
+	}
+
 	/**
 	 * Register an AnalogReadChangeListener to receive events about analog pin change state.
 	 * With this method ardulink is able to receive information from arduino board
@@ -284,20 +343,6 @@ public class Link {
 	}
 
 	/**
-	 * @return the connected port name (for serial connection)
-	 */
-	public String getConnectedPortName() {
-		return connectedPortName;
-	}
-
-	/**
-	 * @return the connected baud rate (for serial connection)
-	 */
-	public int getConnectedBaudRate() {
-		return connectedBaudRate;
-	}
-
-	/**
 	 * @return the link name
 	 */
 	public String getName() {
@@ -332,7 +377,7 @@ public class Link {
 	 * Call protocol sendPowerPinSwitch with this Link (and without a call back implementation to manage reply message)
 	 * This method request arduino to perform a digitalWrite function call.
 	 * @param pin
-	 * @param power IProtocol.HIGH or IProtocol.LOW
+	 * @param power IProtocol.POWER_HIGH or IProtocol.POWER_LOW
 	 * @return the MessageInfo class
 	 */
 	public MessageInfo sendPowerPinSwitch(int pin, int power) {
@@ -479,5 +524,9 @@ public class Link {
 	 */
 	public IncomingMessageEvent parseMessage(int[] realMsg) {
 		return protocol.parseMessage(realMsg);
+	}
+
+	public Connection getConnection() {
+		return connection;
 	}
 }

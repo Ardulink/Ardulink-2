@@ -19,9 +19,13 @@ limitations under the License.
 package org.zu.ardulink.protocol;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
+ * MessageInfo collects information about messages sent to the Arduino board.
+ * An instance of this class is returned by the methods defined in the IProtocol interface.
+ * If a ReplyMessageCallback handler is set then MessageInfo is completed with other
+ * information.
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
- * 
+ * @see IProtocol
  * [adsense]
  *
  */

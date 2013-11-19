@@ -19,7 +19,7 @@ limitations under the License.
 package org.zu.ardulink.event;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
  * [adsense]

@@ -21,7 +21,7 @@ package org.zu.ardulink.event;
 import java.util.Date;
 
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
  * Event raised when Network disconnection occurs.
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 

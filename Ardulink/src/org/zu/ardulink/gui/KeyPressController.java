@@ -24,16 +24,21 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import org.zu.ardulink.Link;
+
 /**
- * [ardulinktitle]
+ * [ardulinktitle] [ardulinkversion]
+ * This class captures key press events and sends messages to arduino board with key press
+ * information.
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
- * 
+ * @see KeyPressListener
  * [adsense]
  *
  */
 public class KeyPressController extends JPanel {
 
 	private static final long serialVersionUID = -1842577141033747612L;
+	private KeyPressListener keyPressListener;
 
 	/**
 	 * Create the panel.
@@ -49,10 +54,14 @@ public class KeyPressController extends JPanel {
 		pressedKeyLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		add(pressedKeyLabel, BorderLayout.CENTER);
 
-		KeyPressListener keyPressListener = new KeyPressListener();
+		keyPressListener = new KeyPressListener();
 		addKeyListener(keyPressListener);
 		keyPressListener.setGuiInteractionLabel(pressedKeyLabel);
 		setFocusTraversalKeysEnabled(false);
 	}
 
+	public void setLink(Link link) {
+		keyPressListener.setLink(link);
+	}
+	
 }
