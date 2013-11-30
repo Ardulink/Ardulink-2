@@ -44,7 +44,12 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 	
 	private boolean handshakeComplete = false;
 	
+	private Network_iface contact;
+	
+	private String id;
+	
 	public NetworkProxy(String host, int port) throws IOException {
+		id = host + ":" + port;
 		socket = new Socket(host, port);
 
 		inputStream = socket.getInputStream();
@@ -73,6 +78,7 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 				e.printStackTrace();
 			}
 		}
+
 		return retvalue;
 	}
 
@@ -106,6 +112,7 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 				retvalue = true;
 				handshakeComplete = true;
 			}
+			contact.networkConnected(id, portName);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -116,6 +123,7 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 	public boolean disconnect() {
 		try {
 			socket.close();
+			contact.networkDisconnected(id);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -143,7 +151,7 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 
 	@Override
 	public void setConnectionContact(Network_iface contact) {
-		throw new UnsupportedOperationException("Not implemented yet");
+		this.contact = contact;
 	}
 
 	public boolean isHandshakeComplete() {

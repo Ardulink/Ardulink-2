@@ -47,7 +47,7 @@ import java.awt.Dimension;
  * [adsense]
  *
  */
-public class SerialConnectionPanel extends JPanel {
+public class ConnectionPanel extends JPanel implements Linkable {
 
 	/**
 	 * 
@@ -56,12 +56,17 @@ public class SerialConnectionPanel extends JPanel {
 	private JTextField connectionPortTextField;
 	private JTextField baudRateTextField;
 	private JList connectionPortList;
+	private JButton discoverButton;
 
+	private Link link = Link.getDefaultInstance();
+	
 	/**
 	 * Create the panel.
 	 */
-	public SerialConnectionPanel() {
-		setPreferredSize(new Dimension(240, 275));
+	public ConnectionPanel() {
+		Dimension dimension = new Dimension(240, 275);
+		setPreferredSize(dimension);
+		setMinimumSize(dimension);
 		setLayout(null);
 		
 		JLabel connectionPortLabel = new JLabel("Connection Port:");
@@ -105,10 +110,10 @@ public class SerialConnectionPanel extends JPanel {
 		connectionPortList.setVisibleRowCount(-1);
 		connectionPortList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
-		JButton discoverButton = new JButton("");
+		discoverButton = new JButton("");
 		discoverButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				List<String> portList = Link.getDefaultInstance().getPortList();
+				List<String> portList = link.getPortList();
 //				portList = new ArrayList<String>(); // Mock code...
 //				portList.add("COM19");
 //				portList.add("COM20");
@@ -117,7 +122,7 @@ public class SerialConnectionPanel extends JPanel {
 				}
 			}
 		});
-		discoverButton.setIcon(new ImageIcon(SerialConnectionPanel.class.getResource("/org/zu/ardulink/gui/icons/search_icon.png")));
+		discoverButton.setIcon(new ImageIcon(ConnectionPanel.class.getResource("/org/zu/ardulink/gui/icons/search_icon.png")));
 		discoverButton.setToolTipText("Discover");
 		discoverButton.setBounds(198, 105, 32, 32);
 		add(discoverButton);
@@ -163,6 +168,23 @@ public class SerialConnectionPanel extends JPanel {
 	//TODO if not numeric take default from Link class.
 	public String getBaudRate() {
 		return baudRateTextField.getText();
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled);
+		connectionPortTextField.setEnabled(enabled);
+		baudRateTextField.setEnabled(enabled);
+		connectionPortList.setEnabled(enabled);
+		discoverButton.setEnabled(enabled);
+	}
+
+	public Link getLink() {
+		return link;
+	}
+
+	public void setLink(Link link) {
+		this.link = link;
 	}
 	
 }

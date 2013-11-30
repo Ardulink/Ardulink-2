@@ -42,7 +42,7 @@ import java.awt.Dimension;
  * [adsense]
  *
  */
-public class SwitchController extends JPanel {
+public class SwitchController extends JPanel implements Linkable {
 
 	/**
 	 * 

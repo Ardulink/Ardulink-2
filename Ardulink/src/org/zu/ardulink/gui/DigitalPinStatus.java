@@ -44,7 +44,7 @@ import org.zu.ardulink.gui.facility.UtilityModel;
  * [adsense]
  *
  */
-public class DigitalPinStatus extends JPanel implements DigitalReadChangeListener {
+public class DigitalPinStatus extends JPanel implements DigitalReadChangeListener, Linkable {
 
 
 	/**
@@ -138,7 +138,9 @@ public class DigitalPinStatus extends JPanel implements DigitalReadChangeListene
 	}
 
 	public void setLink(Link link) {
-		this.link.removeDigitalReadChangeListener((DigitalReadChangeListener)tglbtnSensor.getParent());
+		if(this.link != null) {
+			this.link.removeDigitalReadChangeListener((DigitalReadChangeListener)tglbtnSensor.getParent());
+		}
 		tglbtnSensor.setText("Sensor off");
 		pinComboBox.setEnabled(true);
 

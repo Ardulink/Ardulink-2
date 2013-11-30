@@ -172,6 +172,7 @@ public class Link {
 	
 	private Link(String linkName, IProtocol protocol, Connection connection) {
 		this.connection = connection;
+		connection.setConnectionContact(networkInterface);
 		this.name = linkName;
 		this.protocol = protocol;
 	}

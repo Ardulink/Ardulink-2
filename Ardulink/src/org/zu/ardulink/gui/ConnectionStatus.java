@@ -36,7 +36,7 @@ import org.zu.ardulink.event.DisconnectionEvent;
  * [adsense]
  *
  */
-public class ConnectionStatus extends JPanel implements ConnectionListener{
+public class ConnectionStatus extends JPanel implements ConnectionListener, Linkable {
 
 	/**
 	 * 
@@ -70,9 +70,15 @@ public class ConnectionStatus extends JPanel implements ConnectionListener{
 	}
 
 	public void setLink(Link link) {
-		this.link.removeConnectionListener(this);
+		if(this.link != null) {
+			this.link.removeConnectionListener(this);
+		} 
 		this.link = link;
-		this.link.addConnectionListener(this);
+		if(link != null) {
+			link.addConnectionListener(this);
+		} else {
+			disconnected(new DisconnectionEvent());
+		}
 	}
 
 	@Override

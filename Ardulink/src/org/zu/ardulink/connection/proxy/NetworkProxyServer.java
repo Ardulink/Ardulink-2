@@ -21,11 +21,11 @@ package org.zu.ardulink.connection.proxy;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.logging.Logger;
 
 public class NetworkProxyServer implements NetworkProxyMessages {
 	
     private static boolean listening = true;
+    public static final int DEFAULT_LISTENING_PORT = 4478;
 
 	public static void main(String[] args) {
 	    if (!validateArgs(args)) {
@@ -36,7 +36,10 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 	    }
 
 	    String command = args[0];
-	    int portNumber = Integer.parseInt(args[1]);
+	    int portNumber = DEFAULT_LISTENING_PORT;
+	    if(args.length > 1) {
+	    	portNumber = Integer.parseInt(args[1]);
+	    }
 	    
 	    if("stop".equals(command)) {
 	    	requestStop(portNumber);

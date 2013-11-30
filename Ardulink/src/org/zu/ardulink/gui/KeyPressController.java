@@ -35,7 +35,7 @@ import org.zu.ardulink.Link;
  * [adsense]
  *
  */
-public class KeyPressController extends JPanel {
+public class KeyPressController extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = -1842577141033747612L;
 	private KeyPressListener keyPressListener;

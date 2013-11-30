@@ -199,9 +199,9 @@ public class NetworkInterfaceImpl implements Network_iface {
 			Set<DigitalReadChangeListener> pinListeningSet = digitalReadChangeListeners.get(pinListening);
 			if(pinListeningSet != null) {
 				retvalue = pinListeningSet.remove(listener);
-			}
-			if(pinListeningSet.isEmpty() && pinListening != DigitalReadChangeListener.ALL_PINS) {
-				link.stopListenDigitalPin(pinListening);
+				if(pinListeningSet.isEmpty() && pinListening != DigitalReadChangeListener.ALL_PINS) {
+					link.stopListenDigitalPin(pinListening);
+				}
 			}
 		}
 		

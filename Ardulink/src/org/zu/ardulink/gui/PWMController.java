@@ -49,7 +49,7 @@ import java.awt.Dimension;
  * [adsense]
  *
  */
-public class PWMController extends JPanel {
+public class PWMController extends JPanel implements Linkable {
 
 	/**
 	 * 
