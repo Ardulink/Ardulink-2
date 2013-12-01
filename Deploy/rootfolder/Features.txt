@@ -1,4 +1,22 @@
-Version 0.1.0 20131027
+Version 0.2.1.20131201
+
+- Ardulink Network Proxy Server available
+- Link class improved. Now it's possible setup Link class 
+  with NetworkProxy to be connected with the Ardulink Network Proxy Server
+- New GUI Component to do network connections 
+- Ardulink Console improved. Connection Panel for Network Proxy connection is available
+- All previous version features
+
+
+Version 0.2.0.20131110
+
+- Link class improved. Several links to several Arduino boards is possible
+- Some minor bugs fixed
+- New name Ardulink instead of Arduino PC Link refactor.
+- All previous version features
+
+
+Version 0.1.0.20131027
 
 - Native ALProtocol implementation
 - Sketch to handle ALProtocol
