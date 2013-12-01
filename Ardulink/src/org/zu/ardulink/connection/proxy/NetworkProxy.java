@@ -18,6 +18,7 @@ limitations under the License.
 
 package org.zu.ardulink.connection.proxy;
 
+import gnu.io.SerialPort;
 import gnu.io.net.Network_iface;
 
 import java.io.BufferedReader;
@@ -47,6 +48,17 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 	private Network_iface contact;
 	
 	private String id;
+
+	/**
+	 * The Thread used to receive the data from the Serial interface.
+	 */
+	private Thread reader;
+
+	/**
+	 * Communicating between threads, showing the {@link #reader} when the
+	 * connection has been closed, so it can {@link Thread#join()}.
+	 */
+	private boolean end = false;
 	
 	public NetworkProxy(String host, int port) throws IOException {
 		id = host + ":" + port;
@@ -111,6 +123,10 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 			if(inputLine != null && inputLine.equals(OK)) {
 				retvalue = true;
 				handshakeComplete = true;
+
+				reader = (new Thread(new SerialReader(inputStream)));
+				end = false;
+				reader.start();
 			}
 			contact.networkConnected(id, portName);
 		} catch (IOException e) {
@@ -124,6 +140,7 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 		try {
 			socket.close();
 			contact.networkDisconnected(id);
+			end = true;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -157,4 +174,60 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 	public boolean isHandshakeComplete() {
 		return handshakeComplete;
 	}
+	
+	/**
+	 * A separate class to use as the {@link gnu.io.net.Network#reader}. It is run as a
+	 * separate {@link Thread} and manages the incoming data, packaging them
+	 * using {@link gnu.io.net.Network#divider} into arrays of <b>int</b>s and
+	 * forwarding them using
+	 * {@link gnu.io.net.Network_iface#parseInput(int, int, int[])}.
+	 * 
+	 */
+	private class SerialReader implements Runnable {
+		private InputStream in;
+		private int[] tempBytes = new int[1024];
+		private int numTempBytes = 0;
+
+		public SerialReader(InputStream in) {
+			this.in = in;
+		}
+
+		public void run() {
+			byte[] buffer = new byte[1024];
+			int len = -1, i, temp;
+			try {
+				while (!end) {
+					if ((len = this.in.read(buffer)) > -1) {
+						for (i = 0; i < len; i++) {
+							temp = buffer[i];
+							// adjust from C-Byte to Java-Byte
+							if (temp < 0)
+								temp += 256;
+							if (temp == Link.MESSAGE_DIVIDER) {
+								if  (numTempBytes > 0) {
+									contact.parseInput(id, numTempBytes,
+											tempBytes);
+								}
+								numTempBytes = 0;
+							} else {
+								tempBytes[numTempBytes] = temp;
+								++numTempBytes;
+							}
+						}
+					}
+				}
+			} catch (IOException e) {
+				end = true;
+				try {
+					outputStream.close();
+					inputStream.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				contact.networkDisconnected(id);
+				contact.writeLog(id, "connection has been interrupted");
+			}
+		}
+	}
+	
 }

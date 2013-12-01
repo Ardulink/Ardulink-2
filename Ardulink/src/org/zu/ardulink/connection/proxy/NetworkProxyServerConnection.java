@@ -154,5 +154,12 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 				e.printStackTrace();
 			}
 		}
+		try {
+			outputStream.write(Link.MESSAGE_DIVIDER);
+			outputStream.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 }
