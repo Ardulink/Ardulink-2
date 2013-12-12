@@ -51,6 +51,7 @@ import org.zu.ardulink.Link;
 import org.zu.ardulink.event.ConnectionEvent;
 import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DisconnectionEvent;
+import org.zu.ardulink.protocol.ReplyMessageCallback;
 
 import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 
@@ -476,4 +477,12 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		btnConnect.setEnabled(true);
 		btnDisconnect.setEnabled(false);
 	}
+	
+	public ReplyMessageCallback getReplyMessageCallback() {
+		throw new RuntimeException("Not developed yet");
+	}
+
+	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
+		throw new RuntimeException("Not developed yet");
+	}	
 }

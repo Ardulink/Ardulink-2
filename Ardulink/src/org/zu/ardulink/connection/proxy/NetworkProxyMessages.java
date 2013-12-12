@@ -18,6 +18,12 @@ limitations under the License.
 
 package org.zu.ardulink.connection.proxy;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ */
 public interface NetworkProxyMessages {
 	public static final String NUMBER_OF_PORTS = "NUMBER_OF_PORTS=";
 	public static final String OK = "OK";

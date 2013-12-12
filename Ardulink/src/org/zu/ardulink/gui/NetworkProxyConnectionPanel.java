@@ -33,6 +33,12 @@ import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.proxy.NetworkProxy;
 import org.zu.ardulink.connection.proxy.NetworkProxyServer;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ */
 public class NetworkProxyConnectionPanel extends JPanel {
 
 	/**

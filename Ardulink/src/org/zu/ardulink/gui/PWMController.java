@@ -20,6 +20,7 @@ package org.zu.ardulink.gui;
 
 import java.awt.ComponentOrientation;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,7 +38,7 @@ import javax.swing.event.ChangeListener;
 
 import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.facility.UtilityModel;
-import java.awt.Dimension;
+import org.zu.ardulink.protocol.ReplyMessageCallback;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -236,5 +237,14 @@ public class PWMController extends JPanel implements Linkable {
 
 	public void setLink(Link link) {
 		this.link = link;
+	}
+
+	public ReplyMessageCallback getReplyMessageCallback() {
+		throw new RuntimeException("Not developed yet");
+	}
+
+	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
+		throw new RuntimeException("Not developed yet");
 	}	
+	
 }

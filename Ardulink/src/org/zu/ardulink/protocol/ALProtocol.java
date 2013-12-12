@@ -107,6 +107,11 @@ public class ALProtocol implements IProtocol {
 	}
 
 	@Override
+	public MessageInfo sendCustomMessage(Link link, String message) {
+		return sendCustomMessage(link, message, null);
+	}
+	
+	@Override
 	public MessageInfo sendKeyPressEvent(Link link, char keychar, int keycode,	int keylocation, int keymodifiers, int keymodifiersex, ReplyMessageCallback callback) {
 		MessageInfo retvalue = new MessageInfo();
 		synchronized(this) {
@@ -227,6 +232,43 @@ public class ALProtocol implements IProtocol {
 		return retvalue;
 	}
 
+	@Override
+	public MessageInfo sendCustomMessage(Link link, String message, ReplyMessageCallback callback) {
+		MessageInfo retvalue = new MessageInfo();
+		synchronized(this) {
+			if(link.isConnected()) {
+				
+				long currentId = nextId++;
+				retvalue.setMessageID(currentId);
+				if(callback != null) {
+					retvalue.setCallback(callback);
+					messageInfos.put(currentId, retvalue);
+				}
+				
+				StringBuilder builder = new StringBuilder("alp://cust/");
+				builder.append(message);
+				if(callback != null) {
+					builder.append("?id=");
+					builder.append(currentId);
+				}
+				builder.append("\n");
+				
+				String mesg = builder.toString();
+				logger.fine(mesg);
+				
+				boolean result = link.writeSerial(mesg);
+				retvalue.setSent(result);
+				retvalue.setMessageSent(mesg);
+
+				if(!result) {
+					messageInfos.remove(currentId);
+				}
+			}
+		}
+		
+		return retvalue;
+	}	
+	
 	@Override
 	public MessageInfo startListenDigitalPin(Link link, int pin) {
 		return startListenDigitalPin(link, pin, null);
@@ -446,4 +488,5 @@ public class ALProtocol implements IProtocol {
 			messageInfo.getCallback().replyInfo(messageInfo); // Callback!
 		}
 	}
+
 }

@@ -391,6 +391,16 @@ public class Link {
 	}
 
 	/**
+	 * Call protocol sendCustomMessage with this Link (and without a call back implementation to manage reply message)
+	 * Custom message should be used to request specific actions in custom sketches
+	 * @param message
+	 * @return the MessageInfo class
+	 */
+	public MessageInfo sendCustomMessage(String message) {
+		return protocol.sendCustomMessage(this, message);
+	}
+
+	/**
 	 * Call protocol sendKeyPressEvent with this Link.
 	 * Arduino should send a reply message back. You can manage this callback with a specific implementation. 
 	 * @param keychar
@@ -429,6 +439,17 @@ public class Link {
 	 */
 	public MessageInfo sendPowerPinSwitch(int pin, int power, ReplyMessageCallback callback) {
 		return protocol.sendPowerPinSwitch(this, pin, power, callback);
+	}
+
+	/**
+	 * Call protocol sendCustomMessage with this Link.
+	 * Custom message should be used to request specific actions in custom sketches
+	 * @param message
+	 * @param callback
+	 * @return the MessageInfo class
+	 */
+	public MessageInfo sendCustomMessage(String message, ReplyMessageCallback callback) {
+		return protocol.sendCustomMessage(this, message, callback);
 	}
 
 	/**

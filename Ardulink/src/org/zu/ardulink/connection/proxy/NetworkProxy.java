@@ -18,7 +18,6 @@ limitations under the License.
 
 package org.zu.ardulink.connection.proxy;
 
-import gnu.io.SerialPort;
 import gnu.io.net.Network_iface;
 
 import java.io.BufferedReader;
@@ -34,6 +33,12 @@ import java.util.List;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.Connection;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ */
 public class NetworkProxy implements Connection, NetworkProxyMessages {
 
 	private Socket socket = null;

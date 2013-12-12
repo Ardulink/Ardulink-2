@@ -32,6 +32,12 @@ import java.util.logging.Logger;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.RawDataListener;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ */
 public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessages, RawDataListener {
 
 	private static Logger logger = Logger.getLogger(NetworkProxyServerConnection.class.getName());

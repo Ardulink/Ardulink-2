@@ -34,6 +34,7 @@ import org.zu.ardulink.Link;
 import org.zu.ardulink.event.DigitalReadChangeEvent;
 import org.zu.ardulink.event.DigitalReadChangeListener;
 import org.zu.ardulink.gui.facility.UtilityModel;
+import org.zu.ardulink.protocol.ReplyMessageCallback;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -148,5 +149,12 @@ public class DigitalPinStatus extends JPanel implements DigitalReadChangeListene
 		this.link = link;
 	}
 	
+	public ReplyMessageCallback getReplyMessageCallback() {
+		throw new RuntimeException("Not developed yet");
+	}
+
+	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
+		throw new RuntimeException("Not developed yet");
+	}	
 	
 }

@@ -82,6 +82,14 @@ public interface IProtocol {
 	public MessageInfo sendPowerPinSwitch(Link link, int pin, int power);
 	
 	/**
+	 * Sends a custom message used for specific actions in Arduino sketches
+	 * @param link
+	 * @param message
+	 * @return a MessageInfo containing the success or failure (for comunication)
+	 */
+	public MessageInfo sendCustomMessage(Link link, String message);
+
+	/**
 	 * Sends information about which key was pressed.
 	 * @param link
 	 * @param keychar
@@ -115,6 +123,15 @@ public interface IProtocol {
 	 * @return a MessageInfo containing the success or failure (for comunication)
 	 */
 	public MessageInfo sendPowerPinSwitch(Link link, int pin, int power, ReplyMessageCallback callback);
+
+	/**
+	 * Sends a custom message used for specific actions in Arduino sketches
+	 * @param link
+	 * @param message
+	 * @param callback
+	 * @return a MessageInfo containing the success or failure (for comunication)
+	 */
+	public MessageInfo sendCustomMessage(Link link, String message, ReplyMessageCallback callback);
 
 	/**
 	 * When a message arrives from Arduino, NetworkInterfaceImpl and Link classes call this method that parses message and

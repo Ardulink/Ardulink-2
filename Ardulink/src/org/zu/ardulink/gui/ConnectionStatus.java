@@ -18,14 +18,15 @@ limitations under the License.
 
 package org.zu.ardulink.gui;
 
-import javax.swing.JPanel;
-import javax.swing.JLabel;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 import org.zu.ardulink.Link;
 import org.zu.ardulink.event.ConnectionEvent;
 import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DisconnectionEvent;
+import org.zu.ardulink.protocol.ReplyMessageCallback;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -92,5 +93,13 @@ public class ConnectionStatus extends JPanel implements ConnectionListener, Link
 		lblStatelabel.setText(DISCONNECTED);
 		lblStatelabel.setIcon(DISCONNECTED_ICON);
 	}
+
+	public ReplyMessageCallback getReplyMessageCallback() {
+		throw new RuntimeException("Not developed yet");
+	}
+
+	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
+		throw new RuntimeException("Not developed yet");
+	}	
 
 }

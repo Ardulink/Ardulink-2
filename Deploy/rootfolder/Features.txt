@@ -1,3 +1,11 @@
+Version 0.2.2.20131212
+
+- Custom message added in protocol interface and ALProtocol
+- SignalButton component added for custom messages
+- ReplyMessageCallback for GUI added
+- Linkable interface modified for ReplyMessageCallback handling
+- Example Sketch for custom messages added
+
 Version 0.2.1.20131201
 
 - Ardulink Network Proxy Server available
