@@ -489,4 +489,9 @@ public class ALProtocol implements IProtocol {
 		}
 	}
 
+	@Override
+	public ProtocolType getProtocolType() {
+		return ProtocolType.TEXT;
+	}
+
 }

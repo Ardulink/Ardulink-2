@@ -20,7 +20,6 @@ package org.zu.ardulink.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -51,6 +50,7 @@ import org.zu.ardulink.Link;
 import org.zu.ardulink.event.ConnectionEvent;
 import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DisconnectionEvent;
+import org.zu.ardulink.gui.digistump.DigisparkConnectionPanel;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
 import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
@@ -77,12 +77,14 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 	private KeyPressController keyControlPanel;
 	private JRadioButton serialConnectionRadioButton;
 	private JRadioButton networkConnectionRadioButton;
+	private JRadioButton digisparkConnectionRadioButton;
 	private JButton btnConnect;
 	private JButton btnDisconnect;
 	private ConnectionStatus connectionStatus;
 	
-	private ConnectionPanel serialConnectionPanel;
+	private SerialConnectionPanel serialConnectionPanel;
 	private NetworkProxyConnectionPanel networkProxyConnectionPanel;
+	private DigisparkConnectionPanel digisparkConnectionPanel;
 	
 	private Link link = null;
 	
@@ -136,31 +138,48 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		btnConnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
-				String comPort = null;
-				String baudRateS = null;
-				if(serialConnectionRadioButton.isSelected()) { // Serial Connection
-					comPort = serialConnectionPanel.getConnectionPort();
-					baudRateS = serialConnectionPanel.getBaudRate();
-					
-				} else { // Network Connection
-					comPort = networkProxyConnectionPanel.getConnectionPort();
-					baudRateS = serialConnectionPanel.getBaudRate();
-				}
-				if(comPort == null || "".equals(comPort)) {
-					JOptionPane.showMessageDialog(btnConnect, "Invalid COM PORT setted.", "Error", JOptionPane.ERROR_MESSAGE);
-				} else if(baudRateS == null || "".equals(baudRateS)) {
-					JOptionPane.showMessageDialog(btnConnect, "Invalid baud rate setted. Advice: set " + Link.DEFAULT_BAUDRATE, "Error", JOptionPane.ERROR_MESSAGE);
-				} else if(networkConnectionRadioButton.isSelected() && networkProxyConnectionPanel.getLink() == null) {
-					JOptionPane.showMessageDialog(btnConnect, "Proxy is not activated", "Error", JOptionPane.ERROR_MESSAGE);
-				} else {
-					try {
-						int baudRate = Integer.parseInt(baudRateS);
+				if(serialConnectionRadioButton.isSelected() || networkConnectionRadioButton.isSelected()) {
+					String comPort = null;
+					String baudRateS = null;
+					if(serialConnectionRadioButton.isSelected()) { // Serial Connection
+						comPort = serialConnectionPanel.getConnectionPort();
+						baudRateS = serialConnectionPanel.getBaudRate();
 						
-						if(networkConnectionRadioButton.isSelected()) {
-							setLink(networkProxyConnectionPanel.getLink());
+					} else if(networkConnectionRadioButton.isSelected()) { // Network Connection
+						comPort = networkProxyConnectionPanel.getConnectionPort();
+						baudRateS = serialConnectionPanel.getBaudRate();
+					}
+					if(comPort == null || "".equals(comPort)) {
+						JOptionPane.showMessageDialog(btnConnect, "Invalid COM PORT setted.", "Error", JOptionPane.ERROR_MESSAGE);
+					} else if(baudRateS == null || "".equals(baudRateS)) {
+						JOptionPane.showMessageDialog(btnConnect, "Invalid baud rate setted. Advice: set " + Link.DEFAULT_BAUDRATE, "Error", JOptionPane.ERROR_MESSAGE);
+					} else if(networkConnectionRadioButton.isSelected() && networkProxyConnectionPanel.getLink() == null) {
+						JOptionPane.showMessageDialog(btnConnect, "Proxy is not activated", "Error", JOptionPane.ERROR_MESSAGE);
+					} else {
+						try {
+							int baudRate = Integer.parseInt(baudRateS);
+							
+							if(networkConnectionRadioButton.isSelected()) {
+								setLink(networkProxyConnectionPanel.getLink());
+							}
+							
+							boolean connected = link.connect(comPort, baudRate);
+							logger.info("Connection status: " + connected);
 						}
-						
-						boolean connected = link.connect(comPort, baudRate);
+						catch(Exception ex) {
+							ex.printStackTrace();
+							String message = ex.getMessage();
+							if(message == null || message.trim().equals("")) {
+								message = "Generic Error on connection";
+							}
+							JOptionPane.showMessageDialog(btnConnect, message, "Error", JOptionPane.ERROR_MESSAGE);
+						}
+					}
+				} else { // Digispark Connection
+					try {
+						String deviceName = digisparkConnectionPanel.getSelectedDevice();
+						setLink(digisparkConnectionPanel.getLink());
+						boolean connected = link.connect(deviceName);
 						logger.info("Connection status: " + connected);
 					}
 					catch(Exception ex) {
@@ -171,7 +190,9 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 						}
 						JOptionPane.showMessageDialog(btnConnect, message, "Error", JOptionPane.ERROR_MESSAGE);
 					}
+					
 				}
+
 			}
 		});
 		connectPanel.add(btnConnect);
@@ -203,12 +224,13 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 			public void actionPerformed(ActionEvent e) {
 				serialConnectionPanel.setEnabled(true);
 				networkProxyConnectionPanel.setEnabled(false);
+				digisparkConnectionPanel.setEnabled(false);
 				setLink(serialConnectionPanel.getLink());
 			}
 		});
 		serialConnectionRadioButton.setSelected(true);
 		GridBagConstraints gbc_serialConnectionRadioButton = new GridBagConstraints();
-		gbc_serialConnectionRadioButton.insets = new Insets(0, 0, 0, 5);
+		gbc_serialConnectionRadioButton.insets = new Insets(0, 0, 0, 10);
 		gbc_serialConnectionRadioButton.anchor = GridBagConstraints.NORTH;
 		gbc_serialConnectionRadioButton.fill = GridBagConstraints.HORIZONTAL;
 		gbc_serialConnectionRadioButton.gridx = 0;
@@ -220,23 +242,41 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 			public void actionPerformed(ActionEvent e) {
 				serialConnectionPanel.setEnabled(false);
 				networkProxyConnectionPanel.setEnabled(true);
+				digisparkConnectionPanel.setEnabled(false);
 				setLink(networkProxyConnectionPanel.getLink());
 			}
 		});
 		GridBagConstraints gbc_networkConnectionRadioButton = new GridBagConstraints();
-		gbc_networkConnectionRadioButton.insets = new Insets(0, 5, 0, 0);
+		gbc_networkConnectionRadioButton.insets = new Insets(0, 10, 0, 0);
 		gbc_networkConnectionRadioButton.anchor = GridBagConstraints.NORTH;
 		gbc_networkConnectionRadioButton.fill = GridBagConstraints.HORIZONTAL;
 		gbc_networkConnectionRadioButton.gridx = 1;
 		gbc_networkConnectionRadioButton.gridy = 0;
 		allConnectionsPanel.add(networkConnectionRadioButton, gbc_networkConnectionRadioButton);
 		
-		serialConnectionPanel = new ConnectionPanel();
+		digisparkConnectionRadioButton = new JRadioButton("Digispark Connection");
+		digisparkConnectionRadioButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				serialConnectionPanel.setEnabled(false);
+				networkProxyConnectionPanel.setEnabled(false);
+				digisparkConnectionPanel.setEnabled(true);
+				setLink(serialConnectionPanel.getLink());
+			}
+		});
+		digisparkConnectionRadioButton.setSelected(true);
+		GridBagConstraints gbc_digisparkConnectionRadioButton = new GridBagConstraints();
+		gbc_digisparkConnectionRadioButton.insets = new Insets(20, 0, 0, 10);
+		gbc_digisparkConnectionRadioButton.anchor = GridBagConstraints.NORTH;
+		gbc_digisparkConnectionRadioButton.fill = GridBagConstraints.HORIZONTAL;
+		gbc_digisparkConnectionRadioButton.gridx = 0;
+		gbc_digisparkConnectionRadioButton.gridy = 2;
+		allConnectionsPanel.add(digisparkConnectionRadioButton, gbc_digisparkConnectionRadioButton);
+
+		serialConnectionPanel = new SerialConnectionPanel();
 		serialConnectionPanel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-		serialConnectionPanel.setLayout(null);
 		GridBagConstraints gbc_serialConnectionPanel = new GridBagConstraints();
-		gbc_serialConnectionPanel.insets = new Insets(0, 0, 0, 5);
-		gbc_serialConnectionPanel.anchor = GridBagConstraints.SOUTH;
+		gbc_serialConnectionPanel.insets = new Insets(0, 0, 0, 10);
+		gbc_serialConnectionPanel.anchor = GridBagConstraints.NORTH;
 		gbc_serialConnectionPanel.fill = GridBagConstraints.HORIZONTAL;
 		gbc_serialConnectionPanel.gridx = 0;
 		gbc_serialConnectionPanel.gridy = 1;
@@ -244,22 +284,33 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		
 		networkProxyConnectionPanel = new NetworkProxyConnectionPanel();
 		networkProxyConnectionPanel.setEnabled(false);
-		networkProxyConnectionPanel.setPreferredSize(new Dimension(240, 390));
-		networkProxyConnectionPanel.setMinimumSize(new Dimension(240, 390));
 		networkProxyConnectionPanel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-		networkProxyConnectionPanel.setLayout(null);
 		GridBagConstraints gbc_networkProxyConnectionPanel = new GridBagConstraints();
-		gbc_networkProxyConnectionPanel.insets = new Insets(0, 5, 0, 0);
+		gbc_networkProxyConnectionPanel.gridheight = 3;
+		gbc_networkProxyConnectionPanel.insets = new Insets(0, 10, 0, 0);
 		gbc_networkProxyConnectionPanel.anchor = GridBagConstraints.SOUTH;
 		gbc_networkProxyConnectionPanel.fill = GridBagConstraints.HORIZONTAL;
 		gbc_networkProxyConnectionPanel.gridx = 1;
 		gbc_networkProxyConnectionPanel.gridy = 1;
 		allConnectionsPanel.add(networkProxyConnectionPanel, gbc_networkProxyConnectionPanel);
 		
+		digisparkConnectionPanel = new DigisparkConnectionPanel();
+		digisparkConnectionPanel.setEnabled(false);
+		digisparkConnectionPanel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
+		GridBagConstraints gbc_digisparkConnectionPanel = new GridBagConstraints();
+		gbc_digisparkConnectionPanel.gridheight = 1;
+		gbc_digisparkConnectionPanel.insets = new Insets(0, 0, 0, 10);
+		gbc_digisparkConnectionPanel.anchor = GridBagConstraints.NORTH;
+		gbc_digisparkConnectionPanel.fill = GridBagConstraints.HORIZONTAL;
+		gbc_digisparkConnectionPanel.gridx = 0;
+		gbc_digisparkConnectionPanel.gridy = 3;
+		allConnectionsPanel.add(digisparkConnectionPanel, gbc_digisparkConnectionPanel);
+
 		//Group the radio buttons.
 	    ButtonGroup group = new ButtonGroup();
 	    group.add(serialConnectionRadioButton);
 	    group.add(networkConnectionRadioButton);
+	    group.add(digisparkConnectionRadioButton);
 		
 		keyControlPanel = new KeyPressController();
 		linkables.add(keyControlPanel);
@@ -466,6 +517,16 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 	public void connected(ConnectionEvent e) {
 		serialConnectionRadioButton.setEnabled(false);
 		networkConnectionRadioButton.setEnabled(false);
+		digisparkConnectionRadioButton.setEnabled(false);
+		
+		if(serialConnectionRadioButton.isSelected()) {
+			serialConnectionPanel.setEnabled(false);
+		} else if(networkConnectionRadioButton.isSelected()) {
+			networkProxyConnectionPanel.setEnabled(false);
+		} else if(digisparkConnectionRadioButton.isSelected()) {
+			digisparkConnectionPanel.setEnabled(false);
+		}
+		
 		btnConnect.setEnabled(false);
 		btnDisconnect.setEnabled(true);
 	}
@@ -474,6 +535,16 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 	public void disconnected(DisconnectionEvent e) {
 		serialConnectionRadioButton.setEnabled(true);
 		networkConnectionRadioButton.setEnabled(true);
+		digisparkConnectionRadioButton.setEnabled(true);
+
+		if(serialConnectionRadioButton.isSelected()) {
+			serialConnectionPanel.setEnabled(true);
+		} else if(networkConnectionRadioButton.isSelected()) {
+			networkProxyConnectionPanel.setEnabled(true);
+		} else if(digisparkConnectionRadioButton.isSelected()) {
+			digisparkConnectionPanel.setEnabled(true);
+		}
+		
 		btnConnect.setEnabled(true);
 		btnDisconnect.setEnabled(false);
 	}

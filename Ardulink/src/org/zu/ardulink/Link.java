@@ -18,14 +18,13 @@ limitations under the License.
 
 package org.zu.ardulink;
 
-import gnu.io.net.Network;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.zu.ardulink.connection.Connection;
+import org.zu.ardulink.connection.serial.SerialConnection;
 import org.zu.ardulink.event.AnalogReadChangeListener;
 import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DigitalReadChangeListener;
@@ -76,7 +75,7 @@ public class Link {
 		createInstance(DEFAULT_LINK_NAME, ALProtocol.NAME);
 	}
 	
-	private NetworkInterfaceImpl networkInterface = new NetworkInterfaceImpl(this);
+	private ConnectionContactImpl connectionContact = new ConnectionContactImpl(this);
 	private Connection connection = null;
 	private String name;
 	
@@ -153,8 +152,6 @@ public class Link {
 			IProtocol protocol = ProtocolHandler.getProtocolImplementation(protocolName);
 			link = new Link(linkName, protocol, connection);
 			links.put(linkName, link);
-		} else {
-			throw new RuntimeException("Instance " + linkName + " already created.");
 		}
 		return link;
 	}
@@ -170,40 +167,29 @@ public class Link {
 	}
 
 	private Link(String linkName, IProtocol protocol) {
-		this.connection = new Network(linkName, networkInterface, Link.MESSAGE_DIVIDER);
+		this.connection = new SerialConnection(linkName, connectionContact, Link.MESSAGE_DIVIDER);
 		this.name = linkName;
 		this.protocol = protocol;
 	}
 	
 	private Link(String linkName, IProtocol protocol, Connection connection) {
 		this.connection = connection;
-		connection.setConnectionContact(networkInterface);
+		connection.setConnectionContact(connectionContact);
 		this.name = linkName;
 		this.protocol = protocol;
 	}
 
 	/**
 	 * Connects to Arduino board.
-	 * @param portName the port name
-	 * @return true if connection is ok
+	 * @param params
+	 * @return
 	 */
-	public boolean connect(String portName) {
-		return connect(portName, DEFAULT_BAUDRATE);
-	}
-
-	/**
-	 * Connects to Arduino board.
-	 * @param portName the port name
-	 * @param baudRate the baud rate
-	 * @return true if connection is ok
-	 * @see Network
-	 */
-	public boolean connect(String portName, int baudRate) {
+	public boolean connect(Object... params) {
 		if(connection.isConnected()) {
 			connection.disconnect();
 		}
 		
-		boolean retvalue = connection.connect(portName, baudRate);
+		boolean retvalue = connection.connect(params);
 
 		return retvalue;
 	}
@@ -211,7 +197,7 @@ public class Link {
 	/**
 	 * It works for serial connection links
 	 * @return ports available
-	 * @see Network
+	 * @see SerialConnection
 	 */
 	public List<String> getPortList() {
 		return connection.getPortList();
@@ -232,7 +218,7 @@ public class Link {
 
 	/**
 	 * @return true if arduino board is connected
-	 * @see Network
+	 * @see SerialConnection
 	 */
 	public boolean isConnected() {
 		return connection.isConnected();
@@ -242,7 +228,7 @@ public class Link {
 	 * Writes data to arduino
 	 * @param message
 	 * @return
-	 * @see Network
+	 * @see SerialConnection
 	 */
 	public boolean writeSerial(String message) {
 		return connection.writeSerial(message);
@@ -253,7 +239,7 @@ public class Link {
 	 * @param numBytes
 	 * @param message
 	 * @return
-	 * @see Network
+	 * @see SerialConnection
 	 */
 	public boolean writeSerial(int numBytes, int[] message) {
 		return connection.writeSerial(numBytes, message);
@@ -263,40 +249,40 @@ public class Link {
 	 * Register a ConnectionListener to receive events about connection status.
 	 * @param connectionListener
 	 * @return true if this set did not already contain the specified connectionListener
-	 * @see NetworkInterfaceImpl
+	 * @see ConnectionContactImpl
 	 */
 	public boolean addConnectionListener(ConnectionListener connectionListener) {
-		return networkInterface.addConnectionListener(connectionListener);
+		return connectionContact.addConnectionListener(connectionListener);
 	}
 
 	/**
 	 * Remove a ConnectionListener from the event notification set.
 	 * @param connectionListener
 	 * @return true if this set contained the specified connectionListener
-	 * @see NetworkInterfaceImpl
+	 * @see ConnectionContactImpl
 	 */
 	public boolean removeConnectionListener(ConnectionListener connectionListener) {
-		return networkInterface.removeConnectionListener(connectionListener);
+		return connectionContact.removeConnectionListener(connectionListener);
 	}
 	
 	/**
 	 * Register a RawDataListener to receive data from Arduino.
 	 * @param rawDataListener
 	 * @return true if this set did not already contain the specified rawDataListener
-	 * @see NetworkInterfaceImpl
+	 * @see ConnectionContactImpl
 	 */
 	public boolean addRawDataListener(RawDataListener rawDataListener) {
-		return networkInterface.addRawDataListener(rawDataListener);
+		return connectionContact.addRawDataListener(rawDataListener);
 	}
 
 	/**
 	 * Remove a RawDataListener from the data notification set.
 	 * @param rawDataListener
 	 * @return
-	 * @see NetworkInterfaceImpl
+	 * @see ConnectionContactImpl
 	 */
 	public boolean removeRawDataListener(RawDataListener rawDataListener) {
-		return networkInterface.removeRawDataListener(rawDataListener);
+		return connectionContact.removeRawDataListener(rawDataListener);
 	}
 
 	/**
@@ -304,20 +290,20 @@ public class Link {
 	 * With this method ardulink is able to receive information from arduino board
 	 * @param listener
 	 * @return true if this set did not already contain the specified AnalogReadChangeListener
-	 * @see NetworkInterfaceImpl
+	 * @see ConnectionContactImpl
 	 */
 	public boolean addAnalogReadChangeListener(AnalogReadChangeListener listener) {
-		return networkInterface.addAnalogReadChangeListener(listener);
+		return connectionContact.addAnalogReadChangeListener(listener);
 	}
 
 	/**
 	 * Remove a AnalogReadChangeListener from the event notification set.
 	 * @param listener
 	 * @return true if this set contained the specified AnalogReadChangeListener
-	 * @see NetworkInterfaceImpl
+	 * @see ConnectionContactImpl
 	 */
 	public boolean removeAnalogReadChangeListener(AnalogReadChangeListener listener) {
-		return networkInterface.removeAnalogReadChangeListener(listener);
+		return connectionContact.removeAnalogReadChangeListener(listener);
 	}
 
 	/**
@@ -325,20 +311,20 @@ public class Link {
 	 * With this method ardulink is able to receive information from arduino board
 	 * @param listener
 	 * @return true if this set did not already contain the specified DigitalReadChangeListener
-	 * @see NetworkInterfaceImpl
+	 * @see ConnectionContactImpl
 	 */
 	public boolean addDigitalReadChangeListener(DigitalReadChangeListener listener) {
-		return networkInterface.addDigitalReadChangeListener(listener);
+		return connectionContact.addDigitalReadChangeListener(listener);
 	}
 
 	/**
 	 * Remove a DigitalReadChangeListener from the event notification set.
 	 * @param listener
 	 * @return true if this set contained the specified DigitalReadChangeListener
-	 * @see NetworkInterfaceImpl
+	 * @see ConnectionContactImpl
 	 */
 	public boolean removeDigitalReadChangeListener(DigitalReadChangeListener listener) {
-		return networkInterface.removeDigitalReadChangeListener(listener);
+		return connectionContact.removeDigitalReadChangeListener(listener);
 	}
 
 	/**

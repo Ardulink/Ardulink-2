@@ -27,7 +27,9 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
 import javax.swing.JButton;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 
+import javax.swing.Icon;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
 
@@ -152,4 +154,50 @@ public class SignalButton extends JPanel implements Linkable {
 	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
 		this.replyMessageCallback = replyMessageCallback;
 	}
+
+	public void setIcon(Icon defaultIcon) {
+		signalButton.setIcon(defaultIcon);
+	}
+
+	public void setPressedIcon(Icon pressedIcon) {
+		signalButton.setPressedIcon(pressedIcon);
+	}
+
+	public void setSelectedIcon(Icon selectedIcon) {
+		signalButton.setSelectedIcon(selectedIcon);
+	}
+
+	public void setRolloverIcon(Icon rolloverIcon) {
+		signalButton.setRolloverIcon(rolloverIcon);
+	}
+
+	public void setRolloverSelectedIcon(Icon rolloverSelectedIcon) {
+		signalButton.setRolloverSelectedIcon(rolloverSelectedIcon);
+	}
+
+	public void setDisabledIcon(Icon disabledIcon) {
+		signalButton.setDisabledIcon(disabledIcon);
+	}
+
+	public void setDisabledSelectedIcon(Icon disabledSelectedIcon) {
+		signalButton.setDisabledSelectedIcon(disabledSelectedIcon);
+	}
+
+	public void setIconTextGap(int iconTextGap) {
+		signalButton.setIconTextGap(iconTextGap);
+	}
+
+	public void setRolloverEnabled(boolean b) {
+		signalButton.setRolloverEnabled(b);
+	}
+
+	public void setForeground(Color fg) {
+		signalButton.setForeground(fg);
+	}
+
+	public void setBackground(Color bg) {
+		signalButton.setBackground(bg);
+	}
+	
+	
 }

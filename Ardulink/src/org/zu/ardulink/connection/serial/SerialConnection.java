@@ -1,4 +1,4 @@
-package gnu.io.net;
+package org.zu.ardulink.connection.serial;
 
 import gnu.io.CommPortIdentifier;
 import gnu.io.NoSuchPortException;
@@ -15,6 +15,7 @@ import java.util.Vector;
 
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.Connection;
+import org.zu.ardulink.connection.ConnectionContact;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -29,18 +30,23 @@ import org.zu.ardulink.connection.Connection;
  * This class also makes packages out of a stream of bytes received, using a
  * {@link #divider}, and sending these packages as an array of <b>int</b>s (each
  * between 0 and 255) to a function implemented by a class implementing the
- * {@link gnu.io.net.Network_iface}-interface.
+ * {@link org.zu.ardulink.connection.ConnectionContact}-interface.
  * 
  * @author Raphael Blatter (raphael@blatter.sg)
  * @author heavily using code examples from the RXTX-website (rxtx.qbang.org)
  * 
- * Luciano has added Connection implementation interface to allow multiple connections.
+ * <p>
+ * Luciano Zu Ardulink has added Connection implementation interface to allow multiple connections.
+ * </p>
+ * <p>
+ * Luciano Zu Ardulink has heavily refactored this class (its original name was gnu.io.net.Network)
+ * </p> 
  * 
  * [adsense]
  */
-public class Network implements Connection {
+public class SerialConnection implements Connection {
 	
-	public static final String DEFAULT_NETWORK_NAME = Link.DEFAULT_LINK_NAME; // Added from Luciano Zu
+	public static final String DEFAULT_CONNECTION_NAME = Link.DEFAULT_LINK_NAME; // Added from Luciano Zu
 	
 	private InputStream inputStream;
 	private OutputStream outputStream;
@@ -60,26 +66,26 @@ public class Network implements Connection {
 	private boolean end = false;
 
 	/**
-	 * Link to the instance of the class implementing {@link gnu.io.net.Network_iface}.
+	 * Link to the instance of the class implementing {@link org.zu.ardulink.connection.ConnectionContact}.
 	 */
-	private Network_iface contact;
+	private ConnectionContact contact;
 	/**
 	 * A small <b>int</b> representing the number to be used to distinguish
 	 * between two consecutive packages. It can only take a value between 0 and
 	 * 255. Note that data is only sent to
-	 * {@link gnu.io.net.Network_iface#parseInput(int, int, int[])} once the following
+	 * {@link org.zu.ardulink.connection.ConnectionContact#parseInput(int, int, int[])} once the following
 	 * 'divider' could be identified.
 	 * 
 	 * As a default, <b>255</b> is used as a divider (unless specified otherwise
 	 * in the constructor).
 	 * 
-	 * @see gnu.io.net.Network#Network(int, Network_iface, int)
+	 * @see org.zu.ardulink.connection.serial.SerialConnection#SerialConnection(int, ConnectionContact, int)
 	 */
 	private int divider;
 	/**
-	 * <b>String</b> identifying the specific instance of the Network-class. While
+	 * <b>String</b> identifying the specific instance of the SerialConnection-class. While
 	 * having only a single instance, 'id' is irrelevant. However, having more
-	 * than one open connection (using more than one instance of {@link Network}
+	 * than one open connection (using more than one instance of {@link SerialConnection}
 	 * ), 'id' helps identifying which Serial connection a message or a log
 	 * entry came from.
 	 * 
@@ -93,24 +99,24 @@ public class Network implements Connection {
 	/**
 	 * @param id
 	 *            <b>int</b> identifying the specific instance of the
-	 *            Network-class. While having only a single instance,
+	 *            SerialConnection-class. While having only a single instance,
 	 *            {@link #id} is irrelevant. However, having more than one open
-	 *            connection (using more than one instance of Network),
+	 *            connection (using more than one instance of SerialConnection),
 	 *            {@link #id} helps identifying which Serial connection a
 	 *            message or a log entry came from.
 	 * 
 	 * @param contact
 	 *            Link to the instance of the class implementing
-	 *            {@link gnu.io.net.Network_iface}.
+	 *            {@link org.zu.ardulink.connection.ConnectionContact}.
 	 * 
 	 * @param divider
 	 *            A small <b>int</b> representing the number to be used to
 	 *            distinguish between two consecutive packages. It can take a
 	 *            value between 0 and 255. Note that data is only sent to
-	 *            {@link gnu.io.net.Network_iface#parseInput(int, int, int[])} once the
+	 *            {@link org.zu.ardulink.connection.ConnectionContact#parseInput(int, int, int[])} once the
 	 *            following {@link #divider} could be identified.
 	 */
-	public Network(String id, Network_iface contact, int divider) {
+	public SerialConnection(String id, ConnectionContact contact, int divider) {
 		this.contact = contact;
 		this.divider = divider;
 		if (this.divider > 255)
@@ -122,25 +128,25 @@ public class Network implements Connection {
 	}
 
 	/**
-	 * Just as {@link #Network(int, Network_iface, int)}, but with a default
+	 * Just as {@link #SerialConnection(int, ConnectionContact, int)}, but with a default
 	 * {@link #divider} of <b>255</b>.
 	 * 
-	 * @see #Network(int, Network_iface, int)
+	 * @see #SerialConnection(int, ConnectionContact, int)
 	 */
-	public Network(String id, Network_iface contact) {
+	public SerialConnection(String id, ConnectionContact contact) {
 		this(id, contact, 255);
 	}
 
 	/**
-	 * Just as {@link #Network(int, Network_iface, int)}, but with a default
+	 * Just as {@link #SerialConnection(int, ConnectionContact, int)}, but with a default
 	 * {@link #divider} of <b>255</b> and a default {@link #id} of 0. This
 	 * constructor may mainly be used if only one Serial connection is needed at
 	 * any time.
 	 * 
-	 * @see #Network(int, Network_iface, int)
+	 * @see #SerialConnection(int, ConnectionContact, int)
 	 */
-	public Network(Network_iface contact) {
-		this(DEFAULT_NETWORK_NAME, contact);
+	public SerialConnection(ConnectionContact contact) {
+		this(DEFAULT_CONNECTION_NAME, contact);
 	}
 
 	/**
@@ -196,7 +202,7 @@ public class Network implements Connection {
 	 * speed. After opening the port, messages can be sent using
 	 * {@link #writeSerial(String)} and received data will be packed into
 	 * packets (see {@link #divider}) and forwarded using
-	 * {@link gnu.io.net.Network_iface#parseInput(int, int, int[])}.
+	 * {@link org.zu.ardulink.connection.ConnectionContact#parseInput(int, int, int[])}.
 	 * 
 	 * @param portName
 	 *            The name of the port the connection should be opened to (see
@@ -228,7 +234,7 @@ public class Network implements Connection {
 				connected = true;
 				contact.writeLog(id, "connection on " + portName
 						+ " established");
-				contact.networkConnected(id, portName);
+				contact.connected(id, portName);
 				conn = true;
 			}
 		} catch (NoSuchPortException e) {
@@ -248,11 +254,11 @@ public class Network implements Connection {
 	}
 
 	/**
-	 * A separate class to use as the {@link gnu.io.net.Network#reader}. It is run as a
+	 * A separate class to use as the {@link org.zu.ardulink.connection.serial.SerialConnection#reader}. It is run as a
 	 * separate {@link Thread} and manages the incoming data, packaging them
-	 * using {@link gnu.io.net.Network#divider} into arrays of <b>int</b>s and
+	 * using {@link org.zu.ardulink.connection.serial.SerialConnection#divider} into arrays of <b>int</b>s and
 	 * forwarding them using
-	 * {@link gnu.io.net.Network_iface#parseInput(int, int, int[])}.
+	 * {@link org.zu.ardulink.connection.ConnectionContact#parseInput(int, int, int[])}.
 	 * 
 	 */
 	private class SerialReader implements Runnable {
@@ -298,7 +304,7 @@ public class Network implements Connection {
 				}
 				serialPort.close();
 				connected = false;
-				contact.networkDisconnected(id);
+				contact.disconnected(id);
 				contact.writeLog(id, "connection has been interrupted");
 			}
 		}
@@ -306,7 +312,7 @@ public class Network implements Connection {
 
 	/**
 	 * Simple function closing the connection held by this instance of
-	 * {@link gnu.io.net.Network}. It also ends the Thread {@link gnu.io.net.Network#reader}.
+	 * {@link org.zu.ardulink.connection.serial.SerialConnection}. It also ends the Thread {@link org.zu.ardulink.connection.serial.SerialConnection#reader}.
 	 * 
 	 * @return <b>true</b> if the connection could be closed, <b>false</b>
 	 *         otherwise.
@@ -331,13 +337,13 @@ public class Network implements Connection {
 			serialPort.close();
 			connected = false;
 		}
-		contact.networkDisconnected(id);
+		contact.disconnected(id);
 		contact.writeLog(id, "connection disconnected");
 		return disconn;
 	}
 
 	/**
-	 * @return Whether this instance of {@link gnu.io.net.Network} has currently an
+	 * @return Whether this instance of {@link org.zu.ardulink.connection.serial.SerialConnection} has currently an
 	 *         open connection of not.
 	 */
 	public boolean isConnected() {
@@ -352,7 +358,7 @@ public class Network implements Connection {
 	 * If a connection is open, a {@link String} can be sent over the Serial
 	 * port using this function. If no connection is available, <b>false</b> is
 	 * returned and a message is sent using
-	 * {@link gnu.io.net.Network_iface#writeLog(int, String)}.
+	 * {@link org.zu.ardulink.connection.ConnectionContact#writeLog(int, String)}.
 	 * 
 	 * @param message
 	 *            The {@link String} to be sent over the Serial connection.
@@ -375,11 +381,11 @@ public class Network implements Connection {
 
 	/**
 	 * If a connection is open, an <b>int</b> between 0 and 255 (except the
-	 * {@link gnu.io.net.Network#divider}) can be sent over the Serial port using this
+	 * {@link org.zu.ardulink.connection.serial.SerialConnection#divider}) can be sent over the Serial port using this
 	 * function. The message will be finished by sending the
-	 * {@link gnu.io.net.Network#divider}. If no connection is available, <b>false</b>
+	 * {@link org.zu.ardulink.connection.serial.SerialConnection#divider}. If no connection is available, <b>false</b>
 	 * is returned and a message is sent using
-	 * {@link gnu.io.net.Network_iface#writeLog(int, String)}.
+	 * {@link org.zu.ardulink.connection.ConnectionContact#writeLog(int, String)}.
 	 * 
 	 * @param numBytes
 	 *            The number of bytes to send over the Serial port.
@@ -387,7 +393,7 @@ public class Network implements Connection {
 	 *            [] The array of<b>int</b>s to be sent over the Serial
 	 *            connection (between 0 and 256).
 	 * @return <b>true</b> if the message could be sent, <b>false</b> otherwise
-	 *         or if one of the numbers is equal to the #{@link Network#divider}
+	 *         or if one of the numbers is equal to the #{@link SerialConnection#divider}
 	 *         .
 	 */
 	public boolean writeSerial(int numBytes, int message[]) {
@@ -464,7 +470,7 @@ public class Network implements Connection {
 	 * Method added by Luciano Zu - Ardulink
 	 */
 	@Override
-	public void setConnectionContact(Network_iface connectionContact) {
+	public void setConnectionContact(ConnectionContact connectionContact) {
 		contact = connectionContact;
 	}
 }

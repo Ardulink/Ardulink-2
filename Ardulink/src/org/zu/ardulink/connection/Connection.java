@@ -18,8 +18,6 @@ limitations under the License.
 
 package org.zu.ardulink.connection;
 
-import gnu.io.net.Network_iface;
-
 import java.util.List;
 
 /**
@@ -36,5 +34,5 @@ public interface Connection {
 	public boolean isConnected();
 	public boolean writeSerial(String message);
 	public boolean writeSerial(int numBytes, int message[]);
-	public void setConnectionContact(Network_iface contact);
+	public void setConnectionContact(ConnectionContact contact);
 }

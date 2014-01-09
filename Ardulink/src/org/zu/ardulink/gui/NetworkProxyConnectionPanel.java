@@ -30,7 +30,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import org.zu.ardulink.Link;
-import org.zu.ardulink.connection.proxy.NetworkProxy;
+import org.zu.ardulink.connection.proxy.NetworkProxyConnection;
 import org.zu.ardulink.connection.proxy.NetworkProxyServer;
 
 /**
@@ -46,7 +46,7 @@ public class NetworkProxyConnectionPanel extends JPanel {
 	 */
 	private static final long serialVersionUID = -519317364929658756L;
 	
-	private ConnectionPanel connectionPanel;
+	private SerialConnectionPanel connectionPanel;
 	private JTextField hostNameTextField;
 	private JTextField hostPortTextField;
 	private JButton activateButton;
@@ -57,12 +57,12 @@ public class NetworkProxyConnectionPanel extends JPanel {
 	 * Create the panel.
 	 */
 	public NetworkProxyConnectionPanel() {
-		Dimension dimension = new Dimension(240, 390);
+		Dimension dimension = new Dimension(275, 200);
 		setPreferredSize(dimension);
 		setMinimumSize(dimension);
 		setLayout(null);
 		
-		connectionPanel = new ConnectionPanel();
+		connectionPanel = new SerialConnectionPanel();
 		connectionPanel.setLocation(0, 115);
 		connectionPanel.setSize(connectionPanel.getPreferredSize());
 		connectionPanel.setEnabled(false);
@@ -75,7 +75,7 @@ public class NetworkProxyConnectionPanel extends JPanel {
 		
 		hostNameTextField = new JTextField();
 		hostNameTextField.setColumns(10);
-		hostNameTextField.setBounds(108, 6, 122, 28);
+		hostNameTextField.setBounds(108, 6, 161, 28);
 		add(hostNameTextField);
 		
 		JLabel lblHostPort = new JLabel("Host Port:");
@@ -85,7 +85,7 @@ public class NetworkProxyConnectionPanel extends JPanel {
 		
 		hostPortTextField = new JTextField();
 		hostPortTextField.setColumns(10);
-		hostPortTextField.setBounds(108, 39, 122, 28);
+		hostPortTextField.setBounds(108, 39, 161, 28);
 		hostPortTextField.setText("" + NetworkProxyServer.DEFAULT_LISTENING_PORT);
 		add(hostPortTextField);
 		
@@ -107,9 +107,9 @@ public class NetworkProxyConnectionPanel extends JPanel {
 				}
 				if(hostPort != -1) {
 					try {
-						// Create a NetworkProxy (the Connection implementation to send data over the net)
+						// Create a NetworkProxyConnection (the Connection implementation to send data over the net)
 						// params are hostname and hostport
-						NetworkProxy connection = new NetworkProxy(hostName, hostPort);
+						NetworkProxyConnection connection = new NetworkProxyConnection(hostName, hostPort);
 						
 						// Create a Link class (so now we use this instead of the default one)
 						link = Link.createInstance(hostPortTextField.getParent().toString(), connection);
@@ -126,7 +126,7 @@ public class NetworkProxyConnectionPanel extends JPanel {
 				}
 			}
 		});
-		activateButton.setBounds(5, 75, 230, 28);
+		activateButton.setBounds(5, 75, 264, 28);
 		add(activateButton);
 	}
 	

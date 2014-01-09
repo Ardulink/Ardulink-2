@@ -18,8 +18,6 @@ limitations under the License.
 
 package org.zu.ardulink.connection.proxy;
 
-import gnu.io.net.Network_iface;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +30,7 @@ import java.util.List;
 
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.Connection;
+import org.zu.ardulink.connection.ConnectionContact;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -39,7 +38,7 @@ import org.zu.ardulink.connection.Connection;
  * 
  * [adsense]
  */
-public class NetworkProxy implements Connection, NetworkProxyMessages {
+public class NetworkProxyConnection implements Connection, NetworkProxyMessages {
 
 	private Socket socket = null;
 
@@ -50,7 +49,7 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 	
 	private boolean handshakeComplete = false;
 	
-	private Network_iface contact;
+	private ConnectionContact contact;
 	
 	private String id;
 
@@ -65,7 +64,7 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 	 */
 	private boolean end = false;
 	
-	public NetworkProxy(String host, int port) throws IOException {
+	public NetworkProxyConnection(String host, int port) throws IOException {
 		id = host + ":" + port;
 		socket = new Socket(host, port);
 
@@ -133,7 +132,7 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 				end = false;
 				reader.start();
 			}
-			contact.networkConnected(id, portName);
+			contact.connected(id, portName);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -144,7 +143,7 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 	public boolean disconnect() {
 		try {
 			socket.close();
-			contact.networkDisconnected(id);
+			contact.disconnected(id);
 			end = true;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -172,7 +171,7 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 	}
 
 	@Override
-	public void setConnectionContact(Network_iface contact) {
+	public void setConnectionContact(ConnectionContact contact) {
 		this.contact = contact;
 	}
 
@@ -181,11 +180,11 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 	}
 	
 	/**
-	 * A separate class to use as the {@link gnu.io.net.Network#reader}. It is run as a
+	 * A separate class to use as the {@link org.zu.ardulink.connection.serial.SerialConnection#reader}. It is run as a
 	 * separate {@link Thread} and manages the incoming data, packaging them
-	 * using {@link gnu.io.net.Network#divider} into arrays of <b>int</b>s and
+	 * using {@link org.zu.ardulink.connection.serial.SerialConnection#divider} into arrays of <b>int</b>s and
 	 * forwarding them using
-	 * {@link gnu.io.net.Network_iface#parseInput(int, int, int[])}.
+	 * {@link org.zu.ardulink.connection.ConnectionContact#parseInput(int, int, int[])}.
 	 * 
 	 */
 	private class SerialReader implements Runnable {
@@ -229,7 +228,7 @@ public class NetworkProxy implements Connection, NetworkProxyMessages {
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
-				contact.networkDisconnected(id);
+				contact.disconnected(id);
 				contact.writeLog(id, "connection has been interrupted");
 			}
 		}

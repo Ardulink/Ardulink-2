@@ -22,31 +22,31 @@ import java.util.Date;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- * Event raised when Network connection occurs.
+ * Event raised when connection occurs.
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *
  */
 public class ConnectionEvent {
-	private String networkId = null;
+	private String connectionId = null;
 	private String portName = null;
 	private Date timestamp = new Date();
 
 	public ConnectionEvent() {
 	}
 	
-	public ConnectionEvent(String networkId) {
-		this.networkId = networkId;
+	public ConnectionEvent(String connectionId) {
+		this.connectionId = connectionId;
 	}
 	
-	public ConnectionEvent(String networkId, String portName) {
-		this.networkId = networkId;
+	public ConnectionEvent(String connectionId, String portName) {
+		this.connectionId = connectionId;
 		this.portName = portName;
 	}
 
-	public String getNetworkId() {
-		return networkId;
+	public String getConnectionId() {
+		return connectionId;
 	}
 
 	public Date getTimestamp() {

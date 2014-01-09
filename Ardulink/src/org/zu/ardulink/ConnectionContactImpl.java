@@ -18,8 +18,6 @@ limitations under the License.
 
 package org.zu.ardulink;
 
-import gnu.io.net.Network_iface;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.zu.ardulink.connection.ConnectionContact;
 import org.zu.ardulink.event.AnalogReadChangeEvent;
 import org.zu.ardulink.event.AnalogReadChangeListener;
 import org.zu.ardulink.event.ConnectionEvent;
@@ -50,9 +49,9 @@ import org.zu.ardulink.event.IncomingMessageEvent;
  * [adsense]
  *
  */
-public class NetworkInterfaceImpl implements Network_iface {
+public class ConnectionContactImpl implements ConnectionContact {
 
-	private static Logger logger = Logger.getLogger(NetworkInterfaceImpl.class.getName());
+	private static Logger logger = Logger.getLogger(ConnectionContactImpl.class.getName());
 	
 	private Link link;
 
@@ -105,7 +104,7 @@ public class NetworkInterfaceImpl implements Network_iface {
 		return connectionListeners.iterator();
 	}
 	
-	public NetworkInterfaceImpl(Link link) {
+	public ConnectionContactImpl(Link link) {
 		super();
 		this.link = link;
 	}
@@ -165,7 +164,7 @@ public class NetworkInterfaceImpl implements Network_iface {
 	 * Call a startListenAnalogPin.
 	 * @param listener
 	 * @return true if this set did not already contain the specified DigitalReadChangeListener
-	 * @see NetworkInterfaceImpl
+	 * @see ConnectionContactImpl
 	 */
 	public boolean addDigitalReadChangeListener(DigitalReadChangeListener listener) {
 		boolean retvalue = false;
@@ -190,7 +189,7 @@ public class NetworkInterfaceImpl implements Network_iface {
 	 * Call a stopListenDigitalPin if this is the last remove element.
 	 * @param listener
 	 * @return true if this set contained the specified DigitalReadChangeListener
-	 * @see NetworkInterfaceImpl
+	 * @see ConnectionContactImpl
 	 */
 	public boolean removeDigitalReadChangeListener(DigitalReadChangeListener listener) {
 		boolean retvalue = true;
@@ -214,7 +213,7 @@ public class NetworkInterfaceImpl implements Network_iface {
 	}
 
 	/**
-	 * Method invoked by Raphael Blatter's Network class.
+	 * Method invoked by Raphael Blatter's SerialConnection class.
 	 * This method call the Link.parseMessage method and if the IncomingMessageEvent is not null fire the event
 	 * to the listeners.
 	 */
@@ -279,8 +278,8 @@ public class NetworkInterfaceImpl implements Network_iface {
 	}
 
 	@Override
-	public void networkDisconnected(String id) {
-		logger.fine("networkDisconnected()");
+	public void disconnected(String id) {
+		logger.fine("disconnected()");
 		DisconnectionEvent event = new DisconnectionEvent(id);
 		Iterator<ConnectionListener> iterator = getConnectionListenersIterator();
 		while(iterator.hasNext()) {
@@ -289,8 +288,8 @@ public class NetworkInterfaceImpl implements Network_iface {
 	}
 	
 	@Override
-	public void networkConnected(String id, String portName) {
-		logger.fine("networkConnected()");
+	public void connected(String id, String portName) {
+		logger.fine("connected()");
 		ConnectionEvent event = new ConnectionEvent(id, portName);
 		Iterator<ConnectionListener> iterator = getConnectionListenersIterator();
 		while(iterator.hasNext()) {

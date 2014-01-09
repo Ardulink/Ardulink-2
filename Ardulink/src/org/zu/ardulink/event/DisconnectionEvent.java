@@ -22,25 +22,25 @@ import java.util.Date;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- * Event raised when Network disconnection occurs.
+ * Event raised when disconnection occurs.
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *
  */
 public class DisconnectionEvent {
-	private String networkId = null;
+	private String connectionId = null;
 	private Date timestamp = new Date();
 
 	public DisconnectionEvent() {
 	}
 	
-	public DisconnectionEvent(String networkId) {
-		this.networkId = networkId;
+	public DisconnectionEvent(String connectionId) {
+		this.connectionId = connectionId;
 	}
 
-	public String getNetworkId() {
-		return networkId;
+	public String getConnectionId() {
+		return connectionId;
 	}
 
 	public Date getTimestamp() {

@@ -1,19 +1,22 @@
-package gnu.io.net;
+package org.zu.ardulink.connection;
+
 
 /**
  * [ardulinktitle] [ardulinkversion]
  * An instance of a class implementing this interface has to be passed to the
- * constructor of {@link gnu.io.net.Network}. It will be used by {@link gnu.io.net.Network} to
+ * constructor of {@link org.zu.ardulink.connection.serial.SerialConnection}. It will be used by {@link org.zu.ardulink.connection.serial.SerialConnection} to
  * forward received messages, write to a log and take action when the connection
  * is closed.
  * 
- * @see gnu.io.net.Network#Network(int, Network_iface, int)
+ * @see org.zu.ardulink.connection.serial.SerialConnection#SerialConnection(int, ConnectionContact, int)
  * 
  * @author Raphael Blatter (raphael@blatter.sg)
- * 
+ * <p>
+ * Luciano Zu Ardulink has heavily refactored this interface (its original name was gnu.io.net.Network_iface)
+ * </p> 
  * [adsense]
  */
-public interface Network_iface {
+public interface ConnectionContact {
 	/**
 	 * Is called to write connection information to the log. The information can
 	 * either be ignored, directed to stdout or written out to a specialized
@@ -21,10 +24,10 @@ public interface Network_iface {
 	 * 
 	 * @param id
 	 *            The <b>String</b> passed to
-	 *            {@link gnu.io.net.Network#Network(String, Network_iface, int)} in the
+	 *            {@link org.zu.ardulink.connection.serial.SerialConnection#SerialConnection(String, ConnectionContact, int)} in the
 	 *            constructor. It can be used to identify which instance (which
 	 *            connection) a message comes from, when several instances of
-	 *            {@link gnu.io.net.Network} are connected to the same instance of a
+	 *            {@link org.zu.ardulink.connection.serial.SerialConnection} are connected to the same instance of a
 	 *            class implementing this interface.
 	 *            
 	 *            Luciano Zu has modified variable type from int to String
@@ -37,19 +40,19 @@ public interface Network_iface {
 	/**
 	 * Is called when sequence of bytes are received over the Serial interface.
 	 * It sends the bytes (as <b>int</b>s between 0 and 255) between the two
-	 * {@link gnu.io.net.Network#divider}s passed via the constructor of
-	 * {@link gnu.io.net.Network} (
-	 * {@link gnu.io.net.Network#Network(int, Network_iface, int)}), without the
-	 * {@link gnu.io.net.Network#divider}s. Messages are only forwarded using this
-	 * function, once a {@link gnu.io.net.Network#divider} has been recognized in the
+	 * {@link org.zu.ardulink.connection.serial.SerialConnection#divider}s passed via the constructor of
+	 * {@link org.zu.ardulink.connection.serial.SerialConnection} (
+	 * {@link org.zu.ardulink.connection.serial.SerialConnection#SerialConnection(int, ConnectionContact, int)}), without the
+	 * {@link org.zu.ardulink.connection.serial.SerialConnection#divider}s. Messages are only forwarded using this
+	 * function, once a {@link org.zu.ardulink.connection.serial.SerialConnection#divider} has been recognized in the
 	 * incoming stream.
 	 * 
 	 * @param id
 	 *            The <b>String</b> passed to
-	 *            {@link gnu.io.net.Network#Network(int, Network_iface, int)} in the
+	 *            {@link org.zu.ardulink.connection.serial.SerialConnection#SerialConnection(int, ConnectionContact, int)} in the
 	 *            constructor. It can be used to identify which instance a
 	 *            message comes from, when several instances of
-	 *            {@link gnu.io.net.Network} are connected to the same instance of a
+	 *            {@link org.zu.ardulink.connection.serial.SerialConnection} are connected to the same instance of a
 	 *            class implementing this interface.
 	 *            
 	 *            Luciano Zu has modified variable type from int to String
@@ -59,8 +62,8 @@ public interface Network_iface {
 	 * @param message
 	 *            Message received over the Serial interface. The complete array
 	 *            of bytes (as <b>int</b>s between 0 and 255) between
-	 *            {@link gnu.io.net.Network#divider} is sent (without
-	 *            {@link gnu.io.net.Network#divider}s).
+	 *            {@link org.zu.ardulink.connection.serial.SerialConnection#divider} is sent (without
+	 *            {@link org.zu.ardulink.connection.serial.SerialConnection#divider}s).
 	 */
 	public void parseInput(String id, int numBytes, int[] message);
 
@@ -72,10 +75,10 @@ public interface Network_iface {
 	 *            Luciano Zu has modified variable type from int to String
 	 * 
 	 * @param id
-	 *            {@link gnu.io.net.Network#id} of the corresponding
-	 *            {@link gnu.io.net.Network} instance (see {@link gnu.io.net.Network#id}).
+	 *            {@link org.zu.ardulink.connection.serial.SerialConnection#id} of the corresponding
+	 *            {@link org.zu.ardulink.connection.serial.SerialConnection} instance (see {@link org.zu.ardulink.connection.serial.SerialConnection#id}).
 	 */
-	public void networkDisconnected(String id);
+	public void disconnected(String id);
 
 	/**
 	 * Is called when the network has been connected. This call can e.g. be
@@ -85,9 +88,9 @@ public interface Network_iface {
 	 * This method is added for Ardulink project.
 	 * 
 	 * @param id
-	 *            {@link gnu.io.net.Network#id} of the corresponding
-	 *            {@link gnu.io.net.Network} instance (see {@link gnu.io.net.Network#id}).
+	 *            {@link org.zu.ardulink.connection.serial.SerialConnection#id} of the corresponding
+	 *            {@link org.zu.ardulink.connection.serial.SerialConnection} instance (see {@link org.zu.ardulink.connection.serial.SerialConnection#id}).
 	 * @author Luciano Zu
 	 */
-	public void networkConnected(String id, String portName);
+	public void connected(String id, String portName);
 }
