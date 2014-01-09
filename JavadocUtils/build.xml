@@ -24,7 +24,7 @@
 			  <replacevalue><![CDATA[<h3>Ardulink - <a href="http://www.ardulink.org/" target="_parent">return to homepage</a></h3>]]></replacevalue>
 		</replace>
 		<replace dir="generated/doc" token="[ardulinkversion]">
-			  <replacevalue><![CDATA[<p>v0.2.2</p>]]></replacevalue>
+			  <replacevalue><![CDATA[<p>v0.3.0</p>]]></replacevalue>
 		</replace>
 	</target>
 

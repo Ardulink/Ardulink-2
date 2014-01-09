@@ -1,4 +1,4 @@
-Version 0.3.0.XXXX
+Version 0.3.0.20140109
 
 - Added support for Digispark board from http://www.digistump.com/
 - Heavily refactored Connection classes for a stronger naming convention standard

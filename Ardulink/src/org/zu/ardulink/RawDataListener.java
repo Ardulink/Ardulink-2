@@ -18,6 +18,14 @@ limitations under the License.
 
 package org.zu.ardulink;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface RawDataListener {
 	
 	public void parseInput(String id, int numBytes, int[] message);

@@ -33,6 +33,14 @@ import javax.swing.JPanel;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.usb.DigisparkUSBConnection;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DigisparkConnectionPanel extends JPanel {
 
 	private static final long serialVersionUID = 6713040751827233041L;

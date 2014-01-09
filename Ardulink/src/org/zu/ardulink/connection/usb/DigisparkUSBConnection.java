@@ -34,6 +34,14 @@ import ch.ntb.usb.Usb_Bus;
 import ch.ntb.usb.Usb_Device;
 import ch.ntb.usb.Usb_Device_Descriptor;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DigisparkUSBConnection implements Connection {
 
 	private Map<String, Usb_Device> deviceMap = new HashMap<String, Usb_Device>();
