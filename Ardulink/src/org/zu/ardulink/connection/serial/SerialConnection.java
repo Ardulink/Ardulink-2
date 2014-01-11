@@ -454,7 +454,9 @@ public class SerialConnection implements Connection {
 		if(params.length > 1 && !(params[1] instanceof Integer)) {
 			throw new RuntimeException("This connection accepts a String port name and a Integer baud rate. Only the port name is mandatory. Second argument was not an Integer");
 		} else {
-			baudRate = (Integer)params[1];
+			if(params.length > 1) {
+				baudRate = (Integer)params[1];
+			}
 		}
 
 		boolean retvalue = false;

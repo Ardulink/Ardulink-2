@@ -36,6 +36,7 @@ int analogPinListenedValue[analogPinListeningNum]; // Array used to know which v
 void setup() {
   // initialize serial: (this is general code you can reuse)
   Serial.begin(115200);
+  while(!Serial); // Wait until Serial not connected (because difference between Leonardo and Micro with UNO and others)
   
   //set to false all listen variable
   int index = 0;
@@ -62,6 +63,19 @@ void setup() {
 }
 
 void loop() {
+  
+  while (Serial.available() && !stringComplete) {
+     // get the new byte:
+    char inChar = (char)Serial.read();
+    // add it to the inputString:
+    inputString += inChar;
+    // if the incoming character is a newline, set a flag
+    // so the main loop can do something about it:
+    if (inChar == '\n') {
+      stringComplete = true;
+    }
+  }
+  
   // when a newline arrives:
   if (stringComplete) {
     
@@ -171,26 +185,5 @@ void loop() {
   }
 }
 
-/*
-  SerialEvent occurs whenever a new data comes in the
- hardware serial RX.  This routine is run between each
- time loop() runs, so using delay inside loop can delay
- response.  Multiple bytes of data may be available.
- This is general code you can reuse.
- */
-void serialEvent() {
-    
-  while (Serial.available() && !stringComplete) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the inputString:
-    inputString += inChar;
-    // if the incoming character is a newline, set a flag
-    // so the main loop can do something about it:
-    if (inChar == '\n') {
-      stringComplete = true;
-    }
-  }
-}
 
 
