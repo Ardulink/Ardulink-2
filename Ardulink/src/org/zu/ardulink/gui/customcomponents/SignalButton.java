@@ -192,11 +192,15 @@ public class SignalButton extends JPanel implements Linkable {
 	}
 
 	public void setForeground(Color fg) {
-		signalButton.setForeground(fg);
+		if(signalButton != null) {
+			signalButton.setForeground(fg);
+		}
 	}
 
 	public void setBackground(Color bg) {
-		signalButton.setBackground(bg);
+		if(signalButton != null) {
+			signalButton.setBackground(bg);
+		}
 	}
 	
 	
