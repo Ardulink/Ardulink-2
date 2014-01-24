@@ -1,3 +1,11 @@
+Version 0.3.1.20140124
+
+- BUG FIX 
+- Added support for Arduino Micro
+- Added the ModifiableSignalButton component that wraps a SignalButton.
+- Added a panel into the Ardulink console to use a set of ModifiableSignalButton objects
+
+
 Version 0.3.0.20140109
 
 - Added support for Digispark board from http://www.digistump.com/
