@@ -50,6 +50,7 @@ import org.zu.ardulink.Link;
 import org.zu.ardulink.event.ConnectionEvent;
 import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DisconnectionEvent;
+import org.zu.ardulink.gui.customcomponents.ModifiableSignalButton;
 import org.zu.ardulink.gui.digistump.DigisparkConnectionPanel;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
@@ -118,7 +119,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(Console.class.getResource("/org/zu/ardulink/gui/icons/logo_icon.png")));
 		setTitle("Ardulink Console");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 640, 590);
+		setBounds(100, 100, 680, 590);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
@@ -410,7 +411,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		switchPanel.add(switchController13);
 		
 		JPanel sensorDigitalPanel = new JPanel();
-		tabbedPane.addTab("Sensor Digital Panel", null, sensorDigitalPanel, null);
+		tabbedPane.addTab("Digital Sensor Panel", null, sensorDigitalPanel, null);
 		sensorDigitalPanel.setLayout(new GridLayout(4, 3, 0, 0));
 		
 		DigitalPinStatus digitalPinStatus2 = new DigitalPinStatus();
@@ -472,6 +473,34 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		linkables.add(digitalPinStatus13);
 		digitalPinStatus13.setPin(13);
 		sensorDigitalPanel.add(digitalPinStatus13);
+		
+		JPanel customPanel = new JPanel();
+		tabbedPane.addTab("Custom Components", null, customPanel, null);
+		customPanel.setLayout(new GridLayout(2, 3, 10, 15));
+		
+		ModifiableSignalButton modifiableSignalButton1 = new ModifiableSignalButton();
+		linkables.add(modifiableSignalButton1);
+		customPanel.add(modifiableSignalButton1);
+		
+		ModifiableSignalButton modifiableSignalButton2 = new ModifiableSignalButton();
+		linkables.add(modifiableSignalButton2);
+		customPanel.add(modifiableSignalButton2);
+		
+		ModifiableSignalButton modifiableSignalButton3 = new ModifiableSignalButton();
+		linkables.add(modifiableSignalButton3);
+		customPanel.add(modifiableSignalButton3);
+		
+		ModifiableSignalButton modifiableSignalButton4 = new ModifiableSignalButton();
+		linkables.add(modifiableSignalButton4);
+		customPanel.add(modifiableSignalButton4);
+		
+		ModifiableSignalButton modifiableSignalButton5 = new ModifiableSignalButton();
+		linkables.add(modifiableSignalButton5);
+		customPanel.add(modifiableSignalButton5);
+		
+		ModifiableSignalButton modifiableSignalButton6 = new ModifiableSignalButton();
+		linkables.add(modifiableSignalButton6);
+		customPanel.add(modifiableSignalButton6);
 		
 		JPanel stateBar = new JPanel();
 		FlowLayout flowLayout_1 = (FlowLayout) stateBar.getLayout();

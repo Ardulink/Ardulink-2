@@ -33,7 +33,7 @@ import org.zu.ardulink.event.IncomingMessageEvent;
  * This class implements the native Arduino Link protocol.<br/>
  * With this class you are able to send messages to Arduino.<br/>
  * <br/>
- * Message are in the format:<br/>
+ * Messages are in the format:<br/>
  * <br/>
  * alp://&lt;request or response&gt;/&lt;variable data&gt;?id=&lt;numeric message id&gt;<br/>
  * <br/>
@@ -46,6 +46,7 @@ import org.zu.ardulink.event.IncomingMessageEvent;
  * spld - Stop Listening Digital Pin<br/>
  * srla - Start Listening Analog Pin<br/>
  * spla - Stop Listening Analog Pin<br/>
+ * cust - Custom message
  * <br/>
  * requests from arduino to ardulink are:<br/>
  * ared - Analog Pin Read<br/>
@@ -69,6 +70,7 @@ import org.zu.ardulink.event.IncomingMessageEvent;
  * alp://spld/&lt;pin&gt;?id=&lt;message id&gt;<br/>
  * alp://srla/&lt;pin&gt;?id=&lt;message id&gt;<br/>
  * alp://spla/&lt;pin&gt;?id=&lt;message id&gt;<br/>
+ * alp://cust/&lt;a custom message&gt;?id=&lt;message id&gt;<br/>
  * alp://ared/&lt;pin&gt;/&lt;intensity&gt;                      intensity:0-1023<br/>
  * alp://dred/&lt;pin&gt;/&lt;power&gt;                          power:0-1<br/>
  * alp://rply/ok|ko?id=&lt;message id&gt;<br/>
