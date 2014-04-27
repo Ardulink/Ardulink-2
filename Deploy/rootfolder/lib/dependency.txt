@@ -1,0 +1,6 @@
+Ardulink needs:
+ch.ntb.usb-0.5.9.jar
+RXTXcomm.jar
+
+ArdulinkMail needs:
+javax.mail-1.5.1.jar

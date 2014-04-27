@@ -57,6 +57,7 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 	public NetworkProxyServerConnection(Socket socket) {
 		super();
 		this.socket = socket;
+		// TODO aggiungere una configurazione per permettere di usare link diversi e non solo quello di default.
 		this.link = Link.createInstance(socket.toString());
 		this.link.addRawDataListener(this);
 	}

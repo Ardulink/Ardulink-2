@@ -44,6 +44,9 @@ public interface IProtocol {
 	public static final int POWER_HIGH = 1;
 	public static final int POWER_LOW = 0;
 
+	public static final int HIGH = POWER_HIGH;
+	public static final int LOW = POWER_LOW;
+
 	public static final int UNDEFINED_ID = -1;
 	public static final int UNDEFINED_REPLY = -1;
 	public static final int REPLY_OK = 1;

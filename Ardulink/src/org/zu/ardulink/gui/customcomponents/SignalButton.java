@@ -53,6 +53,7 @@ public class SignalButton extends JPanel implements Linkable {
 	private JButton signalButton;
 	private JPanel valuePanel;
 	private String id = "none";
+	private JLabel valueLabel;
 	
 	/**
 	 * Create the panel.
@@ -72,8 +73,8 @@ public class SignalButton extends JPanel implements Linkable {
 		valuePanel = new JPanel();
 		add(valuePanel, BorderLayout.NORTH);
 		
-		JLabel lblValue = new JLabel("Value:");
-		valuePanel.add(lblValue);
+		valueLabel = new JLabel("Value:");
+		valuePanel.add(valueLabel);
 		
 		textField = new JTextField();
 		valuePanel.add(textField);
@@ -84,6 +85,21 @@ public class SignalButton extends JPanel implements Linkable {
 	@Override
 	public void setLink(Link link) {
 		this.link = link;
+	}
+
+	/**
+	 * @return the string label for value parameter
+	 */
+	public String getValueLabel() {
+		return valueLabel.getText();
+	}
+
+	/**
+	 * Set the string label for value parameter
+	 * @param valueLabel
+	 */
+	public void setValueLabel(String valueLabel) {
+		this.valueLabel.setText(valueLabel);
 	}
 
 	/**

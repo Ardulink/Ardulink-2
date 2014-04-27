@@ -442,7 +442,7 @@ public class ALProtocol implements IProtocol {
 					parseReplyMessage(msg);
 				} else if("dred".equals(cmd)) { // alp://dred/<pin>/<value>
 					retvalue = parseDigitalReadMessage(msg);
-				} else if("ared".equals(cmd)) { // alp://dred/<pin>/<value>
+				} else if("ared".equals(cmd)) { // alp://ared/<pin>/<value>
 					retvalue = parseAnalogReadMessage(msg);
 				} else { // Message I don't recognize its very strange!
 					logger.severe("Arduino sent to me a message in ALProtocol that I don't recognize. Msg: " + msg);
