@@ -82,6 +82,8 @@ import org.zu.ardulink.event.IncomingMessageEvent;
 public class ALProtocol implements IProtocol {
 
 	public static final String NAME = "ArdulinkProtocol";
+
+	private static final String OUTGOING_MESSAGE_DIVIDER = "\n";
 	
 	private static Logger logger = Logger.getLogger(ALProtocol.class.getName());
 	private static long nextId = 1;
@@ -140,7 +142,7 @@ public class ALProtocol implements IProtocol {
 					builder.append("?id=");
 					builder.append(currentId);
 				}
-				builder.append("\n");
+				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
 				logger.fine(mesg);
@@ -179,7 +181,7 @@ public class ALProtocol implements IProtocol {
 					builder.append("?id=");
 					builder.append(currentId);
 				}
-				builder.append("\n");
+				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
 				logger.fine(mesg);
@@ -217,7 +219,7 @@ public class ALProtocol implements IProtocol {
 					builder.append("?id=");
 					builder.append(currentId);
 				}
-				builder.append("\n");
+				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
 				logger.fine(mesg);
@@ -253,7 +255,7 @@ public class ALProtocol implements IProtocol {
 					builder.append("?id=");
 					builder.append(currentId);
 				}
-				builder.append("\n");
+				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
 				logger.fine(mesg);
@@ -309,7 +311,7 @@ public class ALProtocol implements IProtocol {
 					builder.append("?id=");
 					builder.append(currentId);
 				}
-				builder.append("\n");
+				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
 				logger.fine(mesg);
@@ -344,7 +346,7 @@ public class ALProtocol implements IProtocol {
 					builder.append("?id=");
 					builder.append(currentId);
 				}
-				builder.append("\n");
+				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
 				logger.fine(mesg);
@@ -379,7 +381,7 @@ public class ALProtocol implements IProtocol {
 					builder.append("?id=");
 					builder.append(currentId);
 				}
-				builder.append("\n");
+				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
 				logger.fine(mesg);
@@ -414,7 +416,7 @@ public class ALProtocol implements IProtocol {
 					builder.append("?id=");
 					builder.append(currentId);
 				}
-				builder.append("\n");
+				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
 				logger.fine(mesg);
@@ -494,6 +496,16 @@ public class ALProtocol implements IProtocol {
 	@Override
 	public ProtocolType getProtocolType() {
 		return ProtocolType.TEXT;
+	}
+
+	@Override
+	public int getIncomingMessageDivider() {
+		return 255;
+	}
+
+	@Override
+	public int getOutgoingMessageDivider() {
+		return ALProtocol.OUTGOING_MESSAGE_DIVIDER.charAt(0);
 	}
 
 }

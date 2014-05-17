@@ -58,11 +58,6 @@ public class Link {
 	public static final int DEFAULT_BAUDRATE = 115200;
 	
 	/**
-	 * Value used to divide incoming messages
-	 */
-	public static final int MESSAGE_DIVIDER = 255;
-	
-	/**
 	 * Default Link name
 	 * @see getDefaultInstance()
 	 * @see getInstance(String linkName)
@@ -167,7 +162,7 @@ public class Link {
 	}
 
 	private Link(String linkName, IProtocol protocol) {
-		this.connection = new SerialConnection(linkName, connectionContact, Link.MESSAGE_DIVIDER);
+		this.connection = new SerialConnection(linkName, connectionContact, protocol.getIncomingMessageDivider());
 		this.name = linkName;
 		this.protocol = protocol;
 	}

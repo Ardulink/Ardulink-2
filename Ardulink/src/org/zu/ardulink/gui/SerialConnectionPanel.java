@@ -22,6 +22,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -33,7 +34,10 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import org.zu.ardulink.Link;
+import org.zu.ardulink.connection.usb.DigisparkUSBConnection;
+import org.zu.ardulink.protocol.ProtocolHandler;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.protocol.SimpleBinaryProtocol;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -60,6 +64,17 @@ public class SerialConnectionPanel extends JPanel implements Linkable {
 	 * Create the panel.
 	 */
 	public SerialConnectionPanel() {
+
+		// decomment this to use simple byte protocol
+//		link = Link.getInstance("serialConnection");
+//		if(link == null) {
+//			Set<String> protocolNames = ProtocolHandler.getInstalledProtocolImplementationNames();
+//			if(!protocolNames.contains(SimpleBinaryProtocol.NAME)) {
+//				ProtocolHandler.installProtocolImplementation(new SimpleBinaryProtocol());
+//			}
+//			link = Link.createInstance("serialConnection", SimpleBinaryProtocol.NAME);
+//		}
+		
 		Dimension dimension = new Dimension(275, 80);
 		setPreferredSize(dimension);
 		setMinimumSize(dimension);
@@ -94,6 +109,8 @@ public class SerialConnectionPanel extends JPanel implements Linkable {
 //				portList.add("COM20");
 				if(portList != null && portList.size() > 0) {
 					connectionPortComboBox.setModel(new DefaultComboBoxModel(portList.toArray()));
+				} else {
+					connectionPortComboBox.removeAllItems();
 				}
 			}
 		});

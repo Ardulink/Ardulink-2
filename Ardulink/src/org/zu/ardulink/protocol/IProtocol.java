@@ -52,6 +52,9 @@ public interface IProtocol {
 	public static final int REPLY_OK = 1;
 	public static final int REPLY_KO = 0;
 	
+	public static final byte DEFAULT_INCOMING_MESSAGE_DIVIDER = (byte)255;
+	public static final byte DEFAULT_OUTGOING_MESSAGE_DIVIDER = '\n';
+
 	/**
 	 * Sends information about which key was pressed.
 	 * @param link
@@ -240,4 +243,15 @@ public interface IProtocol {
 		BINARY
 	}
 	
+	/**
+	 * the incoming message divider used from Connection to divide incoming message (if ProtocolType is binary then incoming must
+	 * be equal to outgoing
+	 */
+	public int getIncomingMessageDivider();
+
+	/**
+	 * the outgoing message divider used from Protocol to divide outgoing message (if ProtocolType is binary then incoming must
+	 * be equal to outgoing
+	 */
+	public int getOutgoingMessageDivider();
 }

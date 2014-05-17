@@ -22,6 +22,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -32,6 +33,8 @@ import javax.swing.JPanel;
 
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.usb.DigisparkUSBConnection;
+import org.zu.ardulink.protocol.ProtocolHandler;
+import org.zu.ardulink.protocol.SimpleBinaryProtocol;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -44,8 +47,8 @@ import org.zu.ardulink.connection.usb.DigisparkUSBConnection;
 public class DigisparkConnectionPanel extends JPanel {
 
 	private static final long serialVersionUID = 6713040751827233041L;
-
-	private Link link = Link.createInstance("digisparkConnection", new DigisparkUSBConnection());
+	
+	private Link link = null;
 
 	private JButton discoverButton;
 	private JComboBox deviceComboBox;
@@ -54,6 +57,13 @@ public class DigisparkConnectionPanel extends JPanel {
 	 * Create the panel.
 	 */
 	public DigisparkConnectionPanel() {
+		Set<String> protocolNames = ProtocolHandler.getInstalledProtocolImplementationNames();
+		SimpleBinaryProtocol protocol = new SimpleBinaryProtocol();
+		if(!protocolNames.contains(SimpleBinaryProtocol.NAME)) {
+			ProtocolHandler.installProtocolImplementation(protocol);
+		}
+		link = Link.createInstance("digisparkConnection", SimpleBinaryProtocol.NAME, new DigisparkUSBConnection("digisparkConnection", protocol.getIncomingMessageDivider()));
+		
 		Dimension dimension = new Dimension(275, 55);
 		setPreferredSize(dimension);
 		setMinimumSize(dimension);
@@ -68,6 +78,8 @@ public class DigisparkConnectionPanel extends JPanel {
 //				portList.add("COM20");
 				if(portList != null && portList.size() > 0) {
 					deviceComboBox.setModel(new DefaultComboBoxModel(portList.toArray()));
+				} else {
+					deviceComboBox.removeAllItems();
 				}
 			}
 		});

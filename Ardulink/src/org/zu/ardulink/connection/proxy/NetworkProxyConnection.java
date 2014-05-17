@@ -31,6 +31,7 @@ import java.util.List;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.Connection;
 import org.zu.ardulink.connection.ConnectionContact;
+import org.zu.ardulink.protocol.IProtocol;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -207,7 +208,7 @@ public class NetworkProxyConnection implements Connection, NetworkProxyMessages 
 							// adjust from C-Byte to Java-Byte
 							if (temp < 0)
 								temp += 256;
-							if (temp == Link.MESSAGE_DIVIDER) {
+							if (temp == IProtocol.DEFAULT_INCOMING_MESSAGE_DIVIDER) {
 								if  (numTempBytes > 0) {
 									contact.parseInput(id, numTempBytes,
 											tempBytes);

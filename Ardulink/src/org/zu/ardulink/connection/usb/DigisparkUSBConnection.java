@@ -304,6 +304,12 @@ public class DigisparkUSBConnection implements Connection {
 						+ LibusbJava.usb_strerror());
 			}			
 		}
+
+		int len = LibusbJava.usb_control_msg(usbDevHandle, (0x01 << 5), 0x09, 0, divider, new byte[0], 0, 0);
+		if (len < 0) {
+			throw new RuntimeException("LibusbJava.controlMsg: "
+					+ LibusbJava.usb_strerror());
+		}			
 		
 		return success;
 	}

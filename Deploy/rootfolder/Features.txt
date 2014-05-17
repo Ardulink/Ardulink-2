@@ -1,3 +1,14 @@
+Version 0.3.2.20140517
+
+- BUG FIX
+- Added SimpleBinaryProtocol (limited support)
+- Added SimpleBinaryProtocol sketches for Digispark/PicoDuino and Arduino UNO boards
+- Enhanced support for Digispark with a binary protocol instead of ALProtocol
+- Modified DigisparkConnectionPanel to use SimpleBinaryProtocol insetal of ALProtocol
+- tested PicoDuino (that is 100% compatible with Digispark)
+- Enhanced message divider mechanism (now just text protocols have to add divider to outgoing messages)
+- Added XML to/from JavaBean technology for future use
+
 Version 0.3.1.20140124
 
 - BUG FIX 

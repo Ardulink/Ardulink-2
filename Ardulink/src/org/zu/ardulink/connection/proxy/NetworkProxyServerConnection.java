@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 
 import org.zu.ardulink.Link;
 import org.zu.ardulink.RawDataListener;
+import org.zu.ardulink.protocol.IProtocol;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -162,7 +163,7 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 			}
 		}
 		try {
-			outputStream.write(Link.MESSAGE_DIVIDER);
+			outputStream.write(IProtocol.DEFAULT_OUTGOING_MESSAGE_DIVIDER);
 			outputStream.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
