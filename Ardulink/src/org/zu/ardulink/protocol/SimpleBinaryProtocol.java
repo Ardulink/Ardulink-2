@@ -24,6 +24,18 @@ import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.usb.DigisparkUSBConnection;
 import org.zu.ardulink.event.IncomingMessageEvent;
 
+
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * This is a binary protocol to minimize messages payload. With this protocol tiny devices as Digispark work better
+ * than with text protocols as ALProtocol (that is the default).
+ * Hovewer this protocol is actually very limited and are implemented only sendPowerPinIntensity and sendPowerPinSwitch
+ * methods (without callback feature).
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * @see IProtocol
+ * [adsense]
+ *
+ */
 public class SimpleBinaryProtocol implements IProtocol {
 
 	private static Logger logger = Logger.getLogger(SimpleBinaryProtocol.class.getName());
