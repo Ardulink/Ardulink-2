@@ -17,6 +17,14 @@ limitations under the License.
 */
 package org.zu.ardulink.io;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class WritingException extends Exception {
 
 	private static final long serialVersionUID = 7380824605617847898L;

@@ -35,6 +35,14 @@ import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.Linkable;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ModifiableSignalButton extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = 7024281203061769142L;

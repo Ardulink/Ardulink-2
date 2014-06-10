@@ -90,7 +90,7 @@ public class DigitalPinStatus extends JPanel implements DigitalReadChangeListene
 		
 		pinComboBox = new JComboBox();
 		comboPanel.add(pinComboBox);
-		pinComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(2, 13)));
+		pinComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(2, 40)));
 		
 		tglbtnSensor = new JToggleButton("Sensor off");
 		tglbtnSensor.addItemListener(new ItemListener() {

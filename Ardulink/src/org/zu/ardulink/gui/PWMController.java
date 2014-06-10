@@ -94,7 +94,7 @@ public class PWMController extends JPanel implements Linkable {
 		pinComboBox = new JComboBox();
 		// TODO definire un metodo per poter cambiare l'insieme dei pin controllabili. In questo modo si può lavorare anche con schede diverse da Arduino UNO
 		// pinComboBox.setModel(new DefaultComboBoxModel(new String[] {"3", "5", "6", "9", "10", "11"}));
-		pinComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(0, 13)));
+		pinComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(0, 40)));
 		pinComboBox.setSelectedItem("11");
 		pinComboBox.setBounds(65, 36, 55, 22);
 		add(pinComboBox);

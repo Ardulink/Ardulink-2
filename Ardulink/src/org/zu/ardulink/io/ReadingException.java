@@ -17,6 +17,14 @@ limitations under the License.
 */
 package org.zu.ardulink.io;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ReadingException extends Exception {
 
 	private static final long serialVersionUID = -4573858746170282126L;
