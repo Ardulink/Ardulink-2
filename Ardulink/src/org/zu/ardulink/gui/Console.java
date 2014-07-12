@@ -119,7 +119,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(Console.class.getResource("/org/zu/ardulink/gui/icons/logo_icon.png")));
 		setTitle("Ardulink Console");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 680, 590);
+		setBounds(100, 100, 730, 590);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
@@ -501,6 +501,12 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		ModifiableSignalButton modifiableSignalButton6 = new ModifiableSignalButton();
 		linkables.add(modifiableSignalButton6);
 		customPanel.add(modifiableSignalButton6);
+		
+		JPanel rgbPanel = new JPanel();
+		tabbedPane.addTab("RGB Panel", null, rgbPanel, null);
+		
+		RGBController rgbController = new RGBController();
+		rgbPanel.add(rgbController);
 		
 		JPanel stateBar = new JPanel();
 		FlowLayout flowLayout_1 = (FlowLayout) stateBar.getLayout();

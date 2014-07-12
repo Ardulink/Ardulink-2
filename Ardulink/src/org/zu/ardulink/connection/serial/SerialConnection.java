@@ -273,7 +273,7 @@ public class SerialConnection implements Connection {
 			int len = -1, i, temp;
 			try {
 				while (!end) {
-					if ((in.available()) > 0) {
+					// if ((in.available()) > 0) {
 						if ((len = this.in.read(buffer)) > -1) {
 							for (i = 0; i < len; i++) {
 								temp = buffer[i];
@@ -292,7 +292,7 @@ public class SerialConnection implements Connection {
 								}
 							}
 						}
-					}
+					// }
 				}
 			} catch (IOException e) {
 				end = true;
