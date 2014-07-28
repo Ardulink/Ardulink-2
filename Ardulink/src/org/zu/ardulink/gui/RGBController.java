@@ -23,8 +23,11 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -61,6 +64,7 @@ public class RGBController extends JPanel implements Linkable, PWMControllerList
 	private JLabel lblColor;
 	private JTextField colorTextField;
 	private JCheckBox chckbxInverted;
+	private final RGBController instance = this;
 	
 	/**
 	 * Create the panel.
@@ -74,16 +78,19 @@ public class RGBController extends JPanel implements Linkable, PWMControllerList
 		
 		redController = new PWMController();
 		redController.setTitle("Red");
+		redController.setPin(2);
 		redController.addPWMControllerListener(this);
 		centralPanel.add(redController);
 		
 		greenController = new PWMController();
 		greenController.setTitle("Green");
+		greenController.setPin(1);
 		greenController.addPWMControllerListener(this);
 		centralPanel.add(greenController);
 		
 		blueController = new PWMController();
 		blueController.setTitle("Blue");
+		blueController.setPin(0);
 		blueController.addPWMControllerListener(this);
 		centralPanel.add(blueController);
 		
@@ -104,8 +111,34 @@ public class RGBController extends JPanel implements Linkable, PWMControllerList
 		southPanel.add(chckbxInverted);
 		
 		coloredPanel = new JPanel();
+		coloredPanel.setToolTipText("click to open color dialog");
 		coloredPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		coloredPanel.setPreferredSize(new Dimension(150, 40));
+		coloredPanel.setPreferredSize(new Dimension(150, 40));		
+		coloredPanel.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+			}
+			
+			@Override
+			public void mousePressed(MouseEvent e) {
+			}
+			
+			@Override
+			public void mouseExited(MouseEvent e) {
+			}
+			
+			@Override
+			public void mouseEntered(MouseEvent e) {
+			}
+			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				ColorChooserDialog dialog = new ColorChooserDialog(instance);
+				dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+				dialog.setVisible(true);
+			}
+		});
 		southPanel.add(coloredPanel);
 		coloredPanel.setBackground(new Color(redController.getValue(), greenController.getValue(), blueController.getValue()));
 		
@@ -179,11 +212,27 @@ public class RGBController extends JPanel implements Linkable, PWMControllerList
 		redController.removePWMControllerListener(this);
 		greenController.removePWMControllerListener(this);
 		blueController.removePWMControllerListener(this);
-		redController.setValue(color.getRed());
-		greenController.setValue(color.getGreen());
-		blueController.setValue(color.getBlue());
+		if(chckbxInverted.isSelected()) {
+			redController.setValue(255 - color.getRed());
+			greenController.setValue(255 - color.getGreen());
+			blueController.setValue(255 - color.getBlue());
+		} else {
+			redController.setValue(color.getRed());
+			greenController.setValue(color.getGreen());
+			blueController.setValue(color.getBlue());
+		}
 		redController.addPWMControllerListener(this);
 		greenController.addPWMControllerListener(this);
 		blueController.addPWMControllerListener(this);
+	}
+	
+	public void setColor(Color color) {
+		String colorString = UtilityColor.toString(color);
+		colorTextField.setText(colorString);
+		updateColor();
+	}
+	
+	public Color getColor() {
+		return coloredPanel.getBackground();
 	}
 }

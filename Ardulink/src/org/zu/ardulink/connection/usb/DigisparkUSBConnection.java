@@ -49,6 +49,7 @@ public class DigisparkUSBConnection implements Connection {
 	
 	private Usb_Device openedDevice = null;
 	private long usbDevHandle;
+	private String openedPortName = null;
 
 	public static final String DEFAULT_ID = "defaultDigisparkUSBConnection";
 	
@@ -112,6 +113,7 @@ public class DigisparkUSBConnection implements Connection {
 		List<String> retvalue = new ArrayList<String>();
 		deviceMap.clear();
 		try {
+			USB.init();
 			Usb_Bus bus = USB.getBus();
 			Usb_Device device = null;
 			int internal_index = 0;
@@ -187,6 +189,7 @@ public class DigisparkUSBConnection implements Connection {
 		Usb_Device usbDevice = deviceMap.get(portName);
 		if(usbDevice != null) {
 			openedDevice = usbDevice;
+			openedPortName = portName;
 			
 			long res = LibusbJava.usb_open(openedDevice);
 			if (res == 0) {
@@ -200,9 +203,9 @@ public class DigisparkUSBConnection implements Connection {
 			}
 			claim_interface(usbDevHandle, 1, 0);
 
-			reader = (new Thread(new DigisparkUSBReader()));
+			//reader = (new Thread(new DigisparkUSBReader()));
 			end = false;
-			reader.start();
+			//reader.start();
 
 			if(contact != null) {
 				contact.writeLog(id, "connection on " + portName
@@ -248,7 +251,10 @@ public class DigisparkUSBConnection implements Connection {
 			
 			end = true;
 			try {
-				reader.join();
+				if(reader != null) {
+					reader.join();
+					reader = null;
+				}
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
@@ -256,6 +262,7 @@ public class DigisparkUSBConnection implements Connection {
 		}
 
 		openedDevice = null;
+		openedPortName = null;
 		deviceMap.clear();
 		portListRequested = false;
 		if(contact != null) {
@@ -284,8 +291,12 @@ public class DigisparkUSBConnection implements Connection {
 			
 			int len = LibusbJava.usb_control_msg(usbDevHandle, (0x01 << 5), 0x09, 0, (int) out[i], new byte[0], 0, 0);
 			if (len < 0) {
-				throw new RuntimeException("LibusbJava.controlMsg: "
-						+ LibusbJava.usb_strerror());
+				tryARecover();
+				len = LibusbJava.usb_control_msg(usbDevHandle, (0x01 << 5), 0x09, 0, (int) out[i], new byte[0], 0, 0);
+				if (len < 0) {
+					throw new RuntimeException("LibusbJava.controlMsg: "
+							+ LibusbJava.usb_strerror());
+				}
 			}			
 		}
 		
@@ -300,8 +311,12 @@ public class DigisparkUSBConnection implements Connection {
 			
 			int len = LibusbJava.usb_control_msg(usbDevHandle, (0x01 << 5), 0x09, 0, message[i], new byte[0], 0, 0);
 			if (len < 0) {
-				throw new RuntimeException("LibusbJava.controlMsg: "
-						+ LibusbJava.usb_strerror());
+				tryARecover();
+				len = LibusbJava.usb_control_msg(usbDevHandle, (0x01 << 5), 0x09, 0, message[i], new byte[0], 0, 0);
+				if (len < 0) {
+					throw new RuntimeException("LibusbJava.controlMsg: "
+							+ LibusbJava.usb_strerror());
+				}
 			}			
 		}
 
@@ -312,6 +327,22 @@ public class DigisparkUSBConnection implements Connection {
 		}			
 		
 		return success;
+	}
+
+	private void tryARecover() {
+		try {
+			contact.writeLog(id, "COMUNICATION ERROR DETECTED. RECOVERING...");
+			Thread.sleep(10);
+			getPortList();
+			Thread.sleep(10);
+			connect(openedPortName);
+			Thread.sleep(10);
+			contact.writeLog(id, "COMUNICATION ERROR DETECTED. NEXT TRY!!!");
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			throw new RuntimeException("LibusbJava.controlMsg: "
+					+ LibusbJava.usb_strerror());
+		}
 	}
 
 	@Override

@@ -43,20 +43,22 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  * [adsense]
  *
  */
-public class ModifiableSignalButton extends JPanel implements Linkable {
+public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = 7024281203061769142L;
 
-	private SignalButton signalButton = new SignalButton();
-	private JCheckBox chckbxValueFieldIs;
+	private TogggleSignalButton signalButton = new TogggleSignalButton();
+	private JCheckBox chckbxValueOnFieldIs;
 	private JTextField columnsTextField;
-	private JTextField buttonTextField;
+	private JTextField buttonOnTextField;
+	private JCheckBox chckbxValueOffFieldIs;
+	private JTextField buttonOffTextField;
 	private JTextField idTextField;
 
 	/**
 	 * Create the panel.
 	 */
-	public ModifiableSignalButton() {
+	public ModifiableToggleSignalButton() {
 		setLayout(new BorderLayout(0, 0));
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
@@ -68,15 +70,25 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 		tabbedPane.addTab("Configure", null, configPanel, null);
 		configPanel.setLayout(null);
 		
-		chckbxValueFieldIs = new JCheckBox("Value field is visible");
-		chckbxValueFieldIs.addChangeListener(new ChangeListener() {
+		chckbxValueOnFieldIs = new JCheckBox("Value field ON is visible");
+		chckbxValueOnFieldIs.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				signalButton.setValueVisible(chckbxValueFieldIs.isSelected());
+				signalButton.setValueOnVisible(chckbxValueOnFieldIs.isSelected());
 			}
 		});
-		chckbxValueFieldIs.setSelected(true);
-		chckbxValueFieldIs.setBounds(6, 6, 136, 18);
-		configPanel.add(chckbxValueFieldIs);
+		chckbxValueOnFieldIs.setSelected(true);
+		chckbxValueOnFieldIs.setBounds(6, 6, 136, 18);
+		configPanel.add(chckbxValueOnFieldIs);
+
+		chckbxValueOffFieldIs = new JCheckBox("Value field OFF is visible");
+		chckbxValueOffFieldIs.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				signalButton.setValueOffVisible(chckbxValueOffFieldIs.isSelected());
+			}
+		});
+		chckbxValueOffFieldIs.setSelected(true);
+		chckbxValueOffFieldIs.setBounds(6, 6, 136, 18);
+		configPanel.add(chckbxValueOffFieldIs);
 		
 		JLabel lblColumns = new JLabel("Columns:");
 		lblColumns.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -107,23 +119,29 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 			private void updateColumns() {
 				try {
 					int columns = Integer.parseInt(columnsTextField.getText());
-					signalButton.setValueColumns(columns);
+					signalButton.setValueOnColumns(columns);
+					signalButton.setValueOffColumns(columns);
 				}
 				catch(NumberFormatException e) {}
 			}
 		});
 		
-		JLabel lblBtnText = new JLabel("Btn. Text:");
-		lblBtnText.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblBtnText.setBounds(6, 70, 55, 16);
-		configPanel.add(lblBtnText);
+		JLabel lblBtnOnText = new JLabel("Btn. ON Text:");
+		lblBtnOnText.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblBtnOnText.setBounds(6, 70, 55, 16);
+		configPanel.add(lblBtnOnText);
 		
-		buttonTextField = new JTextField();
-		buttonTextField.setText("Send");
-		buttonTextField.setColumns(10);
-		buttonTextField.setBounds(62, 64, 80, 28);
-		configPanel.add(buttonTextField);
-		buttonTextField.getDocument().addDocumentListener(new DocumentListener() {
+		JLabel lblBtnOffText = new JLabel("Btn. OFF Text:");
+		lblBtnOffText.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblBtnOffText.setBounds(6, 70, 55, 16);
+		configPanel.add(lblBtnOffText);
+		
+		buttonOnTextField = new JTextField();
+		buttonOnTextField.setText("Send");
+		buttonOnTextField.setColumns(10);
+		buttonOnTextField.setBounds(62, 64, 80, 28);
+		configPanel.add(buttonOnTextField);
+		buttonOnTextField.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void removeUpdate(DocumentEvent e) {
 				updateButtonLabel();
@@ -140,10 +158,36 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 			}
 			
 			private void updateButtonLabel() {
-				signalButton.setButtonText(buttonTextField.getText());
+				signalButton.setButtonTextOn(buttonOnTextField.getText());
 			}
 		});
 		
+		buttonOffTextField = new JTextField();
+		buttonOffTextField.setText("Send");
+		buttonOffTextField.setColumns(10);
+		buttonOffTextField.setBounds(62, 64, 80, 28);
+		configPanel.add(buttonOffTextField);
+		buttonOffTextField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				updateButtonLabel();
+			}
+			
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				updateButtonLabel();
+			}
+			
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				updateButtonLabel();
+			}
+			
+			private void updateButtonLabel() {
+				signalButton.setButtonTextOff(buttonOffTextField.getText());
+			}
+		});
+
 		JLabel lblId = new JLabel("Id:");
 		lblId.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblId.setBounds(6, 104, 55, 16);
@@ -175,8 +219,9 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 			}
 		});
 		
-		signalButton.setValueColumns(Integer.parseInt(columnsTextField.getText()));
-		signalButton.setButtonText(buttonTextField.getText());
+		signalButton.setValueOnColumns(Integer.parseInt(columnsTextField.getText()));
+		signalButton.setButtonTextOn(buttonOnTextField.getText());
+		signalButton.setButtonTextOff(buttonOffTextField.getText());
 		signalButton.setId(idTextField.getText());
 
 	}
@@ -196,38 +241,68 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 		signalButton.setReplyMessageCallback(replyMessageCallback);
 	}
 
-	public SignalButton getSignalButton() {
+	public TogggleSignalButton getSignalButton() {
 		return signalButton;
 	}
 	
 	/**
-	 * Set the value to be sent
+	 * Set the value ON to be sent
 	 * @param t
 	 */
-	public void setValue(String t) {
-		signalButton.setValue(t);
+	public void setValueOn(String t) {
+		signalButton.setValueOn(t);
 	}
 
 	/**
-	 * @return the value to be sent
+	 * Set the value OFF to be sent
+	 * @param t
 	 */
-	public String getValue() {
-		return signalButton.getValue();
+	public void setValueOff(String t) {
+		signalButton.setValueOff(t);
 	}
 
 	/**
-	 * @return value text field visibility
+	 * @return the value ON to be sent
 	 */
-	public boolean isValueVisible() {
-		return signalButton.isValueVisible();
+	public String getValueOn() {
+		return signalButton.getValueOn();
+	}
+
+	/**
+	 * @return the value OFF to be sent
+	 */
+	public String getValueOff() {
+		return signalButton.getValueOff();
+	}
+	
+	/**
+	 * @return value ON text field visibility
+	 */
+	public boolean isValueOnVisible() {
+		return signalButton.isValueOnVisible();
+	}
+
+	/**
+	 * @return value ON text field visibility
+	 */
+	public boolean isValueOffVisible() {
+		return signalButton.isValueOffVisible();
 	}
 
 	/**
 	 * Set value text field visibility
 	 * @param aFlag
 	 */
-	public void setValueVisible(boolean aFlag) {
-		chckbxValueFieldIs.setSelected(aFlag);
+	public void setValueOnVisible(boolean aFlag) {
+		chckbxValueOnFieldIs.setSelected(aFlag);
+	}
+
+	/**
+	 * Set value text field visibility
+	 * @param aFlag
+	 */
+	public void setValueOffVisible(boolean aFlag) {
+		chckbxValueOffFieldIs.setSelected(aFlag);
 	}
 
 	/**
@@ -242,8 +317,16 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 	 * Set button's text
 	 * @param text
 	 */
-	public void setButtonText(String text) {
-		buttonTextField.setText(text);
+	public void setButtonOnText(String text) {
+		buttonOnTextField.setText(text);
+	}
+
+	/**
+	 * Set button's text
+	 * @param text
+	 */
+	public void setButtonOffText(String text) {
+		buttonOffTextField.setText(text);
 	}
 
 	/**

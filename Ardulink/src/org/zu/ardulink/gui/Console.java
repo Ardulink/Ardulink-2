@@ -119,7 +119,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(Console.class.getResource("/org/zu/ardulink/gui/icons/logo_icon.png")));
 		setTitle("Ardulink Console");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 730, 590);
+		setBounds(100, 100, 730, 620);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
@@ -474,6 +474,40 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		digitalPinStatus13.setPin(13);
 		sensorDigitalPanel.add(digitalPinStatus13);
 		
+		JPanel sensorAnalogPanel = new JPanel();
+		sensorAnalogPanel.setLayout(new GridLayout(2, 3, 0, 0));
+		tabbedPane.addTab("Analog Sensor Panel", null, sensorAnalogPanel, null);
+		
+		AnalogPinStatus analogPinStatus0 = new AnalogPinStatus();
+		analogPinStatus0.setPin(0);
+		linkables.add(analogPinStatus0);
+		sensorAnalogPanel.add(analogPinStatus0);
+		
+		AnalogPinStatus analogPinStatus1 = new AnalogPinStatus();
+		analogPinStatus1.setPin(1);
+		linkables.add(analogPinStatus1);
+		sensorAnalogPanel.add(analogPinStatus1);
+
+		AnalogPinStatus analogPinStatus2 = new AnalogPinStatus();
+		analogPinStatus2.setPin(2);
+		linkables.add(analogPinStatus2);
+		sensorAnalogPanel.add(analogPinStatus2);
+
+		AnalogPinStatus analogPinStatus3 = new AnalogPinStatus();
+		analogPinStatus3.setPin(3);
+		linkables.add(analogPinStatus3);
+		sensorAnalogPanel.add(analogPinStatus3);
+
+		AnalogPinStatus analogPinStatus4 = new AnalogPinStatus();
+		analogPinStatus4.setPin(4);
+		linkables.add(analogPinStatus4);
+		sensorAnalogPanel.add(analogPinStatus4);
+
+		AnalogPinStatus analogPinStatus5 = new AnalogPinStatus();
+		analogPinStatus5.setPin(5);
+		linkables.add(analogPinStatus5);
+		sensorAnalogPanel.add(analogPinStatus5);
+
 		JPanel customPanel = new JPanel();
 		tabbedPane.addTab("Custom Components", null, customPanel, null);
 		customPanel.setLayout(new GridLayout(2, 3, 10, 15));
@@ -506,6 +540,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		tabbedPane.addTab("RGB Panel", null, rgbPanel, null);
 		
 		RGBController rgbController = new RGBController();
+		linkables.add(rgbController);
 		rgbPanel.add(rgbController);
 		
 		JPanel stateBar = new JPanel();
