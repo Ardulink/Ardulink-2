@@ -1,3 +1,16 @@
+Version 0.4.0.20140912 Rainbow Dash
+
+- Improved listener thread performance
+- Added RGBController component that you can use to control RGB LEDs
+- Added ToggleSignalButton component for custom messages with two states (ON/OFF)
+- Added ModifiableToggleSignalButton component that wraps a SignalButton
+- Replaced 3 ModifiableSignalButton with 3 ModifiableToggleSignalButton into the Ardulink Console
+- Improved Digispark/PicoDuino support with a recovery connection error routine (it doesn't work always)
+
+Version 0.3.3.20140610
+
+- Added support for chipKIT Uno32
+
 Version 0.3.2.20140517
 
 - BUG FIX
@@ -14,7 +27,7 @@ Version 0.3.1.20140124
 - BUG FIX 
 - Added support for Arduino Micro
 - Added the ModifiableSignalButton component that wraps a SignalButton.
-- Added a panel into the Ardulink console to use a set of ModifiableSignalButton objects
+- Added a panel into the Ardulink Console to use a set of ModifiableSignalButton objects
 
 
 Version 0.3.0.20140109

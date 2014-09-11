@@ -22,6 +22,12 @@ you code useful for a specific purpose. In this case you have to modify it to su
 your needs.
 */
 
+#include <IOShieldOled.h>
+
+#define BUFFER_SIZE 64
+
+char buffer[BUFFER_SIZE];
+
 String inputString = "";         // a string to hold incoming data (this is general code you can reuse)
 boolean stringComplete = false;  // whether the string is complete (this is general code you can reuse)
 
@@ -29,9 +35,24 @@ void setup() {
   // initialize serial: (this is general code you can reuse)
   Serial.begin(115200);
   
+  IOShieldOled.begin();
 }
 
 void loop() {
+
+  while (Serial.available() && !stringComplete) {
+    // get the new byte:
+    char inChar = (char)Serial.read();
+    // add it to the inputString:
+    inputString += inChar;
+    // if the incoming character is a newline, set a flag
+    // so the main loop can do something about it:
+    if (inChar == '\n') {
+      stringComplete = true;
+    }
+  }
+
+  
   // when a newline arrives:
   if (stringComplete) {
     
@@ -45,12 +66,17 @@ void loop() {
         int messageIdPosition = inputString.indexOf('?', 11 );
         String customId = inputString.substring(11,separatorPosition);
         String value = inputString.substring(separatorPosition + 1, messageIdPosition);
-        if(customId == "none") {
-          analogWrite(10,255);
-          delay(1000);
-          analogWrite(10,0);
-        } else if(customId == "anotherid") {
-          analogWrite(10,value.toInt());
+        if(customId == "OLED") {
+            //Clear the virtual buffer
+            IOShieldOled.clearBuffer();
+            //Chosing Fill pattern 0
+            IOShieldOled.setFillPattern(IOShieldOled.getStdPattern(0));
+            //Turn automatic updating off
+            IOShieldOled.setCharUpdate(0);
+            IOShieldOled.setCursor(0, 0);
+            value.toCharArray(buffer, BUFFER_SIZE);
+            IOShieldOled.putString(buffer);
+            IOShieldOled.updateDisplay();
         } else {
           msgRecognized = false; // this sketch doesn't know other messages in this case command is ko (not ok)
         }
@@ -82,26 +108,5 @@ void loop() {
   
 }
 
-/*
-  SerialEvent occurs whenever a new data comes in the
- hardware serial RX.  This routine is run between each
- time loop() runs, so using delay inside loop can delay
- response.  Multiple bytes of data may be available.
- This is general code you can reuse.
- */
-void serialEvent() {
-    
-  while (Serial.available() && !stringComplete) {
-    // get the new byte:
-    char inChar = (char)Serial.read();
-    // add it to the inputString:
-    inputString += inChar;
-    // if the incoming character is a newline, set a flag
-    // so the main loop can do something about it:
-    if (inChar == '\n') {
-      stringComplete = true;
-    }
-  }
-}
 
 

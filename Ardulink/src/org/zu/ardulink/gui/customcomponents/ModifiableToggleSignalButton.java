@@ -77,7 +77,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 			}
 		});
 		chckbxValueOnFieldIs.setSelected(true);
-		chckbxValueOnFieldIs.setBounds(6, 6, 136, 18);
+		chckbxValueOnFieldIs.setBounds(6, 8, 164, 18);
 		configPanel.add(chckbxValueOnFieldIs);
 
 		chckbxValueOffFieldIs = new JCheckBox("Value field OFF is visible");
@@ -87,17 +87,17 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 			}
 		});
 		chckbxValueOffFieldIs.setSelected(true);
-		chckbxValueOffFieldIs.setBounds(6, 6, 136, 18);
+		chckbxValueOffFieldIs.setBounds(6, 34, 164, 18);
 		configPanel.add(chckbxValueOffFieldIs);
 		
 		JLabel lblColumns = new JLabel("Columns:");
 		lblColumns.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblColumns.setBounds(6, 36, 55, 16);
+		lblColumns.setBounds(6, 66, 80, 16);
 		configPanel.add(lblColumns);
 		
 		columnsTextField = new JTextField();
 		columnsTextField.setText("10");
-		columnsTextField.setBounds(62, 30, 80, 28);
+		columnsTextField.setBounds(90, 60, 80, 28);
 		configPanel.add(columnsTextField);
 		columnsTextField.setColumns(10);
 		columnsTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -128,18 +128,18 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 		
 		JLabel lblBtnOnText = new JLabel("Btn. ON Text:");
 		lblBtnOnText.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblBtnOnText.setBounds(6, 70, 55, 16);
+		lblBtnOnText.setBounds(6, 102, 80, 16);
 		configPanel.add(lblBtnOnText);
 		
 		JLabel lblBtnOffText = new JLabel("Btn. OFF Text:");
 		lblBtnOffText.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblBtnOffText.setBounds(6, 70, 55, 16);
+		lblBtnOffText.setBounds(6, 138, 80, 16);
 		configPanel.add(lblBtnOffText);
 		
 		buttonOnTextField = new JTextField();
 		buttonOnTextField.setText("Send");
 		buttonOnTextField.setColumns(10);
-		buttonOnTextField.setBounds(62, 64, 80, 28);
+		buttonOnTextField.setBounds(90, 96, 80, 28);
 		configPanel.add(buttonOnTextField);
 		buttonOnTextField.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
@@ -165,7 +165,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 		buttonOffTextField = new JTextField();
 		buttonOffTextField.setText("Send");
 		buttonOffTextField.setColumns(10);
-		buttonOffTextField.setBounds(62, 64, 80, 28);
+		buttonOffTextField.setBounds(90, 132, 80, 28);
 		configPanel.add(buttonOffTextField);
 		buttonOffTextField.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
@@ -190,13 +190,13 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 
 		JLabel lblId = new JLabel("Id:");
 		lblId.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblId.setBounds(6, 104, 55, 16);
+		lblId.setBounds(6, 174, 80, 16);
 		configPanel.add(lblId);
 		
 		idTextField = new JTextField();
 		idTextField.setText("ID");
 		idTextField.setColumns(10);
-		idTextField.setBounds(62, 98, 80, 28);
+		idTextField.setBounds(90, 168, 80, 28);
 		configPanel.add(idTextField);
 		idTextField.getDocument().addDocumentListener(new DocumentListener() {
 			@Override

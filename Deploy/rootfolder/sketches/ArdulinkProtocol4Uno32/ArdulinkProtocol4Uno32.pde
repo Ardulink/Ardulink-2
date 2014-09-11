@@ -127,6 +127,8 @@ void loop() {
           String pin = inputString.substring(11);
           analogPinListening[pin.toInt()] = false;
           analogPinListening[pin.toInt()] = -1; // Ensure a message back when start listen happens.
+      } else if(inputString.substring(6,10) "cust") { // Custom Message
+          
       } else {
         msgRecognized = false; // this sketch doesn't know other messages in this case command is ko (not ok)
       }
@@ -172,6 +174,7 @@ void loop() {
   for (index = 0; index < analogPinListeningNum; index++) {
     if(analogPinListening[index] == true) {
       int value = analogRead(index);
+      value = value / 4; // Precision set 0 to 255 instead of 0 to 1023
       if(value != analogPinListenedValue[index]) {
         analogPinListenedValue[index] = value;
         Serial.print("alp://ared/");

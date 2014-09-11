@@ -51,6 +51,7 @@ import org.zu.ardulink.event.ConnectionEvent;
 import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DisconnectionEvent;
 import org.zu.ardulink.gui.customcomponents.ModifiableSignalButton;
+import org.zu.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
 import org.zu.ardulink.gui.digistump.DigisparkConnectionPanel;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
@@ -524,17 +525,17 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		linkables.add(modifiableSignalButton3);
 		customPanel.add(modifiableSignalButton3);
 		
-		ModifiableSignalButton modifiableSignalButton4 = new ModifiableSignalButton();
-		linkables.add(modifiableSignalButton4);
-		customPanel.add(modifiableSignalButton4);
+		ModifiableToggleSignalButton modifiableToggleSignalButton1 = new ModifiableToggleSignalButton();
+		linkables.add(modifiableToggleSignalButton1);
+		customPanel.add(modifiableToggleSignalButton1);
 		
-		ModifiableSignalButton modifiableSignalButton5 = new ModifiableSignalButton();
-		linkables.add(modifiableSignalButton5);
-		customPanel.add(modifiableSignalButton5);
+		ModifiableToggleSignalButton modifiableToggleSignalButton2 = new ModifiableToggleSignalButton();
+		linkables.add(modifiableToggleSignalButton2);
+		customPanel.add(modifiableToggleSignalButton2);
 		
-		ModifiableSignalButton modifiableSignalButton6 = new ModifiableSignalButton();
-		linkables.add(modifiableSignalButton6);
-		customPanel.add(modifiableSignalButton6);
+		ModifiableToggleSignalButton modifiableToggleSignalButton3 = new ModifiableToggleSignalButton();
+		linkables.add(modifiableToggleSignalButton3);
+		customPanel.add(modifiableToggleSignalButton3);
 		
 		JPanel rgbPanel = new JPanel();
 		tabbedPane.addTab("RGB Panel", null, rgbPanel, null);
