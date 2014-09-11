@@ -30,7 +30,7 @@
 
 	<target name="modifyVersion">
 	<replace dir="generated/doc" token="[ardulinkversion]">
-			  <replacevalue><![CDATA[<p>v0.3.2</p>]]></replacevalue>
+			  <replacevalue><![CDATA[<p>v0.4.0 Rainbow Dash</p>]]></replacevalue>
 		</replace>
 	</target>
 	
