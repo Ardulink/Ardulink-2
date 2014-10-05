@@ -7,13 +7,10 @@ import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
-import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.Connection;
 import org.zu.ardulink.connection.ConnectionContact;
 
@@ -44,57 +41,9 @@ import org.zu.ardulink.connection.ConnectionContact;
  * 
  * [adsense]
  */
-public class SerialConnection implements Connection {
+public class SerialConnection extends AbstractSerialConnection implements Connection {
 	
-	public static final String DEFAULT_CONNECTION_NAME = Link.DEFAULT_LINK_NAME; // Added from Luciano Zu
-	
-	private InputStream inputStream;
-	private OutputStream outputStream;
-	/**
-	 * The status of the connection.
-	 */
-	private boolean connected = false;
-	/**
-	 * The Thread used to receive the data from the Serial interface.
-	 */
-	private Thread reader;
 	private SerialPort serialPort;
-	/**
-	 * Communicating between threads, showing the {@link #reader} when the
-	 * connection has been closed, so it can {@link Thread#join()}.
-	 */
-	private boolean end = false;
-
-	/**
-	 * Link to the instance of the class implementing {@link org.zu.ardulink.connection.ConnectionContact}.
-	 */
-	private ConnectionContact contact;
-	/**
-	 * A small <b>int</b> representing the number to be used to distinguish
-	 * between two consecutive packages. It can only take a value between 0 and
-	 * 255. Note that data is only sent to
-	 * {@link org.zu.ardulink.connection.ConnectionContact#parseInput(int, int, int[])} once the following
-	 * 'divider' could be identified.
-	 * 
-	 * As a default, <b>255</b> is used as a divider (unless specified otherwise
-	 * in the constructor).
-	 * 
-	 * @see org.zu.ardulink.connection.serial.SerialConnection#SerialConnection(int, ConnectionContact, int)
-	 */
-	private int divider;
-	/**
-	 * <b>String</b> identifying the specific instance of the SerialConnection-class. While
-	 * having only a single instance, 'id' is irrelevant. However, having more
-	 * than one open connection (using more than one instance of {@link SerialConnection}
-	 * ), 'id' helps identifying which Serial connection a message or a log
-	 * entry came from.
-	 * 
-	 * Luciano Zu has modified id type from int to String
-	 */
-	private String id;
-
-	private int[] tempBytes;
-	int numTempBytes = 0, numTotBytes = 0;
 
 	/**
 	 * @param id
@@ -117,14 +66,7 @@ public class SerialConnection implements Connection {
 	 *            following {@link #divider} could be identified.
 	 */
 	public SerialConnection(String id, ConnectionContact contact, int divider) {
-		this.contact = contact;
-		this.divider = divider;
-		if (this.divider > 255)
-			this.divider = 255;
-		if (this.divider < 0)
-			this.divider = 0;
-		this.id = id;
-		tempBytes = new int[1024];
+		super(id, contact, divider);
 	}
 
 	/**
@@ -134,7 +76,7 @@ public class SerialConnection implements Connection {
 	 * @see #SerialConnection(int, ConnectionContact, int)
 	 */
 	public SerialConnection(String id, ConnectionContact contact) {
-		this(id, contact, 255);
+		super(id, contact);
 	}
 
 	/**
@@ -146,7 +88,7 @@ public class SerialConnection implements Connection {
 	 * @see #SerialConnection(int, ConnectionContact, int)
 	 */
 	public SerialConnection(ConnectionContact contact) {
-		this(DEFAULT_CONNECTION_NAME, contact);
+		super(contact);
 	}
 
 	/**
@@ -174,9 +116,9 @@ public class SerialConnection implements Connection {
 				portVect.add(portId.getName());
 			}
 		}
-		contact.writeLog(id, "found the following ports:");
+		writeLog("found the following ports:");
 		for (int i = 0; i < portVect.size(); i++) {
-			contact.writeLog(id, ("   " + (String) portVect.elementAt(i)));
+			writeLog("   " + (String) portVect.elementAt(i));
 		}
 
 		return portVect;
@@ -213,101 +155,30 @@ public class SerialConnection implements Connection {
 	 *         <b>false</b> otherwise.
 	 */
 	public boolean connect(String portName, int speed) {
+		boolean retvalue = false;
 		CommPortIdentifier portIdentifier;
-		boolean conn = false;
 		try {
 			portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
 			if (portIdentifier.isCurrentlyOwned()) {
-				contact.writeLog(id, "Error: Port is currently in use");
+				writeLog("Error: Port is currently in use");
 			} else {
-				serialPort = (SerialPort) portIdentifier.open("RTBug_network",
-						2000);
-				serialPort.setSerialPortParams(speed, SerialPort.DATABITS_8,
-						SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+				serialPort = (SerialPort) portIdentifier.open("RTBug_network",2000);
+				serialPort.setSerialPortParams(speed, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
 
-				inputStream = serialPort.getInputStream();
-				outputStream = serialPort.getOutputStream();
+				setInputStream(serialPort.getInputStream());
+				setOutputStream(serialPort.getOutputStream());
 
-				reader = (new Thread(new SerialReader(inputStream)));
-				end = false;
-				reader.start();
-				connected = true;
-				contact.writeLog(id, "connection on " + portName
-						+ " established");
-				contact.connected(id, portName);
-				conn = true;
+				startReader();
+				writeLog("connection on " + portName + " established");
+				getContact().connected(getId(), portName);
+				setConnected(true);
+				retvalue = true;
 			}
-		} catch (NoSuchPortException e) {
-			contact.writeLog(id, "the connection could not be made");
-			e.printStackTrace();
-		} catch (PortInUseException e) {
-			contact.writeLog(id, "the connection could not be made");
-			e.printStackTrace();
-		} catch (UnsupportedCommOperationException e) {
-			contact.writeLog(id, "the connection could not be made");
-			e.printStackTrace();
-		} catch (IOException e) {
-			contact.writeLog(id, "the connection could not be made");
+		} catch (Exception e) {
+			writeLog("the connection could not be made " + e.getMessage());
 			e.printStackTrace();
 		}
-		return conn;
-	}
-
-	/**
-	 * A separate class to use as the {@link org.zu.ardulink.connection.serial.SerialConnection#reader}. It is run as a
-	 * separate {@link Thread} and manages the incoming data, packaging them
-	 * using {@link org.zu.ardulink.connection.serial.SerialConnection#divider} into arrays of <b>int</b>s and
-	 * forwarding them using
-	 * {@link org.zu.ardulink.connection.ConnectionContact#parseInput(int, int, int[])}.
-	 * 
-	 */
-	private class SerialReader implements Runnable {
-		InputStream in;
-
-		public SerialReader(InputStream in) {
-			this.in = in;
-		}
-
-		public void run() {
-			byte[] buffer = new byte[1024];
-			int len = -1, i, temp;
-			try {
-				while (!end) {
-					// if ((in.available()) > 0) {
-						if ((len = this.in.read(buffer)) > -1) {
-							for (i = 0; i < len; i++) {
-								temp = buffer[i];
-								 // adjust from C-Byte to Java-Byte
-								if (temp < 0)
-									temp += 256;
-								if (temp == divider) {
-									if  (numTempBytes > 0) {
-										contact.parseInput(id, numTempBytes,
-												tempBytes);
-									}
-									numTempBytes = 0;
-								} else {
-									tempBytes[numTempBytes] = temp;
-									++numTempBytes;
-								}
-							}
-						}
-					// }
-				}
-			} catch (IOException e) {
-				end = true;
-				try {
-					outputStream.close();
-					inputStream.close();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-				serialPort.close();
-				connected = false;
-				contact.disconnected(id);
-				contact.writeLog(id, "connection has been interrupted");
-			}
-		}
+		return retvalue;
 	}
 
 	/**
@@ -318,122 +189,14 @@ public class SerialConnection implements Connection {
 	 *         otherwise.
 	 */
 	public boolean disconnect() {
-		boolean disconn = true;
-		if(connected) {
-			end = true;
-			try {
-				reader.join();
-			} catch (InterruptedException e1) {
-				e1.printStackTrace();
-				disconn = false;
-			}
-			try {
-				outputStream.close();
-				inputStream.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-				disconn = false;
-			}
+		if(isConnected()) {
+			stopReader();
 			serialPort.close();
-			connected = false;
+			setConnected(false);
 		}
-		contact.disconnected(id);
-		contact.writeLog(id, "connection disconnected");
-		return disconn;
-	}
-
-	/**
-	 * @return Whether this instance of {@link org.zu.ardulink.connection.serial.SerialConnection} has currently an
-	 *         open connection of not.
-	 */
-	public boolean isConnected() {
-		return connected;
-	}
-
-	/**
-	 * This method is included as a legacy. Depending on the other side of the
-	 * Serial port, it might be easier to send using a String. Note: this method
-	 * does not add the {@link #divider} to the end.
-	 * 
-	 * If a connection is open, a {@link String} can be sent over the Serial
-	 * port using this function. If no connection is available, <b>false</b> is
-	 * returned and a message is sent using
-	 * {@link org.zu.ardulink.connection.ConnectionContact#writeLog(int, String)}.
-	 * 
-	 * @param message
-	 *            The {@link String} to be sent over the Serial connection.
-	 * @return <b>true</b> if the message could be sent, <b>false</b> otherwise.
-	 */
-	public boolean writeSerial(String message) {
-		boolean success = false;
-		if (isConnected()) {
-			try {
-				outputStream.write(message.getBytes());
-				success = true;
-			} catch (IOException e) {
-				disconnect();
-			}
-		} else {
-			contact.writeLog(id, "No port is connected.");
-		}
-		return success;
-	}
-
-	/**
-	 * If a connection is open, an <b>int</b> between 0 and 255 (except the
-	 * {@link org.zu.ardulink.connection.serial.SerialConnection#divider}) can be sent over the Serial port using this
-	 * function. The message will be finished by sending the
-	 * {@link org.zu.ardulink.connection.serial.SerialConnection#divider}. If no connection is available, <b>false</b>
-	 * is returned and a message is sent using
-	 * {@link org.zu.ardulink.connection.ConnectionContact#writeLog(int, String)}.
-	 * 
-	 * @param numBytes
-	 *            The number of bytes to send over the Serial port.
-	 * @param message
-	 *            [] The array of<b>int</b>s to be sent over the Serial
-	 *            connection (between 0 and 256).
-	 * @return <b>true</b> if the message could be sent, <b>false</b> otherwise
-	 *         or if one of the numbers is equal to the #{@link SerialConnection#divider}
-	 *         .
-	 */
-	public boolean writeSerial(int numBytes, int message[]) {
-		boolean success = true;
-		int i;
-		for (i = 0; i < numBytes; ++i) {
-			if (message[i] == divider) {
-				success = false;
-				break;
-			}
-		}
-		if (success && isConnected()) {
-			try {
-				for (i = 0; i < numBytes; ++i) {
-						outputStream.write(changeToByte(message[i]));
-				}
-				outputStream.write(changeToByte(divider));
-			} catch (IOException e) {
-				success = false;
-				disconnect();
-			}
-		} else if (!success) {
-			// message contains the divider
-			contact.writeLog(id, "The message contains the divider.");
-		} else {
-			contact.writeLog(id, "No port is connected.");
-		}
-		return success;
-	}
-
-	private byte changeToByte(int num) {
-		byte number;
-		int temp;
-		temp = num;
-		if (temp > 255)
-			temp = 255;
-		if (temp < 0)
-			temp = 0;
-		number = (byte) temp;
-		return number;
+		getContact().disconnected(getId());
+		writeLog("connection disconnected");
+		return !isConnected();
 	}
 
 	/*
@@ -466,13 +229,5 @@ public class SerialConnection implements Connection {
 			retvalue = connect(portName, baudRate);
 		}
 		return retvalue;
-	}
-
-	/*
-	 * Method added by Luciano Zu - Ardulink
-	 */
-	@Override
-	public void setConnectionContact(ConnectionContact connectionContact) {
-		contact = connectionContact;
 	}
 }

@@ -80,6 +80,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 	private JRadioButton serialConnectionRadioButton;
 	private JRadioButton networkConnectionRadioButton;
 	private JRadioButton digisparkConnectionRadioButton;
+	private JRadioButton bluetoothConnectionRadioButton;
 	private JButton btnConnect;
 	private JButton btnDisconnect;
 	private ConnectionStatus connectionStatus;
@@ -87,6 +88,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 	private SerialConnectionPanel serialConnectionPanel;
 	private NetworkProxyConnectionPanel networkProxyConnectionPanel;
 	private DigisparkConnectionPanel digisparkConnectionPanel;
+	private BluetoothConnectionPanel bluetoothConnectionPanel;
 	
 	private Link link = null;
 	
@@ -177,6 +179,22 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 							JOptionPane.showMessageDialog(btnConnect, message, "Error", JOptionPane.ERROR_MESSAGE);
 						}
 					}
+				} else if(bluetoothConnectionRadioButton.isSelected()) {
+					try {
+						String deviceName = bluetoothConnectionPanel.getSelectedDevice();
+						setLink(bluetoothConnectionPanel.getLink());
+						boolean connected = link.connect(deviceName);
+						logger.info("Connection status: " + connected);
+					}
+					catch(Exception ex) {
+						ex.printStackTrace();
+						String message = ex.getMessage();
+						if(message == null || message.trim().equals("")) {
+							message = "Generic Error on connection";
+						}
+						JOptionPane.showMessageDialog(btnConnect, message, "Error", JOptionPane.ERROR_MESSAGE);
+					}
+
 				} else { // Digispark Connection
 					try {
 						String deviceName = digisparkConnectionPanel.getSelectedDevice();
@@ -227,6 +245,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 				serialConnectionPanel.setEnabled(true);
 				networkProxyConnectionPanel.setEnabled(false);
 				digisparkConnectionPanel.setEnabled(false);
+				bluetoothConnectionPanel.setEnabled(false);
 				setLink(serialConnectionPanel.getLink());
 			}
 		});
@@ -245,6 +264,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 				serialConnectionPanel.setEnabled(false);
 				networkProxyConnectionPanel.setEnabled(true);
 				digisparkConnectionPanel.setEnabled(false);
+				bluetoothConnectionPanel.setEnabled(false);
 				setLink(networkProxyConnectionPanel.getLink());
 			}
 		});
@@ -262,10 +282,11 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 				serialConnectionPanel.setEnabled(false);
 				networkProxyConnectionPanel.setEnabled(false);
 				digisparkConnectionPanel.setEnabled(true);
-				setLink(serialConnectionPanel.getLink());
+				bluetoothConnectionPanel.setEnabled(false);
+				setLink(digisparkConnectionPanel.getLink());
 			}
 		});
-		digisparkConnectionRadioButton.setSelected(true);
+		digisparkConnectionRadioButton.setSelected(false);
 		GridBagConstraints gbc_digisparkConnectionRadioButton = new GridBagConstraints();
 		gbc_digisparkConnectionRadioButton.insets = new Insets(20, 0, 0, 10);
 		gbc_digisparkConnectionRadioButton.anchor = GridBagConstraints.NORTH;
@@ -273,6 +294,25 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		gbc_digisparkConnectionRadioButton.gridx = 0;
 		gbc_digisparkConnectionRadioButton.gridy = 2;
 		allConnectionsPanel.add(digisparkConnectionRadioButton, gbc_digisparkConnectionRadioButton);
+
+		bluetoothConnectionRadioButton = new JRadioButton("Bluetooth Connection");
+		bluetoothConnectionRadioButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				serialConnectionPanel.setEnabled(false);
+				networkProxyConnectionPanel.setEnabled(false);
+				digisparkConnectionPanel.setEnabled(false);
+				bluetoothConnectionPanel.setEnabled(true);
+				setLink(bluetoothConnectionPanel.getLink());
+			}
+		});
+		bluetoothConnectionRadioButton.setSelected(false);
+		GridBagConstraints gbc_bluetoothConnectionRadioButton = new GridBagConstraints();
+		gbc_bluetoothConnectionRadioButton.insets = new Insets(20, 0, 0, 10);
+		gbc_bluetoothConnectionRadioButton.anchor = GridBagConstraints.NORTH;
+		gbc_bluetoothConnectionRadioButton.fill = GridBagConstraints.HORIZONTAL;
+		gbc_bluetoothConnectionRadioButton.gridx = 0;
+		gbc_bluetoothConnectionRadioButton.gridy = 4;
+		allConnectionsPanel.add(bluetoothConnectionRadioButton, gbc_bluetoothConnectionRadioButton);
 
 		serialConnectionPanel = new SerialConnectionPanel();
 		serialConnectionPanel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
@@ -308,11 +348,24 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		gbc_digisparkConnectionPanel.gridy = 3;
 		allConnectionsPanel.add(digisparkConnectionPanel, gbc_digisparkConnectionPanel);
 
+		bluetoothConnectionPanel = new BluetoothConnectionPanel();
+		bluetoothConnectionPanel.setEnabled(false);
+		bluetoothConnectionPanel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
+		GridBagConstraints gbc_bluetoothConnectionPanel = new GridBagConstraints();
+		gbc_bluetoothConnectionPanel.gridheight = 1;
+		gbc_bluetoothConnectionPanel.insets = new Insets(0, 0, 0, 10);
+		gbc_bluetoothConnectionPanel.anchor = GridBagConstraints.NORTH;
+		gbc_bluetoothConnectionPanel.fill = GridBagConstraints.HORIZONTAL;
+		gbc_bluetoothConnectionPanel.gridx = 0;
+		gbc_bluetoothConnectionPanel.gridy = 5;
+		allConnectionsPanel.add(bluetoothConnectionPanel, gbc_bluetoothConnectionPanel);
+
 		//Group the radio buttons.
 	    ButtonGroup group = new ButtonGroup();
 	    group.add(serialConnectionRadioButton);
 	    group.add(networkConnectionRadioButton);
 	    group.add(digisparkConnectionRadioButton);
+	    group.add(bluetoothConnectionRadioButton);
 		
 		keyControlPanel = new KeyPressController();
 		linkables.add(keyControlPanel);
