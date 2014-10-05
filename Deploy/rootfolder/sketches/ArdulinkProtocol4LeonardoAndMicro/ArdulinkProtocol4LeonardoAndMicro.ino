@@ -35,7 +35,7 @@ int analogPinListenedValue[analogPinListeningNum]; // Array used to know which v
 
 void setup() {
   // initialize serial: (this is general code you can reuse)
-  Serial.begin(115200);
+  Serial.begin(9600);
   while(!Serial); // Wait until Serial not connected (because difference between Leonardo and Micro with UNO and others)
   
   //set to false all listen variable
@@ -122,11 +122,11 @@ void loop() {
       } else if(inputString.substring(6,10) == "srla") { // Start Listen Analog Pin (this is general code you can reuse)
           String pin = inputString.substring(11);
           analogPinListening[pin.toInt()] = true;
-          analogPinListening[pin.toInt()] = -1; // Ensure a message back when start listen happens.
+          analogPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
       } else if(inputString.substring(6,10) == "spla") { // Stop Listen Analog Pin (this is general code you can reuse)
           String pin = inputString.substring(11);
           analogPinListening[pin.toInt()] = false;
-          analogPinListening[pin.toInt()] = -1; // Ensure a message back when start listen happens.
+          analogPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
       } else {
         msgRecognized = false; // this sketch doesn't know other messages in this case command is ko (not ok)
       }
@@ -171,7 +171,7 @@ void loop() {
   }
   for (index = 0; index < analogPinListeningNum; index++) {
     if(analogPinListening[index] == true) {
-      int value = analogRead(index);
+      int value = highPrecisionAnalogRead(index);
       if(value != analogPinListenedValue[index]) {
         analogPinListenedValue[index] = value;
         Serial.print("alp://ared/");
@@ -185,5 +185,14 @@ void loop() {
   }
 }
 
+// Reads 4 times and computes the average value
+int highPrecisionAnalogRead(int pin) {
+  int value1 = analogRead(pin);
+  int value2 = analogRead(pin);
+  int value3 = analogRead(pin);
+  int value4 = analogRead(pin);
+  
+  int retvalue = (value1 + value2 + value3 + value4) / 4;
+}
 
 
