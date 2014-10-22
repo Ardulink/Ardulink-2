@@ -39,6 +39,13 @@ import javax.microedition.io.StreamConnectionNotifier;
 
 import org.zu.ardulink.connection.serial.AbstractSerialConnection;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ */
 public class BluetoothConnection extends AbstractSerialConnection {
 
 	private Object lock = new Object();

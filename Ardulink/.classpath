@@ -5,6 +5,5 @@
 	<classpathentry kind="lib" path="/Deploy/rootfolder/lib/RXTXcomm.jar"/>
 	<classpathentry kind="lib" path="/Deploy/rootfolder/lib/ch.ntb.usb-0.5.9.jar"/>
 	<classpathentry kind="lib" path="/Deploy/rootfolder/lib/bluecove-2.1.0.jar"/>
-	<classpathentry kind="lib" path="/Deploy/rootfolder/lib/bluecove-gpl-2.1.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
