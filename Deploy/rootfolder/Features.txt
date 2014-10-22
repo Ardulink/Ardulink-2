@@ -1,3 +1,8 @@
+Version 0.4.1.20141016 King Harald
+
+- Added Bluetooth connection. Now Ardulink can connect with an Arduino board by bluetooth serial profile.
+- Tested Analog listener togheter with AnalogPinStatus SWING component. With general sketch there is some problem but with specific sketch it works fine. 
+
 Version 0.4.0.20140912 Rainbow Dash
 
 - Improved listener thread performance
@@ -5,7 +10,7 @@ Version 0.4.0.20140912 Rainbow Dash
 - Added ToggleSignalButton component for custom messages with two states (ON/OFF)
 - Added ModifiableToggleSignalButton component that wraps a SignalButton
 - Replaced 3 ModifiableSignalButton with 3 ModifiableToggleSignalButton into the Ardulink Console
-- Improved Digispark/PicoDuino support with a recovery connection error routine (it doesn't work always)
+- Improved Digispark/PicoDuino support with a recovery connection error routine (still in beta)
 
 Version 0.3.3.20140610
 
