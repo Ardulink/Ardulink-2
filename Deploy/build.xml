@@ -4,6 +4,8 @@
 	<target name="init">
 		<mkdir dir="build" />
 		<mkdir dir="build/classes" />
+		<mkdir dir="buildExamples/SimpleSmartCarDriver" />
+		<mkdir dir="buildExamples/SimpleSmartCarDriver/classes" />
 		<mkdir dir="dist" />
 	</target>
 
@@ -11,10 +13,14 @@
 		<copy todir="build/classes">
 			<fileset dir="../Ardulink/bin"/>
 		</copy>
+		<copy todir="buildExamples/SimpleSmartCarDriver/classes">
+			<fileset dir="../SimpleSmartCarDriver/bin"/>
+		</copy>
 	</target>
 
 	<target name="compress" depends="copy">
 		<jar destfile="build/ardulink.jar" basedir="build/classes" />
+		<jar destfile="buildExamples/simplesmartcardriver.jar" basedir="buildExamples/SimpleSmartCarDriver/classes" />
 	</target>
 
 	<target name="pack" depends="compress">
@@ -23,11 +29,18 @@
 			<fileset dir="rootfolder"/>
 		</copy>
 		<copy todir="dist/pack/ardulink/lib" file="build/ardulink.jar" />
+		<mkdir dir="dist/pack/ardulink/examples" />
+		<copy todir="dist/pack/ardulink/examples/SimpleSmartCarDriver" file="buildExamples/simplesmartcardriver.jar" />
+		<mkdir dir="dist/pack/ardulink/examples/SimpleSmartCarDriver/src" />
+		<copy todir="dist/pack/ardulink/examples/SimpleSmartCarDriver/src">
+			<fileset dir="../SimpleSmartCarDriver/src"/>
+		</copy>
 		<zip destfile="dist/ardulink.zip" basedir="dist/pack" />
 	</target>
 
 	<target name="clean">
 		<delete dir="build" />
+		<delete dir="buildExamples" />
 		<delete dir="dist" />
 	</target>
 

@@ -1,4 +1,4 @@
-Version 0.4.1.20141016 King Harald
+Version 0.4.1.20141208 King Harald
 
 - Added Bluetooth connection. Now Ardulink can connect with an Arduino board by bluetooth serial profile.
 - Tested Analog listener togheter with AnalogPinStatus SWING component. With general sketch there is some problem but with specific sketch it works fine. 
