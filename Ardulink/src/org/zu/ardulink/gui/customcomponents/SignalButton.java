@@ -79,6 +79,7 @@ public class SignalButton extends JPanel implements Linkable {
 		textField = new JTextField();
 		valuePanel.add(textField);
 		textField.setColumns(10);
+		textField.setMinimumSize(getPreferredSize());
 
 	}
 
