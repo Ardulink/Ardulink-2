@@ -53,7 +53,8 @@ public class SerialConnectionPanel extends JPanel implements Linkable {
 	private JComboBox connectionPortComboBox;
 	private JTextField baudRateTextField;
 	private JButton discoverButton;
-
+	private JLabel lblBaudRate;
+	
 	private Link link = Link.getDefaultInstance();
 	
 	/**
@@ -85,7 +86,7 @@ public class SerialConnectionPanel extends JPanel implements Linkable {
 		connectionPortComboBox.setBounds(108, 10, 122, 28);
 		add(connectionPortComboBox);
 		
-		JLabel lblBaudRate = new JLabel("Baud Rate:");
+		lblBaudRate = new JLabel("Baud Rate:");
 		lblBaudRate.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblBaudRate.setBounds(6, 44, 91, 16);
 		add(lblBaudRate);
@@ -122,7 +123,12 @@ public class SerialConnectionPanel extends JPanel implements Linkable {
 	 * @return the connection port name selected or set
 	 */
 	public String getConnectionPort() {
-		return connectionPortComboBox.getSelectedItem().toString();
+		String retvalue = "";
+		Object selectedItem = connectionPortComboBox.getSelectedItem();
+		if(selectedItem != null) {
+			retvalue = selectedItem.toString();
+		}
+		return retvalue;
 	}
 
 	/**
@@ -155,5 +161,10 @@ public class SerialConnectionPanel extends JPanel implements Linkable {
 
 	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
 		throw new RuntimeException("Not developed yet");
-	}	
+	}
+	
+	public void setBaudRateVisible(boolean visibility) {
+		baudRateTextField.setVisible(visibility);
+		lblBaudRate.setVisible(visibility);
+	}
 }
