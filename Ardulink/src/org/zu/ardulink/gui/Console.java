@@ -52,6 +52,9 @@ import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DisconnectionEvent;
 import org.zu.ardulink.gui.customcomponents.ModifiableSignalButton;
 import org.zu.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
+import org.zu.ardulink.gui.customcomponents.joystick.Joystick;
+import org.zu.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
+import org.zu.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.zu.ardulink.gui.digistump.DigisparkConnectionPanel;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
@@ -463,6 +466,25 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		linkables.add(switchController13);
 		switchController13.setPin(13);
 		switchPanel.add(switchController13);
+		
+		JPanel joystickPanel = new JPanel();
+		tabbedPane.addTab("Joystick Panel", null, joystickPanel, null);
+		joystickPanel.setLayout(new GridLayout(2, 2, 0, 0));
+		
+		ModifiableJoystick joy1 = new ModifiableJoystick();
+		ModifiableJoystick joy2 = new ModifiableJoystick();
+		SimplePositionListener tracer1 = new SimplePositionListener();
+		SimplePositionListener tracer2 = new SimplePositionListener();
+		joystickPanel.add(tracer1);
+		joystickPanel.add(tracer2);
+		joystickPanel.add(joy1);
+		joystickPanel.add(joy2);
+		joy1.addPositionListener(tracer1);
+		joy2.addPositionListener(tracer2);
+		joy1.setId("Left");
+		joy2.setId("Right");
+		linkables.add(joy1);
+		linkables.add(joy2);
 		
 		JPanel sensorDigitalPanel = new JPanel();
 		tabbedPane.addTab("Digital Sensor Panel", null, sensorDigitalPanel, null);
