@@ -1,3 +1,10 @@
+Version 0.4.2.20150304 Top Gun
+
+- Added Joystick SWING component
+- Added Windows 32/64 bit setup script for RXTX library
+- Added setBaudRateVisible(boolean) method for SerialConnectionPanel
+- BUG FIX
+
 Version 0.4.1.20141208 King Harald
 
 - Added Bluetooth connection. Now Ardulink can connect with an Arduino board by bluetooth serial profile.
