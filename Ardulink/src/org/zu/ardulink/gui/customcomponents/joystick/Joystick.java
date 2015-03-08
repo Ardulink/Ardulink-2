@@ -170,7 +170,7 @@ public class Joystick extends JPanel implements Linkable {
 
     private void callPositionListeners() {
     	Iterator<PositionListener> it = positionListeners.iterator();
-    	PositionEvent event = new PositionEvent(new Point(position), joyOutputRange);
+    	PositionEvent event = new PositionEvent(new Point(position), joyOutputRange, id);
     	while (it.hasNext()) {
 			PositionListener positionListener = (PositionListener) it.next();
 			positionListener.positionChanged(event);
@@ -179,8 +179,10 @@ public class Joystick extends JPanel implements Linkable {
 	}
 
     private void sendMessage() {
-		String message = getId() + "/" + getValueX() + "/" + getValueY();
-		link.sendCustomMessage(message, replyMessageCallback);
+		if(link != null) {
+			String message = getId() + "/" + getValueX() + "/" + getValueY();
+			link.sendCustomMessage(message, replyMessageCallback);
+		}
 	}
 
     private int getValueX() {

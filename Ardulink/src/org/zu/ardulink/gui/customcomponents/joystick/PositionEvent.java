@@ -22,13 +22,15 @@ import java.awt.Point;
 
 public class PositionEvent {
 	
+	private String id;
 	private Point position;
 	private int maxSize;
 
-	public PositionEvent(Point position, int maxSize) {
+	public PositionEvent(Point position, int maxSize, String id) {
 		super();
 		this.position = position;
 		this.maxSize = maxSize;
+		this.id = id;
 	}
 
 	public Point getPosition() {
@@ -37,5 +39,9 @@ public class PositionEvent {
 
 	public int getMaxSize() {
 		return maxSize;
+	}
+
+	public String getId() {
+		return id;
 	}
 }
