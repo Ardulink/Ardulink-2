@@ -78,7 +78,7 @@ public class JoystickSmartCarDriver extends JFrame implements ConnectionListener
 	 * Create the frame.
 	 */
 	public JoystickSmartCarDriver() {
-		setTitle("Simple Smart Car Driver");
+		setTitle("Joystick Smart Car Driver");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 735, 407);
 		contentPane = new JPanel();
