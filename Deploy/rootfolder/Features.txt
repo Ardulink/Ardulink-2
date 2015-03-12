@@ -1,3 +1,11 @@
+Version 0.4.2.20150312 Top Gun
+
+- Added Joystick SWING component example code to drive a Smart Car
+- Added Windows 32/64 bit support for bluetooth connection
+- Added Joystick Smart Car Driver example
+- Added Joystick id to PositionEvent
+
+
 Version 0.4.2.20150304 Top Gun
 
 - Added Joystick SWING component

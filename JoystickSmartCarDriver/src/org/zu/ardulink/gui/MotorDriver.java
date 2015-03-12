@@ -100,7 +100,5 @@ public class MotorDriver implements PositionListener, Linkable {
 			System.out.println(message);
 			link.sendCustomMessage(message, replyMessageCallback);
 		}
-		
-
 	}
 }
