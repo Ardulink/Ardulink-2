@@ -207,10 +207,8 @@ public class NetworkProxyConnection implements Connection, NetworkProxyMessages 
 					if ((len = this.in.read(buffer)) > -1) {
 						for (i = 0; i < len; i++) {
 							temp = buffer[i];
-							// adjust from C-Byte to Java-Byte
-							if (temp < 0)
-								temp += 256;
-							if (temp == IProtocol.DEFAULT_INCOMING_MESSAGE_DIVIDER) {
+
+							if (temp == (int)IProtocol.DEFAULT_INCOMING_MESSAGE_DIVIDER) {
 								if  (numTempBytes > 0) {
 									contact.parseInput(id, numTempBytes,
 											tempBytes);

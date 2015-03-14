@@ -163,7 +163,7 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 			}
 		}
 		try {
-			outputStream.write(IProtocol.DEFAULT_OUTGOING_MESSAGE_DIVIDER);
+			outputStream.write(IProtocol.DEFAULT_INCOMING_MESSAGE_DIVIDER);
 			outputStream.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
