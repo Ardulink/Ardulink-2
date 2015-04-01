@@ -53,14 +53,11 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 
 	private boolean closed = false;
 	private boolean handshakeComplete = false;
-	
-	
+		
 	public NetworkProxyServerConnection(Socket socket) {
 		super();
 		this.socket = socket;
-		// TODO aggiungere una configurazione per permettere di usare link diversi e non solo quello di default.
-		this.link = Link.createInstance(socket.toString());
-		this.link.addRawDataListener(this);
+		this.link = null;
 	}
 
 	@Override
@@ -79,19 +76,24 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 					inputLine = bufferedReader.readLine();
 				}
             }
-			int dataReceived = bufferedReader.read();
-			while (dataReceived != -1) {
-				String data = "" + (char)dataReceived;
-				// System.out.print(data);
-				writeSerial(data);
-				dataReceived = bufferedReader.read();
-            }			
+			if(!closed) {
+				int dataReceived = bufferedReader.read();
+				while (dataReceived != -1) {
+					String data = "" + (char)dataReceived;
+					// System.out.print(data);
+					writeSerial(data);
+					dataReceived = bufferedReader.read();
+	            }			
+			}
 		} catch (IOException e) {
 		}
 		finally {
 			logger.info(socket.getRemoteSocketAddress().toString() + " connection closed.");
 			closed = true;
-			Link.destroyInstance(socket.toString());
+			if(link != null) {
+				link.removeRawDataListener(this);
+				NetworkProxyServer.disconnect(link.getName());
+			}
 			try {
 				socket.close();
 			} catch (IOException socketClosingExceptionTry) {
@@ -142,15 +144,26 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 	}
 
 	private List<String> getPortList() {
-		return link.getPortList();
+		// TODO aggiungere una configurazione per permettere di usare link diversi e non solo quello di default.
+		return Link.getDefaultInstance().getPortList();
 	}
 
 	private boolean writeSerial(String message) {
-		return link.writeSerial(message);
+		boolean retvalue = false;
+		synchronized (link) {
+			retvalue = link.writeSerial(message);
+		}
+		return retvalue;
 	}
 
 	private boolean connect(String portName, int baudRate) {
-		return link.connect(portName, baudRate);
+		
+		link = NetworkProxyServer.connect(portName, baudRate);
+		boolean isConnected = link.isConnected();
+		if(isConnected) {
+			link.addRawDataListener(this);
+		}
+		return isConnected;
 	}
 
 	@Override

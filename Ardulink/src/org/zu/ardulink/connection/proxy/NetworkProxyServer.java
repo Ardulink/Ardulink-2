@@ -21,6 +21,11 @@ package org.zu.ardulink.connection.proxy;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+
+import org.zu.ardulink.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -32,7 +37,9 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 	
     private static boolean listening = true;
     public static final int DEFAULT_LISTENING_PORT = 4478;
-
+    
+    private static Map<String, Integer> linkUsers = new HashMap<String, Integer>();
+        
 	public static void main(String[] args) {
 	    if (!validateArgs(args)) {
 	    	System.out.println("Ardulink Network Proxy Server");
@@ -110,5 +117,67 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 	public static void stop() {
 		listening = false;
 	}
+
+	public static Link connect(String portName, int baudRate) {
 		
+		Link link = Link.getInstance(portName);
+		if(link == null) {
+			link = Link.createInstance(portName);
+		}
+		if(!link.isConnected()) {
+			link.connect(portName, baudRate);
+		}
+		addUserToLink(portName);
+		return link;
+	}
+
+	public static boolean disconnect(String portName) {
+		boolean retvalue = false;
+		if(!Link.getDefaultInstance().getName().equals(portName)) {
+			Link link = Link.getInstance(portName);
+			if(link != null) {
+				int currentUsers = removeUserFromLink(portName);
+				if(currentUsers == 0) {
+					retvalue = link.disconnect();
+					Link.destroyInstance(portName);
+				}
+			} else {
+				removeUserFromLink(portName);
+			}
+		}
+		return retvalue;
+	}
+
+	private static int addUserToLink(String portName) {
+		int retvalue = 0;
+		synchronized (linkUsers) {
+			Integer users = linkUsers.get(portName);
+			if(users == null) {
+				retvalue = 1;
+			} else {
+				retvalue = users + 1;
+			}
+			linkUsers.put(portName, retvalue);
+		}
+		return retvalue;
+	}
+
+	private static int removeUserFromLink(String portName) {
+		int retvalue = 0;
+		synchronized (linkUsers) {
+			Integer users = linkUsers.get(portName);
+			if(users == null) {
+				retvalue = 0;
+			} else {
+				retvalue = users - 1;
+				if(retvalue < 0) {
+					retvalue = 0;
+				}
+			}
+			linkUsers.put(portName, retvalue);
+		}
+		return retvalue;
+	}
+
+	
 }
