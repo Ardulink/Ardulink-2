@@ -8,6 +8,8 @@
 		<mkdir dir="buildExamples/SimpleSmartCarDriver/classes" />
 		<mkdir dir="buildExamples/JoystickSmartCarDriver" />
 		<mkdir dir="buildExamples/JoystickSmartCarDriver/classes" />
+		<mkdir dir="buildExamples/DataReceiver" />
+		<mkdir dir="buildExamples/DataReceiver/classes" />
 		<mkdir dir="dist" />
 	</target>
 
@@ -21,12 +23,16 @@
 		<copy todir="buildExamples/JoystickSmartCarDriver/classes">
 			<fileset dir="../JoystickSmartCarDriver/bin"/>
 		</copy>
+		<copy todir="buildExamples/DataReceiver/classes">
+			<fileset dir="../DataReceiver/bin"/>
+		</copy>
 	</target>
 
 	<target name="compress" depends="copy">
 		<jar destfile="build/ardulink.jar" basedir="build/classes" />
 		<jar destfile="buildExamples/simplesmartcardriver.jar" basedir="buildExamples/SimpleSmartCarDriver/classes" />
 		<jar destfile="buildExamples/joysticksmartcardriver.jar" basedir="buildExamples/JoystickSmartCarDriver/classes" />
+		<jar destfile="buildExamples/datareceiver.jar" basedir="buildExamples/DataReceiver/classes" />
 	</target>
 
 	<target name="pack" depends="compress">
@@ -45,6 +51,11 @@
 		<mkdir dir="dist/pack/ardulink/examples/JoystickSmartCarDriver/src" />
 		<copy todir="dist/pack/ardulink/examples/JoystickSmartCarDriver/src">
 			<fileset dir="../JoystickSmartCarDriver/src"/>
+		</copy>
+		<copy todir="dist/pack/ardulink/examples/DataReceiver" file="buildExamples/datareceiver.jar" />
+		<mkdir dir="dist/pack/ardulink/examples/DataReceiver/src" />
+		<copy todir="dist/pack/ardulink/examples/DataReceiver/src">
+			<fileset dir="../DataReceiver/src"/>
 		</copy>
 		<zip destfile="dist/ardulink.zip" basedir="dist/pack" />
 	</target>
