@@ -135,11 +135,14 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 			}
 			if(connected) {
 				printWriter.println(OK);
+				printWriter.flush();
 				handshakeComplete = true;
+				link.addRawDataListener(this);
 			} else {
 				printWriter.println(KO);
+				printWriter.flush();
 			}
-			printWriter.flush();
+			
 		}
 	}
 
@@ -160,9 +163,6 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 		
 		link = NetworkProxyServer.connect(portName, baudRate);
 		boolean isConnected = link.isConnected();
-		if(isConnected) {
-			link.addRawDataListener(this);
-		}
 		return isConnected;
 	}
 
