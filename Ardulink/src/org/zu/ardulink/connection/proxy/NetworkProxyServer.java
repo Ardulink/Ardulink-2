@@ -122,6 +122,7 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 		
 		Link link = Link.getInstance(portName);
 		if(link == null) {
+			// TODO aggiungere qui la logica per fare link non solo di default
 			link = Link.createInstance(portName);
 		}
 		if(!link.isConnected()) {

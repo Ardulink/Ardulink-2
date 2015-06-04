@@ -96,6 +96,21 @@ void loop() {
           } else if(power.toInt() == 0) {
             digitalWrite(pin.toInt(), LOW);
           }
+      } else if(inputString.substring(6,10) == "tone") { // tone request (this is general code you can reuse)
+          int firstSlashPosition = inputString.indexOf('/', 11 );
+          int secondSlashPosition = inputString.indexOf('/', firstSlashPosition );
+          int pin = inputString.substring(11,firstSlashPosition).toInt();
+          int frequency = inputString.substring(firstSlashPosition + 1, secondSlashPosition).toInt();
+          int duration = inputString.substring(secondSlashPosition + 1).toInt();
+          if(duration == -1) {
+          	tone(pin, frequency);
+          } else {
+          	tone(pin, frequency, duration);
+          }
+      } else if(inputString.substring(6,10) == "notn") { // no tone request (this is general code you can reuse)
+          int firstSlashPosition = inputString.indexOf('/', 11 );
+          int pin = inputString.substring(11,firstSlashPosition).toInt();
+          noTone(pin);
       } else if(inputString.substring(6,10) == "srld") { // Start Listen Digital Pin (this is general code you can reuse)
           String pin = inputString.substring(11);
           digitalPinListening[pin.toInt()] = true;

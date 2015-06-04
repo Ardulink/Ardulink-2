@@ -391,6 +391,39 @@ public class Link {
 	}
 
 	/**
+	 * Call protocol sendToneMessage with this Link (and without a call back implementation to manage reply message)
+	 * This method request arduino to perform a tone function call.
+	 * @param pin
+	 * @param frequency
+	 * @return the MessageInfo class
+	 */
+	public MessageInfo sendToneMessage(int pin, int frequency) {
+		return protocol.sendToneMessage(this, pin, frequency);
+	}
+
+	/**
+	 * Call protocol sendToneMessage with this Link (and without a call back implementation to manage reply message)
+	 * This method request arduino to perform a tone function call.
+	 * @param pin
+	 * @param frequency
+	 * @param duration
+	 * @return the MessageInfo class
+	 */
+	public MessageInfo sendToneMessage(int pin, int frequency, int duration) {
+		return protocol.sendToneMessage(this, pin, frequency, duration);
+	}
+
+	/**
+	 * Call protocol sendNoToneMessage with this Link (and without a call back implementation to manage reply message)
+	 * This method request arduino to perform a noTone function call.
+	 * @param pin
+	 * @return the MessageInfo class
+	 */
+	public MessageInfo sendNoToneMessage(int pin) {
+		return protocol.sendNoToneMessage(this, pin);
+	}
+
+	/**
 	 * Call protocol sendCustomMessage with this Link (and without a call back implementation to manage reply message)
 	 * Custom message should be used to request specific actions in custom sketches
 	 * @param message
@@ -439,6 +472,45 @@ public class Link {
 	 */
 	public MessageInfo sendPowerPinSwitch(int pin, int power, ReplyMessageCallback callback) {
 		return protocol.sendPowerPinSwitch(this, pin, power, callback);
+	}
+	
+	/**
+	 * Call protocol sendToneMessage with this Link
+	 * This method request arduino to perform a tone function call.
+	 * Arduino should send a reply message back. You can manage this callback with a specific implementation. 
+	 * @param pin
+	 * @param frequency
+	 * @param callback
+	 * @return the MessageInfo class
+	 */
+	public MessageInfo sendToneMessage(int pin, int frequency, ReplyMessageCallback callback) {
+		return protocol.sendToneMessage(this, pin, frequency, callback);
+	}
+
+	/**
+	 * Call protocol sendToneMessage with this Link
+	 * This method request arduino to perform a tone function call.
+	 * Arduino should send a reply message back. You can manage this callback with a specific implementation. 
+	 * @param pin
+	 * @param frequency
+	 * @param duration
+	 * @param callback
+	 * @return the MessageInfo class
+	 */
+	public MessageInfo sendToneMessage(int pin, int frequency, int duration, ReplyMessageCallback callback) {
+		return protocol.sendToneMessage(this, pin, frequency, duration,	callback);
+	}
+
+	/**
+	 * Call protocol sendNoToneMessage with this Link
+	 * This method request arduino to perform a noTone function call.
+	 * Arduino should send a reply message back. You can manage this callback with a specific implementation. 
+	 * @param pin
+	 * @param callback
+	 * @return the MessageInfo class
+	 */
+	public MessageInfo sendNoToneMessage(int pin, ReplyMessageCallback callback) {
+		return protocol.sendNoToneMessage(this, pin, callback);
 	}
 
 	/**

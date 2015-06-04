@@ -101,6 +101,21 @@ public class SimpleBinaryProtocol implements IProtocol {
 	}
 
 	@Override
+	public MessageInfo sendToneMessage(Link link, int pin, int frequency) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public MessageInfo sendToneMessage(Link link, int pin, int frequency, int duration) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public MessageInfo sendNoToneMessage(Link link, int pin) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
 	public MessageInfo sendCustomMessage(Link link, String message) {
 		throw new UnsupportedOperationException();
 	}
@@ -120,6 +135,21 @@ public class SimpleBinaryProtocol implements IProtocol {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public MessageInfo sendToneMessage(Link link, int pin, int frequency, ReplyMessageCallback callback) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public MessageInfo sendToneMessage(Link link, int pin, int frequency, int duration, ReplyMessageCallback callback) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public MessageInfo sendNoToneMessage(Link link, int pin, ReplyMessageCallback callback) {
+		throw new UnsupportedOperationException();
+	}
+	
 	@Override
 	public MessageInfo sendCustomMessage(Link link, String message, ReplyMessageCallback callback) {
 		throw new UnsupportedOperationException();

@@ -88,6 +88,33 @@ public interface IProtocol {
 	public MessageInfo sendPowerPinSwitch(Link link, int pin, int power);
 	
 	/**
+	 * Sends the request to generate a tone (square wave)
+	 * @param link
+	 * @param pin
+	 * @param frequency
+	 * @return a MessageInfo containing the success or failure (for comunication)
+	 */
+	public MessageInfo sendToneMessage(Link link, int pin, int frequency);
+
+	/**
+	 * Sends the request to generate a tone (square wave)
+	 * @param link
+	 * @param pin
+	 * @param frequency
+	 * @param duration
+	 * @return a MessageInfo containing the success or failure (for comunication)
+	 */
+	public MessageInfo sendToneMessage(Link link, int pin, int frequency, int duration);
+
+	/**
+	 * Sends the request to stop the generation of a tone (square wave)
+	 * @param link
+	 * @param pin
+	 * @return a MessageInfo containing the success or failure (for comunication)
+	 */
+	public MessageInfo sendNoToneMessage(Link link, int pin);
+
+	/**
 	 * Sends a custom message used for specific actions in Arduino sketches
 	 * @param link
 	 * @param message
@@ -131,6 +158,36 @@ public interface IProtocol {
 	public MessageInfo sendPowerPinSwitch(Link link, int pin, int power, ReplyMessageCallback callback);
 
 	/**
+	 * Sends the request to generate a tone (square wave)
+	 * @param link
+	 * @param pin
+	 * @param frequency
+	 * @param callback
+	 * @return a MessageInfo containing the success or failure (for comunication)
+	 */
+	public MessageInfo sendToneMessage(Link link, int pin, int frequency, ReplyMessageCallback callback);
+
+	/**
+	 * Sends the request to generate a tone (square wave)
+	 * @param link
+	 * @param pin
+	 * @param frequency
+	 * @param duration
+	 * @param callback
+	 * @return a MessageInfo containing the success or failure (for comunication)
+	 */
+	public MessageInfo sendToneMessage(Link link, int pin, int frequency, int duration, ReplyMessageCallback callback);
+
+	/**
+	 * Sends the request to stop the generation of a tone (square wave)
+	 * @param link
+	 * @param pin
+	 * @param callback
+	 * @return a MessageInfo containing the success or failure (for comunication)
+	 */
+	public MessageInfo sendNoToneMessage(Link link, int pin, ReplyMessageCallback callback);
+
+	/**
 	 * Sends a custom message used for specific actions in Arduino sketches
 	 * @param link
 	 * @param message
@@ -138,7 +195,7 @@ public interface IProtocol {
 	 * @return a MessageInfo containing the success or failure (for comunication)
 	 */
 	public MessageInfo sendCustomMessage(Link link, String message, ReplyMessageCallback callback);
-
+	
 	/**
 	 * When a message arrives from Arduino, ConnectionContactImpl and Link classes call this method that parses message and
 	 * returns a specific event. If message arrived is a reply message then null is returned and a callback action is taken.

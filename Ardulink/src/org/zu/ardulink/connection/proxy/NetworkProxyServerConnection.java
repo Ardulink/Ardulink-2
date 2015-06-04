@@ -148,6 +148,7 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 
 	private List<String> getPortList() {
 		// TODO aggiungere una configurazione per permettere di usare link diversi e non solo quello di default.
+		// delegare al NetworkProxyServer come per la connect
 		return Link.getDefaultInstance().getPortList();
 	}
 

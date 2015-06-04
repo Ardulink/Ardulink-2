@@ -42,6 +42,8 @@ import org.zu.ardulink.event.IncomingMessageEvent;
  * kprs - Key Pressed<br/>
  * ppin - Power Pin Intensity<br/>
  * ppsw - Power Pin Switch<br/>
+ * tone - Tone square wave start<br/>
+ * notn - Tone square wave stop<br/>
  * srld - Start Listening Digital Pin<br/>
  * spld - Stop Listening Digital Pin<br/>
  * srla - Start Listening Analog Pin<br/>
@@ -70,6 +72,9 @@ import org.zu.ardulink.event.IncomingMessageEvent;
  * alp://spld/&lt;pin&gt;?id=&lt;message id&gt;<br/>
  * alp://srla/&lt;pin&gt;?id=&lt;message id&gt;<br/>
  * alp://spla/&lt;pin&gt;?id=&lt;message id&gt;<br/>
+ * alp://tone/&lt;pin&gt;/&lt;frequency&gt;?id=&lt;message id&gt;<br/>
+ * alp://tone/&lt;pin&gt;/&lt;frequency&gt;/&lt;duration&gt;?id=&lt;message id&gt;<br/>
+ * alp://notn/&lt;pin&gt;?id=&lt;message id&gt;<br/>
  * alp://cust/&lt;a custom message&gt;?id=&lt;message id&gt;<br/>
  * alp://ared/&lt;pin&gt;/&lt;intensity&gt;                      intensity:0-1023<br/>
  * alp://dred/&lt;pin&gt;/&lt;power&gt;                          power:0-1<br/>
@@ -89,6 +94,8 @@ public class ALProtocol implements IProtocol {
 	private static long nextId = 1;
 	
 	private Map<Long, MessageInfo> messageInfos = new Hashtable<Long, MessageInfo>();
+	
+	public static final int NO_DURATION = -1;
 
 	@Override
 	public String getProtocolName() {
@@ -108,6 +115,21 @@ public class ALProtocol implements IProtocol {
 	@Override
 	public MessageInfo sendPowerPinSwitch(Link link, int pin, int power) {
 		return sendPowerPinSwitch(link, pin, power, null);
+	}
+	
+	@Override
+	public MessageInfo sendToneMessage(Link link, int pin, int frequency) {
+		return sendToneMessage(link, pin, frequency, null);
+	}
+
+	@Override
+	public MessageInfo sendToneMessage(Link link, int pin, int frequency, int duration) {
+		return sendToneMessage(link, pin, frequency, duration, null);
+	}
+
+	@Override
+	public MessageInfo sendNoToneMessage(Link link, int pin) {
+		return sendNoToneMessage(link, pin, null);
 	}
 
 	@Override
@@ -233,6 +255,89 @@ public class ALProtocol implements IProtocol {
 				}
 			}
 		}
+		return retvalue;
+	}
+
+	@Override
+	public MessageInfo sendToneMessage(Link link, int pin, int frequency, ReplyMessageCallback callback) {
+		return sendToneMessage(link, pin, frequency, NO_DURATION, callback);
+	}
+
+	@Override
+	public MessageInfo sendToneMessage(Link link, int pin, int frequency, int duration, ReplyMessageCallback callback) {
+		MessageInfo retvalue = new MessageInfo();
+		synchronized(this) {
+			if(link.isConnected()) {
+				
+				long currentId = nextId++;
+				retvalue.setMessageID(currentId);
+				if(callback != null) {
+					retvalue.setCallback(callback);
+					messageInfos.put(currentId, retvalue);
+				}
+				
+				StringBuilder builder = new StringBuilder("alp://tone/");
+				builder.append(pin);
+				builder.append("/");
+				builder.append(frequency);
+				builder.append("/");
+				builder.append(duration);
+				if(callback != null) {
+					builder.append("?id=");
+					builder.append(currentId);
+				}
+				builder.append(OUTGOING_MESSAGE_DIVIDER);
+				
+				String mesg = builder.toString();
+				logger.fine(mesg);
+				
+				boolean result = link.writeSerial(mesg);
+				retvalue.setSent(result);
+				retvalue.setMessageSent(mesg);
+
+				if(!result) {
+					messageInfos.remove(currentId);
+				}
+			}
+		}
+		
+		return retvalue;	
+	}
+
+	@Override
+	public MessageInfo sendNoToneMessage(Link link, int pin, ReplyMessageCallback callback) {
+		MessageInfo retvalue = new MessageInfo();
+		synchronized(this) {
+			if(link.isConnected()) {
+				
+				long currentId = nextId++;
+				retvalue.setMessageID(currentId);
+				if(callback != null) {
+					retvalue.setCallback(callback);
+					messageInfos.put(currentId, retvalue);
+				}
+				
+				StringBuilder builder = new StringBuilder("alp://notn/");
+				builder.append(pin);
+				if(callback != null) {
+					builder.append("?id=");
+					builder.append(currentId);
+				}
+				builder.append(OUTGOING_MESSAGE_DIVIDER);
+				
+				String mesg = builder.toString();
+				logger.fine(mesg);
+				
+				boolean result = link.writeSerial(mesg);
+				retvalue.setSent(result);
+				retvalue.setMessageSent(mesg);
+
+				if(!result) {
+					messageInfos.remove(currentId);
+				}
+			}
+		}
+		
 		return retvalue;
 	}
 
