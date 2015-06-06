@@ -1,10 +1,17 @@
+Version 0.5.0.20150606 Life Multiplexer
+
+- Improved Network Proxy Server broadcast capabilities, now it's possible broadcast events to many clients connected to the same Arduino board
+- Added tone and no tone messages to ardulink protocol interface
+- Added tone and no tone messages to default ardulink protocol implementation ALProtocol
+- Added ToneController SWING component
+- Added a ToneController to Ardulink Console
+
 Version 0.4.2.20150312 Top Gun
 
 - Added Joystick SWING component example code to drive a Smart Car
 - Added Windows 32/64 bit support for bluetooth connection
 - Added Joystick Smart Car Driver example
 - Added Joystick id to PositionEvent
-
 
 Version 0.4.2.20150304 Top Gun
 
