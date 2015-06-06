@@ -98,7 +98,7 @@ void loop() {
           }
       } else if(inputString.substring(6,10) == "tone") { // tone request (this is general code you can reuse)
           int firstSlashPosition = inputString.indexOf('/', 11 );
-          int secondSlashPosition = inputString.indexOf('/', firstSlashPosition );
+          int secondSlashPosition = inputString.indexOf('/', firstSlashPosition + 1 );
           int pin = inputString.substring(11,firstSlashPosition).toInt();
           int frequency = inputString.substring(firstSlashPosition + 1, secondSlashPosition).toInt();
           int duration = inputString.substring(secondSlashPosition + 1).toInt();

@@ -612,6 +612,13 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		linkables.add(modifiableToggleSignalButton3);
 		customPanel.add(modifiableToggleSignalButton3);
 		
+		JPanel tonePanel = new JPanel();
+		tabbedPane.addTab("Tone Panel", null, tonePanel, null);
+		
+		ToneController toneController = new ToneController();
+		tonePanel.add(toneController);
+		linkables.add(toneController);
+		
 		JPanel rgbPanel = new JPanel();
 		tabbedPane.addTab("RGB Panel", null, rgbPanel, null);
 		

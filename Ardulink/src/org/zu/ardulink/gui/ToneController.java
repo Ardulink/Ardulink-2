@@ -26,6 +26,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.BoxLayout;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -36,7 +37,14 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 
 import org.zu.ardulink.Link;
+import org.zu.ardulink.gui.facility.UtilityModel;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
+
+import javax.swing.JComboBox;
+
+import java.awt.Font;
+import java.awt.FlowLayout;
+import java.awt.Dimension;
 
 public class ToneController extends JPanel implements Linkable {
 
@@ -57,6 +65,9 @@ public class ToneController extends JPanel implements Linkable {
 	private String toneButtonOnText = "On";
 	private String toneButtonOffText = "Off";
 	private JCheckBox durationCheckBox;
+	private JComboBox pinComboBox;
+	private JLabel pinLabel;
+	private JPanel pinPanel;
 	
 	/**
 	 * Create the valuePanelOff.
@@ -68,28 +79,44 @@ public class ToneController extends JPanel implements Linkable {
 		add(configPanel, BorderLayout.NORTH);
 		configPanel.setLayout(new BoxLayout(configPanel, BoxLayout.Y_AXIS));
 		
+		pinPanel = new JPanel();
+		FlowLayout flowLayout = (FlowLayout) pinPanel.getLayout();
+		flowLayout.setAlignment(FlowLayout.LEFT);
+		configPanel.add(pinPanel);
+		
+		pinLabel = new JLabel("Pin:");
+		pinPanel.add(pinLabel);
+		pinLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
+		
+		pinComboBox = new JComboBox();
+		pinComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(0, 40)));
+		pinPanel.add(pinComboBox);
+		
 		frequencyPanel = new JPanel();
 		configPanel.add(frequencyPanel);
 		frequencyPanel.setLayout(new BoxLayout(frequencyPanel, BoxLayout.X_AXIS));
 		
-		frequencyLabel = new JLabel("Frequency:");
+		frequencyLabel = new JLabel("Frequency (Hz):");
+		frequencyLabel.setToolTipText("the frequency of the tone in hertz");
 		frequencyLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 		frequencyPanel.add(frequencyLabel);
 		
 		frequencySpinner = new JSpinner();
-		frequencySpinner.setModel(new SpinnerNumberModel(new Integer(0), new Integer(0), null, new Integer(1)));
+		frequencySpinner.setModel(new SpinnerNumberModel(31, 1, 65535, 1));
 		frequencyPanel.add(frequencySpinner);
 
 		durationPanel = new JPanel();
 		configPanel.add(durationPanel);
 		durationPanel.setLayout(new BoxLayout(durationPanel, BoxLayout.X_AXIS));
 		
-		durationLabel = new JLabel("Duration:");
+		durationLabel = new JLabel("Duration (ms):");
+		durationLabel.setToolTipText("the duration of the tone in milliseconds (optional)");
 		durationLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 		durationPanel.add(durationLabel);
 		
 		durationSpinner = new JSpinner();
-		durationSpinner.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
+		durationSpinner.setPreferredSize(new Dimension(105, 28));
+		durationSpinner.setModel(new SpinnerNumberModel(new Integer(1000), new Integer(1), null, new Integer(1)));
 		durationPanel.add(durationSpinner);
 		
 		durationCheckBox = new JCheckBox("Duration enabled");
@@ -111,15 +138,21 @@ public class ToneController extends JPanel implements Linkable {
 		toneButton = new JToggleButton("Off");
 		toneButton.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
+				int pin = Integer.parseInt((String)pinComboBox.getSelectedItem());
 				if(e.getStateChange() == ItemEvent.SELECTED) {
-//					link.sendToneMessage(pin, frequency)(message, replyMessageCallback);
-					// TODO ggiungere una combobox per i pin
-// TODO inviare il messaggio corretto					
+					
+					if(durationCheckBox.isSelected()) {
+						link.sendToneMessage(pin, (Integer)frequencySpinner.getValue(), (Integer)durationSpinner.getValue());
+					} else {
+						link.sendToneMessage(pin, (Integer)frequencySpinner.getValue());
+					}
+					
 					updateToneButtonText();
+					
 				} else if(e.getStateChange() == ItemEvent.DESELECTED) {
-//					String message = getId() + "/" + getValueOff();
-//					link.sendCustomMessage(message, replyMessageCallback);
 
+					link.sendNoToneMessage(pin);
+					
 					updateToneButtonText();
 				}
 			}
