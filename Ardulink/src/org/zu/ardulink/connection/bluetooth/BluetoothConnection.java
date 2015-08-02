@@ -37,6 +37,7 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;
 import javax.microedition.io.StreamConnectionNotifier;
 
+import org.zu.ardulink.connection.Connection;
 import org.zu.ardulink.connection.serial.AbstractSerialConnection;
 
 /**
@@ -46,7 +47,7 @@ import org.zu.ardulink.connection.serial.AbstractSerialConnection;
  * 
  * [adsense]
  */
-public class BluetoothConnection extends AbstractSerialConnection {
+public class BluetoothConnection extends AbstractSerialConnection implements Connection {
 
 	private Object lock = new Object();
 	private ArdulinkDiscoveryListener listener = new ArdulinkDiscoveryListener(this, lock);
@@ -60,6 +61,11 @@ public class BluetoothConnection extends AbstractSerialConnection {
 	//read string from spp client
 	private InputStream inputStream = null;
 	private OutputStream outputStream = null;
+	
+	
+	public BluetoothConnection() {
+		super();
+	}
 
 	@Override
 	public List<String> getPortList() {
