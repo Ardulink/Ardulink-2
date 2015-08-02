@@ -108,7 +108,7 @@ public class ConnectionContactImpl implements ConnectionContact {
 		super();
 		this.link = link;
 	}
-
+	
 	/**
 	 * Register an AnalogReadChangeListener to receive events about analog pin change state.
 	 * With this method ardulink is able to receive information from arduino board

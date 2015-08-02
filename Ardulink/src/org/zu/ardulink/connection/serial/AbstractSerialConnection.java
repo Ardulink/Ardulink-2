@@ -136,9 +136,25 @@ public abstract class AbstractSerialConnection implements Connection {
 	 * The first method to use should be {@link #setConnectionContact(ConnectionContact)}
 	 */
 	public AbstractSerialConnection() {
-		this(null);
+		this((ConnectionContact)null);
 	}
 
+	/**
+	 * Just as (@link {@link #AbstractSerialConnection(int, ConnectionContact, int)}, but with null contact.
+	 * The first method to use should be {@link #setConnectionContact(ConnectionContact)}
+	 */
+	public AbstractSerialConnection(String id, int divider) {
+		this(id, null, divider);
+	}
+
+	/**
+	 * Just as (@link {@link #AbstractSerialConnection(int, ConnectionContact, int)}, but with null contact and default divider.
+	 * The first method to use should be {@link #setConnectionContact(ConnectionContact)}
+	 */
+	public AbstractSerialConnection(String id) {
+		this(id, null, 255);
+	}
+	
 	/**
 	 * This method is used to get a list of all the available Serial ports
 	 * (note: only Serial ports are considered). Any one of the elements

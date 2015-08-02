@@ -1,12 +1,8 @@
 package org.zu.ardulink.connection.serial;
 
 import gnu.io.CommPortIdentifier;
-import gnu.io.NoSuchPortException;
-import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
-import gnu.io.UnsupportedCommOperationException;
 
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
@@ -89,6 +85,28 @@ public class SerialConnection extends AbstractSerialConnection implements Connec
 	 */
 	public SerialConnection(ConnectionContact contact) {
 		super(contact);
+	}
+
+	
+	/**
+	 * See super constructor
+	 */
+	public SerialConnection() {
+		super();
+	}
+
+	/**
+	 * See super constructor
+	 */
+	public SerialConnection(String id, int divider) {
+		super(id, divider);
+	}
+
+	/**
+	 * See super constructor
+	 */
+	public SerialConnection(String id) {
+		super(id);
 	}
 
 	/**
