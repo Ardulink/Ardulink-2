@@ -4,7 +4,7 @@
 	<artifactId>Ardulink</artifactId>
 
 	<parent>
-		<groupId>Ardulink</groupId>
+		<groupId>com.github.ardulink</groupId>
 		<artifactId>parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
