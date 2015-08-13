@@ -106,8 +106,12 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					
-					UIManager.setLookAndFeel(NimbusLookAndFeel.class.getCanonicalName());
+					for (LookAndFeelInfo laf : UIManager
+							.getInstalledLookAndFeels()) {
+						if ("Nimbus".equals(laf.getName())) {
+							UIManager.setLookAndFeel(laf.getClassName());
+						}
+					}
 					Console frame = new Console();					
 					frame.setVisible(true);					
 				} catch (Exception e) {

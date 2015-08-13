@@ -41,21 +41,17 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 	private static final long serialVersionUID = -7897193872896320730L;
 
 	private final JPanel contentPanel = new JPanel();
-	private PortListCallbackImpl implementation = null;
-	private JButton cancelButton = null;
-	private JProgressBar progressBar = null;
+	private PortListCallbackImpl implementation;
+	private JButton cancelButton;
+	private JProgressBar progressBar;
 
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		try {
-			PortListCallbackDialog dialog = new PortListCallbackDialog(new DefaultComboBoxModel());
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		PortListCallbackDialog dialog = new PortListCallbackDialog(new DefaultComboBoxModel());
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		dialog.setVisible(true);
 	}
 
 	/**

@@ -34,6 +34,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
 import org.zu.ardulink.Link;
@@ -43,9 +44,9 @@ import org.zu.ardulink.event.DisconnectionEvent;
 import org.zu.ardulink.gui.customcomponents.SignalButton;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
-import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
-
 public class SimpleSmartCarDriver extends JFrame implements ConnectionListener, Linkable {
+
+	private static final long serialVersionUID = 6065022178316507177L;
 
 	private JPanel contentPane;
 	private Link link = null;
@@ -77,7 +78,11 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener, 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					UIManager.setLookAndFeel(NimbusLookAndFeel.class.getCanonicalName());
+					for (LookAndFeelInfo laf : UIManager.getInstalledLookAndFeels()) {
+						if ("Nimbus".equals(laf.getName())) {
+							UIManager.setLookAndFeel(laf.getClassName());
+						}
+					}
 					SimpleSmartCarDriver frame = new SimpleSmartCarDriver();
 					frame.setVisible(true);
 				} catch (Exception e) {
