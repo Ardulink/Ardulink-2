@@ -42,6 +42,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -52,13 +53,10 @@ import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DisconnectionEvent;
 import org.zu.ardulink.gui.customcomponents.ModifiableSignalButton;
 import org.zu.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
-import org.zu.ardulink.gui.customcomponents.joystick.Joystick;
 import org.zu.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.zu.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.zu.ardulink.gui.digistump.DigisparkConnectionPanel;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
-
-import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 
 /**
  * [ardulinktitle] [ardulinkversion]

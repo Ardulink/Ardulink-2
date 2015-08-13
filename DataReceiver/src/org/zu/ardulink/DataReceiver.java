@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.zu.ardulink;
 
+import static java.lang.String.format;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +47,18 @@ public class DataReceiver {
 
 	@Option(name = "-remote", usage = "Host and port of a remote arduino")
 	private String remote;
+
+	@Option(name = "-d", aliases = "--digital", usage = "Digital pins to listen to")
+	private int[] digitals = new int[] { 2 };
+
+	@Option(name = "-a", aliases = "--analog", usage = "Analog pins to listen to")
+	private int[] analogs = new int[0];
+
+	@Option(name = "-msga", aliases = "--analogMessage", usage = "Message format for analog pins")
+	private String msgAnalog = "PIN state changed. Analog PIN: %s Value: %s";
+
+	@Option(name = "-msgd", aliases = "--digitalMessage", usage = "Message format for digital pins")
+	private String msgDigital = "PIN state changed. Digital PIN: %s Value: %s";
 
 	private Link link;
 
@@ -83,18 +97,20 @@ public class DataReceiver {
 				TimeUnit.SECONDS.sleep(sleepSecs);
 				System.out.println("Ok, now it should be ready...");
 
-				DigitalReadChangeListener drcl = digitalReadChangeListener(2);
-				link.addDigitalReadChangeListener(drcl);
-				link.addAnalogReadChangeListener(analogReadChangeListener(0));
-				link.addAnalogReadChangeListener(analogReadChangeListener(1));
+				link.addAnalogReadChangeListener(analogReadChangeListener());
+				for (int analog : analogs) {
+					link.startListenAnalogPin(analog);
+				}
+
+				link.addDigitalReadChangeListener(digitalReadChangeListener());
+				for (int digital : digitals) {
+					link.startListenDigitalPin(digital);
+				}
 
 				if (verbose) {
 					link.addRawDataListener(rawDataListener());
 				}
 
-				if (drcl.getPinListening() == DigitalReadChangeListener.ALL_PINS) {
-					link.startListenDigitalPin(2);
-				}
 			} catch (InterruptedException e1) {
 				throw new RuntimeException(e1);
 			}
@@ -105,20 +121,12 @@ public class DataReceiver {
 
 	private ConnectionListener connectionListener() {
 		return new ConnectionListener() {
-
-			/**
-			 * This method is called when a Link is connected to an Arduino
-			 */
 			@Override
 			public void connected(ConnectionEvent e) {
 				System.out.println("Connected! Port: " + e.getPortName()
 						+ " ID: " + e.getConnectionId());
 			}
 
-			/**
-			 * This method is called when a Link is disconnected from an
-			 * Arduino.
-			 */
 			@Override
 			public void disconnected(DisconnectionEvent e) {
 				System.out.println("Disconnected! ID: " + e.getConnectionId());
@@ -149,42 +157,34 @@ public class DataReceiver {
 		};
 	}
 
-	private DigitalReadChangeListener digitalReadChangeListener(final int pin) {
+	private DigitalReadChangeListener digitalReadChangeListener() {
 		return new DigitalReadChangeListener() {
 
-			/**
-			 * When a PIN change its state this method is invoked
-			 */
 			@Override
 			public void stateChanged(DigitalReadChangeEvent e) {
-				System.out.println("PIN state changed. PIN: " + e.getPin()
-						+ " Value: " + e.getValue());
+				System.out
+						.println(format(msgDigital, e.getPin(), e.getValue()));
 			}
 
-			/**
-			 * This method set which PIN this listener is listening for use
-			 * DigitalReadChangeListener.ALL_PINS for all PINs
-			 */
 			@Override
 			public int getPinListening() {
-				return pin;
+				return DigitalReadChangeListener.ALL_PINS;
 			}
 
 		};
 	}
 
-	private AnalogReadChangeListener analogReadChangeListener(final int pin) {
+	private AnalogReadChangeListener analogReadChangeListener() {
 		return new AnalogReadChangeListener() {
 
 			@Override
 			public void stateChanged(AnalogReadChangeEvent e) {
-				System.out.println("PIN state changed. PIN: " + e.getPin()
-						+ " Value: " + e.getValue());
+				System.out.println(format(msgAnalog, e.getPin(), e.getValue()));
 			}
 
 			@Override
 			public int getPinListening() {
-				return pin;
+				return AnalogReadChangeListener.ALL_PINS;
 			}
 		};
 	}
