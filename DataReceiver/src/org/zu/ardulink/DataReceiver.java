@@ -37,6 +37,7 @@ import org.zu.ardulink.event.DisconnectionEvent;
 
 public class DataReceiver {
 
+	@Option(name = "-delay", usage = "Do a n seconds delay after connecting")
 	private int sleepSecs = 10;
 
 	@Option(name = "-v", usage = "Be verbose")
