@@ -14,104 +14,116 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @author Luciano Zu
-*/
+ */
 
 package org.zu.ardulink.connection.proxy;
+
+import static java.lang.Math.max;
 
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.spi.SubCommand;
+import org.kohsuke.args4j.spi.SubCommandHandler;
+import org.kohsuke.args4j.spi.SubCommands;
 import org.zu.ardulink.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
- * [adsense]
+ *         [adsense]
  */
 public class NetworkProxyServer implements NetworkProxyMessages {
-	
-    private static boolean listening = true;
-    public static final int DEFAULT_LISTENING_PORT = 4478;
-    
-    private static Map<String, Integer> linkUsers = new HashMap<String, Integer>();
-        
-	public static void main(String[] args) {
-	    if (!validateArgs(args)) {
-	    	System.out.println("Ardulink Network Proxy Server");
-	    	System.out.println("Usage: networkproxyserver command listening_port_number");
-	    	System.out.println("command=start|stop");
-	        System.exit(1);
-	    }
 
-	    String command = args[0];
-	    int portNumber = DEFAULT_LISTENING_PORT;
-	    if(args.length > 1) {
-	    	portNumber = Integer.parseInt(args[1]);
-	    }
-	    
-	    if("stop".equals(command)) {
-	    	requestStop(portNumber);
-	    } else {
-	        
-		    try {
-		    	ServerSocket serverSocket = new ServerSocket(portNumber);
-		    	System.out.println("Ardulink Network Proxy Server running...");
-		    	while (listening) {
-		    		NetworkProxyServerConnection connection = new NetworkProxyServerConnection(serverSocket.accept());
-		    		Thread thread = new Thread(connection);
-		    		thread.start();
-		    		Thread.sleep(2000);
-		    	}
-		    } catch (Exception e) {
-		    	e.printStackTrace();
-		    	System.exit(-1);
-		    }
-		    System.out.println("Ardulink Network Proxy Server stops.");
-	    }
-        System.exit(0);
+	private interface Command {
+		void execute(int portNumber);
 	}
 
-	private static void requestStop(int portNumber) {
-		try {
-			Socket socket = new Socket("127.0.0.1", portNumber);
-			PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-			writer.println(STOP_SERVER_CMD);
-			writer.close();
-			socket.close();
-			System.out.println("Ardulink Network Proxy Server stop requested.");
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
+	public static class StartCommand implements Command {
 
-	private static boolean validateArgs(String[] args) {
-		boolean retvalue = true;
-		
-		if(args == null) { //should never happens
-			retvalue = false;
-		} else if(args.length < 1) {
-			retvalue = false;
-		} else if(args.length > 2) {
-			retvalue = false;
-		} else if(!(args[0].equals("start") || args[0].equals("stop"))) {
-	        System.err.println(args[0] + "is not \'start\' or \'stop\'");
-			retvalue = false;
-		} else if(args.length == 2) { // check if the sencond param is a number
+		@Override
+		public void execute(int portNumber) {
 			try {
-				Integer.parseInt(args[1]);
+				ServerSocket serverSocket = new ServerSocket(portNumber);
+				try {
+					System.out
+							.println("Ardulink Network Proxy Server running...");
+					while (listening) {
+						NetworkProxyServerConnection connection = new NetworkProxyServerConnection(
+								serverSocket.accept());
+						Thread thread = new Thread(connection);
+						thread.start();
+						TimeUnit.SECONDS.sleep(2);
+					}
+				} finally {
+					serverSocket.close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.exit(-1);
 			}
-			catch(NumberFormatException e) {
-				System.out.println(args[1] + "is not a number.");
-		        retvalue = false;
+			System.out.println("Ardulink Network Proxy Server stops.");
+		}
+
+	}
+
+	public static class StopCommand implements Command {
+
+		@Override
+		public void execute(int portNumber) {
+			try {
+				Socket socket = new Socket("127.0.0.1", portNumber);
+				PrintWriter writer = new PrintWriter(socket.getOutputStream(),
+						true);
+				writer.println(STOP_SERVER_CMD);
+				writer.close();
+				socket.close();
+				System.out
+						.println("Ardulink Network Proxy Server stop requested.");
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
-		
-		return retvalue;
+
+	}
+
+	private static boolean listening = true;
+	public static final int DEFAULT_LISTENING_PORT = 4478;
+
+	@Argument(required = true, usage = "command", handler = SubCommandHandler.class)
+	@SubCommands({ @SubCommand(name = "start", impl = StartCommand.class),
+			@SubCommand(name = "stop", impl = StopCommand.class) })
+	private Command command;
+
+	@Option(name = "-p", aliases = "--port", usage = "Local port to bind to")
+	private int portNumber = DEFAULT_LISTENING_PORT;
+
+	private static Map<String, Integer> linkUsers = new HashMap<String, Integer>();
+
+	public static void main(String[] args) {
+		new NetworkProxyServer().doMain(args);
+	}
+
+	private void doMain(String[] args) {
+		CmdLineParser cmdLineParser = new CmdLineParser(this);
+		try {
+			cmdLineParser.parseArgument(args);
+		} catch (CmdLineException e) {
+			System.err.println(e.getMessage());
+			cmdLineParser.printUsage(System.err);
+			return;
+		}
+		command.execute(portNumber);
 	}
 
 	public static void stop() {
@@ -119,13 +131,12 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 	}
 
 	public static Link connect(String portName, int baudRate) {
-		
 		Link link = Link.getInstance(portName);
-		if(link == null) {
+		if (link == null) {
 			// TODO aggiungere qui la logica per fare link non solo di default
 			link = Link.createInstance(portName);
 		}
-		if(!link.isConnected()) {
+		if (!link.isConnected()) {
 			link.connect(portName, baudRate);
 		}
 		addUserToLink(portName);
@@ -134,11 +145,11 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 
 	public static boolean disconnect(String portName) {
 		boolean retvalue = false;
-		if(!Link.getDefaultInstance().getName().equals(portName)) {
+		if (!Link.getDefaultInstance().getName().equals(portName)) {
 			Link link = Link.getInstance(portName);
-			if(link != null) {
+			if (link != null) {
 				int currentUsers = removeUserFromLink(portName);
-				if(currentUsers == 0) {
+				if (currentUsers == 0) {
 					retvalue = link.disconnect();
 					Link.destroyInstance(portName);
 				}
@@ -150,35 +161,21 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 	}
 
 	private static int addUserToLink(String portName) {
-		int retvalue = 0;
 		synchronized (linkUsers) {
 			Integer users = linkUsers.get(portName);
-			if(users == null) {
-				retvalue = 1;
-			} else {
-				retvalue = users + 1;
-			}
+			int retvalue = users == null ? 1 : users + 1;
 			linkUsers.put(portName, retvalue);
+			return retvalue;
 		}
-		return retvalue;
 	}
 
 	private static int removeUserFromLink(String portName) {
-		int retvalue = 0;
 		synchronized (linkUsers) {
 			Integer users = linkUsers.get(portName);
-			if(users == null) {
-				retvalue = 0;
-			} else {
-				retvalue = users - 1;
-				if(retvalue < 0) {
-					retvalue = 0;
-				}
-			}
+			int retvalue = users == null ? 0 : max(0, users - 1);
 			linkUsers.put(portName, retvalue);
+			return retvalue;
 		}
-		return retvalue;
 	}
 
-	
 }

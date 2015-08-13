@@ -14,129 +14,200 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @author Luciano Zu
-*/
+ */
 
 package org.zu.ardulink;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
 import org.zu.ardulink.connection.proxy.NetworkProxyConnection;
+import org.zu.ardulink.connection.proxy.NetworkProxyServer;
+import org.zu.ardulink.event.AnalogReadChangeEvent;
+import org.zu.ardulink.event.AnalogReadChangeListener;
 import org.zu.ardulink.event.ConnectionEvent;
 import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DigitalReadChangeEvent;
 import org.zu.ardulink.event.DigitalReadChangeListener;
 import org.zu.ardulink.event.DisconnectionEvent;
 
-public class DataReceiver implements DigitalReadChangeListener, RawDataListener, ConnectionListener {
-	
+public class DataReceiver {
+
+	@Option(name = "-delay", usage = "Do a n seconds delay after connecting")
+	private int sleepSecs = 10;
+
+	@Option(name = "-v", usage = "Be verbose")
+	private boolean verbose;
+
+	@Option(name = "-remote", usage = "Host and port of a remote arduino")
+	private String remote;
+
 	private Link link;
 
 	public static void main(String[] args) {
-		
-		try {
-			DataReceiver dataReceiver = new DataReceiver();
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
+		new DataReceiver().doMain(args);
 	}
-	
-	public DataReceiver() {
-		link = getLink();
+
+	private void doMain(String[] args) {
+		CmdLineParser cmdLineParser = new CmdLineParser(this);
+		try {
+			cmdLineParser.parseArgument(args);
+		} catch (CmdLineException e) {
+			System.err.println(e.getMessage());
+			cmdLineParser.printUsage(System.err);
+			return;
+		}
+		work();
+	}
+
+	private void work() {
+		link = createLink();
 		List<String> portList = link.getPortList();
-		if(portList != null && portList.size() > 0) {
-			
+		if (portList != null && !portList.isEmpty()) {
+
 			// Register this class as connection listener
-			link.addConnectionListener(this);
-			
+			link.addConnectionListener(connectionListener());
+
 			String port = portList.get(0);
 			System.out.println("Trying to connect to: " + port);
 			boolean connected = link.connect(port, 115200);
-			if(!connected) {
+			if (!connected) {
 				throw new RuntimeException("Connection failed!");
 			}
 			try {
 				System.out.println("Wait a while for Arduino boot");
-				Thread.sleep(10000); // Wait for a while just to Arduino reboot
+				TimeUnit.SECONDS.sleep(sleepSecs);
 				System.out.println("Ok, now it should be ready...");
-				link.addDigitalReadChangeListener(this);
-				link.addRawDataListener(this);
-				
-				// link.startListenDigitalPin(2); // Add this if getPinListening() returns DigitalReadChangeListener.ALL_PINS
+
+				DigitalReadChangeListener drcl = digitalReadChangeListener(2);
+				link.addDigitalReadChangeListener(drcl);
+				link.addAnalogReadChangeListener(analogReadChangeListener(0));
+				link.addAnalogReadChangeListener(analogReadChangeListener(1));
+
+				if (verbose) {
+					link.addRawDataListener(rawDataListener());
+				}
+
+				if (drcl.getPinListening() == DigitalReadChangeListener.ALL_PINS) {
+					link.startListenDigitalPin(2);
+				}
 			} catch (InterruptedException e1) {
-				throw new RuntimeException(e1.getCause());
-			} 
+				throw new RuntimeException(e1);
+			}
 		} else {
 			throw new RuntimeException("No port found!");
 		}
 	}
 
+	private ConnectionListener connectionListener() {
+		return new ConnectionListener() {
+
+			/**
+			 * This method is called when a Link is connected to an Arduino
+			 */
+			@Override
+			public void connected(ConnectionEvent e) {
+				System.out.println("Connected! Port: " + e.getPortName()
+						+ " ID: " + e.getConnectionId());
+			}
+
+			/**
+			 * This method is called when a Link is disconnected from an
+			 * Arduino.
+			 */
+			@Override
+			public void disconnected(DisconnectionEvent e) {
+				System.out.println("Disconnected! ID: " + e.getConnectionId());
+			}
+
+		};
+	}
+
+	private RawDataListener rawDataListener() {
+		return new RawDataListener() {
+
+			/**
+			 * All messages from Arduino are sent to this method in their raw
+			 * format
+			 */
+			@Override
+			public void parseInput(String id, int numBytes, int[] message) {
+
+				System.out.println("Message from: " + id);
+				StringBuilder builder = new StringBuilder(numBytes);
+				for (int i = 0; i < numBytes; i++) {
+					builder.append((char) message[i]);
+				}
+
+				System.out.println("Message: " + builder.toString());
+			}
+
+		};
+	}
+
+	private DigitalReadChangeListener digitalReadChangeListener(final int pin) {
+		return new DigitalReadChangeListener() {
+
+			/**
+			 * When a PIN change its state this method is invoked
+			 */
+			@Override
+			public void stateChanged(DigitalReadChangeEvent e) {
+				System.out.println("PIN state changed. PIN: " + e.getPin()
+						+ " Value: " + e.getValue());
+			}
+
+			/**
+			 * This method set which PIN this listener is listening for use
+			 * DigitalReadChangeListener.ALL_PINS for all PINs
+			 */
+			@Override
+			public int getPinListening() {
+				return pin;
+			}
+
+		};
+	}
+
+	private AnalogReadChangeListener analogReadChangeListener(final int pin) {
+		return new AnalogReadChangeListener() {
+
+			@Override
+			public void stateChanged(AnalogReadChangeEvent e) {
+				System.out.println("PIN state changed. PIN: " + e.getPin()
+						+ " Value: " + e.getValue());
+			}
+
+			@Override
+			public int getPinListening() {
+				return pin;
+			}
+		};
+	}
+
 	/**
 	 * Return the Link used from this example
+	 * 
 	 * @return
 	 */
-	private Link getLink() {
-		Link link = Link.getDefaultInstance();
-
-		/*
-		 * Decomment these rows to try network connection with Ardulink Proxy Server
-		 */
-//		try {
-//			link = Link.createInstance("network", new NetworkProxyConnection("127.0.0.1", 4478));
-//		} catch (IOException e) {
-//			throw new RuntimeException(e.getCause());
-//		}
-		
-		return link;
-	}
-
-	/**
-	 * All messages from Arduino are sent to this method in their raw format
-	 */
-	@Override
-	public void parseInput(String id, int numBytes, int[] message) {
-		
-		System.out.println("Message from: " + id);
-		StringBuilder builder = new StringBuilder(numBytes);
-		for (int i = 0; i < numBytes; i++) {
-			builder.append((char)message[i]);
+	private Link createLink() {
+		if (remote == null || remote.isEmpty()) {
+			return Link.getDefaultInstance();
 		}
-		
-		System.out.println("Message: " + builder.toString());	
-	}
 
-	/**
-	 * When a PIN change its state this method is invoked
-	 */
-	@Override
-	public void stateChanged(DigitalReadChangeEvent e) {
-		
-		System.out.println("PIN state changed. PIN: " + e.getPin() + " Value: " + e.getValue());		
-	}
-
-	/**
-	 * This method set which PIN this listener is listening for use DigitalReadChangeListener.ALL_PINS for all PINs
-	 */
-	@Override
-	public int getPinListening() {
-		return 2;
-	}
-
-	/**
-	 * This method is called when a Link is connected to an Arduino
-	 */
-	@Override
-	public void connected(ConnectionEvent e) {
-		System.out.println("Connected! Port: " + e.getPortName() + " ID: " + e.getConnectionId());
-	}
-
-	/**
-	 * This method is called when a Link is disconnected from an Arduino
-	 */
-	@Override
-	public void disconnected(DisconnectionEvent e) {
-		System.out.println("Disconnected! ID: " + e.getConnectionId());
+		String[] hostAndPort = remote.split("\\:");
+		try {
+			int port = hostAndPort.length == 1 ? NetworkProxyServer.DEFAULT_LISTENING_PORT
+					: Integer.parseInt(hostAndPort[1]);
+			return Link.createInstance("network", new NetworkProxyConnection(
+					hostAndPort[0], port));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }
