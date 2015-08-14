@@ -45,12 +45,9 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  */
 public class SwitchController extends JPanel implements Linkable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -260988038687002762L;
 
-	private JComboBox pinComboBox;
+	private JComboBox<String> pinComboBox;
 	private JToggleButton switchToggleButton;
 	
 	private Link link = Link.getDefaultInstance();
@@ -61,9 +58,9 @@ public class SwitchController extends JPanel implements Linkable {
 	public SwitchController() {
 		setPreferredSize(new Dimension(125, 75));
 		setLayout(null);
-		pinComboBox = new JComboBox();
 		// TODO definire un metodo per poter cambiare l'insieme dei pin controllabili. In questo modo si può lavorare anche con schede diverse da Arduino UNO
-		pinComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(0, 40)));
+		pinComboBox = new JComboBox<String>(new DefaultComboBoxModel<String>(
+				UtilityModel.generateModelForCombo(0, 40)));
 		pinComboBox.setSelectedItem("3");
 		pinComboBox.setBounds(66, 11, 47, 22);
 		add(pinComboBox);
@@ -100,7 +97,7 @@ public class SwitchController extends JPanel implements Linkable {
 	 * @param pin
 	 */
 	public void setPin(int pin) {
-		pinComboBox.setSelectedItem("" + pin);
+		pinComboBox.setSelectedItem(String.valueOf(pin));
 	}
 
 	public void setLink(Link link) {
