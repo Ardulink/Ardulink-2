@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.zu.ardulink.connection.Connection;
 import org.zu.ardulink.connection.ConnectionContact;
@@ -329,11 +330,11 @@ public class DigisparkUSBConnection implements Connection {
 	private void tryARecover() {
 		try {
 			contact.writeLog(id, "COMUNICATION ERROR DETECTED. RECOVERING...");
-			Thread.sleep(10);
+			TimeUnit.MILLISECONDS.sleep(10);
 			getPortList();
-			Thread.sleep(10);
+			TimeUnit.MILLISECONDS.sleep(10);
 			connect(openedPortName);
-			Thread.sleep(10);
+			TimeUnit.MILLISECONDS.sleep(10);
 			contact.writeLog(id, "COMUNICATION ERROR DETECTED. NEXT TRY!!!");
 		} catch (InterruptedException e) {
 			e.printStackTrace();

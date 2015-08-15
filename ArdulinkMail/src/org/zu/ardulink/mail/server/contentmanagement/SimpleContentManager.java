@@ -21,6 +21,7 @@ package org.zu.ardulink.mail.server.contentmanagement;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.zu.ardulink.Link;
 import org.zu.ardulink.mail.server.links.configuration.ALink;
@@ -110,9 +111,9 @@ public class SimpleContentManager implements IContentManager {
 
 		// wait for Arduino bootstrap (2 secs should be enough)
 		try {
-			Thread.sleep(2000);
+			TimeUnit.SECONDS.sleep(2);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 		
 		return retvalue;
