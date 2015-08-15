@@ -23,6 +23,7 @@ import static java.lang.String.format;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -62,6 +63,9 @@ public class DataReceiver {
 
 	private Link link;
 
+	private static final Logger log = Logger.getLogger(DataReceiver.class
+			.getName());
+
 	public static void main(String[] args) {
 		new DataReceiver().doMain(args);
 	}
@@ -87,15 +91,15 @@ public class DataReceiver {
 			link.addConnectionListener(connectionListener());
 
 			String port = portList.get(0);
-			System.out.println("Trying to connect to: " + port);
+			log.info("Trying to connect to: " + port);
 			boolean connected = link.connect(port, 115200);
 			if (!connected) {
 				throw new RuntimeException("Connection failed!");
 			}
 			try {
-				System.out.println("Wait a while for Arduino boot");
+				log.info("Wait a while for Arduino boot");
 				TimeUnit.SECONDS.sleep(sleepSecs);
-				System.out.println("Ok, now it should be ready...");
+				log.info("Ok, now it should be ready...");
 
 				link.addAnalogReadChangeListener(analogReadChangeListener());
 				for (int analog : analogs) {
@@ -123,13 +127,13 @@ public class DataReceiver {
 		return new ConnectionListener() {
 			@Override
 			public void connected(ConnectionEvent e) {
-				System.out.println("Connected! Port: " + e.getPortName()
-						+ " ID: " + e.getConnectionId());
+				log.info("Connected! Port: " + e.getPortName() + " ID: "
+						+ e.getConnectionId());
 			}
 
 			@Override
 			public void disconnected(DisconnectionEvent e) {
-				System.out.println("Disconnected! ID: " + e.getConnectionId());
+				log.info("Disconnected! ID: " + e.getConnectionId());
 			}
 
 		};
@@ -145,13 +149,13 @@ public class DataReceiver {
 			@Override
 			public void parseInput(String id, int numBytes, int[] message) {
 
-				System.out.println("Message from: " + id);
+				log.info("Message from: " + id);
 				StringBuilder builder = new StringBuilder(numBytes);
 				for (int i = 0; i < numBytes; i++) {
 					builder.append((char) message[i]);
 				}
 
-				System.out.println("Message: " + builder.toString());
+				log.info("Message: " + builder.toString());
 			}
 
 		};
@@ -162,8 +166,7 @@ public class DataReceiver {
 
 			@Override
 			public void stateChanged(DigitalReadChangeEvent e) {
-				System.out
-						.println(format(msgDigital, e.getPin(), e.getValue()));
+				log.info(format(msgDigital, e.getPin(), e.getValue()));
 			}
 
 			@Override
@@ -179,7 +182,7 @@ public class DataReceiver {
 
 			@Override
 			public void stateChanged(AnalogReadChangeEvent e) {
-				System.out.println(format(msgAnalog, e.getPin(), e.getValue()));
+				log.info(format(msgAnalog, e.getPin(), e.getValue()));
 			}
 
 			@Override
