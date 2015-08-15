@@ -48,14 +48,11 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
 public class DigitalPinStatus extends JPanel implements DigitalReadChangeListener, Linkable {
 
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -7773514191770737230L;
 
 	private JLabel lblStatelabel;
 	private JToggleButton tglbtnSensor;
-	private JComboBox pinComboBox;
+	private JComboBox<Integer> pinComboBox;
 	private JLabel lblPin;
 	
 	private Link link = Link.getDefaultInstance();
@@ -63,8 +60,8 @@ public class DigitalPinStatus extends JPanel implements DigitalReadChangeListene
 	private static final String HIGH = "High";
 	private static final String LOW = "Low";
 	
-	private static final String HIGH_ICON_NAME = "/org/zu/ardulink/gui/icons/blue-on-32.png";
-	private static final String LOW_ICON_NAME = "/org/zu/ardulink/gui/icons/blue-off-32.png";
+	private static final String HIGH_ICON_NAME = "icons/blue-on-32.png";
+	private static final String LOW_ICON_NAME = "icons/blue-off-32.png";
 	
 	private static final ImageIcon HIGH_ICON = new ImageIcon(DigitalPinStatus.class.getResource(HIGH_ICON_NAME));
 	private static final ImageIcon LOW_ICON = new ImageIcon(DigitalPinStatus.class.getResource(LOW_ICON_NAME));
@@ -88,9 +85,8 @@ public class DigitalPinStatus extends JPanel implements DigitalReadChangeListene
 		lblPin = new JLabel("Pin:");
 		comboPanel.add(lblPin);
 		
-		pinComboBox = new JComboBox();
+		pinComboBox = new JComboBox<Integer>(UtilityModel.generateModelForCombo(2, 40));
 		comboPanel.add(pinComboBox);
-		pinComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(2, 40)));
 		
 		tglbtnSensor = new JToggleButton("Sensor off");
 		tglbtnSensor.addItemListener(new ItemListener() {
@@ -131,11 +127,11 @@ public class DigitalPinStatus extends JPanel implements DigitalReadChangeListene
 
 	@Override
 	public int getPinListening() {
-		return Integer.parseInt((String)pinComboBox.getSelectedItem());
+		return ((Integer) pinComboBox.getSelectedItem()).intValue();
 	}
 
 	public void setPin(int pin) {
-		pinComboBox.setSelectedItem("" + pin);
+		pinComboBox.setSelectedItem(Integer.valueOf(pin));
 	}
 
 	public void setLink(Link link) {

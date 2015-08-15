@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -57,19 +56,16 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  */
 public class PWMController extends JPanel implements Linkable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 7927439571760351922L;
 	
 	private JSlider powerSlider;
-	private JComboBox valueComboBox;
+	private JComboBox<Integer> valueComboBox;
 	private JLabel voltValueLbl;
 	private JCheckBox chckbxContChange;
 	private JProgressBar progressBar;
-	private JComboBox maxValueComboBox;
-	private JComboBox minValueComboBox;
-	private JComboBox pinComboBox;
+	private JComboBox<Integer> maxValueComboBox;
+	private JComboBox<Integer> minValueComboBox;
+	private JComboBox<Integer> pinComboBox;
 	private JLabel lblPowerPinController;
 	
 	private List<PWMControllerListener> pwmControllerListeners = new LinkedList<PWMControllerListener>();
@@ -99,24 +95,21 @@ public class PWMController extends JPanel implements Linkable {
 		lblPowerPin.setBounds(10, 40, 59, 14);
 		add(lblPowerPin);
 		
-		pinComboBox = new JComboBox();
 		// TODO definire un metodo per poter cambiare l'insieme dei pin controllabili. In questo modo si può lavorare anche con schede diverse da Arduino UNO
 		// pinComboBox.setModel(new DefaultComboBoxModel(new String[] {"3", "5", "6", "9", "10", "11"}));
-		pinComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(0, 40)));
-		pinComboBox.setSelectedItem("11");
+		pinComboBox = new JComboBox<Integer>(UtilityModel.generateModelForCombo(0, 40));
+		pinComboBox.setSelectedItem(Integer.valueOf(11));
 		pinComboBox.setBounds(65, 36, 55, 22);
 		add(pinComboBox);
 		
-		maxValueComboBox = new JComboBox();
-		maxValueComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(0, 255)));
+		maxValueComboBox = new JComboBox<Integer>(UtilityModel.generateModelForCombo(0, 255));
 		maxValueComboBox.setBounds(65, 65, 55, 22);
-		maxValueComboBox.setSelectedItem("255");
+		minValueComboBox.setSelectedIndex(maxValueComboBox.getModel().getSize() - 1);
 		add(maxValueComboBox);
 
-		minValueComboBox = new JComboBox();
-		minValueComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(0, 255)));
+		minValueComboBox = new JComboBox<Integer>(UtilityModel.generateModelForCombo(0, 255));
 		minValueComboBox.setBounds(65, 217, 55, 22);
-		minValueComboBox.setSelectedItem("0");
+		minValueComboBox.setSelectedIndex(0);
 		add(minValueComboBox);
 		
 		JLabel lblMaxValue = new JLabel("Max Value:");
@@ -159,10 +152,10 @@ public class PWMController extends JPanel implements Linkable {
 		lblCurrentValue.setBounds(10, 98, 76, 14);
 		add(lblCurrentValue);
 		
-		valueComboBox = new JComboBox();
+		valueComboBox = new JComboBox<Integer>(UtilityModel.generateModelForCombo(0, 255));
 		valueComboBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int comboBoxCurrentValue = Integer.parseInt((String)((JComboBox)e.getSource()).getSelectedItem());
+				int comboBoxCurrentValue = Integer.parseInt((String)(valueComboBox).getSelectedItem());
 				int powerSliderCurrentValue = powerSlider.getValue();
 				if(comboBoxCurrentValue != powerSliderCurrentValue) {
 					powerSlider.setValue(comboBoxCurrentValue);
@@ -170,8 +163,7 @@ public class PWMController extends JPanel implements Linkable {
 			}
 		});
 		valueComboBox.setBounds(10, 112, 55, 22);
-		valueComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(0, 255)));
-		minValueComboBox.setSelectedItem("0");
+		minValueComboBox.setSelectedIndex(0);
 		add(valueComboBox);
 		
 		JLabel lblContinuousChange = new JLabel("Cont. Change:");
@@ -192,7 +184,7 @@ public class PWMController extends JPanel implements Linkable {
 			public void stateChanged(ChangeEvent e) {
 				if (!powerSlider.getValueIsAdjusting() || chckbxContChange.isSelected()) {
 			        int powerValue = (int)powerSlider.getValue();
-			        valueComboBox.setSelectedItem("" + powerValue);
+			        valueComboBox.setSelectedItem(Integer.valueOf(powerValue));
 			        float volt = ((float)(((float)powerValue)*5.0f))/255.0f;
 			        voltValueLbl.setText(""+volt+"V");
 			        float progress  = ((float)(((float)(powerValue - powerSlider.getMinimum()))*100.0f))/((float)powerSlider.getMaximum() - (float)powerSlider.getMinimum());
@@ -214,10 +206,10 @@ public class PWMController extends JPanel implements Linkable {
 				
 				if(minimum > maximum) {
 					minimum = maximum;
-					minValueComboBox.setSelectedItem("" + minimum);
+					minValueComboBox.setSelectedItem(Integer.valueOf(minimum));
 				}
 				
-				valueComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(minimum, maximum)));
+				valueComboBox.setModel(UtilityModel.generateModelForCombo(minimum, maximum));
 				powerSlider.setMinimum(minimum);
 			}
 		});
@@ -229,10 +221,10 @@ public class PWMController extends JPanel implements Linkable {
 
 				if(minimum > maximum) {
 					maximum = minimum;
-					maxValueComboBox.setSelectedItem("" + maximum);
+					maxValueComboBox.setSelectedItem(Integer.valueOf(maximum));
 				}
 				
-				valueComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(minimum, maximum)));
+				valueComboBox.setModel(UtilityModel.generateModelForCombo(minimum, maximum));
 				powerSlider.setMaximum(maximum);
 			}
 		});
@@ -244,7 +236,7 @@ public class PWMController extends JPanel implements Linkable {
 	 * @param pin
 	 */
 	public void setPin(int pin) {
-		pinComboBox.setSelectedItem("" + pin);
+		pinComboBox.setSelectedItem(Integer.valueOf(pin));
 	}
 
 	public void setLink(Link link) {
@@ -292,6 +284,6 @@ public class PWMController extends JPanel implements Linkable {
 		} else if(value < minValue) {
 			value = minValue;
 		}
-		valueComboBox.setSelectedItem(Integer.toString(value));
+		valueComboBox.setSelectedItem(Integer.valueOf(value));
 	}
 }
