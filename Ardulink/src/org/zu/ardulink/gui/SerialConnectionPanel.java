@@ -46,11 +46,9 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  */
 public class SerialConnectionPanel extends JPanel implements Linkable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1290277902714226253L;
-	private JComboBox connectionPortComboBox;
+
+	private JComboBox<String> connectionPortComboBox;
 	private JTextField baudRateTextField;
 	private JButton discoverButton;
 	private JLabel lblBaudRate;
@@ -82,7 +80,7 @@ public class SerialConnectionPanel extends JPanel implements Linkable {
 		connectionPortLabel.setBounds(6, 16, 91, 16);
 		add(connectionPortLabel);
 		
-		connectionPortComboBox = new JComboBox();
+		connectionPortComboBox = new JComboBox<String>();
 		connectionPortComboBox.setBounds(108, 10, 122, 28);
 		add(connectionPortComboBox);
 		
@@ -104,8 +102,10 @@ public class SerialConnectionPanel extends JPanel implements Linkable {
 //				portList = new ArrayList<String>(); // Mock code...
 //				portList.add("COM19");
 //				portList.add("COM20");
-				if(portList != null && portList.size() > 0) {
-					connectionPortComboBox.setModel(new DefaultComboBoxModel(portList.toArray()));
+				if(portList != null && !portList.isEmpty()) {
+					connectionPortComboBox
+							.setModel(new DefaultComboBoxModel<String>(portList
+									.toArray(new String[portList.size()])));
 				} else {
 					connectionPortComboBox.removeAllItems();
 				}
