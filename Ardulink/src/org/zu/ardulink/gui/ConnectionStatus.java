@@ -39,9 +39,6 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  */
 public class ConnectionStatus extends JPanel implements ConnectionListener, Linkable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 6630818070505677116L;
 
 	private JLabel lblStatelabel;

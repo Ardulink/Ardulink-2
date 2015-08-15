@@ -51,7 +51,7 @@ public class DigisparkConnectionPanel extends JPanel {
 	private Link link = null;
 
 	private JButton discoverButton;
-	private JComboBox deviceComboBox;
+	private JComboBox<String> deviceComboBox;
 
 	/**
 	 * Create the panel.
@@ -76,8 +76,8 @@ public class DigisparkConnectionPanel extends JPanel {
 //				portList = new ArrayList<String>(); // Mock code...
 //				portList.add("COM19");
 //				portList.add("COM20");
-				if(portList != null && portList.size() > 0) {
-					deviceComboBox.setModel(new DefaultComboBoxModel(portList.toArray()));
+				if(portList != null && !portList.isEmpty()) {
+					deviceComboBox.setModel(new DefaultComboBoxModel<String>(portList.toArray(new String[portList.size()])));
 				} else {
 					deviceComboBox.removeAllItems();
 				}
@@ -92,7 +92,7 @@ public class DigisparkConnectionPanel extends JPanel {
 		lblDigispark.setBounds(6, 17, 65, 16);
 		add(lblDigispark);
 		
-		deviceComboBox = new JComboBox();
+		deviceComboBox = new JComboBox<String>();
 		deviceComboBox.setBounds(67, 12, 165, 26);
 		add(deviceComboBox);
 		
