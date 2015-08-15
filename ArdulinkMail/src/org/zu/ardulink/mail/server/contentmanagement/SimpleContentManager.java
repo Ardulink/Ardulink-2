@@ -19,7 +19,6 @@ limitations under the License.
 package org.zu.ardulink.mail.server.contentmanagement;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,18 +40,12 @@ public class SimpleContentManager implements IContentManager {
 
 	@Override
 	public boolean isForContent(String content, List<String> mailContentHooks) {
-		
-		boolean retvalue = false;
-		
-		Iterator<String> it = mailContentHooks.iterator();
-		while (it.hasNext() && retvalue == false) {
-			String hook = (String) it.next();
+		for (String hook : mailContentHooks) {
 			if(content.toUpperCase().contains(hook.toUpperCase())) {
-				retvalue = true;
+				return true;
 			}
 		}
-		
-		return retvalue;
+		return false;
 	}
 
 	@Override
@@ -61,12 +54,9 @@ public class SimpleContentManager implements IContentManager {
 		StringBuilder builder = new StringBuilder();
 		
 		List<Link> links = getConnectedLinks(aLinkNames);
-		Iterator<Link> it = links.iterator();
-		while (it.hasNext()) {
-			Link link = (Link) it.next();
-			Iterator<String> itValues = values.iterator();
-			while (itValues.hasNext()) {
-				StringBuilder value = new StringBuilder(itValues.next());
+		for (Link link : links) {
+			for (String string : values) {
+				StringBuilder value = new StringBuilder(string);
 				value.append(new String(new byte[] { IProtocol.DEFAULT_OUTGOING_MESSAGE_DIVIDER }));
 				boolean isOk = link.writeSerial(value.toString());
 				builder.append("message ");
@@ -87,9 +77,7 @@ public class SimpleContentManager implements IContentManager {
 	private List<Link> getConnectedLinks(List<String> aLinkNames) {
 		List<ALink> aLinks = ConfigurationFacade.getALinks(aLinkNames);
 		List<Link> links = new LinkedList<Link>();
-		Iterator<ALink> it = aLinks.iterator();
-		while (it.hasNext()) {
-			ALink aLink = (ALink) it.next();
+		for (ALink aLink : aLinks) {
 			Link link = aLink.getLink();
 			if(!link.isConnected()) {
 				try {
@@ -113,10 +101,8 @@ public class SimpleContentManager implements IContentManager {
 		List<AParameter> connectParamenter = aLink.getConnectParameters();
 		Object[] params = new Object[connectParamenter.size()];
 		
-		Iterator<AParameter> it = connectParamenter.iterator();
 		int index = 0;
-		while (it.hasNext()) {
-			AParameter aParameter = (AParameter) it.next();
+		for (AParameter aParameter : connectParamenter) {
 			params[index] = aParameter.getValueForClass();
 			index++;
 		}

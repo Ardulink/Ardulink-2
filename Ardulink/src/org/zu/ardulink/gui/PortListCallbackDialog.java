@@ -22,7 +22,6 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
@@ -109,9 +108,7 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 				portListCallbackDialog.setButtonText("Ok");
 				portListCallbackDialog.stopProgressBar();
 			} else {
-				Iterator<String> it = ports.iterator();
-				while (it.hasNext()) {
-					String port = (String) it.next();
+				for (String port : ports) {
 					defaultComboBoxModel.addElement(port);
 				}
 				portListCallbackDialog.dispose();

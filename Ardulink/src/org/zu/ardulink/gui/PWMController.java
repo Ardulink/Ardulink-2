@@ -27,7 +27,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -269,10 +268,8 @@ public class PWMController extends JPanel implements Linkable {
 	}
 
 	private void notifyListeners(int powerValue) {
-		Iterator<PWMControllerListener> pwmControllerListenersIterator = pwmControllerListeners.iterator();
 		PWMChangeEvent event = new PWMChangeEvent(this, powerValue);
-		while (pwmControllerListenersIterator.hasNext()) {
-			PWMControllerListener pwmControllerListener = (PWMControllerListener) pwmControllerListenersIterator.next();
+		for (PWMControllerListener pwmControllerListener : pwmControllerListeners) {
 			pwmControllerListener.pwmChanged(event);
 		}
 	}

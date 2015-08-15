@@ -20,7 +20,6 @@ package org.zu.ardulink.connection.usb;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -141,9 +140,8 @@ public class DigisparkUSBConnection implements Connection {
 		
 		if(contact != null) {
 			contact.writeLog(id, "found the following ports:");
-			Iterator<String> it = retvalue.iterator();
-			while (it.hasNext()) {
-				contact.writeLog(id, "   " + it.next());
+			for (String string : retvalue) {
+				contact.writeLog(id, "   " + string);
 			}
 		}
 		
@@ -151,8 +149,7 @@ public class DigisparkUSBConnection implements Connection {
 	}
 
 	private String getUsbDeviceName(int internal_index) {
-		String deviceName = "Digispark (" + internal_index + ")";
-		return deviceName;
+		return "Digispark (" + internal_index + ")";
 	}
 	
 	@Override
