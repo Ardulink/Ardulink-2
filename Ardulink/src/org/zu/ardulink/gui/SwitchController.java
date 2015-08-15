@@ -29,7 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
 import org.zu.ardulink.Link;
-import org.zu.ardulink.gui.facility.UtilityModel;
+import org.zu.ardulink.gui.facility.IntMinMaxModel;
 import org.zu.ardulink.protocol.IProtocol;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
@@ -46,7 +46,7 @@ public class SwitchController extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = -260988038687002762L;
 
-	private JComboBox<Integer> pinComboBox;
+	private IntMinMaxModel pinComboBoxModel;
 	private JToggleButton switchToggleButton;
 	
 	private Link link = Link.getDefaultInstance();
@@ -57,9 +57,8 @@ public class SwitchController extends JPanel implements Linkable {
 	public SwitchController() {
 		setPreferredSize(new Dimension(125, 75));
 		setLayout(null);
-		// TODO definire un metodo per poter cambiare l'insieme dei pin controllabili. In questo modo si può lavorare anche con schede diverse da Arduino UNO
-		pinComboBox = new JComboBox<Integer>(UtilityModel.generateModelForCombo(0, 40));
-		pinComboBox.setSelectedItem(Integer.valueOf(3));
+		pinComboBoxModel = new IntMinMaxModel(0, 40).withSelectedItem(3);
+		JComboBox<Integer> pinComboBox = new JComboBox<Integer>(pinComboBoxModel);
 		pinComboBox.setBounds(66, 11, 47, 22);
 		add(pinComboBox);
 		
@@ -71,7 +70,7 @@ public class SwitchController extends JPanel implements Linkable {
 		switchToggleButton = new JToggleButton("Off");
 		switchToggleButton.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				int pin = ((Integer)pinComboBox.getSelectedItem()).intValue();
+				int pin = pinComboBoxModel.getSelectedItem().intValue();
 				if(e.getStateChange() == ItemEvent.SELECTED) {
 					switchToggleButton.setText("On");
 					link.sendPowerPinSwitch(pin, IProtocol.POWER_HIGH);
@@ -90,7 +89,7 @@ public class SwitchController extends JPanel implements Linkable {
 	 * @param pin
 	 */
 	public void setPin(int pin) {
-		pinComboBox.setSelectedItem(Integer.valueOf(pin));
+		pinComboBoxModel.setSelectedItem(pin);
 	}
 
 	public void setLink(Link link) {
