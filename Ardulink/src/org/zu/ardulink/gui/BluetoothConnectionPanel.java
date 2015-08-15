@@ -87,7 +87,7 @@ public class BluetoothConnectionPanel extends JPanel implements Linkable {
 				dialog.setVisible(true);
 			}
 		});
-		discoverButton.setIcon(new ImageIcon(BluetoothConnectionPanel.class.getResource("/org/zu/ardulink/gui/icons/search_icon.png")));
+		discoverButton.setIcon(new ImageIcon(BluetoothConnectionPanel.class.getResource("icons/search_icon.png")));
 		discoverButton.setToolTipText("Discover");
 		discoverButton.setBounds(237, 9, 32, 32);
 		add(discoverButton);

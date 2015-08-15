@@ -111,7 +111,7 @@ public class SerialConnectionPanel extends JPanel implements Linkable {
 				}
 			}
 		});
-		discoverButton.setIcon(new ImageIcon(SerialConnectionPanel.class.getResource("/org/zu/ardulink/gui/icons/search_icon.png")));
+		discoverButton.setIcon(new ImageIcon(SerialConnectionPanel.class.getResource("icons/search_icon.png")));
 		discoverButton.setToolTipText("Discover");
 		discoverButton.setBounds(235, 8, 32, 32);
 		add(discoverButton);

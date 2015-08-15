@@ -83,7 +83,7 @@ public class DigisparkConnectionPanel extends JPanel {
 				}
 			}
 		});
-		discoverButton.setIcon(new ImageIcon(DigisparkConnectionPanel.class.getResource("/org/zu/ardulink/gui/icons/search_icon.png")));
+		discoverButton.setIcon(new ImageIcon(DigisparkConnectionPanel.class.getResource("icons/search_icon.png")));
 		discoverButton.setToolTipText("Discover");
 		discoverButton.setBounds(237, 9, 32, 32);
 		add(discoverButton);
