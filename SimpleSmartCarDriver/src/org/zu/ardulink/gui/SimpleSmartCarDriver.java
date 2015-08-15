@@ -61,10 +61,10 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener, 
 	private SignalButton btnRight;
 	private SignalButton btnBack;
 	
-	private static final String AHEAD_ICON_NAME = "/org/zu/ardulink/gui/icons/arrow-up.png";
-	private static final String LEFT_ICON_NAME = "/org/zu/ardulink/gui/icons/arrow-left.png";
-	private static final String RIGHT_ICON_NAME = "/org/zu/ardulink/gui/icons/arrow-right.png";
-	private static final String BACK_ICON_NAME = "/org/zu/ardulink/gui/icons/arrow-down.png";
+	private static final String AHEAD_ICON_NAME = "icons/arrow-up.png";
+	private static final String LEFT_ICON_NAME = "icons/arrow-left.png";
+	private static final String RIGHT_ICON_NAME = "icons/arrow-right.png";
+	private static final String BACK_ICON_NAME = "icons/arrow-down.png";
 	
 	private static final ImageIcon AHEAD_ICON = new ImageIcon(SimpleSmartCarDriver.class.getResource(AHEAD_ICON_NAME));
 	private static final ImageIcon LEFT_ICON = new ImageIcon(SimpleSmartCarDriver.class.getResource(LEFT_ICON_NAME));
