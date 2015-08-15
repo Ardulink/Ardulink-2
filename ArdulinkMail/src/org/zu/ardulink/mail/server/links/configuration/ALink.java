@@ -24,8 +24,6 @@ import javax.xml.bind.annotation.XmlElement;
 
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.Connection;
-import org.zu.ardulink.mail.server.contentmanagement.IContentManager;
-
 
 public class ALink {
 	
@@ -35,7 +33,7 @@ public class ALink {
 	private String aConnectionName;
 	private List<AParameter> connectParameters;
 	
-	private Link link = null;
+	private Link link;
 	private AConnection aConnection;
 	
 	@XmlElement(name="name", required=true, nillable=false)
@@ -101,7 +99,6 @@ public class ALink {
 	}
 	
 	private Connection getConnection() {
-		
 		if(aConnection == null) {
 			aConnection = ConfigurationFacade.getAConnection(aConnectionName);
 		}
