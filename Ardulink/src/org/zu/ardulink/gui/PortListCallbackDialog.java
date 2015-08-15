@@ -19,7 +19,6 @@ limitations under the License.
 package org.zu.ardulink.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,7 +48,7 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		PortListCallbackDialog dialog = new PortListCallbackDialog(new DefaultComboBoxModel());
+		PortListCallbackDialog dialog = new PortListCallbackDialog(new DefaultComboBoxModel<String>());
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		dialog.setVisible(true);
 	}
@@ -57,7 +56,7 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 	/**
 	 * Create the dialog.
 	 */
-	public PortListCallbackDialog(DefaultComboBoxModel defaultComboBoxModel) {
+	public PortListCallbackDialog(DefaultComboBoxModel<String> defaultComboBoxModel) {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setResizable(false);
 		setModal(true);
@@ -93,10 +92,10 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 	
 	class PortListCallbackImpl extends AbstractPortListCallback {
 
-		private DefaultComboBoxModel defaultComboBoxModel = null;
-		private PortListCallbackDialog portListCallbackDialog = null;
+		private DefaultComboBoxModel<String> defaultComboBoxModel;
+		private PortListCallbackDialog portListCallbackDialog;
 
-		public PortListCallbackImpl(PortListCallbackDialog portListCallbackDialog, DefaultComboBoxModel defaultComboBoxModel) {
+		public PortListCallbackImpl(PortListCallbackDialog portListCallbackDialog, DefaultComboBoxModel<String> defaultComboBoxModel) {
 			super();
 			this.defaultComboBoxModel = defaultComboBoxModel;
 			this.portListCallbackDialog = portListCallbackDialog;
@@ -105,7 +104,7 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 		@Override
 		public void portList(List<String> ports) {
 			
-			if(ports == null || ports.size() == 0) {
+			if(ports == null || ports.isEmpty()) {
 				portListCallbackDialog.setTitle("Nothing found.");
 				portListCallbackDialog.setButtonText("Ok");
 				portListCallbackDialog.stopProgressBar();

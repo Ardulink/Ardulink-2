@@ -192,7 +192,7 @@ public class PWMController extends JPanel implements Linkable {
 			        
 			        notifyListeners(powerValue);
 			        
-			        int pin = Integer.parseInt((String)pinComboBox.getSelectedItem());
+			        int pin = ((Integer)pinComboBox.getSelectedItem()).intValue();
 			        link.sendPowerPinIntensity(pin, powerValue);
 			    }
 			}
@@ -201,8 +201,8 @@ public class PWMController extends JPanel implements Linkable {
 		
 		minValueComboBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int maximum = Integer.parseInt((String)maxValueComboBox.getSelectedItem());
-				int minimum = Integer.parseInt((String)minValueComboBox.getSelectedItem());
+				int maximum = ((Integer)maxValueComboBox.getSelectedItem()).intValue();
+				int minimum = ((Integer)minValueComboBox.getSelectedItem()).intValue();
 				
 				if(minimum > maximum) {
 					minimum = maximum;
@@ -216,8 +216,8 @@ public class PWMController extends JPanel implements Linkable {
 
 		maxValueComboBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				int maximum = Integer.parseInt((String)maxValueComboBox.getSelectedItem());
-				int minimum = Integer.parseInt((String)minValueComboBox.getSelectedItem());
+				int maximum = ((Integer)maxValueComboBox.getSelectedItem()).intValue();
+				int minimum = ((Integer)minValueComboBox.getSelectedItem()).intValue();
 
 				if(minimum > maximum) {
 					maximum = minimum;
