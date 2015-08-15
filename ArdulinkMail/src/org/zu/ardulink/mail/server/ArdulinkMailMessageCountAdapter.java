@@ -151,9 +151,7 @@ public class ArdulinkMailMessageCountAdapter extends MessageCountAdapter impleme
 	}
 
 	private String execute(String content) throws MessagingException {
-		
-		ArdulinkExecutor executor = new ArdulinkExecutor();
-		return executor.execute(content);
+		return new ArdulinkExecutor().execute(content);
 	}
 
 }
