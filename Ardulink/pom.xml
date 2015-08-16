@@ -11,6 +11,7 @@
 
 	<build>
 		<sourceDirectory>src</sourceDirectory>
+		<testSourceDirectory>test</testSourceDirectory>
 	</build>
 
 	<dependencies>
@@ -33,6 +34,12 @@
 			<groupId>args4j</groupId>
 			<artifactId>args4j</artifactId>
 			<version>${args4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
