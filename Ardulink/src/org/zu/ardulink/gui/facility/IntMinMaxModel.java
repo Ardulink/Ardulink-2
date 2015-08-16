@@ -9,23 +9,23 @@ public class IntMinMaxModel extends AbstractListModel<Integer> implements
 	private static final long serialVersionUID = -6314940179491347446L;
 
 	private final int low;
-	private final int high;
+	private final int size;
 
 	private Integer selectedItem;
 
 	public IntMinMaxModel(int low, int high) {
 		this.low = low;
-		this.high = high;
+		this.size = high - low + 1;
 	}
 
 	@Override
 	public int getSize() {
-		return high - low + 1;
+		return this.size;
 	}
 
 	@Override
 	public Integer getElementAt(int index) {
-		return Integer.valueOf(index + low);
+		return Integer.valueOf(index + this.low);
 	}
 
 	@Override
@@ -35,7 +35,7 @@ public class IntMinMaxModel extends AbstractListModel<Integer> implements
 
 	@Override
 	public Integer getSelectedItem() {
-		return selectedItem;
+		return this.selectedItem;
 	}
 
 	public IntMinMaxModel withSelectedItem(int selectedItem) {
