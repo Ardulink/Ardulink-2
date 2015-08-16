@@ -8,8 +8,8 @@ public class IntMinMaxModel extends AbstractListModel<Integer> implements
 
 	private static final long serialVersionUID = -6314940179491347446L;
 
-	private int low;
-	private int high;
+	private final int low;
+	private final int high;
 
 	private Integer selectedItem;
 
