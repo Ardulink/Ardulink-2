@@ -35,20 +35,36 @@ public class DataReceiver {
 
 	private Link link;
 
+	/**
+	 * Call it without arguments to use the default link or use host:port (port is not mandatory) to
+	 * use a network link to an Ardulink Network Proxy Server. 
+	 * @param args
+	 */
 	public static void main(String[] args) {
-		new DataReceiver(args);
+
+		System.out.println("DataReceiver: call it without arguments to use the default link or use host:port (port is not mandatory) to use a network link to an Ardulink Network Proxy Server.");
+		
+		DataReceiver dataReceiver;
+		if (args.length > 0) {
+			dataReceiver = new DataReceiver(args[0]);
+		} else {
+			dataReceiver = new DataReceiver();
+		}
 	}
 
-	public DataReceiver(String[] args) {
-		if (args.length > 0) {
-			remote = args[0];
-		}
+	public DataReceiver() {
+		this(null);
+	}
+
+
+	public DataReceiver(String remote) {
+		this.remote = remote;
 		link = createLink();
 		List<String> portList = link.getPortList();
 		if (portList != null && !portList.isEmpty()) {
 
-			// Register this class as connection listener
-			link.addConnectionListener(connectionListener());
+			// Register a class as connection listener
+			link.addConnectionListener(createConnectionListener());
 
 			String port = portList.get(0);
 			System.out.println("Trying to connect to: " + port);
@@ -60,12 +76,15 @@ public class DataReceiver {
 				System.out.println("Wait a while for Arduino boot");
 				Thread.sleep(10000); // Wait for a while just to Arduino reboot
 				System.out.println("Ok, now it should be ready...");
-				DigitalReadChangeListener drcl = digitalReadChangeListener(2);
-				link.addDigitalReadChangeListener(drcl);
-				link.addRawDataListener(rawDataListener());
+				DigitalReadChangeListener digitalReadChangeListener = createDigitalReadChangeListener(4);
+				// Register a class as digital read change listener
+				link.addDigitalReadChangeListener(digitalReadChangeListener);
 
-				if (drcl.getPinListening() == DigitalReadChangeListener.ALL_PINS) {
-					link.startListenDigitalPin(2);
+				// Register a class as raw data listener
+				link.addRawDataListener(createRawDataListener());
+
+				if (digitalReadChangeListener.getPinListening() == DigitalReadChangeListener.ALL_PINS) {
+					link.startListenDigitalPin(4);
 				}
 			} catch (InterruptedException e1) {
 				throw new RuntimeException(e1);
@@ -75,7 +94,7 @@ public class DataReceiver {
 		}
 	}
 
-	private ConnectionListener connectionListener() {
+	private ConnectionListener createConnectionListener() {
 		return new ConnectionListener() {
 
 			/**
@@ -99,7 +118,7 @@ public class DataReceiver {
 		};
 	}
 
-	private RawDataListener rawDataListener() {
+	private RawDataListener createRawDataListener() {
 		return new RawDataListener() {
 
 			/**
@@ -121,7 +140,7 @@ public class DataReceiver {
 		};
 	}
 
-	private DigitalReadChangeListener digitalReadChangeListener(final int pin) {
+	private DigitalReadChangeListener createDigitalReadChangeListener(final int pin) {
 		return new DigitalReadChangeListener() {
 
 			/**
@@ -151,19 +170,26 @@ public class DataReceiver {
 	 * @return
 	 */
 	private Link createLink() {
+		Link retvalue = null;
 		if (remote == null || remote.isEmpty()) {
-			return Link.getDefaultInstance();
+			retvalue = Link.getDefaultInstance();
+		} else {
+			String[] hostAndPort = remote.split("\\:");
+			try {
+				
+				int port = NetworkProxyServer.DEFAULT_LISTENING_PORT;
+				if(hostAndPort.length > 1) {
+					port = Integer.parseInt(hostAndPort[1]);
+				}
+				
+				String host = hostAndPort[0];
+				retvalue = Link.createInstance("network", new NetworkProxyConnection(host, port));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
-
-		String[] hostAndPort = remote.split("\\:");
-		try {
-			int port = hostAndPort.length == 1 ? NetworkProxyServer.DEFAULT_LISTENING_PORT
-					: Integer.parseInt(hostAndPort[1]);
-			return Link.createInstance("network", new NetworkProxyConnection(
-					hostAndPort[0], port));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		
+		return retvalue;
 	}
 
 }
