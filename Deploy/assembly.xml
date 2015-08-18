@@ -1,0 +1,33 @@
+<assembly
+	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+	<id>bin</id>
+	<formats>
+		<format>zip</format>
+	</formats>
+
+	<includeBaseDirectory>false</includeBaseDirectory>
+	<baseDirectory>ardulink</baseDirectory>
+
+	<moduleSets>
+		<moduleSet>
+			<useAllReactorProjects>true</useAllReactorProjects>
+			<includes>
+				<include>com.github.ardulink:*</include>
+			</includes>
+			<binaries>
+				<!-- put jars under ${baseDirectory}/lib -->
+				<outputDirectory>ardulink/lib</outputDirectory>
+				<unpack>false</unpack>
+			</binaries>
+		</moduleSet>
+	</moduleSets>
+	<fileSets>
+		<!-- include rootfolder in ${baseDirectory} -->
+		<fileSet>
+			<directory>rootfolder</directory>
+			<outputDirectory>ardulink</outputDirectory>
+		</fileSet>
+	</fileSets>
+</assembly>
