@@ -18,6 +18,7 @@
 				<configuration>
 					<archive>
 						<manifest>
+							<addClasspath>true</addClasspath>
 							<mainClass>org.zu.ardulink.mail.server.MailListener</mainClass>
 						</manifest>
 					</archive>
