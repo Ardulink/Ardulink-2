@@ -12,10 +12,6 @@
 		<version>0.5.1-SNAPSHOT</version>
 	</parent>
 
-	<!-- NOTE: These dependency declarations are only required to sort this 
-		project to the end of the line in the multimodule build. Since we only include 
-		the child1 module in our assembly, we only need to ensure this distribution 
-		project builds AFTER that one... -->
 	<dependencies>
 		<dependency>
 			<groupId>com.github.ardulink</groupId>
@@ -49,6 +45,11 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
+<configuration>
+<finalName>ardulink-V${project.version}-${maven.build.timestamp}</finalName>
+<appendAssemblyId>false</appendAssemblyId>
+</configuration>
+
 				<executions>
 					<execution>
 						<id>distro-assembly</id>
@@ -66,4 +67,5 @@
 			</plugin>
 		</plugins>
 	</build>
+
 </project>

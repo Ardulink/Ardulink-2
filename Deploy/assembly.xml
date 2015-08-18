@@ -6,22 +6,28 @@
 	<formats>
 		<format>zip</format>
 	</formats>
+
 	<includeBaseDirectory>false</includeBaseDirectory>
+	<baseDirectory>ardulink</baseDirectory>
+
 	<moduleSets>
 		<moduleSet>
 			<useAllReactorProjects>true</useAllReactorProjects>
-			<!-- Now, select which projects to include in this module-set. -->
 			<includes>
-				<include>com.github.ardulink:Ardulink</include>
-				<include>com.github.ardulink:ArdulinkMail</include>
-				<include>com.github.ardulink:DataReceiver</include>
-				<include>com.github.ardulink:JoystickSmartCarDriver</include>
-				<include>com.github.ardulink:SimpleSmartCarDriver</include>
+				<include>com.github.ardulink:*</include>
 			</includes>
 			<binaries>
-				<outputDirectory>modules/maven-assembly-plugin</outputDirectory>
+				<!-- put jars under ${baseDirectory}/lib -->
+				<outputDirectory>ardulink/lib</outputDirectory>
 				<unpack>false</unpack>
 			</binaries>
 		</moduleSet>
 	</moduleSets>
+	<fileSets>
+		<!-- include rootfolder in ${baseDirectory} -->
+		<fileSet>
+			<directory>rootfolder</directory>
+			<outputDirectory>ardulink</outputDirectory>
+		</fileSet>
+	</fileSets>
 </assembly>
