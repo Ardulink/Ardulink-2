@@ -30,6 +30,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.github.ardulink</groupId>
+			<artifactId>Mqtt</artifactId>
+			<version>0.5.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.ardulink</groupId>
 			<artifactId>JoystickSmartCarDriver</artifactId>
 			<version>0.5.1-SNAPSHOT</version>
 		</dependency>

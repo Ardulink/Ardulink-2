@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>Ardulink</artifactId>
+	<artifactId>Mqtt</artifactId>
 
 	<parent>
 		<groupId>com.github.ardulink</groupId>
@@ -9,14 +9,22 @@
 		<version>0.5.1-SNAPSHOT</version>
 	</parent>
 
+	<repositories>
+		<!-- org.eclipse.paho:mqtt-client -->
+		<repository>
+			<id>Eclipse Paho Repo</id>
+			<url>https://repo.eclipse.org/content/repositories/paho-releases/</url>
+		</repository>
+		<!-- org.dna.mqtt:moquette-broker -->
+		<repository>
+			<id>bintray</id>
+			<url>http://dl.bintray.com/andsel/maven/</url>
+		</repository>
+	</repositories>
+
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<testSourceDirectory>test</testSourceDirectory>
-		<resources>
-			<resource>
-				<directory>resources</directory>
-			</resource>
-		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -26,7 +34,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>org.zu.ardulink.gui.Console</mainClass>
+							<mainClass>com.github.pfichtner.ardulink.MqttMain</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -36,19 +44,14 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.rxtx</groupId>
-			<artifactId>rxtx</artifactId>
-			<version>2.1.7</version>
+			<groupId>com.github.ardulink</groupId>
+			<artifactId>Ardulink</artifactId>
+			<version>0.5.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<groupId>ch.ntb</groupId>
-			<artifactId>usb</artifactId>
-			<version>0.5.9</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.bluecove</groupId>
-			<artifactId>bluecove</artifactId>
-			<version>2.1.0</version>
+			<groupId>org.eclipse.paho</groupId>
+			<artifactId>mqtt-client</artifactId>
+			<version>0.4.0</version>
 		</dependency>
 		<dependency>
 			<groupId>args4j</groupId>
@@ -59,6 +62,18 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.9.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.dna.mqtt</groupId>
+			<artifactId>moquette-broker</artifactId>
+			<version>0.6</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
