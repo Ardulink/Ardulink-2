@@ -192,10 +192,7 @@ public class MqttMain {
 			return;
 		}
 
-		// ensure brokerTopic is normalized
-		setBrokerTopic(this.brokerTopic);
-
-		createClient();
+		connectToMqttBroker();
 		try {
 			wait4ever();
 		} finally {
@@ -204,9 +201,11 @@ public class MqttMain {
 
 	}
 
-	private void createClient() throws MqttSecurityException, MqttException,
-			InterruptedException {
+	public void connectToMqttBroker() throws MqttSecurityException,
+			MqttException, InterruptedException {
 		this.link = connect(createLink());
+		// ensure brokerTopic is normalized
+		setBrokerTopic(this.brokerTopic);
 		mqttClient = new MqttClient(link, Config.withTopic(this.brokerTopic));
 	}
 

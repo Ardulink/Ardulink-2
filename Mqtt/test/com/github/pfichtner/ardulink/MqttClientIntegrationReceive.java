@@ -1,8 +1,8 @@
 package com.github.pfichtner.ardulink;
 
+import static com.github.pfichtner.ardulink.util.TestUtil.startAsync;
+import static com.github.pfichtner.ardulink.util.TestUtil.startBroker;
 import static java.util.Collections.singletonList;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -19,8 +19,6 @@ import org.junit.Test;
 import org.zu.ardulink.Link;
 
 import com.github.pfichtner.ardulink.util.AnotherMqttClient;
-import com.github.pfichtner.ardulink.util.MainStarter;
-import com.github.pfichtner.ardulink.util.TestUtil;
 
 public class MqttClientIntegrationReceive {
 
@@ -50,14 +48,11 @@ public class MqttClientIntegrationReceive {
 
 	private AnotherMqttClient amc;
 
-	private MainStarter starter;
-
 	@Before
 	public void setup() throws IOException, InterruptedException,
 			MqttSecurityException, MqttException {
-		broker = TestUtil.startBroker();
+		broker = startBroker();
 		amc = new AnotherMqttClient(TOPIC).connect();
-		starter = new MainStarter(client);
 	}
 
 	@After
@@ -76,12 +71,11 @@ public class MqttClientIntegrationReceive {
 		int value = 1;
 
 		doNotListenForAnything(client);
-		starter.startAsync();
+		startAsync(client);
 		amc.switchDigitalPin(pin, true);
 
 		tearDown();
 
-		assertThat(starter.getExceptions().isEmpty(), is(true));
 		verify(link).getPortList();
 		verify(link).connect("/dev/null", 115200);
 		verify(link).sendPowerPinSwitch(pin, value);
@@ -99,12 +93,11 @@ public class MqttClientIntegrationReceive {
 		int value = 123;
 
 		doNotListenForAnything(client);
-		starter.startAsync();
+		startAsync(client);
 		amc.switchAnalogPin(pin, value);
 
 		tearDown();
 
-		assertThat(starter.getExceptions().isEmpty(), is(true));
 		verify(link).getPortList();
 		verify(link).connect("/dev/null", 115200);
 		verify(link).sendPowerPinIntensity(pin, value);

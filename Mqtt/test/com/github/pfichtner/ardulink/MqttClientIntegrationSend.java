@@ -6,6 +6,8 @@ import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.DI
 import static com.github.pfichtner.ardulink.util.TestUtil.createConnection;
 import static com.github.pfichtner.ardulink.util.TestUtil.getField;
 import static com.github.pfichtner.ardulink.util.TestUtil.set;
+import static com.github.pfichtner.ardulink.util.TestUtil.startAsync;
+import static com.github.pfichtner.ardulink.util.TestUtil.startBroker;
 import static com.github.pfichtner.ardulink.util.TestUtil.toCodepoints;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -26,9 +28,7 @@ import org.zu.ardulink.connection.Connection;
 import org.zu.ardulink.connection.ConnectionContact;
 
 import com.github.pfichtner.ardulink.util.AnotherMqttClient;
-import com.github.pfichtner.ardulink.util.MainStarter;
 import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
-import com.github.pfichtner.ardulink.util.TestUtil;
 
 public class MqttClientIntegrationSend {
 
@@ -70,14 +70,12 @@ public class MqttClientIntegrationSend {
 
 	private Server broker;
 	private AnotherMqttClient amc;
-	private MainStarter starter;
 
 	@Before
 	public void setup() throws IOException, InterruptedException,
 			MqttSecurityException, MqttException {
-		broker = TestUtil.startBroker();
+		broker = startBroker();
 		amc = new AnotherMqttClient(TOPIC).connect();
-		starter = new MainStarter(client);
 	}
 
 	@After
@@ -96,13 +94,12 @@ public class MqttClientIntegrationSend {
 		client.setAnalogs();
 		client.setDigitals(pin);
 
-		starter.startAsync();
+		startAsync(client);
 		simulateArduinoToMqtt(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin)
 				.withValue(1));
 
 		tearDown();
 
-		assertThat(starter.getExceptions().isEmpty(), is(true));
 		assertThat(
 				amc.hasReceived(),
 				is(Collections.singletonList(MqttMessageBuilder
@@ -120,13 +117,12 @@ public class MqttClientIntegrationSend {
 		client.setAnalogs(pin);
 		client.setDigitals();
 
-		starter.startAsync();
+		startAsync(client);
 		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
 				.withValue(value));
 
 		tearDown();
 
-		assertThat(starter.getExceptions().isEmpty(), is(true));
 		assertThat(
 				amc.hasReceived(),
 				is(Collections.singletonList(MqttMessageBuilder
