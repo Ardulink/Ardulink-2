@@ -78,7 +78,9 @@ public class AnotherMqttClient {
 	}
 
 	public void disconnect() throws MqttException {
-		this.mqttClient.disconnect();
+		if (this.mqttClient.isConnected()) {
+			this.mqttClient.disconnect();
+		}
 	}
 
 	public List<Message> hasReceived() {

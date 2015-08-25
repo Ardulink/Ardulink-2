@@ -1,7 +1,6 @@
 package com.github.pfichtner.ardulink;
 
 import static java.util.Collections.singletonList;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -12,7 +11,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 
 import org.dna.mqtt.moquette.server.Server;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.junit.After;
@@ -30,10 +28,11 @@ public class MqttClientIntegrationReceive {
 
 	private static final String TOPIC = "foo/bar";
 
-	private final Link mock = mock(Link.class);
+	private final Link link = mock(Link.class);
 	{
-		when(mock.getPortList()).thenReturn(singletonList("/dev/null"));
-		when(mock.connect("/dev/null", 115200)).thenReturn(true);
+		when(link.getPortList()).thenReturn(singletonList("/dev/null"));
+		when(link.connect("/dev/null", 115200)).thenReturn(true);
+		when(link.isConnected()).thenReturn(true);
 	}
 
 	private MqttMain client = new MqttMain() {
@@ -43,7 +42,7 @@ public class MqttClientIntegrationReceive {
 
 		@Override
 		protected Link createLink() {
-			return mock;
+			return link;
 		}
 	};
 
@@ -80,13 +79,15 @@ public class MqttClientIntegrationReceive {
 		starter.startAsync();
 		amc.switchDigitalPin(pin, true);
 
-		MILLISECONDS.sleep(100);
+		tearDown();
 
 		assertThat(starter.getExceptions().isEmpty(), is(true));
-		verify(mock).getPortList();
-		verify(mock).connect("/dev/null", 115200);
-		verify(mock).sendPowerPinSwitch(pin, value);
-		verifyNoMoreInteractions(mock);
+		verify(link).getPortList();
+		verify(link).connect("/dev/null", 115200);
+		verify(link).sendPowerPinSwitch(pin, value);
+		verify(link).isConnected();
+		verify(link).disconnect();
+		verifyNoMoreInteractions(link);
 	}
 
 	@Test(timeout = TIMEOUT)
@@ -101,13 +102,15 @@ public class MqttClientIntegrationReceive {
 		starter.startAsync();
 		amc.switchAnalogPin(pin, value);
 
-		MILLISECONDS.sleep(100);
+		tearDown();
 
 		assertThat(starter.getExceptions().isEmpty(), is(true));
-		verify(mock).getPortList();
-		verify(mock).connect("/dev/null", 115200);
-		verify(mock).sendPowerPinIntensity(pin, value);
-		verifyNoMoreInteractions(mock);
+		verify(link).getPortList();
+		verify(link).connect("/dev/null", 115200);
+		verify(link).sendPowerPinIntensity(pin, value);
+		verify(link).isConnected();
+		verify(link).disconnect();
+		verifyNoMoreInteractions(link);
 	}
 
 	private static void doNotListenForAnything(MqttMain client) {

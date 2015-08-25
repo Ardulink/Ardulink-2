@@ -125,14 +125,21 @@ public class MqttMain {
 		}
 
 		public void subscribe() throws MqttException {
-			client.subscribe(brokerTopic + '#');
+			this.client.subscribe(brokerTopic + '#');
+		}
+
+		private void unsubscribe() throws MqttException {
+			this.client.unsubscribe(brokerTopic + '#');
 		}
 
 		public void close() throws MqttException {
-			// "kill" the callback since it retries to reconnect
-			this.client.setCallback(null);
-			publishClientStatus(FALSE);
-			this.client.disconnect();
+			if (this.client.isConnected()) {
+				unsubscribe();
+				// "kill" the callback since it retries to reconnect
+				this.client.setCallback(null);
+				publishClientStatus(FALSE);
+				this.client.disconnect();
+			}
 			this.client.close();
 		}
 
@@ -237,7 +244,9 @@ public class MqttMain {
 	}
 
 	public void close() throws MqttException {
-		this.link.disconnect();
+		if (this.link.isConnected()) {
+			this.link.disconnect();
+		}
 		this.mqttClient.close();
 	}
 

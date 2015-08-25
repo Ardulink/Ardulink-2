@@ -7,7 +7,6 @@ import static com.github.pfichtner.ardulink.util.TestUtil.createConnection;
 import static com.github.pfichtner.ardulink.util.TestUtil.getField;
 import static com.github.pfichtner.ardulink.util.TestUtil.set;
 import static com.github.pfichtner.ardulink.util.TestUtil.toCodepoints;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -86,8 +85,6 @@ public class MqttClientIntegrationSend {
 		client.close();
 		amc.disconnect();
 		broker.stopServer();
-
-		Link.destroyInstance(LINKNAME);
 	}
 
 	@Test(timeout = TIMEOUT)
@@ -103,7 +100,7 @@ public class MqttClientIntegrationSend {
 		simulateArduinoToMqtt(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin)
 				.withValue(1));
 
-		MILLISECONDS.sleep(100);
+		tearDown();
 
 		assertThat(starter.getExceptions().isEmpty(), is(true));
 		assertThat(
@@ -127,7 +124,7 @@ public class MqttClientIntegrationSend {
 		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
 				.withValue(value));
 
-		MILLISECONDS.sleep(100);
+		tearDown();
 
 		assertThat(starter.getExceptions().isEmpty(), is(true));
 		assertThat(
