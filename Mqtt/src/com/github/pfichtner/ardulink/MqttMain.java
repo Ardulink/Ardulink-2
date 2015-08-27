@@ -218,7 +218,7 @@ public class MqttMain {
 		if (!link.connect(portList.get(0), 115200)) {
 			throw new RuntimeException("Connection failed!");
 		}
-		TimeUnit.SECONDS.sleep(1);
+		TimeUnit.SECONDS.sleep(3);
 		return link;
 	}
 
