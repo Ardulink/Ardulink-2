@@ -1,5 +1,6 @@
 package com.github.pfichtner.ardulink;
 
+import static com.github.pfichtner.ardulink.AbstractMqttAdapter.Tolerance.maxTolerance;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.zu.ardulink.connection.proxy.NetworkProxyServer.DEFAULT_LISTENING_PORT;
@@ -94,7 +95,7 @@ public class MqttMain {
 			connect();
 			subscribe();
 			for (int analogPin : analogs) {
-				enableAnalogPinChangeEvents(analogPin, tolerance);
+				enableAnalogPinChangeEvents(analogPin, maxTolerance(tolerance));
 			}
 			for (int digitalPin : digitals) {
 				enableDigitalPinChangeEvents(digitalPin);

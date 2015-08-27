@@ -17,6 +17,28 @@ import org.zu.ardulink.event.DigitalReadChangeListener;
 
 public abstract class AbstractMqttAdapter {
 
+	public static class Tolerance {
+
+		private final int maxTolerance;
+
+		public Tolerance(int maxTolerance) {
+			this.maxTolerance = maxTolerance;
+		}
+
+		public static Tolerance maxTolerance(int maxTolerance) {
+			return new Tolerance(maxTolerance);
+		}
+
+		public boolean isZero() {
+			return maxTolerance == 0;
+		}
+
+		protected boolean inTolerance(int oldValue, int newValue) {
+			return abs(oldValue - newValue) <= maxTolerance;
+		}
+
+	}
+
 	public interface Handler {
 		boolean handle(String topic, String message);
 	}
@@ -140,14 +162,15 @@ public abstract class AbstractMqttAdapter {
 		});
 	}
 
-	public void enableAnalogPinChangeEvents(final int pin, final int tolerance) {
+	public void enableAnalogPinChangeEvents(final int pin,
+			final Tolerance tolerance) {
 		AnalogReadChangeListener delegate = newAnalogReadChangeListener(pin);
-		this.link.addAnalogReadChangeListener(tolerance == 0 ? delegate
+		this.link.addAnalogReadChangeListener(tolerance.isZero() ? delegate
 				: toleranceAdapter(tolerance, delegate));
 	}
 
 	private static AnalogReadChangeListener toleranceAdapter(
-			final int tolerance, final AnalogReadChangeListener delegate) {
+			final Tolerance tolerance, final AnalogReadChangeListener delegate) {
 		return new AnalogReadChangeListener() {
 
 			private Integer cachedValue;
@@ -156,8 +179,8 @@ public abstract class AbstractMqttAdapter {
 			public void stateChanged(AnalogReadChangeEvent e) {
 				int newValue = e.getValue();
 				if (this.cachedValue == null
-						|| abs(this.cachedValue.intValue() - newValue) > tolerance
-						|| isHighOrLowValue(newValue)) {
+						|| !tolerance.inTolerance(this.cachedValue.intValue(),
+								newValue) || isHighOrLowValue(newValue)) {
 					this.cachedValue = Integer.valueOf(newValue);
 					delegate.stateChanged(e);
 				}

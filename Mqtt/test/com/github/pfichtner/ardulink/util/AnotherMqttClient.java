@@ -55,16 +55,16 @@ public class AnotherMqttClient {
 
 	public void switchDigitalPin(int pin, Object value)
 			throws MqttPersistenceException, MqttException {
-		sendMessage(createSetMessage(newMsgBuilder().forDigitalPin(pin), value));
+		sendMessage(createSetMessage(newMsgBuilder().digitalPin(pin), value));
 	}
 
 	public void switchAnalogPin(int pin, Object value)
 			throws MqttPersistenceException, MqttException {
-		sendMessage(createSetMessage(newMsgBuilder().forAnalogPin(pin), value));
+		sendMessage(createSetMessage(newMsgBuilder().analogPin(pin), value));
 	}
 
 	private Message createSetMessage(MqttMessageBuilder msgBuilder, Object value) {
-		return msgBuilder.withValue(value).createSetMessage();
+		return msgBuilder.setValue(value);
 	}
 
 	private MqttMessageBuilder newMsgBuilder() {

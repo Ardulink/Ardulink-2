@@ -29,7 +29,11 @@ public class ProtoBuilder {
 		this.command = command;
 	}
 
-	public String withValue(int value) {
+	public String valueChangedTo(int value) {
+		return setValue(value);
+	}
+
+	public String setValue(int value) {
 		return "alp://" + command + "/" + pin + "/" + value + "\n";
 	}
 

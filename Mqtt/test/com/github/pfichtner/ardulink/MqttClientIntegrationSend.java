@@ -74,15 +74,15 @@ public class MqttClientIntegrationSend {
 	@Before
 	public void setup() throws IOException, InterruptedException,
 			MqttSecurityException, MqttException {
-		broker = startBroker();
-		amc = new AnotherMqttClient(TOPIC).connect();
+		this.broker = startBroker();
+		this.amc = new AnotherMqttClient(TOPIC).connect();
 	}
 
 	@After
 	public void tearDown() throws InterruptedException, MqttException {
-		client.close();
-		amc.disconnect();
-		broker.stopServer();
+		this.client.close();
+		this.amc.disconnect();
+		this.broker.stopServer();
 	}
 
 	@Test(timeout = TIMEOUT)
@@ -91,20 +91,20 @@ public class MqttClientIntegrationSend {
 			IOException {
 
 		int pin = 1;
-		client.setAnalogs();
-		client.setDigitals(pin);
+		this.client.setAnalogs();
+		this.client.setDigitals(pin);
 
 		startAsync(client);
 		simulateArduinoToMqtt(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin)
-				.withValue(1));
+				.valueChangedTo(1));
 
 		tearDown();
 
 		assertThat(
-				amc.hasReceived(),
+				this.amc.hasReceived(),
 				is(Collections.singletonList(MqttMessageBuilder
-						.mqttMessageWithBasicTopic(TOPIC).forDigitalPin(pin)
-						.withValue(1).createGetMessage())));
+						.mqttMessageWithBasicTopic(TOPIC).digitalPin(pin)
+						.hasValue(1))));
 	}
 
 	@Test(timeout = TIMEOUT)
@@ -114,25 +114,26 @@ public class MqttClientIntegrationSend {
 
 		int pin = 1;
 		int value = 45;
-		client.setAnalogs(pin);
-		client.setDigitals();
+		this.client.setAnalogs(pin);
+		this.client.setDigitals();
 
-		startAsync(client);
+		startAsync(this.client);
 		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.withValue(value));
+				.valueChangedTo(value));
 
 		tearDown();
 
 		assertThat(
-				amc.hasReceived(),
+				this.amc.hasReceived(),
 				is(Collections.singletonList(MqttMessageBuilder
-						.mqttMessageWithBasicTopic(TOPIC).forAnalogPin(pin)
-						.withValue(value).createGetMessage())));
+						.mqttMessageWithBasicTopic(TOPIC).analogPin(pin)
+						.hasValue(value))));
 	}
 
 	private void simulateArduinoToMqtt(String message) {
 		int[] codepoints = toCodepoints(message);
-		connectionContact.parseInput("someId", codepoints.length, codepoints);
+		this.connectionContact.parseInput("someId", codepoints.length,
+				codepoints);
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.github.pfichtner.ardulink;
 
+import static com.github.pfichtner.ardulink.AbstractMqttAdapter.Tolerance.maxTolerance;
 import static com.github.pfichtner.ardulink.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
 import static com.github.pfichtner.ardulink.util.ProtoBuilder.alpProtocolMessage;
 import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.ANALOG_PIN_READ;
@@ -31,11 +32,8 @@ import org.zu.ardulink.connection.ConnectionContact;
 
 import com.github.pfichtner.ardulink.util.Message;
 import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
-import com.github.pfichtner.ardulink.util.ProtoBuilder;
 
 public class MqttAdapterTest {
-
-	private static final String TOPIC = Config.DEFAULT_TOPIC;
 
 	private static final String LINKNAME = "testlink";
 
@@ -55,6 +53,8 @@ public class MqttAdapterTest {
 			published.add(new Message(topic, message));
 		}
 	};
+
+	private final MqttMessageBuilder mqttMessage = mqttMessageWithBasicTopic(Config.DEFAULT_TOPIC);
 
 	{
 		// there is an extremely high coupling of ConnectionContactImpl and Link
@@ -79,45 +79,42 @@ public class MqttAdapterTest {
 	@Test
 	public void canPowerOnDigitalPin() {
 		int pin = 0;
-		simulateMqttToArduino(mqttMessageWithBasicTopic(TOPIC)
-				.forDigitalPin(pin).withValue(true).createSetMessage());
+		simulateMqttToArduino(mqttMessage.digitalPin(pin).setValue(true));
 		assertThat(serialReceived(), is(alpProtocolMessage(POWER_PIN_SWITCH)
-				.forPin(pin).withValue(1)));
+				.forPin(pin).setValue(1)));
 	}
 
 	@Test
 	public void canHandleInvalidTopics() {
-		mqttClient.toArduino(TOPIC + "invalidTopic", String.valueOf("true"));
-		assertThat(serialReceived(), is(""));
+		simulateMqttToArduino(mqttMessage.withSubTopic(
+				"xxxxxxxxINVALID_TOPICxxxxxxxx").setValue(true));
+		assertThat(serialReceived(), is(empty()));
 	}
 
 	@Test
 	public void canHandleInvalidBooleanPayloads() {
 		int pin = 3;
-		simulateMqttToArduino(mqttMessageWithBasicTopic(TOPIC)
-				.forDigitalPin(pin).withValue("xxxxxxxxINVALIDxxxxxxxx")
-				.createSetMessage());
+		simulateMqttToArduino(mqttMessage.digitalPin(pin).setValue(
+				"xxxxxxxxINVALID_VALUExxxxxxxx"));
 		assertThat(serialReceived(), is(alpProtocolMessage(POWER_PIN_SWITCH)
-				.forPin(pin).withValue(0)));
+				.forPin(pin).setValue(0)));
 	}
 
 	@Test
 	public void canSetPowerAtAnalogPin() {
 		int pin = 3;
 		int value = 127;
-		simulateMqttToArduino(mqttMessageWithBasicTopic(TOPIC)
-				.forAnalogPin(pin).withValue(value).createSetMessage());
+		simulateMqttToArduino(mqttMessage.analogPin(pin).setValue(value));
 		assertThat(serialReceived(), is(alpProtocolMessage(POWER_PIN_INTENSITY)
-				.forPin(pin).withValue(value)));
+				.forPin(pin).setValue(value)));
 	}
 
 	@Test
 	public void canHandleInvalidDigitalPayloads() {
 		int pin = 3;
 		String value = "NaN";
-		simulateMqttToArduino(mqttMessageWithBasicTopic(TOPIC)
-				.forAnalogPin(pin).withValue(value).createSetMessage());
-		assertThat(serialReceived(), is(""));
+		simulateMqttToArduino(mqttMessage.analogPin(pin).setValue(value));
+		assertThat(serialReceived(), is(empty()));
 	}
 
 	@Test
@@ -126,10 +123,9 @@ public class MqttAdapterTest {
 		int value = 1;
 		mqttClient.enableDigitalPinChangeEvents(pin);
 		simulateArduinoToMqtt(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin)
-				.withValue(value));
-		assertThat(published, is(singletonList(mqttMessageWithBasicTopic(TOPIC)
-				.forDigitalPin(pin).withValue((Object) value)
-				.createGetMessage())));
+				.valueChangedTo(value));
+		assertThat(published, is(singletonList(mqttMessage.digitalPin(pin)
+				.hasValue(value))));
 	}
 
 	@Test
@@ -138,7 +134,7 @@ public class MqttAdapterTest {
 		int value = 1;
 		mqttClient.enableDigitalPinChangeEvents(pin);
 		simulateArduinoToMqtt(alpProtocolMessage(DIGITAL_PIN_READ).forPin(
-				anyOtherPinThan(pin)).withValue(value));
+				anyOtherPinThan(pin)).valueChangedTo(value));
 		assertThat(published, is(Collections.<Message> emptyList()));
 	}
 
@@ -148,12 +144,9 @@ public class MqttAdapterTest {
 		int value = 123;
 		mqttClient.enableAnalogPinChangeEvents(pin);
 		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.withValue(value));
-		assertThat(
-				published,
-				is(singletonList(mqttMessageWithBasicTopic(TOPIC)
-						.forAnalogPin(pin).withValue((Object) value)
-						.createGetMessage())));
+				.valueChangedTo(value));
+		assertThat(published, is(singletonList(mqttMessage.analogPin(pin)
+				.hasValue((Object) value))));
 	}
 
 	@Test
@@ -162,7 +155,7 @@ public class MqttAdapterTest {
 		int value = 1;
 		mqttClient.enableAnalogPinChangeEvents(pin);
 		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
-				anyOtherPinThan(pin)).withValue(value));
+				anyOtherPinThan(pin)).valueChangedTo(value));
 		assertThat(published, is(Collections.<Message> emptyList()));
 	}
 
@@ -173,16 +166,14 @@ public class MqttAdapterTest {
 		int pin = 9;
 		int valueLow = 123;
 		int valueHigh = 127;
-		mqttClient.enableAnalogPinChangeEvents(pin, 3);
+		mqttClient.enableAnalogPinChangeEvents(pin, maxTolerance(3));
 		for (int i = valueLow; i <= valueHigh; i++) {
 			simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
-					pin).withValue(i));
+					pin).valueChangedTo(i));
 		}
-		assertThat(published, is(Arrays.asList(
-				mqttMessageWithBasicTopic(TOPIC).forAnalogPin(pin)
-						.withValue(valueLow).createGetMessage(),
-				mqttMessageWithBasicTopic(TOPIC).forAnalogPin(pin)
-						.withValue(valueHigh).createGetMessage())));
+		assertThat(published, is(Arrays.asList(mqttMessage.analogPin(pin)
+				.hasValue(valueLow),
+				mqttMessage.analogPin(pin).hasValue(valueHigh))));
 	}
 
 	@Test
@@ -190,46 +181,41 @@ public class MqttAdapterTest {
 		int pin = 9;
 		int valueHigh = 123;
 		int valueLow = 119;
-		mqttClient.enableAnalogPinChangeEvents(pin, 3);
+		mqttClient.enableAnalogPinChangeEvents(pin, maxTolerance(3));
 		for (int i = valueHigh; i >= valueLow; i--) {
 			simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
-					pin).withValue(i));
+					pin).valueChangedTo(i));
 		}
-		assertThat(published, is(Arrays.asList(
-				mqttMessageWithBasicTopic(TOPIC).forAnalogPin(pin)
-						.withValue(valueHigh).createGetMessage(),
-				mqttMessageWithBasicTopic(TOPIC).forAnalogPin(pin)
-						.withValue(valueLow).createGetMessage())));
+		assertThat(published, is(Arrays.asList(mqttMessage.analogPin(pin)
+				.hasValue(valueHigh),
+				mqttMessage.analogPin(pin).hasValue(valueLow))));
 	}
 
 	@Test
 	public void whenGettingLowValueMessageIsPublishedAnyhow() {
 		int pin = 9;
-		mqttClient.enableAnalogPinChangeEvents(pin, 25);
-		ProtoBuilder protoBuilder = alpProtocolMessage(ANALOG_PIN_READ).forPin(
-				pin);
-		simulateArduinoToMqtt(protoBuilder.withValue(1));
-		simulateArduinoToMqtt(protoBuilder.withValue(0));
-		MqttMessageBuilder mqttBuilder = mqttMessageWithBasicTopic(TOPIC)
-				.forAnalogPin(pin);
-		assertThat(published, is(Arrays.asList(mqttBuilder.withValue(1)
-				.createGetMessage(), mqttBuilder.withValue(0)
-				.createGetMessage())));
+		mqttClient.enableAnalogPinChangeEvents(pin, maxTolerance(25));
+		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
+				.valueChangedTo(1));
+		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
+				.valueChangedTo(0));
+		MqttMessageBuilder mqttBuilder = mqttMessage.analogPin(pin);
+		assertThat(
+				published,
+				is(Arrays.asList(mqttBuilder.hasValue(1),
+						mqttBuilder.hasValue(0))));
 	}
 
 	@Test
 	public void whenGettingHighValueMessageIsPublishedAnyhow() {
 		int pin = 9;
-		mqttClient.enableAnalogPinChangeEvents(pin, 25);
-		ProtoBuilder protoBuilder = alpProtocolMessage(ANALOG_PIN_READ).forPin(
-				pin);
-		simulateArduinoToMqtt(protoBuilder.withValue(254));
-		simulateArduinoToMqtt(protoBuilder.withValue(255));
-		MqttMessageBuilder mqttBuilder = mqttMessageWithBasicTopic(TOPIC)
-				.forAnalogPin(pin);
-		assertThat(published, is(Arrays.asList(mqttBuilder.withValue(254)
-				.createGetMessage(), mqttBuilder.withValue(255)
-				.createGetMessage())));
+		mqttClient.enableAnalogPinChangeEvents(pin, maxTolerance(25));
+		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
+				.valueChangedTo(254));
+		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
+				.valueChangedTo(255));
+		assertThat(published, is(Arrays.asList(mqttMessage.analogPin(pin)
+				.hasValue(254), mqttMessage.analogPin(pin).hasValue(255))));
 	}
 
 	private int anyOtherPinThan(int pin) {
@@ -256,6 +242,10 @@ public class MqttAdapterTest {
 			throw new RuntimeException(e);
 		}
 		return new String(outputStream.toByteArray());
+	}
+
+	private String empty() {
+		return "";
 	}
 
 }
