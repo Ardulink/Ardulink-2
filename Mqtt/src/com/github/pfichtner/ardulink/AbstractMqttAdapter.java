@@ -1,7 +1,6 @@
 package com.github.pfichtner.ardulink;
 
 import static java.lang.Boolean.parseBoolean;
-import static java.lang.Math.abs;
 import static java.lang.String.format;
 import static org.zu.ardulink.protocol.IProtocol.POWER_HIGH;
 import static org.zu.ardulink.protocol.IProtocol.POWER_LOW;
@@ -15,29 +14,14 @@ import org.zu.ardulink.event.AnalogReadChangeListener;
 import org.zu.ardulink.event.DigitalReadChangeEvent;
 import org.zu.ardulink.event.DigitalReadChangeListener;
 
+import com.github.pfichtner.ardulink.compactors.AnalogReadChangeListenerToleranceAdapter;
+import com.github.pfichtner.ardulink.compactors.SlicedAnalogReadChangeListenerAdapter;
+import com.github.pfichtner.ardulink.compactors.TimeSliceCompactorAvg;
+import com.github.pfichtner.ardulink.compactors.TimeSliceCompactorLast;
+import com.github.pfichtner.ardulink.compactors.TimeSlicer;
+import com.github.pfichtner.ardulink.compactors.Tolerance;
+
 public abstract class AbstractMqttAdapter {
-
-	public static class Tolerance {
-
-		private final int maxTolerance;
-
-		public Tolerance(int maxTolerance) {
-			this.maxTolerance = maxTolerance;
-		}
-
-		public static Tolerance maxTolerance(int maxTolerance) {
-			return new Tolerance(maxTolerance);
-		}
-
-		public boolean isZero() {
-			return maxTolerance == 0;
-		}
-
-		protected boolean inTolerance(int oldValue, int newValue) {
-			return abs(oldValue - newValue) <= maxTolerance;
-		}
-
-	}
 
 	public interface Handler {
 		boolean handle(String topic, String message);
@@ -162,39 +146,64 @@ public abstract class AbstractMqttAdapter {
 		});
 	}
 
-	public void enableAnalogPinChangeEvents(final int pin,
-			final Tolerance tolerance) {
-		AnalogReadChangeListener delegate = newAnalogReadChangeListener(pin);
-		this.link.addAnalogReadChangeListener(tolerance.isZero() ? delegate
-				: toleranceAdapter(tolerance, delegate));
+	public enum CompactStrategy {
+		LAST_WINS, AVERAGE;
 	}
 
-	private static AnalogReadChangeListener toleranceAdapter(
-			final Tolerance tolerance, final AnalogReadChangeListener delegate) {
-		return new AnalogReadChangeListener() {
+	public class AnalogReadChangeListenerConfigurer {
 
-			private Integer cachedValue;
+		private AnalogReadChangeListener active;
 
-			@Override
-			public void stateChanged(AnalogReadChangeEvent e) {
-				int newValue = e.getValue();
-				if (this.cachedValue == null
-						|| !tolerance.inTolerance(this.cachedValue.intValue(),
-								newValue) || isHighOrLowValue(newValue)) {
-					this.cachedValue = Integer.valueOf(newValue);
-					delegate.stateChanged(e);
-				}
+		public AnalogReadChangeListenerConfigurer(int pin) {
+			active = newAnalogReadChangeListener(pin);
+		}
+
+		public AnalogReadChangeListenerConfigurer tolerance(Tolerance tolerance) {
+			if (!tolerance.isZero()) {
+				decorate(new AnalogReadChangeListenerToleranceAdapter(
+						tolerance, active));
 			}
+			return this;
+		}
 
-			private boolean isHighOrLowValue(int value) {
-				return value == 0 || value == 255;
-			}
+		public AnalogReadChangeListenerConfigurer compact(
+				CompactStrategy strategy, TimeSlicer timeSlicer) {
+			SlicedAnalogReadChangeListenerAdapter worker = createWorker(strategy);
+			timeSlicer.add(worker);
+			decorate(worker);
+			return this;
+		}
 
-			@Override
-			public int getPinListening() {
-				return delegate.getPinListening();
+		private SlicedAnalogReadChangeListenerAdapter createWorker(
+				CompactStrategy strategy) {
+			switch (strategy) {
+			case AVERAGE:
+				return new TimeSliceCompactorAvg(active);
+			case LAST_WINS:
+				return new TimeSliceCompactorLast(active);
+			default:
+				throw new IllegalStateException("Unsupported strategy "
+						+ strategy);
 			}
-		};
+		}
+
+		public void decorate(AnalogReadChangeListener newActive) {
+			this.active = newActive;
+		}
+
+		public AnalogReadChangeListener getActive() {
+			return active;
+		}
+
+		public void add() {
+			link.addAnalogReadChangeListener(active);
+		}
+
+	}
+
+	public AnalogReadChangeListenerConfigurer configureAnalogReadChangeListener(
+			int pin) {
+		return new AnalogReadChangeListenerConfigurer(pin);
 	}
 
 	public void enableAnalogPinChangeEvents(final int pin) {

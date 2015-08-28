@@ -1,6 +1,5 @@
 package com.github.pfichtner.ardulink;
 
-import static com.github.pfichtner.ardulink.AbstractMqttAdapter.Tolerance.maxTolerance;
 import static com.github.pfichtner.ardulink.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
 import static com.github.pfichtner.ardulink.util.ProtoBuilder.alpProtocolMessage;
 import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.ANALOG_PIN_READ;
@@ -18,7 +17,6 @@ import static org.junit.Assert.assertThat;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -157,65 +155,6 @@ public class MqttAdapterTest {
 		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
 				anyOtherPinThan(pin)).valueChangedTo(value));
 		assertThat(published, is(Collections.<Message> emptyList()));
-	}
-
-	// ----------------------------------------------------------------------------
-
-	@Test
-	public void doesNotPublishPinChangesLowerThanToleranceValueWhenIncreasing() {
-		int pin = 9;
-		int valueLow = 123;
-		int valueHigh = 127;
-		mqttClient.enableAnalogPinChangeEvents(pin, maxTolerance(3));
-		for (int i = valueLow; i <= valueHigh; i++) {
-			simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
-					pin).valueChangedTo(i));
-		}
-		assertThat(published, is(Arrays.asList(mqttMessage.analogPin(pin)
-				.hasValue(valueLow),
-				mqttMessage.analogPin(pin).hasValue(valueHigh))));
-	}
-
-	@Test
-	public void doesNotPublishPinChangesLowerThanToleranceValueWhenDecreasing() {
-		int pin = 9;
-		int valueHigh = 123;
-		int valueLow = 119;
-		mqttClient.enableAnalogPinChangeEvents(pin, maxTolerance(3));
-		for (int i = valueHigh; i >= valueLow; i--) {
-			simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
-					pin).valueChangedTo(i));
-		}
-		assertThat(published, is(Arrays.asList(mqttMessage.analogPin(pin)
-				.hasValue(valueHigh),
-				mqttMessage.analogPin(pin).hasValue(valueLow))));
-	}
-
-	@Test
-	public void whenGettingLowValueMessageIsPublishedAnyhow() {
-		int pin = 9;
-		mqttClient.enableAnalogPinChangeEvents(pin, maxTolerance(25));
-		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.valueChangedTo(1));
-		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.valueChangedTo(0));
-		MqttMessageBuilder mqttBuilder = mqttMessage.analogPin(pin);
-		assertThat(
-				published,
-				is(Arrays.asList(mqttBuilder.hasValue(1),
-						mqttBuilder.hasValue(0))));
-	}
-
-	@Test
-	public void whenGettingHighValueMessageIsPublishedAnyhow() {
-		int pin = 9;
-		mqttClient.enableAnalogPinChangeEvents(pin, maxTolerance(25));
-		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.valueChangedTo(254));
-		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.valueChangedTo(255));
-		assertThat(published, is(Arrays.asList(mqttMessage.analogPin(pin)
-				.hasValue(254), mqttMessage.analogPin(pin).hasValue(255))));
 	}
 
 	private int anyOtherPinThan(int pin) {

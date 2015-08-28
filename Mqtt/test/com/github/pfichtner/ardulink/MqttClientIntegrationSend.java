@@ -91,6 +91,7 @@ public class MqttClientIntegrationSend {
 			IOException {
 
 		int pin = 1;
+		this.client.setThrottleMillis(0);
 		this.client.setAnalogs();
 		this.client.setDigitals(pin);
 
@@ -114,6 +115,7 @@ public class MqttClientIntegrationSend {
 
 		int pin = 1;
 		int value = 45;
+		this.client.setThrottleMillis(0);
 		this.client.setAnalogs(pin);
 		this.client.setDigitals();
 

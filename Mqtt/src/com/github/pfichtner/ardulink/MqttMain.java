@@ -1,8 +1,10 @@
 package com.github.pfichtner.ardulink;
 
-import static com.github.pfichtner.ardulink.AbstractMqttAdapter.Tolerance.maxTolerance;
+import static com.github.pfichtner.ardulink.AbstractMqttAdapter.CompactStrategy.AVERAGE;
+import static com.github.pfichtner.ardulink.compactors.Tolerance.maxTolerance;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.zu.ardulink.connection.proxy.NetworkProxyServer.DEFAULT_LISTENING_PORT;
 
 import java.io.IOException;
@@ -21,6 +23,10 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.proxy.NetworkProxyConnection;
+
+import com.github.pfichtner.ardulink.AbstractMqttAdapter.CompactStrategy;
+import com.github.pfichtner.ardulink.compactors.ThreadTimeSlicer;
+import com.github.pfichtner.ardulink.compactors.TimeSlicer;
 
 public class MqttMain {
 
@@ -45,8 +51,14 @@ public class MqttMain {
 	@Option(name = "-a", aliases = "--analog", usage = "Analog pins to listen to")
 	private int[] analogs = new int[0];
 
-	@Option(name = "-at", aliases = "--tolerance", usage = "Analog tolerance, publich only changes exceeding this value")
+	@Option(name = "-ato", aliases = "--tolerance", usage = "Analog tolerance, publish only changes exceeding this value")
 	private int tolerance = 3;
+
+	@Option(name = "-athms", aliases = "--throttle", usage = "Analog throttle, do not publish multiple events within <throttleMillis>")
+	private int throttleMillis = (int) TimeUnit.SECONDS.toMillis(5);
+
+	@Option(name = "-athstr", aliases = "--strategy", usage = "Analog throttle strategy")
+	private CompactStrategy compactStrategy = AVERAGE;
 
 	@Option(name = "-remote", usage = "Host (and optional port) of a remote ardulink arduino")
 	private String remote;
@@ -94,9 +106,19 @@ public class MqttMain {
 			});
 			connect();
 			subscribe();
-			for (int analogPin : analogs) {
-				enableAnalogPinChangeEvents(analogPin, maxTolerance(tolerance));
+
+			TimeSlicer timeSlicer = null;
+			if (throttleMillis > 0) {
+				timeSlicer = new ThreadTimeSlicer(throttleMillis, MILLISECONDS);
 			}
+			for (int analogPin : analogs) {
+				AnalogReadChangeListenerConfigurer cfg = configureAnalogReadChangeListener(
+						analogPin).tolerance(maxTolerance(tolerance));
+				cfg = timeSlicer == null ? cfg : cfg.compact(compactStrategy,
+						timeSlicer);
+				cfg.add();
+			}
+
 			for (int digitalPin : digitals) {
 				enableDigitalPinChangeEvents(digitalPin);
 			}
@@ -261,6 +283,10 @@ public class MqttMain {
 
 	public void setDigitals(int... digitals) {
 		this.digitals = digitals == null ? new int[0] : digitals.clone();
+	}
+
+	public void setThrottleMillis(int throttleMillis) {
+		this.throttleMillis = throttleMillis;
 	}
 
 	private static void wait4ever() throws InterruptedException {
