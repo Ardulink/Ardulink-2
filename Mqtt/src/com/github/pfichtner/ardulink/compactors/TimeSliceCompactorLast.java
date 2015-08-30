@@ -6,6 +6,7 @@ import org.zu.ardulink.event.AnalogReadChangeListener;
 public class TimeSliceCompactorLast extends
 		SlicedAnalogReadChangeListenerAdapter {
 
+	private boolean firstCall = true;
 	private AnalogReadChangeEvent lastEvent;
 
 	public TimeSliceCompactorLast(AnalogReadChangeListener delegate) {
@@ -13,16 +14,21 @@ public class TimeSliceCompactorLast extends
 	}
 
 	@Override
-	public void ticked() {
-		AnalogReadChangeEvent e = lastEvent;
-		if (e != null) {
-			getDelegate().stateChanged(e);
+	public void stateChanged(AnalogReadChangeEvent event) {
+		if (this.firstCall) {
+			getDelegate().stateChanged(event);
+			this.firstCall = false;
+		} else {
+			this.lastEvent = event;
 		}
 	}
 
 	@Override
-	public void stateChanged(AnalogReadChangeEvent e) {
-		this.lastEvent = e;
+	public void ticked() {
+		AnalogReadChangeEvent event = this.lastEvent;
+		if (event != null) {
+			getDelegate().stateChanged(event);
+		}
 	}
 
 }

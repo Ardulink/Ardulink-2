@@ -11,23 +11,39 @@ import com.github.pfichtner.ardulink.util.HashMultiMap;
 public class TimeSliceCompactorAvg extends
 		SlicedAnalogReadChangeListenerAdapter {
 
-	private HashMultiMap<Integer, Integer> data = new HashMultiMap<Integer, Integer>();
+	private boolean firstCall = true;
+	private final HashMultiMap<Integer, Integer> data = new HashMultiMap<Integer, Integer>();
 
 	public TimeSliceCompactorAvg(AnalogReadChangeListener delegate) {
 		super(delegate);
 	}
 
 	@Override
-	public void ticked() {
-		HashMultiMap<Integer, Integer> vs = data;
-		if (!vs.isEmpty()) {
-			data = new HashMultiMap<Integer, Integer>();
-			for (Entry<Integer, List<Integer>> entry : vs.asMap().entrySet()) {
-				getDelegate().stateChanged(
-						new AnalogReadChangeEvent(entry.getKey(), avg(entry
-								.getValue()), "alp://todo/rebuild/message"));
+	public void stateChanged(AnalogReadChangeEvent event) {
+		if (this.firstCall) {
+			getDelegate().stateChanged(event);
+			this.firstCall = false;
+		} else {
+			synchronized (this.data) {
+				this.data.put(event.getPin(), event.getValue());
 			}
+		}
+	}
 
+	@Override
+	public void ticked() {
+		synchronized (this.data) {
+			if (!data.isEmpty()) {
+				for (Entry<Integer, List<Integer>> entry : data.asMap()
+						.entrySet()) {
+					getDelegate()
+							.stateChanged(
+									new AnalogReadChangeEvent(entry.getKey(),
+											avg(entry.getValue()),
+											"alp://todo/rebuild/message"));
+				}
+				data.clear();
+			}
 		}
 	}
 
@@ -41,11 +57,6 @@ public class TimeSliceCompactorAvg extends
 			sum += integer;
 		}
 		return sum;
-	}
-
-	@Override
-	public void stateChanged(AnalogReadChangeEvent e) {
-		this.data.put(e.getPin(), e.getValue());
 	}
 
 }

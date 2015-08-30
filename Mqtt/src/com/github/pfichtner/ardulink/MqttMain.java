@@ -52,10 +52,10 @@ public class MqttMain {
 	private int[] analogs = new int[0];
 
 	@Option(name = "-ato", aliases = "--tolerance", usage = "Analog tolerance, publish only changes exceeding this value")
-	private int tolerance = 3;
+	private int tolerance = 1;
 
 	@Option(name = "-athms", aliases = "--throttle", usage = "Analog throttle, do not publish multiple events within <throttleMillis>")
-	private int throttleMillis = (int) TimeUnit.SECONDS.toMillis(5);
+	private int throttleMillis = (int) TimeUnit.SECONDS.toMillis(10);
 
 	@Option(name = "-athstr", aliases = "--strategy", usage = "Analog throttle strategy")
 	private CompactStrategy compactStrategy = AVERAGE;

@@ -16,8 +16,6 @@ import static org.junit.Assert.assertThat;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 import org.junit.After;
@@ -84,6 +82,12 @@ public class FloodProtectTest {
 
 	}
 
+	private List<Message> published() {
+		List<Message> result = new ArrayList<Message>(published);
+		published.clear();
+		return result;
+	}
+
 	@Before
 	public void setup() {
 		link.connect();
@@ -106,7 +110,7 @@ public class FloodProtectTest {
 			simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
 					pin).valueChangedTo(i));
 		}
-		assertThat(published, is(Arrays.asList(mqttMessage.analogPin(pin)
+		assertThat(published(), is(Arrays.asList(mqttMessage.analogPin(pin)
 				.hasValue(valueLow),
 				mqttMessage.analogPin(pin).hasValue(valueHigh))));
 	}
@@ -122,7 +126,7 @@ public class FloodProtectTest {
 			simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
 					pin).valueChangedTo(i));
 		}
-		assertThat(published, is(Arrays.asList(mqttMessage.analogPin(pin)
+		assertThat(published(), is(Arrays.asList(mqttMessage.analogPin(pin)
 				.hasValue(valueHigh),
 				mqttMessage.analogPin(pin).hasValue(valueLow))));
 	}
@@ -138,7 +142,7 @@ public class FloodProtectTest {
 				.valueChangedTo(0));
 		MqttMessageBuilder mqttBuilder = mqttMessage.analogPin(pin);
 		assertThat(
-				published,
+				published(),
 				is(Arrays.asList(mqttBuilder.hasValue(1),
 						mqttBuilder.hasValue(0))));
 	}
@@ -152,7 +156,7 @@ public class FloodProtectTest {
 				.valueChangedTo(254));
 		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
 				.valueChangedTo(255));
-		assertThat(published, is(Arrays.asList(mqttMessage.analogPin(pin)
+		assertThat(published(), is(Arrays.asList(mqttMessage.analogPin(pin)
 				.hasValue(254), mqttMessage.analogPin(pin).hasValue(255))));
 	}
 
@@ -161,25 +165,25 @@ public class FloodProtectTest {
 	@Test
 	public void compactLatestWins() {
 		int pin = 11;
-		mqttClient.configureAnalogReadChangeListener(pin).compact(LAST_WINS, dummyTimeSlicer).add();
+		mqttClient.configureAnalogReadChangeListener(pin)
+				.compact(LAST_WINS, dummyTimeSlicer).add();
 		fire(pin);
 		dummyTimeSlicer.simulateTick();
-		assertThat(
-				new HashSet<Message>(published),
-				is(new HashSet<Message>(Collections.singleton(mqttMessage
-						.analogPin(pin).hasValue(99)))));
+		Message first = mqttMessage.analogPin(pin).hasValue(0);
+		Message last = mqttMessage.analogPin(pin).hasValue(99);
+		assertThat(published(), is(Arrays.asList(first, last)));
 	}
 
 	@Test
 	public void compactAverage() {
 		int pin = 11;
-		mqttClient.configureAnalogReadChangeListener(pin).compact(AVERAGE, dummyTimeSlicer).add();
+		mqttClient.configureAnalogReadChangeListener(pin)
+				.compact(AVERAGE, dummyTimeSlicer).add();
 		fire(pin);
 		dummyTimeSlicer.simulateTick();
-		assertThat(
-				new HashSet<Message>(published),
-				is(new HashSet<Message>(Collections.singleton(mqttMessage
-						.analogPin(pin).hasValue(49)))));
+		Message first = mqttMessage.analogPin(pin).hasValue(0);
+		Message average = mqttMessage.analogPin(pin).hasValue(50);
+		assertThat(published(), is(Arrays.asList(first, average)));
 
 	}
 
