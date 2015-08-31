@@ -10,13 +10,13 @@ import static com.github.pfichtner.ardulink.util.TestUtil.createConnection;
 import static com.github.pfichtner.ardulink.util.TestUtil.getField;
 import static com.github.pfichtner.ardulink.util.TestUtil.set;
 import static com.github.pfichtner.ardulink.util.TestUtil.toCodepoints;
-import static java.util.Collections.singletonList;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -79,7 +79,7 @@ public class MqttAdapterTest {
 		int pin = 0;
 		simulateMqttToArduino(mqttMessage.digitalPin(pin).setValue(true));
 		assertThat(serialReceived(), is(alpProtocolMessage(POWER_PIN_SWITCH)
-				.forPin(pin).setValue(1)));
+				.forPin(pin).withValue(1)));
 	}
 
 	@Test
@@ -95,7 +95,7 @@ public class MqttAdapterTest {
 		simulateMqttToArduino(mqttMessage.digitalPin(pin).setValue(
 				"xxxxxxxxINVALID_VALUExxxxxxxx"));
 		assertThat(serialReceived(), is(alpProtocolMessage(POWER_PIN_SWITCH)
-				.forPin(pin).setValue(0)));
+				.forPin(pin).withValue(0)));
 	}
 
 	@Test
@@ -104,7 +104,7 @@ public class MqttAdapterTest {
 		int value = 127;
 		simulateMqttToArduino(mqttMessage.analogPin(pin).setValue(value));
 		assertThat(serialReceived(), is(alpProtocolMessage(POWER_PIN_INTENSITY)
-				.forPin(pin).setValue(value)));
+				.forPin(pin).withValue(value)));
 	}
 
 	@Test
@@ -121,8 +121,8 @@ public class MqttAdapterTest {
 		int value = 1;
 		mqttClient.enableDigitalPinChangeEvents(pin);
 		simulateArduinoToMqtt(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin)
-				.valueChangedTo(value));
-		assertThat(published, is(singletonList(mqttMessage.digitalPin(pin)
+				.withValue(value));
+		assertThat(published, is(listWithSameOrder(mqttMessage.digitalPin(pin)
 				.hasValue(value))));
 	}
 
@@ -132,8 +132,8 @@ public class MqttAdapterTest {
 		int value = 1;
 		mqttClient.enableDigitalPinChangeEvents(pin);
 		simulateArduinoToMqtt(alpProtocolMessage(DIGITAL_PIN_READ).forPin(
-				anyOtherPinThan(pin)).valueChangedTo(value));
-		assertThat(published, is(Collections.<Message> emptyList()));
+				anyOtherPinThan(pin)).withValue(value));
+		assertThat(published, is(noMessages()));
 	}
 
 	@Test
@@ -142,9 +142,9 @@ public class MqttAdapterTest {
 		int value = 123;
 		mqttClient.enableAnalogPinChangeEvents(pin);
 		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.valueChangedTo(value));
-		assertThat(published, is(singletonList(mqttMessage.analogPin(pin)
-				.hasValue((Object) value))));
+				.withValue(value));
+		assertThat(published, is(listWithSameOrder(mqttMessage.analogPin(pin)
+				.hasValue(value))));
 	}
 
 	@Test
@@ -153,21 +153,13 @@ public class MqttAdapterTest {
 		int value = 1;
 		mqttClient.enableAnalogPinChangeEvents(pin);
 		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
-				anyOtherPinThan(pin)).valueChangedTo(value));
-		assertThat(published, is(Collections.<Message> emptyList()));
-	}
-
-	private int anyOtherPinThan(int pin) {
-		return ++pin;
+				anyOtherPinThan(pin)).withValue(value));
+		assertThat(published, is(noMessages()));
 	}
 
 	private void simulateArduinoToMqtt(String message) {
 		int[] codepoints = toCodepoints(message);
 		connectionContact.parseInput(anyId(), codepoints.length, codepoints);
-	}
-
-	private String anyId() {
-		return "randomId";
 	}
 
 	private void simulateMqttToArduino(Message message) {
@@ -183,8 +175,24 @@ public class MqttAdapterTest {
 		return new String(outputStream.toByteArray());
 	}
 
-	private String empty() {
+	private static int anyOtherPinThan(int pin) {
+		return ++pin;
+	}
+
+	private static String anyId() {
+		return "randomId";
+	}
+
+	private static String empty() {
 		return "";
+	}
+
+	private static <T> List<T> listWithSameOrder(T... t) {
+		return Arrays.asList(t);
+	}
+
+	private static List<Message> noMessages() {
+		return Collections.<Message> emptyList();
 	}
 
 }

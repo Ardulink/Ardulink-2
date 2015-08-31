@@ -7,7 +7,7 @@ public class MqttMessageBuilder {
 	public enum Type {
 		SET("set"), GET("get");
 
-		private String name;
+		private final String name;
 
 		private Type(String name) {
 			this.name = name;

@@ -108,7 +108,7 @@ public class FloodProtectTest {
 				.tolerance(maxTolerance(3)).add();
 		for (int i = valueLow; i <= valueHigh; i++) {
 			simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
-					pin).valueChangedTo(i));
+					pin).withValue(i));
 		}
 		assertThat(published(), is(Arrays.asList(mqttMessage.analogPin(pin)
 				.hasValue(valueLow),
@@ -124,7 +124,7 @@ public class FloodProtectTest {
 				.tolerance(maxTolerance(3)).add();
 		for (int i = valueHigh; i >= valueLow; i--) {
 			simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
-					pin).valueChangedTo(i));
+					pin).withValue(i));
 		}
 		assertThat(published(), is(Arrays.asList(mqttMessage.analogPin(pin)
 				.hasValue(valueHigh),
@@ -137,9 +137,9 @@ public class FloodProtectTest {
 		mqttClient.configureAnalogReadChangeListener(pin)
 				.tolerance(maxTolerance(25)).add();
 		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.valueChangedTo(1));
+				.withValue(1));
 		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.valueChangedTo(0));
+				.withValue(0));
 		MqttMessageBuilder mqttBuilder = mqttMessage.analogPin(pin);
 		assertThat(
 				published(),
@@ -153,9 +153,9 @@ public class FloodProtectTest {
 		mqttClient.configureAnalogReadChangeListener(pin)
 				.tolerance(maxTolerance(25)).add();
 		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.valueChangedTo(254));
+				.withValue(254));
 		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.valueChangedTo(255));
+				.withValue(255));
 		assertThat(published(), is(Arrays.asList(mqttMessage.analogPin(pin)
 				.hasValue(254), mqttMessage.analogPin(pin).hasValue(255))));
 	}
@@ -190,7 +190,7 @@ public class FloodProtectTest {
 	protected void fire(int pin) {
 		for (int value = 0; value < 100; value++) {
 			simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
-					pin).valueChangedTo(value));
+					pin).withValue(value));
 		}
 	}
 

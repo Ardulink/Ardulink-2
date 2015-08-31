@@ -97,7 +97,7 @@ public class MqttClientIntegrationSend {
 
 		startAsync(client);
 		simulateArduinoToMqtt(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin)
-				.valueChangedTo(1));
+				.withValue(1));
 
 		tearDown();
 
@@ -121,7 +121,7 @@ public class MqttClientIntegrationSend {
 
 		startAsync(this.client);
 		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.valueChangedTo(value));
+				.withValue(value));
 
 		tearDown();
 
