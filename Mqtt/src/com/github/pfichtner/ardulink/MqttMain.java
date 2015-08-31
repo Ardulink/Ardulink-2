@@ -77,36 +77,22 @@ public class MqttMain {
 				throws MqttSecurityException, MqttException {
 			super(link, config);
 			this.client = newClient(brokerHost, brokerPort, clientId);
-			this.client.setCallback(new MqttCallback() {
-				public void connectionLost(Throwable cause) {
-					do {
-						try {
-							TimeUnit.SECONDS.sleep(1);
-						} catch (InterruptedException e1) {
-							Thread.currentThread().interrupt();
-						}
-						try {
-							connect();
-							subscribe();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					} while (!MqttClient.this.client.isConnected());
-				}
+			this.client.setCallback(createCallback());
+		}
 
-				public void messageArrived(String topic, MqttMessage message)
-						throws IOException {
-					MqttClient.this.toArduino(topic,
-							new String(message.getPayload()));
-				}
+		public MqttClient listenToMqttAndArduino()
+				throws MqttSecurityException, MqttException {
+			return listenToMqtt().listenToArduino();
+		}
 
-				public void deliveryComplete(IMqttDeliveryToken token) {
-					// nothing to do
-				}
-			});
+		private MqttClient listenToMqtt() throws MqttSecurityException,
+				MqttException {
 			connect();
 			subscribe();
+			return this;
+		}
 
+		private MqttClient listenToArduino() {
 			TimeSlicer timeSlicer = null;
 			if (throttleMillis > 0) {
 				timeSlicer = new ThreadTimeSlicer(throttleMillis, MILLISECONDS);
@@ -122,6 +108,36 @@ public class MqttMain {
 			for (int digitalPin : digitals) {
 				enableDigitalPinChangeEvents(digitalPin);
 			}
+			return this;
+		}
+
+		private MqttCallback createCallback() {
+			return new MqttCallback() {
+				public void connectionLost(Throwable cause) {
+					do {
+						try {
+							TimeUnit.SECONDS.sleep(1);
+						} catch (InterruptedException e1) {
+							Thread.currentThread().interrupt();
+						}
+						try {
+							listenToMqtt();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					} while (!MqttClient.this.client.isConnected());
+				}
+
+				public void messageArrived(String topic, MqttMessage message)
+						throws IOException {
+					MqttClient.this.toArduino(topic,
+							new String(message.getPayload()));
+				}
+
+				public void deliveryComplete(IMqttDeliveryToken token) {
+					// nothing to do
+				}
+			};
 		}
 
 		private org.eclipse.paho.client.mqttv3.MqttClient newClient(
@@ -229,7 +245,8 @@ public class MqttMain {
 		this.link = connect(createLink());
 		// ensure brokerTopic is normalized
 		setBrokerTopic(this.brokerTopic);
-		mqttClient = new MqttClient(link, Config.withTopic(this.brokerTopic));
+		mqttClient = new MqttClient(link, Config.withTopic(this.brokerTopic))
+				.listenToMqttAndArduino();
 	}
 
 	private static Link connect(Link link) throws InterruptedException {
