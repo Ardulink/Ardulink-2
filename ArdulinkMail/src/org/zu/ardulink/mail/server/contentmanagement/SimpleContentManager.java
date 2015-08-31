@@ -18,15 +18,11 @@ limitations under the License.
 
 package org.zu.ardulink.mail.server.contentmanagement;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.zu.ardulink.Link;
-import org.zu.ardulink.mail.server.links.configuration.ALink;
-import org.zu.ardulink.mail.server.links.configuration.AParameter;
-import org.zu.ardulink.mail.server.links.configuration.ConfigurationFacade;
+import org.zu.ardulink.mail.server.links.configuration.utils.ConfigurationUtility;
 import org.zu.ardulink.protocol.IProtocol;
 
 /**
@@ -38,7 +34,7 @@ import org.zu.ardulink.protocol.IProtocol;
  *
  */
 public class SimpleContentManager implements IContentManager {
-
+	
 	@Override
 	public boolean isForContent(String content, List<String> mailContentHooks) {
 		
@@ -60,7 +56,7 @@ public class SimpleContentManager implements IContentManager {
 		
 		StringBuilder builder = new StringBuilder();
 		
-		List<Link> links = getConnectedLinks(aLinkNames);
+		List<Link> links = ConfigurationUtility.getConnectedLinks(aLinkNames);
 		Iterator<Link> it = links.iterator();
 		while (it.hasNext()) {
 			Link link = (Link) it.next();
@@ -83,53 +79,4 @@ public class SimpleContentManager implements IContentManager {
 		
 		return builder.toString();
 	}
-	
-	private List<Link> getConnectedLinks(List<String> aLinkNames) {
-		List<ALink> aLinks = ConfigurationFacade.getALinks(aLinkNames);
-		List<Link> links = new LinkedList<Link>();
-		Iterator<ALink> it = aLinks.iterator();
-		while (it.hasNext()) {
-			ALink aLink = (ALink) it.next();
-			Link link = aLink.getLink();
-			if(!link.isConnected()) {
-				try {
-					boolean isConnected = connect(aLink, link);
-					if(isConnected) {
-						links.add(link);
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					System.out.println("Connection failed.");
-				}
-			} else {
-				links.add(link);
-			}
-		}
-		return links;
-	}
-
-	private boolean connect(ALink aLink, Link link) throws IllegalArgumentException, ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException {
-		
-		List<AParameter> connectParamenter = aLink.getConnectParameters();
-		Object[] params = new Object[connectParamenter.size()];
-		
-		Iterator<AParameter> it = connectParamenter.iterator();
-		int index = 0;
-		while (it.hasNext()) {
-			AParameter aParameter = (AParameter) it.next();
-			params[index] = aParameter.getValueForClass();
-			index++;
-		}
-		boolean retvalue = link.connect(params);
-
-		// wait for Arduino bootstrap (2 secs should be enough)
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		return retvalue;
-	}	
-
 }

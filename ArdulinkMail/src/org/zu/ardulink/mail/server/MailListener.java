@@ -55,7 +55,7 @@ public class MailListener implements ArdulinkMailConstants {
     	            System.out.println("Messaged in inbox: " + inbox.getMessageCount());
 
     	            // Add messageCountListener to listen for new messages
-    	            inbox.addMessageCountListener(new ArdulinkMailMessageCountAdapter());
+    	            inbox.addMessageCountListener(new ArdulinkMailMessageCountListener());
     	            
     	            // TODO pezzo da rivedere. Perché casto a IMAP se l'ho messo in configurazione? Perché
     	            // casto ad una classe proprietaria della SUN?

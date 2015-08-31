@@ -18,6 +18,7 @@ limitations under the License.
 
 package org.zu.ardulink.connection.proxy;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -59,14 +60,7 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 	    } else {
 	        
 		    try {
-		    	ServerSocket serverSocket = new ServerSocket(portNumber);
-		    	System.out.println("Ardulink Network Proxy Server running...");
-		    	while (listening) {
-		    		NetworkProxyServerConnection connection = new NetworkProxyServerConnection(serverSocket.accept());
-		    		Thread thread = new Thread(connection);
-		    		thread.start();
-		    		Thread.sleep(2000);
-		    	}
+		    	start(portNumber);
 		    } catch (Exception e) {
 		    	e.printStackTrace();
 		    	System.exit(-1);
@@ -76,7 +70,11 @@ public class NetworkProxyServer implements NetworkProxyMessages {
         System.exit(0);
 	}
 
-	private static void requestStop(int portNumber) {
+	/**
+	 * Method called when a stop request comes
+	 * @param portNumber
+	 */
+	public static void requestStop(int portNumber) {
 		try {
 			Socket socket = new Socket("127.0.0.1", portNumber);
 			PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
@@ -89,6 +87,25 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 		}
 	}
 
+	
+	/**
+	 * Method called when a start request comes (the caller thread blocks until a requestStop method is invoked)
+	 * @param portNumber
+	 * @throws IOException 
+	 * @throws InterruptedException 
+	 */
+	public static void start(int portNumber) throws IOException, InterruptedException {
+		listening = true;
+    	ServerSocket serverSocket = new ServerSocket(portNumber);
+    	System.out.println("Ardulink Network Proxy Server running...");
+    	while (listening) {
+    		NetworkProxyServerConnection connection = new NetworkProxyServerConnection(serverSocket.accept());
+    		Thread thread = new Thread(connection);
+    		thread.start();
+    		Thread.sleep(2000);
+    	}
+	}
+	
 	private static boolean validateArgs(String[] args) {
 		boolean retvalue = true;
 		

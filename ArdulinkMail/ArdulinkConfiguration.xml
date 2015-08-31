@@ -20,20 +20,20 @@
             <values>alp://ppsw/27/0</values>
         </acommands>
         <acommands>
-            <aLinkNames>LINK 2</aLinkNames>
-            <className>org.zu.ardulink.mail.server.contentmanagement.SimpleContentManager</className>
+            <aLinkNames>LINK 1</aLinkNames>
+            <className>org.zu.ardulink.mail.server.contentmanagement.ProtocolContentManager</className>
             <mailContentHooks>su</mailContentHooks>
             <name>ACCENDI LED 32 e 33</name>
-            <values>alp://ppsw/32/1</values>
-            <values>alp://ppsw/33/1</values>
+            <values>sendPowerPinSwitch(32, 1)</values>
+            <values>sendPowerPinSwitch(33, 1)</values>
         </acommands>
         <acommands>
-            <aLinkNames>LINK 2</aLinkNames>
-            <className>org.zu.ardulink.mail.server.contentmanagement.SimpleContentManager</className>
+            <aLinkNames>LINK 1</aLinkNames>
+            <className>org.zu.ardulink.mail.server.contentmanagement.ProtocolContentManager</className>
             <mailContentHooks>giù</mailContentHooks>
             <name>SPEGNI LED 32 e 33</name>
-            <values>alp://ppsw/32/0</values>
-            <values>alp://ppsw/33/0</values>
+            <values>sendPowerPinSwitch(32, 0)</values>
+            <values>sendPowerPinSwitch(33, 0)</values>
         </acommands>
     </aCommandList>
     <aConnectionList>
@@ -62,6 +62,7 @@
             </connectParameters>
             <defaultLink>true</defaultLink>
             <name>LINK 1</name>
+            <waitSecondsAfterConnection>10</waitSecondsAfterConnection>
         </alinks>
         <alinks>
             <aConnectionName>SERIAL CONNECTION</aConnectionName>
@@ -76,6 +77,7 @@
             <defaultLink>false</defaultLink>
             <name>LINK 2</name>
             <protocolName>ArdulinkProtocol</protocolName>
+            <waitSecondsAfterConnection>10</waitSecondsAfterConnection>
         </alinks>
     </aLinkList>
 </configuration>
