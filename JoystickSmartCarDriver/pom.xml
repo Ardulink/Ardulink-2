@@ -1,0 +1,39 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>JoystickSmartCarDriver</artifactId>
+
+	<parent>
+		<groupId>com.github.ardulink</groupId>
+		<artifactId>parent</artifactId>
+		<version>0.5.1-SNAPSHOT</version>
+	</parent>
+
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<mainClass>org.zu.ardulink.gui.JoystickSmartCarDriver</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.github.ardulink</groupId>
+			<artifactId>Ardulink</artifactId>
+			<version>0.5.1-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+
+</project>
