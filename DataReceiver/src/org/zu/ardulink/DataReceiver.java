@@ -14,15 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @author Luciano Zu
-*/
+ */
 
 package org.zu.ardulink;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
 import org.zu.ardulink.connection.proxy.NetworkProxyConnection;
 import org.zu.ardulink.connection.proxy.NetworkProxyServer;
+import org.zu.ardulink.event.AnalogReadChangeEvent;
+import org.zu.ardulink.event.AnalogReadChangeListener;
 import org.zu.ardulink.event.ConnectionEvent;
 import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DigitalReadChangeEvent;
@@ -31,6 +37,13 @@ import org.zu.ardulink.event.DisconnectionEvent;
 
 public class DataReceiver {
 
+	@Option(name = "-delay", usage = "Do a n seconds delay after connecting")
+	private int sleepSecs = 10;
+
+	@Option(name = "-v", usage = "Be verbose")
+	private boolean verbose;
+
+	@Option(name = "-remote", usage = "Host and port of a remote arduino")
 	private String remote;
 
 	private Link link;
@@ -42,23 +55,22 @@ public class DataReceiver {
 	 */
 	public static void main(String[] args) {
 
-		System.out.println("DataReceiver: call it without arguments to use the default link or use host:port (port is not mandatory) to use a network link to an Ardulink Network Proxy Server.");
-		
-		DataReceiver dataReceiver;
-		if (args.length > 0) {
-			dataReceiver = new DataReceiver(args[0]);
-		} else {
-			dataReceiver = new DataReceiver();
+		new DataReceiver().doMain(args);
+	}
+
+	private void doMain(String[] args) {
+		CmdLineParser cmdLineParser = new CmdLineParser(this);
+		try {
+			cmdLineParser.parseArgument(args);
+		} catch (CmdLineException e) {
+			System.err.println(e.getMessage());
+			cmdLineParser.printUsage(System.err);
+			return;
 		}
+		work();
 	}
 
-	public DataReceiver() {
-		this(null);
-	}
-
-
-	public DataReceiver(String remote) {
-		this.remote = remote;
+	private void work() {
 		link = createLink();
 		List<String> portList = link.getPortList();
 		if (portList != null && !portList.isEmpty()) {
@@ -74,14 +86,17 @@ public class DataReceiver {
 			}
 			try {
 				System.out.println("Wait a while for Arduino boot");
-				Thread.sleep(10000); // Wait for a while just to Arduino reboot
+				TimeUnit.SECONDS.sleep(sleepSecs);
 				System.out.println("Ok, now it should be ready...");
-				DigitalReadChangeListener digitalReadChangeListener = createDigitalReadChangeListener(4);
-				// Register a class as digital read change listener
-				link.addDigitalReadChangeListener(digitalReadChangeListener);
 
-				// Register a class as raw data listener
-				link.addRawDataListener(createRawDataListener());
+				DigitalReadChangeListener drcl = digitalReadChangeListener(2);
+				link.addDigitalReadChangeListener(drcl);
+				link.addAnalogReadChangeListener(analogReadChangeListener(0));
+				link.addAnalogReadChangeListener(analogReadChangeListener(1));
+
+				if (verbose) {
+					link.addRawDataListener(rawDataListener());
+				}
 
 				if (digitalReadChangeListener.getPinListening() == DigitalReadChangeListener.ALL_PINS) {
 					link.startListenDigitalPin(4);
@@ -161,6 +176,22 @@ public class DataReceiver {
 				return pin;
 			}
 
+		};
+	}
+
+	private AnalogReadChangeListener analogReadChangeListener(final int pin) {
+		return new AnalogReadChangeListener() {
+
+			@Override
+			public void stateChanged(AnalogReadChangeEvent e) {
+				System.out.println("PIN state changed. PIN: " + e.getPin()
+						+ " Value: " + e.getValue());
+			}
+
+			@Override
+			public int getPinListening() {
+				return pin;
+			}
 		};
 	}
 
