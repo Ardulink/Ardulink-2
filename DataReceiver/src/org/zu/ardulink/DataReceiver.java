@@ -89,16 +89,16 @@ public class DataReceiver {
 				TimeUnit.SECONDS.sleep(sleepSecs);
 				System.out.println("Ok, now it should be ready...");
 
-				DigitalReadChangeListener drcl = digitalReadChangeListener(2);
+				DigitalReadChangeListener drcl = createDigitalReadChangeListener(2);
 				link.addDigitalReadChangeListener(drcl);
 				link.addAnalogReadChangeListener(analogReadChangeListener(0));
 				link.addAnalogReadChangeListener(analogReadChangeListener(1));
 
 				if (verbose) {
-					link.addRawDataListener(rawDataListener());
+					link.addRawDataListener(createRawDataListener());
 				}
 
-				if (digitalReadChangeListener.getPinListening() == DigitalReadChangeListener.ALL_PINS) {
+				if (drcl.getPinListening() == DigitalReadChangeListener.ALL_PINS) {
 					link.startListenDigitalPin(4);
 				}
 			} catch (InterruptedException e1) {
