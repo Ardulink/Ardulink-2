@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -99,7 +100,12 @@ public class ConnectionContactImpl implements ConnectionContact {
 		return rawDataListeners.remove(rawDataListener);
 	}
 	
+	private Iterator<ConnectionListener> getConnectionListenersIterator() {
+		return connectionListeners.iterator();
+	}
+	
 	public ConnectionContactImpl(Link link) {
+		super();
 		this.link = link;
 	}
 	
@@ -229,43 +235,44 @@ public class ConnectionContactImpl implements ConnectionContact {
 	}
 
 	private void fireDataToRawDataListener(String id, int numBytes, int[] message) {
-		for (RawDataListener rawDataListener : rawDataListeners) {
-			rawDataListener.parseInput(id, numBytes, message);
+		Iterator<RawDataListener> it = rawDataListeners.iterator();
+		while(it.hasNext()) {
+			it.next().parseInput(id, numBytes, message);
 		}
 	}
 
 	private void fireAnalogReadChangeEvent(AnalogReadChangeEvent event) {
 		int pin = event.getPin();
-		Set<AnalogReadChangeListener> pinListeningSet = analogReadChangeListeners
-				.get(pin);
-		if (pinListeningSet != null) {
-			for (AnalogReadChangeListener analogReadChangeListener : pinListeningSet) {
-				analogReadChangeListener.stateChanged(event);
+		Set<AnalogReadChangeListener> pinListeningSet = analogReadChangeListeners.get(pin);
+		if(pinListeningSet != null) {
+			Iterator<AnalogReadChangeListener> it = pinListeningSet.iterator();
+			while(it.hasNext()) {
+				it.next().stateChanged(event);
 			}
 		}
-		pinListeningSet = analogReadChangeListeners
-				.get(AnalogReadChangeListener.ALL_PINS);
-		if (pinListeningSet != null) {
-			for (AnalogReadChangeListener analogReadChangeListener : pinListeningSet) {
-				analogReadChangeListener.stateChanged(event);
+		pinListeningSet = analogReadChangeListeners.get(AnalogReadChangeListener.ALL_PINS);
+		if(pinListeningSet != null) {
+			Iterator<AnalogReadChangeListener> it = pinListeningSet.iterator();
+			while(it.hasNext()) {
+				it.next().stateChanged(event);
 			}
 		}
 	}
 
 	private void fireDigitalReadChangeEvent(DigitalReadChangeEvent event) {
 		int pin = event.getPin();
-		Set<DigitalReadChangeListener> pinListeningSet = digitalReadChangeListeners
-				.get(pin);
-		if (pinListeningSet != null) {
-			for (DigitalReadChangeListener digitalReadChangeListener : pinListeningSet) {
-				digitalReadChangeListener.stateChanged(event);
+		Set<DigitalReadChangeListener> pinListeningSet = digitalReadChangeListeners.get(pin);
+		if(pinListeningSet != null) {
+			Iterator<DigitalReadChangeListener> it = pinListeningSet.iterator();
+			while(it.hasNext()) {
+				it.next().stateChanged(event);
 			}
 		}
-		pinListeningSet = digitalReadChangeListeners
-				.get(DigitalReadChangeListener.ALL_PINS);
-		if (pinListeningSet != null) {
-			for (DigitalReadChangeListener digitalReadChangeListener : pinListeningSet) {
-				digitalReadChangeListener.stateChanged(event);
+		pinListeningSet = digitalReadChangeListeners.get(DigitalReadChangeListener.ALL_PINS);
+		if(pinListeningSet != null) {
+			Iterator<DigitalReadChangeListener> it = pinListeningSet.iterator();
+			while(it.hasNext()) {
+				it.next().stateChanged(event);
 			}
 		}
 	}
@@ -274,8 +281,9 @@ public class ConnectionContactImpl implements ConnectionContact {
 	public void disconnected(String id) {
 		logger.fine("disconnected()");
 		DisconnectionEvent event = new DisconnectionEvent(id);
-		for (ConnectionListener connectionListener : connectionListeners) {
-			connectionListener.disconnected(event);
+		Iterator<ConnectionListener> iterator = getConnectionListenersIterator();
+		while(iterator.hasNext()) {
+			iterator.next().disconnected(event);
 		}
 	}
 	
@@ -283,8 +291,9 @@ public class ConnectionContactImpl implements ConnectionContact {
 	public void connected(String id, String portName) {
 		logger.fine("connected()");
 		ConnectionEvent event = new ConnectionEvent(id, portName);
-		for (ConnectionListener connectionListener : connectionListeners) {
-			connectionListener.connected(event);
+		Iterator<ConnectionListener> iterator = getConnectionListenersIterator();
+		while(iterator.hasNext()) {
+			iterator.next().connected(event);
 		}
 	}
 

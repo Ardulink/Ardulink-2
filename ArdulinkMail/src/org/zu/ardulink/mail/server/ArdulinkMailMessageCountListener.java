@@ -19,6 +19,7 @@ limitations under the License.
 package org.zu.ardulink.mail.server;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import javax.mail.Address;
 import javax.mail.BodyPart;
@@ -28,11 +29,13 @@ import javax.mail.Multipart;
 import javax.mail.event.MessageCountAdapter;
 import javax.mail.event.MessageCountEvent;
 
-public class ArdulinkMailMessageCountAdapter extends MessageCountAdapter implements ArdulinkMailConstants {
+public class ArdulinkMailMessageCountListener extends MessageCountAdapter implements ArdulinkMailConstants {
 
+	private static Logger logger = Logger.getLogger(ArdulinkMailMessageCountListener.class.getName());
+	
 	public void messagesAdded(MessageCountEvent ev) {
 	    Message[] msgs = ev.getMessages();
-	    System.out.println("Got " + msgs.length + " new messages");
+	    logger.info("Got " + msgs.length + " new messages");
 
 	    for (int i = 0; i < msgs.length; i++) {
 			try {
@@ -46,8 +49,8 @@ public class ArdulinkMailMessageCountAdapter extends MessageCountAdapter impleme
 	}
 
 	private void manageMessage(Message message) throws MessagingException, IOException {
-	    System.out.println("-----");
-	    System.out.println("Message " + message.getMessageNumber() + ":");
+		logger.info("*****************************************************************************************************");
+		logger.info("Message " + message.getMessageNumber() + ":");
 	    
 	    validateContentType(message);
 	    validateFrom(message.getFrom());
@@ -56,8 +59,14 @@ public class ArdulinkMailMessageCountAdapter extends MessageCountAdapter impleme
 	    
 	    String reply = execute(content);
 	    if(reply != null) {
-	    	// TODO creare la risposa e spararla all'indietro.
+	    	
+	    //	sendMail(message.getFrom(), "Re: " + message.getSubject(), reply);
 	    }
+	}
+
+	private void sendMail(Address[] to, String subject, String body) throws MessagingException {
+		
+		MailSender.sendMail(to, subject, body);
 	}
 
 	private void validateContentType(Message message) throws MessagingException, IOException {
@@ -103,7 +112,7 @@ public class ArdulinkMailMessageCountAdapter extends MessageCountAdapter impleme
 					}
 					if(!found) {
 						foundAll = false;
-						System.out.println("From Address: " + from[i].toString() + " is not valid. Mail is not validated.");
+						logger.info("From Address: " + from[i].toString() + " is not valid. Mail is not validated.");
 					}
 				}
 				if(!foundAll) {
@@ -124,7 +133,7 @@ public class ArdulinkMailMessageCountAdapter extends MessageCountAdapter impleme
 					throw new MessagingException("Content password validation failed.");
 				}
 			} else {
-				System.out.println("Content password not found. Password validation skipped.");
+				logger.info("Content password not found. Password validation skipped.");
 			}
 		}
 	}
@@ -151,7 +160,9 @@ public class ArdulinkMailMessageCountAdapter extends MessageCountAdapter impleme
 	}
 
 	private String execute(String content) throws MessagingException {
-		return new ArdulinkExecutor().execute(content);
+		
+		ArdulinkExecutor executor = new ArdulinkExecutor();
+		return executor.execute(content);
 	}
 
 }

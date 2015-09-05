@@ -20,9 +20,9 @@ package org.zu.ardulink.connection.bluetooth;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.bluetooth.DataElement;
 import javax.bluetooth.DeviceClass;
@@ -67,17 +67,20 @@ public class ArdulinkDiscoveryListener implements DiscoveryListener {
 		
 		Map<String, ServiceRecord> ports = new HashMap<String, ServiceRecord>();
 		
-		for (Entry<RemoteDevice, ServiceRecord[]> entry : services.entrySet()) {
-			RemoteDevice remoteDevice = entry.getKey();
-			ServiceRecord service = findService(entry.getValue());
-			if (service != null) {
-				String name = "noname";
-				try {
-					name = remoteDevice.getFriendlyName(false);
-				} catch (Exception e) {
-				}
+		Iterator<RemoteDevice> iterator = services.keySet().iterator();
+		while (iterator.hasNext()) {
+			RemoteDevice remoteDevice = (RemoteDevice) iterator.next();
 
-				name += " " + remoteDevice.getBluetoothAddress();
+			ServiceRecord service = findService(services.get(remoteDevice));
+			if(service != null) {
+				String name = "noname";
+		        try {
+		            name = remoteDevice.getFriendlyName(false);
+		        } catch (Exception e) {
+		        }
+		        
+		        name += " " + remoteDevice.getBluetoothAddress();
+				
 				ports.put(name, service);
 			}
 		}

@@ -23,13 +23,14 @@ import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
 import org.zu.ardulink.Link;
-import org.zu.ardulink.gui.facility.IntMinMaxModel;
+import org.zu.ardulink.gui.facility.UtilityModel;
 import org.zu.ardulink.protocol.IProtocol;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
@@ -44,9 +45,12 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  */
 public class SwitchController extends JPanel implements Linkable {
 
+	/**
+	 * 
+	 */
 	private static final long serialVersionUID = -260988038687002762L;
 
-	private IntMinMaxModel pinComboBoxModel;
+	private JComboBox pinComboBox;
 	private JToggleButton switchToggleButton;
 	
 	private Link link = Link.getDefaultInstance();
@@ -57,8 +61,10 @@ public class SwitchController extends JPanel implements Linkable {
 	public SwitchController() {
 		setPreferredSize(new Dimension(125, 75));
 		setLayout(null);
-		pinComboBoxModel = new IntMinMaxModel(0, 40).withSelectedItem(3);
-		JComboBox<Integer> pinComboBox = new JComboBox<Integer>(pinComboBoxModel);
+		pinComboBox = new JComboBox();
+		// TODO definire un metodo per poter cambiare l'insieme dei pin controllabili. In questo modo si può lavorare anche con schede diverse da Arduino UNO
+		pinComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(0, 40)));
+		pinComboBox.setSelectedItem("3");
 		pinComboBox.setBounds(66, 11, 47, 22);
 		add(pinComboBox);
 		
@@ -70,12 +76,17 @@ public class SwitchController extends JPanel implements Linkable {
 		switchToggleButton = new JToggleButton("Off");
 		switchToggleButton.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				int pin = pinComboBoxModel.getSelectedItem().intValue();
 				if(e.getStateChange() == ItemEvent.SELECTED) {
+					
 					switchToggleButton.setText("On");
+					
+					int pin = Integer.parseInt((String)pinComboBox.getSelectedItem());
 					link.sendPowerPinSwitch(pin, IProtocol.POWER_HIGH);
 				} else if(e.getStateChange() == ItemEvent.DESELECTED) {
+					
 					switchToggleButton.setText("Off");
+					
+					int pin = Integer.parseInt((String)pinComboBox.getSelectedItem());
 					link.sendPowerPinSwitch(pin, IProtocol.POWER_LOW);
 				}
 			}
@@ -89,7 +100,7 @@ public class SwitchController extends JPanel implements Linkable {
 	 * @param pin
 	 */
 	public void setPin(int pin) {
-		pinComboBoxModel.setSelectedItem(pin);
+		pinComboBox.setSelectedItem("" + pin);
 	}
 
 	public void setLink(Link link) {

@@ -49,9 +49,13 @@ public class ColorChooserDialog extends JDialog {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		ColorChooserDialog dialog = new ColorChooserDialog(new RGBController());
-		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		dialog.setVisible(true);
+		try {
+			ColorChooserDialog dialog = new ColorChooserDialog(new RGBController());
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setVisible(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -97,7 +101,7 @@ public class ColorChooserDialog extends JDialog {
 		colorChooser = new JColorChooser();
 		colorChooser.setColor(rgbController.getColor());
 		contentPanel.add(colorChooser, BorderLayout.CENTER);
-		pack();
+		this.pack();
 	}
 
 }

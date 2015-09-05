@@ -19,9 +19,11 @@ limitations under the License.
 package org.zu.ardulink.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
@@ -39,23 +41,27 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 	private static final long serialVersionUID = -7897193872896320730L;
 
 	private final JPanel contentPanel = new JPanel();
-	private PortListCallbackImpl implementation;
-	private JButton cancelButton;
-	private JProgressBar progressBar;
+	private PortListCallbackImpl implementation = null;
+	private JButton cancelButton = null;
+	private JProgressBar progressBar = null;
 
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		PortListCallbackDialog dialog = new PortListCallbackDialog(new DefaultComboBoxModel<String>());
-		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		dialog.setVisible(true);
+		try {
+			PortListCallbackDialog dialog = new PortListCallbackDialog(new DefaultComboBoxModel());
+			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setVisible(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
 	 * Create the dialog.
 	 */
-	public PortListCallbackDialog(DefaultComboBoxModel<String> defaultComboBoxModel) {
+	public PortListCallbackDialog(DefaultComboBoxModel defaultComboBoxModel) {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setResizable(false);
 		setModal(true);
@@ -91,10 +97,10 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 	
 	class PortListCallbackImpl extends AbstractPortListCallback {
 
-		private DefaultComboBoxModel<String> defaultComboBoxModel;
-		private PortListCallbackDialog portListCallbackDialog;
+		private DefaultComboBoxModel defaultComboBoxModel = null;
+		private PortListCallbackDialog portListCallbackDialog = null;
 
-		public PortListCallbackImpl(PortListCallbackDialog portListCallbackDialog, DefaultComboBoxModel<String> defaultComboBoxModel) {
+		public PortListCallbackImpl(PortListCallbackDialog portListCallbackDialog, DefaultComboBoxModel defaultComboBoxModel) {
 			super();
 			this.defaultComboBoxModel = defaultComboBoxModel;
 			this.portListCallbackDialog = portListCallbackDialog;
@@ -103,12 +109,14 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 		@Override
 		public void portList(List<String> ports) {
 			
-			if(ports == null || ports.isEmpty()) {
+			if(ports == null || ports.size() == 0) {
 				portListCallbackDialog.setTitle("Nothing found.");
 				portListCallbackDialog.setButtonText("Ok");
 				portListCallbackDialog.stopProgressBar();
 			} else {
-				for (String port : ports) {
+				Iterator<String> it = ports.iterator();
+				while (it.hasNext()) {
+					String port = (String) it.next();
 					defaultComboBoxModel.addElement(port);
 				}
 				portListCallbackDialog.dispose();

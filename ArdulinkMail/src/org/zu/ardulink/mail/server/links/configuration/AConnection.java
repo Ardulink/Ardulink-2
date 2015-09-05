@@ -20,6 +20,7 @@ package org.zu.ardulink.mail.server.links.configuration;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -64,9 +65,9 @@ public class AConnection {
 	public Connection getConnection() {
 		if(connection == null) {
 			try {
-				Class<?> connectionClass = this.getClass().getClassLoader().loadClass(className);
-				Class<?>[] parameterTypes = getParamenterTypes();
-				Constructor<?> constructor = connectionClass.getConstructor(parameterTypes);
+				Class connectionClass = this.getClass().getClassLoader().loadClass(className);
+				Class[] parameterTypes = getParamenterTypes();
+				Constructor constructor = connectionClass.getConstructor(parameterTypes);
 				connection = (Connection)constructor.newInstance(getParamenterValues(parameterTypes));
 			}
 			catch(Exception e)  {
@@ -77,21 +78,31 @@ public class AConnection {
 		return connection;
 	}
 	
-	private Class<?>[] getParamenterTypes() throws ClassNotFoundException {
-		Class<?>[] parameterTypes = new Class[constructorParameters.size()];
+	private Class[] getParamenterTypes() throws ClassNotFoundException {
+		
+		Class[] parameterTypes = new Class[constructorParameters.size()];
+		
+		Iterator<AParameter> it = constructorParameters.iterator();
 		int index = 0;
-		for (AParameter aParameter : constructorParameters) {
-			parameterTypes[index++] = aParameter.getClassType();
+		while (it.hasNext()) {
+			AParameter aParameter = (AParameter) it.next();
+			parameterTypes[index] = aParameter.getClassType();
+			index++;
 		}
+		
 		return parameterTypes;
 	}
 
-	private Object[] getParamenterValues(Class<?>[] parameterTypes) throws ClassNotFoundException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
+	private Object[] getParamenterValues(Class[] parameterTypes) throws ClassNotFoundException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
+		
 		Object[] parametervalues = new Object[constructorParameters.size()];
+		Iterator<AParameter> it = constructorParameters.iterator();
 		int index = 0;
-		for (AParameter aParameter : constructorParameters) {
-			parametervalues[index++] = aParameter
-					.getValueForClass(parameterTypes[index]);
+		while (it.hasNext()) {
+			AParameter aParameter = (AParameter) it.next();
+			Class parameterType = parameterTypes[index];
+			parametervalues[index] = aParameter.getValueForClass(parameterType);
+			index++;
 		}
 		
 		return parametervalues;

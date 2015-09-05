@@ -25,6 +25,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -33,7 +34,6 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
 import org.zu.ardulink.Link;
@@ -43,9 +43,9 @@ import org.zu.ardulink.event.DisconnectionEvent;
 import org.zu.ardulink.gui.customcomponents.SignalButton;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
-public class SimpleSmartCarDriver extends JFrame implements ConnectionListener, Linkable {
+import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 
-	private static final long serialVersionUID = 6065022178316507177L;
+public class SimpleSmartCarDriver extends JFrame implements ConnectionListener, Linkable {
 
 	private JPanel contentPane;
 	private Link link = null;
@@ -60,10 +60,10 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener, 
 	private SignalButton btnRight;
 	private SignalButton btnBack;
 	
-	private static final String AHEAD_ICON_NAME = "icons/arrow-up.png";
-	private static final String LEFT_ICON_NAME = "icons/arrow-left.png";
-	private static final String RIGHT_ICON_NAME = "icons/arrow-right.png";
-	private static final String BACK_ICON_NAME = "icons/arrow-down.png";
+	private static final String AHEAD_ICON_NAME = "/org/zu/ardulink/gui/icons/arrow-up.png";
+	private static final String LEFT_ICON_NAME = "/org/zu/ardulink/gui/icons/arrow-left.png";
+	private static final String RIGHT_ICON_NAME = "/org/zu/ardulink/gui/icons/arrow-right.png";
+	private static final String BACK_ICON_NAME = "/org/zu/ardulink/gui/icons/arrow-down.png";
 	
 	private static final ImageIcon AHEAD_ICON = new ImageIcon(SimpleSmartCarDriver.class.getResource(AHEAD_ICON_NAME));
 	private static final ImageIcon LEFT_ICON = new ImageIcon(SimpleSmartCarDriver.class.getResource(LEFT_ICON_NAME));
@@ -77,11 +77,7 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener, 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					for (LookAndFeelInfo laf : UIManager.getInstalledLookAndFeels()) {
-						if ("Nimbus".equals(laf.getName())) {
-							UIManager.setLookAndFeel(laf.getClassName());
-						}
-					}
+					UIManager.setLookAndFeel(NimbusLookAndFeel.class.getCanonicalName());
 					SimpleSmartCarDriver frame = new SimpleSmartCarDriver();
 					frame.setVisible(true);
 				} catch (Exception e) {
@@ -211,8 +207,9 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener, 
 		} else {
 			disconnected(new DisconnectionEvent());
 		}
-		for (Linkable linkable : linkables) {
-			linkable.setLink(link);
+		Iterator<Linkable> it = linkables.iterator();
+		while(it.hasNext()) {
+			it.next().setLink(link);
 		}
 	}
 

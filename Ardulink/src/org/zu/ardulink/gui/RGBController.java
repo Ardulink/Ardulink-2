@@ -23,8 +23,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -114,7 +114,24 @@ public class RGBController extends JPanel implements Linkable, PWMControllerList
 		coloredPanel.setToolTipText("click to open color dialog");
 		coloredPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		coloredPanel.setPreferredSize(new Dimension(150, 40));		
-		coloredPanel.addMouseListener(new MouseAdapter() {
+		coloredPanel.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+			}
+			
+			@Override
+			public void mousePressed(MouseEvent e) {
+			}
+			
+			@Override
+			public void mouseExited(MouseEvent e) {
+			}
+			
+			@Override
+			public void mouseEntered(MouseEvent e) {
+			}
+			
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				ColorChooserDialog dialog = new ColorChooserDialog(instance);

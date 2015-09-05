@@ -29,6 +29,7 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -41,7 +42,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -52,10 +52,13 @@ import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DisconnectionEvent;
 import org.zu.ardulink.gui.customcomponents.ModifiableSignalButton;
 import org.zu.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
+import org.zu.ardulink.gui.customcomponents.joystick.Joystick;
 import org.zu.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.zu.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.zu.ardulink.gui.digistump.DigisparkConnectionPanel;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
+
+import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -69,6 +72,9 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  */
 public class Console extends JFrame implements ConnectionListener, Linkable {
 
+	/**
+	 * 
+	 */
 	private static final long serialVersionUID = -5288916405936436557L;
 	
 	private JPanel contentPane;
@@ -87,7 +93,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 	private DigisparkConnectionPanel digisparkConnectionPanel;
 	private BluetoothConnectionPanel bluetoothConnectionPanel;
 	
-	private Link link;
+	private Link link = null;
 	
 	private List<Linkable> linkables = new LinkedList<Linkable>();
 	
@@ -100,12 +106,8 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					for (LookAndFeelInfo laf : UIManager
-							.getInstalledLookAndFeels()) {
-						if ("Nimbus".equals(laf.getName())) {
-							UIManager.setLookAndFeel(laf.getClassName());
-						}
-					}
+					
+					UIManager.setLookAndFeel(NimbusLookAndFeel.class.getCanonicalName());
 					Console frame = new Console();					
 					frame.setVisible(true);					
 				} catch (Exception e) {
@@ -120,8 +122,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 	 * Create the frame.
 	 */
 	public Console() {
-		setIconImage(Toolkit.getDefaultToolkit().getImage(
-				Console.class.getResource("icons/logo_icon.png")));
+		setIconImage(Toolkit.getDefaultToolkit().getImage(Console.class.getResource("/org/zu/ardulink/gui/icons/logo_icon.png")));
 		setTitle("Ardulink Console");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 730, 620);
@@ -377,57 +378,239 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		tabbedPane.addTab("Power Panel", null, powerPanel, null);
 		powerPanel.setLayout(new GridLayout(2, 3, 0, 0));
 		
-		for (int pin = 3; pin <= 11; pin++) {
-			powerPanel.add(pwmController(pin));
-		}
+		PWMController panelPin3 = new PWMController();
+		linkables.add(panelPin3);
+		panelPin3.setPin(3);
+		powerPanel.add(panelPin3);
 		
+		PWMController panelPin5 = new PWMController();
+		linkables.add(panelPin5);
+		panelPin5.setPin(5);
+		powerPanel.add(panelPin5);
+		
+		PWMController panelPin6 = new PWMController();
+		linkables.add(panelPin6);
+		panelPin6.setPin(6);
+		powerPanel.add(panelPin6);
+		
+		PWMController panelPin9 = new PWMController();
+		linkables.add(panelPin9);
+		panelPin9.setPin(9);
+		powerPanel.add(panelPin9);
+		
+		PWMController panelPin10 = new PWMController();
+		linkables.add(panelPin10);
+		panelPin10.setPin(10);
+		powerPanel.add(panelPin10);
+		
+		PWMController panelPin11 = new PWMController();
+		linkables.add(panelPin11);
+		panelPin11.setPin(11);
+		powerPanel.add(panelPin11);
+				
 		JPanel switchPanel = new JPanel();
 		tabbedPane.addTab("Switch Panel", null, switchPanel, null);
 		switchPanel.setLayout(new GridLayout(5, 3, 0, 0));
 				
-		for (int pin = 3; pin <= 13; pin++) {
-			switchPanel.add(switchController(pin));
-		}
+		SwitchController switchController3 = new SwitchController();
+		linkables.add(switchController3);
+		switchController3.setPin(3);
+		switchPanel.add(switchController3);
+		
+		SwitchController switchController4 = new SwitchController();
+		linkables.add(switchController4);
+		switchController4.setPin(4);
+		switchPanel.add(switchController4);
+		
+		SwitchController switchController5 = new SwitchController();
+		linkables.add(switchController5);
+		switchController5.setPin(5);
+		switchPanel.add(switchController5);
+		
+		SwitchController switchController6 = new SwitchController();
+		linkables.add(switchController6);
+		switchController6.setPin(6);
+		switchPanel.add(switchController6);
+		
+		SwitchController switchController7 = new SwitchController();
+		linkables.add(switchController7);
+		switchController7.setPin(7);
+		switchPanel.add(switchController7);
+		
+		SwitchController switchController8 = new SwitchController();
+		linkables.add(switchController8);
+		switchController8.setPin(8);
+		switchPanel.add(switchController8);
+		
+		SwitchController switchController9 = new SwitchController();
+		linkables.add(switchController9);
+		switchController9.setPin(9);
+		switchPanel.add(switchController9);
+		
+		SwitchController switchController10 = new SwitchController();
+		linkables.add(switchController10);
+		switchController10.setPin(10);
+		switchPanel.add(switchController10);
+		
+		SwitchController switchController11 = new SwitchController();
+		linkables.add(switchController11);
+		switchController11.setPin(11);
+		switchPanel.add(switchController11);
+		
+		SwitchController switchController12 = new SwitchController();
+		linkables.add(switchController12);
+		switchController12.setPin(12);
+		switchPanel.add(switchController12);
+		
+		SwitchController switchController13 = new SwitchController();
+		linkables.add(switchController13);
+		switchController13.setPin(13);
+		switchPanel.add(switchController13);
 		
 		JPanel joystickPanel = new JPanel();
 		tabbedPane.addTab("Joystick Panel", null, joystickPanel, null);
 		joystickPanel.setLayout(new GridLayout(2, 2, 0, 0));
 		
-		ModifiableJoystick joy1 = modifiableJoystick("Left");
+		ModifiableJoystick joy1 = new ModifiableJoystick();
+		ModifiableJoystick joy2 = new ModifiableJoystick();
+		SimplePositionListener tracer1 = new SimplePositionListener();
+		SimplePositionListener tracer2 = new SimplePositionListener();
+		joystickPanel.add(tracer1);
+		joystickPanel.add(tracer2);
 		joystickPanel.add(joy1);
-		joystickPanel.add(simplePositionListener(joy1));
-
-		ModifiableJoystick joy2 = modifiableJoystick("Right");
 		joystickPanel.add(joy2);
-		joystickPanel.add(simplePositionListener(joy2));
+		joy1.addPositionListener(tracer1);
+		joy2.addPositionListener(tracer2);
+		joy1.setId("Left");
+		joy2.setId("Right");
+		linkables.add(joy1);
+		linkables.add(joy2);
 		
 		JPanel sensorDigitalPanel = new JPanel();
 		tabbedPane.addTab("Digital Sensor Panel", null, sensorDigitalPanel, null);
 		sensorDigitalPanel.setLayout(new GridLayout(4, 3, 0, 0));
 		
-		for (int pin = 2; pin <= 12; pin++) {
-			sensorDigitalPanel.add(digitalPinStatus(pin));
-		}
+		DigitalPinStatus digitalPinStatus2 = new DigitalPinStatus();
+		linkables.add(digitalPinStatus2);
+		digitalPinStatus2.setPin(2);
+		sensorDigitalPanel.add(digitalPinStatus2);
+		
+		DigitalPinStatus digitalPinStatus3 = new DigitalPinStatus();
+		linkables.add(digitalPinStatus3);
+		digitalPinStatus3.setPin(3);
+		sensorDigitalPanel.add(digitalPinStatus3);
+		
+		DigitalPinStatus digitalPinStatus4 = new DigitalPinStatus();
+		linkables.add(digitalPinStatus4);
+		digitalPinStatus4.setPin(4);
+		sensorDigitalPanel.add(digitalPinStatus4);
+		
+		DigitalPinStatus digitalPinStatus5 = new DigitalPinStatus();
+		linkables.add(digitalPinStatus5);
+		digitalPinStatus5.setPin(5);
+		sensorDigitalPanel.add(digitalPinStatus5);
+		
+		DigitalPinStatus digitalPinStatus6 = new DigitalPinStatus();
+		linkables.add(digitalPinStatus6);
+		digitalPinStatus6.setPin(6);
+		sensorDigitalPanel.add(digitalPinStatus6);
+		
+		DigitalPinStatus digitalPinStatus7 = new DigitalPinStatus();
+		linkables.add(digitalPinStatus7);
+		digitalPinStatus7.setPin(7);
+		sensorDigitalPanel.add(digitalPinStatus7);
+		
+		DigitalPinStatus digitalPinStatus8 = new DigitalPinStatus();
+		linkables.add(digitalPinStatus8);
+		digitalPinStatus8.setPin(8);
+		sensorDigitalPanel.add(digitalPinStatus8);
+		
+		DigitalPinStatus digitalPinStatus9 = new DigitalPinStatus();
+		linkables.add(digitalPinStatus9);
+		digitalPinStatus9.setPin(9);
+		sensorDigitalPanel.add(digitalPinStatus9);
+		
+		DigitalPinStatus digitalPinStatus10 = new DigitalPinStatus();
+		linkables.add(digitalPinStatus10);
+		digitalPinStatus10.setPin(10);
+		sensorDigitalPanel.add(digitalPinStatus10);
+		
+		DigitalPinStatus digitalPinStatus11 = new DigitalPinStatus();
+		linkables.add(digitalPinStatus11);
+		digitalPinStatus11.setPin(11);
+		sensorDigitalPanel.add(digitalPinStatus11);
+		
+		DigitalPinStatus digitalPinStatus12 = new DigitalPinStatus();
+		linkables.add(digitalPinStatus12);
+		digitalPinStatus12.setPin(12);
+		sensorDigitalPanel.add(digitalPinStatus12);
+		
+		DigitalPinStatus digitalPinStatus13 = new DigitalPinStatus();
+		linkables.add(digitalPinStatus13);
+		digitalPinStatus13.setPin(13);
+		sensorDigitalPanel.add(digitalPinStatus13);
 		
 		JPanel sensorAnalogPanel = new JPanel();
 		sensorAnalogPanel.setLayout(new GridLayout(2, 3, 0, 0));
 		tabbedPane.addTab("Analog Sensor Panel", null, sensorAnalogPanel, null);
-
-		for (int pin = 0; pin <= 5; pin++) {
-			sensorAnalogPanel.add(analogPinStatus(pin));
-		}
 		
+		AnalogPinStatus analogPinStatus0 = new AnalogPinStatus();
+		analogPinStatus0.setPin(0);
+		linkables.add(analogPinStatus0);
+		sensorAnalogPanel.add(analogPinStatus0);
+		
+		AnalogPinStatus analogPinStatus1 = new AnalogPinStatus();
+		analogPinStatus1.setPin(1);
+		linkables.add(analogPinStatus1);
+		sensorAnalogPanel.add(analogPinStatus1);
+
+		AnalogPinStatus analogPinStatus2 = new AnalogPinStatus();
+		analogPinStatus2.setPin(2);
+		linkables.add(analogPinStatus2);
+		sensorAnalogPanel.add(analogPinStatus2);
+
+		AnalogPinStatus analogPinStatus3 = new AnalogPinStatus();
+		analogPinStatus3.setPin(3);
+		linkables.add(analogPinStatus3);
+		sensorAnalogPanel.add(analogPinStatus3);
+
+		AnalogPinStatus analogPinStatus4 = new AnalogPinStatus();
+		analogPinStatus4.setPin(4);
+		linkables.add(analogPinStatus4);
+		sensorAnalogPanel.add(analogPinStatus4);
+
+		AnalogPinStatus analogPinStatus5 = new AnalogPinStatus();
+		analogPinStatus5.setPin(5);
+		linkables.add(analogPinStatus5);
+		sensorAnalogPanel.add(analogPinStatus5);
+
 		JPanel customPanel = new JPanel();
 		tabbedPane.addTab("Custom Components", null, customPanel, null);
 		customPanel.setLayout(new GridLayout(2, 3, 10, 15));
-
-		for (int i = 0; i <= 2; i++) {
-			customPanel.add(modifiableSignalButton());
-		}
-
-		for (int i = 0; i <= 2; i++) {
-			customPanel.add(modifiableToggleSignalButton());
-		}
+		
+		ModifiableSignalButton modifiableSignalButton1 = new ModifiableSignalButton();
+		linkables.add(modifiableSignalButton1);
+		customPanel.add(modifiableSignalButton1);
+		
+		ModifiableSignalButton modifiableSignalButton2 = new ModifiableSignalButton();
+		linkables.add(modifiableSignalButton2);
+		customPanel.add(modifiableSignalButton2);
+		
+		ModifiableSignalButton modifiableSignalButton3 = new ModifiableSignalButton();
+		linkables.add(modifiableSignalButton3);
+		customPanel.add(modifiableSignalButton3);
+		
+		ModifiableToggleSignalButton modifiableToggleSignalButton1 = new ModifiableToggleSignalButton();
+		linkables.add(modifiableToggleSignalButton1);
+		customPanel.add(modifiableToggleSignalButton1);
+		
+		ModifiableToggleSignalButton modifiableToggleSignalButton2 = new ModifiableToggleSignalButton();
+		linkables.add(modifiableToggleSignalButton2);
+		customPanel.add(modifiableToggleSignalButton2);
+		
+		ModifiableToggleSignalButton modifiableToggleSignalButton3 = new ModifiableToggleSignalButton();
+		linkables.add(modifiableToggleSignalButton3);
+		customPanel.add(modifiableToggleSignalButton3);
 		
 		JPanel tonePanel = new JPanel();
 		tabbedPane.addTab("Tone Panel", null, tonePanel, null);
@@ -467,78 +650,19 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		setLink(serialConnectionPanel.getLink());
 	}
 
-
-	private PWMController pwmController(int pin) {
-		PWMController pwmController = new PWMController();
-		pwmController.setPin(pin);
-		linkables.add(pwmController);
-		return pwmController;
-	}
-
-
-	private SimplePositionListener simplePositionListener(
-			ModifiableJoystick joystick) {
-		SimplePositionListener positionListener = new SimplePositionListener();
-		joystick.addPositionListener(positionListener);
-		return positionListener;
-	}
-
-	private ModifiableJoystick modifiableJoystick(String id) {
-		ModifiableJoystick joy1 = new ModifiableJoystick();
-		joy1.setId(id);
-		linkables.add(joy1);
-		return joy1;
-	}
-
-
-
-
-	private ModifiableToggleSignalButton modifiableToggleSignalButton() {
-		ModifiableToggleSignalButton modifiableToggleSignalButton1 = new ModifiableToggleSignalButton();
-		linkables.add(modifiableToggleSignalButton1);
-		return modifiableToggleSignalButton1;
-	}
-
-
-	private SwitchController switchController(int pin) {
-		SwitchController switchController = new SwitchController();
-		switchController.setPin(pin);
-		linkables.add(switchController);
-		return switchController;
-	}
-
-	private AnalogPinStatus analogPinStatus(int pin) {
-		AnalogPinStatus analogPinStatus = new AnalogPinStatus();
-		analogPinStatus.setPin(pin);
-		linkables.add(analogPinStatus);
-		return analogPinStatus;
-	}
-
-	private ModifiableSignalButton modifiableSignalButton() {
-		ModifiableSignalButton modifiableSignalButton1 = new ModifiableSignalButton();
-		linkables.add(modifiableSignalButton1);
-		return modifiableSignalButton1;
-	}
-	
-	private DigitalPinStatus digitalPinStatus(int pin) {
-		DigitalPinStatus digitalPinStatus2 = new DigitalPinStatus();
-		digitalPinStatus2.setPin(pin);
-		linkables.add(digitalPinStatus2);
-		return digitalPinStatus2;
-	}
-	
 	public void setLink(Link link) {
-		if (this.link != null) {
+		if(this.link != null) {
 			this.link.removeConnectionListener(this);
-		}
+		} 
 		this.link = link;
-		if (link == null) {
-			disconnected(new DisconnectionEvent());
-		} else {
+		if(link != null) {
 			link.addConnectionListener(this);
+		} else {
+			disconnected(new DisconnectionEvent());
 		}
-		for (Linkable linkable : linkables) {
-			linkable.setLink(link);
+		Iterator<Linkable> it = linkables.iterator();
+		while(it.hasNext()) {
+			it.next().setLink(link);
 		}
 	}
 

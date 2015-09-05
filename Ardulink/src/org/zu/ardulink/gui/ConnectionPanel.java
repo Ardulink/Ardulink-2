@@ -21,7 +21,6 @@ package org.zu.ardulink.gui;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
@@ -59,7 +58,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 	private static final long serialVersionUID = 1290277902714226253L;
 	private JTextField connectionPortTextField;
 	private JTextField baudRateTextField;
-	private JList<String> connectionPortList;
+	private JList connectionPortList;
 	private JButton discoverButton;
 
 	private Link link = Link.getDefaultInstance();
@@ -102,7 +101,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		scrollPane.setBounds(6, 105, 190, 160);
 		add(scrollPane);
 		
-		connectionPortList = new JList<String>();
+		connectionPortList = new JList();
 		connectionPortList.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
 				String connectionPort = (String)connectionPortList.getSelectedValue();
@@ -121,12 +120,12 @@ public class ConnectionPanel extends JPanel implements Linkable {
 //				portList = new ArrayList<String>(); // Mock code...
 //				portList.add("COM19");
 //				portList.add("COM20");
-				if(portList != null && !portList.isEmpty()) {
-					connectionPortList.setModel(new PortListModel<String>(portList));
+				if(portList != null && portList.size() > 0) {
+					connectionPortList.setModel(new PortListModel(portList));
 				}
 			}
 		});
-		discoverButton.setIcon(new ImageIcon(ConnectionPanel.class.getResource("icons/search_icon.png")));
+		discoverButton.setIcon(new ImageIcon(ConnectionPanel.class.getResource("/org/zu/ardulink/gui/icons/search_icon.png")));
 		discoverButton.setToolTipText("Discover");
 		discoverButton.setBounds(198, 105, 32, 32);
 		add(discoverButton);
@@ -134,24 +133,29 @@ public class ConnectionPanel extends JPanel implements Linkable {
 
 	}
 	
-	public static class PortListModel<T> extends AbstractListModel<T> {
+	public class PortListModel extends AbstractListModel {
 
+		/**
+		 * 
+		 */
 		private static final long serialVersionUID = -7316872587399489264L;
-
-		private List<T> values;
-
-		public PortListModel(List<T> values) {
-			this.values = new ArrayList<T>(values);
+		private String[] values = null;
+		
+		public PortListModel(String[] values) {
+			super();
+			this.values = values;
 		}
-
+		public PortListModel(List<String> values) {
+			super();
+			this.values = values.toArray(new String[0]);
+		}
+		
 		public int getSize() {
-			return values.size();
+			return values.length;
 		}
-
-		public T getElementAt(int index) {
-			return values.get(index);
+		public Object getElementAt(int index) {
+			return values[index];
 		}
-
 	}
 
 	/**

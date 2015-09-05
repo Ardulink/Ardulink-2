@@ -20,9 +20,9 @@ package org.zu.ardulink.connection.usb;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.zu.ardulink.connection.Connection;
 import org.zu.ardulink.connection.ConnectionContact;
@@ -141,8 +141,9 @@ public class DigisparkUSBConnection implements Connection {
 		
 		if(contact != null) {
 			contact.writeLog(id, "found the following ports:");
-			for (String string : retvalue) {
-				contact.writeLog(id, "   " + string);
+			Iterator<String> it = retvalue.iterator();
+			while (it.hasNext()) {
+				contact.writeLog(id, "   " + it.next());
 			}
 		}
 		
@@ -150,7 +151,8 @@ public class DigisparkUSBConnection implements Connection {
 	}
 
 	private String getUsbDeviceName(int internal_index) {
-		return "Digispark (" + internal_index + ")";
+		String deviceName = "Digispark (" + internal_index + ")";
+		return deviceName;
 	}
 	
 	@Override
@@ -330,11 +332,11 @@ public class DigisparkUSBConnection implements Connection {
 	private void tryARecover() {
 		try {
 			contact.writeLog(id, "COMUNICATION ERROR DETECTED. RECOVERING...");
-			TimeUnit.MILLISECONDS.sleep(10);
+			Thread.sleep(10);
 			getPortList();
-			TimeUnit.MILLISECONDS.sleep(10);
+			Thread.sleep(10);
 			connect(openedPortName);
-			TimeUnit.MILLISECONDS.sleep(10);
+			Thread.sleep(10);
 			contact.writeLog(id, "COMUNICATION ERROR DETECTED. NEXT TRY!!!");
 		} catch (InterruptedException e) {
 			e.printStackTrace();

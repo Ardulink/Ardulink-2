@@ -39,6 +39,9 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  */
 public class ConnectionStatus extends JPanel implements ConnectionListener, Linkable {
 
+	/**
+	 * 
+	 */
 	private static final long serialVersionUID = 6630818070505677116L;
 
 	private JLabel lblStatelabel;
@@ -48,8 +51,8 @@ public class ConnectionStatus extends JPanel implements ConnectionListener, Link
 	private static final String CONNECTED = "connected";
 	private static final String DISCONNECTED = "disconnected";
 	
-	private static final String CONNECTED_ICON_NAME = "icons/connect_established.png";
-	private static final String DISCONNECTED_ICON_NAME = "icons/connect_no.png";
+	private static final String CONNECTED_ICON_NAME = "/org/zu/ardulink/gui/icons/connect_established.png";
+	private static final String DISCONNECTED_ICON_NAME = "/org/zu/ardulink/gui/icons/connect_no.png";
 	
 	private static final ImageIcon CONNECTED_ICON = new ImageIcon(ConnectionStatus.class.getResource(CONNECTED_ICON_NAME));
 	private static final ImageIcon DISCONNECTED_ICON = new ImageIcon(ConnectionStatus.class.getResource(DISCONNECTED_ICON_NAME));

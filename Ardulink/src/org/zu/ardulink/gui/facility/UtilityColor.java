@@ -14,35 +14,50 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @author Luciano Zu
- */
+*/
 
 package org.zu.ardulink.gui.facility;
 
-import static java.awt.Color.BLACK;
-import static java.lang.Integer.toHexString;
-
 import java.awt.Color;
 
-public final class UtilityColor {
-
-	private UtilityColor() {
-		super();
-	}
-
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * This class has some usefull methods to Color (color conversion and so on)
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
+public class UtilityColor {
+	
 	public static Color toColor(String hexString) {
-		hexString = normalize(hexString);
-		return hexString.isEmpty() ? BLACK : Color.decode(hexString);
-	}
-
-	private static String normalize(String hexString) {
-		if (hexString != null && hexString.startsWith("#")) {
+		int hexValue = 0;
+		if(hexString != null && hexString.startsWith("#")) {
 			hexString = hexString.substring(1);
 		}
-		return hexString == null || hexString.isEmpty() ? "" : "#" + hexString;
+		
+		try {
+			hexValue = Integer.parseInt(hexString, 16);
+		}
+		catch(NumberFormatException e) {
+			hexValue = 0;
+		}
+		
+		Color retvalue = new Color(hexValue);
+		
+		return retvalue;
 	}
-
+	
 	public static String toString(Color color) {
-		return "#" + toHexString(color.getRGB()).substring(2).toUpperCase();
+		int red = color.getRed();
+		int green = color.getGreen();
+		int blue = color.getBlue();
+		StringBuilder builder = new StringBuilder(7);
+		builder.append('#');
+		builder.append(String.format("%02X", red));
+		builder.append(String.format("%02X", green));
+		builder.append(String.format("%02X", blue));
+		return builder.toString();
 	}
 
 }

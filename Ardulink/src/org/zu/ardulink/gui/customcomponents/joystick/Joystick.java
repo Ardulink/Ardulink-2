@@ -29,6 +29,7 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -168,8 +169,10 @@ public class Joystick extends JPanel implements Linkable {
     }
 
     private void callPositionListeners() {
+    	Iterator<PositionListener> it = positionListeners.iterator();
     	PositionEvent event = new PositionEvent(new Point(position), joyOutputRange, id);
-    	for (PositionListener positionListener : positionListeners) {
+    	while (it.hasNext()) {
+			PositionListener positionListener = (PositionListener) it.next();
 			positionListener.positionChanged(event);
 		}
 		
