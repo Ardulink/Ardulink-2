@@ -157,6 +157,21 @@ public class MqttAdapterTest {
 		assertThat(published, is(noMessages()));
 	}
 
+	@Test(expected = IllegalArgumentException.class)
+	public void doesNotAcceptNegativeDigitalPins() {
+		mqttClient.enableDigitalPinChangeEvents(-1);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void doesNotAcceptNegativeAnalogPins() {
+		mqttClient.enableAnalogPinChangeEvents(-1);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void cannotConfigureChangeListenerOnNegativeAnalogPins() {
+		mqttClient.configureAnalogReadChangeListener(-1);
+	}
+
 	private void simulateArduinoToMqtt(String message) {
 		int[] codepoints = toCodepoints(message);
 		connectionContact.parseInput(anyId(), codepoints.length, codepoints);

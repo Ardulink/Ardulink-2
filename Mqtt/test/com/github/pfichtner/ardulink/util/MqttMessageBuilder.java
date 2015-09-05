@@ -1,5 +1,6 @@
 package com.github.pfichtner.ardulink.util;
 
+import static com.github.pfichtner.ardulink.util.Preconditions.checkArgument;
 import static java.lang.String.format;
 
 public class MqttMessageBuilder {
@@ -30,10 +31,12 @@ public class MqttMessageBuilder {
 	}
 
 	public MqttMessageBuilder digitalPin(int pin) {
+		checkArgument(pin >= 0, "Pin must not be negative but was %s", pin);
 		return pin("D", pin);
 	}
 
 	public MqttMessageBuilder analogPin(int pin) {
+		checkArgument(pin >= 0, "Pin must not be negative but was %s", pin);
 		return pin("A", pin);
 	}
 

@@ -1,5 +1,6 @@
 package com.github.pfichtner.ardulink;
 
+import static com.github.pfichtner.ardulink.util.Preconditions.checkArgument;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
 import static org.zu.ardulink.protocol.IProtocol.POWER_HIGH;
@@ -130,6 +131,7 @@ public abstract class AbstractMqttAdapter {
 	}
 
 	public void enableDigitalPinChangeEvents(final int pin) {
+		checkArgument(pin >= 0, "Pin must not be negative but was %s", pin);
 		this.link.addDigitalReadChangeListener(new DigitalReadChangeListener() {
 			@Override
 			public void stateChanged(DigitalReadChangeEvent e) {
@@ -203,10 +205,12 @@ public abstract class AbstractMqttAdapter {
 
 	public AnalogReadChangeListenerConfigurer configureAnalogReadChangeListener(
 			int pin) {
+		checkArgument(pin >= 0, "Pin must not be negative but was %s", pin);
 		return new AnalogReadChangeListenerConfigurer(pin);
 	}
 
 	public void enableAnalogPinChangeEvents(final int pin) {
+		checkArgument(pin >= 0, "Pin must not be negative but was %s", pin);
 		this.link.addAnalogReadChangeListener(newAnalogReadChangeListener(pin));
 	}
 

@@ -1,5 +1,7 @@
 package com.github.pfichtner.ardulink.util;
 
+import static com.github.pfichtner.ardulink.util.Preconditions.checkArgument;
+
 public class ProtoBuilder {
 
 	private final String command;
@@ -34,6 +36,7 @@ public class ProtoBuilder {
 	}
 
 	public ProtoBuilder forPin(int pin) {
+		checkArgument(pin >= 0, "Pin must not be negative but was %s", pin);
 		this.pin = pin;
 		return this;
 	}
