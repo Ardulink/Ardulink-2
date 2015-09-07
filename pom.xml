@@ -27,12 +27,14 @@
 		<maven.compiler.source>1.6</maven.compiler.source>
 		<maven.compiler.target>1.6</maven.compiler.target>
 		<args4j.version>2.32</args4j.version>
+		<junit.version>4.12</junit.version>
 	</properties>
 
 	<modules>
 		<module>Ardulink</module>
 		<module>ArdulinkMail</module>
 		<module>DataReceiver</module>
+		<module>Mqtt</module>
 		<module>JoystickSmartCarDriver</module>
 		<module>SimpleSmartCarDriver</module>
 		<module>Deploy</module>
