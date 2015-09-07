@@ -32,7 +32,7 @@
 		<dependency>
 			<groupId>com.github.ardulink</groupId>
 			<artifactId>Ardulink</artifactId>
-			<version>0.5.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 

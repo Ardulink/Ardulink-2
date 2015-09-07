@@ -16,27 +16,32 @@
 		<dependency>
 			<groupId>com.github.ardulink</groupId>
 			<artifactId>Ardulink</artifactId>
-			<version>0.5.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.ardulink</groupId>
 			<artifactId>ArdulinkMail</artifactId>
-			<version>0.5.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.ardulink</groupId>
 			<artifactId>DataReceiver</artifactId>
-			<version>0.5.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.ardulink</groupId>
 			<artifactId>JoystickSmartCarDriver</artifactId>
-			<version>0.5.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.ardulink</groupId>
 			<artifactId>SimpleSmartCarDriver</artifactId>
-			<version>0.5.1-SNAPSHOT</version>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.ardulink</groupId>
+			<artifactId>Mqtt</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 
