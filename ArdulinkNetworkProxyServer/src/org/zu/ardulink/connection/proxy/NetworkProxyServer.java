@@ -18,8 +18,9 @@ limitations under the License.
 
 package org.zu.ardulink.connection.proxy;
 
-import java.io.IOException;
 import static java.lang.Math.max;
+import static org.zu.ardulink.connection.proxy.NetworkProxyConnection.DEFAULT_LISTENING_PORT;
+
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -98,7 +99,6 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 	}
 
 	private static boolean listening = true;
-	public static final int DEFAULT_LISTENING_PORT = 4478;
 
 	@Argument(required = true, usage = "command", handler = SubCommandHandler.class)
 	@SubCommands({ @SubCommand(name = "start", impl = StartCommand.class),

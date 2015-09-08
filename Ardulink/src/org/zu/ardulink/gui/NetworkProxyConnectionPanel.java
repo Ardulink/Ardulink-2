@@ -31,7 +31,6 @@ import javax.swing.SwingConstants;
 
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.proxy.NetworkProxyConnection;
-import org.zu.ardulink.connection.proxy.NetworkProxyServer;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -86,7 +85,7 @@ public class NetworkProxyConnectionPanel extends JPanel {
 		hostPortTextField = new JTextField();
 		hostPortTextField.setColumns(10);
 		hostPortTextField.setBounds(108, 39, 161, 28);
-		hostPortTextField.setText("" + NetworkProxyServer.DEFAULT_LISTENING_PORT);
+		hostPortTextField.setText("" + NetworkProxyConnection.DEFAULT_LISTENING_PORT);
 		add(hostPortTextField);
 		
 		activateButton = new JButton("Activate Proxy");

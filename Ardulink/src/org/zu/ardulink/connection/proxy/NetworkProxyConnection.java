@@ -41,6 +41,8 @@ import org.zu.ardulink.protocol.IProtocol;
  */
 public class NetworkProxyConnection implements Connection, NetworkProxyMessages {
 
+	public static final int DEFAULT_LISTENING_PORT = 4478;
+
 	private Socket socket = null;
 
 	private BufferedReader bufferedReader;
