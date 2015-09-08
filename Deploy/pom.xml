@@ -12,6 +12,7 @@
 		<version>0.5.1-SNAPSHOT</version>
 	</parent>
 
+<!-- 
 	<dependencies>
 		<dependency>
 			<groupId>com.github.ardulink</groupId>
@@ -45,7 +46,8 @@
 		</dependency>
 	</dependencies>
 
-
+ -->
+ 
 	<build>
 		<plugins>
 			<plugin>

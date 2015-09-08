@@ -14,11 +14,46 @@
 		<moduleSet>
 			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
-				<include>com.github.ardulink:*</include>
+				<include>*:Ardulink</include>
+				<include>*:ArdulinkMail</include>
+				<include>*:Mqtt</include>
 			</includes>
 			<binaries>
 				<!-- put jars under ${baseDirectory}/lib -->
 				<outputDirectory>ardulink/lib</outputDirectory>
+				<unpack>false</unpack>
+			</binaries>
+		</moduleSet>
+		<moduleSet>
+			<useAllReactorProjects>true</useAllReactorProjects>
+			<includes>
+				<include>com.github.ardulink:DataReceiver:*</include>
+			</includes>
+			<binaries>
+				<!-- put jars under ${baseDirectory}/lib -->
+				<outputDirectory>ardulink/examples/DataReceiver</outputDirectory>
+				<unpack>false</unpack>
+			</binaries>
+		</moduleSet>
+		<moduleSet>
+			<useAllReactorProjects>true</useAllReactorProjects>
+			<includes>
+				<include>com.github.ardulink:JoystickSmartCarDriver:*</include>
+			</includes>
+			<binaries>
+				<!-- put jars under ${baseDirectory}/lib -->
+				<outputDirectory>ardulink/examples/JoystickSmartCarDriver</outputDirectory>
+				<unpack>false</unpack>
+			</binaries>
+		</moduleSet>
+		<moduleSet>
+			<useAllReactorProjects>true</useAllReactorProjects>
+			<includes>
+				<include>com.github.ardulink:SimpleSmartCarDriver:*</include>
+			</includes>
+			<binaries>
+				<!-- put jars under ${baseDirectory}/lib -->
+				<outputDirectory>ardulink/examples/SimpleSmartCarDriver</outputDirectory>
 				<unpack>false</unpack>
 			</binaries>
 		</moduleSet>
