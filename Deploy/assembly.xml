@@ -14,7 +14,8 @@
 		<moduleSet>
 			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
-				<include>*:Ardulink</include>
+				<include>*:ArdulinkCore</include>
+				<include>*:ArdulinkConsole</include>
 				<include>*:ArdulinkMail</include>
 				<include>*:ArdulinkNetworkProxyServer</include>
 				<include>*:Mqtt</include>

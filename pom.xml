@@ -31,7 +31,8 @@
 	</properties>
 
 	<modules>
-		<module>Ardulink</module>
+		<module>ArdulinkCore</module>
+		<module>ArdulinkConsole</module>
 		<module>ArdulinkMail</module>
 		<module>ArdulinkNetworkProxyServer</module>
 		<module>DataReceiver</module>

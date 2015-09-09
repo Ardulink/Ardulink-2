@@ -45,7 +45,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.github.ardulink</groupId>
-			<artifactId>Ardulink</artifactId>
+			<artifactId>ArdulinkCore</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
