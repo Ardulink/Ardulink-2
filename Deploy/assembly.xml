@@ -61,10 +61,19 @@
 		</moduleSet>
 	</moduleSets>
 	<fileSets>
-		<!-- include rootfolder in ${baseDirectory} -->
+		<!-- include rootfolder's static files in ${baseDirectory} -->
 		<fileSet>
 			<directory>rootfolder</directory>
 			<outputDirectory>ardulink</outputDirectory>
+			<excludes>
+				<exclude>bin/*</exclude>
+			</excludes>
+		</fileSet>
+		<!-- include rootfolder's dynamic files in ${baseDirectory} (filter == true) -->
+		<fileSet>
+			<directory>rootfolder/bin</directory>
+			<outputDirectory>ardulink/bin</outputDirectory>
+			<filtered>true</filtered>
 		</fileSet>
 	</fileSets>
 </assembly>
