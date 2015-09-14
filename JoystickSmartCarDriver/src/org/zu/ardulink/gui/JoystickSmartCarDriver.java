@@ -22,7 +22,6 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -30,6 +29,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
 import org.zu.ardulink.Link;
@@ -39,14 +39,12 @@ import org.zu.ardulink.event.DisconnectionEvent;
 import org.zu.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
-import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
-
 public class JoystickSmartCarDriver extends JFrame implements ConnectionListener, Linkable {
 
 	private static final long serialVersionUID = 1402473246181814940L;
 
 	private JPanel contentPane;
-	private Link link = null;
+	private Link link;
 	private List<Linkable> linkables = new LinkedList<Linkable>();
 	
 	private BluetoothConnectionPanel bluetoothConnectionPanel;
@@ -63,7 +61,11 @@ public class JoystickSmartCarDriver extends JFrame implements ConnectionListener
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					UIManager.setLookAndFeel(NimbusLookAndFeel.class.getCanonicalName());
+					for (LookAndFeelInfo laf : UIManager.getInstalledLookAndFeels()) {
+						if ("Nimbus".equals(laf.getName())) {
+							UIManager.setLookAndFeel(laf.getClassName());
+						}
+					}
 					JoystickSmartCarDriver frame = new JoystickSmartCarDriver();
 					frame.setVisible(true);
 				} catch (Exception e) {
@@ -144,9 +146,8 @@ public class JoystickSmartCarDriver extends JFrame implements ConnectionListener
 		} else {
 			disconnected(new DisconnectionEvent());
 		}
-		Iterator<Linkable> it = linkables.iterator();
-		while(it.hasNext()) {
-			it.next().setLink(link);
+		for (Linkable linkable : linkables) {
+			linkable.setLink(link);
 		}
 	}
 

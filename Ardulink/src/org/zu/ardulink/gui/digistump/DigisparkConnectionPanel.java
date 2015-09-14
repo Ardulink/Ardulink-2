@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.usb.DigisparkUSBConnection;
+import org.zu.ardulink.gui.Console;
 import org.zu.ardulink.protocol.ProtocolHandler;
 import org.zu.ardulink.protocol.SimpleBinaryProtocol;
 
@@ -51,7 +52,7 @@ public class DigisparkConnectionPanel extends JPanel {
 	private Link link = null;
 
 	private JButton discoverButton;
-	private JComboBox deviceComboBox;
+	private JComboBox<String> deviceComboBox;
 
 	/**
 	 * Create the panel.
@@ -76,14 +77,14 @@ public class DigisparkConnectionPanel extends JPanel {
 //				portList = new ArrayList<String>(); // Mock code...
 //				portList.add("COM19");
 //				portList.add("COM20");
-				if(portList != null && portList.size() > 0) {
-					deviceComboBox.setModel(new DefaultComboBoxModel(portList.toArray()));
+				if(portList != null && !portList.isEmpty()) {
+					deviceComboBox.setModel(new DefaultComboBoxModel<String>(portList.toArray(new String[portList.size()])));
 				} else {
 					deviceComboBox.removeAllItems();
 				}
 			}
 		});
-		discoverButton.setIcon(new ImageIcon(DigisparkConnectionPanel.class.getResource("/org/zu/ardulink/gui/icons/search_icon.png")));
+		discoverButton.setIcon(new ImageIcon(Console.class.getResource("icons/search_icon.png")));
 		discoverButton.setToolTipText("Discover");
 		discoverButton.setBounds(237, 9, 32, 32);
 		add(discoverButton);
@@ -92,7 +93,7 @@ public class DigisparkConnectionPanel extends JPanel {
 		lblDigispark.setBounds(6, 17, 65, 16);
 		add(lblDigispark);
 		
-		deviceComboBox = new JComboBox();
+		deviceComboBox = new JComboBox<String>();
 		deviceComboBox.setBounds(67, 12, 165, 26);
 		add(deviceComboBox);
 		

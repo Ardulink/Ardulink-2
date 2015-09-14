@@ -18,9 +18,12 @@ limitations under the License.
 
 package org.zu.ardulink;
 
+import static java.lang.String.format;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -46,15 +49,24 @@ public class DataReceiver {
 	@Option(name = "-remote", usage = "Host and port of a remote arduino")
 	private String remote;
 
+	@Option(name = "-d", aliases = "--digital", usage = "Digital pins to listen to")
+	private int[] digitals = new int[] { 2 };
+
+	@Option(name = "-a", aliases = "--analog", usage = "Analog pins to listen to")
+	private int[] analogs = new int[0];
+
+	@Option(name = "-msga", aliases = "--analogMessage", usage = "Message format for analog pins")
+	private String msgAnalog = "PIN state changed. Analog PIN: %s Value: %s";
+
+	@Option(name = "-msgd", aliases = "--digitalMessage", usage = "Message format for digital pins")
+	private String msgDigital = "PIN state changed. Digital PIN: %s Value: %s";
+
 	private Link link;
 
-	/**
-	 * Call it without arguments to use the default link or use host:port (port is not mandatory) to
-	 * use a network link to an Ardulink Network Proxy Server. 
-	 * @param args
-	 */
-	public static void main(String[] args) {
+	private static final Logger log = Logger.getLogger(DataReceiver.class
+			.getName());
 
+	public static void main(String[] args) {
 		new DataReceiver().doMain(args);
 	}
 
@@ -75,32 +87,34 @@ public class DataReceiver {
 		List<String> portList = link.getPortList();
 		if (portList != null && !portList.isEmpty()) {
 
-			// Register a class as connection listener
-			link.addConnectionListener(createConnectionListener());
+			// Register this class as connection listener
+			link.addConnectionListener(connectionListener());
 
 			String port = portList.get(0);
-			System.out.println("Trying to connect to: " + port);
+			log.info("Trying to connect to: " + port);
 			boolean connected = link.connect(port, 115200);
 			if (!connected) {
 				throw new RuntimeException("Connection failed!");
 			}
 			try {
-				System.out.println("Wait a while for Arduino boot");
+				log.info("Wait a while for Arduino boot");
 				TimeUnit.SECONDS.sleep(sleepSecs);
-				System.out.println("Ok, now it should be ready...");
+				log.info("Ok, now it should be ready...");
 
-				DigitalReadChangeListener drcl = createDigitalReadChangeListener(2);
-				link.addDigitalReadChangeListener(drcl);
-				link.addAnalogReadChangeListener(analogReadChangeListener(0));
-				link.addAnalogReadChangeListener(analogReadChangeListener(1));
+				link.addAnalogReadChangeListener(analogReadChangeListener());
+				for (int analog : analogs) {
+					link.startListenAnalogPin(analog);
+				}
+
+				link.addDigitalReadChangeListener(digitalReadChangeListener());
+				for (int digital : digitals) {
+					link.startListenDigitalPin(digital);
+				}
 
 				if (verbose) {
-					link.addRawDataListener(createRawDataListener());
+					link.addRawDataListener(rawDataListener());
 				}
 
-				if (drcl.getPinListening() == DigitalReadChangeListener.ALL_PINS) {
-					link.startListenDigitalPin(4);
-				}
 			} catch (InterruptedException e1) {
 				throw new RuntimeException(e1);
 			}
@@ -109,31 +123,23 @@ public class DataReceiver {
 		}
 	}
 
-	private ConnectionListener createConnectionListener() {
+	private ConnectionListener connectionListener() {
 		return new ConnectionListener() {
-
-			/**
-			 * This method is called when a Link is connected to an Arduino
-			 */
 			@Override
 			public void connected(ConnectionEvent e) {
-				System.out.println("Connected! Port: " + e.getPortName()
-						+ " ID: " + e.getConnectionId());
+				log.info("Connected! Port: " + e.getPortName() + " ID: "
+						+ e.getConnectionId());
 			}
 
-			/**
-			 * This method is called when a Link is disconnected from an
-			 * Arduino.
-			 */
 			@Override
 			public void disconnected(DisconnectionEvent e) {
-				System.out.println("Disconnected! ID: " + e.getConnectionId());
+				log.info("Disconnected! ID: " + e.getConnectionId());
 			}
 
 		};
 	}
 
-	private RawDataListener createRawDataListener() {
+	private RawDataListener rawDataListener() {
 		return new RawDataListener() {
 
 			/**
@@ -143,54 +149,45 @@ public class DataReceiver {
 			@Override
 			public void parseInput(String id, int numBytes, int[] message) {
 
-				System.out.println("Message from: " + id);
+				log.info("Message from: " + id);
 				StringBuilder builder = new StringBuilder(numBytes);
 				for (int i = 0; i < numBytes; i++) {
 					builder.append((char) message[i]);
 				}
 
-				System.out.println("Message: " + builder.toString());
+				log.info("Message: " + builder.toString());
 			}
 
 		};
 	}
 
-	private DigitalReadChangeListener createDigitalReadChangeListener(final int pin) {
+	private DigitalReadChangeListener digitalReadChangeListener() {
 		return new DigitalReadChangeListener() {
 
-			/**
-			 * When a PIN change its state this method is invoked
-			 */
 			@Override
 			public void stateChanged(DigitalReadChangeEvent e) {
-				System.out.println("PIN state changed. PIN: " + e.getPin()
-						+ " Value: " + e.getValue());
+				log.info(format(msgDigital, e.getPin(), e.getValue()));
 			}
 
-			/**
-			 * This method set which PIN this listener is listening for use
-			 * DigitalReadChangeListener.ALL_PINS for all PINs
-			 */
 			@Override
 			public int getPinListening() {
-				return pin;
+				return DigitalReadChangeListener.ALL_PINS;
 			}
 
 		};
 	}
 
-	private AnalogReadChangeListener analogReadChangeListener(final int pin) {
+	private AnalogReadChangeListener analogReadChangeListener() {
 		return new AnalogReadChangeListener() {
 
 			@Override
 			public void stateChanged(AnalogReadChangeEvent e) {
-				System.out.println("PIN state changed. PIN: " + e.getPin()
-						+ " Value: " + e.getValue());
+				log.info(format(msgAnalog, e.getPin(), e.getValue()));
 			}
 
 			@Override
 			public int getPinListening() {
-				return pin;
+				return AnalogReadChangeListener.ALL_PINS;
 			}
 		};
 	}
@@ -201,26 +198,19 @@ public class DataReceiver {
 	 * @return
 	 */
 	private Link createLink() {
-		Link retvalue = null;
 		if (remote == null || remote.isEmpty()) {
-			retvalue = Link.getDefaultInstance();
-		} else {
-			String[] hostAndPort = remote.split("\\:");
-			try {
-				
-				int port = NetworkProxyServer.DEFAULT_LISTENING_PORT;
-				if(hostAndPort.length > 1) {
-					port = Integer.parseInt(hostAndPort[1]);
-				}
-				
-				String host = hostAndPort[0];
-				retvalue = Link.createInstance("network", new NetworkProxyConnection(host, port));
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+			return Link.getDefaultInstance();
 		}
-		
-		return retvalue;
+
+		String[] hostAndPort = remote.split("\\:");
+		try {
+			int port = hostAndPort.length == 1 ? NetworkProxyServer.DEFAULT_LISTENING_PORT
+					: Integer.parseInt(hostAndPort[1]);
+			return Link.createInstance("network", new NetworkProxyConnection(
+					hostAndPort[0], port));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }

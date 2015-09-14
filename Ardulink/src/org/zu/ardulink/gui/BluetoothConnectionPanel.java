@@ -49,7 +49,7 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
 public class BluetoothConnectionPanel extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = -3658770765086157064L;
-	private JComboBox deviceComboBox;
+	private JComboBox<String> deviceComboBox;
 	private JButton discoverButton;
 
 	private Link link = Link.createInstance("bluetoothConnection", new BluetoothConnection());
@@ -69,7 +69,7 @@ public class BluetoothConnectionPanel extends JPanel implements Linkable {
 		devicesLabel.setBounds(6, 17, 65, 16);
 		add(devicesLabel);
 		
-		deviceComboBox = new JComboBox();
+		deviceComboBox = new JComboBox<String>();
 		deviceComboBox.setBounds(67, 12, 165, 26);
 		add(deviceComboBox);
 				
@@ -78,7 +78,7 @@ public class BluetoothConnectionPanel extends JPanel implements Linkable {
 			public void actionPerformed(ActionEvent e) {
 				
 				deviceComboBox.removeAllItems();
-				DefaultComboBoxModel model = new DefaultComboBoxModel(); 
+				DefaultComboBoxModel<String> model = new DefaultComboBoxModel<String>(); 
 				deviceComboBox.setModel(model);
 				PortListCallbackDialog dialog = new PortListCallbackDialog(model);
 				UtilityGeometry.setAlignmentCentered(dialog, SwingUtilities.getRoot((Component)e.getSource()));
@@ -87,7 +87,7 @@ public class BluetoothConnectionPanel extends JPanel implements Linkable {
 				dialog.setVisible(true);
 			}
 		});
-		discoverButton.setIcon(new ImageIcon(BluetoothConnectionPanel.class.getResource("/org/zu/ardulink/gui/icons/search_icon.png")));
+		discoverButton.setIcon(new ImageIcon(BluetoothConnectionPanel.class.getResource("icons/search_icon.png")));
 		discoverButton.setToolTipText("Discover");
 		discoverButton.setBounds(237, 9, 32, 32);
 		add(discoverButton);

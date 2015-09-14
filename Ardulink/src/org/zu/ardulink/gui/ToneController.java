@@ -20,15 +20,18 @@ package org.zu.ardulink.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.BoxLayout;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
@@ -37,14 +40,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 
 import org.zu.ardulink.Link;
-import org.zu.ardulink.gui.facility.UtilityModel;
+import org.zu.ardulink.gui.facility.IntMinMaxModel;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
-
-import javax.swing.JComboBox;
-
-import java.awt.Font;
-import java.awt.FlowLayout;
-import java.awt.Dimension;
 
 public class ToneController extends JPanel implements Linkable {
 
@@ -65,9 +62,10 @@ public class ToneController extends JPanel implements Linkable {
 	private String toneButtonOnText = "On";
 	private String toneButtonOffText = "Off";
 	private JCheckBox durationCheckBox;
-	private JComboBox pinComboBox;
+	private IntMinMaxModel pinComboBoxModel;
 	private JLabel pinLabel;
 	private JPanel pinPanel;
+
 	
 	/**
 	 * Create the valuePanelOff.
@@ -88,8 +86,8 @@ public class ToneController extends JPanel implements Linkable {
 		pinPanel.add(pinLabel);
 		pinLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
 		
-		pinComboBox = new JComboBox();
-		pinComboBox.setModel(new DefaultComboBoxModel(UtilityModel.generateModelForCombo(0, 40)));
+		pinComboBoxModel = new IntMinMaxModel(0, 40);
+		JComboBox<Integer> pinComboBox = new JComboBox<Integer>(pinComboBoxModel);
 		pinPanel.add(pinComboBox);
 		
 		frequencyPanel = new JPanel();
@@ -138,21 +136,18 @@ public class ToneController extends JPanel implements Linkable {
 		toneButton = new JToggleButton("Off");
 		toneButton.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				int pin = Integer.parseInt((String)pinComboBox.getSelectedItem());
+				int pin = pinComboBoxModel.getSelectedItem().intValue();
 				if(e.getStateChange() == ItemEvent.SELECTED) {
-					
-					if(durationCheckBox.isSelected()) {
-						link.sendToneMessage(pin, (Integer)frequencySpinner.getValue(), (Integer)durationSpinner.getValue());
+					Integer value = (Integer) frequencySpinner.getValue();
+					if (durationCheckBox.isSelected()) {
+						link.sendToneMessage(pin, value,
+								(Integer) durationSpinner.getValue());
 					} else {
-						link.sendToneMessage(pin, (Integer)frequencySpinner.getValue());
+						link.sendToneMessage(pin, value);
 					}
-					
 					updateToneButtonText();
-					
 				} else if(e.getStateChange() == ItemEvent.DESELECTED) {
-
 					link.sendNoToneMessage(pin);
-					
 					updateToneButtonText();
 				}
 			}
