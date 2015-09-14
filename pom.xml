@@ -9,7 +9,7 @@
 	<repositories>
 		<repository>
 			<id>local-repo</id>
-			<url>file://local-repo</url>
+			<url>file://${project.basedir}/local-repo</url>
 		</repository>
 		<repository>
 			<snapshots>
@@ -31,8 +31,10 @@
 	</properties>
 
 	<modules>
-		<module>Ardulink</module>
+		<module>ArdulinkCore</module>
+		<module>ArdulinkConsole</module>
 		<module>ArdulinkMail</module>
+		<module>ArdulinkNetworkProxyServer</module>
 		<module>DataReceiver</module>
 		<module>Mqtt</module>
 		<module>JoystickSmartCarDriver</module>

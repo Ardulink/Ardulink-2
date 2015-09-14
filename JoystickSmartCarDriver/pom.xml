@@ -31,8 +31,8 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.github.ardulink</groupId>
-			<artifactId>Ardulink</artifactId>
-			<version>0.5.1-SNAPSHOT</version>
+			<artifactId>ArdulinkCore</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 

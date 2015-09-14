@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>SimpleSmartCarDriver</artifactId>
+	<artifactId>ArdulinkConsole</artifactId>
 
 	<parent>
 		<groupId>com.github.ardulink</groupId>
@@ -16,7 +16,6 @@
 				<directory>resources</directory>
 			</resource>
 		</resources>
-		
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -26,7 +25,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>org.zu.ardulink.gui.SimpleSmartCarDriver</mainClass>
+							<mainClass>org.zu.ardulink.gui.Console</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -39,6 +38,26 @@
 			<groupId>com.github.ardulink</groupId>
 			<artifactId>ArdulinkCore</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.rxtx</groupId>
+			<artifactId>rxtx</artifactId>
+			<version>2.1.7</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.ntb</groupId>
+			<artifactId>usb</artifactId>
+			<version>0.5.9</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.bluecove</groupId>
+			<artifactId>bluecove</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>args4j</groupId>
+			<artifactId>args4j</artifactId>
+			<version>${args4j.version}</version>
 		</dependency>
 	</dependencies>
 

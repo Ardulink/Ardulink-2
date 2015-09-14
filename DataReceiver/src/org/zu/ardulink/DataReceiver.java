@@ -19,6 +19,7 @@ limitations under the License.
 package org.zu.ardulink;
 
 import static java.lang.String.format;
+import static org.zu.ardulink.connection.proxy.NetworkProxyConnection.DEFAULT_LISTENING_PORT;
 
 import java.io.IOException;
 import java.util.List;
@@ -29,7 +30,6 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.zu.ardulink.connection.proxy.NetworkProxyConnection;
-import org.zu.ardulink.connection.proxy.NetworkProxyServer;
 import org.zu.ardulink.event.AnalogReadChangeEvent;
 import org.zu.ardulink.event.AnalogReadChangeListener;
 import org.zu.ardulink.event.ConnectionEvent;
@@ -37,6 +37,7 @@ import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DigitalReadChangeEvent;
 import org.zu.ardulink.event.DigitalReadChangeListener;
 import org.zu.ardulink.event.DisconnectionEvent;
+
 
 public class DataReceiver {
 
@@ -204,7 +205,7 @@ public class DataReceiver {
 
 		String[] hostAndPort = remote.split("\\:");
 		try {
-			int port = hostAndPort.length == 1 ? NetworkProxyServer.DEFAULT_LISTENING_PORT
+			int port = hostAndPort.length == 1 ? DEFAULT_LISTENING_PORT
 					: Integer.parseInt(hostAndPort[1]);
 			return Link.createInstance("network", new NetworkProxyConnection(
 					hostAndPort[0], port));

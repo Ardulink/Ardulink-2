@@ -12,43 +12,14 @@
 		<version>0.5.1-SNAPSHOT</version>
 	</parent>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.github.ardulink</groupId>
-			<artifactId>Ardulink</artifactId>
-			<version>0.5.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.ardulink</groupId>
-			<artifactId>ArdulinkMail</artifactId>
-			<version>0.5.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.ardulink</groupId>
-			<artifactId>DataReceiver</artifactId>
-			<version>0.5.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.ardulink</groupId>
-			<artifactId>JoystickSmartCarDriver</artifactId>
-			<version>0.5.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.ardulink</groupId>
-			<artifactId>SimpleSmartCarDriver</artifactId>
-			<version>0.5.1-SNAPSHOT</version>
-		</dependency>
-	</dependencies>
-
-
 	<build>
 		<plugins>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
-<configuration>
-<finalName>ardulink-V${project.version}-${maven.build.timestamp}</finalName>
-<appendAssemblyId>false</appendAssemblyId>
-</configuration>
+				<configuration>
+					<finalName>ardulink-V${project.version}-${maven.build.timestamp}</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
+				</configuration>
 
 				<executions>
 					<execution>

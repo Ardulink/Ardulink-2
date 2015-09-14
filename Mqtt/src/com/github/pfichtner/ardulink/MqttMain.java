@@ -5,7 +5,7 @@ import static com.github.pfichtner.ardulink.compactors.Tolerance.maxTolerance;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.zu.ardulink.connection.proxy.NetworkProxyServer.DEFAULT_LISTENING_PORT;
+import static org.zu.ardulink.connection.proxy.NetworkProxyConnection.DEFAULT_LISTENING_PORT;
 
 import java.io.IOException;
 import java.util.List;
