@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- sample configuration file -->
+<configuration>
+    <aCommandList>
+        <acommands>
+            <aLinkNames>LINK 1</aLinkNames>
+            <className>org.zu.ardulink.mail.server.contentmanagement.SimpleContentManager</className>
+            <mailContentHooks>accendi</mailContentHooks>
+            <mailContentHooks>turn on</mailContentHooks>
+            <name>ACCENDI LED 26 e 27</name>
+            <values>alp://ppsw/26/1</values>
+            <values>alp://ppsw/27/1</values>
+        </acommands>
+        <acommands>
+            <aLinkNames>LINK 1</aLinkNames>
+            <className>org.zu.ardulink.mail.server.contentmanagement.SimpleContentManager</className>
+            <mailContentHooks>spegni</mailContentHooks>
+            <mailContentHooks>turn off</mailContentHooks>
+            <name>SPEGNI LED 26 e 27</name>
+            <values>alp://ppsw/26/0</values>
+            <values>alp://ppsw/27/0</values>
+        </acommands>
+        <acommands>
+            <aLinkNames>LINK 1</aLinkNames>
+            <className>org.zu.ardulink.mail.server.contentmanagement.ProtocolContentManager</className>
+            <mailContentHooks>su</mailContentHooks>
+            <name>ACCENDI LED 32 e 33</name>
+            <values>sendPowerPinSwitch(32, 1)</values>
+            <values>sendPowerPinSwitch(33, 1)</values>
+        </acommands>
+        <acommands>
+            <aLinkNames>LINK 1</aLinkNames>
+            <className>org.zu.ardulink.mail.server.contentmanagement.ProtocolContentManager</className>
+            <mailContentHooks>giù</mailContentHooks>
+            <name>SPEGNI LED 32 e 33</name>
+            <values>sendPowerPinSwitch(32, 0)</values>
+            <values>sendPowerPinSwitch(33, 0)</values>
+        </acommands>
+    </aCommandList>
+    <aConnectionList>
+        <aconnections>
+            <className>org.zu.ardulink.connection.serial.SerialConnection</className>
+            <constructorParameters>
+                <type>java.lang.String</type>
+                <value>SERIAL CONNECTION ID</value>
+            </constructorParameters>
+            <constructorParameters>
+                <type>int</type>
+                <value>255</value>
+            </constructorParameters>
+            <name>SERIAL CONNECTION</name>
+        </aconnections>
+        <aconnections>
+            <className>org.zu.ardulink.connection.bluetooth.BluetoothConnection</className>
+            <name>BLUETOOTH CONNECTION</name>
+        </aconnections>
+    </aConnectionList>
+    <aLinkList>
+        <alinks>
+            <connectParameters>
+                <type>java.lang.String</type>
+                <value>COM5</value>
+            </connectParameters>
+            <defaultLink>true</defaultLink>
+            <name>LINK 1</name>
+            <waitSecondsAfterConnection>10</waitSecondsAfterConnection>
+        </alinks>
+        <alinks>
+            <aConnectionName>SERIAL CONNECTION</aConnectionName>
+            <connectParameters>
+                <type>java.lang.String</type>
+                <value>COM5</value>
+            </connectParameters>
+            <connectParameters>
+                <type>int</type>
+                <value>115200</value>
+            </connectParameters>
+            <defaultLink>false</defaultLink>
+            <name>LINK 2</name>
+            <protocolName>ArdulinkProtocol</protocolName>
+            <waitSecondsAfterConnection>10</waitSecondsAfterConnection>
+        </alinks>
+    </aLinkList>
+</configuration>

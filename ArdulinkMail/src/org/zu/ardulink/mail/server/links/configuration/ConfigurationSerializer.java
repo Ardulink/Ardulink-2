@@ -26,7 +26,7 @@ import org.zu.ardulink.io.WritingException;
 
 public class ConfigurationSerializer {
 	
-	public static final String CONFIGURATION_FILE_NAME = "ArdulinkConfiguration.xml";
+	public static final String CONFIGURATION_FILE_NAME = "ArdulinkMailConfiguration.xml";
 
 	public static AConfiguration read(String file) throws ReadingException {
 		return read(new File(file));
