@@ -29,8 +29,8 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  */
 public interface Linkable {
 	
-	public void setLink(Link link);
-	public ReplyMessageCallback getReplyMessageCallback();
-	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback);
+	void setLink(Link link);
+	ReplyMessageCallback getReplyMessageCallback();
+	void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback);
 
 }

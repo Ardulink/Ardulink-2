@@ -25,8 +25,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.zu.ardulink.Link;
@@ -119,9 +119,8 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 				printWriter.println(NUMBER_OF_PORTS + "0");
 			} else {
 				printWriter.println(NUMBER_OF_PORTS + portList.size());
-				Iterator<String> it = portList.iterator();
-				while(it.hasNext()) {
-					printWriter.println(it.next());
+				for (String port : portList) {
+					printWriter.println(port);
 				}
 			}
 			printWriter.flush();
@@ -130,8 +129,9 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 			Integer baudRate = new Integer(bufferedReader.readLine());
 			boolean connected = connect(portName, baudRate);
 			try { // wait a wile to avoid messages with connection not valid.
-				Thread.sleep(1000);
+				TimeUnit.SECONDS.sleep(1);
 			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
 			}
 			if(connected) {
 				printWriter.println(OK);
