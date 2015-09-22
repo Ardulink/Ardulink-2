@@ -19,7 +19,6 @@ limitations under the License.
 package org.zu.ardulink.mail.server.links.configuration;
 
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -70,11 +69,8 @@ public class ConfigurationFacade {
 	 * @return
 	 */
 	public static List<ACommand> findCommands(String content) {
-		
 		List<ACommand> retvalue = new LinkedList<ACommand>();
-		Iterator<ACommand> it = configuration.getaCommandList().getACommands().iterator();
-		while (it.hasNext()) {
-			ACommand aCommand = (ACommand) it.next();
+		for (ACommand aCommand : configuration.getaCommandList().getACommands()) {
 			if(aCommand.isForContent(content)) {
 				retvalue.add(aCommand);
 			}
@@ -83,53 +79,49 @@ public class ConfigurationFacade {
 	}
 	
 	public static List<ALink> getALinks(List<String> aLinkNames) {
-		
 		List<ALink> retvalue = new LinkedList<ALink>();
-		
-		Iterator<String> it = aLinkNames.iterator();
-		while (it.hasNext()) {
-			String aLinkName = (String) it.next();
+		for (String aLinkName : aLinkNames) {
 			ALink aLink = linksMap.get(aLinkName);
-			if(aLink == null) {
-				Iterator<ALink> itLink = configuration.getaLinkList().getALinks().iterator();
-				boolean found = false;
-				while (itLink.hasNext() && !found) {
-					ALink aLinkInList = (ALink) itLink.next();
-					if(aLinkName.equals(aLinkInList.getName())) {
-						aLink = aLinkInList;
-						linksMap.put(aLinkName, aLink);
-						found = true;
-					}
-				}
-				if(!found) {
-					throw new RuntimeException("ALink name in ACommand is not found in ALinksList please check this name in config file: " + aLinkName);
-				}
+			if (aLink == null) {
+				linksMap.put(
+						aLinkName,
+						linkByName(aLinkName, configuration.getaLinkList()
+								.getALinks()));
 			}
 			retvalue.add(aLink);
 		}
-		
 		return retvalue;
 	}
 
-	public static AConnection getAConnection(String aConnectionName) {
-		
-		AConnection retvalue = connectionsMap.get(aConnectionName);
-		if(retvalue == null) {
-			Iterator<AConnection> itConnection = configuration.getaConnectionList().getAConnections().iterator();
-			boolean found = false;
-			while (itConnection.hasNext() && !found) {
-				AConnection aConnectionInList = (AConnection) itConnection.next();
-				if(aConnectionName.equals(aConnectionInList.getName())) {
-					retvalue = aConnectionInList;
-					connectionsMap.put(aConnectionName, aConnectionInList);
-					found = true;
-				}
-			}
-			if(!found) {
-				throw new RuntimeException("AConnection name in ALink is not found in AConnectionsList please check this name in config file: " + aConnectionName);
+	private static ALink linkByName(String aLinkName, Iterable<ALink> links) {
+		for (ALink aLink : links) {
+			if (aLinkName.equals(aLink.getName())) {
+				return aLink;
 			}
 		}
+		throw new RuntimeException(
+				"ALink name in ACommand is not found in ALinksList please check this name in config file: "
+						+ aLinkName);
+	}
+
+	public static AConnection getAConnection(String aConnectionName) {
+		AConnection retvalue = connectionsMap.get(aConnectionName);
+		if (retvalue == null) {
+			connectionsMap.put(
+					aConnectionName,
+					connectionByName(aConnectionName, configuration
+							.getaConnectionList().getAConnections()));
+		}
 		return retvalue;
+	}
+	
+	private static AConnection connectionByName(String aConnectionName, Iterable<AConnection> connections) {
+		for (AConnection aConnection : connections) {
+			if (aConnectionName.equals(aConnection.getName())) {
+				return aConnection;
+			}
+		}
+		throw new RuntimeException("AConnection name in ALink is not found in AConnectionsList please check this name in config file: " + aConnectionName);
 	}
 
 }

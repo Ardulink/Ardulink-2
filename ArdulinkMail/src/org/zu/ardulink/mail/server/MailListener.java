@@ -39,44 +39,27 @@ public class MailListener implements ArdulinkMailConstants {
 	private static Properties mailConfig;
 	private static Folder inbox;
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws MessagingException {
+		initConfiguration();
+		initInbox();
+		System.out.println("Messaged in inbox: " + inbox.getMessageCount());
 		
-		boolean configLoad = initConfiguration();
-
-		if(!configLoad) {
-			System.out.println("Config file not loaded. Exiting...");
-		} else {
-        	boolean inboxInitiated = initInbox();
-        	if(!inboxInitiated) {
-    			System.out.println("Error initiating inbox. Exiting...");
-        	} else {
-    	        try {
-    	        	
-    	            System.out.println("Messaged in inbox: " + inbox.getMessageCount());
-
-    	            // Add messageCountListener to listen for new messages
-    	            inbox.addMessageCountListener(new ArdulinkMailMessageCountListener());
-    	            
-    	            // TODO pezzo da rivedere. Perché casto a IMAP se l'ho messo in configurazione? Perché
-    	            // casto ad una classe proprietaria della SUN?
-    	            // NON esiste codice più standard?
-    	            // Se ho un listener non posso semplicemente ciclare questo thread con una sleep?
-    	            // int freq = 1000;
-    	            while(true) {
-    	    		    IMAPFolder f = (IMAPFolder)inbox;
-    	    		    f.idle();
-    	    		    System.out.println("IDLE done");
-    	            }
-    	            
-    	        } catch (Exception mex) {
-    	            mex.printStackTrace();
-    	        }
-        	}
+		// Add messageCountListener to listen for new messages
+		inbox.addMessageCountListener(new ArdulinkMailMessageCountAdapter());
+		
+		// TODO pezzo da rivedere. Perché casto a IMAP se l'ho messo in configurazione? Perché
+		// casto ad una classe proprietaria della SUN?
+		// NON esiste codice più standard?
+		// Se ho un listener non posso semplicemente ciclare questo thread con una sleep?
+		// int freq = 1000;
+		while(true) {
+			IMAPFolder f = (IMAPFolder)inbox;
+			f.idle();
+			System.out.println("IDLE done");
 		}
 	}
 
-	private static boolean initInbox() {
-		boolean retvalue = false;
+	private static void initInbox() {
 		try {
 			System.out.println("Inbox initiating...");
 
@@ -96,13 +79,10 @@ public class MailListener implements ArdulinkMailConstants {
 	        
 	        inbox = store.getFolder("INBOX");
 	        inbox.open(Folder.READ_WRITE);
-	        retvalue = true;
 			System.out.println("Inbox initiated");
 		} catch (Exception e) {
-			retvalue = false;
-			e.printStackTrace();
+			throw new IllegalStateException("Error initiating inbox. Exiting...");
 		}
-		return retvalue;
 	}
 
 	/**
@@ -113,11 +93,8 @@ public class MailListener implements ArdulinkMailConstants {
 	 * host=imap.gmail.com
 	 * user=spazzolauzer@gmail.com
 	 * password=pisello01
-	 * 
-	 * @return true if init is successfull completed
 	 */
-	private static boolean initConfiguration() {
-		boolean retvalue = true;
+	private static void initConfiguration() {
 		System.out.println("Searching for config file...");
 		ClassLoader classLoader = MailListener.class.getClassLoader();
 		InputStream is = classLoader.getResourceAsStream(MAIL_CONF_PROPERTIES_FILENAME);
@@ -135,40 +112,31 @@ public class MailListener implements ArdulinkMailConstants {
 						System.out.println("config file not found in the working dir");
 					}
 				} else {
-					System.out.println("config file not found in the working dir");
-					retvalue = false;
+					throw new IllegalStateException("config file not found in the working dir");
 				}
 			} else {
-				System.out.println("config file not found in System classpath");
+				throw new IllegalStateException("config file not found in System classpath");
 			}
 		} else {
 			System.out.println("config file found in MailListener classpath");
 		}
 		
-		if(retvalue == true) {
-			retvalue = loadConfiguration(is);
-			System.out.println("Config file loaded.");
-			try {
-				is.close();
-			} catch (IOException e) {
-				// Not clear closed
-			}
+		loadConfiguration(is);
+		System.out.println("Config file loaded.");
+		try {
+			is.close();
+		} catch (IOException e) {
+			// Not clear closed
 		}
-		
-		return retvalue;
 	}
 
-	private static boolean loadConfiguration(InputStream is) {
-		boolean retvalue = true;
+	private static void loadConfiguration(InputStream is) {
 		mailConfig = new Properties();
 		try {
 			mailConfig.load(is);
 		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("Error reading config file");
-			retvalue = false;
+			throw new IllegalStateException("Error reading config file", e);
 		}
-		return retvalue;
 	}
 
 	private static void printFolders(Folder folder) throws MessagingException {

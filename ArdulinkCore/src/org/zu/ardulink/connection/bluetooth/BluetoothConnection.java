@@ -22,10 +22,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.bluetooth.BluetoothStateException;
 import javax.bluetooth.DiscoveryAgent;
@@ -98,8 +96,6 @@ public class BluetoothConnection extends AbstractSerialConnection implements Con
         };
         
         for (RemoteDevice device : listener.getDevices()) {
-            
-            
             try {
                 agent.searchServices(attrIDs, uuidSet, device, listener);
                 synchronized(lock){
@@ -111,19 +107,9 @@ public class BluetoothConnection extends AbstractSerialConnection implements Con
             }
         }
         
-		return setToList(ports.keySet());
+		return new ArrayList<String>(ports.keySet());
 	}
 
-	private <T> List<T> setToList(Set<T> set) {
-		List<T> retvalue = new ArrayList<T>(set.size());
-		Iterator<T> iterator = set.iterator();
-		while (iterator.hasNext()) {
-			T item = (T) iterator.next();
-			retvalue.add(item);
-		}
-		return retvalue;
-	}
-	
 	@Override
 	public boolean connect(Object... params) {
 		String deviceName = null;

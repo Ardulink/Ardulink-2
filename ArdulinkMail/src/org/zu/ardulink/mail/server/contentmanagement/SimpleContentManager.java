@@ -18,11 +18,15 @@ limitations under the License.
 
 package org.zu.ardulink.mail.server.contentmanagement;
 
-import java.util.Iterator;
+import java.lang.reflect.InvocationTargetException;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.zu.ardulink.Link;
-import org.zu.ardulink.mail.server.links.configuration.utils.ConfigurationUtility;
+import org.zu.ardulink.mail.server.links.configuration.ALink;
+import org.zu.ardulink.mail.server.links.configuration.AParameter;
+import org.zu.ardulink.mail.server.links.configuration.ConfigurationFacade;
 import org.zu.ardulink.protocol.IProtocol;
 
 /**
@@ -34,21 +38,15 @@ import org.zu.ardulink.protocol.IProtocol;
  *
  */
 public class SimpleContentManager implements IContentManager {
-	
+
 	@Override
 	public boolean isForContent(String content, List<String> mailContentHooks) {
-		
-		boolean retvalue = false;
-		
-		Iterator<String> it = mailContentHooks.iterator();
-		while (it.hasNext() && retvalue == false) {
-			String hook = (String) it.next();
+		for (String hook : mailContentHooks) {
 			if(content.toUpperCase().contains(hook.toUpperCase())) {
-				retvalue = true;
+				return true;
 			}
 		}
-		
-		return retvalue;
+		return false;
 	}
 
 	@Override
@@ -56,13 +54,10 @@ public class SimpleContentManager implements IContentManager {
 		
 		StringBuilder builder = new StringBuilder();
 		
-		List<Link> links = ConfigurationUtility.getConnectedLinks(aLinkNames);
-		Iterator<Link> it = links.iterator();
-		while (it.hasNext()) {
-			Link link = (Link) it.next();
-			Iterator<String> itValues = values.iterator();
-			while (itValues.hasNext()) {
-				StringBuilder value = new StringBuilder(itValues.next());
+		List<Link> links = getConnectedLinks(aLinkNames);
+		for (Link link : links) {
+			for (String string : values) {
+				StringBuilder value = new StringBuilder(string);
 				value.append(new String(new byte[] { IProtocol.DEFAULT_OUTGOING_MESSAGE_DIVIDER }));
 				boolean isOk = link.writeSerial(value.toString());
 				builder.append("message ");
@@ -79,4 +74,49 @@ public class SimpleContentManager implements IContentManager {
 		
 		return builder.toString();
 	}
+	
+	private List<Link> getConnectedLinks(List<String> aLinkNames) {
+		List<ALink> aLinks = ConfigurationFacade.getALinks(aLinkNames);
+		List<Link> links = new LinkedList<Link>();
+		for (ALink aLink : aLinks) {
+			Link link = aLink.getLink();
+			if(!link.isConnected()) {
+				try {
+					boolean isConnected = connect(aLink, link);
+					if(isConnected) {
+						links.add(link);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.out.println("Connection failed.");
+				}
+			} else {
+				links.add(link);
+			}
+		}
+		return links;
+	}
+
+	private boolean connect(ALink aLink, Link link) throws IllegalArgumentException, ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException {
+		
+		List<AParameter> connectParamenter = aLink.getConnectParameters();
+		Object[] params = new Object[connectParamenter.size()];
+		
+		int index = 0;
+		for (AParameter aParameter : connectParamenter) {
+			params[index] = aParameter.getValueForClass();
+			index++;
+		}
+		boolean retvalue = link.connect(params);
+
+		// wait for Arduino bootstrap (2 secs should be enough)
+		try {
+			TimeUnit.SECONDS.sleep(2);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+		
+		return retvalue;
+	}	
+
 }
