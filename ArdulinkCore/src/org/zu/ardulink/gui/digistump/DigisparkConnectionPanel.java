@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.usb.DigisparkUSBConnection;
+import org.zu.ardulink.gui.Linkable;
 import org.zu.ardulink.protocol.ProtocolHandler;
 import org.zu.ardulink.protocol.SimpleBinaryProtocol;
 
@@ -83,7 +84,7 @@ public class DigisparkConnectionPanel extends JPanel {
 				}
 			}
 		});
-		discoverButton.setIcon(new ImageIcon(DigisparkConnectionPanel.class.getResource("icons/search_icon.png")));
+		discoverButton.setIcon(new ImageIcon(Linkable.class.getResource("icons/search_icon.png")));
 		discoverButton.setToolTipText("Discover");
 		discoverButton.setBounds(237, 9, 32, 32);
 		add(discoverButton);
