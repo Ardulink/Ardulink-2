@@ -14,11 +14,11 @@
 		<moduleSet>
 			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
-				<include>*:ArdulinkCore</include>
-				<include>*:ArdulinkConsole</include>
-				<include>*:ArdulinkMail</include>
-				<include>*:ArdulinkNetworkProxyServer</include>
-				<include>*:Mqtt</include>
+				<include>*:ardulink-core</include>
+				<include>*:ardulink-console</include>
+				<include>*:ardulink-mail</include>
+				<include>*:ardulink-networkproxyserver</include>
+				<include>*:ardulink-mqtt</include>
 			</includes>
 			<binaries>
 				<!-- put Ardulink and applications jars under ${baseDirectory}/lib -->
@@ -29,7 +29,7 @@
 		<moduleSet>
 			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
-				<include>com.github.ardulink:DataReceiver:*</include>
+				<include>*:datareceiver:*</include>
 			</includes>
 			<binaries>
 				<!-- put example jars under ${baseDirectory}/examples -->
@@ -40,7 +40,7 @@
 		<moduleSet>
 			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
-				<include>com.github.ardulink:JoystickSmartCarDriver:*</include>
+				<include>*:joysticksmartcardriver:*</include>
 			</includes>
 			<binaries>
 				<!-- put example jars under ${baseDirectory}/examples -->
@@ -51,7 +51,7 @@
 		<moduleSet>
 			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
-				<include>com.github.ardulink:SimpleSmartCarDriver:*</include>
+				<include>*:simplesmartcardriver:*</include>
 			</includes>
 			<binaries>
 				<!-- put example jars under ${baseDirectory}/examples -->
