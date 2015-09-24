@@ -59,7 +59,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 	private static final long serialVersionUID = 1290277902714226253L;
 	private JTextField connectionPortTextField;
 	private JTextField baudRateTextField;
-	private JList<String> connectionPortList;
+	private JList connectionPortList;
 	private JButton discoverButton;
 
 	private Link link = Link.getDefaultInstance();
@@ -102,7 +102,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		scrollPane.setBounds(6, 105, 190, 160);
 		add(scrollPane);
 		
-		connectionPortList = new JList<String>();
+		connectionPortList = new JList();
 		connectionPortList.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
 				String connectionPort = (String)connectionPortList.getSelectedValue();
@@ -134,7 +134,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 
 	}
 	
-	public static class PortListModel<T> extends AbstractListModel<T> {
+	public static class PortListModel<T> extends AbstractListModel {
 
 		private static final long serialVersionUID = -7316872587399489264L;
 

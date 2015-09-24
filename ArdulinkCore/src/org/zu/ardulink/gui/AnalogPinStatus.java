@@ -59,11 +59,11 @@ public class AnalogPinStatus extends JPanel implements Linkable, AnalogReadChang
 	private JLabel valueLabel;
 	private JLabel voltValueLbl;
 	private JProgressBar progressBar;
-	private JComboBox<Integer> minValueComboBox;
+	private JComboBox minValueComboBox;
 	private IntMinMaxModel minValueComboBoxModel;
-	private JComboBox<Integer> maxValueComboBox;
+	private JComboBox maxValueComboBox;
 	private IntMinMaxModel maxValueComboBoxModel;
-	private JComboBox<Integer> pinComboBox;
+	private JComboBox pinComboBox;
 	private IntMinMaxModel pinComboBoxModel;
 	private JLabel lblPowerPinController;
 	private JToggleButton tglbtnSensor;
@@ -85,18 +85,18 @@ public class AnalogPinStatus extends JPanel implements Linkable, AnalogReadChang
 		// TODO definire un metodo per poter cambiare l'insieme dei pin controllabili. In questo modo si può lavorare anche con schede diverse da Arduino UNO
 		// pinComboBox.setModel(new DefaultComboBoxModel(new String[] {"3", "5", "6", "9", "10", "11"}));
 		pinComboBoxModel = new IntMinMaxModel(0, 40);
-		pinComboBox = new JComboBox<Integer>(pinComboBoxModel);
+		pinComboBox = new JComboBox(pinComboBoxModel);
 		pinComboBox.setSelectedItem(Integer.valueOf(0));
 		pinComboBox.setBounds(65, 36, 62, 22);
 		add(pinComboBox);
 		
 		maxValueComboBoxModel = new IntMinMaxModel(0, 1023).withLastItemSelected();
-		maxValueComboBox = new JComboBox<Integer>(maxValueComboBoxModel);
+		maxValueComboBox = new JComboBox(maxValueComboBoxModel);
 		maxValueComboBox.setBounds(65, 65, 62, 22);
 		add(maxValueComboBox);
 
 		minValueComboBoxModel = new IntMinMaxModel(0, 1023).withFirstItemSelected();
-		minValueComboBox = new JComboBox<Integer>(minValueComboBoxModel);
+		minValueComboBox = new JComboBox(minValueComboBoxModel);
 		minValueComboBox.setBounds(65, 217, 62, 22);
 		add(minValueComboBox);
 		

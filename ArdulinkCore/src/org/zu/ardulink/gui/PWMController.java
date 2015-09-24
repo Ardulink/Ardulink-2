@@ -18,8 +18,8 @@ limitations under the License.
 
 package org.zu.ardulink.gui;
 
-import static java.lang.Integer.max;
-import static java.lang.Integer.min;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 import java.awt.ComponentOrientation;
 import java.awt.Cursor;
@@ -61,14 +61,14 @@ public class PWMController extends JPanel implements Linkable {
 	private static final long serialVersionUID = 7927439571760351922L;
 	
 	private JSlider powerSlider;
-	private JComboBox<Integer> valueComboBox;
+	private JComboBox valueComboBox;
 	private IntMinMaxModel valueComboBoxModel;
 	private JLabel voltValueLbl;
 	private JCheckBox chckbxContChange;
 	private JProgressBar progressBar;
 	private IntMinMaxModel maxValueComboBoxModel;
 	private IntMinMaxModel minValueComboBoxModel;
-	private JComboBox<Integer> pinComboBox;
+	private JComboBox pinComboBox;
 	private JLabel lblPowerPinController;
 	
 	private List<PWMControllerListener> pwmControllerListeners = new LinkedList<PWMControllerListener>();
@@ -101,18 +101,18 @@ public class PWMController extends JPanel implements Linkable {
 		// TODO definire un metodo per poter cambiare l'insieme dei pin controllabili. In questo modo si può lavorare anche con schede diverse da Arduino UNO
 		// pinComboBox.setModel(new DefaultComboBoxModel(new String[] {"3", "5", "6", "9", "10", "11"}));
 		IntMinMaxModel pinComboBoxModel = new IntMinMaxModel(0, 40);
-		pinComboBox = new JComboBox<Integer>(pinComboBoxModel);
+		pinComboBox = new JComboBox(pinComboBoxModel);
 		pinComboBox.setSelectedItem(Integer.valueOf(11));
 		pinComboBox.setBounds(65, 36, 55, 22);
 		add(pinComboBox);
 		
 		maxValueComboBoxModel = new IntMinMaxModel(0, 255).withLastItemSelected();
-		JComboBox<Integer> maxValueComboBox = new JComboBox<Integer>(maxValueComboBoxModel);
+		JComboBox maxValueComboBox = new JComboBox(maxValueComboBoxModel);
 		maxValueComboBox.setBounds(65, 65, 55, 22);
 		add(maxValueComboBox);
 
 		minValueComboBoxModel = new IntMinMaxModel(0, 255).withFirstItemSelected();
-		JComboBox<Integer> minValueComboBox = new JComboBox<Integer>(minValueComboBoxModel);
+		JComboBox minValueComboBox = new JComboBox(minValueComboBoxModel);
 		minValueComboBox.setBounds(65, 217, 55, 22);
 		add(minValueComboBox);
 		
@@ -157,7 +157,7 @@ public class PWMController extends JPanel implements Linkable {
 		add(lblCurrentValue);
 		
 		valueComboBoxModel = new IntMinMaxModel(0, 255).withFirstItemSelected();
-		valueComboBox = new JComboBox<Integer>(valueComboBoxModel);
+		valueComboBox = new JComboBox(valueComboBoxModel);
 		valueComboBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int comboBoxCurrentValue = valueComboBoxModel.getSelectedItem().intValue();

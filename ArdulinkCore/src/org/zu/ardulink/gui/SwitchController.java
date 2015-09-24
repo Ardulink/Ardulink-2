@@ -58,7 +58,7 @@ public class SwitchController extends JPanel implements Linkable {
 		setPreferredSize(new Dimension(125, 75));
 		setLayout(null);
 		pinComboBoxModel = new IntMinMaxModel(0, 40).withSelectedItem(3);
-		JComboBox<Integer> pinComboBox = new JComboBox<Integer>(pinComboBoxModel);
+		JComboBox pinComboBox = new JComboBox(pinComboBoxModel);
 		pinComboBox.setBounds(66, 11, 47, 22);
 		add(pinComboBox);
 		

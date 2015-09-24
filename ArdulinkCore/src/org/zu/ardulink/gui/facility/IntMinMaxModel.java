@@ -3,8 +3,8 @@ package org.zu.ardulink.gui.facility;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 
-public class IntMinMaxModel extends AbstractListModel<Integer> implements
-		ComboBoxModel<Integer> {
+public class IntMinMaxModel extends AbstractListModel implements
+		ComboBoxModel {
 
 	private static final long serialVersionUID = -6314940179491347446L;
 

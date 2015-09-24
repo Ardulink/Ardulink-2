@@ -49,7 +49,7 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
 public class BluetoothConnectionPanel extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = -3658770765086157064L;
-	private JComboBox<String> deviceComboBox;
+	private JComboBox deviceComboBox;
 	private JButton discoverButton;
 
 	private Link link = Link.createInstance("bluetoothConnection", new BluetoothConnection());
@@ -69,7 +69,7 @@ public class BluetoothConnectionPanel extends JPanel implements Linkable {
 		devicesLabel.setBounds(6, 17, 65, 16);
 		add(devicesLabel);
 		
-		deviceComboBox = new JComboBox<String>();
+		deviceComboBox = new JComboBox();
 		deviceComboBox.setBounds(67, 12, 165, 26);
 		add(deviceComboBox);
 				
@@ -78,7 +78,7 @@ public class BluetoothConnectionPanel extends JPanel implements Linkable {
 			public void actionPerformed(ActionEvent e) {
 				
 				deviceComboBox.removeAllItems();
-				DefaultComboBoxModel<String> model = new DefaultComboBoxModel<String>(); 
+				DefaultComboBoxModel model = new DefaultComboBoxModel(); 
 				deviceComboBox.setModel(model);
 				PortListCallbackDialog dialog = new PortListCallbackDialog(model);
 				UtilityGeometry.setAlignmentCentered(dialog, SwingUtilities.getRoot((Component)e.getSource()));

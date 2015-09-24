@@ -47,7 +47,7 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		PortListCallbackDialog dialog = new PortListCallbackDialog(new DefaultComboBoxModel<String>());
+		PortListCallbackDialog dialog = new PortListCallbackDialog(new DefaultComboBoxModel());
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		dialog.setVisible(true);
 	}
@@ -55,7 +55,7 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 	/**
 	 * Create the dialog.
 	 */
-	public PortListCallbackDialog(DefaultComboBoxModel<String> defaultComboBoxModel) {
+	public PortListCallbackDialog(DefaultComboBoxModel defaultComboBoxModel) {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setResizable(false);
 		setModal(true);
@@ -91,10 +91,10 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 	
 	class PortListCallbackImpl extends AbstractPortListCallback {
 
-		private DefaultComboBoxModel<String> defaultComboBoxModel;
+		private DefaultComboBoxModel defaultComboBoxModel;
 		private PortListCallbackDialog portListCallbackDialog;
 
-		public PortListCallbackImpl(PortListCallbackDialog portListCallbackDialog, DefaultComboBoxModel<String> defaultComboBoxModel) {
+		public PortListCallbackImpl(PortListCallbackDialog portListCallbackDialog, DefaultComboBoxModel defaultComboBoxModel) {
 			super();
 			this.defaultComboBoxModel = defaultComboBoxModel;
 			this.portListCallbackDialog = portListCallbackDialog;

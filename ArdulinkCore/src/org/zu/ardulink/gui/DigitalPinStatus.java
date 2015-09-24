@@ -51,7 +51,7 @@ public class DigitalPinStatus extends JPanel implements DigitalReadChangeListene
 
 	private JLabel lblStatelabel;
 	private JToggleButton tglbtnSensor;
-	private JComboBox<Integer> pinComboBox;
+	private JComboBox pinComboBox;
 	private IntMinMaxModel pinComboBoxModel;
 	private JLabel lblPin;
 	
@@ -87,7 +87,7 @@ public class DigitalPinStatus extends JPanel implements DigitalReadChangeListene
 		comboPanel.add(lblPin);
 		
 		pinComboBoxModel = new IntMinMaxModel(2, 40);
-		pinComboBox = new JComboBox<Integer>(pinComboBoxModel);
+		pinComboBox = new JComboBox(pinComboBoxModel);
 		comboPanel.add(pinComboBox);
 		
 		tglbtnSensor = new JToggleButton("Sensor off");

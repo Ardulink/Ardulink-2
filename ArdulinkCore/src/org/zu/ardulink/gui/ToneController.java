@@ -87,7 +87,7 @@ public class ToneController extends JPanel implements Linkable {
 		pinLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
 		
 		pinComboBoxModel = new IntMinMaxModel(0, 40);
-		JComboBox<Integer> pinComboBox = new JComboBox<Integer>(pinComboBoxModel);
+		JComboBox pinComboBox = new JComboBox(pinComboBoxModel);
 		pinPanel.add(pinComboBox);
 		
 		frequencyPanel = new JPanel();
