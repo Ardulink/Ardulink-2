@@ -32,6 +32,7 @@ public class ALink {
 	private String protocolName;
 	private String aConnectionName;
 	private List<AParameter> connectParameters;
+	private int waitSecondsAfterConnection;
 	
 	private Link link;
 	private AConnection aConnection;
@@ -74,6 +75,14 @@ public class ALink {
 	}
 	public void setConnectParameters(List<AParameter> connectParameters) {
 		this.connectParameters = connectParameters;
+	}
+	
+	@XmlElement(name="waitSecondsAfterConnection", required=false)
+	public int getWaitSecondsAfterConnection() {
+		return waitSecondsAfterConnection;
+	}
+	public void setWaitSecondsAfterConnection(int waitSecondsAfterConnection) {
+		this.waitSecondsAfterConnection = waitSecondsAfterConnection;
 	}
 	
 	// begin business methods
