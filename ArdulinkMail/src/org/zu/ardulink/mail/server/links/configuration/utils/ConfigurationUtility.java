@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.zu.ardulink.Link;
@@ -73,7 +74,7 @@ public class ConfigurationUtility {
 
 		// wait for Arduino bootstrap
 		try {
-			Thread.sleep(aLink.getWaitSecondsAfterConnection() * 1000);
+			TimeUnit.SECONDS.sleep(aLink.getWaitSecondsAfterConnection());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
