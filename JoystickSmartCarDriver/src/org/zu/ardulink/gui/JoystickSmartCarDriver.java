@@ -39,6 +39,14 @@ import org.zu.ardulink.event.DisconnectionEvent;
 import org.zu.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class JoystickSmartCarDriver extends JFrame implements ConnectionListener, Linkable {
 
 	private static final long serialVersionUID = 1402473246181814940L;

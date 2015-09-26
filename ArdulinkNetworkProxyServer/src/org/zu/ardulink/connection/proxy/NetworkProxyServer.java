@@ -42,7 +42,7 @@ import org.zu.ardulink.Link;
  * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
- *         [adsense]
+ * [adsense]
  */
 public class NetworkProxyServer implements NetworkProxyMessages {
 

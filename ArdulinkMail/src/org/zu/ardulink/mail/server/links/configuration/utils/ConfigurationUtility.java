@@ -30,6 +30,14 @@ import org.zu.ardulink.mail.server.links.configuration.ALink;
 import org.zu.ardulink.mail.server.links.configuration.AParameter;
 import org.zu.ardulink.mail.server.links.configuration.ConfigurationFacade;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ConfigurationUtility {
 	
 	private static Logger logger = Logger.getLogger(ConfigurationUtility.class.getName());

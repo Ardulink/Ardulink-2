@@ -29,6 +29,14 @@ import org.zu.ardulink.protocol.IProtocol;
 import org.zu.ardulink.protocol.MessageInfo;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ProtocolContentManager implements IContentManager {
 
 	@Override

@@ -34,6 +34,14 @@ import javax.mail.Store;
 
 import com.sun.mail.imap.IMAPFolder;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class MailListener implements ArdulinkMailConstants {
 
 	private static Properties mailConfig;

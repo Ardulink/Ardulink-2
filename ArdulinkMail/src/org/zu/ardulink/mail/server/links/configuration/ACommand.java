@@ -24,6 +24,14 @@ import javax.xml.bind.annotation.XmlElement;
 
 import org.zu.ardulink.mail.server.contentmanagement.IContentManager;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ACommand {
 	
 	private String name;

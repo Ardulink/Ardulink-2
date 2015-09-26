@@ -22,6 +22,14 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ACommandList {
 
 	private List<ACommand> acommands;

@@ -27,6 +27,14 @@ import java.util.logging.Logger;
 import org.zu.ardulink.io.ReadingException;
 import org.zu.ardulink.io.WritingException;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ConfigurationFacade {
 
 	private static Logger logger = Logger.getLogger(ConfigurationFacade.class.getName());

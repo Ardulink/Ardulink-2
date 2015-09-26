@@ -20,6 +20,14 @@ package org.zu.ardulink.mail.server.contentmanagement;
 
 import java.util.List;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface IContentManager {
 
 	public boolean isForContent(String content, List<String> mailContentHooks);

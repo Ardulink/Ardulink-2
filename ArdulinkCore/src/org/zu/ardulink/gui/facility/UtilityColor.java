@@ -23,6 +23,14 @@ import static java.lang.Integer.toHexString;
 
 import java.awt.Color;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public final class UtilityColor {
 
 	private UtilityColor() {

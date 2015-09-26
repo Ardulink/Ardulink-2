@@ -24,6 +24,14 @@ import org.zu.ardulink.io.JAXBReaderWriter;
 import org.zu.ardulink.io.ReadingException;
 import org.zu.ardulink.io.WritingException;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ConfigurationSerializer {
 	
 	public static final String CONFIGURATION_FILE_NAME = "ArdulinkMailConfiguration.xml";

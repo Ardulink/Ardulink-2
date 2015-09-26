@@ -25,6 +25,14 @@ import org.zu.ardulink.gui.customcomponents.joystick.PositionEvent;
 import org.zu.ardulink.gui.customcomponents.joystick.PositionListener;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class MotorDriver implements PositionListener, Linkable {
 
 	private Link link = null;

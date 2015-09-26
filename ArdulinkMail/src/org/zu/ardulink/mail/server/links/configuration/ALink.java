@@ -25,6 +25,14 @@ import javax.xml.bind.annotation.XmlElement;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.Connection;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ALink {
 	
 	private String name;

@@ -18,6 +18,12 @@ limitations under the License.
 
 package org.zu.ardulink.gui.customcomponents.joystick;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ */
 public interface PositionListener {
 	
 	public void positionChanged(PositionEvent e);

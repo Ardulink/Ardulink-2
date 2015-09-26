@@ -21,6 +21,14 @@ package org.zu.ardulink.mail.server.links.configuration;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 @XmlRootElement(name="configuration")
 public class AConfiguration {
 

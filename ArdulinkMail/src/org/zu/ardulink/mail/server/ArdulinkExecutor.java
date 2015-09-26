@@ -25,6 +25,14 @@ import javax.mail.MessagingException;
 import org.zu.ardulink.mail.server.links.configuration.ACommand;
 import org.zu.ardulink.mail.server.links.configuration.ConfigurationFacade;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ArdulinkExecutor {
 
 	/**

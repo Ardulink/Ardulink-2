@@ -27,6 +27,12 @@ import java.awt.RenderingHints;
 
 import javax.swing.JPanel;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ */
 public class SimplePositionListener extends JPanel implements PositionListener {
 
 	private static final long serialVersionUID = -315437517373209646L;

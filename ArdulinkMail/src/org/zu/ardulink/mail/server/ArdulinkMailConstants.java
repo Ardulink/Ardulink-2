@@ -18,6 +18,14 @@ limitations under the License.
 
 package org.zu.ardulink.mail.server;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface ArdulinkMailConstants {
 
 	public static final String TRUE = "true";

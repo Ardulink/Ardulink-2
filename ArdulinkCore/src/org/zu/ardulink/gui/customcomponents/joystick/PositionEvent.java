@@ -20,6 +20,12 @@ package org.zu.ardulink.gui.customcomponents.joystick;
 
 import java.awt.Point;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ */
 public class PositionEvent {
 	
 	private String id;

@@ -23,6 +23,14 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.xml.bind.annotation.XmlElement;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class AParameter {
 
 	private enum Primitive {

@@ -43,6 +43,14 @@ import org.zu.ardulink.event.DisconnectionEvent;
 import org.zu.ardulink.gui.customcomponents.SignalButton;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class SimpleSmartCarDriver extends JFrame implements ConnectionListener, Linkable {
 
 	private static final long serialVersionUID = 6065022178316507177L;

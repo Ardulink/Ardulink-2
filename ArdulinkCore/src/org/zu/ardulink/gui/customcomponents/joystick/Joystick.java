@@ -39,6 +39,12 @@ import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.Linkable;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ */
 public class Joystick extends JPanel implements Linkable {
 
 	private Link link = Link.getDefaultInstance();

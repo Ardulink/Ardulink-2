@@ -28,6 +28,14 @@ import javax.mail.Multipart;
 import javax.mail.event.MessageCountAdapter;
 import javax.mail.event.MessageCountEvent;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ArdulinkMailMessageCountAdapter extends MessageCountAdapter implements ArdulinkMailConstants {
 
 	public void messagesAdded(MessageCountEvent ev) {

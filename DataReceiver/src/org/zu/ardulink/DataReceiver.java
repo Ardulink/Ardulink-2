@@ -38,7 +38,14 @@ import org.zu.ardulink.event.DigitalReadChangeEvent;
 import org.zu.ardulink.event.DigitalReadChangeListener;
 import org.zu.ardulink.event.DisconnectionEvent;
 
-
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DataReceiver {
 
 	@Option(name = "-delay", usage = "Do a n seconds delay after connecting")
