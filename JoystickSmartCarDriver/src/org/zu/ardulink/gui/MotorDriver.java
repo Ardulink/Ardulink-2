@@ -21,8 +21,8 @@ package org.zu.ardulink.gui;
 import java.awt.Point;
 
 import org.zu.ardulink.Link;
-import org.zu.ardulink.gui.customcomponents.joystick.PositionEvent;
-import org.zu.ardulink.gui.customcomponents.joystick.PositionListener;
+import org.zu.ardulink.gui.event.PositionEvent;
+import org.zu.ardulink.gui.event.PositionListener;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
 /**

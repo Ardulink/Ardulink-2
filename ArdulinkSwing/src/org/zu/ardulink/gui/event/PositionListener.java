@@ -16,7 +16,7 @@ limitations under the License.
 @author Luciano Zu
 */
 
-package org.zu.ardulink.gui.customcomponents.joystick;
+package org.zu.ardulink.gui.event;
 
 /**
  * [ardulinktitle] [ardulinkversion]

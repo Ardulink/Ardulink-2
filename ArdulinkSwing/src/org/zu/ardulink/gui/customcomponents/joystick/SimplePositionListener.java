@@ -27,6 +27,9 @@ import java.awt.RenderingHints;
 
 import javax.swing.JPanel;
 
+import org.zu.ardulink.gui.event.PositionEvent;
+import org.zu.ardulink.gui.event.PositionListener;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * @author Luciano Zu project Ardulink http://www.ardulink.org/

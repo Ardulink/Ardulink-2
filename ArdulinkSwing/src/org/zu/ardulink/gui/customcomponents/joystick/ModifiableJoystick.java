@@ -33,6 +33,8 @@ import javax.swing.event.DocumentListener;
 
 import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.Linkable;
+import org.zu.ardulink.gui.event.PositionEvent;
+import org.zu.ardulink.gui.event.PositionListener;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
 /**

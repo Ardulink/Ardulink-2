@@ -132,7 +132,7 @@ public class JoystickSmartCarDriver extends JFrame implements ConnectionListener
 		controlPanel.setLayout(new BorderLayout(0, 0));
 		
 		joystick = new ModifiableJoystick();
-		// not use Joystick link, PositionEvents will be captured and managed with a specifica class
+		// not use Joystick link, PositionEvents will be captured and managed with a specific class
 		joystick.setLink(null);
 		joystick.setId("joy");
 		joystick.addPositionListener(motorDriver);

@@ -15,6 +15,7 @@
 			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
 				<include>*:ardulink-core</include>
+				<include>*:ardulink-swing</include>
 				<include>*:ardulink-console</include>
 				<include>*:ardulink-mail</include>
 				<include>*:ardulink-networkproxyserver</include>
