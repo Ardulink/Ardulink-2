@@ -34,6 +34,9 @@ import javax.swing.SwingConstants;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.Linkable;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.protocol.custommessages.CustomMessageMaker;
+import org.zu.ardulink.protocol.custommessages.CustomMessageSender;
+import org.zu.ardulink.protocol.custommessages.SimpleCustomMessageMaker;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -41,7 +44,7 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  * 
  * [adsense]
  */
-public class TogggleSignalButton extends JPanel implements Linkable {
+public class TogggleSignalButton extends JPanel implements Linkable, CustomMessageSender {
 
 	private static final long serialVersionUID = -5162326079507604871L;
 
@@ -61,7 +64,9 @@ public class TogggleSignalButton extends JPanel implements Linkable {
 	private String signalButtonOnText = "On";
 	private String signalButtonOffText = "Off";
 	
-	/**
+    private CustomMessageMaker customMessageMaker = new SimpleCustomMessageMaker();
+
+    /**
 	 * Create the valuePanelOff.
 	 */
 	public TogggleSignalButton() {
@@ -100,12 +105,12 @@ public class TogggleSignalButton extends JPanel implements Linkable {
 		signalButton.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if(e.getStateChange() == ItemEvent.SELECTED) {
-					String message = getId() + "/" + getValueOn();
+					String message = customMessageMaker.getCustomMessage(getId(), getValueOn());;
 					link.sendCustomMessage(message, replyMessageCallback);
 					
 					updateSignalButtonText();
 				} else if(e.getStateChange() == ItemEvent.DESELECTED) {
-					String message = getId() + "/" + getValueOff();
+					String message = customMessageMaker.getCustomMessage(getId(), getValueOff());;
 					link.sendCustomMessage(message, replyMessageCallback);
 
 					updateSignalButtonText();
@@ -324,4 +329,13 @@ public class TogggleSignalButton extends JPanel implements Linkable {
 			signalButton.setBackground(bg);
 		}
 	}
+
+	public CustomMessageMaker getCustomMessageMaker() {
+		return customMessageMaker;
+	}
+
+	public void setCustomMessageMaker(CustomMessageMaker customMessageMaker) {
+		this.customMessageMaker = customMessageMaker;
+	}
+	
 }

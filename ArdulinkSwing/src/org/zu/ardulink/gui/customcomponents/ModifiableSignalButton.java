@@ -34,6 +34,8 @@ import javax.swing.event.DocumentListener;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.Linkable;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.protocol.custommessages.CustomMessageMaker;
+import org.zu.ardulink.protocol.custommessages.CustomMessageSender;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -43,7 +45,7 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  * [adsense]
  *
  */
-public class ModifiableSignalButton extends JPanel implements Linkable {
+public class ModifiableSignalButton extends JPanel implements Linkable, CustomMessageSender {
 
 	private static final long serialVersionUID = 7024281203061769142L;
 
@@ -259,5 +261,15 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 	 */
 	public void setId(String id) {
 		idTextField.setText(id);
-	}	
+	}
+
+	public CustomMessageMaker getCustomMessageMaker() {
+		return signalButton.getCustomMessageMaker();
+	}
+
+	public void setCustomMessageMaker(CustomMessageMaker customMessageMaker) {
+		signalButton.setCustomMessageMaker(customMessageMaker);
+	}
+	
+	
 }

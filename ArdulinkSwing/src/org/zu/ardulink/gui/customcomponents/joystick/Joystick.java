@@ -40,6 +40,9 @@ import org.zu.ardulink.gui.Linkable;
 import org.zu.ardulink.gui.event.PositionEvent;
 import org.zu.ardulink.gui.event.PositionListener;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.protocol.custommessages.CustomMessageMaker;
+import org.zu.ardulink.protocol.custommessages.CustomMessageSender;
+import org.zu.ardulink.protocol.custommessages.SimpleCustomMessageMaker;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -47,7 +50,7 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  * 
  * [adsense]
  */
-public class Joystick extends JPanel implements Linkable {
+public class Joystick extends JPanel implements Linkable, CustomMessageSender {
 
 	private Link link = Link.getDefaultInstance();
 	private ReplyMessageCallback replyMessageCallback = null;
@@ -71,6 +74,8 @@ public class Joystick extends JPanel implements Linkable {
     private int mouseX, mouseY;
     private Stroke lineStroke = new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
     private final Point position;
+    
+    private CustomMessageMaker customMessageMaker = new SimpleCustomMessageMaker();
     
     public Joystick() {
     	this(255, 128);
@@ -185,7 +190,7 @@ public class Joystick extends JPanel implements Linkable {
 
     private void sendMessage() {
 		if(link != null) {
-			String message = getId() + "/" + getValueX() + "/" + getValueY();
+			String message = customMessageMaker.getCustomMessage(getId(), String.valueOf(getValueX()), String.valueOf(getValueY()));
 			link.sendCustomMessage(message, replyMessageCallback);
 		}
 	}
@@ -278,5 +283,13 @@ public class Joystick extends JPanel implements Linkable {
         joyCenterX = getSize().width / 2;
         joyCenterY = getSize().height / 2;
         this.joySize = joyWidth / 2;
+	}
+
+	public CustomMessageMaker getCustomMessageMaker() {
+		return customMessageMaker;
+	}
+
+	public void setCustomMessageMaker(CustomMessageMaker customMessageMaker) {
+		this.customMessageMaker = customMessageMaker;
 	}
 }

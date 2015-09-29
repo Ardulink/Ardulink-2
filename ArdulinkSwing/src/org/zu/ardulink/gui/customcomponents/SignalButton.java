@@ -23,6 +23,9 @@ import javax.swing.JPanel;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.Linkable;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.protocol.custommessages.CustomMessageMaker;
+import org.zu.ardulink.protocol.custommessages.CustomMessageSender;
+import org.zu.ardulink.protocol.custommessages.SimpleCustomMessageMaker;
 
 import javax.swing.JButton;
 
@@ -42,7 +45,7 @@ import java.awt.event.ActionEvent;
  * 
  * [adsense]
  */
-public class SignalButton extends JPanel implements Linkable {
+public class SignalButton extends JPanel implements Linkable, CustomMessageSender {
 
 	private static final long serialVersionUID = -5162326079507604871L;
 
@@ -55,6 +58,8 @@ public class SignalButton extends JPanel implements Linkable {
 	private String id = "none";
 	private JLabel valueLabel;
 	
+    private CustomMessageMaker customMessageMaker = new SimpleCustomMessageMaker();
+
 	/**
 	 * Create the panel.
 	 */
@@ -64,7 +69,7 @@ public class SignalButton extends JPanel implements Linkable {
 		signalButton = new JButton("Send");
 		signalButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String message = getId() + "/" + getValue();
+				String message = customMessageMaker.getCustomMessage(getId(), getValue());;
 				link.sendCustomMessage(message, replyMessageCallback);
 			}
 		});
@@ -220,5 +225,11 @@ public class SignalButton extends JPanel implements Linkable {
 		}
 	}
 	
-	
+	public CustomMessageMaker getCustomMessageMaker() {
+		return customMessageMaker;
+	}
+
+	public void setCustomMessageMaker(CustomMessageMaker customMessageMaker) {
+		this.customMessageMaker = customMessageMaker;
+	}
 }

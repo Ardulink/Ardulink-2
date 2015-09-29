@@ -36,6 +36,8 @@ import org.zu.ardulink.gui.Linkable;
 import org.zu.ardulink.gui.event.PositionEvent;
 import org.zu.ardulink.gui.event.PositionListener;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.protocol.custommessages.CustomMessageMaker;
+import org.zu.ardulink.protocol.custommessages.CustomMessageSender;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -43,7 +45,7 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  * 
  * [adsense]
  */
-public class ModifiableJoystick extends JPanel implements Linkable, PositionListener {
+public class ModifiableJoystick extends JPanel implements Linkable, PositionListener, CustomMessageSender {
 
 	private static final long serialVersionUID = -7958194636043905634L;
 
@@ -151,4 +153,14 @@ public class ModifiableJoystick extends JPanel implements Linkable, PositionList
 	public String getId() {
 		return idTextField.getText();
 	}
+
+	public CustomMessageMaker getCustomMessageMaker() {
+		return joy.getCustomMessageMaker();
+	}
+
+	public void setCustomMessageMaker(CustomMessageMaker customMessageMaker) {
+		joy.setCustomMessageMaker(customMessageMaker);
+	}
+	
+	
 }
