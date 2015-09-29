@@ -36,8 +36,8 @@
 		<module>ArdulinkConsole</module>
 		<module>ArdulinkMail</module>
 		<module>ArdulinkNetworkProxyServer</module>
-		<module>DataReceiver</module>
 		<module>Mqtt</module>
+		<module>DataReceiver</module>
 		<module>JoystickSmartCarDriver</module>
 		<module>SimpleSmartCarDriver</module>
 		<module>Deploy</module>

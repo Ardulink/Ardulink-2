@@ -1,0 +1,12 @@
+HOW TO START ARDULINK'S APPLICATIONS
+
+Ardulink has several applications you can start. You can double click on the right jar file or run they with
+you system command line. Of course some applications need for parameters, so you have to start they from the
+command line.
+
+From your linux/windows/apple shell you can run these commands (from Ardulink's lib folder):
+
+java -jar ardulink-console-${project.version}.jar
+java -jar ardulink-networkproxyserver-${project.version}.jar
+java -jar ardulink-mail-${project.version}.jar
+java -jar ardulink-mqtt-${project.version}.jar
