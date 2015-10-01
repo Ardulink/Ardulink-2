@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package com.github.pfichtner.ardulink;
 
 import static com.github.pfichtner.ardulink.AbstractMqttAdapter.CompactStrategy.AVERAGE;
@@ -84,6 +84,9 @@ public class MqttMain {
 
 	@Option(name = "-remote", usage = "Host (and optional port) of a remote ardulink arduino")
 	private String remote;
+
+	@Option(name = "-control", usage = "Enable the control of listeners via mqtt")
+	private boolean control;
 
 	private MqttClient mqttClient;
 
@@ -267,7 +270,9 @@ public class MqttMain {
 		this.link = connect(createLink());
 		// ensure brokerTopic is normalized
 		setBrokerTopic(this.brokerTopic);
-		mqttClient = new MqttClient(link, Config.withTopic(this.brokerTopic))
+		Config config = Config.withTopic(this.brokerTopic);
+		mqttClient = new MqttClient(link,
+				this.control ? config.withControlChannelEnabled() : config)
 				.listenToMqttAndArduino();
 	}
 

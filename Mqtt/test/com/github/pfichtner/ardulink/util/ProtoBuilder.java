@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package com.github.pfichtner.ardulink.util;
 
 import static com.github.pfichtner.ardulink.util.Preconditions.checkArgument;
@@ -32,7 +32,9 @@ public class ProtoBuilder {
 	public enum ALPProtocolKeys {
 
 		POWER_PIN_SWITCH("ppsw"), POWER_PIN_INTENSITY("ppin"), DIGITAL_PIN_READ(
-				"dred"), ANALOG_PIN_READ("ared");
+				"dred"), ANALOG_PIN_READ("ared"), START_LISTENING_DIGITAL(
+				"srld"), START_LISTENING_ANALOG("srla"), STOP_LISTENING_DIGITAL(
+				"spld"), STOP_LISTENING_ANALOG("spla");
 
 		private String proto;
 
@@ -51,6 +53,10 @@ public class ProtoBuilder {
 
 	private ProtoBuilder(String command) {
 		this.command = command;
+	}
+
+	public String withoutValue() {
+		return "alp://" + command + "/" + pin + "\n";
 	}
 
 	public String withValue(int value) {

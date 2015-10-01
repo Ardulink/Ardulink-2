@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package com.github.pfichtner.ardulink;
 
 import static java.util.regex.Pattern.compile;
@@ -28,13 +28,49 @@ import java.util.regex.Pattern;
  */
 public abstract class Config {
 
+	private static class ConfigDelegate extends Config {
+
+		private final Config delegate;
+
+		public ConfigDelegate(Config delegate) {
+			this.delegate = delegate;
+		}
+
+		@Override
+		protected String getTopic() {
+			return delegate.getTopic();
+		}
+
+		public Pattern getTopicPatternDigitalWrite() {
+			return delegate.getTopicPatternDigitalWrite();
+		}
+
+		public Pattern getTopicPatternAnalogWrite() {
+			return delegate.getTopicPatternAnalogWrite();
+		}
+
+		public String getTopicPatternDigitalRead() {
+			return delegate.getTopicPatternDigitalRead();
+		}
+
+		public String getTopicPatternAnalogRead() {
+			return delegate.getTopicPatternAnalogRead();
+		}
+
+		public Pattern getTopicPatternControl() {
+			return delegate.getTopicPatternControl();
+		}
+
+	}
+
 	public static final String DEFAULT_TOPIC = "home/devices/ardulink/";
 
 	public static final Config DEFAULT = withTopic(DEFAULT_TOPIC);
 
-	public static Config withTopic(final String topic) {
+	public static Config withTopic(final String withTopic) {
 		return new Config() {
 
+			private String topic = withTopic;
 			private final Pattern topicPatternDigitalWrite;
 			private final String topicPatternDigitalRead;
 			private final Pattern topicPatternAnalogWrite;
@@ -62,6 +98,11 @@ public abstract class Config {
 			}
 
 			@Override
+			protected String getTopic() {
+				return topic;
+			}
+
+			@Override
 			public Pattern getTopicPatternDigitalWrite() {
 				return topicPatternDigitalWrite;
 			}
@@ -81,8 +122,28 @@ public abstract class Config {
 				return topicPatternAnalogRead;
 			}
 
+			@Override
+			public Pattern getTopicPatternControl() {
+				return null;
+			}
+
 		};
 	}
+
+	public Config withControlChannelEnabled() {
+		return new ConfigDelegate(this) {
+
+			private final Pattern topicPatternControl = compile(getTopic()
+					+ "system\\/listening\\/(.)(\\w+)\\/value\\/set");
+
+			@Override
+			public Pattern getTopicPatternControl() {
+				return topicPatternControl;
+			}
+		};
+	}
+
+	protected abstract String getTopic();
 
 	public abstract Pattern getTopicPatternDigitalWrite();
 
@@ -91,5 +152,7 @@ public abstract class Config {
 	public abstract String getTopicPatternDigitalRead();
 
 	public abstract String getTopicPatternAnalogRead();
+
+	public abstract Pattern getTopicPatternControl();
 
 }
