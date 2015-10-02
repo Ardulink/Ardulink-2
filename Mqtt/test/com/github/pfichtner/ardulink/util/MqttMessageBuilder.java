@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package com.github.pfichtner.ardulink.util;
 
 import static com.github.pfichtner.ardulink.util.Preconditions.checkArgument;
@@ -37,15 +37,14 @@ public class MqttMessageBuilder {
 		}
 	}
 
-	private final String basicTopic;
-	private String subTopic;
+	private final StringBuilder topic;
 
 	public static MqttMessageBuilder mqttMessageWithBasicTopic(String basicTopic) {
 		return new MqttMessageBuilder(basicTopic);
 	}
 
 	private MqttMessageBuilder(String basicTopic) {
-		this.basicTopic = normalize(basicTopic);
+		this.topic = new StringBuilder(normalize(basicTopic));
 	}
 
 	private static String normalize(String string) {
@@ -63,12 +62,31 @@ public class MqttMessageBuilder {
 	}
 
 	private MqttMessageBuilder pin(String type, int pin) {
-		return withSubTopic(type + pin);
+		return appendTopic(type + pin);
 	}
 
-	public MqttMessageBuilder withSubTopic(String subTopic) {
-		this.subTopic = subTopic;
-		return this;
+	public MqttMessageBuilder appendTopic(String subTopic) {
+		return new MqttMessageBuilder(topic.toString() + '/' + subTopic);
+	}
+
+	public MqttMessageBuilder digitalListener(int pin) {
+		return listener().appendTopic("D" + pin);
+	}
+
+	public MqttMessageBuilder analogListener(int pin) {
+		return listener().appendTopic("A" + pin);
+	}
+
+	public MqttMessageBuilder listener() {
+		return appendTopic("system/listening/");
+	}
+
+	public Message enable() {
+		return setValue(true);
+	}
+
+	public Message disable() {
+		return setValue(false);
 	}
 
 	public Message setValue(Object value) {
@@ -80,8 +98,8 @@ public class MqttMessageBuilder {
 	}
 
 	protected Message value(Type type, Object value) {
-		return new Message(format("%s/%s/value/%s", this.basicTopic,
-				this.subTopic, type.name), mqttMessage(value));
+		return new Message(format("%s/value/%s", this.topic, type.name),
+				mqttMessage(value));
 	}
 
 	private String mqttMessage(Object message) {

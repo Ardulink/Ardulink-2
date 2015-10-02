@@ -99,15 +99,15 @@ public class MqttAdapterTest {
 	@Test
 	public void canPowerOnDigitalPin() {
 		int pin = 0;
-		simulateMqttToArduino(mqttMessage.digitalPin(pin).setValue(true));
+		simulateMqttToArduino(mqttMessage.digitalPin(pin).enable());
 		assertThat(serialReceived(), is(alpProtocolMessage(POWER_PIN_SWITCH)
 				.forPin(pin).withValue(1)));
 	}
 
 	@Test
 	public void canHandleInvalidTopics() {
-		simulateMqttToArduino(mqttMessage.withSubTopic(
-				"xxxxxxxxINVALID_TOPICxxxxxxxx").setValue(true));
+		simulateMqttToArduino(mqttMessage.appendTopic(
+				"xxxxxxxxINVALID_TOPICxxxxxxxx").enable());
 		assertThat(serialReceived(), is(empty()));
 	}
 
