@@ -44,14 +44,18 @@ import com.github.pfichtner.ardulink.util.AnotherMqttClient;
  */
 public class MqttClientIntegrationReceive {
 
+	private static final String PORT = "/dev/null";
+	
+	private static final int SPEED = 115200;
+
 	private static final long TIMEOUT = 10 * 1000;;
 
 	private static final String TOPIC = "foo/bar";
 
 	private final Link link = mock(Link.class);
 	{
-		when(link.getPortList()).thenReturn(singletonList("/dev/null"));
-		when(link.connect("/dev/null", 115200)).thenReturn(true);
+		when(link.getPortList()).thenReturn(singletonList(PORT));
+		when(link.connect(PORT, SPEED)).thenReturn(true);
 		when(link.isConnected()).thenReturn(true);
 	}
 
@@ -99,7 +103,7 @@ public class MqttClientIntegrationReceive {
 		tearDown();
 
 		verify(link).getPortList();
-		verify(link).connect("/dev/null", 115200);
+		verify(link).connect(PORT, SPEED);
 		verify(link).sendPowerPinSwitch(pin, value);
 		verify(link).isConnected();
 		verify(link).disconnect();
@@ -121,7 +125,7 @@ public class MqttClientIntegrationReceive {
 		tearDown();
 
 		verify(link).getPortList();
-		verify(link).connect("/dev/null", 115200);
+		verify(link).connect(PORT, SPEED);
 		verify(link).sendPowerPinIntensity(pin, value);
 		verify(link).isConnected();
 		verify(link).disconnect();

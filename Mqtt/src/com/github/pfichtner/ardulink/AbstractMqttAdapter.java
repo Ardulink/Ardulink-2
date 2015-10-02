@@ -16,15 +16,16 @@ limitations under the License.
  */
 package com.github.pfichtner.ardulink;
 
+import static com.github.pfichtner.ardulink.util.Integers.tryParse;
 import static com.github.pfichtner.ardulink.util.Preconditions.checkArgument;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 import static org.zu.ardulink.protocol.IProtocol.POWER_HIGH;
 import static org.zu.ardulink.protocol.IProtocol.POWER_LOW;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -58,7 +59,7 @@ public abstract class AbstractMqttAdapter {
 	/**
 	 * Does handle mqtt messages for digital pins.
 	 */
-	private static class DigitalHandler implements Handler {
+	public static class DigitalHandler implements Handler {
 
 		private final Link link;
 		private final Pattern pattern;
@@ -74,9 +75,8 @@ public abstract class AbstractMqttAdapter {
 			if (matcher.matches()) {
 				Integer pin = tryParse(matcher.group(1));
 				if (pin != null) {
-					boolean state = parseBoolean(message);
 					this.link.sendPowerPinSwitch(pin.intValue(),
-							state ? POWER_HIGH : POWER_LOW);
+							parseBoolean(message) ? POWER_HIGH : POWER_LOW);
 					return true;
 				}
 			}
@@ -88,7 +88,7 @@ public abstract class AbstractMqttAdapter {
 	/**
 	 * Does handle mqtt messages for analog pins.
 	 */
-	private static class AnalogHandler implements Handler {
+	public static class AnalogHandler implements Handler {
 
 		private final Link link;
 		private final Pattern pattern;
@@ -119,7 +119,7 @@ public abstract class AbstractMqttAdapter {
 	 * Does handle mqtt messages for controlling Ardulink (start/stop digital
 	 * listeners).
 	 */
-	private static class ControlHandlerDigital implements Handler {
+	public static class ControlHandlerDigital implements Handler {
 
 		private final Link link;
 		private final Pattern pattern;
@@ -152,7 +152,7 @@ public abstract class AbstractMqttAdapter {
 	 * Does handle mqtt messages for controlling Ardulink (start/stop analog
 	 * listeners).
 	 */
-	private static class ControlHandlerAnalog implements Handler {
+	public static class ControlHandlerAnalog implements Handler {
 
 		private final Link link;
 		private final Pattern pattern;
@@ -191,8 +191,8 @@ public abstract class AbstractMqttAdapter {
 		this(link, config, handlers(link, config));
 	}
 
-	protected static List<Handler> handlers(Link link, Config config) {
-		List<Handler> handlers = new ArrayList<Handler>(Arrays.asList(
+	private static List<Handler> handlers(Link link, Config config) {
+		List<Handler> handlers = new ArrayList<Handler>(asList(
 				new DigitalHandler(link, config), new AnalogHandler(link,
 						config)));
 		if (config.getTopicPatternAnalogControl() != null) {
@@ -225,14 +225,6 @@ public abstract class AbstractMqttAdapter {
 			if (handler.handle(topic, message)) {
 				return;
 			}
-		}
-	}
-
-	private static Integer tryParse(String string) {
-		try {
-			return Integer.valueOf(string);
-		} catch (NumberFormatException e) {
-			return null;
 		}
 	}
 

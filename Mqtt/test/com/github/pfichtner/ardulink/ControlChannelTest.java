@@ -30,8 +30,6 @@ import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -46,16 +44,13 @@ import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- * 
  * @author Peter Fichtner
  * 
- *         [adsense]
+ * [adsense]
  */
 public class ControlChannelTest {
 
 	private static final String LINKNAME = "testlink";
-
-	private final List<Message> published = new ArrayList<Message>();
 
 	private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 	private final ConnectionContact connectionContact = new ConnectionContactImpl(
@@ -68,7 +63,7 @@ public class ControlChannelTest {
 			link, Config.DEFAULT.withControlChannelEnabled()) {
 		@Override
 		void fromArduino(String topic, String message) {
-			published.add(new Message(topic, message));
+			throw new UnsupportedOperationException("Receiving not supported");
 		}
 	};
 
@@ -110,7 +105,8 @@ public class ControlChannelTest {
 		new AbstractMqttAdapter(link, Config.DEFAULT) {
 			@Override
 			void fromArduino(String topic, String message) {
-				published.add(new Message(topic, message));
+				throw new UnsupportedOperationException(
+						"Receiving not supported");
 			}
 		}.toArduino(message.getTopic(), message.getMessage());
 		assertThat(serialReceived(), is(empty()));

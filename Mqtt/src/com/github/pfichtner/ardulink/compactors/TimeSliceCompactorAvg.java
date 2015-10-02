@@ -16,6 +16,8 @@ limitations under the License.
 */
 package com.github.pfichtner.ardulink.compactors;
 
+import static com.github.pfichtner.ardulink.util.Integers.average;
+
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -61,7 +63,7 @@ public class TimeSliceCompactorAvg extends
 					getDelegate()
 							.stateChanged(
 									new AnalogReadChangeEvent(entry.getKey(),
-											avg(entry.getValue()),
+											average(entry.getValue()),
 											"alp://todo/rebuild/message"));
 				}
 				data.clear();
@@ -69,16 +71,5 @@ public class TimeSliceCompactorAvg extends
 		}
 	}
 
-	private int avg(List<Integer> values) {
-		return sum(values) / values.size();
-	}
-
-	protected int sum(List<Integer> values) {
-		int sum = 0;
-		for (Integer integer : values) {
-			sum += integer;
-		}
-		return sum;
-	}
 
 }
