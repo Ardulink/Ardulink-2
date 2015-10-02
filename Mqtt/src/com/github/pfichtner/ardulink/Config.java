@@ -57,8 +57,14 @@ public abstract class Config {
 			return delegate.getTopicPatternAnalogRead();
 		}
 
-		public Pattern getTopicPatternControl() {
-			return delegate.getTopicPatternControl();
+		@Override
+		public Pattern getTopicPatternDigitalControl() {
+			return delegate.getTopicPatternDigitalControl();
+		}
+
+		@Override
+		public Pattern getTopicPatternAnalogControl() {
+			return delegate.getTopicPatternAnalogControl();
 		}
 
 	}
@@ -81,20 +87,6 @@ public abstract class Config {
 				this.topicPatternDigitalRead = read(topic, "D");
 				this.topicPatternAnalogWrite = compile(write(topic, "A"));
 				this.topicPatternAnalogRead = read(topic, "A");
-			}
-
-			private String read(String brokerTopic, String prefix) {
-				return format(brokerTopic, prefix, "%s", "/get");
-			}
-
-			private String write(String brokerTopic, String prefix) {
-				return format(brokerTopic, prefix, "(\\w+)", "/set");
-			}
-
-			private String format(String brokerTopic, String prefix,
-					String numerated, String appendix) {
-				return brokerTopic + prefix
-						+ String.format("%s/value", numerated) + appendix;
 			}
 
 			@Override
@@ -123,7 +115,12 @@ public abstract class Config {
 			}
 
 			@Override
-			public Pattern getTopicPatternControl() {
+			public Pattern getTopicPatternDigitalControl() {
+				return null;
+			}
+
+			@Override
+			public Pattern getTopicPatternAnalogControl() {
 				return null;
 			}
 
@@ -133,14 +130,37 @@ public abstract class Config {
 	public Config withControlChannelEnabled() {
 		return new ConfigDelegate(this) {
 
-			private final Pattern topicPatternControl = compile(getTopic()
-					+ "system\\/listening\\/(.)(\\w+)\\/value\\/set");
+			private final Pattern topicPatternDigitalControl = compile(write(
+					getTopic() + "system/listening/", "D"));
+
+			private final Pattern topicPatternAnalogControl = compile(write(
+					getTopic() + "system/listening/", "A"));
 
 			@Override
-			public Pattern getTopicPatternControl() {
-				return topicPatternControl;
+			public Pattern getTopicPatternDigitalControl() {
+				return topicPatternDigitalControl;
 			}
+
+			@Override
+			public Pattern getTopicPatternAnalogControl() {
+				return topicPatternAnalogControl;
+			}
+
 		};
+	}
+
+	private static String read(String brokerTopic, String prefix) {
+		return format(brokerTopic, prefix, "%s", "/get");
+	}
+
+	private static String write(String brokerTopic, String prefix) {
+		return format(brokerTopic, prefix, "(\\w+)", "/set");
+	}
+
+	private static String format(String brokerTopic, String prefix,
+			String numerated, String appendix) {
+		return brokerTopic + prefix + String.format("%s/value", numerated)
+				+ appendix;
 	}
 
 	protected abstract String getTopic();
@@ -153,6 +173,8 @@ public abstract class Config {
 
 	public abstract String getTopicPatternAnalogRead();
 
-	public abstract Pattern getTopicPatternControl();
+	public abstract Pattern getTopicPatternDigitalControl();
+
+	public abstract Pattern getTopicPatternAnalogControl();
 
 }
