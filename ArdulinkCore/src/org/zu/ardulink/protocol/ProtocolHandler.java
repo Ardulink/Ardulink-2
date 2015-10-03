@@ -39,8 +39,8 @@ import java.util.Set;
  */
 public class ProtocolHandler {
 	
-	private static IProtocol currentProtocolImplementation = null;
-	private static Map<String, IProtocol> installedProtocolImplementations = new Hashtable<String, IProtocol>();
+	private static IProtocol currentProtocolImplementation;
+	private static final Map<String, IProtocol> installedProtocolImplementations = new Hashtable<String, IProtocol>();
 
 	static {
 		ALProtocol alProtocol = new ALProtocol();

@@ -49,7 +49,7 @@ public class TogggleSignalButton extends JPanel implements Linkable, CustomMessa
 	private static final long serialVersionUID = -5162326079507604871L;
 
 	private Link link = Link.getDefaultInstance();
-	private ReplyMessageCallback replyMessageCallback = null;
+	private ReplyMessageCallback replyMessageCallback;
 
 	private JTextField textFieldOn;
 	private JToggleButton signalButton;

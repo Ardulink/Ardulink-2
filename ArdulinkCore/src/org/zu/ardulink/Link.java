@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.zu.ardulink;
 
+import static org.zu.ardulink.util.Preconditions.checkState;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +37,7 @@ import org.zu.ardulink.protocol.LoggerReplyMessageCallback;
 import org.zu.ardulink.protocol.MessageInfo;
 import org.zu.ardulink.protocol.ProtocolHandler;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.util.Preconditions;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -64,14 +67,14 @@ public class Link {
 	 */
 	public static final String DEFAULT_LINK_NAME = "DEFAULT_LINK";
 	
-	private static Map<String, Link> links = Collections.synchronizedMap(new HashMap<String, Link>());
+	private static final Map<String, Link> links = Collections.synchronizedMap(new HashMap<String, Link>());
 	
 	static {
 		createInstance(DEFAULT_LINK_NAME, ALProtocol.NAME);
 	}
 	
 	private ConnectionContactImpl connectionContact = new ConnectionContactImpl(this);
-	private Connection connection = null;
+	private Connection connection;
 	private String name;
 	
 	private LoggerReplyMessageCallback loggerCallback = new LoggerReplyMessageCallback();
@@ -114,13 +117,10 @@ public class Link {
 	 */
 	public static Link createInstance(String linkName, String protocolName) {
 		Link link = getInstance(linkName);
-		if(link == null) {
-			IProtocol protocol = ProtocolHandler.getProtocolImplementation(protocolName);
-			link = new Link(linkName, protocol);
-			links.put(linkName, link);
-		} else {
-			throw new RuntimeException("Instance " + linkName + " already created.");
-		}
+		checkState(link == null, "Instance %s already created.", linkName);
+		IProtocol protocol = ProtocolHandler.getProtocolImplementation(protocolName);
+		link = new Link(linkName, protocol);
+		links.put(linkName, link);
 		return link;
 	}
 

@@ -20,6 +20,7 @@ package org.zu.ardulink.gui.facility;
 
 import static java.awt.Color.BLACK;
 import static java.lang.Integer.toHexString;
+import static org.zu.ardulink.util.Strings.nullOrEmpty;
 
 import java.awt.Color;
 
@@ -27,6 +28,7 @@ import java.awt.Color;
  * [ardulinktitle] [ardulinkversion]
  * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * @author Peter Fichtner
  * 
  * [adsense]
  *
@@ -46,7 +48,7 @@ public final class UtilityColor {
 		if (hexString != null && hexString.startsWith("#")) {
 			hexString = hexString.substring(1);
 		}
-		return hexString == null || hexString.isEmpty() ? "" : "#" + hexString;
+		return nullOrEmpty(hexString) ? "" : "#" + hexString;
 	}
 
 	public static String toString(Color color) {

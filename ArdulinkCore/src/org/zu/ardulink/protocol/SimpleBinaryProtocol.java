@@ -65,7 +65,7 @@ public class SimpleBinaryProtocol implements IProtocol {
 				message[1] = pin;
 				message[2] = intensity;
 				
-				logger.fine("" + message[0] + message[1] + message[2]); 
+				logger.fine(String.valueOf(message[0]) + message[1] + message[2]); 
 				
 				boolean result = link.writeSerial(message.length, message);
 				retvalue.setSent(result);
@@ -89,7 +89,7 @@ public class SimpleBinaryProtocol implements IProtocol {
 				message[1] = pin;
 				message[2] = power;
 
-				logger.fine("" + message[0] + message[1] + message[2]); 
+				logger.fine(String.valueOf(message[0]) + message[1] + message[2]); 
 				
 				boolean result = link.writeSerial(message.length, message);
 				retvalue.setSent(result);

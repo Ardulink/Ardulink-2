@@ -38,9 +38,9 @@ import org.zu.ardulink.io.WritingException;
 public class ConfigurationFacade {
 
 	private static Logger logger = Logger.getLogger(ConfigurationFacade.class.getName());
-	private static AConfiguration configuration = null;
-	private static Map<String, ALink> linksMap = new Hashtable<String, ALink>();
-	private static Map<String, AConnection> connectionsMap = new Hashtable<String, AConnection>();
+	private static AConfiguration configuration;
+	private static final Map<String, ALink> linksMap = new Hashtable<String, ALink>();
+	private static final Map<String, AConnection> connectionsMap = new Hashtable<String, AConnection>();
 	
 	static {
 		try {

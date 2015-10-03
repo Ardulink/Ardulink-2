@@ -43,7 +43,7 @@ public class ConnectionStatus extends JPanel implements ConnectionListener, Link
 
 	private JLabel lblStatelabel;
 	
-	private Link link = null;
+	private Link link;
 	
 	private static final String CONNECTED = "connected";
 	private static final String DISCONNECTED = "disconnected";

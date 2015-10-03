@@ -51,8 +51,8 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 	private PrintWriter printWriter;
 	private OutputStream outputStream;
 
-	private boolean closed = false;
-	private boolean handshakeComplete = false;
+	private boolean closed;
+	private boolean handshakeComplete;
 		
 	public NetworkProxyServerConnection(Socket socket) {
 		super();
@@ -79,7 +79,7 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 			if(!closed) {
 				int dataReceived = bufferedReader.read();
 				while (dataReceived != -1) {
-					String data = "" + (char)dataReceived;
+					String data = String.valueOf((char)dataReceived);
 					// System.out.print(data);
 					writeSerial(data);
 					dataReceived = bufferedReader.read();
@@ -115,7 +115,7 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 			closed = true;
 		} else if(inputLine.equals(GET_PORT_LIST_CMD)) {
 			List<String> portList = getPortList();
-			if(portList == null || portList.size() == 0) {
+			if(portList == null || portList.isEmpty()) {
 				printWriter.println(NUMBER_OF_PORTS + "0");
 			} else {
 				printWriter.println(NUMBER_OF_PORTS + portList.size());

@@ -30,14 +30,15 @@ package org.zu.ardulink.protocol;
  *
  */
 public class MessageInfo {
-	private boolean sent = false;
+	private boolean sent;
 	private long messageID = IProtocol.UNDEFINED_ID;
-	private String messageSent = null;
-	private String messageReceived = null;
+	private String messageSent;
+	private String messageReceived;
 	private int reply = IProtocol.UNDEFINED_REPLY;
-	private ReplyMessageCallback callback = null;
+	private ReplyMessageCallback callback;
 	
 	public MessageInfo() {
+		super();
 	}
 	
 	/**

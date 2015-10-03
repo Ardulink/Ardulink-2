@@ -39,7 +39,7 @@ import org.zu.ardulink.gui.event.PositionListener;
 public class SimplePositionListener extends JPanel implements PositionListener {
 
 	private static final long serialVersionUID = -315437517373209646L;
-	private Point position = null;
+	private Point position;
 	private int maxSize = 1;
 	
 	private static final int POINT_DIM = 15;

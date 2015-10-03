@@ -38,7 +38,7 @@ public abstract class IncomingMessageEvent {
 	
 	private int pin = UNDEFINED_PIN;
 	private int value = UNDEFINED_VALUE;
-	private String incomingMessage = null;
+	private String incomingMessage;
 
 	public IncomingMessageEvent() {
 	}

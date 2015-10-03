@@ -18,12 +18,12 @@ package com.github.pfichtner.ardulink;
 
 import static com.github.pfichtner.ardulink.AbstractMqttAdapter.CompactStrategy.AVERAGE;
 import static com.github.pfichtner.ardulink.compactors.Tolerance.maxTolerance;
-import static com.github.pfichtner.ardulink.util.Strings.nullOrEmpty;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.zu.ardulink.connection.proxy.NetworkProxyConnection.DEFAULT_LISTENING_PORT;
+import static org.zu.ardulink.util.Strings.nullOrEmpty;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,6 +40,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.proxy.NetworkProxyConnection;
+import org.zu.ardulink.util.Strings;
 
 import com.github.pfichtner.ardulink.AbstractMqttAdapter.CompactStrategy;
 import com.github.pfichtner.ardulink.compactors.ThreadTimeSlicer;
@@ -286,8 +287,8 @@ public class MqttMain {
 	}
 
 	protected Link createLink() {
-		return this.remote == null || this.remote.isEmpty() ? Link
-				.getDefaultInstance() : createRemoteLink(this.remote);
+		return nullOrEmpty(this.remote) ? Link.getDefaultInstance()
+				: createRemoteLink(this.remote);
 	}
 
 	private static Link createRemoteLink(String remote) {

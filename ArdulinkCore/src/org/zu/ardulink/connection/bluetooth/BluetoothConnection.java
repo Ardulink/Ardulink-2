@@ -18,6 +18,9 @@ limitations under the License.
 
 package org.zu.ardulink.connection.bluetooth;
 
+import static org.zu.ardulink.util.Preconditions.checkNotNull;
+import static org.zu.ardulink.util.Preconditions.checkState;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -52,13 +55,13 @@ public class BluetoothConnection extends AbstractSerialConnection implements Con
 
 	private Map<String, ServiceRecord> ports = new HashMap<String, ServiceRecord>();
 
-	private javax.microedition.io.Connection connection = null;
-	private StreamConnectionNotifier streamConnNotifier = null;
-	private StreamConnection streamConnection = null;
+	private javax.microedition.io.Connection connection;
+	private StreamConnectionNotifier streamConnNotifier;
+	private StreamConnection streamConnection;
 
 	//read string from spp client
-	private InputStream inputStream = null;
-	private OutputStream outputStream = null;
+	private InputStream inputStream;
+	private OutputStream outputStream;
 	
 	
 	public BluetoothConnection() {
@@ -112,15 +115,11 @@ public class BluetoothConnection extends AbstractSerialConnection implements Con
 
 	@Override
 	public boolean connect(Object... params) {
-		String deviceName = null;
-		if(params == null || params.length != 1) {
-			throw new RuntimeException("This connection accepts just a String device name.");
-		}
-		if(!(params[0] instanceof String)) {
-			throw new RuntimeException("This connection accepts a just a String parameter");
-		} else {
-			deviceName =(String)params[0]; 
-		}
+		checkState(checkNotNull(params, "Params must not be null").length == 1,
+				"This connection accepts exactly one String device name.");
+		checkState(params[0] instanceof String,
+				"This connection accepts a just a parameter with type String");
+		String deviceName = (String) params[0];
 
 		boolean retvalue = false;
 		retvalue = connect(deviceName);

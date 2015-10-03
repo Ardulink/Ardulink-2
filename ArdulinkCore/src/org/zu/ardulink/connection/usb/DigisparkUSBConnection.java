@@ -18,6 +18,9 @@ limitations under the License.
 
 package org.zu.ardulink.connection.usb;
 
+import static org.zu.ardulink.util.Preconditions.checkNotNull;
+import static org.zu.ardulink.util.Preconditions.checkState;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.zu.ardulink.connection.Connection;
 import org.zu.ardulink.connection.ConnectionContact;
+import org.zu.ardulink.util.Preconditions;
 
 import ch.ntb.usb.LibusbJava;
 import ch.ntb.usb.USB;
@@ -44,12 +48,12 @@ import ch.ntb.usb.Usb_Device_Descriptor;
  */
 public class DigisparkUSBConnection implements Connection {
 
-	private Map<String, Usb_Device> deviceMap = new HashMap<String, Usb_Device>();
-	private boolean portListRequested = false;
+	private final Map<String, Usb_Device> deviceMap = new HashMap<String, Usb_Device>();
+	private boolean portListRequested;
 	
-	private Usb_Device openedDevice = null;
+	private Usb_Device openedDevice;
 	private long usbDevHandle;
-	private String openedPortName = null;
+	private String openedPortName;
 
 	public static final String DEFAULT_ID = "defaultDigisparkUSBConnection";
 	
@@ -155,18 +159,13 @@ public class DigisparkUSBConnection implements Connection {
 	
 	@Override
 	public boolean connect(Object... params) {
-		String portName = null;
-		if(params == null || params.length < 1) {
-			throw new RuntimeException("This connection accepts a String port name. Null or zero arguments passed.");
-		}
-		if(!(params[0] instanceof String)) {
-			throw new RuntimeException("This connection accepts a String port name. First argument was not a String");
-		} else {
-			portName =(String)params[0]; 
-		}
-		if(params.length > 1) {
-			throw new RuntimeException("This connection accepts a String port name. More than one argument passed");
-		}
+		checkState(
+				checkNotNull(params,
+						"This connection accepts a String port name. Null arguments passed.").length == 1,
+				"This connection accepts a String port name. Zero ore more than one argument(s) passed.");
+		checkState(params[0] instanceof String,
+				"This connection accepts a String port name. First argument was not a String");
+		String portName = (String) params[0];
 		boolean retvalue = false;
 		retvalue = connect(portName);
 
@@ -190,15 +189,13 @@ public class DigisparkUSBConnection implements Connection {
 			openedPortName = portName;
 			
 			long res = LibusbJava.usb_open(openedDevice);
-			if (res == 0) {
-				throw new RuntimeException("LibusbJava.usb_open: "
-						+ LibusbJava.usb_strerror());
-			}
+			checkState(res != 0, "LibusbJava.usb_open: %s",
+					LibusbJava.usb_strerror());
+
 			usbDevHandle = res;
 
-			if (openedDevice == null || usbDevHandle == 0) {
-				throw new RuntimeException("USB Digispark device with not found on USB");
-			}
+			checkState(openedDevice != null && usbDevHandle != 0,
+					"USB Digispark device with not found on USB");
 			claim_interface(usbDevHandle, 1, 0);
 
 			//reader = (new Thread(new DigisparkUSBReader()));
@@ -291,10 +288,8 @@ public class DigisparkUSBConnection implements Connection {
 			if (len < 0) {
 				tryARecover();
 				len = LibusbJava.usb_control_msg(usbDevHandle, (0x01 << 5), 0x09, 0, (int) out[i], new byte[0], 0, 0);
-				if (len < 0) {
-					throw new RuntimeException("LibusbJava.controlMsg: "
-							+ LibusbJava.usb_strerror());
-				}
+				checkState(len >= 0, "LibusbJava.controlMsg: %s",
+						LibusbJava.usb_strerror());
 			}			
 		}
 		
@@ -311,19 +306,14 @@ public class DigisparkUSBConnection implements Connection {
 			if (len < 0) {
 				tryARecover();
 				len = LibusbJava.usb_control_msg(usbDevHandle, (0x01 << 5), 0x09, 0, message[i], new byte[0], 0, 0);
-				if (len < 0) {
-					throw new RuntimeException("LibusbJava.controlMsg: "
-							+ LibusbJava.usb_strerror());
-				}
+				checkState(len >= 0, "LibusbJava.controlMsg: %s",
+						LibusbJava.usb_strerror());
 			}			
 		}
 
 		int len = LibusbJava.usb_control_msg(usbDevHandle, (0x01 << 5), 0x09, 0, divider, new byte[0], 0, 0);
-		if (len < 0) {
-			throw new RuntimeException("LibusbJava.controlMsg: "
-					+ LibusbJava.usb_strerror());
-		}			
-		
+		checkState(len >= 0, "LibusbJava.controlMsg: %s",
+				LibusbJava.usb_strerror());
 		return success;
 	}
 
@@ -363,6 +353,7 @@ public class DigisparkUSBConnection implements Connection {
 		int numTempBytes = 0;
 
 		public DigisparkUSBReader() {
+			super();
 		}
 
 		public void run() {

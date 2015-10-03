@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.zu.ardulink.gui;
 
+import static org.zu.ardulink.util.Strings.nullOrEmpty;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -155,11 +157,11 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 						comPort = networkProxyConnectionPanel.getConnectionPort();
 						baudRateS = serialConnectionPanel.getBaudRate();
 					}
-					if(comPort == null || "".equals(comPort)) {
+					if (nullOrEmpty(comPort)) {
 						JOptionPane.showMessageDialog(btnConnect, "Invalid COM PORT setted.", "Error", JOptionPane.ERROR_MESSAGE);
-					} else if(baudRateS == null || "".equals(baudRateS)) {
+					} else if (nullOrEmpty(baudRateS)) {
 						JOptionPane.showMessageDialog(btnConnect, "Invalid baud rate setted. Advice: set " + Link.DEFAULT_BAUDRATE, "Error", JOptionPane.ERROR_MESSAGE);
-					} else if(networkConnectionRadioButton.isSelected() && networkProxyConnectionPanel.getLink() == null) {
+					} else if (networkConnectionRadioButton.isSelected() && networkProxyConnectionPanel.getLink() == null) {
 						JOptionPane.showMessageDialog(btnConnect, "Proxy is not activated", "Error", JOptionPane.ERROR_MESSAGE);
 					} else {
 						try {
@@ -175,7 +177,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 						catch(Exception ex) {
 							ex.printStackTrace();
 							String message = ex.getMessage();
-							if(message == null || message.trim().equals("")) {
+							if (nullOrEmpty(message)) {
 								message = "Generic Error on connection";
 							}
 							JOptionPane.showMessageDialog(btnConnect, message, "Error", JOptionPane.ERROR_MESSAGE);
@@ -191,7 +193,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 					catch(Exception ex) {
 						ex.printStackTrace();
 						String message = ex.getMessage();
-						if(message == null || message.trim().equals("")) {
+						if (nullOrEmpty(message)) {
 							message = "Generic Error on connection";
 						}
 						JOptionPane.showMessageDialog(btnConnect, message, "Error", JOptionPane.ERROR_MESSAGE);
@@ -207,7 +209,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 					catch(Exception ex) {
 						ex.printStackTrace();
 						String message = ex.getMessage();
-						if(message == null || message.trim().equals("")) {
+						if (nullOrEmpty(message)) {
 							message = "Generic Error on connection";
 						}
 						JOptionPane.showMessageDialog(btnConnect, message, "Error", JOptionPane.ERROR_MESSAGE);

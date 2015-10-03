@@ -237,7 +237,7 @@ public class ModifiableSignalButton extends JPanel implements Linkable, CustomMe
 	 * @param columns
 	 */
 	public void setValueColumns(int columns) {
-		columnsTextField.setText("" + columns);
+		columnsTextField.setText(String.valueOf(columns));
 	}
 
 	/**
