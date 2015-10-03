@@ -75,7 +75,7 @@ public class AnotherMqttClient {
 		return this;
 	}
 
-	public void switchDigitalPin(int pin, Object value)
+	public void switchDigitalPin(int pin, boolean value)
 			throws MqttPersistenceException, MqttException {
 		sendMessage(createSetMessage(newMsgBuilder().digitalPin(pin), value));
 	}

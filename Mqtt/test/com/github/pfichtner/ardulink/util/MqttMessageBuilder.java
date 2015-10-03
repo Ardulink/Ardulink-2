@@ -52,16 +52,15 @@ public class MqttMessageBuilder {
 	}
 
 	public MqttMessageBuilder digitalPin(int pin) {
-		checkArgument(pin >= 0, "Pin must not be negative but was %s", pin);
 		return pin("D", pin);
 	}
 
 	public MqttMessageBuilder analogPin(int pin) {
-		checkArgument(pin >= 0, "Pin must not be negative but was %s", pin);
 		return pin("A", pin);
 	}
 
 	private MqttMessageBuilder pin(String type, int pin) {
+		checkArgument(pin >= 0, "Pin must not be negative but was %s", pin);
 		return appendTopic(type + pin);
 	}
 
@@ -70,11 +69,11 @@ public class MqttMessageBuilder {
 	}
 
 	public MqttMessageBuilder digitalListener(int pin) {
-		return listener().appendTopic("D" + pin);
+		return listener().digitalPin(pin);
 	}
 
 	public MqttMessageBuilder analogListener(int pin) {
-		return listener().appendTopic("A" + pin);
+		return listener().analogPin(pin);
 	}
 
 	public MqttMessageBuilder listener() {

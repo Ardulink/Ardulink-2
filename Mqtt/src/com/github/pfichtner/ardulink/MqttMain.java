@@ -18,14 +18,15 @@ package com.github.pfichtner.ardulink;
 
 import static com.github.pfichtner.ardulink.AbstractMqttAdapter.CompactStrategy.AVERAGE;
 import static com.github.pfichtner.ardulink.compactors.Tolerance.maxTolerance;
+import static com.github.pfichtner.ardulink.util.Strings.nullOrEmpty;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.zu.ardulink.connection.proxy.NetworkProxyConnection.DEFAULT_LISTENING_PORT;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -77,7 +78,7 @@ public class MqttMain {
 	private int tolerance = 1;
 
 	@Option(name = "-athms", aliases = "--throttle", usage = "Analog throttle, do not publish multiple events within <throttleMillis>")
-	private int throttleMillis = (int) TimeUnit.SECONDS.toMillis(10);
+	private int throttleMillis = (int) SECONDS.toMillis(10);
 
 	@Option(name = "-athstr", aliases = "--strategy", usage = "Analog throttle strategy")
 	private CompactStrategy compactStrategy = AVERAGE;
@@ -141,7 +142,7 @@ public class MqttMain {
 				public void connectionLost(Throwable cause) {
 					do {
 						try {
-							TimeUnit.SECONDS.sleep(1);
+							SECONDS.sleep(1);
 						} catch (InterruptedException e1) {
 							Thread.currentThread().interrupt();
 						}
@@ -234,10 +235,6 @@ public class MqttMain {
 			return client.isConnected();
 		}
 
-		private boolean nullOrEmpty(String string) {
-			return string == null || string.isEmpty();
-		}
-
 	}
 
 	public static void main(String[] args) throws MqttSecurityException,
@@ -284,7 +281,7 @@ public class MqttMain {
 		if (!link.connect(portList.get(0), 115200)) {
 			throw new RuntimeException("Connection failed!");
 		}
-		TimeUnit.SECONDS.sleep(3);
+		SECONDS.sleep(3);
 		return link;
 	}
 

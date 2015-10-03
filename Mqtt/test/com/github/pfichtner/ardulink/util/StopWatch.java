@@ -13,8 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package com.github.pfichtner.ardulink.util;
+
+import static com.github.pfichtner.ardulink.util.Preconditions.checkState;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -27,14 +32,18 @@ public class StopWatch {
 	private Long started;
 
 	public StopWatch start() {
+		checkState(this.started == null, "StopWatch already started");
 		this.started = Long.valueOf(System.currentTimeMillis());
 		return this;
 	}
 
 	public long getTime() {
-		Long _started = started;
-		return _started == null ? 0 : System.currentTimeMillis()
-				- _started.longValue();
+		Long tmp = started;
+		return tmp == null ? 0 : System.currentTimeMillis() - tmp.longValue();
+	}
+
+	public long getTime(TimeUnit timeUnit) {
+		return timeUnit.convert(getTime(), MILLISECONDS);
 	}
 
 }

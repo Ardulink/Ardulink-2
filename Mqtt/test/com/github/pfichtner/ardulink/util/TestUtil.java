@@ -120,10 +120,10 @@ public final class TestUtil {
 		StopWatch stopWatch = new StopWatch().start();
 		while (!mqttMain.isConnected()) {
 			timeUnit.sleep(value);
-			int secs = 5;
-			if (stopWatch.getTime() > SECONDS.toMillis(secs)) {
+			int maxSecs = 5;
+			if (stopWatch.getTime(SECONDS) > maxSecs) {
 				throw new IllegalStateException("Could not connect within "
-						+ secs + " seconds");
+						+ maxSecs + " seconds");
 			}
 		}
 		return mqttMain;
