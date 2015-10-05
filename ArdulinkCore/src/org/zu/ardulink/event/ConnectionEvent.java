@@ -29,8 +29,8 @@ import java.util.Date;
  *
  */
 public class ConnectionEvent {
-	private String connectionId = null;
-	private String portName = null;
+	private String connectionId;
+	private String portName;
 	private Date timestamp = new Date();
 
 	public ConnectionEvent() {

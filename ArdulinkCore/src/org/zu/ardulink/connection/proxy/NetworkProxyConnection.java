@@ -18,6 +18,9 @@ limitations under the License.
 
 package org.zu.ardulink.connection.proxy;
 
+import static org.zu.ardulink.util.Preconditions.checkNotNull;
+import static org.zu.ardulink.util.Preconditions.checkState;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,7 +53,7 @@ public class NetworkProxyConnection implements Connection, NetworkProxyMessages 
 	private PrintWriter printWriter;
 	private OutputStream outputStream;
 	
-	private boolean handshakeComplete = false;
+	private boolean handshakeComplete;
 	
 	private ConnectionContact contact;
 	
@@ -103,24 +106,19 @@ public class NetworkProxyConnection implements Connection, NetworkProxyMessages 
 
 	@Override
 	public boolean connect(Object... params) {
-		String portName = null;
 		Integer baudRate = Link.DEFAULT_BAUDRATE;
-		if(params == null || params.length < 1) {
-			throw new RuntimeException("This connection accepts a String port name and a Integer baud rate. Only the port name is mandatory. Null or zero arguments passed.");
+		checkState(checkNotNull(params, "Params must not be null").length >= 1,
+				"This connection accepts a String port name and a Integer baud rate. Only the port name is mandatory. Null or zero arguments passed.");
+		checkState(params[0] instanceof String,
+				"This connection accepts a String port name and a Integer baud rate. Only the port name is mandatory. First argument was not a String");
+		String portName = (String) params[0];
+		if (params.length > 1) {
+			checkState(
+					params[1] instanceof Integer,
+					"This connection accepts a String port name and a Integer baud rate. Only the port name is mandatory. Second argument was not an Integer");
+			baudRate = (Integer) params[1];
 		}
-		if(!(params[0] instanceof String)) {
-			throw new RuntimeException("This connection accepts a String port name and a Integer baud rate. Only the port name is mandatory. First argument was not a String");
-		} else {
-			portName =(String)params[0]; 
-		}
-		if(params.length > 1 && !(params[1] instanceof Integer)) {
-			throw new RuntimeException("This connection accepts a String port name and a Integer baud rate. Only the port name is mandatory. Second argument was not an Integer");
-		} else {
-			if(params.length > 1) {
-				baudRate = (Integer)params[1];
-			}
-		}
-		
+
 		boolean retvalue = false;
 		try {
 			printWriter.println(CONNECT_CMD);

@@ -16,8 +16,8 @@ limitations under the License.
  */
 package com.github.pfichtner.ardulink.util;
 
-import static com.github.pfichtner.ardulink.util.Preconditions.checkArgument;
 import static java.lang.String.format;
+import static org.zu.ardulink.util.Preconditions.checkArgument;
 
 /**
  * [ardulinktitle] [ardulinkversion]

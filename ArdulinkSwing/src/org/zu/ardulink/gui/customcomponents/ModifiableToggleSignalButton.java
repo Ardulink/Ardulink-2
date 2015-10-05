@@ -312,7 +312,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable, Cu
 	 * @param columns
 	 */
 	public void setValueColumns(int columns) {
-		columnsTextField.setText("" + columns);
+		columnsTextField.setText(String.valueOf(columns));
 	}
 
 	/**

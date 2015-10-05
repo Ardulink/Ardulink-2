@@ -53,8 +53,8 @@ import org.zu.ardulink.protocol.custommessages.SimpleCustomMessageMaker;
 public class Joystick extends JPanel implements Linkable, CustomMessageSender {
 
 	private Link link = Link.getDefaultInstance();
-	private ReplyMessageCallback replyMessageCallback = null;
-	private List<PositionListener> positionListeners = new LinkedList<PositionListener>();
+	private ReplyMessageCallback replyMessageCallback;
+	private final List<PositionListener> positionListeners = new LinkedList<PositionListener>();
 	private String id = "none";
 	
 	// TODO rendere parametrico il border size e trasformare questo in un valore di defalut

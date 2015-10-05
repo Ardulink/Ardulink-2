@@ -16,8 +16,8 @@ limitations under the License.
  */
 package com.github.pfichtner.ardulink.util;
 
-import static com.github.pfichtner.ardulink.util.Preconditions.checkState;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.zu.ardulink.util.Preconditions.checkState;
 
 import java.util.concurrent.TimeUnit;
 

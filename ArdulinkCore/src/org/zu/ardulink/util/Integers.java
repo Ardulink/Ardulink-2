@@ -1,4 +1,4 @@
-package com.github.pfichtner.ardulink.util;
+package org.zu.ardulink.util;
 
 import java.util.Collection;
 

@@ -29,7 +29,7 @@ import java.util.Date;
  *
  */
 public class DisconnectionEvent {
-	private String connectionId = null;
+	private String connectionId;
 	private Date timestamp = new Date();
 
 	public DisconnectionEvent() {

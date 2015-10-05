@@ -49,7 +49,7 @@ public class DigisparkConnectionPanel extends JPanel {
 
 	private static final long serialVersionUID = 6713040751827233041L;
 	
-	private Link link = null;
+	private Link link;
 
 	private JButton discoverButton;
 	private JComboBox deviceComboBox;

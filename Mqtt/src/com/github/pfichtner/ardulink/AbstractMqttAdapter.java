@@ -16,14 +16,14 @@ limitations under the License.
  */
 package com.github.pfichtner.ardulink;
 
-import static com.github.pfichtner.ardulink.util.Integers.tryParse;
-import static com.github.pfichtner.ardulink.util.Preconditions.checkArgument;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 import static org.zu.ardulink.protocol.IProtocol.POWER_HIGH;
 import static org.zu.ardulink.protocol.IProtocol.POWER_LOW;
+import static org.zu.ardulink.util.Integers.tryParse;
+import static org.zu.ardulink.util.Preconditions.checkArgument;
 
 import java.util.ArrayList;
 import java.util.Collection;

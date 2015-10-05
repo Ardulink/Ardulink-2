@@ -40,7 +40,7 @@ public class AConnection {
 	private String className;
 	private List<AParameter> constructorParameters;
 	
-	private Connection connection = null;
+	private Connection connection;
 	
 	@XmlElement(name="name", required=true)
 	public String getName() {

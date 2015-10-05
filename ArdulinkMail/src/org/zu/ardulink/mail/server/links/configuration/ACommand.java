@@ -40,7 +40,7 @@ public class ACommand {
 	private String className;
 	private List<String> aLinkNames;
 	
-	private IContentManager contentManager = null;
+	private IContentManager contentManager;
 	
 	@XmlElement(name="name", required=true)
 	public String getName() {

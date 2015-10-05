@@ -37,6 +37,7 @@ import org.zu.ardulink.event.ConnectionListener;
 import org.zu.ardulink.event.DigitalReadChangeEvent;
 import org.zu.ardulink.event.DigitalReadChangeListener;
 import org.zu.ardulink.event.DisconnectionEvent;
+import org.zu.ardulink.util.Strings;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -206,7 +207,7 @@ public class DataReceiver {
 	 * @return
 	 */
 	private Link createLink() {
-		if (remote == null || remote.isEmpty()) {
+		if (Strings.nullOrEmpty(remote)) {
 			return Link.getDefaultInstance();
 		}
 

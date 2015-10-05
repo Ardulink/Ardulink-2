@@ -16,15 +16,14 @@ limitations under the License.
 */
 package com.github.pfichtner.ardulink.compactors;
 
-import static com.github.pfichtner.ardulink.util.Integers.average;
+import static org.zu.ardulink.util.Integers.average;
 
 import java.util.List;
 import java.util.Map.Entry;
 
 import org.zu.ardulink.event.AnalogReadChangeEvent;
 import org.zu.ardulink.event.AnalogReadChangeListener;
-
-import com.github.pfichtner.ardulink.util.HashMultiMap;
+import org.zu.ardulink.util.HashMultiMap;
 
 /**
  * [ardulinktitle] [ardulinkversion]

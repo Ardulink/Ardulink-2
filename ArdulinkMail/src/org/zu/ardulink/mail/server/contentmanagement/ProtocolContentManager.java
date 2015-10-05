@@ -18,8 +18,11 @@ limitations under the License.
 
 package org.zu.ardulink.mail.server.contentmanagement;
 
+import static org.zu.ardulink.util.Preconditions.checkNotNull;
+import static org.zu.ardulink.util.Preconditions.checkState;
+import static org.zu.ardulink.util.Primitive.parseAs;
+
 import java.lang.reflect.Method;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,17 +44,12 @@ public class ProtocolContentManager implements IContentManager {
 
 	@Override
 	public boolean isForContent(String content, List<String> mailContentHooks) {
-		boolean retvalue = false;
-		
-		Iterator<String> it = mailContentHooks.iterator();
-		while (it.hasNext() && retvalue == false) {
-			String hook = (String) it.next();
+		for (String hook : mailContentHooks) {
 			if(content.toUpperCase().contains(hook.toUpperCase())) {
-				retvalue = true;
+				return true;
 			}
 		}
-		
-		return retvalue;
+		return false;
 	}
 
 	@Override
@@ -59,12 +57,8 @@ public class ProtocolContentManager implements IContentManager {
 		StringBuilder builder = new StringBuilder();
 		
 		List<Link> links = ConfigurationUtility.getConnectedLinks(aLinkNames);
-		Iterator<Link> it = links.iterator();
-		while (it.hasNext()) {
-			Link link = (Link) it.next();
-			Iterator<String> itValues = values.iterator();
-			while (itValues.hasNext()) {
-				String value = itValues.next();
+		for (Link link : links) {
+			for (String value : values) {
 				String returnMessage;
 				boolean messageSent = false;
 				try {
@@ -99,10 +93,8 @@ public class ProtocolContentManager implements IContentManager {
 		Thread thread = new Thread(caller);
 		thread.start();
 		thread.join();
-		
-		if(!caller.isMessageSent()) {
-			throw new RuntimeException(caller.getResult());
-		}
+
+		checkState(caller.isMessageSent(), caller.getResult());
 
 		return caller.getResult();
 	}
@@ -114,13 +106,15 @@ public class ProtocolContentManager implements IContentManager {
 		int indexOfOpenParenthesis = message.indexOf("(");
 		int indexOfCloseParenthesis = message.indexOf(")");
 		
-		if(indexOfOpenParenthesis == -1) {
-			throw new RuntimeException("Configuration Exception: in message " + message + " does not exist an open parenthesis");
-		}
+		checkState(
+				indexOfOpenParenthesis != -1,
+				"Configuration Exception: in message %s does not exist an open parenthesis",
+				message);
 		
-		if(indexOfCloseParenthesis == -1) {
-			throw new RuntimeException("Configuration Exception: in message " + message + " does not exist a close parenthesis");
-		}
+		checkState(
+				indexOfCloseParenthesis != -1,
+				"Configuration Exception: in message %s does not exist a close parenthesis",
+				message);
 		
 		String methodName = message.substring(0, indexOfOpenParenthesis);
 		String[] parametersAsString = message.substring(indexOfOpenParenthesis + 1, indexOfCloseParenthesis).split(",");
@@ -135,51 +129,27 @@ public class ProtocolContentManager implements IContentManager {
 				found = true;
 			}
 		}
-		
-		if(found) {
-			List<Object> parameters = new LinkedList<Object>();
-			Class<?>[] types = retvalue.getMethod().getParameterTypes();
-			for (int i = 0; i < parametersAsString.length; i++) {
-				parametersAsString[i] = parametersAsString[i].trim();
-				parameters.add(getParameter(types[i], parametersAsString[i]));
-			}
-			retvalue.setParameters(parameters);
-		} else {
-			throw new RuntimeException(methodName + " method with " + parametersAsString.length +" parameters is not found in " + link.getClass().getName() + " class");
+
+		checkState(found, "%s method with %s parameters not found in %s class",
+				methodName, parametersAsString.length, link.getClass()
+						.getName());
+		List<Object> parameters = new LinkedList<Object>();
+		Class<?>[] types = retvalue.getMethod().getParameterTypes();
+		for (int i = 0; i < parametersAsString.length; i++) {
+			parametersAsString[i] = parametersAsString[i].trim();
+			parameters.add(getParameter(types[i], parametersAsString[i]));
 		}
-		
+		retvalue.setParameters(parameters);		
 		
 		return retvalue;
 		
 	}
 
 	private Object getParameter(Class<?> parameterType, String value) {
-		Object retvalue;
-		if(parameterType.isAssignableFrom(int.class)) {
-			retvalue = Integer.parseInt(value);
-		} else if(parameterType.isAssignableFrom(byte.class)) {
-			retvalue = Byte.parseByte(value);
-		} else if(parameterType.isAssignableFrom(short.class)) {
-			retvalue = Short.parseShort(value);
-		} else if(parameterType.isAssignableFrom(long.class)) {
-			retvalue = Long.parseLong(value);
-		} else if(parameterType.isAssignableFrom(float.class)) {
-			retvalue = Float.parseFloat(value);
-		} else if(parameterType.isAssignableFrom(double.class)) {
-			retvalue = Double.parseDouble(value);
-		} else if(parameterType.isAssignableFrom(boolean.class)) {
-			retvalue = Boolean.parseBoolean(value);
-		} else if(parameterType.isAssignableFrom(char.class)) {
-			retvalue = value.charAt(0);
-		} else if(parameterType.isAssignableFrom(String.class)) {
-			retvalue = value;
-		} else {
-			throw new RuntimeException("Class: " + parameterType.getName() + " is not legal in the " + this.getClass().getName());
-		}
-		
-		return retvalue;
+		return checkNotNull(parseAs(parameterType, value),
+				"Class: %s is not legal in the %s", parameterType.getName(),
+				this.getClass().getName());
 	}
-
 
 	private class MethodAndParameters {
 		
@@ -210,8 +180,8 @@ public class ProtocolContentManager implements IContentManager {
 		private String message;
 		private MethodAndParameters methodAndParameters;
 		private String result;
-		private boolean messageSent = false;
-		private boolean callbackCalled = false;
+		private boolean messageSent;
+		private boolean callbackCalled;
 		
 		private int counter = 0;
 		
@@ -254,9 +224,7 @@ public class ProtocolContentManager implements IContentManager {
 				 counter++;
 			 }
 			 
-			 if(!callbackCalled) {
-				 throw new RuntimeException("Timed out.");
-			 }
+			 checkState(callbackCalled, "Timed out.");
 				
 			} catch (Exception e) {
 				e.printStackTrace();

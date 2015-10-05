@@ -23,6 +23,8 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.xml.bind.annotation.XmlElement;
 
+import org.zu.ardulink.util.Primitive;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -32,79 +34,6 @@ import javax.xml.bind.annotation.XmlElement;
  *
  */
 public class AParameter {
-
-	private enum Primitive {
-		INT(Integer.TYPE) {
-			@Override
-			Object parse(String value) {
-				return Integer.parseInt(value);
-			}
-		},
-		BYTE(Byte.TYPE) {
-			@Override
-			Object parse(String value) {
-				return Byte.parseByte(value);
-			}
-		},
-		SHORT(Short.TYPE) {
-			@Override
-			Object parse(String value) {
-				return Short.parseShort(value);
-			}
-		},
-		LONG(Long.TYPE) {
-			@Override
-			Object parse(String value) {
-				return Long.parseLong(value);
-			}
-		},
-		FLOAT(Float.TYPE) {
-			@Override
-			Object parse(String value) {
-				return Float.parseFloat(value);
-			}
-		},
-		DOUBLE(Double.TYPE) {
-			@Override
-			Object parse(String value) {
-				return Double.parseDouble(value);
-			}
-		},
-		BOOLEAN(Boolean.TYPE) {
-			@Override
-			Object parse(String value) {
-				return Boolean.parseBoolean(value);
-			}
-		},
-		CHAR(Character.TYPE) {
-			@Override
-			Object parse(String value) {
-				return value.length() == 0 ? null : Character.valueOf(value
-						.charAt(0));
-			}
-		};
-
-		private final Class<?> type;
-
-		private Primitive(Class<?> type) {
-			this.type = type;
-		}
-
-		abstract Object parse(String value);
-
-		public static Primitive forClassName(String name) {
-			for (Primitive primitives : values()) {
-				if (primitives.getClass().getName().equals(name)) {
-					return primitives;
-				}
-			}
-			return null;
-		}
-
-		public Class<?> getType() {
-			return type;
-		}
-	}
 
 	private String type;
 	private String value;
@@ -145,10 +74,9 @@ public class AParameter {
 	public Object getValueForClass(Class<?> parameterType)
 			throws IllegalArgumentException, InstantiationException,
 			IllegalAccessException, InvocationTargetException {
-		for (Primitive primitives : Primitive.values()) {
-			if (parameterType.isAssignableFrom(primitives.getType())) {
-				return primitives.parse(getValue());
-			}
+		Object object = Primitive.parseAs(parameterType, getValue());
+		if (object != null) {
+			return object;
 		}
 		Constructor<?> constructor = findConstructor4Parameter(
 				parameterType.getConstructors(), getValue());

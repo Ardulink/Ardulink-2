@@ -13,42 +13,40 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
-package com.github.pfichtner.ardulink.util;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+ */
+package org.zu.ardulink.util;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
-public class HashMultiMap<K, V> {
+public final class Preconditions {
 
-	private final Map<K, List<V>> data = new HashMap<K, List<V>>();
-
-	public boolean isEmpty() {
-		return this.data.isEmpty();
+	private Preconditions() {
+		super();
 	}
 
-	public void put(K key, V value) {
-		List<V> values = this.data.get(key);
-		if (values == null) {
-			this.data.put(key, values = new ArrayList<V>());
+	public static <T> T checkNotNull(T t, String message, Object... args) {
+		if (t == null) {
+			throw new IllegalStateException(String.format(message, args));
 		}
-		values.add(value);
+		return t;
 	}
 
-	public void clear() {
-		this.data.clear();
+	public static void checkArgument(boolean state, String message,
+			Object... args) {
+		if (!state) {
+			throw new IllegalArgumentException(String.format(message, args));
+		}
 	}
 
-	public Map<K, List<V>> asMap() {
-		return new HashMap<K, List<V>>(data);
+	public static void checkState(boolean state, String message, Object... args) {
+		if (!state) {
+			throw new IllegalStateException(String.format(message, args));
+		}
 	}
 
 }

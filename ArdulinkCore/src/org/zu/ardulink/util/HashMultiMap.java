@@ -14,7 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 */
-package com.github.pfichtner.ardulink.util;
+package org.zu.ardulink.util;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -22,24 +27,28 @@ package com.github.pfichtner.ardulink.util;
  * 
  * [adsense]
  */
-public final class Preconditions {
+public class HashMultiMap<K, V> {
 
-	private Preconditions() {
-		super();
+	private final Map<K, List<V>> data = new HashMap<K, List<V>>();
+
+	public boolean isEmpty() {
+		return this.data.isEmpty();
 	}
 
-	public static void checkArgument(boolean state, String message,
-			Object... args) {
-		if (!state) {
-			throw new IllegalArgumentException(String.format(message, args));
+	public void put(K key, V value) {
+		List<V> values = this.data.get(key);
+		if (values == null) {
+			this.data.put(key, values = new ArrayList<V>());
 		}
+		values.add(value);
 	}
-	
-	public static void checkState(boolean state, String message,
-			Object... args) {
-		if (!state) {
-			throw new IllegalStateException(String.format(message, args));
-		}
+
+	public void clear() {
+		this.data.clear();
+	}
+
+	public Map<K, List<V>> asMap() {
+		return new HashMap<K, List<V>>(data);
 	}
 
 }

@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.zu.ardulink.gui;
 
+import static org.zu.ardulink.util.Strings.nullOrEmpty;
+
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -85,14 +87,14 @@ public class NetworkProxyConnectionPanel extends JPanel {
 		hostPortTextField = new JTextField();
 		hostPortTextField.setColumns(10);
 		hostPortTextField.setBounds(108, 39, 161, 28);
-		hostPortTextField.setText("" + NetworkProxyConnection.DEFAULT_LISTENING_PORT);
+		hostPortTextField.setText(String.valueOf(NetworkProxyConnection.DEFAULT_LISTENING_PORT));
 		add(hostPortTextField);
 		
 		activateButton = new JButton("Activate Proxy");
 		activateButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String hostName = hostNameTextField.getText();
-				if(hostName == null || hostName.trim().equals("")) {
+				if (nullOrEmpty(hostName)) {
 					hostName = "127.0.0.1";
 					hostNameTextField.setText(hostName);
 				}

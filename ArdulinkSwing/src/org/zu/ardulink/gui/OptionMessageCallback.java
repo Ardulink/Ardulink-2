@@ -34,7 +34,7 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  */
 public class OptionMessageCallback implements ReplyMessageCallback {
 
-	private Component component = null;
+	private Component component;
 	
 	public OptionMessageCallback(Component component) {
 		super();

@@ -89,7 +89,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		add(lblBaudRate);
 		
 		baudRateTextField = new JTextField();
-		baudRateTextField.setText("" + Link.DEFAULT_BAUDRATE);
+		baudRateTextField.setText(String.valueOf(Link.DEFAULT_BAUDRATE));
 		baudRateTextField.setColumns(10);
 		baudRateTextField.setBounds(108, 38, 122, 28);
 		add(baudRateTextField);
