@@ -23,7 +23,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -49,8 +48,8 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
 public class BluetoothConnectionPanel extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = -3658770765086157064L;
-	private JComboBox<String> deviceComboBox;
-	private JButton discoverButton;
+	private final JComboBox deviceComboBox;
+	private final JButton discoverButton;
 
 	private Link link = Link.createInstance("bluetoothConnection", new BluetoothConnection());
 	
@@ -69,7 +68,7 @@ public class BluetoothConnectionPanel extends JPanel implements Linkable {
 		devicesLabel.setBounds(6, 17, 65, 16);
 		add(devicesLabel);
 		
-		deviceComboBox = new JComboBox<String>();
+		deviceComboBox = new JComboBox();
 		deviceComboBox.setBounds(67, 12, 165, 26);
 		add(deviceComboBox);
 				

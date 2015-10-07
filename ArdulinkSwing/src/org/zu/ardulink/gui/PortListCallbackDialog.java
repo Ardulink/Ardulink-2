@@ -41,15 +41,15 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 	private static final long serialVersionUID = -7897193872896320730L;
 
 	private final JPanel contentPanel = new JPanel();
-	private PortListCallbackImpl implementation;
-	private JButton cancelButton;
-	private JProgressBar progressBar;
+	private final PortListCallbackImpl implementation;
+	private final JButton cancelButton;
+	private final JProgressBar progressBar;
 
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		PortListCallbackDialog dialog = new PortListCallbackDialog(new JComboBox<String>());
+		PortListCallbackDialog dialog = new PortListCallbackDialog(new JComboBox());
 		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		dialog.setVisible(true);
 	}
@@ -57,7 +57,7 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 	/**
 	 * Create the dialog.
 	 */
-	public PortListCallbackDialog(JComboBox<String> comboBox) {
+	public PortListCallbackDialog(JComboBox comboBox) {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setResizable(false);
 		setModal(true);
@@ -91,12 +91,12 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 		implementation = new PortListCallbackImpl(this, comboBox);
 	}
 	
-	static class PortListCallbackImpl extends AbstractPortListCallback {
+	private static class PortListCallbackImpl extends AbstractPortListCallback {
 
-		private final JComboBox<String> comboBox;
+		private final JComboBox comboBox;
 		private final PortListCallbackDialog portListCallbackDialog;
 
-		public PortListCallbackImpl(PortListCallbackDialog portListCallbackDialog, JComboBox<String> comboBox) {
+		public PortListCallbackImpl(PortListCallbackDialog portListCallbackDialog, JComboBox comboBox) {
 			super();
 			this.comboBox = comboBox;
 			this.portListCallbackDialog = portListCallbackDialog;
@@ -113,8 +113,8 @@ public class PortListCallbackDialog extends JDialog implements PortListCallback 
 						portListCallbackDialog.setButtonText("Ok");
 						portListCallbackDialog.stopProgressBar();
 					} else {
-						comboBox.setModel(new DefaultComboBoxModel<String>(
-								ports.toArray(new String[ports.size()])));
+						comboBox.setModel(new DefaultComboBoxModel(ports
+								.toArray(new String[ports.size()])));
 						portListCallbackDialog.dispose();
 					}
 				}
