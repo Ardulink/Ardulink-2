@@ -22,6 +22,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static org.zu.ardulink.connection.proxy.NetworkProxyConnection.DEFAULT_LISTENING_PORT;
@@ -29,6 +30,7 @@ import static org.zu.ardulink.util.Strings.nullOrEmpty;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -166,8 +168,8 @@ public class MqttMain {
 				public void messageArrived(String topic, MqttMessage message)
 						throws IOException {
 					String payload = new String(message.getPayload());
-					if (logger.isLoggable(INFO)) {
-						logger.info("Received mqtt message, sending to arduino"
+					if (logger.isLoggable(FINE)) {
+						logger.fine("Received mqtt message, sending to arduino"
 								+ topic + " " + payload);
 					}
 					MqttClient.this.toArduino(topic, payload);
