@@ -17,12 +17,12 @@ limitations under the License.
 package com.github.pfichtner.ardulink.util;
 
 import static java.util.Collections.singletonList;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -112,21 +112,24 @@ public final class TestUtil {
 	public static MqttMain startAsync(MqttMain mqttMain)
 			throws InterruptedException, MqttSecurityException, MqttException {
 		mqttMain.connectToMqttBroker();
-		return waitUntilIsConnected(mqttMain, 250, MILLISECONDS);
+		return waitUntilIsConnected(mqttMain, 5, SECONDS);
 	}
 
-	private static MqttMain waitUntilIsConnected(MqttMain mqttMain, int value,
+	public static MqttMain waitUntilIsConnected(MqttMain mqttMain, int value,
 			TimeUnit timeUnit) throws InterruptedException {
 		StopWatch stopWatch = new StopWatch().start();
 		while (!mqttMain.isConnected()) {
 			timeUnit.sleep(value);
-			int maxSecs = 5;
-			if (stopWatch.getTime(SECONDS) > maxSecs) {
+			if (stopWatch.getTime(timeUnit) > value) {
 				throw new IllegalStateException("Could not connect within "
-						+ maxSecs + " seconds");
+						+ value + " " + timeUnit);
 			}
 		}
 		return mqttMain;
+	}
+
+	public static <T> List<T> listWithSameOrder(T... t) {
+		return Arrays.asList(t);
 	}
 
 }
