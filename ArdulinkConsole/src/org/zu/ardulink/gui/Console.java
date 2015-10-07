@@ -91,9 +91,9 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 	
 	private Link link;
 	
-	private List<Linkable> linkables = new LinkedList<Linkable>();
+	private final List<Linkable> linkables = new LinkedList<Linkable>();
 	
-	private static Logger logger = Logger.getLogger(Console.class.getName());
+	private static final Logger logger = Logger.getLogger(Console.class.getName());
 	
 	/**
 	 * Launch the application.
