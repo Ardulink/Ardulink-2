@@ -20,6 +20,7 @@ import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
+import static java.util.logging.Level.INFO;
 import static org.zu.ardulink.protocol.IProtocol.POWER_HIGH;
 import static org.zu.ardulink.protocol.IProtocol.POWER_LOW;
 import static org.zu.ardulink.util.Integers.tryParse;
@@ -28,6 +29,7 @@ import static org.zu.ardulink.util.Preconditions.checkArgument;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,6 +53,8 @@ import com.github.pfichtner.ardulink.compactors.Tolerance;
  * [adsense]
  */
 public abstract class AbstractMqttAdapter {
+	
+	private static final Logger logger = Logger.getLogger(AbstractMqttAdapter.class.getName());
 
 	public interface Handler {
 		boolean handle(String topic, String message);
@@ -223,6 +227,10 @@ public abstract class AbstractMqttAdapter {
 	public void toArduino(String topic, String message) {
 		for (Handler handler : this.handlers) {
 			if (handler.handle(topic, message)) {
+				if (logger.isLoggable(INFO)) {
+					logger.info("Message " + topic + " " + message
+							+ " handled by " + handler);
+				}
 				return;
 			}
 		}
