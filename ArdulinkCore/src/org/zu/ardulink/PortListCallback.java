@@ -29,10 +29,10 @@ import java.util.List;
  */
 public interface PortListCallback {
 
-	public void portList(List<String> ports);
+	void portList(List<String> ports);
 
-	public boolean isActive();
+	boolean isActive();
 	
-	public void setActive(boolean active);
+	void setActive(boolean active);
 
 }
