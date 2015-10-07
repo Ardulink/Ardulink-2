@@ -37,7 +37,6 @@ import org.zu.ardulink.protocol.LoggerReplyMessageCallback;
 import org.zu.ardulink.protocol.MessageInfo;
 import org.zu.ardulink.protocol.ProtocolHandler;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
-import org.zu.ardulink.util.Preconditions;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -189,25 +188,6 @@ public class Link {
 		return retvalue;
 	}
 
-	/**
-	 * This method is used to retrieve asynchronously the port list.
-	 * It is used when the operation take long time.
-	 * @return ports available in a asynch way.
-	 */
-	public void getAsynchPortList(final PortListCallback portListCallback) {
-		Thread thread = new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				List<String> ports = getPortList();
-				if(portListCallback.isActive()) {
-					portListCallback.portList(ports);
-				}
-			}
-		});
-		thread.start();
-	}
-	
 	/**
 	 * It works for serial connection links
 	 * @return ports available
