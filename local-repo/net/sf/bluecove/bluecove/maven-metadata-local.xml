@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>net.sf.bluecove</groupId>
+  <artifactId>bluecove</artifactId>
+  <versioning>
+  	<release>2.1.1-SNAPSHOT</release>
+    <versions>
+      <version>0.5.9</version>
+    </versions>
+    <lastUpdated>20101024214945</lastUpdated>
+  </versioning>S
+</metadata>
