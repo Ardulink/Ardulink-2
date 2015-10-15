@@ -91,7 +91,7 @@ public class MqttClientReconnectsToRestartedBrokerIntegrationTest {
 	}
 
 	@Test(timeout = TIMEOUT)
-	public void clientConnectsWhenBrokerIsNotReachableAtClientsStartup()
+	public void clientConnectsWhenAfterBrokerRestartet()
 			throws InterruptedException, MqttSecurityException, MqttException,
 			IOException {
 
