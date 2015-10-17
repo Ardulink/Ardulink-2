@@ -198,6 +198,9 @@ public class MailListener implements ArdulinkMailConstants {
 	}
 
 	public static Properties getMailConfig() {
+		if(mailConfig == null) {
+			initConfiguration();
+		}
 		return mailConfig;
 	}
 }

@@ -18,15 +18,10 @@ limitations under the License.
 
 package org.zu.ardulink.mail.server.contentmanagement;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.zu.ardulink.Link;
-import org.zu.ardulink.mail.server.links.configuration.ALink;
-import org.zu.ardulink.mail.server.links.configuration.AParameter;
-import org.zu.ardulink.mail.server.links.configuration.ConfigurationFacade;
+import org.zu.ardulink.mail.server.links.configuration.utils.ConfigurationUtility;
 import org.zu.ardulink.protocol.IProtocol;
 
 /**
@@ -54,7 +49,7 @@ public class SimpleContentManager implements IContentManager {
 		
 		StringBuilder builder = new StringBuilder();
 		
-		List<Link> links = getConnectedLinks(aLinkNames);
+		List<Link> links = ConfigurationUtility.getConnectedLinks(aLinkNames);
 		for (Link link : links) {
 			for (String string : values) {
 				StringBuilder value = new StringBuilder(string);
@@ -74,49 +69,5 @@ public class SimpleContentManager implements IContentManager {
 		
 		return builder.toString();
 	}
-	
-	private List<Link> getConnectedLinks(List<String> aLinkNames) {
-		List<ALink> aLinks = ConfigurationFacade.getALinks(aLinkNames);
-		List<Link> links = new LinkedList<Link>();
-		for (ALink aLink : aLinks) {
-			Link link = aLink.getLink();
-			if(!link.isConnected()) {
-				try {
-					boolean isConnected = connect(aLink, link);
-					if(isConnected) {
-						links.add(link);
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					System.out.println("Connection failed.");
-				}
-			} else {
-				links.add(link);
-			}
-		}
-		return links;
-	}
-
-	private boolean connect(ALink aLink, Link link) throws IllegalArgumentException, ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException {
-		
-		List<AParameter> connectParamenter = aLink.getConnectParameters();
-		Object[] params = new Object[connectParamenter.size()];
-		
-		int index = 0;
-		for (AParameter aParameter : connectParamenter) {
-			params[index] = aParameter.getValueForClass();
-			index++;
-		}
-		boolean retvalue = link.connect(params);
-
-		// wait for Arduino bootstrap (2 secs should be enough)
-		try {
-			TimeUnit.SECONDS.sleep(2);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-		
-		return retvalue;
-	}	
 
 }
