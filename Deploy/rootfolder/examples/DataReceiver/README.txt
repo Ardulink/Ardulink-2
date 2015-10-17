@@ -1,4 +1,5 @@
-To run this example double click on data receiver jar.
+To run this example double click on data receiver jar or use java -jar command.
+This example accepts arguments. Please run it with -h option to read the usage.
 
 
 For Windows 32 bit systems.

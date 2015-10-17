@@ -10,3 +10,9 @@ java -jar ardulink-console-${project.version}.jar
 java -jar ardulink-networkproxyserver-${project.version}.jar
 java -jar ardulink-mail-${project.version}.jar
 java -jar ardulink-mqtt-${project.version}.jar
+
+
+The Network Proxy Server accepts a mandatory argument. Please run it without arguments to read the usage.
+
+The MQTT bridge accepts arguments. Please run it with -h option to read the usage.
+
