@@ -22,11 +22,16 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
 import static org.zu.ardulink.connection.proxy.NetworkProxyConnection.DEFAULT_LISTENING_PORT;
 import static org.zu.ardulink.util.Strings.nullOrEmpty;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -40,7 +45,6 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.proxy.NetworkProxyConnection;
-import org.zu.ardulink.util.Strings;
 
 import com.github.pfichtner.ardulink.AbstractMqttAdapter.CompactStrategy;
 import com.github.pfichtner.ardulink.compactors.ThreadTimeSlicer;
@@ -53,6 +57,9 @@ import com.github.pfichtner.ardulink.compactors.TimeSlicer;
  * [adsense]
  */
 public class MqttMain {
+
+	private static final Logger logger = Logger.getLogger(MqttMain.class
+			.getName());
 
 	@Option(name = "-brokerTopic", usage = "Topic to register. To switch pins a message of the form $brokerTopic/[A|D]$pinNumber/value/set must be sent. A for analog pins, D for digital pins")
 	private String brokerTopic = Config.DEFAULT_TOPIC;
@@ -141,6 +148,7 @@ public class MqttMain {
 		private MqttCallback createCallback() {
 			return new MqttCallback() {
 				public void connectionLost(Throwable cause) {
+					logger.warning("Connection to mqtt broker lost");
 					do {
 						try {
 							SECONDS.sleep(1);
@@ -148,17 +156,23 @@ public class MqttMain {
 							Thread.currentThread().interrupt();
 						}
 						try {
+							logger.info("Trying to reconnect");
 							listenToMqtt();
 						} catch (Exception e) {
-							e.printStackTrace();
+							logger.log(WARNING, "Reconnect failed", e);
 						}
 					} while (!MqttClient.this.client.isConnected());
+					logger.info("Successfully reconnected");
 				}
 
 				public void messageArrived(String topic, MqttMessage message)
 						throws IOException {
-					MqttClient.this.toArduino(topic,
-							new String(message.getPayload()));
+					String payload = new String(message.getPayload());
+					if (logger.isLoggable(FINE)) {
+						logger.fine("Received mqtt message, sending to arduino"
+								+ topic + " " + payload);
+					}
+					MqttClient.this.toArduino(topic, payload);
 				}
 
 				public void deliveryComplete(IMqttDeliveryToken token) {
@@ -177,6 +191,10 @@ public class MqttMain {
 		@Override
 		public void fromArduino(String topic, String message) {
 			try {
+				if (logger.isLoggable(INFO)) {
+					logger.info("Publishing arduino state change " + topic
+							+ " " + message);
+				}
 				publish(topic, message);
 			} catch (MqttPersistenceException e) {
 				throw new RuntimeException(e);
@@ -187,6 +205,7 @@ public class MqttMain {
 
 		private void connect() throws MqttSecurityException, MqttException {
 			this.client.connect(mqttConnectOptions());
+			logger.info("Connected to mqtt broker");
 			publishClientStatus(TRUE);
 		}
 

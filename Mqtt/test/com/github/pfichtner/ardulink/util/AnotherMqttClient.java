@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package com.github.pfichtner.ardulink.util;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class AnotherMqttClient {
 	public AnotherMqttClient(String topic) throws MqttSecurityException,
 			MqttException {
 		this.topic = topic;
-		this.mqttClient = mqttClient();
+		this.mqttClient = mqttClient("localhost", 1883);
 		this.mqttClient.setCallback(new MqttCallback() {
 
 			@Override
@@ -63,9 +63,9 @@ public class AnotherMqttClient {
 		});
 	}
 
-	private static MqttClient mqttClient() throws MqttException,
-			MqttSecurityException {
-		return new MqttClient("tcp://localhost:1883", "anotherMqttClient");
+	protected static MqttClient mqttClient(String host, int port)
+			throws MqttException {
+		return new MqttClient("tcp://" + host + ":" + port, "anotherMqttClient");
 	}
 
 	public AnotherMqttClient connect() throws MqttSecurityException,

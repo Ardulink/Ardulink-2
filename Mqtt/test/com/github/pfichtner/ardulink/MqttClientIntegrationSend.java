@@ -21,6 +21,7 @@ import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.AN
 import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.DIGITAL_PIN_READ;
 import static com.github.pfichtner.ardulink.util.TestUtil.createConnection;
 import static com.github.pfichtner.ardulink.util.TestUtil.getField;
+import static com.github.pfichtner.ardulink.util.TestUtil.listWithSameOrder;
 import static com.github.pfichtner.ardulink.util.TestUtil.set;
 import static com.github.pfichtner.ardulink.util.TestUtil.startAsync;
 import static com.github.pfichtner.ardulink.util.TestUtil.startBroker;
@@ -30,7 +31,6 @@ import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Collections;
 
 import org.dna.mqtt.moquette.server.Server;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -123,9 +123,8 @@ public class MqttClientIntegrationSend {
 
 		tearDown();
 
-		assertThat(
-				this.amc.hasReceived(),
-				is(Collections.singletonList(MqttMessageBuilder
+		assertThat(this.amc.hasReceived(),
+				is(listWithSameOrder(MqttMessageBuilder
 						.mqttMessageWithBasicTopic(TOPIC).digitalPin(pin)
 						.hasValue(1))));
 	}
@@ -147,9 +146,8 @@ public class MqttClientIntegrationSend {
 
 		tearDown();
 
-		assertThat(
-				this.amc.hasReceived(),
-				is(Collections.singletonList(MqttMessageBuilder
+		assertThat(this.amc.hasReceived(),
+				is(listWithSameOrder(MqttMessageBuilder
 						.mqttMessageWithBasicTopic(TOPIC).analogPin(pin)
 						.hasValue(value))));
 	}

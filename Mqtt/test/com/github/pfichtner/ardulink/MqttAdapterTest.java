@@ -24,6 +24,7 @@ import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.PO
 import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.POWER_PIN_SWITCH;
 import static com.github.pfichtner.ardulink.util.TestUtil.createConnection;
 import static com.github.pfichtner.ardulink.util.TestUtil.getField;
+import static com.github.pfichtner.ardulink.util.TestUtil.listWithSameOrder;
 import static com.github.pfichtner.ardulink.util.TestUtil.set;
 import static com.github.pfichtner.ardulink.util.TestUtil.toCodepoints;
 import static org.hamcrest.core.Is.is;
@@ -32,7 +33,6 @@ import static org.junit.Assert.assertThat;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -222,10 +222,6 @@ public class MqttAdapterTest {
 
 	private static String empty() {
 		return "";
-	}
-
-	private static <T> List<T> listWithSameOrder(T... t) {
-		return Arrays.asList(t);
 	}
 
 	private static List<Message> noMessages() {

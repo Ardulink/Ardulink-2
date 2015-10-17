@@ -14,14 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @author Luciano Zu
-*/
+ */
 
 package org.zu.ardulink.gui;
+
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -38,62 +42,100 @@ import org.zu.ardulink.gui.facility.UtilityGeometry;
 import org.zu.ardulink.protocol.ReplyMessageCallback;
 
 /**
- * [ardulinktitle] [ardulinkversion]
- * This component is Able to search for bluetooth devices able to use Ardulink and select one.
+ * [ardulinktitle] [ardulinkversion] This component is Able to search for
+ * bluetooth devices able to use Ardulink and select one.
  *
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
- * [adsense]
+ *         [adsense]
  *
  */
 public class BluetoothConnectionPanel extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = -3658770765086157064L;
-	private JComboBox deviceComboBox;
-	private JButton discoverButton;
+	private final JComboBox deviceComboBox;
+	private final JButton discoverButton;
 
-	private Link link = Link.createInstance("bluetoothConnection", new BluetoothConnection());
-	
+	private Link link = Link.createInstance("bluetoothConnection",
+			new BluetoothConnection());
+
 	/**
 	 * Create the panel.
 	 */
 	public BluetoothConnectionPanel() {
-		
+
 		Dimension dimension = new Dimension(275, 55);
 		setPreferredSize(dimension);
 		setMinimumSize(dimension);
 		setLayout(null);
-		
+
 		JLabel devicesLabel = new JLabel("Devices:");
 		devicesLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		devicesLabel.setBounds(6, 17, 65, 16);
 		add(devicesLabel);
-		
+
 		deviceComboBox = new JComboBox();
 		deviceComboBox.setBounds(67, 12, 165, 26);
 		add(deviceComboBox);
-				
+
 		discoverButton = new JButton("");
 		discoverButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
 				deviceComboBox.removeAllItems();
-				DefaultComboBoxModel model = new DefaultComboBoxModel(); 
-				deviceComboBox.setModel(model);
-				PortListCallbackDialog dialog = new PortListCallbackDialog(model);
-				UtilityGeometry.setAlignmentCentered(dialog, SwingUtilities.getRoot((Component)e.getSource()));
-				
-				link.getAsynchPortList(dialog);
+				PortListCallbackDialog dialog = new PortListCallbackDialog();
+				UtilityGeometry.setAlignmentCentered(dialog,
+						SwingUtilities.getRoot((Component) e.getSource()));
+				getAsynchPortList(dialog, deviceComboBox);
 				dialog.setVisible(true);
 			}
 		});
-		discoverButton.setIcon(new ImageIcon(BluetoothConnectionPanel.class.getResource("icons/search_icon.png")));
+		discoverButton.setIcon(new ImageIcon(BluetoothConnectionPanel.class
+				.getResource("icons/search_icon.png")));
 		discoverButton.setToolTipText("Discover");
 		discoverButton.setBounds(237, 9, 32, 32);
 		add(discoverButton);
 
 	}
-	
+
+	/**
+	 * This method is used to retrieve asynchronously the port list. It is used
+	 * when the operation take long time.
+	 * 
+	 * @return ports available in a async way.
+	 */
+	private void getAsynchPortList(final PortListCallbackDialog dialog,
+			final JComboBox comboBox) {
+		newSingleThreadExecutor().submit(new Callable<Void>() {
+			@Override
+			public Void call() {
+				final List<String> ports = BluetoothConnectionPanel.this.link
+						.getPortList();
+				// We are not on the EDT so use SwingUtilities#invokeLater
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						// TODO Do we really need to check #isDisplayable?
+						if (dialog.isDisplayable()) {
+							DefaultComboBoxModel model = new DefaultComboBoxModel(
+									ports == null || ports.isEmpty() ? new String[0]
+											: ports.toArray(new String[ports
+													.size()]));
+							comboBox.setModel(model);
+							if (model.getSize() == 0) {
+								dialog.setTitle("Nothing found.");
+								dialog.setButtonText("Ok");
+								dialog.stopProgressBar();
+							} else {
+								dialog.dispose();
+							}
+						}
+					}
+				});
+				return null;
+			}
+		});
+	}
+
 	/**
 	 * @return the connection port name selected or set
 	 */
@@ -120,11 +162,12 @@ public class BluetoothConnectionPanel extends JPanel implements Linkable {
 		throw new RuntimeException("Not developed yet");
 	}
 
-	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
+	public void setReplyMessageCallback(
+			ReplyMessageCallback replyMessageCallback) {
 		throw new RuntimeException("Not developed yet");
 	}
 
 	public String getSelectedDevice() {
-		return (String)deviceComboBox.getSelectedItem();
-	}	
+		return (String) deviceComboBox.getSelectedItem();
+	}
 }

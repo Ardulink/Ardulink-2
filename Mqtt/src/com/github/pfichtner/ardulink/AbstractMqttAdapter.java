@@ -18,16 +18,18 @@ package com.github.pfichtner.ardulink;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
+import static java.util.logging.Level.INFO;
 import static org.zu.ardulink.protocol.IProtocol.POWER_HIGH;
 import static org.zu.ardulink.protocol.IProtocol.POWER_LOW;
 import static org.zu.ardulink.util.Integers.tryParse;
 import static org.zu.ardulink.util.Preconditions.checkArgument;
+import static org.zu.ardulink.util.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +38,7 @@ import org.zu.ardulink.event.AnalogReadChangeEvent;
 import org.zu.ardulink.event.AnalogReadChangeListener;
 import org.zu.ardulink.event.DigitalReadChangeEvent;
 import org.zu.ardulink.event.DigitalReadChangeListener;
+import org.zu.ardulink.util.ListBuilder;
 
 import com.github.pfichtner.ardulink.compactors.AnalogReadChangeListenerToleranceAdapter;
 import com.github.pfichtner.ardulink.compactors.SlicedAnalogReadChangeListenerAdapter;
@@ -51,36 +54,53 @@ import com.github.pfichtner.ardulink.compactors.Tolerance;
  * [adsense]
  */
 public abstract class AbstractMqttAdapter {
+	
+	private static final Logger logger = Logger.getLogger(AbstractMqttAdapter.class.getName());
 
 	public interface Handler {
 		boolean handle(String topic, String message);
 	}
 
-	/**
-	 * Does handle mqtt messages for digital pins.
-	 */
-	public static class DigitalHandler implements Handler {
+	public static abstract class AbstractPinHandler implements Handler {
 
-		private final Link link;
 		private final Pattern pattern;
 
-		public DigitalHandler(Link link, Config config) {
-			this.link = link;
-			this.pattern = config.getTopicPatternDigitalWrite();
+		public AbstractPinHandler(Pattern pattern) {
+			this.pattern = checkNotNull(pattern, "Pattern must not be null");
 		}
 
-		@Override
 		public boolean handle(String topic, String message) {
-			Matcher matcher = pattern.matcher(topic);
+			Matcher matcher = this.pattern.matcher(topic);
 			if (matcher.matches()) {
 				Integer pin = tryParse(matcher.group(1));
 				if (pin != null) {
-					this.link.sendPowerPinSwitch(pin.intValue(),
-							parseBoolean(message) ? POWER_HIGH : POWER_LOW);
-					return true;
+					return handlePin(pin.intValue(), message);
 				}
 			}
 			return false;
+		}
+
+		protected abstract boolean handlePin(int pin, String message);
+
+	}
+
+	/**
+	 * Does handle mqtt messages for digital pins.
+	 */
+	public static class DigitalHandler extends AbstractPinHandler {
+
+		private final Link link;
+
+		public DigitalHandler(Link link, Config config) {
+			super(config.getTopicPatternDigitalWrite());
+			this.link = link;
+		}
+
+		@Override
+		protected boolean handlePin(int pin, String message) {
+			this.link.sendPowerPinSwitch(pin,
+					parseBoolean(message) ? POWER_HIGH : POWER_LOW);
+			return true;
 		}
 
 	}
@@ -88,29 +108,23 @@ public abstract class AbstractMqttAdapter {
 	/**
 	 * Does handle mqtt messages for analog pins.
 	 */
-	public static class AnalogHandler implements Handler {
+	public static class AnalogHandler extends AbstractPinHandler {
 
 		private final Link link;
-		private final Pattern pattern;
 
 		public AnalogHandler(Link link, Config config) {
+			super(config.getTopicPatternAnalogWrite());
 			this.link = link;
-			this.pattern = config.getTopicPatternAnalogWrite();
 		}
 
 		@Override
-		public boolean handle(String topic, String message) {
-			Matcher matcher = pattern.matcher(topic);
-			if (matcher.matches()) {
-				Integer pin = tryParse(matcher.group(1));
-				Integer intensity = tryParse(message);
-				if (pin != null && intensity != null) {
-					this.link.sendPowerPinIntensity(pin.intValue(),
-							intensity.intValue());
-					return true;
-				}
+		protected boolean handlePin(int pin, String message) {
+			Integer intensity = tryParse(message);
+			if (intensity == null) {
+				return false;
 			}
-			return false;
+			this.link.sendPowerPinIntensity(pin, intensity.intValue());
+			return true;
 		}
 
 	}
@@ -119,31 +133,41 @@ public abstract class AbstractMqttAdapter {
 	 * Does handle mqtt messages for controlling Ardulink (start/stop digital
 	 * listeners).
 	 */
-	public static class ControlHandlerDigital implements Handler {
+	public static class ControlHandlerDigital extends AbstractPinHandler {
+
+		public static class Builder {
+
+			private final Pattern pattern;
+
+			public Builder(Config config) {
+				this.pattern = config.getTopicPatternDigitalControl();
+			}
+
+			public boolean patternIsValid() {
+				return this.pattern != null;
+			}
+
+			public ControlHandlerDigital build(Link link) {
+				return new ControlHandlerDigital(link, this.pattern);
+			}
+
+		}
 
 		private final Link link;
-		private final Pattern pattern;
 
-		public ControlHandlerDigital(Link link, Config config) {
+		public ControlHandlerDigital(Link link, Pattern pattern) {
+			super(pattern);
 			this.link = link;
-			this.pattern = config.getTopicPatternDigitalControl();
 		}
 
 		@Override
-		public boolean handle(String topic, String message) {
-			Matcher matcher = pattern.matcher(topic);
-			if (matcher.matches()) {
-				Integer pin = tryParse(matcher.group(1));
-				if (pin != null) {
-					if (parseBoolean(message)) {
-						this.link.startListenDigitalPin(pin);
-					} else {
-						this.link.stopListenDigitalPin(pin);
-					}
-					return true;
-				}
+		protected boolean handlePin(int pin, String message) {
+			if (parseBoolean(message)) {
+				this.link.startListenDigitalPin(pin);
+			} else {
+				this.link.stopListenDigitalPin(pin);
 			}
-			return false;
+			return true;
 		}
 
 	}
@@ -152,31 +176,41 @@ public abstract class AbstractMqttAdapter {
 	 * Does handle mqtt messages for controlling Ardulink (start/stop analog
 	 * listeners).
 	 */
-	public static class ControlHandlerAnalog implements Handler {
+	public static class ControlHandlerAnalog extends AbstractPinHandler {
+
+		public static class Builder {
+
+			private final Pattern pattern;
+
+			public Builder(Config config) {
+				this.pattern = config.getTopicPatternAnalogControl();
+			}
+
+			public boolean patternIsValid() {
+				return this.pattern != null;
+			}
+
+			public ControlHandlerAnalog build(Link link) {
+				return new ControlHandlerAnalog(link, this.pattern);
+			}
+
+		}
 
 		private final Link link;
-		private final Pattern pattern;
 
-		public ControlHandlerAnalog(Link link, Config config) {
+		public ControlHandlerAnalog(Link link, Pattern pattern) {
+			super(pattern);
 			this.link = link;
-			this.pattern = config.getTopicPatternAnalogControl();
 		}
 
 		@Override
-		public boolean handle(String topic, String message) {
-			Matcher matcher = pattern.matcher(topic);
-			if (matcher.matches()) {
-				Integer pin = tryParse(matcher.group(1));
-				if (pin != null) {
-					if (parseBoolean(message)) {
-						this.link.startListenAnalogPin(pin);
-					} else {
-						this.link.stopListenAnalogPin(pin);
-					}
-					return true;
-				}
+		protected boolean handlePin(int pin, String message) {
+			if (parseBoolean(message)) {
+				this.link.startListenAnalogPin(pin);
+			} else {
+				this.link.stopListenAnalogPin(pin);
 			}
-			return false;
+			return true;
 		}
 
 	}
@@ -192,16 +226,20 @@ public abstract class AbstractMqttAdapter {
 	}
 
 	private static List<Handler> handlers(Link link, Config config) {
-		List<Handler> handlers = new ArrayList<Handler>(asList(
-				new DigitalHandler(link, config), new AnalogHandler(link,
-						config)));
-		if (config.getTopicPatternAnalogControl() != null) {
-			handlers.add(new ControlHandlerAnalog(link, config));
+		ListBuilder<Handler> b = ListBuilder.<Handler> newBuilder().addAll(
+				new DigitalHandler(link, config),
+				new AnalogHandler(link, config));
+		ControlHandlerAnalog.Builder ab = new ControlHandlerAnalog.Builder(
+				config);
+		if (ab.patternIsValid()) {
+			b = b.add(ab.build(link));
 		}
-		if (config.getTopicPatternDigitalControl() != null) {
-			handlers.add(new ControlHandlerDigital(link, config));
+		ControlHandlerDigital.Builder db = new ControlHandlerDigital.Builder(
+				config);
+		if (db.patternIsValid()) {
+			b = b.add(db.build(link));
 		}
-		return handlers;
+		return b.build();
 	}
 
 	public AbstractMqttAdapter(Link link, Config config,
@@ -223,6 +261,10 @@ public abstract class AbstractMqttAdapter {
 	public void toArduino(String topic, String message) {
 		for (Handler handler : this.handlers) {
 			if (handler.handle(topic, message)) {
+				if (logger.isLoggable(INFO)) {
+					logger.info("Message " + topic + " " + message
+							+ " handled by " + handler);
+				}
 				return;
 			}
 		}
