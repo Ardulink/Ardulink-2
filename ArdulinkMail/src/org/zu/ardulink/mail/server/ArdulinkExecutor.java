@@ -43,12 +43,19 @@ public class ArdulinkExecutor {
 	 * @return
 	 */
 	public String execute(String content) throws MessagingException {
+		
+		StringBuilder builder = new StringBuilder();
+		
 		List<ACommand> commands = findCommands(content);
 		for (ACommand aCommand : commands) {
-			aCommand.execute(content);
+			System.out.println("Command: " + aCommand.getName() + " executing...");
+			String reply = aCommand.execute(content);
+			System.out.println("Command: " + aCommand.getName() + " executed");
+			builder.append(reply);
+			builder.append("\n\n");
 		}
 
-		return null;
+		return builder.toString();
 	}
 
 	private List<ACommand> findCommands(String content)

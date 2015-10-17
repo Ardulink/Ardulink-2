@@ -49,6 +49,8 @@ public class ArdulinkMailMessageCountAdapter extends MessageCountAdapter impleme
 			    ioex.printStackTrace();	
 			} catch (MessagingException mex) {
 			    mex.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 	    }
 	}
@@ -64,7 +66,9 @@ public class ArdulinkMailMessageCountAdapter extends MessageCountAdapter impleme
 	    
 	    String reply = execute(content);
 	    if(reply != null) {
-	    	// TODO creare la risposa e spararla all'indietro.
+		    System.out.println("Sending reply to caller...");
+	    	MailSender.sendMail(message.getFrom(), "Re:" + message.getSubject(), reply + "\n\n YOU WROTE: \n\n" + content);
+		    System.out.println("Mail sent.");
 	    }
 	}
 

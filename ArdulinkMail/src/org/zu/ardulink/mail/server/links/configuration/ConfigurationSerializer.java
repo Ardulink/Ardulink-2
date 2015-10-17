@@ -19,6 +19,7 @@ limitations under the License.
 package org.zu.ardulink.mail.server.links.configuration;
 
 import java.io.File;
+import java.io.InputStream;
 
 import org.zu.ardulink.io.JAXBReaderWriter;
 import org.zu.ardulink.io.ReadingException;
@@ -43,6 +44,11 @@ public class ConfigurationSerializer {
 	public static AConfiguration read(File file) throws ReadingException {
 		JAXBReaderWriter<AConfiguration> reader = new JAXBReaderWriter<AConfiguration>(AConfiguration.class);
 		return reader.read(file);
+	} 
+
+	public static AConfiguration read(InputStream is) throws ReadingException {
+		JAXBReaderWriter<AConfiguration> reader = new JAXBReaderWriter<AConfiguration>(AConfiguration.class);
+		return reader.read(is);
 	} 
 	
 	public static void write(AConfiguration configuration, String file) throws WritingException {

@@ -18,6 +18,7 @@ limitations under the License.
 
 package org.zu.ardulink.mail.server.links.configuration;
 
+import java.io.InputStream;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -66,10 +67,29 @@ public class ConfigurationFacade {
 	}
 	
 	public static AConfiguration loadConfiguration() throws ReadingException {
-		configuration = ConfigurationSerializer.read(ConfigurationSerializer.CONFIGURATION_FILE_NAME);
+		
+		configuration = loadConfigurationInClassPath();
+		if(configuration == null) {
+			configuration = ConfigurationSerializer.read(ConfigurationSerializer.CONFIGURATION_FILE_NAME);
+		}
+		
 		return configuration;
 	}
 	
+	private static AConfiguration loadConfigurationInClassPath() throws ReadingException {
+		
+		AConfiguration retvalue = null;
+		ClassLoader classLoader = ConfigurationFacade.class.getClassLoader();
+		InputStream is = classLoader.getResourceAsStream(ConfigurationSerializer.CONFIGURATION_FILE_NAME);
+		if(is == null) {
+			is = ClassLoader.getSystemResourceAsStream(ConfigurationSerializer.CONFIGURATION_FILE_NAME);
+		}
+		
+		if(is != null) {
+			retvalue = ConfigurationSerializer.read(is);
+		}
+		return retvalue;
+	}
 
 	/**
 	 * search for a list of ACommand that has a content hooks right for this content.
@@ -91,10 +111,11 @@ public class ConfigurationFacade {
 		for (String aLinkName : aLinkNames) {
 			ALink aLink = linksMap.get(aLinkName);
 			if (aLink == null) {
+				aLink = linkByName(aLinkName, configuration.getaLinkList()
+						.getALinks());
 				linksMap.put(
 						aLinkName,
-						linkByName(aLinkName, configuration.getaLinkList()
-								.getALinks()));
+						aLink);
 			}
 			retvalue.add(aLink);
 		}

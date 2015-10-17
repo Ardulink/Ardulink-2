@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- sample configuration file -->
 <configuration>
     <aCommandList>
+    	<!-- 
+    	This is a command. It uses LINK1 link and a SimpleContentManager.
+    	A SimpleContentManager when finds a mailContentHooks in mail body sends values strings to link defined (LINK1)
+    	
+    	So if in the mail sent you wrote "turn on" or "accendi" then "alp://ppsw/26/1" and "alp://ppsw/27/1" string
+    	is sent to LINK1. In ALProtocol these strings send a power HIGH message on PINs 26 and 27.
+    	 -->
         <acommands>
             <aLinkNames>LINK 1</aLinkNames>
             <className>org.zu.ardulink.mail.server.contentmanagement.SimpleContentManager</className>
@@ -19,10 +27,18 @@
             <values>alp://ppsw/26/0</values>
             <values>alp://ppsw/27/0</values>
         </acommands>
+    	<!-- 
+    	This is another command. It uses LINK1 link and a ProtocolContentManager.
+    	A ProtocolContentManager when finds a mailContentHooks in mail body call the right method in the link defined (LINK1)
+    	
+    	So if in the mail sent you wrote "up" or "su" then sendPowerPinSwitch(32, 1) and sendPowerPinSwitch(33, 1)
+    	is called on LINK1.
+    	 -->
         <acommands>
             <aLinkNames>LINK 1</aLinkNames>
             <className>org.zu.ardulink.mail.server.contentmanagement.ProtocolContentManager</className>
             <mailContentHooks>su</mailContentHooks>
+            <mailContentHooks>up</mailContentHooks>
             <name>ACCENDI LED 32 e 33</name>
             <values>sendPowerPinSwitch(32, 1)</values>
             <values>sendPowerPinSwitch(33, 1)</values>
@@ -31,12 +47,16 @@
             <aLinkNames>LINK 1</aLinkNames>
             <className>org.zu.ardulink.mail.server.contentmanagement.ProtocolContentManager</className>
             <mailContentHooks>giù</mailContentHooks>
+            <mailContentHooks>down</mailContentHooks>
             <name>SPEGNI LED 32 e 33</name>
             <values>sendPowerPinSwitch(32, 0)</values>
             <values>sendPowerPinSwitch(33, 0)</values>
         </acommands>
     </aCommandList>
     <aConnectionList>
+        <!--
+        This is a connection. In this example SerialConnection(String id, int divider) constructor is called.
+         -->
         <aconnections>
             <className>org.zu.ardulink.connection.serial.SerialConnection</className>
             <constructorParameters>
@@ -55,6 +75,9 @@
         </aconnections>
     </aConnectionList>
     <aLinkList>
+    	<!--
+    	LINK1 is the default Link instance
+    	 -->
         <alinks>
             <connectParameters>
                 <type>java.lang.String</type>
@@ -64,11 +87,15 @@
             <name>LINK 1</name>
             <waitSecondsAfterConnection>10</waitSecondsAfterConnection>
         </alinks>
+        <!--
+        While LINK2 is a Link instance that uses the Serial Connection on port "COM6" with 115200 baud rate 
+        and it speaks with the ArdulinkProtocol
+         -->
         <alinks>
             <aConnectionName>SERIAL CONNECTION</aConnectionName>
             <connectParameters>
                 <type>java.lang.String</type>
-                <value>COM5</value>
+                <value>COM6</value>
             </connectParameters>
             <connectParameters>
                 <type>int</type>
