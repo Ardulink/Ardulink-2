@@ -23,8 +23,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.mail.server.links.configuration.ALink;
 import org.zu.ardulink.mail.server.links.configuration.AParameter;
@@ -40,14 +41,12 @@ import org.zu.ardulink.mail.server.links.configuration.ConfigurationFacade;
  */
 public class ConfigurationUtility {
 	
-	private static Logger logger = Logger.getLogger(ConfigurationUtility.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtility.class);
 	
 	public static List<Link> getConnectedLinks(List<String> aLinkNames) {
 		List<ALink> aLinks = ConfigurationFacade.getALinks(aLinkNames);
 		List<Link> links = new LinkedList<Link>();
-		Iterator<ALink> it = aLinks.iterator();
-		while (it.hasNext()) {
-			ALink aLink = (ALink) it.next();
+		for (ALink aLink : aLinks) {
 			Link link = aLink.getLink();
 			if(!link.isConnected()) {
 				try {

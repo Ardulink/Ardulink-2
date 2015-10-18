@@ -24,11 +24,12 @@ import static org.zu.ardulink.connection.proxy.NetworkProxyConnection.DEFAULT_LI
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zu.ardulink.connection.proxy.NetworkProxyConnection;
 import org.zu.ardulink.event.AnalogReadChangeEvent;
 import org.zu.ardulink.event.AnalogReadChangeListener;
@@ -72,8 +73,8 @@ public class DataReceiver {
 
 	private Link link;
 
-	private static final Logger log = Logger.getLogger(DataReceiver.class
-			.getName());
+	private static final Logger logger = LoggerFactory
+			.getLogger(DataReceiver.class);
 
 	public static void main(String[] args) {
 		new DataReceiver().doMain(args);
@@ -100,15 +101,15 @@ public class DataReceiver {
 			link.addConnectionListener(connectionListener());
 
 			String port = portList.get(0);
-			log.info("Trying to connect to: " + port);
+			logger.info("Trying to connect to: " + port);
 			boolean connected = link.connect(port, 115200);
 			if (!connected) {
 				throw new RuntimeException("Connection failed!");
 			}
 			try {
-				log.info("Wait a while for Arduino boot");
+				logger.info("Wait a while for Arduino boot");
 				TimeUnit.SECONDS.sleep(sleepSecs);
-				log.info("Ok, now it should be ready...");
+				logger.info("Ok, now it should be ready...");
 
 				link.addAnalogReadChangeListener(analogReadChangeListener());
 				for (int analog : analogs) {
@@ -136,13 +137,13 @@ public class DataReceiver {
 		return new ConnectionListener() {
 			@Override
 			public void connected(ConnectionEvent e) {
-				log.info("Connected! Port: " + e.getPortName() + " ID: "
+				logger.info("Connected! Port: " + e.getPortName() + " ID: "
 						+ e.getConnectionId());
 			}
 
 			@Override
 			public void disconnected(DisconnectionEvent e) {
-				log.info("Disconnected! ID: " + e.getConnectionId());
+				logger.info("Disconnected! ID: " + e.getConnectionId());
 			}
 
 		};
@@ -158,13 +159,13 @@ public class DataReceiver {
 			@Override
 			public void parseInput(String id, int numBytes, int[] message) {
 
-				log.info("Message from: " + id);
+				logger.info("Message from: " + id);
 				StringBuilder builder = new StringBuilder(numBytes);
 				for (int i = 0; i < numBytes; i++) {
 					builder.append((char) message[i]);
 				}
 
-				log.info("Message: " + builder.toString());
+				logger.info("Message: " + builder.toString());
 			}
 
 		};
@@ -175,7 +176,7 @@ public class DataReceiver {
 
 			@Override
 			public void stateChanged(DigitalReadChangeEvent e) {
-				log.info(format(msgDigital, e.getPin(), e.getValue()));
+				logger.info(format(msgDigital, e.getPin(), e.getValue()));
 			}
 
 			@Override
@@ -191,7 +192,7 @@ public class DataReceiver {
 
 			@Override
 			public void stateChanged(AnalogReadChangeEvent e) {
-				log.info(format(msgAnalog, e.getPin(), e.getValue()));
+				logger.info(format(msgAnalog, e.getPin(), e.getValue()));
 			}
 
 			@Override

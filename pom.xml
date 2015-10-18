@@ -27,6 +27,7 @@
 		<maven.compiler.source>1.6</maven.compiler.source>
 		<maven.compiler.target>1.6</maven.compiler.target>
 		<args4j.version>2.32</args4j.version>
+		<slf4j.version>1.7.12</slf4j.version>
 		<junit.version>4.12</junit.version>
 	</properties>
 
@@ -58,6 +59,25 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-</project>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>args4j</groupId>
+				<artifactId>args4j</artifactId>
+				<version>${args4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${slf4j.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${junit.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 </project>

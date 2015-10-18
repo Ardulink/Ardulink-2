@@ -18,7 +18,8 @@ limitations under the License.
 
 package org.zu.ardulink.protocol;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -30,15 +31,15 @@ import java.util.logging.Logger;
  */
 public class LoggerReplyMessageCallback implements ReplyMessageCallback {
 
-	private static Logger logger = Logger.getLogger(LoggerReplyMessageCallback.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(LoggerReplyMessageCallback.class);
 
 	@Override
 	public void replyInfo(MessageInfo messageInfo) {
 		logger.info("Reply Message has arrived");
-		logger.info("ID:" + messageInfo.getMessageID());
-		logger.info("Message sent: " + messageInfo.getMessageSent());
-		logger.info("Message received: " + messageInfo.getMessageReceived());
-		logger.info("Result: " + messageInfo.getReply());
+		logger.info("ID: {}", messageInfo.getMessageID());
+		logger.info("Message sent: {}", messageInfo.getMessageSent());
+		logger.info("Message received: {}", messageInfo.getMessageReceived());
+		logger.info("Result: {}", messageInfo.getReply());
 	}
 
 }
