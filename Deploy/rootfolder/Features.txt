@@ -1,3 +1,10 @@
+Version 0.6.0.20151017 Gutenberg
+
+- Added MQTT support. Ardulink MQTT is a command line application that can control Arduino boards receiving messages from a MQTT broker.
+- Added Mail support. Ardulink Mail is a command line application that can control Arduino boards receiving messages from an email inbox.
+- Enhanced build system with maven
+- Crated several Ardulink modules instead of a single JAR. Now Ardulink is composed by several JARs.
+
 Version 0.5.0.20150606 Life Multiplexer
 
 - Improved Network Proxy Server broadcast capabilities, now it's possible broadcast events to many clients connected to the same Arduino board

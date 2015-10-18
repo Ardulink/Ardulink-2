@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.ardulink</groupId>
 		<artifactId>parent</artifactId>
-		<version>0.5.1-SNAPSHOT</version>
+		<version>0.6.0</version>
 	</parent>
 
 	<build>
@@ -30,6 +30,16 @@
 					</archive>
 				</configuration>
 			</plugin>
+	      <plugin>
+	        <groupId>org.apache.maven.plugins</groupId>
+	        <artifactId>maven-javadoc-plugin</artifactId>
+	        <version>2.10.3</version>
+	        <configuration>
+	          <show>public</show>
+	          <reportOutputDirectory>${project.basedir}/../JavadocUtils/generated</reportOutputDirectory>
+          	  <destDir>ardulink-core</destDir>
+	        </configuration>
+	      </plugin>
 		</plugins>
 	</build>
 
