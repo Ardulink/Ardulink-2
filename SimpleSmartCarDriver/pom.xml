@@ -46,6 +46,11 @@
 			<artifactId>ardulink-swing</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 	</dependencies>
 
 </project>
