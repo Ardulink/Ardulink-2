@@ -1,3 +1,5 @@
 eclipse.preferences.version=1
 encoding/<project>=CP1252
 encoding/src=CP1252
+encoding/test=CP1252
+encoding/testResources=CP1252

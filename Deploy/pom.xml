@@ -3,13 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.ardulink</groupId>
 	<artifactId>Deploy</artifactId>
-	<version>0.5.1-SNAPSHOT</version>
+	<version>0.6.0</version>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.ardulink</groupId>
 		<artifactId>parent</artifactId>
-		<version>0.5.1-SNAPSHOT</version>
+		<version>0.6.0</version>
 	</parent>
 
 	<build>
