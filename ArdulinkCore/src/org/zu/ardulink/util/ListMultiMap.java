@@ -27,7 +27,7 @@ import java.util.Map;
  * 
  * [adsense]
  */
-public class HashMultiMap<K, V> {
+public class ListMultiMap<K, V> {
 
 	private final Map<K, List<V>> data = new HashMap<K, List<V>>();
 
