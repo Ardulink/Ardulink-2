@@ -104,6 +104,9 @@ public class ACommand {
 			}
 		}
 		
+		// TODO Luciano will lead to NPE in line 90 if exceptions got caught,
+		// instead of just printing stacktraces the caught exceptions should be
+		// wrapped into RTEs
 		return contentManager;
 	}
 	
