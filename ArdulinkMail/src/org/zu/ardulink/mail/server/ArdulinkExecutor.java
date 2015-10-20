@@ -61,7 +61,7 @@ public class ArdulinkExecutor {
 	private List<ACommand> findCommands(String content)
 			throws MessagingException {
 		List<ACommand> commands = ConfigurationFacade.findCommands(content);
-		if (commands == null || commands.isEmpty()) {
+		if (commands.isEmpty()) {
 			throw new MessagingException("No command is found for content: "
 					+ content);
 		}
