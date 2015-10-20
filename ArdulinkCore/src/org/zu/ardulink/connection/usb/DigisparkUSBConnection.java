@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.zu.ardulink.connection.Connection;
 import org.zu.ardulink.connection.ConnectionContact;
-import org.zu.ardulink.util.Preconditions;
 
 import ch.ntb.usb.LibusbJava;
 import ch.ntb.usb.USB;
@@ -70,7 +69,7 @@ public class DigisparkUSBConnection implements Connection {
 	 * Communicating between threads, showing the {@link #reader} when the
 	 * connection has been closed, so it can {@link Thread#join()}.
 	 */
-	private boolean end = false;
+	private boolean end;
 
 	/**
 	 * The Thread used to receive the data from the Serial interface.
@@ -166,10 +165,7 @@ public class DigisparkUSBConnection implements Connection {
 		checkState(params[0] instanceof String,
 				"This connection accepts a String port name. First argument was not a String");
 		String portName = (String) params[0];
-		boolean retvalue = false;
-		retvalue = connect(portName);
-
-		return retvalue;
+		return connect(portName);
 	}
 
 	public boolean connect(String portName) {
@@ -270,11 +266,7 @@ public class DigisparkUSBConnection implements Connection {
 
 	@Override
 	public boolean isConnected() {
-		boolean retvalue = false;
-		if(openedDevice != null) {
-			retvalue = true;
-		}
-		return retvalue;
+		return openedDevice != null;
 	}
 
 	public boolean writeSerial(String message) {
@@ -349,12 +341,8 @@ public class DigisparkUSBConnection implements Connection {
 	 */
 	private class DigisparkUSBReader implements Runnable {
 
-		private int[] tempBytes = new int[1024];;
-		int numTempBytes = 0;
-
-		public DigisparkUSBReader() {
-			super();
-		}
+		private int[] tempBytes = new int[1024];
+		private int numTempBytes;
 
 		public void run() {
 			byte[] readbyte = new byte[1];
@@ -382,6 +370,6 @@ public class DigisparkUSBConnection implements Connection {
 				disconnect();
 			}
 		}		
-		
 	}
+	
 }
