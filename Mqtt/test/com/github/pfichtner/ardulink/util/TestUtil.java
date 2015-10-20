@@ -29,8 +29,8 @@ import java.util.concurrent.TimeUnit;
 import org.dna.mqtt.moquette.server.Server;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
+import org.zu.ardulink.ConnectionContact;
 import org.zu.ardulink.connection.Connection;
-import org.zu.ardulink.connection.ConnectionContact;
 import org.zu.ardulink.connection.serial.AbstractSerialConnection;
 
 import com.github.pfichtner.ardulink.MqttMain;

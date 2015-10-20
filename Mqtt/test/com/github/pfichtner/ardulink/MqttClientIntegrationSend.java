@@ -38,10 +38,9 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.zu.ardulink.ConnectionContactImpl;
+import org.zu.ardulink.ConnectionContact;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.Connection;
-import org.zu.ardulink.connection.ConnectionContact;
 
 import com.github.pfichtner.ardulink.util.AnotherMqttClient;
 import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
@@ -62,7 +61,7 @@ public class MqttClientIntegrationSend {
 
 	private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-	private final ConnectionContact connectionContact = new ConnectionContactImpl(
+	private final ConnectionContact connectionContact = new ConnectionContact(
 			null);
 
 	private final Connection connection = createConnection(outputStream,
@@ -71,7 +70,7 @@ public class MqttClientIntegrationSend {
 	private final Link link = Link.createInstance(LINKNAME, connection);
 
 	{
-		// there is an extremely high coupling of ConnectionContactImpl and Link
+		// there is an extremely high coupling of ConnectionContact and Link
 		// which can not be solved other than injecting the variables through
 		// reflection
 		set(connectionContact, getField(connectionContact, "link"), link);

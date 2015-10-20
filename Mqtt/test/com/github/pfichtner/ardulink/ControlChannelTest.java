@@ -34,10 +34,9 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.zu.ardulink.ConnectionContactImpl;
+import org.zu.ardulink.ConnectionContact;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.Connection;
-import org.zu.ardulink.connection.ConnectionContact;
 
 import com.github.pfichtner.ardulink.util.Message;
 import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
@@ -53,7 +52,7 @@ public class ControlChannelTest {
 	private static final String LINKNAME = "testlink";
 
 	private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-	private final ConnectionContact connectionContact = new ConnectionContactImpl(
+	private final ConnectionContact connectionContact = new ConnectionContact(
 			null);
 	private final Connection connection = createConnection(outputStream,
 			connectionContact);
@@ -70,7 +69,7 @@ public class ControlChannelTest {
 	private final MqttMessageBuilder mqttMessage = mqttMessageWithBasicTopic(Config.DEFAULT_TOPIC);
 
 	{
-		// there is an extremely high coupling of ConnectionContactImpl and Link
+		// there is an extremely high coupling of ConnectionContact and Link
 		// which can not be solved other than injecting the variables through
 		// reflection
 		set(connectionContact, getField(connectionContact, "link"), link);
