@@ -114,12 +114,12 @@ public class ConnectionContactImpl implements ConnectionContact {
 	public boolean addAnalogReadChangeListener(AnalogReadChangeListener listener) {
 		int pinListening = listener.getPinListening();
 		synchronized (analogReadChangeListeners) {
-			boolean retvalue = analogReadChangeListeners.put(pinListening,
+			boolean added = analogReadChangeListeners.put(pinListening,
 					listener);
 			if (pinListening != AnalogReadChangeListener.ALL_PINS) {
 				link.startListenAnalogPin(pinListening);
 			}
-			return retvalue;
+			return added;
 		}
 	}
 
@@ -157,11 +157,11 @@ public class ConnectionContactImpl implements ConnectionContact {
 	public boolean addDigitalReadChangeListener(DigitalReadChangeListener listener) {
 		int pinListening = listener.getPinListening();
 		synchronized (digitalReadChangeListeners) {
-			boolean retvalue = digitalReadChangeListeners.put(pinListening, listener);
-			if(pinListening != DigitalReadChangeListener.ALL_PINS) {
+			boolean added = digitalReadChangeListeners.put(pinListening, listener);
+			if (pinListening != DigitalReadChangeListener.ALL_PINS) {
 				link.startListenDigitalPin(pinListening);
 			}
-			return retvalue;
+			return added;
 		}
 	}
 
