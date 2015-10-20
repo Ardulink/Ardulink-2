@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Vector;
 
 import org.zu.ardulink.ConnectionContact;
 import org.zu.ardulink.Link;
@@ -174,14 +173,12 @@ public abstract class AbstractSerialConnection implements Connection {
 	/**
 	 * This method is used to get a list of all the available Serial ports
 	 * (note: only Serial ports are considered). Any one of the elements
-	 * contained in the returned {@link Vector} can be used as a parameter in
+	 * contained in the returned {@link List} can be used as a parameter in
 	 * {@link #connect(String)} or {@link #connect(String, int)} to open a
 	 * Serial connection.
 	 * 
-	 * @return A {@link Vector} containing {@link String}s showing all available
+	 * @return A {@link List} containing {@link String}s showing all available
 	 *         Serial ports.
-	 *         
-	 * Luciano Zu has modified return type from Vector to List
 	 */
 	public abstract List<String> getPortList();
 
