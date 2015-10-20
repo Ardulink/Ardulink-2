@@ -20,7 +20,6 @@ package org.zu.ardulink;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +34,7 @@ import org.zu.ardulink.event.DigitalReadChangeEvent;
 import org.zu.ardulink.event.DigitalReadChangeListener;
 import org.zu.ardulink.event.DisconnectionEvent;
 import org.zu.ardulink.event.IncomingMessageEvent;
+import org.zu.ardulink.util.SetMultiMap;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -56,8 +56,8 @@ public class ConnectionContactImpl implements ConnectionContact {
 
 	private Set<ConnectionListener> connectionListeners = Collections.synchronizedSet(new HashSet<ConnectionListener>());
 	private Set<RawDataListener> rawDataListeners = Collections.synchronizedSet(new HashSet<RawDataListener>());
-	private Map<Integer, Set<AnalogReadChangeListener>> analogReadChangeListeners = Collections.synchronizedMap(new HashMap<Integer, Set<AnalogReadChangeListener>>());
-	private Map<Integer, Set<DigitalReadChangeListener>> digitalReadChangeListeners = Collections.synchronizedMap(new HashMap<Integer, Set<DigitalReadChangeListener>>());
+	private final SetMultiMap<Integer, AnalogReadChangeListener> analogReadChangeListeners = new SetMultiMap<Integer, AnalogReadChangeListener>();
+	private final SetMultiMap<Integer, DigitalReadChangeListener> digitalReadChangeListeners = new SetMultiMap<Integer, DigitalReadChangeListener>();
 	
 	/**
 	 * Register a ConnectionListener to receive events about connection status.
@@ -112,21 +112,15 @@ public class ConnectionContactImpl implements ConnectionContact {
 	 * @see Link
 	 */
 	public boolean addAnalogReadChangeListener(AnalogReadChangeListener listener) {
-		boolean retvalue = false;
 		int pinListening = listener.getPinListening();
 		synchronized (analogReadChangeListeners) {
-			Set<AnalogReadChangeListener> pinListeningSet = analogReadChangeListeners.get(pinListening);
-			if(pinListeningSet == null) {
-				pinListeningSet = Collections.synchronizedSet(new HashSet<AnalogReadChangeListener>());
-				analogReadChangeListeners.put(pinListening, pinListeningSet);
-			}
-			retvalue = pinListeningSet.add(listener);
-			if(pinListening != AnalogReadChangeListener.ALL_PINS) {
+			boolean retvalue = analogReadChangeListeners.put(pinListening,
+					listener);
+			if (pinListening != AnalogReadChangeListener.ALL_PINS) {
 				link.startListenAnalogPin(pinListening);
 			}
+			return retvalue;
 		}
-		
-		return retvalue;
 	}
 
 	/**
@@ -136,20 +130,20 @@ public class ConnectionContactImpl implements ConnectionContact {
 	 * @return true if this set contained the specified AnalogReadChangeListener
 	 * @see Link
 	 */
-	public boolean removeAnalogReadChangeListener(AnalogReadChangeListener listener) {
-		boolean retvalue = true;
+	public boolean removeAnalogReadChangeListener(
+			AnalogReadChangeListener listener) {
 		int pinListening = listener.getPinListening();
 		synchronized (analogReadChangeListeners) {
-			Set<AnalogReadChangeListener> pinListeningSet = analogReadChangeListeners.get(pinListening);
-			if(pinListeningSet != null) {
-				retvalue = pinListeningSet.remove(listener);
-			}
-			if(pinListeningSet.isEmpty() && pinListening != AnalogReadChangeListener.ALL_PINS) {
+			boolean removed = analogReadChangeListeners.remove(pinListening,
+					listener);
+			if (removed
+					&& pinListening != AnalogReadChangeListener.ALL_PINS
+					&& analogReadChangeListeners.asMap().get(pinListening)
+							.isEmpty()) {
 				link.stopListenAnalogPin(pinListening);
 			}
+			return removed;
 		}
-		
-		return retvalue;
 	}
 
 	/**
@@ -161,21 +155,14 @@ public class ConnectionContactImpl implements ConnectionContact {
 	 * @see ConnectionContactImpl
 	 */
 	public boolean addDigitalReadChangeListener(DigitalReadChangeListener listener) {
-		boolean retvalue = false;
 		int pinListening = listener.getPinListening();
 		synchronized (digitalReadChangeListeners) {
-			Set<DigitalReadChangeListener> pinListeningSet = digitalReadChangeListeners.get(pinListening);
-			if(pinListeningSet == null) {
-				pinListeningSet = Collections.synchronizedSet(new HashSet<DigitalReadChangeListener>());
-				digitalReadChangeListeners.put(pinListening, pinListeningSet);
-			}
-			retvalue = pinListeningSet.add(listener);
+			boolean retvalue = digitalReadChangeListeners.put(pinListening, listener);
 			if(pinListening != DigitalReadChangeListener.ALL_PINS) {
 				link.startListenDigitalPin(pinListening);
 			}
+			return retvalue;
 		}
-		
-		return retvalue;
 	}
 
 	/**
@@ -186,19 +173,18 @@ public class ConnectionContactImpl implements ConnectionContact {
 	 * @see ConnectionContactImpl
 	 */
 	public boolean removeDigitalReadChangeListener(DigitalReadChangeListener listener) {
-		boolean retvalue = true;
 		int pinListening = listener.getPinListening();
 		synchronized (digitalReadChangeListeners) {
-			Set<DigitalReadChangeListener> pinListeningSet = digitalReadChangeListeners.get(pinListening);
-			if(pinListeningSet != null) {
-				retvalue = pinListeningSet.remove(listener);
-				if(pinListeningSet.isEmpty() && pinListening != DigitalReadChangeListener.ALL_PINS) {
-					link.stopListenDigitalPin(pinListening);
-				}
+			boolean removed = digitalReadChangeListeners.remove(pinListening,
+					listener);
+			if (removed
+					&& digitalReadChangeListeners.asMap().get(pinListening)
+							.isEmpty()
+					&& pinListening != DigitalReadChangeListener.ALL_PINS) {
+				link.stopListenDigitalPin(pinListening);
 			}
+			return removed;
 		}
-		
-		return retvalue;
 	}
 	
 	@Override
@@ -236,36 +222,40 @@ public class ConnectionContactImpl implements ConnectionContact {
 
 	private void fireAnalogReadChangeEvent(AnalogReadChangeEvent event) {
 		int pin = event.getPin();
-		Set<AnalogReadChangeListener> pinListeningSet = analogReadChangeListeners
-				.get(pin);
-		if (pinListeningSet != null) {
-			for (AnalogReadChangeListener analogReadChangeListener : pinListeningSet) {
-				analogReadChangeListener.stateChanged(event);
+		synchronized (analogReadChangeListeners) {
+			Map<Integer, Set<AnalogReadChangeListener>> listeners = analogReadChangeListeners
+					.asMap();
+			Set<AnalogReadChangeListener> pinListeningSet = listeners.get(pin);
+			if (pinListeningSet != null) {
+				for (AnalogReadChangeListener analogReadChangeListener : pinListeningSet) {
+					analogReadChangeListener.stateChanged(event);
+				}
 			}
-		}
-		pinListeningSet = analogReadChangeListeners
-				.get(AnalogReadChangeListener.ALL_PINS);
-		if (pinListeningSet != null) {
-			for (AnalogReadChangeListener analogReadChangeListener : pinListeningSet) {
-				analogReadChangeListener.stateChanged(event);
+			pinListeningSet = listeners.get(AnalogReadChangeListener.ALL_PINS);
+			if (pinListeningSet != null) {
+				for (AnalogReadChangeListener analogReadChangeListener : pinListeningSet) {
+					analogReadChangeListener.stateChanged(event);
+				}
 			}
 		}
 	}
 
 	private void fireDigitalReadChangeEvent(DigitalReadChangeEvent event) {
 		int pin = event.getPin();
-		Set<DigitalReadChangeListener> pinListeningSet = digitalReadChangeListeners
-				.get(pin);
-		if (pinListeningSet != null) {
-			for (DigitalReadChangeListener digitalReadChangeListener : pinListeningSet) {
-				digitalReadChangeListener.stateChanged(event);
+		synchronized (digitalReadChangeListeners) {
+			Map<Integer, Set<DigitalReadChangeListener>> listeners = digitalReadChangeListeners
+					.asMap();
+			Set<DigitalReadChangeListener> pinListeningSet = listeners.get(pin);
+			if (pinListeningSet != null) {
+				for (DigitalReadChangeListener digitalReadChangeListener : pinListeningSet) {
+					digitalReadChangeListener.stateChanged(event);
+				}
 			}
-		}
-		pinListeningSet = digitalReadChangeListeners
-				.get(DigitalReadChangeListener.ALL_PINS);
-		if (pinListeningSet != null) {
-			for (DigitalReadChangeListener digitalReadChangeListener : pinListeningSet) {
-				digitalReadChangeListener.stateChanged(event);
+			pinListeningSet = listeners.get(DigitalReadChangeListener.ALL_PINS);
+			if (pinListeningSet != null) {
+				for (DigitalReadChangeListener digitalReadChangeListener : pinListeningSet) {
+					digitalReadChangeListener.stateChanged(event);
+				}
 			}
 		}
 	}
