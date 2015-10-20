@@ -27,8 +27,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import org.zu.ardulink.ConnectionContact;
 import org.zu.ardulink.connection.Connection;
-import org.zu.ardulink.connection.ConnectionContact;
 
 /**
  * [ardulinktitle] [ardulinkversion]

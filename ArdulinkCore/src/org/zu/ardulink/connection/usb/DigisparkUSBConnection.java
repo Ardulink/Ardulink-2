@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.zu.ardulink.ConnectionContact;
 import org.zu.ardulink.connection.Connection;
-import org.zu.ardulink.connection.ConnectionContact;
 
 import ch.ntb.usb.LibusbJava;
 import ch.ntb.usb.USB;

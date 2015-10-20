@@ -31,9 +31,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.zu.ardulink.ConnectionContact;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.Connection;
-import org.zu.ardulink.connection.ConnectionContact;
 import org.zu.ardulink.protocol.IProtocol;
 
 /**

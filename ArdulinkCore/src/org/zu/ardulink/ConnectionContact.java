@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import org.zu.ardulink.connection.ConnectionContact;
 import org.zu.ardulink.event.AnalogReadChangeEvent;
 import org.zu.ardulink.event.AnalogReadChangeListener;
 import org.zu.ardulink.event.ConnectionEvent;
@@ -48,9 +47,9 @@ import org.zu.ardulink.util.SetMultiMap;
  * [adsense]
  *
  */
-public class ConnectionContactImpl implements ConnectionContact {
+public class ConnectionContact {
 
-	private static final Logger logger = Logger.getLogger(ConnectionContactImpl.class.getName());
+	private static final Logger logger = Logger.getLogger(ConnectionContact.class.getName());
 	
 	private final Link link;
 
@@ -99,7 +98,7 @@ public class ConnectionContactImpl implements ConnectionContact {
 		return rawDataListeners.remove(rawDataListener);
 	}
 	
-	public ConnectionContactImpl(Link link) {
+	public ConnectionContact(Link link) {
 		this.link = link;
 	}
 	
@@ -152,7 +151,7 @@ public class ConnectionContactImpl implements ConnectionContact {
 	 * Call a startListenAnalogPin.
 	 * @param listener
 	 * @return true if this set did not already contain the specified DigitalReadChangeListener
-	 * @see ConnectionContactImpl
+	 * @see ConnectionContact
 	 */
 	public boolean addDigitalReadChangeListener(DigitalReadChangeListener listener) {
 		int pinListening = listener.getPinListening();
@@ -170,7 +169,7 @@ public class ConnectionContactImpl implements ConnectionContact {
 	 * Call a stopListenDigitalPin if this is the last remove element.
 	 * @param listener
 	 * @return true if this set contained the specified DigitalReadChangeListener
-	 * @see ConnectionContactImpl
+	 * @see ConnectionContact
 	 */
 	public boolean removeDigitalReadChangeListener(DigitalReadChangeListener listener) {
 		int pinListening = listener.getPinListening();
@@ -187,7 +186,6 @@ public class ConnectionContactImpl implements ConnectionContact {
 		}
 	}
 	
-	@Override
 	public void writeLog(String id, String text) {
 		logger.info(text);
 	}
@@ -197,7 +195,6 @@ public class ConnectionContactImpl implements ConnectionContact {
 	 * This method call the Link.parseMessage method and if the IncomingMessageEvent is not null fire the event
 	 * to the listeners.
 	 */
-	@Override
 	public void parseInput(String id, int numBytes, int[] message) {
 		logger.fine("Message from Arduino has arrived.");
 		fireDataToRawDataListener(id, numBytes, message);
@@ -260,7 +257,6 @@ public class ConnectionContactImpl implements ConnectionContact {
 		}
 	}
 
-	@Override
 	public void disconnected(String id) {
 		logger.fine("disconnected()");
 		DisconnectionEvent event = new DisconnectionEvent(id);
@@ -269,7 +265,6 @@ public class ConnectionContactImpl implements ConnectionContact {
 		}
 	}
 	
-	@Override
 	public void connected(String id, String portName) {
 		logger.fine("connected()");
 		ConnectionEvent event = new ConnectionEvent(id, portName);

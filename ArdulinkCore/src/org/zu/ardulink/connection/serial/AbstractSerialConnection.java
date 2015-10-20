@@ -27,9 +27,9 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Vector;
 
+import org.zu.ardulink.ConnectionContact;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.Connection;
-import org.zu.ardulink.connection.ConnectionContact;
 
 /**
  * [ardulinktitle] [ardulinkversion]

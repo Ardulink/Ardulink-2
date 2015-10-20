@@ -197,7 +197,7 @@ public interface IProtocol {
 	public MessageInfo sendCustomMessage(Link link, String message, ReplyMessageCallback callback);
 	
 	/**
-	 * When a message arrives from Arduino, ConnectionContactImpl and Link classes call this method that parses message and
+	 * When a message arrives from Arduino, ConnectionContact and Link classes call this method that parses message and
 	 * returns a specific event. If message arrived is a reply message then null is returned and a callback action is taken.
 	 * Otherwise the caller take specific action based on specific IncomingMessage.
 	 * i.e. if a AnalogReadChangeEvent is raised then the caller fire the event to all the listeners.

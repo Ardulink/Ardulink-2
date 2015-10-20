@@ -20,6 +20,8 @@ package org.zu.ardulink.connection;
 
 import java.util.List;
 
+import org.zu.ardulink.ConnectionContact;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
