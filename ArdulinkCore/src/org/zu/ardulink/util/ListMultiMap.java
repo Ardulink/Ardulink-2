@@ -13,42 +13,35 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package org.zu.ardulink.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
  * [adsense]
  */
-public class ListMultiMap<K, V> {
+public class ListMultiMap<K, V> extends AbstractMultiMap<K, V> {
 
-	private final Map<K, List<V>> data = new HashMap<K, List<V>>();
-
-	public boolean isEmpty() {
-		return this.data.isEmpty();
-	}
-
-	public void put(K key, V value) {
-		List<V> values = this.data.get(key);
-		if (values == null) {
-			this.data.put(key, values = new ArrayList<V>());
-		}
-		values.add(value);
-	}
-
-	public void clear() {
-		this.data.clear();
+	protected Collection<V> make() {
+		return new ArrayList<V>();
 	}
 
 	public Map<K, List<V>> asMap() {
-		return new HashMap<K, List<V>>(data);
+		Map<K, List<V>> map = new HashMap<K, List<V>>();
+		for (Entry<K, Collection<V>> entry : data.entrySet()) {
+			map.put(entry.getKey(), (List<V>) entry.getValue());
+		}
+		return map;
 	}
 
 }

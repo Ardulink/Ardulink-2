@@ -18,10 +18,7 @@ package org.zu.ardulink.util;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -30,18 +27,35 @@ import java.util.Set;
  * 
  * [adsense]
  */
-public class SetMultiMap<K, V> extends AbstractMultiMap<K, V> {
+public abstract class AbstractMultiMap<K, V> {
 
-	protected Collection<V> make() {
-		return new HashSet<V>();
+	protected final Map<K, Collection<V>> data = new HashMap<K, Collection<V>>();
+
+	public boolean isEmpty() {
+		return this.data.isEmpty();
 	}
 
-	public Map<K, Set<V>> asMap() {
-		Map<K, Set<V>> map = new HashMap<K, Set<V>>();
-		for (Entry<K, Collection<V>> entry : data.entrySet()) {
-			map.put(entry.getKey(), (Set<V>) entry.getValue());
+	public boolean put(K key, V value) {
+		Collection<V> values = this.data.get(key);
+		if (values == null) {
+			this.data.put(key, values = make());
 		}
-		return map;
+		return values.add(value);
+	}
+
+	public boolean remove(K key, V value) {
+		Collection<V> values = this.data.get(key);
+		boolean removed = values != null && values.remove(value);
+		if (removed && values.isEmpty()) {
+			this.data.remove(key);
+		}
+		return removed;
+	}
+
+	protected abstract Collection<V> make();
+
+	public void clear() {
+		this.data.clear();
 	}
 
 }
