@@ -50,8 +50,9 @@ import org.zu.ardulink.connection.serial.AbstractSerialConnection;
  */
 public class BluetoothConnection extends AbstractSerialConnection implements Connection {
 
-	private Object lock = new Object();
-	private ArdulinkDiscoveryListener listener = new ArdulinkDiscoveryListener(this, lock);
+	// TODO should be replaced by Semaphore
+	private final Object lock = new Object();
+	private final ArdulinkDiscoveryListener listener = new ArdulinkDiscoveryListener(this, lock);
 
 	private Map<String, ServiceRecord> ports = new HashMap<String, ServiceRecord>();
 
@@ -91,16 +92,9 @@ public class BluetoothConnection extends AbstractSerialConnection implements Con
         	throw new RuntimeException(e);
         }            
    
-        UUID[] uuidSet = new UUID[1];
-        uuidSet[0]=new UUID(0x1101); // Serial Port Service
-        
-        int[] attrIDs =  new int[] {
-               0x0100 // Service name
-        };
-        
-        for (RemoteDevice device : listener.getDevices()) {
+		for (RemoteDevice device : listener.getDevices()) {
             try {
-                agent.searchServices(attrIDs, uuidSet, device, listener);
+                agent.searchServices(serviceName(), serialPortService(), device, listener);
                 synchronized(lock){
                     lock.wait();
                 }
@@ -111,6 +105,14 @@ public class BluetoothConnection extends AbstractSerialConnection implements Con
         }
         
 		return new ArrayList<String>(ports.keySet());
+	}
+
+	private static int[] serviceName() {
+		return new int[] { 0x0100 }; // Service name
+	}
+
+	private static UUID[] serialPortService() {
+		return new UUID[] { new UUID(0x1101) }; // Serial Port Service
 	}
 
 	@Override
