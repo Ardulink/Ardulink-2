@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @author Luciano Zu
-*/
+ */
 
 package org.zu.ardulink.mail.server.contentmanagement;
 
@@ -30,6 +30,9 @@ import java.util.List;
  */
 public interface IContentManager {
 
-	public boolean isForContent(String content, List<String> mailContentHooks);
-	public String execute(String content, List<String> values, List<String> mailContentHooks, List<String> aLinkNames);
+	boolean isForContent(String content, List<String> mailContentHooks);
+
+	String execute(String content, List<String> values,
+			List<String> mailContentHooks, List<String> aLinkNames);
+
 }
