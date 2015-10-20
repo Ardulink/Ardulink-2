@@ -26,7 +26,7 @@ package org.zu.ardulink.mail.server;
  * [adsense]
  *
  */
-public interface ArdulinkMailConstants {
+public class ArdulinkMailConstants {
 
 	public static final String TRUE = "true";
 	public static final String FALSE = "false";
