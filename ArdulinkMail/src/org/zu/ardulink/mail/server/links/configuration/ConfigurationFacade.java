@@ -18,8 +18,10 @@ limitations under the License.
 
 package org.zu.ardulink.mail.server.links.configuration;
 
+import static java.util.Collections.synchronizedMap;
+
 import java.io.InputStream;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +42,8 @@ public class ConfigurationFacade {
 
 	private static Logger logger = Logger.getLogger(ConfigurationFacade.class.getName());
 	private static AConfiguration configuration;
-	private static final Map<String, ALink> linksMap = new Hashtable<String, ALink>();
-	private static final Map<String, AConnection> connectionsMap = new Hashtable<String, AConnection>();
+	private static final Map<String, ALink> linksMap = synchronizedMap(new HashMap<String, ALink>());
+	private static final Map<String, AConnection> connectionsMap = synchronizedMap(new HashMap<String, AConnection>());
 	
 	static {
 		try {

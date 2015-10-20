@@ -18,7 +18,9 @@ limitations under the License.
 
 package org.zu.ardulink.protocol;
 
-import java.util.Hashtable;
+import static java.util.Collections.synchronizedMap;
+
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -93,7 +95,7 @@ public class ALProtocol implements IProtocol {
 	private static Logger logger = Logger.getLogger(ALProtocol.class.getName());
 	private static long nextId = 1;
 	
-	private Map<Long, MessageInfo> messageInfos = new Hashtable<Long, MessageInfo>();
+	private final Map<Long, MessageInfo> messageInfos = synchronizedMap(new HashMap<Long, MessageInfo>());
 	
 	public static final int NO_DURATION = -1;
 

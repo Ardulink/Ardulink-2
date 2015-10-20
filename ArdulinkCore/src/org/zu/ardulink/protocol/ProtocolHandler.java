@@ -18,7 +18,10 @@ limitations under the License.
 
 package org.zu.ardulink.protocol;
 
-import java.util.Hashtable;
+import static java.util.Collections.synchronizedMap;
+
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,11 +43,11 @@ import java.util.Set;
 public class ProtocolHandler {
 	
 	private static IProtocol currentProtocolImplementation;
-	private static final Map<String, IProtocol> installedProtocolImplementations = new Hashtable<String, IProtocol>();
+	private static final Map<String, IProtocol> installedProtocolImplementations = synchronizedMap(new HashMap<String, IProtocol>());
 
 	static {
 		ALProtocol alProtocol = new ALProtocol();
-		installedProtocolImplementations.put(alProtocol.getProtocolName(), alProtocol);
+		installProtocolImplementation(alProtocol);
 		currentProtocolImplementation = alProtocol;
 	}
 
