@@ -55,14 +55,11 @@ public class SimpleContentManager implements IContentManager {
 				StringBuilder value = new StringBuilder(string);
 				value.append(new String(new byte[] { IProtocol.DEFAULT_OUTGOING_MESSAGE_DIVIDER }));
 				boolean isOk = link.writeSerial(value.toString());
-				builder.append("message ");
-				builder.append(value);
-				if(isOk) {
-					builder.append(" sent for link: ");
-				} else {
-					builder.append(" NOT sent for link: ");
+				builder.append("message ").append(value).append(" ");
+				if (!isOk) {
+					builder.append("NOT ");
 				}
-				builder.append(link.getName());
+				builder.append("sent for link: ").append(link.getName());
 				builder.append("\n");
 			}
 		}
