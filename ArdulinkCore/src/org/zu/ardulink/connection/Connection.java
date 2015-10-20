@@ -28,11 +28,12 @@ import java.util.List;
  */
 public interface Connection {
 	
-	public List<String> getPortList();
-	public boolean connect(Object... params);
-	public boolean disconnect();
-	public boolean isConnected();
-	public boolean writeSerial(String message);
-	public boolean writeSerial(int numBytes, int message[]);
-	public void setConnectionContact(ConnectionContact contact);
+	List<String> getPortList();
+	boolean connect(Object... params);
+	boolean disconnect();
+	boolean isConnected();
+	boolean writeSerial(String message);
+	boolean writeSerial(int numBytes, int message[]);
+	void setConnectionContact(ConnectionContact contact);
+
 }
