@@ -50,12 +50,12 @@ import org.zu.ardulink.util.SetMultiMap;
  */
 public class ConnectionContactImpl implements ConnectionContact {
 
-	private static Logger logger = Logger.getLogger(ConnectionContactImpl.class.getName());
+	private static final Logger logger = Logger.getLogger(ConnectionContactImpl.class.getName());
 	
-	private Link link;
+	private final Link link;
 
-	private Set<ConnectionListener> connectionListeners = Collections.synchronizedSet(new HashSet<ConnectionListener>());
-	private Set<RawDataListener> rawDataListeners = Collections.synchronizedSet(new HashSet<RawDataListener>());
+	private final Set<ConnectionListener> connectionListeners = Collections.synchronizedSet(new HashSet<ConnectionListener>());
+	private final Set<RawDataListener> rawDataListeners = Collections.synchronizedSet(new HashSet<RawDataListener>());
 	private final SetMultiMap<Integer, AnalogReadChangeListener> analogReadChangeListeners = new SetMultiMap<Integer, AnalogReadChangeListener>();
 	private final SetMultiMap<Integer, DigitalReadChangeListener> digitalReadChangeListeners = new SetMultiMap<Integer, DigitalReadChangeListener>();
 	
