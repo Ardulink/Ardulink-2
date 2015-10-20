@@ -41,10 +41,10 @@ public abstract class IncomingMessageEvent {
 	private String incomingMessage;
 
 	public IncomingMessageEvent() {
+		super();
 	}
 	
 	public IncomingMessageEvent(int pin, int value, String incomingMessage) {
-		super();
 		this.pin = pin;
 		this.value = value;
 		this.incomingMessage = incomingMessage;
