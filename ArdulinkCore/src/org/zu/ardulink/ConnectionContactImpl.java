@@ -24,8 +24,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zu.ardulink.connection.ConnectionContact;
 import org.zu.ardulink.event.AnalogReadChangeEvent;
 import org.zu.ardulink.event.AnalogReadChangeListener;
@@ -50,7 +51,8 @@ import org.zu.ardulink.event.IncomingMessageEvent;
  */
 public class ConnectionContactImpl implements ConnectionContact {
 
-	private static Logger logger = Logger.getLogger(ConnectionContactImpl.class.getName());
+	private static final Logger logger = LoggerFactory
+			.getLogger(ConnectionContactImpl.class);
 	
 	private Link link;
 
@@ -213,7 +215,7 @@ public class ConnectionContactImpl implements ConnectionContact {
 	 */
 	@Override
 	public void parseInput(String id, int numBytes, int[] message) {
-		logger.fine("Message from Arduino has arrived.");
+		logger.debug("Message from Arduino has arrived.");
 		fireDataToRawDataListener(id, numBytes, message);
 		int[] realMsg = Arrays.copyOf(message, numBytes);
 		// String msg = new String(message, 0, numBytes);
@@ -272,7 +274,7 @@ public class ConnectionContactImpl implements ConnectionContact {
 
 	@Override
 	public void disconnected(String id) {
-		logger.fine("disconnected()");
+		logger.debug("disconnected()");
 		DisconnectionEvent event = new DisconnectionEvent(id);
 		for (ConnectionListener connectionListener : connectionListeners) {
 			connectionListener.disconnected(event);
@@ -281,7 +283,7 @@ public class ConnectionContactImpl implements ConnectionContact {
 	
 	@Override
 	public void connected(String id, String portName) {
-		logger.fine("connected()");
+		logger.debug("connected()");
 		ConnectionEvent event = new ConnectionEvent(id, portName);
 		for (ConnectionListener connectionListener : connectionListeners) {
 			connectionListener.connected(event);

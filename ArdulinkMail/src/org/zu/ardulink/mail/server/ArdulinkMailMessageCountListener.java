@@ -19,7 +19,6 @@ limitations under the License.
 package org.zu.ardulink.mail.server;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import javax.mail.Address;
 import javax.mail.BodyPart;
@@ -28,6 +27,9 @@ import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.event.MessageCountAdapter;
 import javax.mail.event.MessageCountEvent;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -39,11 +41,11 @@ import javax.mail.event.MessageCountEvent;
  */
 public class ArdulinkMailMessageCountListener extends MessageCountAdapter implements ArdulinkMailConstants {
 
-	private static Logger logger = Logger.getLogger(ArdulinkMailMessageCountListener.class.getName());
+	private static Logger logger = LoggerFactory.getLogger(ArdulinkMailMessageCountListener.class);
 	
 	public void messagesAdded(MessageCountEvent ev) {
 	    Message[] msgs = ev.getMessages();
-	    logger.info("Got " + msgs.length + " new messages");
+		logger.info("Got {} new messages", msgs.length);
 
 	    for (int i = 0; i < msgs.length; i++) {
 			try {
@@ -58,7 +60,7 @@ public class ArdulinkMailMessageCountListener extends MessageCountAdapter implem
 
 	private void manageMessage(Message message) throws MessagingException, IOException {
 		logger.info("*****************************************************************************************************");
-		logger.info("Message " + message.getMessageNumber() + ":");
+		logger.info("Message {}:", message.getMessageNumber());
 	    
 	    validateContentType(message);
 	    validateFrom(message.getFrom());
@@ -120,7 +122,9 @@ public class ArdulinkMailMessageCountListener extends MessageCountAdapter implem
 					}
 					if(!found) {
 						foundAll = false;
-						logger.info("From Address: " + from[i].toString() + " is not valid. Mail is not validated.");
+						logger.info(
+								"From Address: {} is not valid. Mail is not validated.",
+								from[i]);
 					}
 				}
 				if(!foundAll) {

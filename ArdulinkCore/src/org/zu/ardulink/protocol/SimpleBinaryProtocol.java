@@ -18,8 +18,8 @@ limitations under the License.
 
 package org.zu.ardulink.protocol;
 
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.usb.DigisparkUSBConnection;
 import org.zu.ardulink.event.IncomingMessageEvent;
@@ -38,7 +38,7 @@ import org.zu.ardulink.event.IncomingMessageEvent;
  */
 public class SimpleBinaryProtocol implements IProtocol {
 
-	private static Logger logger = Logger.getLogger(SimpleBinaryProtocol.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(SimpleBinaryProtocol.class);
 
 	public static final String NAME = "SimpleBinaryProtocol";
 
@@ -61,11 +61,9 @@ public class SimpleBinaryProtocol implements IProtocol {
 				long currentId = nextId++;
 				retvalue.setMessageID(currentId);
 				
-				int[] message = {POWER_PIN_INTENSITY_MESSAGE, 0, 0};
-				message[1] = pin;
-				message[2] = intensity;
+				int[] message = {POWER_PIN_INTENSITY_MESSAGE, pin, intensity};
 				
-				logger.fine(String.valueOf(message[0]) + message[1] + message[2]); 
+				logger.debug("{} {} {}", message[0], message[1], message[2]);
 				
 				boolean result = link.writeSerial(message.length, message);
 				retvalue.setSent(result);
@@ -85,11 +83,9 @@ public class SimpleBinaryProtocol implements IProtocol {
 				long currentId = nextId++;
 				retvalue.setMessageID(currentId);
 				
-				int[] message = {POWER_PIN_SWITCH_MESSAGE, 0, 0};
-				message[1] = pin;
-				message[2] = power;
+				int[] message = {POWER_PIN_SWITCH_MESSAGE, pin, power};
 
-				logger.fine(String.valueOf(message[0]) + message[1] + message[2]); 
+				logger.debug("{} {} {}", message[0], message[1], message[2]);
 				
 				boolean result = link.writeSerial(message.length, message);
 				retvalue.setSent(result);

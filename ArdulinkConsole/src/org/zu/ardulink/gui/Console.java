@@ -33,7 +33,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -48,6 +47,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.event.ConnectionEvent;
 import org.zu.ardulink.event.ConnectionListener;
@@ -93,7 +94,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 	
 	private final List<Linkable> linkables = new LinkedList<Linkable>();
 	
-	private static final Logger logger = Logger.getLogger(Console.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(Console.class);
 	
 	/**
 	 * Launch the application.
@@ -172,7 +173,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 							}
 							
 							boolean connected = link.connect(comPort, baudRate);
-							logger.info("Connection status: " + connected);
+							logConnectState(connected);
 						}
 						catch(Exception ex) {
 							ex.printStackTrace();
@@ -188,7 +189,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 						String deviceName = bluetoothConnectionPanel.getSelectedDevice();
 						setLink(bluetoothConnectionPanel.getLink());
 						boolean connected = link.connect(deviceName);
-						logger.info("Connection status: " + connected);
+						logConnectState(connected);
 					}
 					catch(Exception ex) {
 						ex.printStackTrace();
@@ -204,7 +205,7 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 						String deviceName = digisparkConnectionPanel.getSelectedDevice();
 						setLink(digisparkConnectionPanel.getLink());
 						boolean connected = link.connect(deviceName);
-						logger.info("Connection status: " + connected);
+						logConnectState(connected);
 					}
 					catch(Exception ex) {
 						ex.printStackTrace();
@@ -226,13 +227,14 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 			public void actionPerformed(ActionEvent e) {
 				if(link != null) {
 					boolean connected = !link.disconnect();
-					logger.info("Connection status: " + connected);
+					logConnectState(connected);
 					
 					if(networkConnectionRadioButton.isSelected()) {
 						networkProxyConnectionPanel.destroyLink();
 					}
 				}
 			}
+
 		});
 		connectPanel.add(btnDisconnect);
 		
@@ -579,7 +581,11 @@ public class Console extends JFrame implements ConnectionListener, Linkable {
 		btnConnect.setEnabled(true);
 		btnDisconnect.setEnabled(false);
 	}
-	
+
+	private void logConnectState(boolean connected) {
+		logger.info("Connection status: ", connected);
+	}
+
 	public ReplyMessageCallback getReplyMessageCallback() {
 		throw new RuntimeException("Not developed yet");
 	}
