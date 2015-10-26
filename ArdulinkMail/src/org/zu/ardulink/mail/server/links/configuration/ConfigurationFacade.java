@@ -25,8 +25,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zu.ardulink.io.ReadingException;
 import org.zu.ardulink.io.WritingException;
 
@@ -40,7 +41,7 @@ import org.zu.ardulink.io.WritingException;
  */
 public class ConfigurationFacade {
 
-	private static Logger logger = Logger.getLogger(ConfigurationFacade.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(ConfigurationFacade.class);
 	private static AConfiguration configuration;
 	private static final Map<String, ALink> linksMap = synchronizedMap(new HashMap<String, ALink>());
 	private static final Map<String, AConnection> connectionsMap = synchronizedMap(new HashMap<String, AConnection>());
@@ -54,7 +55,7 @@ public class ConfigurationFacade {
 				saveConfiguration();
 			} catch (WritingException e1) {
 				e1.printStackTrace();
-				logger.severe("CONFIGURATION ERROR. APPLICATION IS NOT ABLE TO CONFIGURE ITSELF. EXITING!");
+				logger.error("CONFIGURATION ERROR. APPLICATION IS NOT ABLE TO CONFIGURE ITSELF. EXITING!");
 				System.exit(-1);
 			}
 		}

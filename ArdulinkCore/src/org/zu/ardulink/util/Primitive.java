@@ -5,8 +5,7 @@ package org.zu.ardulink.util;
  * 
  * @author Peter Fichtner
  * 
- *         [adsense]
- *
+ * [adsense]
  */
 public enum Primitive {
 
@@ -79,7 +78,7 @@ public enum Primitive {
 
 	public static Primitive forClassName(String name) {
 		for (Primitive primitives : values()) {
-			if (primitives.getClass().getName().equals(name)) {
+			if (primitives.getType().getName().equals(name)) {
 				return primitives;
 			}
 		}
@@ -89,4 +88,5 @@ public enum Primitive {
 	public Class<?> getType() {
 		return type;
 	}
+
 }

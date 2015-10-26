@@ -23,8 +23,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zu.ardulink.event.AnalogReadChangeEvent;
 import org.zu.ardulink.event.AnalogReadChangeListener;
 import org.zu.ardulink.event.ConnectionEvent;
@@ -49,7 +50,8 @@ import org.zu.ardulink.util.SetMultiMap;
  */
 public class ConnectionContact {
 
-	private static final Logger logger = Logger.getLogger(ConnectionContact.class.getName());
+	private static final Logger logger = LoggerFactory
+			.getLogger(ConnectionContact.class);
 	
 	private final Link link;
 
@@ -196,7 +198,7 @@ public class ConnectionContact {
 	 * to the listeners.
 	 */
 	public void parseInput(String id, int numBytes, int[] message) {
-		logger.fine("Message from Arduino has arrived.");
+		logger.debug("Message from Arduino has arrived.");
 		fireDataToRawDataListener(id, numBytes, message);
 		int[] realMsg = Arrays.copyOf(message, numBytes);
 		// String msg = new String(message, 0, numBytes);
@@ -258,7 +260,7 @@ public class ConnectionContact {
 	}
 
 	public void disconnected(String id) {
-		logger.fine("disconnected()");
+		logger.debug("disconnected()");
 		DisconnectionEvent event = new DisconnectionEvent(id);
 		for (ConnectionListener connectionListener : connectionListeners) {
 			connectionListener.disconnected(event);
@@ -266,7 +268,7 @@ public class ConnectionContact {
 	}
 	
 	public void connected(String id, String portName) {
-		logger.fine("connected()");
+		logger.debug("connected()");
 		ConnectionEvent event = new ConnectionEvent(id, portName);
 		for (ConnectionListener connectionListener : connectionListeners) {
 			connectionListener.connected(event);

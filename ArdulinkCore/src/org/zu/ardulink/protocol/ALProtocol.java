@@ -22,8 +22,9 @@ import static java.util.Collections.synchronizedMap;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.event.AnalogReadChangeEvent;
 import org.zu.ardulink.event.DigitalReadChangeEvent;
@@ -92,7 +93,7 @@ public class ALProtocol implements IProtocol {
 
 	private static final String OUTGOING_MESSAGE_DIVIDER = "\n";
 	
-	private static Logger logger = Logger.getLogger(ALProtocol.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(ALProtocol.class);
 	private static long nextId = 1;
 	
 	private final Map<Long, MessageInfo> messageInfos = synchronizedMap(new HashMap<Long, MessageInfo>());
@@ -169,7 +170,7 @@ public class ALProtocol implements IProtocol {
 				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
-				logger.fine(mesg);
+				logger.debug(mesg);
 				
 				boolean result = link.writeSerial(mesg);
 				retvalue.setSent(result);
@@ -208,7 +209,7 @@ public class ALProtocol implements IProtocol {
 				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
-				logger.fine(mesg);
+				logger.debug(mesg);
 				
 				boolean result = link.writeSerial(mesg);
 				retvalue.setSent(result);
@@ -246,7 +247,7 @@ public class ALProtocol implements IProtocol {
 				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
-				logger.fine(mesg);
+				logger.debug(mesg);
 				
 				boolean result = link.writeSerial(mesg);
 				retvalue.setSent(result);
@@ -291,7 +292,7 @@ public class ALProtocol implements IProtocol {
 				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
-				logger.fine(mesg);
+				logger.debug(mesg);
 				
 				boolean result = link.writeSerial(mesg);
 				retvalue.setSent(result);
@@ -328,7 +329,7 @@ public class ALProtocol implements IProtocol {
 				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
-				logger.fine(mesg);
+				logger.debug(mesg);
 				
 				boolean result = link.writeSerial(mesg);
 				retvalue.setSent(result);
@@ -365,7 +366,7 @@ public class ALProtocol implements IProtocol {
 				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
-				logger.fine(mesg);
+				logger.debug(mesg);
 				
 				boolean result = link.writeSerial(mesg);
 				retvalue.setSent(result);
@@ -421,7 +422,7 @@ public class ALProtocol implements IProtocol {
 				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
-				logger.fine(mesg);
+				logger.debug(mesg);
 				
 				boolean result = link.writeSerial(mesg);
 				retvalue.setSent(result);
@@ -456,7 +457,7 @@ public class ALProtocol implements IProtocol {
 				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
-				logger.fine(mesg);
+				logger.debug(mesg);
 				
 				boolean result = link.writeSerial(mesg);
 				retvalue.setSent(result);
@@ -491,7 +492,7 @@ public class ALProtocol implements IProtocol {
 				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
-				logger.fine(mesg);
+				logger.debug(mesg);
 				
 				boolean result = link.writeSerial(mesg);
 				retvalue.setSent(result);
@@ -526,7 +527,7 @@ public class ALProtocol implements IProtocol {
 				builder.append(OUTGOING_MESSAGE_DIVIDER);
 				
 				String mesg = builder.toString();
-				logger.fine(mesg);
+				logger.debug(mesg);
 				
 				boolean result = link.writeSerial(mesg);
 				retvalue.setSent(result);
@@ -554,12 +555,14 @@ public class ALProtocol implements IProtocol {
 				} else if("ared".equals(cmd)) { // alp://ared/<pin>/<value>
 					retvalue = parseAnalogReadMessage(msg);
 				} else { // Message I don't recognize its very strange!
-					logger.severe("Arduino sent to me a message in ALProtocol that I don't recognize. Msg: " + msg);
+					logger.error(
+							"Arduino sent to me a message in ALProtocol that I don't recognize. Msg: {}",
+							msg);
 				}
 			}
 		}
 		catch(Exception e) {
-			logger.severe("Errror parsing message sent from Arduino. " + e.getMessage());
+			logger.error("Errror parsing message sent from Arduino.", e);
 			e.printStackTrace();
 		}
 		return retvalue;

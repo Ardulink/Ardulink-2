@@ -27,8 +27,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.RawDataListener;
 import org.zu.ardulink.protocol.IProtocol;
@@ -41,7 +42,7 @@ import org.zu.ardulink.protocol.IProtocol;
  */
 public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessages, RawDataListener {
 
-	private static Logger logger = Logger.getLogger(NetworkProxyServerConnection.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(NetworkProxyServerConnection.class);
 
 	private Link link;
 	private Socket socket;
@@ -88,7 +89,7 @@ public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessa
 		} catch (IOException e) {
 		}
 		finally {
-			logger.info(socket.getRemoteSocketAddress().toString() + " connection closed.");
+			logger.info("{} connection closed.", socket.getRemoteSocketAddress());
 			closed = true;
 			if(link != null) {
 				link.removeRawDataListener(this);

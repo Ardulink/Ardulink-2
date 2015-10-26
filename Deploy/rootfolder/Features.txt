@@ -1,4 +1,4 @@
-Version 0.6.0.20151017 Gutenberg
+Version 0.6.1-SNAPSHOT.20151017 Gutenberg
 
 - Added MQTT support. Ardulink MQTT is a command line application that can control Arduino boards receiving messages from a MQTT broker.
 - Added Mail support. Ardulink Mail is a command line application that can control Arduino boards receiving messages from an email inbox.
