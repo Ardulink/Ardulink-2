@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
 public abstract class Config {
 
