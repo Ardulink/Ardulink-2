@@ -41,16 +41,20 @@ public abstract class Config {
 
 		private DefaultConfig(String topic) {
 			this.topic = topic;
+			this.topicPatternDigitalWrite = compile(write(topic, "D"));
+			this.topicPatternDigitalRead = read(topic, "D");
+			this.topicPatternAnalogWrite = compile(write(topic, "A"));
+			this.topicPatternAnalogRead = read(topic, "A");
 		}
 
-		private DefaultConfig(Config config) {
-			topic = config.getTopic();
-			topicPatternDigitalWrite = config.getTopicPatternDigitalWrite();
-			topicPatternDigitalRead = config.getTopicPatternDigitalRead();
-			topicPatternAnalogWrite = config.getTopicPatternAnalogWrite();
-			topicPatternAnalogRead = config.getTopicPatternAnalogRead();
-			topicPatternDigitalControl = config.getTopicPatternDigitalControl();
-			topicPatternAnalogControl = config.getTopicPatternAnalogControl();
+		private DefaultConfig(Config c) {
+			this.topic = c.getTopic();
+			this.topicPatternDigitalWrite = c.getTopicPatternDigitalWrite();
+			this.topicPatternDigitalRead = c.getTopicPatternDigitalRead();
+			this.topicPatternAnalogWrite = c.getTopicPatternAnalogWrite();
+			this.topicPatternAnalogRead = c.getTopicPatternAnalogRead();
+			this.topicPatternDigitalControl = c.getTopicPatternDigitalControl();
+			this.topicPatternAnalogControl = c.getTopicPatternAnalogControl();
 		}
 
 		public String getTopic() {
@@ -86,11 +90,7 @@ public abstract class Config {
 		}
 
 		public static Config withTopic(String topic) {
-			return new DefaultConfig(topic)
-					.withTopicPatternDigitalWrite(compile(write(topic, "D")))
-					.withTopicPatternDigitalRead(read(topic, "D"))
-					.withTopicPatternAnalogWrite(compile(write(topic, "A")))
-					.withTopicPatternAnalogRead(read(topic, "A"));
+			return new DefaultConfig(topic);
 		}
 
 	}
@@ -99,36 +99,32 @@ public abstract class Config {
 
 	public static final Config DEFAULT = withTopic(DEFAULT_TOPIC);
 
-	public static Config withTopic(final String topic) {
+	public static Config withTopic(String topic) {
 		return DefaultConfig.withTopic(topic);
 
 	}
 
-	public Config withTopicPatternAnalogWrite(
-			final Pattern withtopicPatternAnalogWrite) {
+	public Config withTopicPatternAnalogWrite(Pattern topicPatternAnalogWrite) {
 		DefaultConfig copy = DefaultConfig.copyOf(this);
-		copy.topicPatternAnalogWrite = withtopicPatternAnalogWrite;
+		copy.topicPatternAnalogWrite = topicPatternAnalogWrite;
 		return copy;
 	}
 
-	public Config withTopicPatternAnalogRead(
-			final String withTopicPatternAnalogRead) {
+	public Config withTopicPatternAnalogRead(String topicPatternAnalogRead) {
 		DefaultConfig copy = DefaultConfig.copyOf(this);
-		copy.topicPatternAnalogRead = withTopicPatternAnalogRead;
+		copy.topicPatternAnalogRead = topicPatternAnalogRead;
 		return copy;
 	}
 
-	public Config withTopicPatternDigitalWrite(
-			final Pattern withTopicPatternDigitalWrite) {
+	public Config withTopicPatternDigitalWrite(Pattern topicPatternDigitalWrite) {
 		DefaultConfig copy = DefaultConfig.copyOf(this);
-		copy.topicPatternDigitalWrite = withTopicPatternDigitalWrite;
+		copy.topicPatternDigitalWrite = topicPatternDigitalWrite;
 		return copy;
 	}
 
-	public Config withTopicPatternDigitalRead(
-			final String withTopicPatternDigitalRead) {
+	public Config withTopicPatternDigitalRead(String topicPatternDigitalRead) {
 		DefaultConfig copy = DefaultConfig.copyOf(this);
-		copy.topicPatternDigitalRead = withTopicPatternDigitalRead;
+		copy.topicPatternDigitalRead = topicPatternDigitalRead;
 		return copy;
 	}
 
