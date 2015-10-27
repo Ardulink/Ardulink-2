@@ -40,6 +40,7 @@ import org.zu.ardulink.event.DigitalReadChangeEvent;
 import org.zu.ardulink.event.DigitalReadChangeListener;
 import org.zu.ardulink.util.ListBuilder;
 
+import com.github.pfichtner.ardulink.Config.DefaultConfig;
 import com.github.pfichtner.ardulink.compactors.AnalogReadChangeListenerToleranceAdapter;
 import com.github.pfichtner.ardulink.compactors.SlicedAnalogReadChangeListenerAdapter;
 import com.github.pfichtner.ardulink.compactors.TimeSliceCompactorAvg;
@@ -247,7 +248,8 @@ public abstract class AbstractMqttAdapter {
 	public AbstractMqttAdapter(Link link, Config config,
 			Collection<Handler> handlers) {
 		this.link = link;
-		this.config = config.compact();
+		// creating a copy so config can't be changed by caller
+		this.config = DefaultConfig.copyOf(config);
 		this.handlers = unmodifiableList(new ArrayList<Handler>(handlers));
 	}
 

@@ -102,7 +102,8 @@ public class ControlChannelTest {
 	public void noMessageWhenConfigDoesNotSupportControlChannel() {
 		int pin = 2;
 		Message message = mqttMessage.digitalListener(pin).enable();
-		new AbstractMqttAdapter(link, Config.DEFAULT) {
+		Config ccc = Config.DEFAULT;
+		new AbstractMqttAdapter(link, ccc) {
 			@Override
 			void fromArduino(String topic, String message) {
 				throw new UnsupportedOperationException(
