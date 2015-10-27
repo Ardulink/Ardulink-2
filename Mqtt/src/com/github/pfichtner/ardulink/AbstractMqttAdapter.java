@@ -49,13 +49,15 @@ import com.github.pfichtner.ardulink.compactors.Tolerance;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
  * [adsense]
  */
 public abstract class AbstractMqttAdapter {
-	
-	private static final Logger logger = LoggerFactory.getLogger(AbstractMqttAdapter.class);
+
+	private static final Logger logger = LoggerFactory
+			.getLogger(AbstractMqttAdapter.class);
 
 	public interface Handler {
 		boolean handle(String topic, String message);
@@ -71,7 +73,7 @@ public abstract class AbstractMqttAdapter {
 
 		public boolean handle(String topic, String message) {
 			Matcher matcher = this.pattern.matcher(topic);
-			if (matcher.matches()) {
+			if (matcher.matches() && matcher.groupCount() > 0) {
 				Integer pin = tryParse(matcher.group(1));
 				if (pin != null) {
 					return handlePin(pin.intValue(), message);
@@ -245,7 +247,7 @@ public abstract class AbstractMqttAdapter {
 	public AbstractMqttAdapter(Link link, Config config,
 			Collection<Handler> handlers) {
 		this.link = link;
-		this.config = config;
+		this.config = config.compact();
 		this.handlers = unmodifiableList(new ArrayList<Handler>(handlers));
 	}
 
