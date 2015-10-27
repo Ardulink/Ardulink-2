@@ -22,9 +22,10 @@ import java.util.regex.Pattern;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
 public abstract class Config {
 
@@ -73,21 +74,8 @@ public abstract class Config {
 
 	public static final Config DEFAULT = withTopic(DEFAULT_TOPIC);
 
-	public static Config withTopic(final String withTopic) {
+	public static Config withTopic(final String topic) {
 		return new Config() {
-
-			private String topic = withTopic;
-			private final Pattern topicPatternDigitalWrite;
-			private final String topicPatternDigitalRead;
-			private final Pattern topicPatternAnalogWrite;
-			private final String topicPatternAnalogRead;
-
-			{
-				this.topicPatternDigitalWrite = compile(write(topic, "D"));
-				this.topicPatternDigitalRead = read(topic, "D");
-				this.topicPatternAnalogWrite = compile(write(topic, "A"));
-				this.topicPatternAnalogRead = read(topic, "A");
-			}
 
 			@Override
 			protected String getTopic() {
@@ -96,22 +84,22 @@ public abstract class Config {
 
 			@Override
 			public Pattern getTopicPatternDigitalWrite() {
-				return topicPatternDigitalWrite;
+				return compile(write(topic, "D"));
 			}
 
 			@Override
 			public String getTopicPatternDigitalRead() {
-				return topicPatternDigitalRead;
+				return read(topic, "D");
 			}
 
 			@Override
 			public Pattern getTopicPatternAnalogWrite() {
-				return topicPatternAnalogWrite;
+				return compile(write(topic, "A"));
 			}
 
 			@Override
 			public String getTopicPatternAnalogRead() {
-				return topicPatternAnalogRead;
+				return read(topic, "A");
 			}
 
 			@Override
@@ -124,6 +112,46 @@ public abstract class Config {
 				return null;
 			}
 
+		};
+	}
+
+	public Config withTopicPatternAnalogWrite(
+			final Pattern withtopicPatternAnalogWrite) {
+		return new ConfigDelegate(this) {
+			@Override
+			public Pattern getTopicPatternAnalogWrite() {
+				return withtopicPatternAnalogWrite;
+			}
+		};
+	}
+
+	public Config withTopicPatternAnalogRead(
+			final String withtopicPatternAnalogRead) {
+		return new ConfigDelegate(this) {
+			@Override
+			public String getTopicPatternAnalogRead() {
+				return withtopicPatternAnalogRead;
+			}
+		};
+	}
+
+	public Config withTopicPatternDigitalWrite(
+			final Pattern withtopicPatternDigitalWrite) {
+		return new ConfigDelegate(this) {
+			@Override
+			public Pattern getTopicPatternDigitalWrite() {
+				return withtopicPatternDigitalWrite;
+			}
+		};
+	}
+
+	public Config withTopicPatternDigitalRead(
+			final String withtopicPatternDigitalRead) {
+		return new ConfigDelegate(this) {
+			@Override
+			public String getTopicPatternDigitalRead() {
+				return withtopicPatternDigitalRead;
+			}
 		};
 	}
 
@@ -176,5 +204,56 @@ public abstract class Config {
 	public abstract Pattern getTopicPatternDigitalControl();
 
 	public abstract Pattern getTopicPatternAnalogControl();
+
+	public Config compact() {
+		final Config toCompact = this;
+		return new Config() {
+
+			private final String topic = toCompact.getTopic();
+			private final Pattern topicPatternDigitalWrite = toCompact
+					.getTopicPatternDigitalWrite();
+			private final String topicPatternDigitalRead = toCompact
+					.getTopicPatternDigitalRead();
+			private final Pattern topicPatternAnalogWrite = toCompact
+					.getTopicPatternAnalogWrite();
+			private final String topicPatternAnalogRead = toCompact
+					.getTopicPatternAnalogRead();
+			private final Pattern topicPatternDigitalControl = toCompact
+					.getTopicPatternDigitalControl();
+			private final Pattern topicPatternAnalogControl = toCompact
+					.getTopicPatternAnalogControl();
+
+			public String getTopic() {
+				return topic;
+			}
+
+			public Pattern getTopicPatternDigitalWrite() {
+				return topicPatternDigitalWrite;
+			}
+
+			public String getTopicPatternDigitalRead() {
+				return topicPatternDigitalRead;
+			}
+
+			public Pattern getTopicPatternAnalogWrite() {
+				return topicPatternAnalogWrite;
+			}
+
+			public String getTopicPatternAnalogRead() {
+				return topicPatternAnalogRead;
+			}
+
+			@Override
+			public Pattern getTopicPatternDigitalControl() {
+				return topicPatternDigitalControl;
+			}
+
+			@Override
+			public Pattern getTopicPatternAnalogControl() {
+				return topicPatternAnalogControl;
+			}
+
+		};
+	}
 
 }

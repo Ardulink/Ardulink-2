@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package com.github.pfichtner.ardulink;
 
 import static com.github.pfichtner.ardulink.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.junit.After;
 import org.junit.Before;
@@ -49,9 +50,10 @@ import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
 public class MqttAdapterTest {
 
@@ -66,8 +68,8 @@ public class MqttAdapterTest {
 			connectionContact);
 	private final Link link = Link.createInstance(LINKNAME, connection);
 
-	private final AbstractMqttAdapter mqttClient = new AbstractMqttAdapter(
-			link, Config.DEFAULT) {
+	private AbstractMqttAdapter mqttClient = new AbstractMqttAdapter(link,
+			Config.DEFAULT) {
 		@Override
 		void fromArduino(String topic, String message) {
 			published.add(new Message(topic, message));
@@ -82,7 +84,6 @@ public class MqttAdapterTest {
 		// reflection
 		set(connectionContact, getField(connectionContact, "link"), link);
 		set(link, getField(link, "connectionContact"), connectionContact);
-
 	}
 
 	@Before
@@ -192,6 +193,28 @@ public class MqttAdapterTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void cannotConfigureChangeListenerOnNegativeAnalogPins() {
 		mqttClient.configureAnalogReadChangeListener(-1);
+	}
+
+	@Test
+	public void ignoresConfigsWithWrongGroupCountInRegep() {
+		Config defaultConfig = Config.DEFAULT;
+		Config config = defaultConfig.withTopicPatternAnalogWrite(Pattern
+				.compile(removeAll(defaultConfig.getTopicPatternAnalogWrite()
+						.pattern(), "()")));
+		mqttClient = new AbstractMqttAdapter(link, config) {
+			@Override
+			void fromArduino(String topic, String message) {
+				published.add(new Message(topic, message));
+			}
+		};
+		set(connectionContact, getField(connectionContact, "link"), link);
+		set(link, getField(link, "connectionContact"), connectionContact);
+		simulateMqttToArduino(mqttMessage.analogPin(3).setValue("123"));
+		assertThat(serialReceived(), is(empty()));
+	}
+
+	private String removeAll(String string, String remove) {
+		return string.replaceAll("[" + remove + "]", "");
 	}
 
 	private void simulateArduinoToMqtt(String message) {
