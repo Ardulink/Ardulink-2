@@ -85,7 +85,11 @@ public abstract class Config {
 			return topicPatternAnalogControl;
 		}
 
-		public static DefaultConfig copyOf(Config config) {
+		public static Config copyOf(Config config) {
+			return typedCopy(config);
+		}
+
+		private static DefaultConfig typedCopy(Config config) {
 			return new DefaultConfig(config);
 		}
 
@@ -105,35 +109,47 @@ public abstract class Config {
 	}
 
 	public Config withTopicPatternAnalogWrite(Pattern topicPatternAnalogWrite) {
-		DefaultConfig copy = DefaultConfig.copyOf(this);
+		DefaultConfig copy = DefaultConfig.typedCopy(this);
 		copy.topicPatternAnalogWrite = topicPatternAnalogWrite;
 		return copy;
 	}
 
 	public Config withTopicPatternAnalogRead(String topicPatternAnalogRead) {
-		DefaultConfig copy = DefaultConfig.copyOf(this);
+		DefaultConfig copy = DefaultConfig.typedCopy(this);
 		copy.topicPatternAnalogRead = topicPatternAnalogRead;
 		return copy;
 	}
 
 	public Config withTopicPatternDigitalWrite(Pattern topicPatternDigitalWrite) {
-		DefaultConfig copy = DefaultConfig.copyOf(this);
+		DefaultConfig copy = DefaultConfig.typedCopy(this);
 		copy.topicPatternDigitalWrite = topicPatternDigitalWrite;
 		return copy;
 	}
 
 	public Config withTopicPatternDigitalRead(String topicPatternDigitalRead) {
-		DefaultConfig copy = DefaultConfig.copyOf(this);
+		DefaultConfig copy = DefaultConfig.typedCopy(this);
 		copy.topicPatternDigitalRead = topicPatternDigitalRead;
 		return copy;
 	}
 
 	public Config withControlChannelEnabled() {
-		DefaultConfig copy = DefaultConfig.copyOf(this);
-		copy.topicPatternDigitalControl = compile(write(copy.getTopic()
-				+ "system/listening/", "D"));
-		copy.topicPatternAnalogControl = compile(write(copy.getTopic()
-				+ "system/listening/", "A"));
+		String topic = getTopic();
+		String topicD = write(topic + "system/listening/", "D");
+		String topicA = write(topic + "system/listening/", "A");
+		return DefaultConfig.typedCopy(this)
+				.withTopicPatternDigitalControl(topicD)
+				.withTopicPatternAnalogControl(topicA);
+	}
+
+	public Config withTopicPatternDigitalControl(String write) {
+		DefaultConfig copy = DefaultConfig.typedCopy(this);
+		copy.topicPatternDigitalControl = compile(write);
+		return copy;
+	}
+
+	public Config withTopicPatternAnalogControl(String write) {
+		DefaultConfig copy = DefaultConfig.typedCopy(this);
+		copy.topicPatternAnalogControl = compile(write);
 		return copy;
 	}
 
