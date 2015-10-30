@@ -137,10 +137,9 @@ public class ConfigurationFacade {
 	public static AConnection getAConnection(String aConnectionName) {
 		AConnection retvalue = connectionsMap.get(aConnectionName);
 		if (retvalue == null) {
-			connectionsMap.put(
-					aConnectionName,
-					connectionByName(aConnectionName, configuration
-							.getaConnectionList().getAConnections()));
+			retvalue = connectionByName(aConnectionName, configuration.getaConnectionList().getAConnections());
+			
+			connectionsMap.put(	aConnectionName, retvalue);
 		}
 		return retvalue;
 	}

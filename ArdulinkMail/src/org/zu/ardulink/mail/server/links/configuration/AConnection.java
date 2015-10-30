@@ -85,20 +85,26 @@ public class AConnection {
 	}
 	
 	private Class<?>[] getParamenterTypes() throws ClassNotFoundException {
-		Class<?>[] parameterTypes = new Class[constructorParameters.size()];
-		int index = 0;
-		for (AParameter aParameter : constructorParameters) {
-			parameterTypes[index++] = aParameter.getClassType();
+		Class<?>[] parameterTypes = null;
+		if(constructorParameters != null) {
+			parameterTypes = new Class[constructorParameters.size()];
+			int index = 0;
+			for (AParameter aParameter : constructorParameters) {
+				parameterTypes[index++] = aParameter.getClassType();
+			}
 		}
 		return parameterTypes;
 	}
 
 	private Object[] getParamenterValues(Class<?>[] parameterTypes) throws ClassNotFoundException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
-		Object[] parametervalues = new Object[constructorParameters.size()];
-		int index = 0;
-		for (AParameter aParameter : constructorParameters) {
-			parametervalues[index++] = aParameter
-					.getValueForClass(parameterTypes[index]);
+		Object[] parametervalues = null;
+		if(constructorParameters != null) {
+			parametervalues = new Object[constructorParameters.size()];
+			int index = 0;
+			for (AParameter aParameter : constructorParameters) {
+				parametervalues[index++] = aParameter.getValueForClass(parameterTypes[index]);
+			}
+			
 		}
 		
 		return parametervalues;

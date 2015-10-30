@@ -70,6 +70,10 @@
             <name>SERIAL CONNECTION</name>
         </aconnections>
         <aconnections>
+            <className>org.zu.ardulink.connection.FakeConnection</className>
+            <name>FAKE CONNECTION</name>
+        </aconnections>
+        <aconnections>
             <className>org.zu.ardulink.connection.bluetooth.BluetoothConnection</className>
             <name>BLUETOOTH CONNECTION</name>
         </aconnections>
@@ -92,19 +96,15 @@
         and it speaks with the ArdulinkProtocol
          -->
         <alinks>
-            <aConnectionName>SERIAL CONNECTION</aConnectionName>
+            <aConnectionName>FAKE CONNECTION</aConnectionName>
             <connectParameters>
                 <type>java.lang.String</type>
-                <value>COM6</value>
-            </connectParameters>
-            <connectParameters>
-                <type>int</type>
-                <value>115200</value>
+                <value>COM999</value>
             </connectParameters>
             <defaultLink>false</defaultLink>
-            <name>LINK 2</name>
+            <name>FAKE LINK</name>
             <protocolName>ArdulinkProtocol</protocolName>
-            <waitSecondsAfterConnection>10</waitSecondsAfterConnection>
+            <waitSecondsAfterConnection>1</waitSecondsAfterConnection>
         </alinks>
     </aLinkList>
 </configuration>

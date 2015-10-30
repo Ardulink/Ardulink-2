@@ -124,7 +124,7 @@ public class ProtocolContentManager implements IContentManager {
 		for (int i = 0; i < allMethods.length && !found; i++) {
 			Method method = allMethods[i];
 			// search for a method with a parameter more than one because Callback
-			if(method.getName().equals(methodName) && method.getParameterTypes().length + 1 == parametersAsString.length) {
+			if(method.getName().equals(methodName) && method.getParameterTypes().length == parametersAsString.length + 1) {
 				retvalue.setMethod(method);
 				found = true;
 			}
@@ -216,16 +216,17 @@ public class ProtocolContentManager implements IContentManager {
 		public void run() {
 			methodAndParameters.addParameter(this);
 			try {
-				
-			 methodAndParameters.getMethod().invoke(link, methodAndParameters.getParameters().toArray());
-			 
-			 while(!callbackCalled && counter > MAX_COUNT) {
-				 Thread.sleep(1000);
-				 counter++;
-			 }
-			 
-			 checkState(callbackCalled, "Timed out.");
-				
+
+				methodAndParameters.getMethod().invoke(link, methodAndParameters.getParameters().toArray());
+				messageSent = true;
+
+				while (!callbackCalled && counter > MAX_COUNT) {
+					Thread.sleep(1000);
+					counter++;
+				}
+
+				checkState(callbackCalled, "Timed out.");
+
 			} catch (Exception e) {
 				e.printStackTrace();
 				result = e.getMessage();
