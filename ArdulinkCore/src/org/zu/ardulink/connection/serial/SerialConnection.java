@@ -23,12 +23,12 @@ import static org.zu.ardulink.util.Preconditions.checkState;
 import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Vector;
 
+import org.zu.ardulink.ConnectionContact;
 import org.zu.ardulink.connection.Connection;
-import org.zu.ardulink.connection.ConnectionContact;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -132,34 +132,28 @@ public class SerialConnection extends AbstractSerialConnection implements Connec
 	/**
 	 * This method is used to get a list of all the available Serial ports
 	 * (note: only Serial ports are considered). Any one of the elements
-	 * contained in the returned {@link Vector} can be used as a parameter in
+	 * contained in the returned {@link List} can be used as a parameter in
 	 * {@link #connect(String)} or {@link #connect(String, int)} to open a
 	 * Serial connection.
 	 * 
-	 * @return A {@link Vector} containing {@link String}s showing all available
+	 * @return A {@link List} containing {@link String}s showing all available
 	 *         Serial ports.
-	 *         
-	 * Luciano Zu has modified return type from Vector to List
 	 */
-	@SuppressWarnings("unchecked")
 	public List<String> getPortList() {
-		Enumeration<CommPortIdentifier> portList;
-		Vector<String> portVect = new Vector<String>();
-		portList = CommPortIdentifier.getPortIdentifiers();
-
-		CommPortIdentifier portId;
+		List<String> ports = new ArrayList<String>();
+		Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
 		while (portList.hasMoreElements()) {
-			portId = (CommPortIdentifier) portList.nextElement();
+			CommPortIdentifier portId = (CommPortIdentifier) portList.nextElement();
 			if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-				portVect.add(portId.getName());
+				ports.add(portId.getName());
 			}
 		}
 		writeLog("found the following ports:");
-		for (int i = 0; i < portVect.size(); i++) {
-			writeLog("   " + (String) portVect.elementAt(i));
+		for (String port : ports) {
+			writeLog("   " + port);
 		}
 
-		return portVect;
+		return ports;
 	}
 
 	/**

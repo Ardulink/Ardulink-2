@@ -18,15 +18,17 @@ limitations under the License.
 
 package org.zu.ardulink.connection.serial;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Vector;
 
+import org.zu.ardulink.ConnectionContact;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.Connection;
-import org.zu.ardulink.connection.ConnectionContact;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -57,7 +59,7 @@ public abstract class AbstractSerialConnection implements Connection {
 	/**
 	 * The status of the connection.
 	 */
-	private boolean connected = false;
+	private boolean connected;
 
 	/**
 	 * Communicating between threads, showing the {@link #reader} when the
@@ -93,8 +95,8 @@ public abstract class AbstractSerialConnection implements Connection {
 	 */
 	private String id;
 
-	private int[] tempBytes;
-	int numTempBytes = 0, numTotBytes = 0;
+	private final int[] tempBytes = new int[1024];
+	private int numTempBytes;
 
 	/**
 	 * @param id
@@ -118,13 +120,8 @@ public abstract class AbstractSerialConnection implements Connection {
 	 */
 	public AbstractSerialConnection(String id, ConnectionContact contact, int divider) {
 		this.contact = contact;
-		this.divider = divider;
-		if (this.divider > 255)
-			this.divider = 255;
-		if (this.divider < 0)
-			this.divider = 0;
+		this.divider = max(0, min(divider, 255));
 		this.id = id;
-		tempBytes = new int[1024];
 	}
 
 	/**
@@ -176,14 +173,12 @@ public abstract class AbstractSerialConnection implements Connection {
 	/**
 	 * This method is used to get a list of all the available Serial ports
 	 * (note: only Serial ports are considered). Any one of the elements
-	 * contained in the returned {@link Vector} can be used as a parameter in
+	 * contained in the returned {@link List} can be used as a parameter in
 	 * {@link #connect(String)} or {@link #connect(String, int)} to open a
 	 * Serial connection.
 	 * 
-	 * @return A {@link Vector} containing {@link String}s showing all available
+	 * @return A {@link List} containing {@link String}s showing all available
 	 *         Serial ports.
-	 *         
-	 * Luciano Zu has modified return type from Vector to List
 	 */
 	public abstract List<String> getPortList();
 
@@ -341,15 +336,7 @@ public abstract class AbstractSerialConnection implements Connection {
 	}
 
 	private byte changeToByte(int num) {
-		byte number;
-		int temp;
-		temp = num;
-		if (temp > 255)
-			temp = 255;
-		if (temp < 0)
-			temp = 0;
-		number = (byte) temp;
-		return number;
+		return (byte) max(0, min(num, 255));
 	}
 
 	@Override

@@ -17,6 +17,11 @@ limitations under the License.
 */
 
 package org.zu.ardulink.mail.server;
+import static org.zu.ardulink.mail.server.ArdulinkMailConstants.MAIL_CONTENT_PASSWORD_KEY;
+import static org.zu.ardulink.mail.server.ArdulinkMailConstants.MAIL_FROM_ADDRESSES_KEY;
+import static org.zu.ardulink.mail.server.ArdulinkMailConstants.MAIL_VALIDATE_CONTENT_PASSWORD_KEY;
+import static org.zu.ardulink.mail.server.ArdulinkMailConstants.MAIL_VALIDATE_FROM_KEY;
+import static org.zu.ardulink.mail.server.ArdulinkMailConstants.TRUE;
 
 import java.io.IOException;
 
@@ -39,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * [adsense]
  *
  */
-public class ArdulinkMailMessageCountListener extends MessageCountAdapter implements ArdulinkMailConstants {
+public class ArdulinkMailMessageCountListener extends MessageCountAdapter {
 
 	private static Logger logger = LoggerFactory.getLogger(ArdulinkMailMessageCountListener.class);
 	

@@ -28,8 +28,8 @@ package org.zu.ardulink.event;
  */
 public interface ConnectionListener {
 	
-	public void connected(ConnectionEvent e);
+	void connected(ConnectionEvent e);
 
-	public void disconnected(DisconnectionEvent e);
+	void disconnected(DisconnectionEvent e);
 
 }

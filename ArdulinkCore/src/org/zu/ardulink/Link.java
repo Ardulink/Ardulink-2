@@ -72,11 +72,11 @@ public class Link {
 		createInstance(DEFAULT_LINK_NAME, ALProtocol.NAME);
 	}
 	
-	private ConnectionContactImpl connectionContact = new ConnectionContactImpl(this);
+	private final ConnectionContact connectionContact = new ConnectionContact(this);
 	private Connection connection;
-	private String name;
+	private final String name;
 	
-	private LoggerReplyMessageCallback loggerCallback = new LoggerReplyMessageCallback();
+	private final LoggerReplyMessageCallback loggerCallback = new LoggerReplyMessageCallback();
 	private IProtocol protocol;
 	
 	/**
@@ -243,7 +243,7 @@ public class Link {
 	 * Register a ConnectionListener to receive events about connection status.
 	 * @param connectionListener
 	 * @return true if this set did not already contain the specified connectionListener
-	 * @see ConnectionContactImpl
+	 * @see ConnectionContact
 	 */
 	public boolean addConnectionListener(ConnectionListener connectionListener) {
 		return connectionContact.addConnectionListener(connectionListener);
@@ -253,7 +253,7 @@ public class Link {
 	 * Remove a ConnectionListener from the event notification set.
 	 * @param connectionListener
 	 * @return true if this set contained the specified connectionListener
-	 * @see ConnectionContactImpl
+	 * @see ConnectionContact
 	 */
 	public boolean removeConnectionListener(ConnectionListener connectionListener) {
 		return connectionContact.removeConnectionListener(connectionListener);
@@ -263,7 +263,7 @@ public class Link {
 	 * Register a RawDataListener to receive data from Arduino.
 	 * @param rawDataListener
 	 * @return true if this set did not already contain the specified rawDataListener
-	 * @see ConnectionContactImpl
+	 * @see ConnectionContact
 	 */
 	public boolean addRawDataListener(RawDataListener rawDataListener) {
 		return connectionContact.addRawDataListener(rawDataListener);
@@ -273,7 +273,7 @@ public class Link {
 	 * Remove a RawDataListener from the data notification set.
 	 * @param rawDataListener
 	 * @return
-	 * @see ConnectionContactImpl
+	 * @see ConnectionContact
 	 */
 	public boolean removeRawDataListener(RawDataListener rawDataListener) {
 		return connectionContact.removeRawDataListener(rawDataListener);
@@ -284,7 +284,7 @@ public class Link {
 	 * With this method ardulink is able to receive information from arduino board
 	 * @param listener
 	 * @return true if this set did not already contain the specified AnalogReadChangeListener
-	 * @see ConnectionContactImpl
+	 * @see ConnectionContact
 	 */
 	public boolean addAnalogReadChangeListener(AnalogReadChangeListener listener) {
 		return connectionContact.addAnalogReadChangeListener(listener);
@@ -294,7 +294,7 @@ public class Link {
 	 * Remove a AnalogReadChangeListener from the event notification set.
 	 * @param listener
 	 * @return true if this set contained the specified AnalogReadChangeListener
-	 * @see ConnectionContactImpl
+	 * @see ConnectionContact
 	 */
 	public boolean removeAnalogReadChangeListener(AnalogReadChangeListener listener) {
 		return connectionContact.removeAnalogReadChangeListener(listener);
@@ -305,7 +305,7 @@ public class Link {
 	 * With this method ardulink is able to receive information from arduino board
 	 * @param listener
 	 * @return true if this set did not already contain the specified DigitalReadChangeListener
-	 * @see ConnectionContactImpl
+	 * @see ConnectionContact
 	 */
 	public boolean addDigitalReadChangeListener(DigitalReadChangeListener listener) {
 		return connectionContact.addDigitalReadChangeListener(listener);
@@ -315,7 +315,7 @@ public class Link {
 	 * Remove a DigitalReadChangeListener from the event notification set.
 	 * @param listener
 	 * @return true if this set contained the specified DigitalReadChangeListener
-	 * @see ConnectionContactImpl
+	 * @see ConnectionContact
 	 */
 	public boolean removeDigitalReadChangeListener(DigitalReadChangeListener listener) {
 		return connectionContact.removeDigitalReadChangeListener(listener);

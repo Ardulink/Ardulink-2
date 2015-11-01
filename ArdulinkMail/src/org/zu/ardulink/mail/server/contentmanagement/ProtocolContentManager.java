@@ -25,6 +25,7 @@ import static org.zu.ardulink.util.Primitive.parseAs;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.zu.ardulink.Link;
 import org.zu.ardulink.mail.server.links.configuration.utils.ConfigurationUtility;
@@ -221,7 +222,7 @@ public class ProtocolContentManager implements IContentManager {
 				messageSent = true;
 
 				while (!callbackCalled && counter > MAX_COUNT) {
-					Thread.sleep(1000);
+					TimeUnit.SECONDS.sleep(1);
 					counter++;
 				}
 
