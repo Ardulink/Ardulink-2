@@ -28,6 +28,6 @@ package org.zu.ardulink;
  */
 public interface RawDataListener {
 	
-	public void parseInput(String id, int numBytes, int[] message);
+	void parseInput(String id, int numBytes, int[] message);
 
 }

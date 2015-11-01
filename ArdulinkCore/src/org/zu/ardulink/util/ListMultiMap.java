@@ -1,5 +1,5 @@
 /**
-Copyright 2013 Luciano Zu project Ardulink http://www.ardulink.org/
+Copyright 2013 project Ardulink http://www.ardulink.org/
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,29 +13,35 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-@author Luciano Zu
-*/
+ */
+package org.zu.ardulink.util;
 
-package org.zu.ardulink.connection;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-
-import org.zu.ardulink.ConnectionContact;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * 
+ * @author Peter Fichtner
  * 
  * [adsense]
  */
-public interface Connection {
-	
-	List<String> getPortList();
-	boolean connect(Object... params);
-	boolean disconnect();
-	boolean isConnected();
-	boolean writeSerial(String message);
-	boolean writeSerial(int numBytes, int message[]);
-	void setConnectionContact(ConnectionContact contact);
+public class ListMultiMap<K, V> extends AbstractMultiMap<K, V> {
+
+	protected Collection<V> make() {
+		return new ArrayList<V>();
+	}
+
+	public Map<K, List<V>> asMap() {
+		Map<K, List<V>> map = new HashMap<K, List<V>>();
+		for (Entry<K, Collection<V>> entry : data.entrySet()) {
+			map.put(entry.getKey(), (List<V>) entry.getValue());
+		}
+		return map;
+	}
 
 }

@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 
 import org.zu.ardulink.event.AnalogReadChangeEvent;
 import org.zu.ardulink.event.AnalogReadChangeListener;
-import org.zu.ardulink.util.HashMultiMap;
+import org.zu.ardulink.util.ListMultiMap;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -35,7 +35,7 @@ public class TimeSliceCompactorAvg extends
 		SlicedAnalogReadChangeListenerAdapter {
 
 	private boolean firstCall = true;
-	private final HashMultiMap<Integer, Integer> data = new HashMultiMap<Integer, Integer>();
+	private final ListMultiMap<Integer, Integer> data = new ListMultiMap<Integer, Integer>();
 
 	public TimeSliceCompactorAvg(AnalogReadChangeListener delegate) {
 		super(delegate);

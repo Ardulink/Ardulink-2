@@ -28,8 +28,9 @@ package org.zu.ardulink.event;
  */
 public interface AnalogReadChangeListener {
 	
-	public static final int ALL_PINS = -1;
+	int ALL_PINS = -1;
 	
-	public void stateChanged(AnalogReadChangeEvent e);
-	public int getPinListening();
+	void stateChanged(AnalogReadChangeEvent e);
+	int getPinListening();
+
 }

@@ -18,6 +18,12 @@ limitations under the License.
 
 package org.zu.ardulink.mail.server;
 
+import static org.zu.ardulink.mail.server.ArdulinkMailConstants.MAIL_CONF_PROPERTIES_FILENAME;
+import static org.zu.ardulink.mail.server.ArdulinkMailConstants.MAIL_HOST_KEY;
+import static org.zu.ardulink.mail.server.ArdulinkMailConstants.MAIL_PASSWORD_KEY;
+import static org.zu.ardulink.mail.server.ArdulinkMailConstants.MAIL_STORE_PROTOCOL_KEY;
+import static org.zu.ardulink.mail.server.ArdulinkMailConstants.MAIL_USER_KEY;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -42,7 +48,7 @@ import com.sun.mail.imap.IMAPFolder;
  * [adsense]
  *
  */
-public class MailListener implements ArdulinkMailConstants {
+public class MailListener {
 
 	private static Properties mailConfig;
 	private static Folder inbox;
@@ -50,7 +56,7 @@ public class MailListener implements ArdulinkMailConstants {
 	public static void main(String[] args) throws MessagingException {
 		initConfiguration();
 		initInbox();
-		System.out.println("Messaged in inbox: " + inbox.getMessageCount());
+		System.out.println("Messages in inbox: " + inbox.getMessageCount());
 		
 		// Add messageCountListener to listen for new messages
 		inbox.addMessageCountListener(new ArdulinkMailMessageCountAdapter());
@@ -123,6 +129,8 @@ public class MailListener implements ArdulinkMailConstants {
 					throw new IllegalStateException("config file not found in the working dir");
 				}
 			} else {
+				// TODO Luciano will throw an ISE when config file was found in
+				// system classpath!
 				throw new IllegalStateException("config file not found in System classpath");
 			}
 		} else {

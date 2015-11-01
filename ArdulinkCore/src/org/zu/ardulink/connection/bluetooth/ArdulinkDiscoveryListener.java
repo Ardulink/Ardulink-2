@@ -39,11 +39,11 @@ import javax.bluetooth.ServiceRecord;
  */
 public class ArdulinkDiscoveryListener implements DiscoveryListener {
 
-    private List<RemoteDevice> devices = new ArrayList<RemoteDevice>();
-    private Map<RemoteDevice, ServiceRecord[]> services = new HashMap<RemoteDevice, ServiceRecord[]>();
+    private final List<RemoteDevice> devices = new ArrayList<RemoteDevice>();
+    private final Map<RemoteDevice, ServiceRecord[]> services = new HashMap<RemoteDevice, ServiceRecord[]>();
     
-    private BluetoothConnection bluetoothConnection;
-    private Object lock;
+    private final BluetoothConnection bluetoothConnection;
+    private final Object lock;
 
     public ArdulinkDiscoveryListener(BluetoothConnection bluetoothConnection, Object lock) {
 		this.bluetoothConnection = bluetoothConnection;

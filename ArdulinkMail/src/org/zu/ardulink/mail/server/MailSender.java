@@ -14,13 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @author Luciano Zu
-*/
+ */
 
 package org.zu.ardulink.mail.server;
+
+import static org.zu.ardulink.mail.server.ArdulinkMailConstants.MAIL_PASSWORD_KEY;
+import static org.zu.ardulink.mail.server.ArdulinkMailConstants.MAIL_USER_KEY;
+import static org.zu.ardulink.util.Preconditions.checkNotNull;
 
 import java.util.Properties;
 
 import javax.mail.Address;
+import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
@@ -35,48 +40,49 @@ import javax.mail.internet.MimeMessage;
  * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
- * [adsense]
+ *         [adsense]
  *
  */
-public class MailSender implements ArdulinkMailConstants {
-	
-	private static Properties mailConfig;
-	private static boolean isSMTPinitiated = false;
-	private static Session session;
+public class MailSender {
 
-	static {
-		
-		mailConfig = MailListener.getMailConfig();
-		initSMTP();
-		
+	private static final Properties mailConfig = MailListener.getMailConfig();
+	private static final Session session = Session.getDefaultInstance(
+			mailConfig, new Authenticator() {
+
+				private final PasswordAuthentication passwordAuthentication = new PasswordAuthentication(
+						getUser(), getPassword());
+
+				protected PasswordAuthentication getPasswordAuthentication() {
+					return passwordAuthentication;
+				}
+
+			});
+
+	public static void sendMail(Address[] to, String subject, String body)
+			throws AddressException, MessagingException {
+
+		Message message = new MimeMessage(session);
+		message.setFrom(new InternetAddress(getUser()));
+		message.setRecipients(Message.RecipientType.TO, to);
+		message.setSubject(subject);
+		message.setText(body);
+
+		Transport.send(message);
 	}
 
-	public static void sendMail(Address[] to, String subject, String body) throws AddressException, MessagingException {
-
-		if(isSMTPinitiated) {
-			Message message = new MimeMessage(session);
-			message.setFrom(new InternetAddress(mailConfig.getProperty(MAIL_USER_KEY)));
-			message.setRecipients(Message.RecipientType.TO, to);
-			message.setSubject(subject);
-			message.setText(body);
-
-			Transport.send(message);		
-		}
+	private static String getUser() {
+		return getNonNull(MAIL_USER_KEY);
 	}
 
-	
-	
-	
-	private static void initSMTP() {
-		session = Session.getDefaultInstance(mailConfig,
-				new javax.mail.Authenticator() {
-					protected PasswordAuthentication getPasswordAuthentication() {
-						return new PasswordAuthentication(mailConfig.getProperty(MAIL_USER_KEY), mailConfig.getProperty(MAIL_PASSWORD_KEY));
-					}
-				});
-		
-		
-		isSMTPinitiated = true;
+	private static String getPassword() {
+		// TODO Luciano what to return if unset? null? empty String? Throw RTE?
+		// For RTE see #getUser()
+		return mailConfig.getProperty(MAIL_PASSWORD_KEY);
+	}
+
+	private static String getNonNull(String key) {
+		return checkNotNull(mailConfig.getProperty(key), "%s must not be null",
+				key);
 	}
 
 }
