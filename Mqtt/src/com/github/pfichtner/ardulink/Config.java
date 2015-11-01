@@ -22,49 +22,79 @@ import java.util.regex.Pattern;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
  * [adsense]
  */
 public abstract class Config {
 
-	private static class ConfigDelegate extends Config {
+	public static class DefaultConfig extends Config {
 
-		private final Config delegate;
+		private final String topic;
+		private Pattern topicPatternDigitalWrite;
+		private String topicPatternDigitalRead;
+		private Pattern topicPatternAnalogWrite;
+		private String topicPatternAnalogRead;
+		private Pattern topicPatternDigitalControl;
+		private Pattern topicPatternAnalogControl;
 
-		public ConfigDelegate(Config delegate) {
-			this.delegate = delegate;
+		private DefaultConfig(String topic) {
+			this.topic = topic;
+			this.topicPatternDigitalWrite = compile(write(topic, "D"));
+			this.topicPatternDigitalRead = read(topic, "D");
+			this.topicPatternAnalogWrite = compile(write(topic, "A"));
+			this.topicPatternAnalogRead = read(topic, "A");
 		}
 
-		@Override
-		protected String getTopic() {
-			return delegate.getTopic();
+		private DefaultConfig(Config c) {
+			this.topic = c.getTopic();
+			this.topicPatternDigitalWrite = c.getTopicPatternDigitalWrite();
+			this.topicPatternDigitalRead = c.getTopicPatternDigitalRead();
+			this.topicPatternAnalogWrite = c.getTopicPatternAnalogWrite();
+			this.topicPatternAnalogRead = c.getTopicPatternAnalogRead();
+			this.topicPatternDigitalControl = c.getTopicPatternDigitalControl();
+			this.topicPatternAnalogControl = c.getTopicPatternAnalogControl();
+		}
+
+		public String getTopic() {
+			return topic;
 		}
 
 		public Pattern getTopicPatternDigitalWrite() {
-			return delegate.getTopicPatternDigitalWrite();
-		}
-
-		public Pattern getTopicPatternAnalogWrite() {
-			return delegate.getTopicPatternAnalogWrite();
+			return topicPatternDigitalWrite;
 		}
 
 		public String getTopicPatternDigitalRead() {
-			return delegate.getTopicPatternDigitalRead();
+			return topicPatternDigitalRead;
+		}
+
+		public Pattern getTopicPatternAnalogWrite() {
+			return topicPatternAnalogWrite;
 		}
 
 		public String getTopicPatternAnalogRead() {
-			return delegate.getTopicPatternAnalogRead();
+			return topicPatternAnalogRead;
 		}
 
-		@Override
 		public Pattern getTopicPatternDigitalControl() {
-			return delegate.getTopicPatternDigitalControl();
+			return topicPatternDigitalControl;
 		}
 
-		@Override
 		public Pattern getTopicPatternAnalogControl() {
-			return delegate.getTopicPatternAnalogControl();
+			return topicPatternAnalogControl;
+		}
+
+		public static Config copyOf(Config config) {
+			return typedCopy(config);
+		}
+
+		private static DefaultConfig typedCopy(Config config) {
+			return new DefaultConfig(config);
+		}
+
+		public static Config withTopic(String topic) {
+			return new DefaultConfig(topic);
 		}
 
 	}
@@ -73,80 +103,54 @@ public abstract class Config {
 
 	public static final Config DEFAULT = withTopic(DEFAULT_TOPIC);
 
-	public static Config withTopic(final String withTopic) {
-		return new Config() {
+	public static Config withTopic(String topic) {
+		return DefaultConfig.withTopic(topic);
 
-			private String topic = withTopic;
-			private final Pattern topicPatternDigitalWrite;
-			private final String topicPatternDigitalRead;
-			private final Pattern topicPatternAnalogWrite;
-			private final String topicPatternAnalogRead;
+	}
 
-			{
-				this.topicPatternDigitalWrite = compile(write(topic, "D"));
-				this.topicPatternDigitalRead = read(topic, "D");
-				this.topicPatternAnalogWrite = compile(write(topic, "A"));
-				this.topicPatternAnalogRead = read(topic, "A");
-			}
+	public Config withTopicPatternAnalogWrite(Pattern topicPatternAnalogWrite) {
+		DefaultConfig copy = DefaultConfig.typedCopy(this);
+		copy.topicPatternAnalogWrite = topicPatternAnalogWrite;
+		return copy;
+	}
 
-			@Override
-			protected String getTopic() {
-				return topic;
-			}
+	public Config withTopicPatternAnalogRead(String topicPatternAnalogRead) {
+		DefaultConfig copy = DefaultConfig.typedCopy(this);
+		copy.topicPatternAnalogRead = topicPatternAnalogRead;
+		return copy;
+	}
 
-			@Override
-			public Pattern getTopicPatternDigitalWrite() {
-				return topicPatternDigitalWrite;
-			}
+	public Config withTopicPatternDigitalWrite(Pattern topicPatternDigitalWrite) {
+		DefaultConfig copy = DefaultConfig.typedCopy(this);
+		copy.topicPatternDigitalWrite = topicPatternDigitalWrite;
+		return copy;
+	}
 
-			@Override
-			public String getTopicPatternDigitalRead() {
-				return topicPatternDigitalRead;
-			}
-
-			@Override
-			public Pattern getTopicPatternAnalogWrite() {
-				return topicPatternAnalogWrite;
-			}
-
-			@Override
-			public String getTopicPatternAnalogRead() {
-				return topicPatternAnalogRead;
-			}
-
-			@Override
-			public Pattern getTopicPatternDigitalControl() {
-				return null;
-			}
-
-			@Override
-			public Pattern getTopicPatternAnalogControl() {
-				return null;
-			}
-
-		};
+	public Config withTopicPatternDigitalRead(String topicPatternDigitalRead) {
+		DefaultConfig copy = DefaultConfig.typedCopy(this);
+		copy.topicPatternDigitalRead = topicPatternDigitalRead;
+		return copy;
 	}
 
 	public Config withControlChannelEnabled() {
-		return new ConfigDelegate(this) {
+		String topic = getTopic();
+		String topicD = write(topic + "system/listening/", "D");
+		String topicA = write(topic + "system/listening/", "A");
+		return DefaultConfig.typedCopy(this)
+				.withTopicPatternDigitalControl(topicD)
+				.withTopicPatternAnalogControl(topicA);
+	}
 
-			private final Pattern topicPatternDigitalControl = compile(write(
-					getTopic() + "system/listening/", "D"));
+	public Config withTopicPatternDigitalControl(String write) {
+		DefaultConfig copy = DefaultConfig.typedCopy(this);
+		copy.topicPatternDigitalControl = compile(write);
+		return copy;
+	}
 
-			private final Pattern topicPatternAnalogControl = compile(write(
-					getTopic() + "system/listening/", "A"));
-
-			@Override
-			public Pattern getTopicPatternDigitalControl() {
-				return topicPatternDigitalControl;
-			}
-
-			@Override
-			public Pattern getTopicPatternAnalogControl() {
-				return topicPatternAnalogControl;
-			}
-
-		};
+	public Config withTopicPatternAnalogControl(String write) {
+		DefaultConfig copy = DefaultConfig.typedCopy(this);
+		copy.topicPatternAnalogControl = compile(write);
+		return copy;
 	}
 
 	private static String read(String brokerTopic, String prefix) {

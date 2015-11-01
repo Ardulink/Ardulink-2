@@ -40,6 +40,7 @@ import org.zu.ardulink.event.DigitalReadChangeEvent;
 import org.zu.ardulink.event.DigitalReadChangeListener;
 import org.zu.ardulink.util.ListBuilder;
 
+import com.github.pfichtner.ardulink.Config.DefaultConfig;
 import com.github.pfichtner.ardulink.compactors.AnalogReadChangeListenerToleranceAdapter;
 import com.github.pfichtner.ardulink.compactors.SlicedAnalogReadChangeListenerAdapter;
 import com.github.pfichtner.ardulink.compactors.TimeSliceCompactorAvg;
@@ -49,13 +50,15 @@ import com.github.pfichtner.ardulink.compactors.Tolerance;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
  * [adsense]
  */
 public abstract class AbstractMqttAdapter {
-	
-	private static final Logger logger = LoggerFactory.getLogger(AbstractMqttAdapter.class);
+
+	private static final Logger logger = LoggerFactory
+			.getLogger(AbstractMqttAdapter.class);
 
 	public interface Handler {
 		boolean handle(String topic, String message);
@@ -71,7 +74,7 @@ public abstract class AbstractMqttAdapter {
 
 		public boolean handle(String topic, String message) {
 			Matcher matcher = this.pattern.matcher(topic);
-			if (matcher.matches()) {
+			if (matcher.matches() && matcher.groupCount() > 0) {
 				Integer pin = tryParse(matcher.group(1));
 				if (pin != null) {
 					return handlePin(pin.intValue(), message);
@@ -245,7 +248,8 @@ public abstract class AbstractMqttAdapter {
 	public AbstractMqttAdapter(Link link, Config config,
 			Collection<Handler> handlers) {
 		this.link = link;
-		this.config = config;
+		// creating a copy so config can't be changed by caller
+		this.config = DefaultConfig.copyOf(config);
 		this.handlers = unmodifiableList(new ArrayList<Handler>(handlers));
 	}
 
