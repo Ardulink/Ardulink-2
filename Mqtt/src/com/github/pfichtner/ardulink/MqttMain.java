@@ -57,6 +57,9 @@ public class MqttMain {
 
 	private static final Logger logger = LoggerFactory.getLogger(MqttMain.class);
 
+	@Option(name = "-delay", usage = "Do a n seconds delay after connecting")
+	private int sleepSecs = 10;
+	
 	@Option(name = "-brokerTopic", usage = "Topic to register. To switch pins a message of the form $brokerTopic/[A|D]$pinNumber/value/set must be sent. A for analog pins, D for digital pins")
 	private String brokerTopic = Config.DEFAULT_TOPIC;
 
@@ -278,10 +281,11 @@ public class MqttMain {
 	public void connectToMqttBroker() throws MqttSecurityException,
 			MqttException, InterruptedException {
 		this.link = connect(createLink());
+		SECONDS.sleep(this.sleepSecs);
 		// ensure brokerTopic is normalized
 		setBrokerTopic(this.brokerTopic);
 		Config config = Config.withTopic(this.brokerTopic);
-		mqttClient = new MqttClient(link,
+		this.mqttClient = new MqttClient(link,
 				this.control ? config.withControlChannelEnabled() : config)
 				.listenToMqttAndArduino();
 	}
@@ -294,7 +298,6 @@ public class MqttMain {
 		if (!link.connect(portList.get(0), 115200)) {
 			throw new RuntimeException("Connection failed!");
 		}
-		SECONDS.sleep(3);
 		return link;
 	}
 
