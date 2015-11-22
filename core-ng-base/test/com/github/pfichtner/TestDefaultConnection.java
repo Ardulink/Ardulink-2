@@ -2,13 +2,14 @@ package com.github.pfichtner;
 
 import static com.github.pfichtner.Pin.analogPin;
 import static com.github.pfichtner.Pin.digitalPin;
+import static com.github.pfichtner.hamcrest.AnalogPinValueChangedEventMatcher.analogEvent;
+import static com.github.pfichtner.hamcrest.DigitalPinValueChangedEventMatcher.digitalEvent;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
 import static java.lang.Integer.MAX_VALUE;
-import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -26,8 +27,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.github.pfichtner.events.AnalogPinValueChangedEvent;
-import com.github.pfichtner.events.DefaultAnalogPinValueChangedEvent;
-import com.github.pfichtner.events.DefaultDigitalPinValueChangedEvent;
 import com.github.pfichtner.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.events.EventListenerAdapter;
 import com.github.pfichtner.proto.impl.ArdulinkProtocol;
@@ -94,9 +93,8 @@ public class TestDefaultConnection {
 				.withValue(value);
 		simulateArdunoSend(message);
 		waitUntilRead(this.bytesRead, message.length() - 1);
-		AnalogPinValueChangedEvent expected = new DefaultAnalogPinValueChangedEvent(
-				analogPin(pin), value);
-		assertThat(analogEvents, is(singletonList(expected)));
+		assertThat(analogEvents, is(analogEvent(analogPin(pin))
+				.withValue(value)));
 	}
 
 	@Test(timeout = TIMEOUT)
@@ -114,9 +112,8 @@ public class TestDefaultConnection {
 				.withState(true);
 		simulateArdunoSend(message);
 		waitUntilRead(this.bytesRead, message.length() - 1);
-		DigitalPinValueChangedEvent expected = new DefaultDigitalPinValueChangedEvent(
-				digitalPin(pin), true);
-		assertThat(digitalEvents, is(singletonList(expected)));
+		assertThat(digitalEvents, is(is(digitalEvent(digitalPin(pin))
+				.withValue(true))));
 	}
 
 	private int anyPositive(Class<? extends Number> numClass) {

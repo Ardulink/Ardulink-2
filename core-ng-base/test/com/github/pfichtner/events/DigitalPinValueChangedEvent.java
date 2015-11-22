@@ -6,6 +6,6 @@ public interface DigitalPinValueChangedEvent {
 
 	DigitalPin getPin();
 
-	Object getValue();
+	Boolean getValue();
 
 }
