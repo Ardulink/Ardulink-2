@@ -2,8 +2,7 @@ package com.github.pfichtner;
 
 import static com.github.pfichtner.Pin.analogPin;
 import static com.github.pfichtner.Pin.digitalPin;
-import static com.github.pfichtner.hamcrest.AnalogPinValueChangedEventMatcher.analogEvent;
-import static com.github.pfichtner.hamcrest.DigitalPinValueChangedEventMatcher.digitalEvent;
+import static com.github.pfichtner.hamcrest.EventMatchers.eventFor;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
@@ -31,7 +30,6 @@ import com.github.pfichtner.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.events.EventListenerAdapter;
 import com.github.pfichtner.proto.impl.ArdulinkProtocol;
 
-// TODO use Matchers and remove equals/hashCode
 public class TestDefaultConnection {
 
 	private static final int TIMEOUT = 5 * 1000;
@@ -93,8 +91,7 @@ public class TestDefaultConnection {
 				.withValue(value);
 		simulateArdunoSend(message);
 		waitUntilRead(this.bytesRead, message.length() - 1);
-		assertThat(analogEvents, is(analogEvent(analogPin(pin))
-				.withValue(value)));
+		assertThat(analogEvents, is(eventFor(analogPin(pin)).withValue(value)));
 	}
 
 	@Test(timeout = TIMEOUT)
@@ -112,8 +109,8 @@ public class TestDefaultConnection {
 				.withState(true);
 		simulateArdunoSend(message);
 		waitUntilRead(this.bytesRead, message.length() - 1);
-		assertThat(digitalEvents, is(is(digitalEvent(digitalPin(pin))
-				.withValue(true))));
+		assertThat(digitalEvents,
+				is(is(eventFor(digitalPin(pin)).withValue(true))));
 	}
 
 	private int anyPositive(Class<? extends Number> numClass) {
