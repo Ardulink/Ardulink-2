@@ -6,8 +6,6 @@ import static com.github.pfichtner.hamcrest.EventMatchers.eventFor;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
-import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
-import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.hamcrest.core.Is.is;
@@ -62,17 +60,16 @@ public class TestDefaultConnection {
 		int pin = anyPositive(int.class);
 		int value = anyPositive(int.class);
 		this.link.switchAnalogPin(analogPin(pin), value);
-		assertThat(toArduinoWasSent(),
-				is(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(pin)
-						.withValue(value)));
+		assertThat(toArduinoWasSent(), is("alp://ppin/" + pin + "/" + value
+				+ "\n"));
+		
 	}
 
 	@Test(timeout = TIMEOUT)
 	public void canSendDigitalValue() throws IOException {
 		int pin = anyPositive(int.class);
 		this.link.switchDigitalPin(digitalPin(pin), true);
-		assertThat(toArduinoWasSent(), is(alpProtocolMessage(POWER_PIN_SWITCH)
-				.forPin(pin).withState(true)));
+		assertThat(toArduinoWasSent(), is("alp://ppsw/" + pin + "/1\n"));
 	}
 
 	private String toArduinoWasSent() {
