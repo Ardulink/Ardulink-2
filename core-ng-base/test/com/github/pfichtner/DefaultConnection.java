@@ -1,6 +1,7 @@
 package com.github.pfichtner;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
+import static org.zu.ardulink.util.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,15 +21,15 @@ public class DefaultConnection implements Connection {
 
 	@Override
 	public void write(byte[] bytes) throws IOException {
-		outputStream.write(bytes);
+		outputStream.write(checkNotNull(bytes, "bytes must not be null"));
 		outputStream.flush();
 	}
 
 	@Override
 	public void setListener(Listener listener) {
 		this.listener = listener;
-		if (inputStream != null) {
-			runReaderThread(inputStream);
+		if (this.inputStream != null) {
+			runReaderThread(this.inputStream);
 		}
 	}
 
@@ -41,8 +42,8 @@ public class DefaultConnection implements Connection {
 			@Override
 			public void run() {
 				try {
-					DefaultConnection.this.listener.received(scanner.next()
-							.getBytes());
+					DefaultConnection.this.listener.received(this.scanner
+							.next().getBytes());
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

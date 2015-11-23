@@ -3,10 +3,7 @@ package com.github.pfichtner.proto.impl;
 import static com.github.pfichtner.Pin.analogPin;
 import static com.github.pfichtner.Pin.digitalPin;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.alpProtocolMessage;
-import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
-import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
-import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
-import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
+import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.*;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.zu.ardulink.util.Integers.tryParse;
@@ -14,7 +11,6 @@ import static org.zu.ardulink.util.Integers.tryParse;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.github.pfichtner.Pin;
 import com.github.pfichtner.Pin.AnalogPin;
 import com.github.pfichtner.Pin.DigitalPin;
 import com.github.pfichtner.proto.api.Protocol;
@@ -26,17 +22,26 @@ public class ArdulinkProtocol implements Protocol {
 			.compile("alp:\\/\\/([a-z]+)/([\\d]+)/([\\d]+)");
 
 	@Override
-	public byte[] toArduino(ToArduino toArduino) {
-		Pin pin = toArduino.getPin();
-		if (pin instanceof AnalogPin) {
+	public byte[] toArduino(ToArduinoPinEvent pinEvent) {
+		if (pinEvent.pin instanceof AnalogPin) {
 			return toBytes(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(
-					pin.pinNum()).withValue((Integer) toArduino.getValue()));
+					pinEvent.pin.pinNum()).withValue((Integer) pinEvent.value));
 		}
-		if (pin instanceof DigitalPin) {
+		if (pinEvent.pin instanceof DigitalPin) {
 			return toBytes(alpProtocolMessage(POWER_PIN_SWITCH).forPin(
-					pin.pinNum()).withState((Boolean) toArduino.getValue()));
+					pinEvent.pin.pinNum()).withState((Boolean) pinEvent.value));
 		}
-		throw new IllegalStateException(String.valueOf(toArduino));
+		throw new IllegalStateException("Illegal Pin type " + pinEvent.pin);
+	}
+
+	@Override
+	public byte[] toArduino(ToArduinoCharEvent charEvent) {
+		return toBytes(alpProtocolMessage(CHAR_PRESSED)
+				.forChar(charEvent.keychar).append("chr" + charEvent.keychar)
+				.append("cod" + charEvent.keycode)
+				.append("loc" + charEvent.keylocation)
+				.append("mod" + charEvent.keymodifiers)
+				.append("mex" + charEvent.keymodifiersex).toString());
 	}
 
 	@Override

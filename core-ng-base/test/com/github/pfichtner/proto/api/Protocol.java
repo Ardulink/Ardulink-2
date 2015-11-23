@@ -1,14 +1,10 @@
 package com.github.pfichtner.proto.api;
 
 import com.github.pfichtner.Pin;
+import com.github.pfichtner.proto.impl.ToArduinoCharEvent;
+import com.github.pfichtner.proto.impl.ToArduinoPinEvent;
 
 public interface Protocol {
-
-	interface ToArduino {
-		Pin getPin();
-
-		Object getValue();
-	}
 
 	interface FromArduino {
 		Pin getPin();
@@ -16,7 +12,9 @@ public interface Protocol {
 		Object getValue();
 	}
 
-	byte[] toArduino(ToArduino toArduino);
+	byte[] toArduino(ToArduinoPinEvent pinEvent);
+
+	byte[] toArduino(ToArduinoCharEvent charEvent);
 
 	FromArduino fromArduino(byte[] bytes);
 

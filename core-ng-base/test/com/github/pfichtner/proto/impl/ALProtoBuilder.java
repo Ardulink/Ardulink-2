@@ -18,24 +18,31 @@ package com.github.pfichtner.proto.impl;
 
 import static org.zu.ardulink.util.Preconditions.checkArgument;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.github.pfichtner.guava.Joiner;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
 public class ALProtoBuilder {
 
+	private static final Joiner joiner = Joiner.on("/");;
+
 	private final String command;
-	private int pin;
+	private List<Object> data = new ArrayList<Object>();
 
 	public enum ALPProtocolKey {
 
 		POWER_PIN_SWITCH("ppsw"), POWER_PIN_INTENSITY("ppin"), DIGITAL_PIN_READ(
 				"dred"), ANALOG_PIN_READ("ared"), START_LISTENING_DIGITAL(
 				"srld"), START_LISTENING_ANALOG("srla"), STOP_LISTENING_DIGITAL(
-				"spld"), STOP_LISTENING_ANALOG("spla");
+				"spld"), STOP_LISTENING_ANALOG("spla"), CHAR_PRESSED("kprs");
 
 		private String proto;
 
@@ -66,11 +73,15 @@ public class ALProtoBuilder {
 	}
 
 	public String withoutValue() {
-		return "alp://" + command + "/" + pin + "\n";
+		return toString();
 	}
 
 	public String withValue(int value) {
-		return "alp://" + command + "/" + pin + "/" + value + "\n";
+		return append(value).toString();
+	}
+
+	private String data() {
+		return joiner.join(this.data);
 	}
 
 	public String withState(boolean value) {
@@ -79,8 +90,20 @@ public class ALProtoBuilder {
 
 	public ALProtoBuilder forPin(int pin) {
 		checkArgument(pin >= 0, "Pin must not be negative but was %s", pin);
-		this.pin = pin;
+		return append(pin);
+	}
+
+	public ALProtoBuilder forChar(char ch) {
+		return append(ch);
+	}
+
+	public ALProtoBuilder append(Object data) {
+		this.data.add(data);
 		return this;
+	}
+
+	public String toString() {
+		return "alp://" + command + "/" + data() + "\n";
 	}
 
 }

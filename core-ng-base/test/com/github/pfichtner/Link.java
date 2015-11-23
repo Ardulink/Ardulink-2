@@ -14,7 +14,8 @@ import com.github.pfichtner.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.events.EventListener;
 import com.github.pfichtner.proto.api.Protocol;
 import com.github.pfichtner.proto.api.Protocol.FromArduino;
-import com.github.pfichtner.proto.impl.DefaultToArduino;
+import com.github.pfichtner.proto.impl.ToArduinoCharEvent;
+import com.github.pfichtner.proto.impl.ToArduinoPinEvent;
 
 public class Link {
 
@@ -48,9 +49,15 @@ public class Link {
 		send(digitalPin, value);
 	}
 
+	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,
+			int keymodifiers, int keymodifiersex) throws IOException {
+		this.connection.write(this.protocol.toArduino(new ToArduinoCharEvent(
+				keychar, keycode, keylocation, keymodifiers, keymodifiersex)));
+	}
+
 	private void send(Pin pin, Object value) throws IOException {
-		this.connection.write(this.protocol.toArduino(new DefaultToArduino(pin,
-				value)));
+		this.connection.write(this.protocol.toArduino(new ToArduinoPinEvent(
+				pin, value)));
 	}
 
 	protected void received(byte[] bytes) {

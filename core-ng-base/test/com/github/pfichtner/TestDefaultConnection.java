@@ -34,6 +34,8 @@ import com.github.pfichtner.proto.impl.ArdulinkProtocol;
 
 public class TestDefaultConnection {
 
+	// TODO Incoming/Outgoing Divider
+
 	private static final int TIMEOUT = 5 * 1000;
 	private static final ArdulinkProtocol AL_PROTO = new ArdulinkProtocol();
 
@@ -96,7 +98,7 @@ public class TestDefaultConnection {
 		assertThat(analogEvents, eventFor(analogPin(pin)).withValue(value));
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test(timeout = TIMEOUT*1000)
 	public void canReceiveDigitalPinChange() throws IOException {
 		final List<DigitalPinValueChangedEvent> digitalEvents = new ArrayList<DigitalPinValueChangedEvent>();
 		EventListenerAdapter listener = new EventListenerAdapter() {
@@ -133,6 +135,30 @@ public class TestDefaultConnection {
 		waitUntilRead(this.bytesRead, message.length() - 1);
 		List<DigitalPinValueChangedEvent> emptyList = Collections.emptyList();
 		assertThat(digitalEvents, is(emptyList));
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	// TODO Testen: When wir starten zu listen muss eine Nachricht zum
+	// Arduino!!!
+
+	
+	
+	
+	
+	
+	
+	
+	@Test
+	public void canSendKbdEvents() throws IOException {
+		this.link.sendKeyPressEvent('#', 1, 2, 3, 4);
+		assertThat(toArduinoWasSent(),
+				is("alp://kprs/#/chr#/cod1/loc2/mod3/mex4\n"));
 	}
 
 	private int anyPositive(Class<? extends Number> numClass) {
