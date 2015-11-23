@@ -36,12 +36,11 @@ public class ArdulinkProtocol implements Protocol {
 
 	@Override
 	public byte[] toArduino(ToArduinoCharEvent charEvent) {
-		return toBytes(alpProtocolMessage(CHAR_PRESSED)
-				.forChar(charEvent.keychar).append("chr" + charEvent.keychar)
-				.append("cod" + charEvent.keycode)
-				.append("loc" + charEvent.keylocation)
-				.append("mod" + charEvent.keymodifiers)
-				.append("mex" + charEvent.keymodifiersex).toString());
+		return toBytes(alpProtocolMessage(CHAR_PRESSED).withValue(
+				"chr" + charEvent.keychar + "cod" + charEvent.keycode + "loc"
+						+ charEvent.keylocation + "mod"
+						+ charEvent.keymodifiers + "mex"
+						+ charEvent.keymodifiersex));
 	}
 
 	@Override

@@ -158,7 +158,7 @@ public class TestDefaultConnection {
 	public void canSendKbdEvents() throws IOException {
 		this.link.sendKeyPressEvent('#', 1, 2, 3, 4);
 		assertThat(toArduinoWasSent(),
-				is("alp://kprs/#/chr#/cod1/loc2/mod3/mex4\n"));
+				is("alp://kprs/chr#cod1loc2mod3mex4\n"));
 	}
 
 	private int anyPositive(Class<? extends Number> numClass) {
