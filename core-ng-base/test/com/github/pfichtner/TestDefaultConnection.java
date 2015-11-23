@@ -98,7 +98,7 @@ public class TestDefaultConnection {
 		assertThat(analogEvents, eventFor(analogPin(pin)).withValue(value));
 	}
 
-	@Test(timeout = TIMEOUT*1000)
+	@Test(timeout = TIMEOUT)
 	public void canReceiveDigitalPinChange() throws IOException {
 		final List<DigitalPinValueChangedEvent> digitalEvents = new ArrayList<DigitalPinValueChangedEvent>();
 		EventListenerAdapter listener = new EventListenerAdapter() {
