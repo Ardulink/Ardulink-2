@@ -1,11 +1,13 @@
 package com.github.pfichtner.events;
 
-import com.github.pfichtner.Pin;
+import com.github.pfichtner.Pin.AnalogPin;
 
-public interface AnalogPinValueChangedEvent {
+public interface AnalogPinValueChangedEvent extends PinValueChangedEvent {
 
-	Pin getPin();
+	@Override
+	public AnalogPin getPin();
 
+	@Override
 	Integer getValue();
 
 }

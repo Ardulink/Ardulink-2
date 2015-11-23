@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,6 +29,7 @@ import org.junit.Test;
 import com.github.pfichtner.events.AnalogPinValueChangedEvent;
 import com.github.pfichtner.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.events.EventListenerAdapter;
+import com.github.pfichtner.events.FilteredEventListenerAdapter;
 import com.github.pfichtner.proto.impl.ArdulinkProtocol;
 
 public class TestDefaultConnection {
@@ -91,7 +93,7 @@ public class TestDefaultConnection {
 				.withValue(value);
 		simulateArdunoSend(message);
 		waitUntilRead(this.bytesRead, message.length() - 1);
-		assertThat(analogEvents, is(eventFor(analogPin(pin)).withValue(value)));
+		assertThat(analogEvents, eventFor(analogPin(pin)).withValue(value));
 	}
 
 	@Test(timeout = TIMEOUT)
@@ -109,12 +111,36 @@ public class TestDefaultConnection {
 				.withState(true);
 		simulateArdunoSend(message);
 		waitUntilRead(this.bytesRead, message.length() - 1);
-		assertThat(digitalEvents,
-				is(is(eventFor(digitalPin(pin)).withValue(true))));
+		assertThat(digitalEvents, eventFor(digitalPin(pin)).withValue(true));
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void canFilterPins() throws IOException {
+		int pin = anyPositive(int.class);
+		final List<DigitalPinValueChangedEvent> digitalEvents = new ArrayList<DigitalPinValueChangedEvent>();
+		EventListenerAdapter listener = new EventListenerAdapter() {
+			@Override
+			public void stateChanged(DigitalPinValueChangedEvent event) {
+				digitalEvents.add(event);
+			}
+		};
+		this.link.addListener(new FilteredEventListenerAdapter(
+				digitalPin(anyOtherPin(pin)), listener) {
+		});
+		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin)
+				.withState(true);
+		simulateArdunoSend(message);
+		waitUntilRead(this.bytesRead, message.length() - 1);
+		List<DigitalPinValueChangedEvent> emptyList = Collections.emptyList();
+		assertThat(digitalEvents, is(emptyList));
 	}
 
 	private int anyPositive(Class<? extends Number> numClass) {
 		return new Random(System.currentTimeMillis()).nextInt(MAX_VALUE);
+	}
+
+	private int anyOtherPin(int pin) {
+		return pin + 1;
 	}
 
 	private void simulateArdunoSend(String message) throws IOException {

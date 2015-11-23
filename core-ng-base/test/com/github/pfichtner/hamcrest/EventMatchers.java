@@ -6,102 +6,58 @@ import java.util.Iterator;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
-import com.github.pfichtner.Pin.AnalogPin;
-import com.github.pfichtner.Pin.DigitalPin;
-import com.github.pfichtner.events.AnalogPinValueChangedEvent;
-import com.github.pfichtner.events.DigitalPinValueChangedEvent;
+import com.github.pfichtner.Pin;
+import com.github.pfichtner.events.PinValueChangedEvent;
 
 public class EventMatchers {
 
-	public static AnalogPinValueChangedEventMatcher eventFor(AnalogPin analogPin) {
-		return new AnalogPinValueChangedEventMatcher(analogPin);
+	public static PinValueChangedEventMatcher eventFor(Pin pin) {
+		return new PinValueChangedEventMatcher(pin);
 	}
 
-	public static DigitalPinValueChangedEventMatcher eventFor(
-			DigitalPin digitalPin) {
-		return new DigitalPinValueChangedEventMatcher(digitalPin);
-	}
+	public static class PinValueChangedEventMatcher extends
+			TypeSafeMatcher<Collection<? extends PinValueChangedEvent>> {
 
-	public static class AnalogPinValueChangedEventMatcher extends
-			TypeSafeMatcher<Collection<AnalogPinValueChangedEvent>> {
-
-		private AnalogPin pin;
+		private Pin pin;
 		private Object value;
 
-		public AnalogPinValueChangedEventMatcher(AnalogPin analogPin) {
-			this.pin = analogPin;
+		public PinValueChangedEventMatcher(Pin pin) {
+			this.pin = pin;
 		}
 
 		@Override
 		public void describeTo(Description description) {
-			// TODO Auto-generated method stub
-
+			description.appendText(String.valueOf(pin.getClass()
+					.getSimpleName() + "[" + pin.pinNum() + "]=" + value));
 		}
 
 		@Override
 		protected boolean matchesSafely(
-				Collection<AnalogPinValueChangedEvent> items) {
-			Iterator<AnalogPinValueChangedEvent> iterator = items.iterator();
+				Collection<? extends PinValueChangedEvent> items) {
+			Iterator<? extends PinValueChangedEvent> iterator = items
+					.iterator();
 			if (!iterator.hasNext()) {
 				return false;
 			}
-			AnalogPinValueChangedEvent event = iterator.next();
+			PinValueChangedEvent event = iterator.next();
 			return pinsAreEqual(event) && valuesAreEqual(event)
 					&& !iterator.hasNext();
 		}
 
-		private boolean valuesAreEqual(AnalogPinValueChangedEvent event) {
+		private boolean valuesAreEqual(PinValueChangedEvent event) {
 			return event.getValue().equals(value);
 		}
 
-		private boolean pinsAreEqual(AnalogPinValueChangedEvent event) {
+		private boolean pinsAreEqual(PinValueChangedEvent event) {
 			return event.getPin().pinNum() == pin.pinNum();
 		}
 
-		public AnalogPinValueChangedEventMatcher withValue(int value) {
+		public PinValueChangedEventMatcher withValue(int value) {
 			this.value = value;
 			return this;
 		}
 
-	}
-
-	public static class DigitalPinValueChangedEventMatcher extends
-			TypeSafeMatcher<Collection<DigitalPinValueChangedEvent>> {
-
-		private DigitalPin digitalPin;
-		private Boolean value;
-
-		public DigitalPinValueChangedEventMatcher(DigitalPin digitalPin) {
-			this.digitalPin = digitalPin;
-		}
-
-		@Override
-		public void describeTo(Description description) {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		protected boolean matchesSafely(
-				Collection<DigitalPinValueChangedEvent> items) {
-			Iterator<DigitalPinValueChangedEvent> iterator = items.iterator();
-			if (!iterator.hasNext()) {
-				return false;
-			}
-			DigitalPinValueChangedEvent event = iterator.next();
-			return pinsAreEqual(event) && valuesAreEqual(event)
-					&& !iterator.hasNext();
-		}
-
-		private boolean valuesAreEqual(DigitalPinValueChangedEvent event) {
-			return event.getValue().equals(value);
-		}
-
-		private boolean pinsAreEqual(DigitalPinValueChangedEvent event) {
-			return event.getPin().pinNum() == digitalPin.pinNum();
-		}
-
-		public DigitalPinValueChangedEventMatcher withValue(boolean value) {
+		public PinValueChangedEventMatcher withValue(boolean value) {
 			this.value = value;
 			return this;
 		}

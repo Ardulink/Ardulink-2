@@ -36,8 +36,7 @@ public class ArdulinkProtocol implements Protocol {
 			return toBytes(alpProtocolMessage(POWER_PIN_SWITCH).forPin(
 					pin.pinNum()).withState((Boolean) toArduino.getValue()));
 		}
-		throw new IllegalStateException(String.valueOf(pin) + " "
-				+ toArduino.getValue());
+		throw new IllegalStateException(String.valueOf(toArduino));
 	}
 
 	@Override
