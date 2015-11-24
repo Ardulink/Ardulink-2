@@ -14,10 +14,11 @@ import com.github.pfichtner.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.events.EventListener;
 import com.github.pfichtner.events.FilteredEventListenerAdapter;
 import com.github.pfichtner.proto.api.Protocol;
+import com.github.pfichtner.proto.api.Protocol.FromArduino;
 import com.github.pfichtner.proto.api.ToArduinoCharEvent;
 import com.github.pfichtner.proto.api.ToArduinoPinEvent;
 import com.github.pfichtner.proto.api.ToArduinoStartListening;
-import com.github.pfichtner.proto.api.Protocol.FromArduino;
+import com.github.pfichtner.proto.api.ToArduinoStopListening;
 
 public class Link {
 
@@ -39,11 +40,36 @@ public class Link {
 	public Link addListener(EventListener listener) throws IOException {
 		this.listeners.add(listener);
 		if (listener instanceof FilteredEventListenerAdapter) {
+			Pin pin = ((FilteredEventListenerAdapter) listener).getPin();
 			ToArduinoStartListening startListeningEvent = new ToArduinoStartListening(
-					((FilteredEventListenerAdapter) listener).getPin());
+					pin);
 			this.connection.write(this.protocol.toArduino(startListeningEvent));
 		}
 		return this;
+	}
+
+	public Link removeListener(EventListener listener) throws IOException {
+		this.listeners.remove(listener);
+		if (listener instanceof FilteredEventListenerAdapter) {
+			Pin pin = ((FilteredEventListenerAdapter) listener).getPin();
+			ToArduinoStopListening stopListening = new ToArduinoStopListening(
+					pin);
+			if (!listenerLeftFor(pin)) {
+				this.connection.write(this.protocol.toArduino(stopListening));
+			}
+		}
+		return this;
+	}
+
+	private boolean listenerLeftFor(Pin pin) {
+		for (EventListener listener : listeners) {
+			if (listener instanceof FilteredEventListenerAdapter
+					&& pin.equals(((FilteredEventListenerAdapter) listener)
+							.getPin())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void switchAnalogPin(AnalogPin analogPin, Integer value)

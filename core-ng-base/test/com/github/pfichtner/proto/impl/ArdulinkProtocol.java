@@ -8,7 +8,7 @@ import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.CHAR
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
-import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
+import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.*;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -24,6 +24,7 @@ import com.github.pfichtner.proto.api.Protocol;
 import com.github.pfichtner.proto.api.ToArduinoCharEvent;
 import com.github.pfichtner.proto.api.ToArduinoPinEvent;
 import com.github.pfichtner.proto.api.ToArduinoStartListening;
+import com.github.pfichtner.proto.api.ToArduinoStopListening;
 import com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey;
 
 public class ArdulinkProtocol implements Protocol {
@@ -44,6 +45,21 @@ public class ArdulinkProtocol implements Protocol {
 		}
 		throw new IllegalStateException("Illegal Pin type "
 				+ startListeningEvent.pin);
+	}
+
+	@Override
+	public byte[] toArduino(ToArduinoStopListening stopListeningEvent) {
+		Pin pin = stopListeningEvent.pin;
+		if (stopListeningEvent.pin instanceof AnalogPin) {
+			return toBytes(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(
+					pin.pinNum()).withoutValue());
+		}
+		if (stopListeningEvent.pin instanceof DigitalPin) {
+			return toBytes(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(
+					pin.pinNum()).withoutValue());
+		}
+		throw new IllegalStateException("Illegal Pin type "
+				+ stopListeningEvent.pin);
 	}
 
 	@Override

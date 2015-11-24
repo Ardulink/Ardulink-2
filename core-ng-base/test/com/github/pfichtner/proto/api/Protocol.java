@@ -11,7 +11,9 @@ public interface Protocol {
 	}
 
 	byte[] toArduino(ToArduinoStartListening startListeningEvent);
-	
+
+	byte[] toArduino(ToArduinoStopListening stopListeningEvent);
+
 	byte[] toArduino(ToArduinoPinEvent pinEvent);
 
 	byte[] toArduino(ToArduinoCharEvent charEvent);

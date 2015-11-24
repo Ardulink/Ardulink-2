@@ -62,7 +62,6 @@ public class TestDefaultConnection {
 		this.link.switchAnalogPin(analogPin(pin), value);
 		assertThat(toArduinoWasSent(), is("alp://ppin/" + pin + "/" + value
 				+ "\n"));
-
 	}
 
 	@Test(timeout = TIMEOUT)
@@ -70,10 +69,6 @@ public class TestDefaultConnection {
 		int pin = anyPositive(int.class);
 		this.link.switchDigitalPin(digitalPin(pin), true);
 		assertThat(toArduinoWasSent(), is("alp://ppsw/" + pin + "/1\n"));
-	}
-
-	private String toArduinoWasSent() {
-		return this.os.toString();
 	}
 
 	// TODO Test stop when registering two listeners on same pin!
@@ -85,6 +80,24 @@ public class TestDefaultConnection {
 		this.link.addListener(new FilteredEventListenerAdapter(analogPin(pin),
 				null));
 		assertThat(toArduinoWasSent(), is("alp://srla/" + pin + "\n"));
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void doesSendStopListeningAnalogCommangToArduino()
+			throws IOException {
+		int pin = anyPositive(int.class);
+		FilteredEventListenerAdapter l1 = new FilteredEventListenerAdapter(
+				analogPin(pin), null);
+		FilteredEventListenerAdapter l2 = new FilteredEventListenerAdapter(
+				analogPin(pin), null);
+		this.link.addListener(l1);
+		this.link.addListener(l2);
+		String m1 = "alp://srla/" + pin + "\n";
+		assertThat(toArduinoWasSent(), is(m1 + m1));
+		this.link.removeListener(l1);
+		this.link.removeListener(l2);
+		String m2 = "alp://spla/" + pin + "\n";
+		assertThat(toArduinoWasSent(), is(m1 + m1 + m2));
 	}
 
 	@Test(timeout = TIMEOUT)
@@ -169,6 +182,10 @@ public class TestDefaultConnection {
 
 	private void simulateArdunoSend(String message) throws IOException {
 		this.arduinosOutputStream.write(message.getBytes());
+	}
+
+	private String toArduinoWasSent() {
+		return this.os.toString();
 	}
 
 	private static void waitUntilRead(AtomicInteger completed, int toRead) {
