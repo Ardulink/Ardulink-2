@@ -62,7 +62,7 @@ public class TestDefaultConnection {
 		this.link.switchAnalogPin(analogPin(pin), value);
 		assertThat(toArduinoWasSent(), is("alp://ppin/" + pin + "/" + value
 				+ "\n"));
-		
+
 	}
 
 	@Test(timeout = TIMEOUT)
@@ -74,6 +74,17 @@ public class TestDefaultConnection {
 
 	private String toArduinoWasSent() {
 		return this.os.toString();
+	}
+
+	// TODO Test stop when registering two listeners on same pin!
+
+	@Test(timeout = TIMEOUT)
+	public void doesSendStartListeningAnalogCommangToArduino()
+			throws IOException {
+		int pin = anyPositive(int.class);
+		this.link.addListener(new FilteredEventListenerAdapter(analogPin(pin),
+				null));
+		assertThat(toArduinoWasSent(), is("alp://srla/" + pin + "\n"));
 	}
 
 	@Test(timeout = TIMEOUT)
@@ -93,6 +104,15 @@ public class TestDefaultConnection {
 		simulateArdunoSend(message);
 		waitUntilRead(this.bytesRead, message.length() - 1);
 		assertThat(analogEvents, eventFor(analogPin(pin)).withValue(value));
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void doesSendStartListeningDigitalCommangToArduino()
+			throws IOException {
+		int pin = anyPositive(int.class);
+		this.link.addListener(new FilteredEventListenerAdapter(digitalPin(pin),
+				null));
+		assertThat(toArduinoWasSent(), is("alp://srld/" + pin + "\n"));
 	}
 
 	@Test(timeout = TIMEOUT)
@@ -124,8 +144,7 @@ public class TestDefaultConnection {
 			}
 		};
 		this.link.addListener(new FilteredEventListenerAdapter(
-				digitalPin(anyOtherPin(pin)), listener) {
-		});
+				digitalPin(anyOtherPin(pin)), listener));
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin)
 				.withState(true);
 		simulateArdunoSend(message);
@@ -134,28 +153,10 @@ public class TestDefaultConnection {
 		assertThat(digitalEvents, is(emptyList));
 	}
 
-	
-	
-	
-	
-	
-	
-	
-	// TODO Testen: When wir starten zu listen muss eine Nachricht zum
-	// Arduino!!!
-
-	
-	
-	
-	
-	
-	
-	
 	@Test
 	public void canSendKbdEvents() throws IOException {
 		this.link.sendKeyPressEvent('#', 1, 2, 3, 4);
-		assertThat(toArduinoWasSent(),
-				is("alp://kprs/chr#cod1loc2mod3mex4\n"));
+		assertThat(toArduinoWasSent(), is("alp://kprs/chr#cod1loc2mod3mex4\n"));
 	}
 
 	private int anyPositive(Class<? extends Number> numClass) {

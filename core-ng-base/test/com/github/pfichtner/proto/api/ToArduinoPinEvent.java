@@ -1,4 +1,4 @@
-package com.github.pfichtner.proto.impl;
+package com.github.pfichtner.proto.api;
 
 import com.github.pfichtner.Pin;
 

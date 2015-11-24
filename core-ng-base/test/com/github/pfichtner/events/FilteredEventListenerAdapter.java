@@ -12,6 +12,10 @@ public class FilteredEventListenerAdapter extends EventListenerAdapter {
 		this.delegate = delegate;
 	}
 
+	public Pin getPin() {
+		return pin;
+	}
+
 	public void stateChanged(AnalogPinValueChangedEvent event) {
 		if (accept(event)) {
 			this.delegate.stateChanged(event);

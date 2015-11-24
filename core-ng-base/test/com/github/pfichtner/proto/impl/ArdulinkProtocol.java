@@ -3,7 +3,13 @@ package com.github.pfichtner.proto.impl;
 import static com.github.pfichtner.Pin.analogPin;
 import static com.github.pfichtner.Pin.digitalPin;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.alpProtocolMessage;
-import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.*;
+import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.CHAR_PRESSED;
+import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
+import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
+import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
+import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.zu.ardulink.util.Integers.tryParse;
@@ -11,15 +17,34 @@ import static org.zu.ardulink.util.Integers.tryParse;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.github.pfichtner.Pin;
 import com.github.pfichtner.Pin.AnalogPin;
 import com.github.pfichtner.Pin.DigitalPin;
 import com.github.pfichtner.proto.api.Protocol;
+import com.github.pfichtner.proto.api.ToArduinoCharEvent;
+import com.github.pfichtner.proto.api.ToArduinoPinEvent;
+import com.github.pfichtner.proto.api.ToArduinoStartListening;
 import com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey;
 
 public class ArdulinkProtocol implements Protocol {
 
 	private static final Pattern pattern = Pattern
 			.compile("alp:\\/\\/([a-z]+)/([\\d]+)/([\\d]+)");
+
+	@Override
+	public byte[] toArduino(ToArduinoStartListening startListeningEvent) {
+		Pin pin = startListeningEvent.pin;
+		if (startListeningEvent.pin instanceof AnalogPin) {
+			return toBytes(alpProtocolMessage(START_LISTENING_ANALOG).forPin(
+					pin.pinNum()).withoutValue());
+		}
+		if (startListeningEvent.pin instanceof DigitalPin) {
+			return toBytes(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(
+					pin.pinNum()).withoutValue());
+		}
+		throw new IllegalStateException("Illegal Pin type "
+				+ startListeningEvent.pin);
+	}
 
 	@Override
 	public byte[] toArduino(ToArduinoPinEvent pinEvent) {

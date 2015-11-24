@@ -12,10 +12,12 @@ import com.github.pfichtner.events.DefaultAnalogPinValueChangedEvent;
 import com.github.pfichtner.events.DefaultDigitalPinValueChangedEvent;
 import com.github.pfichtner.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.events.EventListener;
+import com.github.pfichtner.events.FilteredEventListenerAdapter;
 import com.github.pfichtner.proto.api.Protocol;
+import com.github.pfichtner.proto.api.ToArduinoCharEvent;
+import com.github.pfichtner.proto.api.ToArduinoPinEvent;
+import com.github.pfichtner.proto.api.ToArduinoStartListening;
 import com.github.pfichtner.proto.api.Protocol.FromArduino;
-import com.github.pfichtner.proto.impl.ToArduinoCharEvent;
-import com.github.pfichtner.proto.impl.ToArduinoPinEvent;
 
 public class Link {
 
@@ -34,8 +36,13 @@ public class Link {
 		});
 	}
 
-	public Link addListener(EventListener listener) {
+	public Link addListener(EventListener listener) throws IOException {
 		this.listeners.add(listener);
+		if (listener instanceof FilteredEventListenerAdapter) {
+			ToArduinoStartListening startListeningEvent = new ToArduinoStartListening(
+					((FilteredEventListenerAdapter) listener).getPin());
+			this.connection.write(this.protocol.toArduino(startListeningEvent));
+		}
 		return this;
 	}
 
