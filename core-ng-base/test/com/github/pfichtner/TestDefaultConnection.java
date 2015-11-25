@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.github.pfichtner.Connection.ListenerAdapter;
 import com.github.pfichtner.events.AnalogPinValueChangedEvent;
 import com.github.pfichtner.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.events.EventListenerAdapter;
@@ -32,13 +33,12 @@ import com.github.pfichtner.proto.impl.ArdulinkProtocol;
 
 public class TestDefaultConnection {
 
-	// TODO Incoming/Outgoing Divider
-
 	private static final int TIMEOUT = 5 * 1000;
 	private static final ArdulinkProtocol AL_PROTO = new ArdulinkProtocol();
 
 	private PipedOutputStream arduinosOutputStream;
 	private final ByteArrayOutputStream os = new ByteArrayOutputStream();
+	private Connection connection;
 	private Link link;
 	private final AtomicInteger bytesRead = new AtomicInteger();
 
@@ -46,7 +46,8 @@ public class TestDefaultConnection {
 	public void setup() throws IOException {
 		PipedInputStream pis = new PipedInputStream();
 		this.arduinosOutputStream = new PipedOutputStream(pis);
-		this.link = new Link(new DefaultConnection(pis, os), AL_PROTO) {
+		this.connection = new DefaultConnection(pis, os);
+		this.link = new Link(connection, AL_PROTO) {
 			@Override
 			protected void received(byte[] bytes) {
 				super.received(bytes);
@@ -71,7 +72,7 @@ public class TestDefaultConnection {
 		assertThat(toArduinoWasSent(), is("alp://ppsw/" + pin + "/1\n"));
 	}
 
-	// TODO Test stop when registering two listeners on same pin!
+	// TODO Test for invalid payloads
 
 	@Test(timeout = TIMEOUT)
 	public void doesSendStartListeningAnalogCommangToArduino()
@@ -166,10 +167,41 @@ public class TestDefaultConnection {
 		assertThat(digitalEvents, is(emptyList));
 	}
 
-	@Test
+	@Test(timeout = TIMEOUT)
 	public void canSendKbdEvents() throws IOException {
 		this.link.sendKeyPressEvent('#', 1, 2, 3, 4);
 		assertThat(toArduinoWasSent(), is("alp://kprs/chr#cod1loc2mod3mex4\n"));
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void canReadRawMessagesRead() throws IOException {
+		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(
+				anyPositive(int.class)).withState(true);
+		final StringBuilder sb = new StringBuilder();
+		this.connection.addListener(new ListenerAdapter() {
+			@Override
+			public void received(byte[] bytes) throws IOException {
+				sb.append(new String(bytes));
+			}
+		});
+		simulateArdunoSend(message);
+		waitUntilRead(this.bytesRead, message.length());
+		assertThat(sb.toString(), is(message));
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void canReadRawMessagesSent() throws IOException {
+		final StringBuilder sb = new StringBuilder();
+		this.connection.addListener(new ListenerAdapter() {
+			@Override
+			public void sent(byte[] bytes) throws IOException {
+				sb.append(new String(bytes));
+			}
+		});
+		int pin = anyPositive(int.class);
+		int value = anyPositive(int.class);
+		this.link.switchAnalogPin(analogPin(pin), value);
+		assertThat(sb.toString(), is("alp://ppin/" + pin + "/" + value + "\n"));
 	}
 
 	private int anyPositive(Class<? extends Number> numClass) {
@@ -181,7 +213,10 @@ public class TestDefaultConnection {
 	}
 
 	private void simulateArdunoSend(String message) throws IOException {
-		this.arduinosOutputStream.write(message.getBytes());
+		// this is not performance optimal but better to read than byte[]
+		// creation and two system arraycopies
+		this.arduinosOutputStream.write((message + new String(AL_PROTO
+				.getReadDivider())).getBytes());
 	}
 
 	private String toArduinoWasSent() {

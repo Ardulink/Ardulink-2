@@ -2,24 +2,27 @@ package com.github.pfichtner.proto.impl;
 
 import static com.github.pfichtner.Pin.analogPin;
 import static com.github.pfichtner.Pin.digitalPin;
+import static com.github.pfichtner.Pins.isAnalog;
+import static com.github.pfichtner.Pins.isDigital;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.CHAR_PRESSED;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
-import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.*;
+import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
+import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
+import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.lang.System.arraycopy;
 import static org.zu.ardulink.util.Integers.tryParse;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.github.pfichtner.Pin;
-import com.github.pfichtner.Pin.AnalogPin;
-import com.github.pfichtner.Pin.DigitalPin;
 import com.github.pfichtner.proto.api.Protocol;
 import com.github.pfichtner.proto.api.ToArduinoCharEvent;
 import com.github.pfichtner.proto.api.ToArduinoPinEvent;
@@ -29,17 +32,31 @@ import com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey;
 
 public class ArdulinkProtocol implements Protocol {
 
+	private static final byte[] READ_DIVIDER = "\n".getBytes();
+
 	private static final Pattern pattern = Pattern
 			.compile("alp:\\/\\/([a-z]+)/([\\d]+)/([\\d]+)");
+
+	// TODO refactor all analog/digital switches
+
+	@Override
+	public byte[] getReadDivider() {
+		return READ_DIVIDER;
+	}
+
+	@Override
+	public byte[] getWriteDivider() {
+		throw new UnsupportedOperationException("not imlemented");
+	}
 
 	@Override
 	public byte[] toArduino(ToArduinoStartListening startListeningEvent) {
 		Pin pin = startListeningEvent.pin;
-		if (startListeningEvent.pin instanceof AnalogPin) {
+		if (isAnalog(startListeningEvent.pin)) {
 			return toBytes(alpProtocolMessage(START_LISTENING_ANALOG).forPin(
 					pin.pinNum()).withoutValue());
 		}
-		if (startListeningEvent.pin instanceof DigitalPin) {
+		if (isDigital(startListeningEvent.pin)) {
 			return toBytes(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(
 					pin.pinNum()).withoutValue());
 		}
@@ -50,11 +67,11 @@ public class ArdulinkProtocol implements Protocol {
 	@Override
 	public byte[] toArduino(ToArduinoStopListening stopListeningEvent) {
 		Pin pin = stopListeningEvent.pin;
-		if (stopListeningEvent.pin instanceof AnalogPin) {
+		if (isAnalog(stopListeningEvent.pin)) {
 			return toBytes(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(
 					pin.pinNum()).withoutValue());
 		}
-		if (stopListeningEvent.pin instanceof DigitalPin) {
+		if (isDigital(stopListeningEvent.pin)) {
 			return toBytes(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(
 					pin.pinNum()).withoutValue());
 		}
@@ -64,11 +81,11 @@ public class ArdulinkProtocol implements Protocol {
 
 	@Override
 	public byte[] toArduino(ToArduinoPinEvent pinEvent) {
-		if (pinEvent.pin instanceof AnalogPin) {
+		if (isAnalog(pinEvent.pin)) {
 			return toBytes(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(
 					pinEvent.pin.pinNum()).withValue((Integer) pinEvent.value));
 		}
-		if (pinEvent.pin instanceof DigitalPin) {
+		if (isDigital(pinEvent.pin)) {
 			return toBytes(alpProtocolMessage(POWER_PIN_SWITCH).forPin(
 					pinEvent.pin.pinNum()).withState((Boolean) pinEvent.value));
 		}
@@ -107,8 +124,12 @@ public class ArdulinkProtocol implements Protocol {
 		return value.intValue() == 1 ? TRUE : FALSE;
 	}
 
-	private static byte[] toBytes(String string) {
-		return string.getBytes();
+	private static byte[] toBytes(String message) {
+		byte[] bytes = new byte[message.length() + READ_DIVIDER.length];
+		byte[] msgBytes = message.getBytes();
+		arraycopy(msgBytes, 0, bytes, 0, msgBytes.length);
+		arraycopy(READ_DIVIDER, 0, bytes, msgBytes.length, READ_DIVIDER.length);
+		return bytes;
 	}
 
 }

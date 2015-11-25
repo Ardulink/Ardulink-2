@@ -6,13 +6,15 @@ import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class DefaultConnection implements Connection {
 
 	private final InputStream inputStream;
 	private final OutputStream outputStream;
-	private Listener listener = Listener.NULL;
+	private List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
 
 	public DefaultConnection(InputStream inputStream, OutputStream outputStream) {
 		this.inputStream = inputStream;
@@ -23,11 +25,14 @@ public class DefaultConnection implements Connection {
 	public void write(byte[] bytes) throws IOException {
 		outputStream.write(checkNotNull(bytes, "bytes must not be null"));
 		outputStream.flush();
+		for (Listener listener : listeners) {
+			listener.sent(bytes);
+		}
 	}
 
 	@Override
-	public void setListener(Listener listener) {
-		this.listener = listener;
+	public void addListener(Listener listener) {
+		this.listeners.add(listener);
 		if (this.inputStream != null) {
 			runReaderThread(this.inputStream);
 		}
@@ -41,12 +46,16 @@ public class DefaultConnection implements Connection {
 
 			@Override
 			public void run() {
-				try {
-					DefaultConnection.this.listener.received(this.scanner
-							.next().getBytes());
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				while (true) {
+					try {
+						byte[] bytes = this.scanner.next().getBytes();
+						for (Listener listener : listeners) {
+							listener.received(bytes);
+						}
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		});

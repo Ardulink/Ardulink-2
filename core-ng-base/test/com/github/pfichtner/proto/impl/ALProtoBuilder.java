@@ -66,7 +66,7 @@ public class ALProtoBuilder {
 	}
 
 	public String withoutValue() {
-		return "alp://" + command + pin() + "\n";
+		return "alp://" + command + pin();
 	}
 
 	private String pin() {
@@ -74,7 +74,7 @@ public class ALProtoBuilder {
 	}
 
 	public String withValue(Object value) {
-		return "alp://" + command + pin() + "/" + value + "\n";
+		return "alp://" + command + pin() + "/" + value;
 	}
 
 	public String withState(boolean value) {

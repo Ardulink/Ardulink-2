@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import com.github.pfichtner.Connection.Listener;
+import com.github.pfichtner.Connection.ListenerAdapter;
 import com.github.pfichtner.Pin.AnalogPin;
 import com.github.pfichtner.Pin.DigitalPin;
 import com.github.pfichtner.events.AnalogPinValueChangedEvent;
@@ -24,12 +24,12 @@ public class Link {
 
 	private final Connection connection;
 	private final Protocol protocol;
-	private final List<EventListener> listeners = new CopyOnWriteArrayList<EventListener>();
+	private final List<EventListener> eventListeners = new CopyOnWriteArrayList<EventListener>();
 
 	public Link(Connection connection, Protocol protocol) {
 		this.connection = connection;
 		this.protocol = protocol;
-		this.connection.setListener(new Listener() {
+		this.connection.addListener(new ListenerAdapter() {
 			@Override
 			public void received(byte[] bytes) throws IOException {
 				Link.this.received(bytes);
@@ -38,7 +38,7 @@ public class Link {
 	}
 
 	public Link addListener(EventListener listener) throws IOException {
-		this.listeners.add(listener);
+		this.eventListeners.add(listener);
 		if (listener instanceof FilteredEventListenerAdapter) {
 			Pin pin = ((FilteredEventListenerAdapter) listener).getPin();
 			ToArduinoStartListening startListeningEvent = new ToArduinoStartListening(
@@ -49,7 +49,7 @@ public class Link {
 	}
 
 	public Link removeListener(EventListener listener) throws IOException {
-		this.listeners.remove(listener);
+		this.eventListeners.remove(listener);
 		if (listener instanceof FilteredEventListenerAdapter) {
 			Pin pin = ((FilteredEventListenerAdapter) listener).getPin();
 			ToArduinoStopListening stopListening = new ToArduinoStopListening(
@@ -62,7 +62,7 @@ public class Link {
 	}
 
 	private boolean listenerLeftFor(Pin pin) {
-		for (EventListener listener : listeners) {
+		for (EventListener listener : eventListeners) {
 			if (listener instanceof FilteredEventListenerAdapter
 					&& pin.equals(((FilteredEventListenerAdapter) listener)
 							.getPin())) {
@@ -100,14 +100,14 @@ public class Link {
 		if (pin instanceof AnalogPin && value instanceof Integer) {
 			AnalogPinValueChangedEvent event = new DefaultAnalogPinValueChangedEvent(
 					(AnalogPin) pin, (Integer) value);
-			for (EventListener eventListener : this.listeners) {
+			for (EventListener eventListener : this.eventListeners) {
 				eventListener.stateChanged(event);
 			}
 		}
 		if (pin instanceof DigitalPin && value instanceof Boolean) {
 			DigitalPinValueChangedEvent event = new DefaultDigitalPinValueChangedEvent(
 					(DigitalPin) pin, (Boolean) value);
-			for (EventListener eventListener : this.listeners) {
+			for (EventListener eventListener : this.eventListeners) {
 				eventListener.stateChanged(event);
 			}
 		}

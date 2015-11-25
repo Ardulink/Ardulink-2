@@ -23,22 +23,46 @@ public interface Connection {
 			public void received(byte[] bytes) throws IOException {
 				// do nothing
 			}
+
+			@Override
+			public void sent(byte[] bytes) throws IOException {
+				// do nothing
+			}
 		};
 
+		/**
+		 * Called whenever a message was received from arduino.
+		 * 
+		 * @param bytes
+		 *            the message read
+		 * @throws IOException
+		 */
 		void received(byte[] bytes) throws IOException;
+
+		/**
+		 * Called whenever a message was sent to the arduino.
+		 * 
+		 * @param bytes
+		 *            the message read
+		 * @throws IOException
+		 */
+		void sent(byte[] bytes) throws IOException;
+	}
+
+	class ListenerAdapter implements Listener {
+		@Override
+		public void received(byte[] bytes) throws IOException {
+			// do nothing
+		}
+
+		@Override
+		public void sent(byte[] bytes) throws IOException {
+			// do nothing
+		}
 	}
 
 	void write(byte[] bytes) throws IOException;
 
-	/**
-	 * Sets a Listener. Please not: Only <b>one</b<> Listener is supported. If
-	 * multiple Listeners should be registered they have to been multiplexed by
-	 * the caller.
-	 * 
-	 * @param listener
-	 *            the Listener to set. Any existing Listener will be replaced
-	 *            silently
-	 */
-	void setListener(Listener listener);
+	void addListener(Listener listener);
 
 }
