@@ -215,12 +215,12 @@ public class StreamConnectionTest {
 		this.link.addListener(new EventListener() {
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
-				throw new IllegalStateException();
+				throw new IllegalStateException("Listener tries to inference");
 			}
 
 			@Override
 			public void stateChanged(DigitalPinValueChangedEvent event) {
-				throw new IllegalStateException();
+				throw new IllegalStateException("Listener tries to inference");
 			}
 		});
 		final AtomicInteger integer = new AtomicInteger();

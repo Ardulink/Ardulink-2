@@ -1,5 +1,8 @@
 package com.github.pfichtner;
 
+import static com.github.pfichtner.Pins.isAnalog;
+import static com.github.pfichtner.Pins.isDigital;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -102,7 +105,7 @@ public class Link {
 		FromArduino fromArduino = this.protocol.fromArduino(bytes);
 		Pin pin = fromArduino.getPin();
 		Object value = fromArduino.getValue();
-		if (pin instanceof AnalogPin && value instanceof Integer) {
+		if (isAnalog(pin) && value instanceof Integer) {
 			AnalogPinValueChangedEvent event = new DefaultAnalogPinValueChangedEvent(
 					(AnalogPin) pin, (Integer) value);
 			for (EventListener eventListener : this.eventListeners) {
@@ -113,7 +116,7 @@ public class Link {
 				}
 			}
 		}
-		if (pin instanceof DigitalPin && value instanceof Boolean) {
+		if (isDigital(pin) && value instanceof Boolean) {
 			DigitalPinValueChangedEvent event = new DefaultDigitalPinValueChangedEvent(
 					(DigitalPin) pin, (Boolean) value);
 			for (EventListener eventListener : this.eventListeners) {

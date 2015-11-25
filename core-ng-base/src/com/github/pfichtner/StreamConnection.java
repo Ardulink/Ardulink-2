@@ -59,7 +59,7 @@ public class StreamConnection implements Connection {
 
 			@Override
 			public void run() {
-				while (true) {
+				while (this.scanner.hasNext()) {
 					try {
 						logger.debug("Waiting for data");
 						byte[] bytes = this.scanner.next().getBytes();
