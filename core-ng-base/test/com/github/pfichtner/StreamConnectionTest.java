@@ -267,10 +267,8 @@ public class StreamConnectionTest {
 	}
 
 	private void simulateArdunoSend(String message) throws IOException {
-		// this is not performance optimal but better to read than byte[]
-		// creation and two system arraycopies
-		this.arduinosOutputStream.write((message + new String(READ_DIVIDER))
-				.getBytes());
+		this.arduinosOutputStream.write((message).getBytes());
+		this.arduinosOutputStream.write(READ_DIVIDER);
 	}
 
 	private String toArduinoWasSent() {
