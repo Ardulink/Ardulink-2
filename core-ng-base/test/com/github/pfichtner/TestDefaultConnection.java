@@ -6,6 +6,7 @@ import static com.github.pfichtner.hamcrest.EventMatchers.eventFor;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static com.github.pfichtner.proto.impl.ArdulinkProtocol.READ_DIVIDER;
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.hamcrest.core.Is.is;
@@ -215,8 +216,8 @@ public class TestDefaultConnection {
 	private void simulateArdunoSend(String message) throws IOException {
 		// this is not performance optimal but better to read than byte[]
 		// creation and two system arraycopies
-		this.arduinosOutputStream.write((message + new String(AL_PROTO
-				.getReadDivider())).getBytes());
+		this.arduinosOutputStream.write((message + new String(READ_DIVIDER))
+				.getBytes());
 	}
 
 	private String toArduinoWasSent() {

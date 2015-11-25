@@ -32,22 +32,12 @@ import com.github.pfichtner.proto.impl.ALProtoBuilder.ALPProtocolKey;
 
 public class ArdulinkProtocol implements Protocol {
 
-	private static final byte[] READ_DIVIDER = "\n".getBytes();
+	public static final byte[] READ_DIVIDER = "\n".getBytes();
 
 	private static final Pattern pattern = Pattern
 			.compile("alp:\\/\\/([a-z]+)/([\\d]+)/([\\d]+)");
 
 	// TODO refactor all analog/digital switches
-
-	@Override
-	public byte[] getReadDivider() {
-		return READ_DIVIDER;
-	}
-
-	@Override
-	public byte[] getWriteDivider() {
-		throw new UnsupportedOperationException("not imlemented");
-	}
 
 	@Override
 	public byte[] toArduino(ToArduinoStartListening startListeningEvent) {

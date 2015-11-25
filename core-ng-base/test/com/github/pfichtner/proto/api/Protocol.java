@@ -4,10 +4,6 @@ import com.github.pfichtner.Pin;
 
 public interface Protocol {
 
-	byte[] getReadDivider();
-
-	byte[] getWriteDivider();
-
 	interface FromArduino {
 		Pin getPin();
 
