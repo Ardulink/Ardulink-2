@@ -223,16 +223,16 @@ public class StreamConnectionTest {
 				throw new IllegalStateException("Listener tries to inference");
 			}
 		});
-		final AtomicInteger integer = new AtomicInteger();
+		final StringBuilder sb = new StringBuilder();
 		this.link.addListener(new EventListener() {
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
-				integer.addAndGet(1);
+				sb.append("AnalogPinValueChangedEvent, ");
 			}
 
 			@Override
 			public void stateChanged(DigitalPinValueChangedEvent event) {
-				integer.addAndGet(2);
+				sb.append("DigitalPinValueChangedEvent");
 			}
 		});
 		int pin = anyPositive(int.class);
@@ -243,7 +243,8 @@ public class StreamConnectionTest {
 		simulateArdunoSend(m1);
 		simulateArdunoSend(m2);
 		waitUntilRead(this.bytesRead, m1.length() + m2.length());
-		assertThat(integer.get(), is(3));
+		assertThat(sb.toString(),
+				is("AnalogPinValueChangedEvent, DigitalPinValueChangedEvent"));
 	}
 
 	@Test(timeout = TIMEOUT)
