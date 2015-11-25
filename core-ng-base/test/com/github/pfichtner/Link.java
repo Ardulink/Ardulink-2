@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.pfichtner.Connection.ListenerAdapter;
 import com.github.pfichtner.Pin.AnalogPin;
 import com.github.pfichtner.Pin.DigitalPin;
@@ -21,6 +24,8 @@ import com.github.pfichtner.proto.api.ToArduinoStartListening;
 import com.github.pfichtner.proto.api.ToArduinoStopListening;
 
 public class Link {
+
+	private static final Logger logger = LoggerFactory.getLogger(Link.class);
 
 	private final Connection connection;
 	private final Protocol protocol;
@@ -101,16 +106,28 @@ public class Link {
 			AnalogPinValueChangedEvent event = new DefaultAnalogPinValueChangedEvent(
 					(AnalogPin) pin, (Integer) value);
 			for (EventListener eventListener : this.eventListeners) {
-				eventListener.stateChanged(event);
+				try {
+					eventListener.stateChanged(event);
+				} catch (Exception e) {
+					logger.error("EventListener {} failure", eventListener, e);
+				}
 			}
 		}
 		if (pin instanceof DigitalPin && value instanceof Boolean) {
 			DigitalPinValueChangedEvent event = new DefaultDigitalPinValueChangedEvent(
 					(DigitalPin) pin, (Boolean) value);
 			for (EventListener eventListener : this.eventListeners) {
-				eventListener.stateChanged(event);
+				try {
+					eventListener.stateChanged(event);
+				} catch (Exception e) {
+					logger.error("EventListener {} failure", eventListener, e);
+				}
 			}
 		}
+	}
+
+	public void close() throws IOException {
+		this.connection.close();
 	}
 
 }

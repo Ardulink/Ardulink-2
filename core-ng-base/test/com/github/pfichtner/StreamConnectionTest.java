@@ -22,17 +22,19 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.github.pfichtner.Connection.ListenerAdapter;
 import com.github.pfichtner.events.AnalogPinValueChangedEvent;
 import com.github.pfichtner.events.DigitalPinValueChangedEvent;
+import com.github.pfichtner.events.EventListener;
 import com.github.pfichtner.events.EventListenerAdapter;
 import com.github.pfichtner.events.FilteredEventListenerAdapter;
 import com.github.pfichtner.proto.impl.ArdulinkProtocol;
 
-public class TestDefaultConnection {
+public class StreamConnectionTest {
 
 	private static final int TIMEOUT = 5 * 1000;
 	private static final ArdulinkProtocol AL_PROTO = new ArdulinkProtocol();
@@ -47,14 +49,19 @@ public class TestDefaultConnection {
 	public void setup() throws IOException {
 		PipedInputStream pis = new PipedInputStream();
 		this.arduinosOutputStream = new PipedOutputStream(pis);
-		this.connection = new DefaultConnection(pis, os);
+		this.connection = new StreamConnection(pis, os);
 		this.link = new Link(connection, AL_PROTO) {
 			@Override
 			protected void received(byte[] bytes) {
 				super.received(bytes);
-				TestDefaultConnection.this.bytesRead.addAndGet(bytes.length);
+				StreamConnectionTest.this.bytesRead.addAndGet(bytes.length);
 			}
 		};
+	}
+
+	@After
+	public void tearDown() throws IOException {
+		this.link.close();
 	}
 
 	@Test(timeout = TIMEOUT)
@@ -72,8 +79,6 @@ public class TestDefaultConnection {
 		this.link.switchDigitalPin(digitalPin(pin), true);
 		assertThat(toArduinoWasSent(), is("alp://ppsw/" + pin + "/1\n"));
 	}
-
-	// TODO Test for invalid payloads
 
 	@Test(timeout = TIMEOUT)
 	public void doesSendStartListeningAnalogCommangToArduino()
@@ -117,7 +122,7 @@ public class TestDefaultConnection {
 		String message = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
 				.withValue(value);
 		simulateArdunoSend(message);
-		waitUntilRead(this.bytesRead, message.length() - 1);
+		waitUntilRead(this.bytesRead, message.length());
 		assertThat(analogEvents, eventFor(analogPin(pin)).withValue(value));
 	}
 
@@ -144,7 +149,7 @@ public class TestDefaultConnection {
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin)
 				.withState(true);
 		simulateArdunoSend(message);
-		waitUntilRead(this.bytesRead, message.length() - 1);
+		waitUntilRead(this.bytesRead, message.length());
 		assertThat(digitalEvents, eventFor(digitalPin(pin)).withValue(true));
 	}
 
@@ -163,7 +168,7 @@ public class TestDefaultConnection {
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin)
 				.withState(true);
 		simulateArdunoSend(message);
-		waitUntilRead(this.bytesRead, message.length() - 1);
+		waitUntilRead(this.bytesRead, message.length());
 		List<DigitalPinValueChangedEvent> emptyList = Collections.emptyList();
 		assertThat(digitalEvents, is(emptyList));
 	}
@@ -203,6 +208,53 @@ public class TestDefaultConnection {
 		int value = anyPositive(int.class);
 		this.link.switchAnalogPin(analogPin(pin), value);
 		assertThat(sb.toString(), is("alp://ppin/" + pin + "/" + value + "\n"));
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void twoListenersMustNotInference() throws IOException {
+		this.link.addListener(new EventListener() {
+			@Override
+			public void stateChanged(AnalogPinValueChangedEvent event) {
+				throw new IllegalStateException();
+			}
+
+			@Override
+			public void stateChanged(DigitalPinValueChangedEvent event) {
+				throw new IllegalStateException();
+			}
+		});
+		final AtomicInteger integer = new AtomicInteger();
+		this.link.addListener(new EventListener() {
+			@Override
+			public void stateChanged(AnalogPinValueChangedEvent event) {
+				integer.addAndGet(1);
+			}
+
+			@Override
+			public void stateChanged(DigitalPinValueChangedEvent event) {
+				integer.addAndGet(2);
+			}
+		});
+		int pin = anyPositive(int.class);
+		String m1 = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withState(
+				true);
+		String m2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(
+				true);
+		simulateArdunoSend(m1);
+		simulateArdunoSend(m2);
+		waitUntilRead(this.bytesRead, m1.length() + m2.length());
+		assertThat(integer.get(), is(3));
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void unparseableInput() throws IOException {
+		String m1 = "eXTRaoRdINARy dATa";
+		simulateArdunoSend(m1);
+		String m2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(
+				anyPositive(int.class)).withState(true);
+		simulateArdunoSend(m2);
+		simulateArdunoSend(m2);
+		waitUntilRead(this.bytesRead, 2 * m2.length());
 	}
 
 	private int anyPositive(Class<? extends Number> numClass) {

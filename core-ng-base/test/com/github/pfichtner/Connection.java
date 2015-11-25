@@ -1,5 +1,6 @@
 package com.github.pfichtner;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
@@ -9,7 +10,7 @@ import java.io.IOException;
  * 
  * @author Peter Fichtner
  */
-public interface Connection {
+public interface Connection extends Closeable {
 
 	/**
 	 * The Listener is called on data received from the Arduino.
