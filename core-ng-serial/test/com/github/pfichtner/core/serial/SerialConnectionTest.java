@@ -28,11 +28,16 @@ public class SerialConnectionTest {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
 		String aValue = "aValue";
 		int bValue = 1;
+		String cValue = "cValue";
+		int dValue = 42;
 		DummyConnection connection = (DummyConnection) connectionManager
-				.getConnection("dummy", "a=" + aValue, "b=" + bValue);
+				.getConnection("dummy", "a=" + aValue, "b=" + bValue, "c="
+						+ cValue, "d=" + dValue);
 		DummyConnectionConfig config = connection.getConfig();
 		assertThat(config.a, is(aValue));
 		assertThat(config.b, is(bValue));
+		assertThat(config.c, is(cValue));
+		assertThat(config.d, is(dValue));
 	}
 
 	@Test
