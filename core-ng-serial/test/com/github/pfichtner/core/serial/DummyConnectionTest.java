@@ -13,7 +13,7 @@ import com.github.pfichtner.ardulink.core.ConnectionManager;
 import com.github.pfichtner.core.serial.DummyConnectionFactory.DummyConnection;
 import com.github.pfichtner.core.serial.DummyConnectionFactory.DummyConnectionConfig;
 
-public class SerialConnectionTest {
+public class DummyConnectionTest {
 
 	@Test
 	public void returnsNullOnInvalidNames() {
