@@ -39,6 +39,12 @@ public abstract class ConnectionManager {
 								if (!configured) {
 									configured = configureViaBeanInfoAnnotation(
 											connectionConfig, param);
+									if (!configured) {
+										// TODO this is key AND value!
+										throw new IllegalArgumentException(
+												"Illegal attribute " + param);
+									}
+
 								}
 							}
 						}

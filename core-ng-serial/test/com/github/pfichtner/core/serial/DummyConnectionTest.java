@@ -24,7 +24,7 @@ public class DummyConnectionTest {
 	}
 
 	@Test
-	public void canFindDummyConnection() {
+	public void canConfigureDummyDonnection() {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
 		String aValue = "aValue";
 		int bValue = 1;
@@ -38,6 +38,12 @@ public class DummyConnectionTest {
 		assertThat(config.b, is(bValue));
 		assertThat(config.c, is(cValue));
 		assertThat(config.d, is(dValue));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void throwsExceptionOnInvalidKey() {
+		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		connectionManager.getConnection("dummy", "nonExistingKey=someValue");
 	}
 
 	@Test
