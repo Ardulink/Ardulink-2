@@ -9,7 +9,6 @@
 		<version>0.6.1-SNAPSHOT</version>
 	</parent>
 
-
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<testSourceDirectory>test</testSourceDirectory>
