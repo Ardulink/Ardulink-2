@@ -11,23 +11,18 @@ public class DummyConnectionFactory implements
 		ConnectionFactory<DummyConnectionConfig> {
 
 	public static class DummyConnectionConfig implements ConnectionConfig {
-		private String port;
-		private int speed;
 
-		public String getPort() {
-			return port;
+		public String a;
+		public int b;
+
+		@Name("a")
+		public void setPort(String a) {
+			this.a = a;
 		}
 
-		public void setPort(String port) {
-			this.port = port;
-		}
-
-		public int getSpeed() {
-			return speed;
-		}
-
-		public void setSpeed(int speed) {
-			this.speed = speed;
+		@Name("b")
+		public void theNameOfTheSetterDoesNotMatter(int b) {
+			this.b = b;
 		}
 
 	}

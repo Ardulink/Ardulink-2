@@ -1,16 +1,14 @@
 package com.github.pfichtner.ardulink.core;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
 import org.zu.ardulink.util.Primitive;
 
 import com.github.pfichtner.Connection;
+import com.github.pfichtner.ardulink.core.ConnectionConfig.Name;
 
 public abstract class ConnectionManager {
 
@@ -46,40 +44,42 @@ public abstract class ConnectionManager {
 					String key = split[0];
 					String value = split[1];
 					try {
-						BeanInfo beanInfo = Introspector
-								.getBeanInfo(connectionConfig.getClass());
-						PropertyDescriptor[] propertyDescriptors = beanInfo
-								.getPropertyDescriptors();
-						for (PropertyDescriptor pd : propertyDescriptors) {
-							if (pd.getName().equals(key)
-									&& pd.getWriteMethod() != null) {
-								setValue(connectionConfig, pd, key, value);
+
+						for (Method method : connectionConfig.getClass()
+								.getMethods()) {
+							if (method != null
+									&& method.isAnnotationPresent(Name.class)
+									&& method.getParameterTypes().length == 1
+									&& key.equals(method.getAnnotation(
+											Name.class).value())) {
+								setValue(connectionConfig, method, key, value);
 							}
 						}
-					} catch (IntrospectionException e) {
-						throw new RuntimeException(e);
 					} catch (IllegalArgumentException e) {
 						throw new RuntimeException(e);
 					}
 				}
 			}
 
-			private void setValue(ConnectionConfig config,
-					PropertyDescriptor pd, String key, String value) {
+			private void setValue(ConnectionConfig config, Method method,
+					String key, String value) {
 				try {
-					Object valueToSet = pd.getPropertyType().isInstance(value) ? value
-							: Primitive.parseAs(pd.getPropertyType(), value);
-					pd.getWriteMethod().invoke(config, valueToSet);
+					Class<?> type = method.getParameterTypes()[0];
+					Object valueToSet = type.isInstance(value) ? value
+							: Primitive.parseAs(type, value);
+					method.invoke(config, valueToSet);
 				} catch (IllegalArgumentException e) {
-					throw new RuntimeException("Cannot set " + key + " to "
-							+ value);
+					throw err(key, value, e);
 				} catch (IllegalAccessException e) {
-					throw new RuntimeException("Cannot set " + key + " to "
-							+ value);
+					throw err(key, value, e);
 				} catch (InvocationTargetException e) {
-					throw new RuntimeException("Cannot set " + key + " to "
-							+ value);
+					throw err(key, value, e);
 				}
+			}
+
+			private RuntimeException err(String key, String value, Exception e) {
+				return new RuntimeException("Cannot set " + key + " to "
+						+ value, e);
 			}
 
 		};

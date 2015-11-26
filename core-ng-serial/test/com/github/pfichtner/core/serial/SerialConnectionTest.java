@@ -26,19 +26,20 @@ public class SerialConnectionTest {
 	@Test
 	public void canFindDummyConnection() {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		String aValue = "aValue";
+		int bValue = 1;
 		DummyConnection connection = (DummyConnection) connectionManager
-				.getConnection("dummy", "port=/dev/ttyUSB", "speed=115200");
+				.getConnection("dummy", "a=" + aValue, "b=" + bValue);
 		DummyConnectionConfig config = connection.getConfig();
-		assertThat(config.getPort(), is("/dev/ttyUSB"));
-		assertThat(config.getSpeed(), is(115200));
+		assertThat(config.a, is(aValue));
+		assertThat(config.b, is(bValue));
 	}
 
 	@Test
 	@Ignore
 	public void canLoadClassViaServiceLoader() {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
-		Connection connection = connectionManager.getConnection("serial",
-				"port=/dev/ttyUSB", "speed=115200");
+		Connection connection = connectionManager.getConnection("serial");
 		assertThat(connection.getClass().getName(),
 				is(StreamConnection.class.getName()));
 	}
