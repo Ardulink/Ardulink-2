@@ -6,8 +6,8 @@ import java.util.Iterator;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
-import com.github.pfichtner.Pin;
-import com.github.pfichtner.events.PinValueChangedEvent;
+import com.github.pfichtner.ardulink.core.Pin;
+import com.github.pfichtner.ardulink.core.events.PinValueChangedEvent;
 
 public class EventMatchers {
 
