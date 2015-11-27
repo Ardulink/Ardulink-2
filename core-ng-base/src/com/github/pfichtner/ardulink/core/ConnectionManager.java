@@ -32,8 +32,14 @@ public abstract class ConnectionManager {
 		}
 
 		@Override
-		public Connection newConnection() {
-			return connectionFactory.newConnection(this.connectionConfig);
+		public Configurer configureAll(String[] params) {
+			for (String param : params) {
+				String[] split = param.split("\\=");
+				if (split.length == 2) {
+					setValue(split[0], split[1]);
+				}
+			}
+			return this;
 		}
 
 		@Override
@@ -52,13 +58,18 @@ public abstract class ConnectionManager {
 			}
 		}
 
+		@Override
+		public Connection newConnection() {
+			return connectionFactory.newConnection(this.connectionConfig);
+		}
+
 		private AttributeSetter findAttributeSetter(
 				ConnectionConfig connectionConfig, String key, String value) {
 
 			for (AttributeSetterProvider asp : attributeSetterProviders) {
 				try {
 					AttributeSetter attributeSetter = asp.find(
-							connectionConfig, key, value);
+							connectionConfig, key);
 					if (attributeSetter != null) {
 						return attributeSetter;
 					}
@@ -77,9 +88,12 @@ public abstract class ConnectionManager {
 	}
 
 	public interface Configurer {
+		Configurer configureAll(String[] params);
+
 		void setValue(String key, String value);
 
 		Connection newConnection();
+
 	}
 
 	private static final String SCHEMA = "ardulink";
@@ -91,8 +105,8 @@ public abstract class ConnectionManager {
 	}
 
 	public interface AttributeSetterProvider {
-		AttributeSetter find(ConnectionConfig connectionConfig, String key,
-				String value) throws Exception;
+		AttributeSetter find(ConnectionConfig connectionConfig, String key)
+				throws Exception;
 	}
 
 	public static class ConfigureViaBeanInfoAnnotation implements
@@ -100,7 +114,7 @@ public abstract class ConnectionManager {
 
 		@Override
 		public AttributeSetter find(final ConnectionConfig connectionConfig,
-				String key, String value) throws Exception {
+				String key) throws Exception {
 			for (final PropertyDescriptor pd : Introspector.getBeanInfo(
 					connectionConfig.getClass()).getPropertyDescriptors()) {
 				if (pd.getName().equals(key) && pd.getWriteMethod() != null) {
@@ -129,7 +143,7 @@ public abstract class ConnectionManager {
 
 		@Override
 		public AttributeSetter find(final ConnectionConfig connectionConfig,
-				String key, String value) throws Exception {
+				String key) throws Exception {
 			for (final Field field : connectionConfig.getClass().getFields()) {
 				if (field != null && field.isAnnotationPresent(Name.class)
 						&& key.equals(field.getAnnotation(Name.class).value())) {
@@ -158,7 +172,7 @@ public abstract class ConnectionManager {
 
 		@Override
 		public AttributeSetter find(final ConnectionConfig connectionConfig,
-				String key, String value) throws Exception {
+				String key) throws Exception {
 			for (final Method method : connectionConfig.getClass().getMethods()) {
 				if (method != null && method.isAnnotationPresent(Name.class)
 						&& method.getParameterTypes().length == 1
@@ -192,28 +206,10 @@ public abstract class ConnectionManager {
 	public static ConnectionManager getInstance() {
 		return new ConnectionManager() {
 
-			@Override
-			public Connection getConnection(URI uri) {
-				checkSchema(uri);
-				String[] params = uri.getQuery() == null ? new String[0] : uri
-						.getQuery().split("\\&");
-				ConnectionFactory connectionFactory = getConnectionFactory(uri);
-				if (connectionFactory != null) {
-					Configurer configurer = getConfigurer(uri);
-					for (String param : params) {
-						String[] split = param.split("\\=");
-						if (split.length == 2) {
-							configurer.setValue(split[0], split[1]);
-						}
-					}
-					return configurer.newConnection();
-				}
-				return null;
-			}
-
-			private void checkSchema(URI uri) {
+			private URI checkSchema(URI uri) {
 				checkArgument(SCHEMA.equalsIgnoreCase(uri.getScheme()),
 						"schema not %s", SCHEMA);
+				return uri;
 			}
 
 			private ConnectionFactory getConnectionFactory(URI uri) {
@@ -231,16 +227,16 @@ public abstract class ConnectionManager {
 
 			@Override
 			public Configurer getConfigurer(URI uri) {
-				ConnectionFactory connectionFactory = getConnectionFactory(uri);
-				return new DefaultConfigurer(connectionFactory);
+				ConnectionFactory connectionFactory = getConnectionFactory(checkSchema(uri));
+				return connectionFactory == null ? null
+						: new DefaultConfigurer(connectionFactory)
+								.configureAll(uri.getQuery() == null ? new String[0]
+										: uri.getQuery().split("\\&"));
 			}
 
 		};
 	}
 
-	public abstract Connection getConnection(URI uri);
-
-	// TODO getConfigurer should hold #newConnection()
 	public abstract Configurer getConfigurer(URI uri);
 
 }
