@@ -1,8 +1,12 @@
 package com.github.pfichtner.core.serial;
 
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -16,23 +20,37 @@ import com.github.pfichtner.core.serial.DummyConnectionFactory.DummyConnectionCo
 public class DummyConnectionTest {
 
 	@Test
-	public void returnsNullOnInvalidNames() {
+	public void returnsNullOnInvalidNames() throws URISyntaxException {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
-		Connection connection = connectionManager
-				.getConnection("--- non registered (and not existing) name---");
+		Connection connection = connectionManager.getConnection(new URI(
+				"ardulink://non_registered_and_not_existing_name"));
 		assertThat(connection, nullValue());
 	}
 
+	@Test(expected = IllegalArgumentException.class)
+	public void schemaHasToBeArdulink() throws URISyntaxException {
+		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		connectionManager.getConnection(new URI("wrongSchema://dummy"));
+	}
+
 	@Test
-	public void canConfigureDummyDonnection() {
+	public void canCreateDummyDonnection() throws URISyntaxException {
+		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		Connection connection = connectionManager.getConnection(new URI(
+				"ardulink://dummy"));
+		assertThat(connection, is(notNullValue()));
+	}
+
+	@Test
+	public void canConfigureDummyDonnection() throws URISyntaxException {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
 		String aValue = "aValue";
 		int bValue = 1;
 		String cValue = "cValue";
 		int dValue = 42;
 		DummyConnection connection = (DummyConnection) connectionManager
-				.getConnection("dummy", "a=" + aValue, "b=" + bValue, "c="
-						+ cValue, "d=" + dValue);
+				.getConnection(new URI("ardulink://dummy/dummy?a=" + aValue
+						+ "&b=" + bValue + "&c=" + cValue + "&d=" + dValue));
 		DummyConnectionConfig config = connection.getConfig();
 		assertThat(config.a, is(aValue));
 		assertThat(config.b, is(bValue));
@@ -41,16 +59,18 @@ public class DummyConnectionTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void throwsExceptionOnInvalidKey() {
+	public void throwsExceptionOnInvalidKey() throws URISyntaxException {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
-		connectionManager.getConnection("dummy", "nonExistingKey=someValue");
+		connectionManager.getConnection(new URI(
+				"ardulink://dummy?nonExistingKey=someValue"));
 	}
 
 	@Test
 	@Ignore
-	public void canLoadClassViaServiceLoader() {
+	public void canLoadClassViaServiceLoader() throws URISyntaxException {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
-		Connection connection = connectionManager.getConnection("serial");
+		Connection connection = connectionManager.getConnection(new URI(
+				"ardulink://serial"));
 		assertThat(connection.getClass().getName(),
 				is(StreamConnection.class.getName()));
 	}

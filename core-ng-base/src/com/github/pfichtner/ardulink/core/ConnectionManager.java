@@ -1,10 +1,13 @@
 package com.github.pfichtner.ardulink.core;
 
+import static org.zu.ardulink.util.Preconditions.checkArgument;
+
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -16,6 +19,8 @@ import com.github.pfichtner.Connection;
 import com.github.pfichtner.ardulink.core.ConnectionConfig.Name;
 
 public abstract class ConnectionManager {
+
+	private static final String SCHEMA = "ardulink";
 
 	public interface AttributeSetter {
 		void setValue(String value) throws Exception;
@@ -134,7 +139,19 @@ public abstract class ConnectionManager {
 			}
 
 			@Override
-			public Connection getConnection(String name, String... params) {
+			public Connection getConnection(URI uri) {
+				checkSchema(uri);
+				return getConnection(uri.getHost(),
+						uri.getQuery() == null ? new String[0] : uri.getQuery()
+								.split("\\&"));
+			}
+
+			private void checkSchema(URI uri) {
+				checkArgument(SCHEMA.equalsIgnoreCase(uri.getScheme()),
+						"schema not %s", SCHEMA);
+			}
+
+			private Connection getConnection(String name, String... params) {
 				ServiceLoader<ConnectionFactory> loader = ServiceLoader
 						.load(ConnectionFactory.class);
 				for (Iterator<ConnectionFactory> iterator = loader.iterator(); iterator
@@ -176,6 +193,6 @@ public abstract class ConnectionManager {
 		};
 	}
 
-	public abstract Connection getConnection(String name, String... params);
+	public abstract Connection getConnection(URI uri);
 
 }
