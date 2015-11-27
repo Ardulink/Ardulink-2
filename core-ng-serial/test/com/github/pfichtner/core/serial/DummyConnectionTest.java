@@ -49,8 +49,8 @@ public class DummyConnectionTest {
 		String cValue = "cValue";
 		int dValue = 42;
 		DummyConnection connection = (DummyConnection) connectionManager
-				.getConnection(new URI("ardulink://dummy/dummy?a=" + aValue
-						+ "&b=" + bValue + "&c=" + cValue + "&d=" + dValue));
+				.getConnection(new URI("ardulink://dummy?a=" + aValue + "&b="
+						+ bValue + "&c=" + cValue + "&d=" + dValue));
 		DummyConnectionConfig config = connection.getConfig();
 		assertThat(config.a, is(aValue));
 		assertThat(config.b, is(bValue));
