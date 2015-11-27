@@ -7,7 +7,14 @@ import java.lang.annotation.Retention;
 public interface ConnectionConfig {
 
 	@Retention(RUNTIME)
-	public @interface Name {
+	public @interface Named {
+
+		String value();
+
+	}
+
+	@Retention(RUNTIME)
+	public @interface PossibleValueFor {
 
 		String value();
 

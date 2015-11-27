@@ -14,22 +14,27 @@ public class DummyConnectionFactory implements
 
 		public String a;
 		public int b;
-		@Name("c")
+		@Named("c")
 		public String c;
 		public int d;
 
-		@Name("a")
+		@Named("a")
 		public void setPort(String a) {
 			this.a = a;
 		}
 
-		@Name("b")
+		@Named("b")
 		public void theNameOfTheSetterDoesNotMatter(int b) {
 			this.b = b;
 		}
 
 		public void setD(int d) {
 			this.d = d;
+		}
+
+		@PossibleValueFor("a")
+		public String[] possibleValuesForAtttribute_A() {
+			return new String[] { "aVal1", "aVal2" };
 		}
 
 	}

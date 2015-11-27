@@ -4,12 +4,9 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -82,17 +79,12 @@ public class DummyConnectionTest {
 	}
 
 	@Test
-	public void canDefinePossibleValues() throws URISyntaxException {
+	public void canDefinePossibleValues() throws Exception {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
-		Connection connection = connectionManager.getConfigurer(
-				new URI("ardulink://dummy")).newConnection();
-		assertThat(getPossibleValues(connection), is(Arrays.asList("v1", "v2")));
-		fail();
-	}
-
-	private List<String> getPossibleValues(Connection connection) {
-		// TODO Auto-generated method stub
-		return null;
+		Configurer configurer = connectionManager.getConfigurer(new URI(
+				"ardulink://dummy"));
+		assertThat(configurer.getAttributeSetter("a").getPossibleValues(),
+				is(new Object[] { "aVal1", "aVal2" }));
 	}
 
 }

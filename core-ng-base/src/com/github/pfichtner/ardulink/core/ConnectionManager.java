@@ -4,6 +4,7 @@ import static org.zu.ardulink.util.Preconditions.checkArgument;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -16,9 +17,22 @@ import java.util.ServiceLoader;
 import org.zu.ardulink.util.Primitive;
 
 import com.github.pfichtner.Connection;
-import com.github.pfichtner.ardulink.core.ConnectionConfig.Name;
+import com.github.pfichtner.ardulink.core.ConnectionConfig.Named;
+import com.github.pfichtner.ardulink.core.ConnectionConfig.PossibleValueFor;
 
 public abstract class ConnectionManager {
+
+	public interface Configurer {
+
+		Configurer configure(String[] params);
+
+		AttributeSetter getAttributeSetter(String key);
+
+		void setValue(String key, String value);
+
+		Connection newConnection();
+
+	}
 
 	public static class DefaultConfigurer<T extends ConnectionConfig>
 			implements Configurer {
@@ -32,7 +46,7 @@ public abstract class ConnectionManager {
 		}
 
 		@Override
-		public Configurer configureAll(String[] params) {
+		public Configurer configure(String[] params) {
 			for (String param : params) {
 				String[] split = param.split("\\=");
 				if (split.length == 2) {
@@ -44,8 +58,7 @@ public abstract class ConnectionManager {
 
 		@Override
 		public void setValue(String key, String value) {
-			AttributeSetter attributeSetter = findAttributeSetter(
-					connectionConfig, key, value);
+			AttributeSetter attributeSetter = getAttributeSetter(key);
 			if (attributeSetter == null) {
 				throw new IllegalArgumentException("Illegal attribute " + key);
 			}
@@ -60,11 +73,10 @@ public abstract class ConnectionManager {
 
 		@Override
 		public Connection newConnection() {
-			return connectionFactory.newConnection(this.connectionConfig);
+			return this.connectionFactory.newConnection(this.connectionConfig);
 		}
 
-		private AttributeSetter findAttributeSetter(
-				ConnectionConfig connectionConfig, String key, String value) {
+		public AttributeSetter getAttributeSetter(String key) {
 
 			for (AttributeSetterProvider asp : attributeSetterProviders) {
 				try {
@@ -87,25 +99,29 @@ public abstract class ConnectionManager {
 
 	}
 
-	public interface Configurer {
-		Configurer configureAll(String[] params);
-
-		void setValue(String key, String value);
-
-		Connection newConnection();
-
-	}
-
 	private static final String SCHEMA = "ardulink";
 
 	public interface AttributeSetter {
 		Class<?> getTargetType();
 
 		void setValue(Object value) throws Exception;
+
+		Object[] getPossibleValues() throws Exception;
+	}
+
+	public interface AttributeGetter {
+		Class<?> getTargetType();
+
+		Object getValue() throws Exception;
 	}
 
 	public interface AttributeSetterProvider {
 		AttributeSetter find(ConnectionConfig connectionConfig, String key)
+				throws Exception;
+	}
+
+	public interface AttributeGetterProvider {
+		AttributeGetter find(ConnectionConfig connectionConfig, String key)
 				throws Exception;
 	}
 
@@ -131,6 +147,11 @@ public abstract class ConnectionManager {
 						public Class<?> getTargetType() {
 							return pd.getPropertyType();
 						}
+
+						@Override
+						public Object[] getPossibleValues() {
+							return null;
+						}
 					};
 				}
 			}
@@ -145,8 +166,8 @@ public abstract class ConnectionManager {
 		public AttributeSetter find(final ConnectionConfig connectionConfig,
 				String key) throws Exception {
 			for (final Field field : connectionConfig.getClass().getFields()) {
-				if (field != null && field.isAnnotationPresent(Name.class)
-						&& key.equals(field.getAnnotation(Name.class).value())) {
+				if (field != null && field.isAnnotationPresent(Named.class)
+						&& key.equals(field.getAnnotation(Named.class).value())) {
 					return new AttributeSetter() {
 						@Override
 						public void setValue(Object value)
@@ -159,6 +180,12 @@ public abstract class ConnectionManager {
 						public Class<?> getTargetType() {
 							return field.getType();
 						}
+
+						@Override
+						public Object[] getPossibleValues() {
+							return null;
+						}
+
 					};
 				}
 			}
@@ -170,13 +197,25 @@ public abstract class ConnectionManager {
 	public static class ConfigureViaMethodAnnotation implements
 			AttributeSetterProvider {
 
+		private final Class<? extends Annotation> annotationClass;
+		private final String attribute;
+
+		public ConfigureViaMethodAnnotation(
+				Class<? extends Annotation> annotationClass, String attribute) {
+			this.annotationClass = annotationClass;
+			this.attribute = attribute;
+		}
+
 		@Override
 		public AttributeSetter find(final ConnectionConfig connectionConfig,
-				String key) throws Exception {
+				final String key) throws Exception {
 			for (final Method method : connectionConfig.getClass().getMethods()) {
-				if (method != null && method.isAnnotationPresent(Name.class)
+				if (method != null
+						&& method.isAnnotationPresent(annotationClass)
 						&& method.getParameterTypes().length == 1
-						&& key.equals(method.getAnnotation(Name.class).value())) {
+						&& key.equals(getAnnoAttribute(
+								method.getAnnotation(annotationClass),
+								attribute))) {
 					return new AttributeSetter() {
 						@Override
 						public void setValue(Object value)
@@ -190,16 +229,84 @@ public abstract class ConnectionManager {
 						public Class<?> getTargetType() {
 							return method.getParameterTypes()[0];
 						}
+
+						@Override
+						public Object[] getPossibleValues() throws Exception {
+							ReadViaMethodAnnotation readViaMethodAnnotation = new ReadViaMethodAnnotation(
+									PossibleValueFor.class, "value");
+							AttributeGetter modifier = readViaMethodAnnotation
+									.find(connectionConfig, key);
+							Object value = modifier.getValue();
+							return modifier == null
+									|| !(value instanceof Object[]) ? null
+									: (Object[]) value;
+						}
+
 					};
 				}
 			}
 			return null;
 		}
 
+		private static Object getAnnoAttribute(Annotation annotation,
+				String attribName) throws IllegalAccessException,
+				InvocationTargetException, NoSuchMethodException {
+			return annotation.getClass().getMethod(attribName)
+					.invoke(annotation);
+		}
+
+	}
+
+	public static class ReadViaMethodAnnotation implements
+			AttributeGetterProvider {
+
+		private final Class<? extends Annotation> annotationClass;
+		private final String attribute;
+
+		public ReadViaMethodAnnotation(
+				Class<? extends Annotation> annotationClass, String attribute) {
+			this.annotationClass = annotationClass;
+			this.attribute = attribute;
+		}
+
+		@Override
+		public AttributeGetter find(final ConnectionConfig connectionConfig,
+				String key) throws Exception {
+			for (final Method method : connectionConfig.getClass().getMethods()) {
+				if (method != null
+						&& method.isAnnotationPresent(annotationClass)
+						&& method.getParameterTypes().length == 0
+						&& key.equals(getAnnoAttribute(
+								method.getAnnotation(annotationClass),
+								attribute))) {
+					return new AttributeGetter() {
+						@Override
+						public Object getValue() throws Exception {
+							return method.invoke(connectionConfig);
+						}
+
+						@Override
+						public Class<?> getTargetType() {
+							return method.getReturnType();
+						}
+
+					};
+				}
+			}
+			return null;
+		}
+
+		private static Object getAnnoAttribute(Annotation annotation,
+				String attribName) throws IllegalAccessException,
+				InvocationTargetException, NoSuchMethodException {
+			return annotation.getClass().getMethod(attribName)
+					.invoke(annotation);
+		}
+
 	}
 
 	private static final List<AttributeSetterProvider> attributeSetterProviders = Arrays
-			.asList(new ConfigureViaMethodAnnotation(),
+			.asList(new ConfigureViaMethodAnnotation(Named.class, "value"),
 					new ConfigureViaFieldAnnotation(),
 					new ConfigureViaBeanInfoAnnotation());
 
@@ -230,7 +337,7 @@ public abstract class ConnectionManager {
 				ConnectionFactory connectionFactory = getConnectionFactory(checkSchema(uri));
 				return connectionFactory == null ? null
 						: new DefaultConfigurer(connectionFactory)
-								.configureAll(uri.getQuery() == null ? new String[0]
+								.configure(uri.getQuery() == null ? new String[0]
 										: uri.getQuery().split("\\&"));
 			}
 
