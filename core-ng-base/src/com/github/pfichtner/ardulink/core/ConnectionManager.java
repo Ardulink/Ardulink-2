@@ -20,6 +20,65 @@ import com.github.pfichtner.ardulink.core.ConnectionConfig.Name;
 
 public abstract class ConnectionManager {
 
+	public static class DefaultConfigurer implements Configurer {
+
+		private final ConnectionConfig connectionConfig;
+
+		public DefaultConfigurer(ConnectionConfig connectionConfig) {
+			this.connectionConfig = connectionConfig;
+		}
+
+		@Override
+		public ConnectionConfig getConfig() {
+			return this.connectionConfig;
+		}
+
+		@Override
+		public void setValue(String key, String value) {
+			AttributeSetter attributeSetter = findAttributeSetter(
+					connectionConfig, key, value);
+			if (attributeSetter == null) {
+				throw new IllegalArgumentException("Illegal attribute " + key);
+			}
+			try {
+				attributeSetter.setValue(convert(value,
+						attributeSetter.getTargetType()));
+			} catch (Exception e) {
+				throw new RuntimeException(
+						"Cannot set " + key + " to " + value, e);
+			}
+		}
+
+		private AttributeSetter findAttributeSetter(
+				ConnectionConfig connectionConfig, String key, String value) {
+
+			for (AttributeSetterProvider asp : attributeSetterProviders) {
+				try {
+					AttributeSetter attributeSetter = asp.find(
+							connectionConfig, key, value);
+					if (attributeSetter != null) {
+						return attributeSetter;
+					}
+				} catch (Exception e) {
+					// ignore all
+				}
+			}
+			return null;
+		}
+
+		private Object convert(String value, Class<?> targetType) {
+			return targetType.isInstance(value) ? value : Primitive.parseAs(
+					targetType, value);
+		}
+
+	}
+
+	public interface Configurer {
+		void setValue(String key, String value);
+
+		ConnectionConfig getConfig();
+	}
+
 	private static final String SCHEMA = "ardulink";
 
 	public interface AttributeSetter {
@@ -129,21 +188,6 @@ public abstract class ConnectionManager {
 
 	public static ConnectionManager getInstance() {
 		return new ConnectionManager() {
-			private AttributeSetter findAttributeSetter(
-					ConnectionConfig connectionConfig, String key, String value) {
-				for (AttributeSetterProvider asp : attributeSetterProviders) {
-					try {
-						AttributeSetter attributeSetter = asp.find(
-								connectionConfig, key, value);
-						if (attributeSetter != null) {
-							return attributeSetter;
-						}
-					} catch (Exception e) {
-						// ignore all
-					}
-				}
-				return null;
-			}
 
 			@Override
 			public Connection getConnection(URI uri) {
@@ -165,48 +209,34 @@ public abstract class ConnectionManager {
 						.hasNext();) {
 					ConnectionFactory connectionFactory = iterator.next();
 					if (connectionFactory.getName().equals(name)) {
-						ConnectionConfig connectionConfig = connectionFactory
-								.newConnectionConfig();
 
+						Configurer configurer = getConfigurer(connectionFactory);
 						for (String param : params) {
-
 							String[] split = param.split("\\=");
 							if (split.length == 2) {
-								String key = split[0];
-								String value = split[1];
-
-								AttributeSetter attributeSetter = findAttributeSetter(
-										connectionConfig, key, value);
-								if (attributeSetter == null) {
-									throw new IllegalArgumentException(
-											"Illegal attribute " + key);
-								}
-								try {
-									attributeSetter.setValue(convert(value,
-											attributeSetter.getTargetType()));
-								} catch (Exception e) {
-									throw new RuntimeException("Cannot set "
-											+ key + " to " + value, e);
-								}
+								configurer.setValue(split[0], split[1]);
 							}
 						}
 
-						return connectionFactory
-								.newConnection(connectionConfig);
+						return connectionFactory.newConnection(configurer.getConfig());
 					}
 				}
 				return null;
 			}
 
-			private Object convert(String value, Class<?> targetType) {
-				Object valueToSet = targetType.isInstance(value) ? value
-						: Primitive.parseAs(targetType, value);
-				return valueToSet;
+			@Override
+			public Configurer getConfigurer(
+					ConnectionFactory<?> connectionFactory) {
+				return new DefaultConfigurer(
+						connectionFactory.newConnectionConfig());
 			}
 
 		};
 	}
 
 	public abstract Connection getConnection(URI uri);
+
+	public abstract Configurer getConfigurer(
+			ConnectionFactory<?> connectionConfig);
 
 }
