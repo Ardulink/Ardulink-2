@@ -20,17 +20,20 @@ import com.github.pfichtner.ardulink.core.ConnectionConfig.Name;
 
 public abstract class ConnectionManager {
 
-	public static class DefaultConfigurer implements Configurer {
+	public static class DefaultConfigurer<T extends ConnectionConfig>
+			implements Configurer {
 
-		private final ConnectionConfig connectionConfig;
+		private final ConnectionFactory<T> connectionFactory;
+		private final T connectionConfig;
 
-		public DefaultConfigurer(ConnectionConfig connectionConfig) {
-			this.connectionConfig = connectionConfig;
+		public DefaultConfigurer(ConnectionFactory<T> connectionFactory) {
+			this.connectionFactory = connectionFactory;
+			this.connectionConfig = connectionFactory.newConnectionConfig();
 		}
 
 		@Override
-		public ConnectionConfig getConfig() {
-			return this.connectionConfig;
+		public Connection newConnection() {
+			return connectionFactory.newConnection(this.connectionConfig);
 		}
 
 		@Override
@@ -76,7 +79,7 @@ public abstract class ConnectionManager {
 	public interface Configurer {
 		void setValue(String key, String value);
 
-		ConnectionConfig getConfig();
+		Connection newConnection();
 	}
 
 	private static final String SCHEMA = "ardulink";
@@ -203,8 +206,7 @@ public abstract class ConnectionManager {
 							configurer.setValue(split[0], split[1]);
 						}
 					}
-					return connectionFactory.newConnection(configurer
-							.getConfig());
+					return configurer.newConnection();
 				}
 				return null;
 			}
@@ -229,8 +231,8 @@ public abstract class ConnectionManager {
 
 			@Override
 			public Configurer getConfigurer(URI uri) {
-				return new DefaultConfigurer(getConnectionFactory(uri)
-						.newConnectionConfig());
+				ConnectionFactory connectionFactory = getConnectionFactory(uri);
+				return new DefaultConfigurer(connectionFactory);
 			}
 
 		};
