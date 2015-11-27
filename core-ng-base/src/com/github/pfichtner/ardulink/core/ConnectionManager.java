@@ -41,25 +41,14 @@ public abstract class ConnectionManager {
 								String key = split[0];
 								String value = split[1];
 
-								AttributeSetter as = findAttributeSetter();
-
-								AttributeSetter configured = configureViaMethodAnnotation(
+								AttributeSetter attributeSetter = findAttributeSetter(
 										connectionConfig, key, value);
-								if (configured == null) {
-									configured = configureViaFieldAnnotation(
-											connectionConfig, key, value);
-									if (configured == null) {
-										configured = configureViaBeanInfoAnnotation(
-												connectionConfig, key, value);
-										if (configured == null) {
-											throw new IllegalArgumentException(
-													"Illegal attribute " + key);
-										}
-
-									}
+								if (attributeSetter == null) {
+									throw new IllegalArgumentException(
+											"Illegal attribute " + key);
 								}
 								try {
-									configured.setValue(value);
+									attributeSetter.setValue(value);
 								} catch (Exception e) {
 									throw new RuntimeException("Cannot set "
 											+ key + " to " + value, e);
@@ -74,8 +63,23 @@ public abstract class ConnectionManager {
 				return null;
 			}
 
-			private AttributeSetter findAttributeSetter() {
-				// TODO Auto-generated method stub
+			private AttributeSetter findAttributeSetter(
+					ConnectionConfig connectionConfig, String key, String value) {
+				AttributeSetter configured = configureViaMethodAnnotation(
+						connectionConfig, key, value);
+				if (configured != null) {
+					return configured;
+				}
+				configured = configureViaFieldAnnotation(connectionConfig, key,
+						value);
+				if (configured != null) {
+					return configured;
+				}
+				configured = configureViaBeanInfoAnnotation(connectionConfig,
+						key, value);
+				if (configured != null) {
+					return configured;
+				}
 				return null;
 			}
 
