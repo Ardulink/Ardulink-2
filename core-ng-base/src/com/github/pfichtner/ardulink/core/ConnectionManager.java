@@ -192,9 +192,21 @@ public abstract class ConnectionManager {
 			@Override
 			public Connection getConnection(URI uri) {
 				checkSchema(uri);
-				return getConnection(uri.getHost(),
-						uri.getQuery() == null ? new String[0] : uri.getQuery()
-								.split("\\&"));
+				String[] params = uri.getQuery() == null ? new String[0] : uri
+						.getQuery().split("\\&");
+				ConnectionFactory connectionFactory = getConnectionFactory(uri);
+				if (connectionFactory != null) {
+					Configurer configurer = getConfigurer(uri);
+					for (String param : params) {
+						String[] split = param.split("\\=");
+						if (split.length == 2) {
+							configurer.setValue(split[0], split[1]);
+						}
+					}
+					return connectionFactory.newConnection(configurer
+							.getConfig());
+				}
+				return null;
 			}
 
 			private void checkSchema(URI uri) {
@@ -202,33 +214,23 @@ public abstract class ConnectionManager {
 						"schema not %s", SCHEMA);
 			}
 
-			private Connection getConnection(String name, String... params) {
+			private ConnectionFactory getConnectionFactory(URI uri) {
 				ServiceLoader<ConnectionFactory> loader = ServiceLoader
 						.load(ConnectionFactory.class);
 				for (Iterator<ConnectionFactory> iterator = loader.iterator(); iterator
 						.hasNext();) {
 					ConnectionFactory connectionFactory = iterator.next();
-					if (connectionFactory.getName().equals(name)) {
-
-						Configurer configurer = getConfigurer(connectionFactory);
-						for (String param : params) {
-							String[] split = param.split("\\=");
-							if (split.length == 2) {
-								configurer.setValue(split[0], split[1]);
-							}
-						}
-
-						return connectionFactory.newConnection(configurer.getConfig());
+					if (connectionFactory.getName().equals(uri.getHost())) {
+						return connectionFactory;
 					}
 				}
 				return null;
 			}
 
 			@Override
-			public Configurer getConfigurer(
-					ConnectionFactory<?> connectionFactory) {
-				return new DefaultConfigurer(
-						connectionFactory.newConnectionConfig());
+			public Configurer getConfigurer(URI uri) {
+				return new DefaultConfigurer(getConnectionFactory(uri)
+						.newConnectionConfig());
 			}
 
 		};
@@ -236,7 +238,7 @@ public abstract class ConnectionManager {
 
 	public abstract Connection getConnection(URI uri);
 
-	public abstract Configurer getConfigurer(
-			ConnectionFactory<?> connectionConfig);
+	// TODO getConfigurer should hold #newConnection()
+	public abstract Configurer getConfigurer(URI uri);
 
 }
