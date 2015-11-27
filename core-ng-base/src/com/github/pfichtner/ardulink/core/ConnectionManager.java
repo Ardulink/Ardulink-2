@@ -23,7 +23,9 @@ public abstract class ConnectionManager {
 	private static final String SCHEMA = "ardulink";
 
 	public interface AttributeSetter {
-		void setValue(String value) throws Exception;
+		Class<?> getTargetType();
+
+		void setValue(Object value) throws Exception;
 	}
 
 	public interface AttributeSetterProvider {
@@ -42,15 +44,16 @@ public abstract class ConnectionManager {
 				if (pd.getName().equals(key) && pd.getWriteMethod() != null) {
 					return new AttributeSetter() {
 						@Override
-						public void setValue(String value)
+						public void setValue(Object value)
 								throws IllegalArgumentException,
 								IllegalAccessException,
 								InvocationTargetException {
-							Object valueToSet = pd.getPropertyType()
-									.isInstance(value) ? value : Primitive
-									.parseAs(pd.getPropertyType(), value);
-							pd.getWriteMethod().invoke(connectionConfig,
-									valueToSet);
+							pd.getWriteMethod().invoke(connectionConfig, value);
+						}
+
+						@Override
+						public Class<?> getTargetType() {
+							return pd.getPropertyType();
 						}
 					};
 				}
@@ -70,13 +73,15 @@ public abstract class ConnectionManager {
 						&& key.equals(field.getAnnotation(Name.class).value())) {
 					return new AttributeSetter() {
 						@Override
-						public void setValue(String value)
+						public void setValue(Object value)
 								throws IllegalArgumentException,
 								IllegalAccessException {
-							Class<?> type = field.getType();
-							Object valueToSet = type.isInstance(value) ? value
-									: Primitive.parseAs(type, value);
-							field.set(connectionConfig, valueToSet);
+							field.set(connectionConfig, value);
+						}
+
+						@Override
+						public Class<?> getTargetType() {
+							return field.getType();
 						}
 					};
 				}
@@ -98,14 +103,16 @@ public abstract class ConnectionManager {
 						&& key.equals(method.getAnnotation(Name.class).value())) {
 					return new AttributeSetter() {
 						@Override
-						public void setValue(String value)
+						public void setValue(Object value)
 								throws IllegalArgumentException,
 								IllegalAccessException,
 								InvocationTargetException {
-							Class<?> type = method.getParameterTypes()[0];
-							Object valueToSet = type.isInstance(value) ? value
-									: Primitive.parseAs(type, value);
-							method.invoke(connectionConfig, valueToSet);
+							method.invoke(connectionConfig, value);
+						}
+
+						@Override
+						public Class<?> getTargetType() {
+							return method.getParameterTypes()[0];
 						}
 					};
 				}
@@ -175,7 +182,8 @@ public abstract class ConnectionManager {
 											"Illegal attribute " + key);
 								}
 								try {
-									attributeSetter.setValue(value);
+									attributeSetter.setValue(convert(value,
+											attributeSetter.getTargetType()));
 								} catch (Exception e) {
 									throw new RuntimeException("Cannot set "
 											+ key + " to " + value, e);
@@ -188,6 +196,12 @@ public abstract class ConnectionManager {
 					}
 				}
 				return null;
+			}
+
+			private Object convert(String value, Class<?> targetType) {
+				Object valueToSet = targetType.isInstance(value) ? value
+						: Primitive.parseAs(targetType, value);
+				return valueToSet;
 			}
 
 		};
