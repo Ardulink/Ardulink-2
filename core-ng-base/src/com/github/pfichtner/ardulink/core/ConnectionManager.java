@@ -28,8 +28,6 @@ public abstract class ConnectionManager {
 
 		AttributeSetter getAttributeSetter(String key);
 
-		void setValue(String key, String value);
-
 		Connection newConnection();
 
 	}
@@ -56,12 +54,9 @@ public abstract class ConnectionManager {
 			return this;
 		}
 
-		@Override
-		public void setValue(String key, String value) {
+		private void setValue(String key, String value) {
 			AttributeSetter attributeSetter = getAttributeSetter(key);
-			if (attributeSetter == null) {
-				throw new IllegalArgumentException("Illegal attribute " + key);
-			}
+			checkArgument(attributeSetter != null, "Illegal attribute %s", key);
 			try {
 				attributeSetter.setValue(convert(value,
 						attributeSetter.getTargetType()));
