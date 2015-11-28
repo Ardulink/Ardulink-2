@@ -20,7 +20,11 @@ public interface Attribute {
 
 	Class<?> getType();
 
+	boolean canRead();
+
 	Object readValue() throws Exception;
+
+	boolean canWrite();
 
 	void writeValue(Object value) throws Exception;
 

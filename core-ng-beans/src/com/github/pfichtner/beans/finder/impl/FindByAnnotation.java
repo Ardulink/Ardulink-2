@@ -5,6 +5,7 @@ import static com.github.pfichtner.beans.finder.impl.ExecWriteMethod.isWriteMeth
 import static org.zu.ardulink.util.Preconditions.checkArgument;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -15,6 +16,60 @@ import com.github.pfichtner.beans.Attribute.AttributeWriter;
 import com.github.pfichtner.beans.finder.api.AttributeFinder;
 
 public class FindByAnnotation implements AttributeFinder {
+
+	public static class AttributeReaderDelegate implements AttributeReader {
+
+		private final AttributeReader delegate;
+		private final String name;
+
+		public AttributeReaderDelegate(AttributeReader delegate, String name) {
+			this.delegate = delegate;
+			this.name = name;
+		}
+
+		@Override
+		public String getName() {
+			return name;
+		}
+
+		@Override
+		public Class<?> getType() {
+			return delegate.getType();
+		}
+
+		@Override
+		public Object getValue() throws Exception {
+			return delegate.getValue();
+		}
+
+	}
+
+	public static class AttributeWriterDelegate implements AttributeWriter {
+
+		private final AttributeWriter delegate;
+		private final String name;
+
+		public AttributeWriterDelegate(AttributeWriter delegate, String name) {
+			this.delegate = delegate;
+			this.name = name;
+		}
+
+		@Override
+		public String getName() {
+			return name;
+		}
+
+		@Override
+		public Class<?> getType() {
+			return delegate.getType();
+		}
+
+		@Override
+		public void setValue(Object value) throws Exception {
+			delegate.setValue(value);
+		}
+
+	}
 
 	private final Class<? extends Annotation> annotationClass;
 	private final Method getAnnotationsAttributeReadMethod;
@@ -44,12 +99,12 @@ public class FindByAnnotation implements AttributeFinder {
 		}
 	}
 
-	public static AttributeFinder methodsAnnotated(
+	public static AttributeFinder propertyAnnotated(
 			Class<? extends Annotation> annotationClass) {
-		return methodsAnnotated(annotationClass, "value");
+		return propertyAnnotated(annotationClass, "value");
 	}
 
-	public static AttributeFinder methodsAnnotated(
+	public static AttributeFinder propertyAnnotated(
 			Class<? extends Annotation> annotationClass,
 			String annotationAttribute) {
 		return new FindByAnnotation(annotationClass, annotationAttribute);
@@ -66,6 +121,18 @@ public class FindByAnnotation implements AttributeFinder {
 						.getAnnotation(annotationClass)), method));
 			}
 		}
+
+		for (Field field : bean.getClass().getDeclaredFields()) {
+			if (field.isAnnotationPresent(annotationClass)) {
+				AttributeReader readMethodForAttribute = readMethodForAttribute(
+						bean, field.getName());
+				if (readMethodForAttribute != null) {
+					readers.add(new AttributeReaderDelegate(
+							readMethodForAttribute, annoValue(field
+									.getAnnotation(annotationClass))));
+				}
+			}
+		}
 		return readers;
 	}
 
@@ -79,7 +146,43 @@ public class FindByAnnotation implements AttributeFinder {
 						.getAnnotation(annotationClass)), method));
 			}
 		}
+
+		for (Field field : bean.getClass().getDeclaredFields()) {
+			if (field.isAnnotationPresent(annotationClass)) {
+				AttributeWriter writeMethodForAttribute = writeMethodForAttribute(
+						bean, field.getName());
+				if (writeMethodForAttribute != null) {
+					writers.add(new AttributeWriterDelegate(
+							writeMethodForAttribute, annoValue(field
+									.getAnnotation(annotationClass))));
+				}
+			}
+		}
 		return writers;
+	}
+
+	private AttributeReader readMethodForAttribute(Object bean,
+			final String name) throws Exception {
+		for (AttributeReader reader : FindByIntrospection.beanAttributes()
+				.listReaders(bean)) {
+			if (reader.getName().equals(name)) {
+				return reader;
+			}
+		}
+		return null;
+
+	}
+
+	private AttributeWriter writeMethodForAttribute(Object bean,
+			final String name) throws Exception {
+		for (AttributeWriter writer : FindByIntrospection.beanAttributes()
+				.listWriters(bean)) {
+			if (writer.getName().equals(name)) {
+				return writer;
+			}
+		}
+		return null;
+
 	}
 
 	private String annoValue(Annotation annotation)

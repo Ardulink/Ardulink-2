@@ -1,6 +1,7 @@
 package com.github.pfichtner.beans;
 
 import static com.github.pfichtner.beans.finder.impl.FindByIntrospection.beanAttributes;
+import static org.zu.ardulink.util.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,12 +62,24 @@ public class BeanProperties {
 		}
 
 		@Override
+		public boolean canRead() {
+			return reader != null;
+		}
+
+		@Override
 		public Object readValue() throws Exception {
+			checkState(canRead(), "cannot read");
 			return reader.getValue();
 		}
 
 		@Override
+		public boolean canWrite() {
+			return writer != null;
+		}
+
+		@Override
 		public void writeValue(Object value) throws Exception {
+			checkState(canWrite(), "cannot write");
 			writer.setValue(value);
 		}
 
