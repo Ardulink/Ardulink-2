@@ -7,13 +7,13 @@ import java.lang.reflect.Method;
 
 import com.github.pfichtner.beans.Attribute.AttributeWriter;
 
-public class ExecWriteMethod implements AttributeWriter {
+public class WriteMethod implements AttributeWriter {
 
 	private final Object bean;
 	private final String name;
 	private final Method writeMethod;
 
-	public ExecWriteMethod(Object bean, String name, Method writeMethod) {
+	public WriteMethod(Object bean, String name, Method writeMethod) {
 		this.bean = bean;
 		this.name = name;
 		this.writeMethod = writeMethod;

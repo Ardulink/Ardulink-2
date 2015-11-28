@@ -7,13 +7,13 @@ import java.lang.reflect.Method;
 
 import com.github.pfichtner.beans.Attribute.AttributeReader;
 
-public class ExecReadMethod implements AttributeReader {
+public class ReadMethod implements AttributeReader {
 
 	private final Object bean;
 	private final String name;
 	private final Method readMethod;
 
-	public ExecReadMethod(Object bean, String name, Method readMethod) {
+	public ReadMethod(Object bean, String name, Method readMethod) {
 		this.bean = bean;
 		this.name = name;
 		this.readMethod = readMethod;

@@ -112,6 +112,11 @@ public class BeanPropertiesTest {
 		}
 	}
 
+	public static class BeanWithAnnoOnPublicField {
+		@OurOwnTestAnno("foo")
+		public List<String> values;
+	}
+
 	@Test
 	public void canFindPropertyByReadMethod() {
 		BeanProperties bp = BeanProperties.forBean(new BeanWithReadMethod());
@@ -228,6 +233,24 @@ public class BeanPropertiesTest {
 		attribute.writeValue(Arrays.asList("1", "2", "3"));
 		assertThat(bean.getValues(), is(Arrays.asList("1", "2", "3")));
 		bean.setValues(Arrays.asList("3", "2", "1"));
+		assertThat(attribute.readValue(),
+				is((Object) Arrays.asList("3", "2", "1")));
+
+	}
+
+	@Test
+	public void canFindPropertyByAnnotatedPublicField() throws Exception {
+		BeanWithAnnoOnPublicField bean = new BeanWithAnnoOnPublicField();
+		BeanProperties bp = BeanProperties
+				.builder(bean)
+				.using(beanAttributes(),
+						propertyAnnotated(OurOwnTestAnno.class)).build();
+		Attribute attribute = bp.getAttribute("foo");
+		assertThat(attribute.getName(), is("foo"));
+		assertThat(attribute.getType().getName(), is(List.class.getName()));
+		attribute.writeValue(Arrays.asList("1", "2", "3"));
+		assertThat(bean.values, is(Arrays.asList("1", "2", "3")));
+		bean.values = Arrays.asList("3", "2", "1");
 		assertThat(attribute.readValue(),
 				is((Object) Arrays.asList("3", "2", "1")));
 

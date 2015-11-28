@@ -1,7 +1,7 @@
 package com.github.pfichtner.beans.finder.impl;
 
-import static com.github.pfichtner.beans.finder.impl.ExecReadMethod.isReadMethod;
-import static com.github.pfichtner.beans.finder.impl.ExecWriteMethod.isWriteMethod;
+import static com.github.pfichtner.beans.finder.impl.ReadMethod.isReadMethod;
+import static com.github.pfichtner.beans.finder.impl.WriteMethod.isWriteMethod;
 import static java.beans.Introspector.getBeanInfo;
 
 import java.beans.PropertyDescriptor;
@@ -27,11 +27,11 @@ public class FindByIntrospection implements AttributeFinder {
 	@Override
 	public Iterable<? extends AttributeReader> listReaders(Object bean)
 			throws Exception {
-		List<ExecReadMethod> readers = new ArrayList<ExecReadMethod>();
+		List<ReadMethod> readers = new ArrayList<ReadMethod>();
 		for (PropertyDescriptor pd : getBeanInfo(bean.getClass())
 				.getPropertyDescriptors()) {
 			if (isReadMethod(pd.getReadMethod())) {
-				readers.add(new ExecReadMethod(bean, pd.getName(), pd
+				readers.add(new ReadMethod(bean, pd.getName(), pd
 						.getReadMethod()));
 			}
 		}
@@ -41,11 +41,11 @@ public class FindByIntrospection implements AttributeFinder {
 	@Override
 	public Iterable<? extends AttributeWriter> listWriters(Object bean)
 			throws Exception {
-		List<ExecWriteMethod> writers = new ArrayList<ExecWriteMethod>();
+		List<WriteMethod> writers = new ArrayList<WriteMethod>();
 		for (PropertyDescriptor pd : getBeanInfo(bean.getClass())
 				.getPropertyDescriptors()) {
 			if (isWriteMethod(pd.getWriteMethod())) {
-				writers.add(new ExecWriteMethod(bean, pd.getName(), pd
+				writers.add(new WriteMethod(bean, pd.getName(), pd
 						.getWriteMethod()));
 			}
 		}

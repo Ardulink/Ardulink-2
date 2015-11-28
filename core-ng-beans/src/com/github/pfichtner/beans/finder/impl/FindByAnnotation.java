@@ -1,13 +1,15 @@
 package com.github.pfichtner.beans.finder.impl;
 
-import static com.github.pfichtner.beans.finder.impl.ExecReadMethod.isReadMethod;
-import static com.github.pfichtner.beans.finder.impl.ExecWriteMethod.isWriteMethod;
+import static com.github.pfichtner.beans.finder.impl.ReadMethod.isReadMethod;
+import static com.github.pfichtner.beans.finder.impl.WriteMethod.isWriteMethod;
+import static java.lang.reflect.Modifier.isPublic;
 import static org.zu.ardulink.util.Preconditions.checkArgument;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -117,7 +119,7 @@ public class FindByAnnotation implements AttributeFinder {
 		for (Method method : bean.getClass().getDeclaredMethods()) {
 			if (method.isAnnotationPresent(annotationClass)
 					&& isReadMethod(method)) {
-				readers.add(new ExecReadMethod(bean, annoValue(method
+				readers.add(new ReadMethod(bean, annoValue(method
 						.getAnnotation(annotationClass)), method));
 			}
 		}
@@ -130,6 +132,9 @@ public class FindByAnnotation implements AttributeFinder {
 					readers.add(new AttributeReaderDelegate(
 							readMethodForAttribute, annoValue(field
 									.getAnnotation(annotationClass))));
+				} else if (isPublic(field.getModifiers())) {
+					readers.add(new FieldAccess(bean, annoValue(field
+							.getAnnotation(annotationClass)), field));
 				}
 			}
 		}
@@ -142,7 +147,7 @@ public class FindByAnnotation implements AttributeFinder {
 		for (Method method : bean.getClass().getDeclaredMethods()) {
 			if (method.isAnnotationPresent(annotationClass)
 					&& isWriteMethod(method)) {
-				writers.add(new ExecWriteMethod(bean, annoValue(method
+				writers.add(new WriteMethod(bean, annoValue(method
 						.getAnnotation(annotationClass)), method));
 			}
 		}
@@ -155,7 +160,11 @@ public class FindByAnnotation implements AttributeFinder {
 					writers.add(new AttributeWriterDelegate(
 							writeMethodForAttribute, annoValue(field
 									.getAnnotation(annotationClass))));
+				} else if (isPublic(field.getModifiers())) {
+					writers.add(new FieldAccess(bean, annoValue(field
+							.getAnnotation(annotationClass)), field));
 				}
+
 			}
 		}
 		return writers;
