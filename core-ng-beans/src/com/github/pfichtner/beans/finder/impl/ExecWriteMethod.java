@@ -10,10 +10,12 @@ import com.github.pfichtner.beans.Attribute.AttributeWriter;
 public class ExecWriteMethod implements AttributeWriter {
 
 	private final Object bean;
+	private final String name;
 	private final Method writeMethod;
 
-	public ExecWriteMethod(Object bean, Method writeMethod) {
+	public ExecWriteMethod(Object bean, String name, Method writeMethod) {
 		this.bean = bean;
+		this.name = name;
 		this.writeMethod = writeMethod;
 	}
 
@@ -26,6 +28,11 @@ public class ExecWriteMethod implements AttributeWriter {
 	@Override
 	public Class<?> getType() {
 		return writeMethod.getParameterTypes()[0];
+	}
+
+	@Override
+	public String getName() {
+		return this.name;
 	}
 
 	public static boolean isWriteMethod(Method method) {

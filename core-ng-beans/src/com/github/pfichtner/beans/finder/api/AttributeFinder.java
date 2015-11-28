@@ -5,8 +5,10 @@ import com.github.pfichtner.beans.Attribute.AttributeWriter;
 
 public interface AttributeFinder {
 
-	AttributeReader findReader(Object bean, String name) throws Exception;
+	Iterable<? extends AttributeReader> listReaders(Object bean)
+			throws Exception;
 
-	AttributeWriter findWriter(Object bean, String name) throws Exception;
+	Iterable<? extends AttributeWriter> listWriters(Object bean)
+			throws Exception;
 
 }

@@ -3,6 +3,8 @@ package com.github.pfichtner.beans;
 public interface Attribute {
 
 	public interface TypedAttributeProvider {
+		String getName();
+
 		Class<?> getType();
 	}
 

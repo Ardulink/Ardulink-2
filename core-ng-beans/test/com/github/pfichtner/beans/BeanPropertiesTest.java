@@ -8,6 +8,8 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import java.lang.annotation.Retention;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -84,6 +86,16 @@ public class BeanPropertiesTest {
 		@OurOwnTestAnno("weHaveToUseAnnotationsSinceThisWontWorkWithBeans")
 		public void setValues(List<String> values) {
 			this.values = values;
+		}
+	}
+
+	public static class BeanWithMultpleAttributes {
+		public String getA() {
+			throw new UnsupportedOperationException();
+		}
+
+		public int getB() {
+			throw new UnsupportedOperationException();
 		}
 	}
 
@@ -180,6 +192,14 @@ public class BeanPropertiesTest {
 				.getAttribute("weHaveToUseAnnotationsSinceThisWontWorkWithBeans");
 		assertThat(attribute.getType().getName(),
 				is(Collection.class.getName()));
+	}
+
+	@Test
+	public void canlistAttributes() throws Exception {
+		BeanProperties bp = BeanProperties
+				.forBean(new BeanWithMultpleAttributes());
+		assertThat(new ArrayList<String>(bp.attributeNames()),
+				is(Arrays.asList("a", "b")));
 	}
 
 }

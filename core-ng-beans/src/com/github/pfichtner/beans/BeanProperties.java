@@ -2,8 +2,15 @@ package com.github.pfichtner.beans;
 
 import static com.github.pfichtner.beans.finder.impl.FindByIntrospection.beanAttributes;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 import com.github.pfichtner.beans.Attribute.AttributeReader;
 import com.github.pfichtner.beans.Attribute.AttributeWriter;
+import com.github.pfichtner.beans.Attribute.TypedAttributeProvider;
 import com.github.pfichtner.beans.finder.api.AttributeFinder;
 
 public class BeanProperties {
@@ -114,9 +121,10 @@ public class BeanProperties {
 
 	private AttributeReader findReader(final String name) throws Exception {
 		for (AttributeFinder finder : finders) {
-			AttributeReader reader = finder.findReader(bean, name);
-			if (reader != null) {
-				return reader;
+			for (AttributeReader reader : finder.listReaders(bean)) {
+				if (name.equals(reader.getName())) {
+					return reader;
+				}
 			}
 		}
 		return null;
@@ -124,12 +132,31 @@ public class BeanProperties {
 
 	private AttributeWriter findWriter(final String name) throws Exception {
 		for (AttributeFinder finder : finders) {
-			AttributeWriter writer = finder.findWriter(bean, name);
-			if (writer != null) {
-				return writer;
+			for (AttributeWriter writer : finder.listWriters(bean)) {
+				if (name.equals(writer.getName())) {
+					return writer;
+				}
 			}
 		}
 		return null;
+	}
+
+	public Collection<String> attributeNames() throws Exception {
+		Set<String> attributeNames = new LinkedHashSet<String>();
+		for (AttributeFinder finder : finders) {
+			attributeNames.addAll(namesOf(finder.listReaders(bean)));
+			attributeNames.addAll(namesOf(finder.listWriters(bean)));
+		}
+		return new ArrayList<String>(attributeNames);
+	}
+
+	private Collection<? extends String> namesOf(
+			Iterable<? extends TypedAttributeProvider> readers) {
+		List<String> names = new ArrayList<String>();
+		for (TypedAttributeProvider reader : readers) {
+			names.add(reader.getName());
+		}
+		return names;
 	}
 
 }

@@ -10,10 +10,12 @@ import com.github.pfichtner.beans.Attribute.AttributeReader;
 public class ExecReadMethod implements AttributeReader {
 
 	private final Object bean;
+	private final String name;
 	private final Method readMethod;
 
-	public ExecReadMethod(Object bean, Method readMethod) {
+	public ExecReadMethod(Object bean, String name, Method readMethod) {
 		this.bean = bean;
+		this.name = name;
 		this.readMethod = readMethod;
 	}
 
@@ -28,9 +30,19 @@ public class ExecReadMethod implements AttributeReader {
 		return readMethod.getReturnType();
 	}
 
+	@Override
+	public String getName() {
+		return this.name;
+	}
+
 	public static boolean isReadMethod(Method method) {
 		return method != null && isPublic(method.getModifiers())
+				&& !anObjectsMethod(method)
 				&& method.getParameterTypes().length == 0;
+	}
+
+	private static boolean anObjectsMethod(Method method) {
+		return method.getDeclaringClass().equals(Object.class);
 	}
 
 }

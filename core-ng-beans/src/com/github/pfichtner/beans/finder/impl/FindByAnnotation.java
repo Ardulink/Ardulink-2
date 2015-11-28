@@ -7,8 +7,11 @@ import static org.zu.ardulink.util.Preconditions.checkArgument;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.github.pfichtner.beans.Attribute.AttributeReader;
+import com.github.pfichtner.beans.Attribute.AttributeWriter;
 import com.github.pfichtner.beans.finder.api.AttributeFinder;
 
 public class FindByAnnotation implements AttributeFinder {
@@ -53,41 +56,35 @@ public class FindByAnnotation implements AttributeFinder {
 	}
 
 	@Override
-	public AttributeReader findReader(Object bean, String name)
+	public Iterable<? extends AttributeReader> listReaders(Object bean)
 			throws Exception {
+		List<AttributeReader> readers = new ArrayList<AttributeReader>();
 		for (Method method : bean.getClass().getDeclaredMethods()) {
-			if (isReadMethod(method) && annotationMatches(name, method)) {
-				return new ExecReadMethod(bean, method);
+			if (method.isAnnotationPresent(annotationClass)
+					&& isReadMethod(method)) {
+				readers.add(new ExecReadMethod(bean, annoValue(method
+						.getAnnotation(annotationClass)), method));
 			}
 		}
-		return null;
+		return readers;
 	}
 
 	@Override
-	public ExecWriteMethod findWriter(Object bean, String name)
-			throws Exception {
+	public Iterable<AttributeWriter> listWriters(Object bean) throws Exception {
+		List<AttributeWriter> writers = new ArrayList<AttributeWriter>();
 		for (Method method : bean.getClass().getDeclaredMethods()) {
-			if (isWriteMethod(method) && annotationMatches(name, method)) {
-				return new ExecWriteMethod(bean, method);
+			if (method.isAnnotationPresent(annotationClass)
+					&& isWriteMethod(method)) {
+				writers.add(new ExecWriteMethod(bean, annoValue(method
+						.getAnnotation(annotationClass)), method));
 			}
 		}
-		return null;
+		return writers;
 	}
 
-	private boolean annotationMatches(String name, Method method)
-			throws NoSuchMethodException, IllegalAccessException,
-			InvocationTargetException {
-		return method.isAnnotationPresent(annotationClass)
-				&& annoValueIsEqualTo(method.getAnnotation(annotationClass),
-						name);
-	}
-
-	private boolean annoValueIsEqualTo(Annotation annotation, String name)
-			throws SecurityException, NoSuchMethodException,
-			IllegalArgumentException, IllegalAccessException,
-			InvocationTargetException {
-		return getAnnotationsAttributeReadMethod.invoke(annotation)
-				.equals(name);
+	private String annoValue(Annotation annotation)
+			throws IllegalAccessException, InvocationTargetException {
+		return (String) getAnnotationsAttributeReadMethod.invoke(annotation);
 	}
 
 }

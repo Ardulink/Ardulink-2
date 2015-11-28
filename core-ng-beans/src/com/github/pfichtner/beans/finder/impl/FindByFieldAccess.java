@@ -3,6 +3,8 @@ package com.github.pfichtner.beans.finder.impl;
 import static java.lang.reflect.Modifier.isPublic;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.github.pfichtner.beans.Attribute.AttributeReader;
 import com.github.pfichtner.beans.Attribute.AttributeWriter;
@@ -13,10 +15,12 @@ public class FindByFieldAccess implements AttributeFinder {
 	public static class FieldAccess implements AttributeReader, AttributeWriter {
 
 		private final Object bean;
+		private final String name;
 		private final Field field;
 
-		public FieldAccess(Object bean, Field field) {
+		public FieldAccess(Object bean, String name, Field field) {
 			this.bean = bean;
+			this.name = name;
 			this.field = field;
 		}
 
@@ -37,6 +41,11 @@ public class FindByFieldAccess implements AttributeFinder {
 			return field.getType();
 		}
 
+		@Override
+		public String getName() {
+			return this.name;
+		}
+
 	}
 
 	private FindByFieldAccess() {
@@ -48,23 +57,23 @@ public class FindByFieldAccess implements AttributeFinder {
 	}
 
 	@Override
-	public AttributeReader findReader(Object bean, String name)
-			throws Exception {
-		return find(bean, name);
+	public Iterable<FieldAccess> listReaders(Object bean) throws Exception {
+		return find(bean);
 	}
 
 	@Override
-	public FieldAccess findWriter(Object bean, String name) throws Exception {
-		return find(bean, name);
+	public Iterable<FieldAccess> listWriters(Object bean) throws Exception {
+		return find(bean);
 	}
 
-	private FieldAccess find(Object bean, String name) {
+	private Iterable<FieldAccess> find(Object bean) {
+		List<FieldAccess> accessors = new ArrayList<FieldAccess>();
 		for (Field field : bean.getClass().getDeclaredFields()) {
-			if (name.equals(field.getName()) && isPublic(field.getModifiers())) {
-				return new FieldAccess(bean, field);
+			if (isPublic(field.getModifiers())) {
+				accessors.add(new FieldAccess(bean, field.getName(), field));
 			}
 		}
-		return null;
+		return accessors;
 	}
 
 }
