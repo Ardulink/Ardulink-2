@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -28,7 +29,7 @@ public abstract class ConnectionManager {
 
 		AttributeSetter getAttributeSetter(String key);
 
-		Connection newConnection();
+		Connection newConnection() throws Exception;
 
 	}
 
@@ -67,7 +68,7 @@ public abstract class ConnectionManager {
 		}
 
 		@Override
-		public Connection newConnection() {
+		public Connection newConnection() throws Exception {
 			return this.connectionFactory.newConnection(this.connectionConfig);
 		}
 
@@ -231,10 +232,19 @@ public abstract class ConnectionManager {
 									PossibleValueFor.class, "value");
 							AttributeGetter modifier = readViaMethodAnnotation
 									.find(connectionConfig, key);
-							Object value = modifier.getValue();
-							return modifier == null
-									|| !(value instanceof Object[]) ? null
-									: (Object[]) value;
+							return modifier == null ? null : toArray(modifier
+									.getValue());
+						}
+
+						private Object[] toArray(Object value) {
+							if (value instanceof Object[]) {
+								return (Object[]) value;
+							}
+							if (value instanceof Collection<?>) {
+								Collection<?> col = (Collection<?>) value;
+								return col.toArray(new Object[col.size()]);
+							}
+							return null;
 						}
 
 					};

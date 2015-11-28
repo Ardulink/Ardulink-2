@@ -6,7 +6,7 @@ public interface ConnectionFactory<T extends ConnectionConfig> {
 
 	String getName();
 
-	Connection newConnection(T config);
+	Connection newConnection(T config) throws Exception;
 
 	T newConnectionConfig();
 

@@ -1,11 +1,21 @@
 package com.github.pfichtner.core.serial;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import static gnu.io.SerialPort.DATABITS_8;
+import static gnu.io.SerialPort.PARITY_NONE;
+import static gnu.io.SerialPort.STOPBITS_1;
+import static org.zu.ardulink.util.Preconditions.checkNotNull;
+import static org.zu.ardulink.util.Preconditions.checkState;
+import gnu.io.CommPortIdentifier;
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.SerialPort;
+import gnu.io.UnsupportedCommOperationException;
 
-import com.github.pfichtner.Connection;
-import com.github.pfichtner.StreamConnection;
-import com.github.pfichtner.ardulink.core.ConnectionFactory;
+import java.io.IOException;
+
+import com.github.pfichtner.ardulink.core.Connection;
+import com.github.pfichtner.ardulink.core.StreamConnection;
+import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionFactory;
 
 public class SerialConnectionFactory implements
 		ConnectionFactory<SerialConnectionConfig> {
@@ -16,10 +26,27 @@ public class SerialConnectionFactory implements
 	}
 
 	@Override
-	public Connection newConnection(SerialConnectionConfig config) {
-		InputStream is = null;
-		OutputStream os = null;
-		return new StreamConnection(is, os);
+	public Connection newConnection(SerialConnectionConfig config)
+			throws NoSuchPortException, PortInUseException,
+			UnsupportedCommOperationException, IOException {
+		CommPortIdentifier portIdentifier = CommPortIdentifier
+				.getPortIdentifier(checkNotNull(config.getPort(),
+						"port must not be null"));
+		checkState(!portIdentifier.isCurrentlyOwned(),
+				"Port %s is currently in use", config.getPort());
+		SerialPort serialPort = serialPort(config, portIdentifier);
+		return new StreamConnection(serialPort.getInputStream(),
+				serialPort.getOutputStream());
+	}
+
+	private SerialPort serialPort(SerialConnectionConfig config,
+			CommPortIdentifier portIdentifier) throws PortInUseException,
+			UnsupportedCommOperationException {
+		SerialPort serialPort = (SerialPort) portIdentifier.open(
+				"RTBug_network", 2000);
+		serialPort.setSerialPortParams(config.getSpeed(), DATABITS_8,
+				STOPBITS_1, PARITY_NONE);
+		return serialPort;
 	}
 
 	@Override

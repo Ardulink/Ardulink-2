@@ -32,7 +32,7 @@ public class DummyConnectionTest {
 	}
 
 	@Test
-	public void canCreateDummyDonnection() throws URISyntaxException {
+	public void canCreateDummyDonnection() throws Exception {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
 		Connection connection = connectionManager.getConfigurer(
 				new URI("ardulink://dummy")).newConnection();
@@ -40,7 +40,7 @@ public class DummyConnectionTest {
 	}
 
 	@Test
-	public void canConfigureDummyConnection() throws URISyntaxException {
+	public void canConfigureDummyConnection() throws Exception {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
 		String aValue = "aValue";
 		int bValue = 1;
