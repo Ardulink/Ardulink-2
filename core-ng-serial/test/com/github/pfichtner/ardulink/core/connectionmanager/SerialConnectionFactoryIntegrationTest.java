@@ -5,6 +5,8 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.junit.Test;
 
@@ -21,8 +23,11 @@ public class SerialConnectionFactoryIntegrationTest {
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://serial?port=/dev/ttyUSB0&speed=115200"));
 
-		configurer.getAttributeSetter("speed").setValue(115200);
-		Object[] possibleValues = configurer.getAttributeSetter("port")
+		assertThat(new ArrayList<String>(configurer.getAttributes()),
+				is(Arrays.asList("port", "speed")));
+
+		configurer.getAttribute("speed").setValue(115200);
+		Object[] possibleValues = configurer.getAttribute("port")
 				.getPossibleValues();
 		assertThat(possibleValues, is(notNullValue()));
 

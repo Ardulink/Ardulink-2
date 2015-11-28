@@ -16,7 +16,6 @@ public class DummyConnectionFactory implements
 		public int b;
 		@Named("c")
 		public String c;
-		public int d;
 
 		@Named("a")
 		public void setPort(String a) {
@@ -26,10 +25,6 @@ public class DummyConnectionFactory implements
 		@Named("b")
 		public void theNameOfTheSetterDoesNotMatter(int b) {
 			this.b = b;
-		}
-
-		public void setD(int d) {
-			this.d = d;
 		}
 
 		@PossibleValueFor("a")

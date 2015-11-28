@@ -45,17 +45,14 @@ public class DummyConnectionTest {
 		String aValue = "aValue";
 		int bValue = 1;
 		String cValue = "cValue";
-		int dValue = 42;
 		DummyConnection connection = (DummyConnection) connectionManager
 				.getConfigurer(
 						new URI("ardulink://dummy?a=" + aValue + "&b=" + bValue
-								+ "&c=" + cValue + "&d=" + dValue))
-				.newConnection();
+								+ "&c=" + cValue)).newConnection();
 		DummyConnectionConfig config = connection.getConfig();
 		assertThat(config.a, is(aValue));
 		assertThat(config.b, is(bValue));
 		assertThat(config.c, is(cValue));
-		assertThat(config.d, is(dValue));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -70,7 +67,7 @@ public class DummyConnectionTest {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://dummy"));
-		assertThat(configurer.getAttributeSetter("a").getPossibleValues(),
+		assertThat(configurer.possibleValues("a"),
 				is(new Object[] { "aVal1", "aVal2" }));
 	}
 
