@@ -67,7 +67,7 @@ public class DummyConnectionTest {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://dummy"));
-		assertThat(configurer.possibleValues("a"),
+		assertThat(configurer.getAttribute("a").getPossibleValues(),
 				is(new Object[] { "aVal1", "aVal2" }));
 	}
 

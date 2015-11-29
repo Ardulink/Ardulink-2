@@ -18,13 +18,46 @@ import com.github.pfichtner.beans.BeanProperties;
 
 public abstract class ConnectionManager {
 
+	public interface ConfigAttribute {
+		void setValue(Object value) throws Exception;
+
+		Object[] getPossibleValues() throws Exception;
+	}
+
+	public static class ConfigAttributeAdapter<T extends ConnectionConfig>
+			implements ConfigAttribute {
+
+		private final T connectionConfig;
+		private final BeanProperties beanProperties;
+		private final String key;
+
+		public ConfigAttributeAdapter(T connectionConfig,
+				BeanProperties beanProperties, String key) {
+			this.connectionConfig = connectionConfig;
+			this.beanProperties = beanProperties;
+			this.key = key;
+		}
+
+		@Override
+		public void setValue(Object value) throws Exception {
+			Attribute attribute = beanProperties.getAttribute(key);
+			attribute.writeValue(value);
+		}
+
+		@Override
+		public Object[] getPossibleValues() throws Exception {
+			BeanProperties pValues = BeanProperties.builder(connectionConfig)
+					.using(propertyAnnotated(PossibleValueFor.class)).build();
+			return (Object[]) pValues.getAttribute(key).readValue();
+		}
+
+	}
+
 	public interface Configurer {
 
 		Configurer configure(String[] params);
 
-		Attribute getAttribute(String key);
-
-		Object[] possibleValues(String key) throws Exception;
+		ConfigAttribute getAttribute(String key);
 
 		Connection newConnection() throws Exception;
 
@@ -52,11 +85,9 @@ public abstract class ConnectionManager {
 			}
 		}
 
-		@Override
-		public Object[] possibleValues(String key) throws Exception {
-			return (Object[]) BeanProperties.builder(connectionConfig)
-					.using(propertyAnnotated(PossibleValueFor.class)).build()
-					.getAttribute(key).readValue();
+		public ConfigAttribute getAttribute(String key) {
+			return new ConfigAttributeAdapter<T>(connectionConfig,
+					beanProperties(), key);
 		}
 
 		private BeanProperties beanProperties() {
@@ -89,10 +120,6 @@ public abstract class ConnectionManager {
 		@Override
 		public Connection newConnection() throws Exception {
 			return this.connectionFactory.newConnection(this.connectionConfig);
-		}
-
-		public Attribute getAttribute(String key) {
-			return beanProperties().getAttribute(key);
 		}
 
 		private Object convert(String value, Class<?> targetType) {
