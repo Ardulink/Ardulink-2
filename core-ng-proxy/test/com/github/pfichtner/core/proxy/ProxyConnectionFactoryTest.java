@@ -17,7 +17,7 @@ import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager;
 import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager.ConfigAttribute;
 import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager.Configurer;
 
-public class ProxyConnectionFactoryIntegrationTest {
+public class ProxyConnectionFactoryTest {
 
 	private static final int TIMEOUT = 5000;
 
