@@ -42,6 +42,9 @@
 		<module>JoystickSmartCarDriver</module>
 		<module>SimpleSmartCarDriver</module>
 		<module>Deploy</module>
+		<module>core-ng-base</module>
+		<module>core-ng-serial</module>
+		<module>core-ng-beans</module>
 	</modules>
 
 	<build>

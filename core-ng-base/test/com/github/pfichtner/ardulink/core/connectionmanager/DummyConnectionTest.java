@@ -9,6 +9,8 @@ import static org.junit.Assert.assertThat;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -76,6 +78,13 @@ public class DummyConnectionTest {
 
 		assertThat(configurer.getAttribute("b").hasPossibleValues(), is(FALSE));
 		assertThat(configurer.getAttribute("c").hasPossibleValues(), is(FALSE));
+	}
+
+	@Test
+	public void canIterateRegisteredFactories() throws URISyntaxException {
+		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		assertThat(connectionManager.listURIs(),
+				is(Arrays.asList(new URI("ardulink://dummy"))));
 	}
 
 }

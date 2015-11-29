@@ -1,21 +1,24 @@
 package com.github.pfichtner.ardulink.core.connectionmanager;
 
 import static com.github.pfichtner.beans.finder.impl.FindByAnnotation.propertyAnnotated;
+import static java.lang.String.format;
 import static org.zu.ardulink.util.Preconditions.checkArgument;
 import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import static org.zu.ardulink.util.Preconditions.checkState;
 
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 import java.util.ServiceLoader;
 
-import org.zu.ardulink.util.Preconditions;
 import org.zu.ardulink.util.Primitive;
 
 import com.github.pfichtner.ardulink.core.Connection;
 import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionConfig.Named;
 import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionConfig.PossibleValueFor;
+import com.github.pfichtner.ardulink.core.guava.Lists;
 import com.github.pfichtner.beans.Attribute;
 import com.github.pfichtner.beans.BeanProperties;
 
@@ -162,17 +165,33 @@ public abstract class ConnectionManager {
 				return uri;
 			}
 
-			private ConnectionFactory getConnectionFactory(URI uri) {
-				ServiceLoader<ConnectionFactory> loader = ServiceLoader
-						.load(ConnectionFactory.class);
-				for (Iterator<ConnectionFactory> iterator = loader.iterator(); iterator
-						.hasNext();) {
-					ConnectionFactory connectionFactory = iterator.next();
+			@Override
+			public List<URI> listURIs() {
+				List<ConnectionFactory> factories = getConnectionFactories();
+				List<URI> result = new ArrayList<URI>(factories.size());
+				for (ConnectionFactory<?> factory : factories) {
+					String name = factory.getName();
+					try {
+						result.add(new URI(format("%s://%s", SCHEMA, name)));
+					} catch (URISyntaxException e) {
+						throw new RuntimeException(e);
+					}
+				}
+				return result;
+			}
+
+			private ConnectionFactory<?> getConnectionFactory(URI uri) {
+				for (ConnectionFactory<?> connectionFactory : getConnectionFactories()) {
 					if (connectionFactory.getName().equals(uri.getHost())) {
 						return connectionFactory;
 					}
 				}
 				return null;
+			}
+
+			private List<ConnectionFactory> getConnectionFactories() {
+				return Lists.newArrayList(ServiceLoader.load(
+						ConnectionFactory.class).iterator());
 			}
 
 			@Override
@@ -188,5 +207,7 @@ public abstract class ConnectionManager {
 	}
 
 	public abstract Configurer getConfigurer(URI uri);
+
+	public abstract List<URI> listURIs();
 
 }
