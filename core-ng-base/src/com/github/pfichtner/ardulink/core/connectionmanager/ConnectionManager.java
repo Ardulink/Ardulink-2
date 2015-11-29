@@ -2,12 +2,15 @@ package com.github.pfichtner.ardulink.core.connectionmanager;
 
 import static com.github.pfichtner.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static org.zu.ardulink.util.Preconditions.checkArgument;
+import static org.zu.ardulink.util.Preconditions.checkNotNull;
+import static org.zu.ardulink.util.Preconditions.checkState;
 
 import java.net.URI;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
+import org.zu.ardulink.util.Preconditions;
 import org.zu.ardulink.util.Primitive;
 
 import com.github.pfichtner.ardulink.core.Connection;
@@ -46,9 +49,16 @@ public abstract class ConnectionManager {
 
 		@Override
 		public Object[] getPossibleValues() throws Exception {
-			BeanProperties pValues = BeanProperties.builder(connectionConfig)
+			BeanProperties values = BeanProperties.builder(connectionConfig)
 					.using(propertyAnnotated(PossibleValueFor.class)).build();
-			return (Object[]) pValues.getAttribute(key).readValue();
+			Object value = checkNotNull(values.getAttribute(key).readValue(),
+					"returntype was null (should be an empty Object[] or empty Collection)");
+			if (value instanceof Collection<?>) {
+				value = ((Collection<?>) value).toArray(new Object[0]);
+			}
+			checkState(value instanceof Object[],
+					"returntype is not an Object[] but %s", value.getClass());
+			return (Object[]) value;
 		}
 
 	}
