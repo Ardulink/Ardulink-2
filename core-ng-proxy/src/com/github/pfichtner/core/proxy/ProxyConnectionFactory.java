@@ -1,7 +1,5 @@
 package com.github.pfichtner.core.proxy;
 
-import static org.zu.ardulink.util.Preconditions.checkNotNull;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -20,16 +18,10 @@ public class ProxyConnectionFactory implements
 
 	@Override
 	public Connection newConnection(ProxyConnectionConfig config)
-			throws Exception {
-		Socket socket = createSocket(config);
+			throws UnknownHostException, IOException {
+		Socket socket = config.getRemote().getSocket();
 		return new StreamConnection(socket.getInputStream(),
 				socket.getOutputStream());
-	}
-
-	private Socket createSocket(ProxyConnectionConfig config)
-			throws UnknownHostException, IOException {
-		return new Socket(checkNotNull(config.getHost(),
-				"host must not be null"), config.getPort());
 	}
 
 	public ProxyConnectionConfig newConnectionConfig() {

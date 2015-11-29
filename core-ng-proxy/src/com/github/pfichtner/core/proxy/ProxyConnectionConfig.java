@@ -41,6 +41,10 @@ public class ProxyConnectionConfig implements ConnectionConfig {
 			printWriter = new PrintWriter(outputStream, true);
 		}
 
+		public Socket getSocket() {
+			return socket;
+		}
+
 		public List<String> getPortList() throws IOException {
 			printWriter.println(GET_PORT_LIST_CMD);
 			printWriter.flush();
@@ -88,16 +92,16 @@ public class ProxyConnectionConfig implements ConnectionConfig {
 		this.portlist = portlist;
 	}
 
-	public String getHost() {
-		return host;
-	}
-
-	public int getPort() {
-		return port;
-	}
-
 	public String getPortlist() {
 		return portlist;
+	}
+
+	public ProxyConnectionToRemote getRemote() throws UnknownHostException,
+			IOException {
+		if (this.remote == null) {
+			this.remote = new ProxyConnectionToRemote(host, port);
+		}
+		return this.remote;
 	}
 
 	@PossibleValueFor(PORTLIST)
