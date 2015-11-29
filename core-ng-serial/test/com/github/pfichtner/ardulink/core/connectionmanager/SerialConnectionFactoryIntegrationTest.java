@@ -1,8 +1,10 @@
 package com.github.pfichtner.ardulink.core.connectionmanager;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -11,29 +13,39 @@ import java.util.Arrays;
 import org.junit.Test;
 
 import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.StreamConnection;
+import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager.ConfigAttribute;
 import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager.Configurer;
 
 public class SerialConnectionFactoryIntegrationTest {
 
 	@Test
-	public void canLoadClassViaServiceLoader() throws Exception {
+	public void canConfigureSerialConnectionViaURI() throws Exception {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
-		// TODO OS dependent!? Windows/Linux
+		Connection connection = connectionManager.getConfigurer(
+				new URI("ardulink://serial?port=anyString&speed=9600"))
+				.newConnection();
+		assertNotNull(connection);
+	}
+
+	@Test
+	public void canConfigureSerialConnectionViaConfigurer() throws Exception {
+		ConnectionManager connectionManager = ConnectionManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
-				"ardulink://serial?port=/dev/ttyUSB0&speed=115200"));
+				"ardulink://serial"));
 
 		assertThat(new ArrayList<String>(configurer.getAttributes()),
 				is(Arrays.asList("port", "speed")));
 
-		configurer.getAttribute("speed").setValue(115200);
-		Object[] possibleValues = configurer.getAttribute("port")
-				.getPossibleValues();
-		assertThat(possibleValues, is(notNullValue()));
+		ConfigAttribute port = configurer.getAttribute("port");
+		ConfigAttribute speed = configurer.getAttribute("speed");
 
-		Connection connection = configurer.newConnection();
-		assertThat(connection.getClass().getName(),
-				is(StreamConnection.class.getName()));
+		assertThat(port.hasPossibleValues(), is(TRUE));
+		assertThat(speed.hasPossibleValues(), is(FALSE));
+
+		assertThat(port.getPossibleValues(), is(notNullValue()));
+
+		port.setValue("anyString");
+		speed.setValue(115200);
 	}
 
 }

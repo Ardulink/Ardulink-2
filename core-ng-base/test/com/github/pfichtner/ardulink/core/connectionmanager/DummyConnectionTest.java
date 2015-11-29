@@ -1,5 +1,7 @@
 package com.github.pfichtner.ardulink.core.connectionmanager;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -11,6 +13,7 @@ import java.net.URISyntaxException;
 import org.junit.Test;
 
 import com.github.pfichtner.ardulink.core.Connection;
+import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager.ConfigAttribute;
 import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager.Configurer;
 import com.github.pfichtner.ardulink.core.connectionmanager.DummyConnectionFactory.DummyConnection;
 import com.github.pfichtner.ardulink.core.connectionmanager.DummyConnectionFactory.DummyConnectionConfig;
@@ -67,8 +70,12 @@ public class DummyConnectionTest {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://dummy"));
-		assertThat(configurer.getAttribute("a").getPossibleValues(),
-				is(new Object[] { "aVal1", "aVal2" }));
+		ConfigAttribute a = configurer.getAttribute("a");
+		assertThat(a.hasPossibleValues(), is(TRUE));
+		assertThat(a.getPossibleValues(), is(new Object[] { "aVal1", "aVal2" }));
+
+		assertThat(configurer.getAttribute("b").hasPossibleValues(), is(FALSE));
+		assertThat(configurer.getAttribute("c").hasPossibleValues(), is(FALSE));
 	}
 
 }

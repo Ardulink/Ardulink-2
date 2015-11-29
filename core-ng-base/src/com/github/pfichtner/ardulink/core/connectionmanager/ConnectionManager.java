@@ -24,7 +24,10 @@ public abstract class ConnectionManager {
 	public interface ConfigAttribute {
 		void setValue(Object value) throws Exception;
 
+		boolean hasPossibleValues();
+
 		Object[] getPossibleValues() throws Exception;
+
 	}
 
 	public static class ConfigAttributeAdapter<T extends ConnectionConfig>
@@ -48,10 +51,13 @@ public abstract class ConnectionManager {
 		}
 
 		@Override
+		public boolean hasPossibleValues() {
+			return getPossibleValuesFor() != null;
+		}
+
+		@Override
 		public Object[] getPossibleValues() throws Exception {
-			BeanProperties values = BeanProperties.builder(connectionConfig)
-					.using(propertyAnnotated(PossibleValueFor.class)).build();
-			Object value = checkNotNull(values.getAttribute(key).readValue(),
+			Object value = checkNotNull(getPossibleValuesFor().readValue(),
 					"returntype was null (should be an empty Object[] or empty Collection)");
 			if (value instanceof Collection<?>) {
 				value = ((Collection<?>) value).toArray(new Object[0]);
@@ -59,6 +65,12 @@ public abstract class ConnectionManager {
 			checkState(value instanceof Object[],
 					"returntype is not an Object[] but %s", value.getClass());
 			return (Object[]) value;
+		}
+
+		private Attribute getPossibleValuesFor() {
+			return BeanProperties.builder(connectionConfig)
+					.using(propertyAnnotated(PossibleValueFor.class)).build()
+					.getAttribute(key);
 		}
 
 	}
