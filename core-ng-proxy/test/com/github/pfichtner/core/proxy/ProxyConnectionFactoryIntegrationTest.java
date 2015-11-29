@@ -1,5 +1,6 @@
 package com.github.pfichtner.core.proxy;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import java.io.BufferedReader;
@@ -10,7 +11,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URI;
 
-import org.hamcrest.core.Is;
 import org.junit.Test;
 
 import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager;
@@ -31,7 +31,21 @@ public class ProxyConnectionFactoryIntegrationTest {
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://proxy?host=localhost&port=" + port));
 		ConfigAttribute portList = configurer.getAttribute("portlist");
-		assertThat(portList.getPossibleValues(), Is.is(new Object[0]));
+		assertThat(portList.getPossibleValues(), is(new Object[0]));
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void canReadPortList() throws Exception {
+		ServerSocket serverSocket = new ServerSocket(0);
+		startServer(serverSocket, 1);
+		int port = serverSocket.getLocalPort();
+
+		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		Configurer configurer = connectionManager.getConfigurer(new URI(
+				"ardulink://proxy?host=localhost&port=" + port));
+		ConfigAttribute portList = configurer.getAttribute("portlist");
+		assertThat(portList.getPossibleValues(),
+				is((Object[]) new String[] { "myPortNr0" }));
 	}
 
 	private void startServer(final ServerSocket serverSocket,
@@ -57,9 +71,12 @@ public class ProxyConnectionFactoryIntegrationTest {
 				while ((line = in.readLine()) != null) {
 					if ("ardulink:networkproxyserver:get_port_list"
 							.equals(line)) {
-						out.write("NUMBER_OF_PORTS=" + numberOfPorts + "\n");
-						out.flush();
+						out.println("NUMBER_OF_PORTS=" + numberOfPorts);
 					}
+					for (int i = 0; i < numberOfPorts; i++) {
+						out.println("myPortNr" + i);
+					}
+					out.flush();
 				}
 			};
 		}.start();
