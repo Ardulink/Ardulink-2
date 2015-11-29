@@ -40,14 +40,14 @@ public class SerialConnectionConfig implements ConnectionConfig {
 	}
 
 	@PossibleValueFor(PORT)
-	public List<String> getPortList() {
+	public String[] getPortList() {
 		List<String> ports = new ArrayList<String>();
 		for (CommPortIdentifier portIdentifier : portIdentifiers()) {
 			if (portIdentifier.getPortType() == PORT_SERIAL) {
 				ports.add(portIdentifier.getName());
 			}
 		}
-		return ports;
+		return ports.toArray(new String[ports.size()]);
 	}
 
 	@SuppressWarnings("unchecked")
