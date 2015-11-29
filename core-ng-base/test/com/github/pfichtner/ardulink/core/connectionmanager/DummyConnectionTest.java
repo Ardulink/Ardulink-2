@@ -4,13 +4,11 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Test;
 
@@ -22,12 +20,11 @@ import com.github.pfichtner.ardulink.core.connectionmanager.DummyConnectionFacto
 
 public class DummyConnectionTest {
 
-	@Test
-	public void returnsNullOnInvalidNames() throws URISyntaxException {
+	@Test(expected = IllegalArgumentException.class)
+	public void throwsExceptionOnInvalidNames() throws URISyntaxException {
 		ConnectionManager connectionManager = ConnectionManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(new URI(
+		connectionManager.getConfigurer(new URI(
 				"ardulink://non_registered_and_not_existing_name"));
-		assertThat(configurer, nullValue());
 	}
 
 	@Test(expected = IllegalArgumentException.class)

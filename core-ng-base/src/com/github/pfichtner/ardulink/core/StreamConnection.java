@@ -45,6 +45,11 @@ public class StreamConnection implements Connection {
 		}
 	}
 
+	@Override
+	public void removeListener(Listener listener) {
+		this.listeners.remove(listener);
+	}
+
 	private void runReaderThread(final InputStream inputStream) {
 		this.thread = new Thread(runnable(inputStream));
 		this.thread.setDaemon(true);

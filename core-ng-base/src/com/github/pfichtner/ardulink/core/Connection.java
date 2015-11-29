@@ -66,4 +66,6 @@ public interface Connection extends Closeable {
 
 	void addListener(Listener listener);
 
+	void removeListener(Listener listener);
+
 }

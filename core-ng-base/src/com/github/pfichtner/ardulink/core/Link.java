@@ -20,11 +20,11 @@ import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.EventListener;
 import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
+import com.github.pfichtner.ardulink.core.proto.api.Protocol.FromArduino;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoCharEvent;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoPinEvent;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStartListening;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol.FromArduino;
 
 public class Link {
 
@@ -48,10 +48,7 @@ public class Link {
 	public Link addListener(EventListener listener) throws IOException {
 		this.eventListeners.add(listener);
 		if (listener instanceof FilteredEventListenerAdapter) {
-			Pin pin = ((FilteredEventListenerAdapter) listener).getPin();
-			ToArduinoStartListening startListeningEvent = new ToArduinoStartListening(
-					pin);
-			this.connection.write(this.protocol.toArduino(startListeningEvent));
+			startListening(((FilteredEventListenerAdapter) listener).getPin());
 		}
 		return this;
 	}
@@ -60,13 +57,22 @@ public class Link {
 		this.eventListeners.remove(listener);
 		if (listener instanceof FilteredEventListenerAdapter) {
 			Pin pin = ((FilteredEventListenerAdapter) listener).getPin();
-			ToArduinoStopListening stopListening = new ToArduinoStopListening(
-					pin);
 			if (!listenerLeftFor(pin)) {
-				this.connection.write(this.protocol.toArduino(stopListening));
+				stopListening(pin);
 			}
 		}
 		return this;
+	}
+
+	public void startListening(Pin pin) throws IOException {
+		ToArduinoStartListening startListeningEvent = new ToArduinoStartListening(
+				pin);
+		this.connection.write(this.protocol.toArduino(startListeningEvent));
+	}
+
+	public void stopListening(Pin pin) throws IOException {
+		ToArduinoStopListening stopListening = new ToArduinoStopListening(pin);
+		this.connection.write(this.protocol.toArduino(stopListening));
 	}
 
 	private boolean listenerLeftFor(Pin pin) {

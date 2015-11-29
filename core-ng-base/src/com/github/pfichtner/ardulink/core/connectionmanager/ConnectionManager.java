@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ServiceLoader;
 
+import org.zu.ardulink.util.Preconditions;
 import org.zu.ardulink.util.Primitive;
 
 import com.github.pfichtner.ardulink.core.Connection;
@@ -180,9 +181,9 @@ public abstract class ConnectionManager {
 				return result;
 			}
 
-			private ConnectionFactory<?> getConnectionFactory(URI uri) {
+			private ConnectionFactory<?> getConnectionFactory(String name) {
 				for (ConnectionFactory<?> connectionFactory : getConnectionFactories()) {
-					if (connectionFactory.getName().equals(uri.getHost())) {
+					if (connectionFactory.getName().equals(name)) {
 						return connectionFactory;
 					}
 				}
@@ -196,11 +197,13 @@ public abstract class ConnectionManager {
 
 			@Override
 			public Configurer getConfigurer(URI uri) {
-				ConnectionFactory connectionFactory = getConnectionFactory(checkSchema(uri));
-				return connectionFactory == null ? null
-						: new DefaultConfigurer(connectionFactory)
-								.configure(uri.getQuery() == null ? new String[0]
-										: uri.getQuery().split("\\&"));
+				String name = checkSchema(uri).getHost();
+				ConnectionFactory connectionFactory = getConnectionFactory(name);
+				checkArgument(connectionFactory != null,
+						"No factory registered for \"%s\"", name);
+				return new DefaultConfigurer(connectionFactory).configure(uri
+						.getQuery() == null ? new String[0] : uri.getQuery()
+						.split("\\&"));
 			}
 
 		};

@@ -56,6 +56,11 @@ public class DummyConnectionFactory implements
 		public void addListener(Listener listener) {
 			throw new UnsupportedOperationException();
 		}
+		
+		@Override
+		public void removeListener(Listener listener) {
+			throw new UnsupportedOperationException();
+		}
 
 		public DummyConnectionConfig getConfig() {
 			return config;
