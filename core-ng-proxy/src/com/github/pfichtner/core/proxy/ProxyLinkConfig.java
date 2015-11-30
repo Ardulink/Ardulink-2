@@ -19,7 +19,7 @@ import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocols;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 
-public class ProxyConnectionConfig implements LinkConfig {
+public class ProxyLinkConfig implements LinkConfig {
 
 	public static class ProxyConnectionToRemote {
 

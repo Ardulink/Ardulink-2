@@ -9,12 +9,12 @@ import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
-import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkFactory.DummyConnectionConfig;
+import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkFactory.DummyLinkConfig;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 
-public class DummyLinkFactory implements LinkFactory<DummyConnectionConfig> {
+public class DummyLinkFactory implements LinkFactory<DummyLinkConfig> {
 
-	public static class DummyConnectionConfig implements LinkConfig {
+	public static class DummyLinkConfig implements LinkConfig {
 
 		public String a;
 		public int b;
@@ -40,10 +40,10 @@ public class DummyLinkFactory implements LinkFactory<DummyConnectionConfig> {
 
 	public static class DummyConnection implements Connection {
 
-		private final DummyConnectionConfig config;
+		private final DummyLinkConfig config;
 		private List<Listener> listeners = new ArrayList<Listener>();
 
-		public DummyConnection(DummyConnectionConfig config) {
+		public DummyConnection(DummyLinkConfig config) {
 			this.config = config;
 		}
 
@@ -67,7 +67,7 @@ public class DummyLinkFactory implements LinkFactory<DummyConnectionConfig> {
 			this.listeners.remove(listener);
 		}
 
-		public DummyConnectionConfig getConfig() {
+		public DummyLinkConfig getConfig() {
 			return config;
 		}
 
@@ -79,14 +79,14 @@ public class DummyLinkFactory implements LinkFactory<DummyConnectionConfig> {
 	}
 
 	@Override
-	public Link newLink(DummyConnectionConfig config) {
+	public Link newLink(DummyLinkConfig config) {
 		return new ConnectionBasedLink(new DummyConnection(config),
 				ArdulinkProtocol.instance());
 	}
 
 	@Override
-	public DummyConnectionConfig newLinkConfig() {
-		return new DummyConnectionConfig();
+	public DummyLinkConfig newLinkConfig() {
+		return new DummyLinkConfig();
 	}
 
 }

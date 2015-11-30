@@ -10,7 +10,7 @@ import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 
 public class ProxyLinkFactory implements
-		LinkFactory<ProxyConnectionConfig> {
+		LinkFactory<ProxyLinkConfig> {
 
 	@Override
 	public String getName() {
@@ -18,7 +18,7 @@ public class ProxyLinkFactory implements
 	}
 
 	@Override
-	public Link newLink(ProxyConnectionConfig config)
+	public Link newLink(ProxyLinkConfig config)
 			throws UnknownHostException, IOException {
 		Socket socket = config.getRemote().getSocket();
 		return new ConnectionBasedLink(new StreamConnection(
@@ -26,8 +26,8 @@ public class ProxyLinkFactory implements
 				config.getProto());
 	}
 
-	public ProxyConnectionConfig newLinkConfig() {
-		return new ProxyConnectionConfig();
+	public ProxyLinkConfig newLinkConfig() {
+		return new ProxyLinkConfig();
 	}
 
 }

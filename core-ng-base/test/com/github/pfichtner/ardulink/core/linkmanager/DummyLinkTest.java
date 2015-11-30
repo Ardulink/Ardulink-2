@@ -15,7 +15,7 @@ import org.junit.Test;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkFactory.DummyConnection;
-import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkFactory.DummyConnectionConfig;
+import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkFactory.DummyLinkConfig;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
@@ -56,7 +56,7 @@ public class DummyLinkTest {
 				is(ConnectionBasedLink.class.getName()));
 		DummyConnection connection = (DummyConnection) ((ConnectionBasedLink) link)
 				.getConnection();
-		DummyConnectionConfig config = connection.getConfig();
+		DummyLinkConfig config = connection.getConfig();
 		assertThat(config.a, is(aValue));
 		assertThat(config.b, is(bValue));
 		assertThat(config.c, is(cValue));

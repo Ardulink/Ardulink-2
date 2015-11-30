@@ -19,7 +19,7 @@ import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 
 public class SerialLinkFactory implements
-		LinkFactory<SerialConnectionConfig> {
+		LinkFactory<SerialLinkConfig> {
 
 	@Override
 	public String getName() {
@@ -27,7 +27,7 @@ public class SerialLinkFactory implements
 	}
 
 	@Override
-	public Link newLink(SerialConnectionConfig config)
+	public Link newLink(SerialLinkConfig config)
 			throws NoSuchPortException, PortInUseException,
 			UnsupportedCommOperationException, IOException {
 		CommPortIdentifier portIdentifier = CommPortIdentifier
@@ -41,7 +41,7 @@ public class SerialLinkFactory implements
 				config.getProto());
 	}
 
-	private SerialPort serialPort(SerialConnectionConfig config,
+	private SerialPort serialPort(SerialLinkConfig config,
 			CommPortIdentifier portIdentifier) throws PortInUseException,
 			UnsupportedCommOperationException {
 		SerialPort serialPort = (SerialPort) portIdentifier.open(
@@ -52,8 +52,8 @@ public class SerialLinkFactory implements
 	}
 
 	@Override
-	public SerialConnectionConfig newLinkConfig() {
-		return new SerialConnectionConfig();
+	public SerialLinkConfig newLinkConfig() {
+		return new SerialLinkConfig();
 	}
 
 }

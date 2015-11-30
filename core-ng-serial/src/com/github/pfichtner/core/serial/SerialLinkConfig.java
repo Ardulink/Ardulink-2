@@ -13,7 +13,7 @@ import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocols;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 
-public class SerialConnectionConfig implements LinkConfig {
+public class SerialLinkConfig implements LinkConfig {
 
 	private static final String PORT = "port";
 
