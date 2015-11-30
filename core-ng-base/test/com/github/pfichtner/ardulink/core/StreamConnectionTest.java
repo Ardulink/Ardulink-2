@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.Link;
+import com.github.pfichtner.ardulink.core.StreamBasedLink;
 import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.Connection.ListenerAdapter;
 import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
@@ -53,7 +53,7 @@ public class StreamConnectionTest {
 		PipedInputStream pis = new PipedInputStream();
 		this.arduinosOutputStream = new PipedOutputStream(pis);
 		this.connection = new StreamConnection(pis, os);
-		this.link = new Link(connection, AL_PROTO) {
+		this.link = new StreamBasedLink(connection, AL_PROTO) {
 			@Override
 			protected void received(byte[] bytes) {
 				super.received(bytes);
