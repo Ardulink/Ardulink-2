@@ -1,4 +1,4 @@
-package com.github.pfichtner.ardulink.core.connectionmanager;
+package com.github.pfichtner.ardulink.core.linkmanager;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -12,45 +12,50 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager.ConfigAttribute;
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager.Configurer;
-import com.github.pfichtner.ardulink.core.connectionmanager.DummyConnectionFactory.DummyConnection;
-import com.github.pfichtner.ardulink.core.connectionmanager.DummyConnectionFactory.DummyConnectionConfig;
+import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
+import com.github.pfichtner.ardulink.core.Link;
+import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkFactory.DummyConnection;
+import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkFactory.DummyConnectionConfig;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
-public class DummyConnectionTest {
+public class DummyLinkTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void throwsExceptionOnInvalidNames() throws URISyntaxException {
-		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		LinkManager connectionManager = LinkManager.getInstance();
 		connectionManager.getConfigurer(new URI(
 				"ardulink://non_registered_and_not_existing_name"));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void schemaHasToBeArdulink() throws URISyntaxException {
-		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		LinkManager connectionManager = LinkManager.getInstance();
 		connectionManager.getConfigurer(new URI("wrongSchema://dummy"));
 	}
 
 	@Test
 	public void canCreateDummyDonnection() throws Exception {
-		ConnectionManager connectionManager = ConnectionManager.getInstance();
-		Connection connection = connectionManager.getConfigurer(
-				new URI("ardulink://dummy")).newConnection();
-		assertThat(connection, is(notNullValue()));
+		LinkManager connectionManager = LinkManager.getInstance();
+		Link link = connectionManager
+				.getConfigurer(new URI("ardulink://dummy")).newLink();
+		assertThat(link, is(notNullValue()));
 	}
 
 	@Test
 	public void canConfigureDummyConnection() throws Exception {
-		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		LinkManager connectionManager = LinkManager.getInstance();
 		String aValue = "aValue";
 		int bValue = 1;
 		String cValue = "cValue";
-		DummyConnection connection = (DummyConnection) connectionManager
-				.getConfigurer(
-						new URI("ardulink://dummy?a=" + aValue + "&b=" + bValue
-								+ "&c=" + cValue)).newConnection();
+		Link link = (Link) connectionManager.getConfigurer(
+				new URI("ardulink://dummy?a=" + aValue + "&b=" + bValue + "&c="
+						+ cValue)).newLink();
+
+		assertThat(link.getClass().getName(),
+				is(ConnectionBasedLink.class.getName()));
+		DummyConnection connection = (DummyConnection) ((ConnectionBasedLink) link)
+				.getConnection();
 		DummyConnectionConfig config = connection.getConfig();
 		assertThat(config.a, is(aValue));
 		assertThat(config.b, is(bValue));
@@ -59,14 +64,14 @@ public class DummyConnectionTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void throwsExceptionOnInvalidKey() throws URISyntaxException {
-		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		LinkManager connectionManager = LinkManager.getInstance();
 		connectionManager.getConfigurer(new URI(
 				"ardulink://dummy?nonExistingKey=someValue"));
 	}
 
 	@Test
 	public void canDefinePossibleValues() throws Exception {
-		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://dummy"));
 		ConfigAttribute a = configurer.getAttribute("a");
@@ -79,7 +84,7 @@ public class DummyConnectionTest {
 
 	@Test
 	public void canIterateRegisteredFactories() throws URISyntaxException {
-		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		LinkManager connectionManager = LinkManager.getInstance();
 		assertThat(connectionManager.listURIs(),
 				is(Arrays.asList(new URI("ardulink://dummy"))));
 	}

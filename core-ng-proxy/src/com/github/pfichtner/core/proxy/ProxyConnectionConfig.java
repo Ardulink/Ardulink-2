@@ -14,9 +14,12 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionConfig;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
+import com.github.pfichtner.ardulink.core.proto.api.Protocol;
+import com.github.pfichtner.ardulink.core.proto.api.Protocols;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 
-public class ProxyConnectionConfig implements ConnectionConfig {
+public class ProxyConnectionConfig implements LinkConfig {
 
 	public static class ProxyConnectionToRemote {
 
@@ -71,9 +74,12 @@ public class ProxyConnectionConfig implements ConnectionConfig {
 
 	private static final String PORTLIST = "portlist";
 
+	private static final String PROTO = "proto";
+
 	private String host;
 	private int port = DEFAULT_LISTENING_PORT;
 	private String portlist;
+	private Protocol proto = ArdulinkProtocol.instance();
 
 	private ProxyConnectionToRemote remote;
 
@@ -92,8 +98,17 @@ public class ProxyConnectionConfig implements ConnectionConfig {
 		this.portlist = portlist;
 	}
 
+	@Named(PROTO)
+	public void setProto(String proto) {
+		this.proto = Protocols.getByName(proto);
+	}
+
 	public String getPortlist() {
 		return portlist;
+	}
+
+	public Protocol getProto() {
+		return proto;
 	}
 
 	public ProxyConnectionToRemote getRemote() throws UnknownHostException,

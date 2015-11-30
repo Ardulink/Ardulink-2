@@ -1,12 +1,13 @@
 package com.github.pfichtner.ardulink.core;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
 import com.github.pfichtner.ardulink.core.events.EventListener;
 
-public interface Link {
+public interface Link extends Closeable {
 
 	Link addListener(EventListener listener) throws IOException;
 
@@ -23,7 +24,5 @@ public interface Link {
 
 	void sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException;
-
-	void close() throws IOException;
 
 }

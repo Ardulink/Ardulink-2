@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.StreamBasedLink;
+import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.Connection.ListenerAdapter;
 import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
@@ -35,12 +35,13 @@ import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.EventListener;
 import com.github.pfichtner.ardulink.core.events.EventListenerAdapter;
 import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
+import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 
-public class StreamConnectionTest {
+public class ConnectionBasedLinkTest {
 
 	private static final int TIMEOUT = 5 * 1000;
-	private static final ArdulinkProtocol AL_PROTO = new ArdulinkProtocol();
+	private static final Protocol AL_PROTO = ArdulinkProtocol.instance();
 
 	private PipedOutputStream arduinosOutputStream;
 	private final ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -53,11 +54,11 @@ public class StreamConnectionTest {
 		PipedInputStream pis = new PipedInputStream();
 		this.arduinosOutputStream = new PipedOutputStream(pis);
 		this.connection = new StreamConnection(pis, os);
-		this.link = new StreamBasedLink(connection, AL_PROTO) {
+		this.link = new ConnectionBasedLink(connection, AL_PROTO) {
 			@Override
 			protected void received(byte[] bytes) {
 				super.received(bytes);
-				StreamConnectionTest.this.bytesRead.addAndGet(bytes.length);
+				ConnectionBasedLinkTest.this.bytesRead.addAndGet(bytes.length);
 			}
 		};
 	}

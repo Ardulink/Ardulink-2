@@ -13,12 +13,13 @@ import gnu.io.UnsupportedCommOperationException;
 
 import java.io.IOException;
 
-import com.github.pfichtner.ardulink.core.Connection;
+import com.github.pfichtner.ardulink.core.Link;
+import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.StreamConnection;
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionFactory;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 
-public class SerialConnectionFactory implements
-		ConnectionFactory<SerialConnectionConfig> {
+public class SerialLinkFactory implements
+		LinkFactory<SerialConnectionConfig> {
 
 	@Override
 	public String getName() {
@@ -26,7 +27,7 @@ public class SerialConnectionFactory implements
 	}
 
 	@Override
-	public Connection newConnection(SerialConnectionConfig config)
+	public Link newLink(SerialConnectionConfig config)
 			throws NoSuchPortException, PortInUseException,
 			UnsupportedCommOperationException, IOException {
 		CommPortIdentifier portIdentifier = CommPortIdentifier
@@ -35,8 +36,9 @@ public class SerialConnectionFactory implements
 		checkState(!portIdentifier.isCurrentlyOwned(),
 				"Port %s is currently in use", config.getPort());
 		SerialPort serialPort = serialPort(config, portIdentifier);
-		return new StreamConnection(serialPort.getInputStream(),
-				serialPort.getOutputStream());
+		return new ConnectionBasedLink(new StreamConnection(
+				serialPort.getInputStream(), serialPort.getOutputStream()),
+				config.getProto());
 	}
 
 	private SerialPort serialPort(SerialConnectionConfig config,
@@ -50,7 +52,7 @@ public class SerialConnectionFactory implements
 	}
 
 	@Override
-	public SerialConnectionConfig newConnectionConfig() {
+	public SerialConnectionConfig newLinkConfig() {
 		return new SerialConnectionConfig();
 	}
 

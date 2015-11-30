@@ -32,12 +32,24 @@ import com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolK
 
 public class ArdulinkProtocol implements Protocol {
 
+	private static final ArdulinkProtocol instance = new ArdulinkProtocol();
+
 	public static final byte[] READ_DIVIDER = "\n".getBytes();
 
 	private static final Pattern pattern = Pattern
 			.compile("alp:\\/\\/([a-z]+)/([\\d]+)/([\\d]+)");
 
+	private static final String NAME = "ardulink";
+
 	// TODO refactor all analog/digital switches
+
+	public String getName() {
+		return NAME;
+	};
+
+	public static Protocol instance() {
+		return instance;
+	}
 
 	@Override
 	public byte[] toArduino(ToArduinoStartListening startListeningEvent) {

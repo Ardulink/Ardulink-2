@@ -13,9 +13,9 @@ import java.net.URI;
 
 import org.junit.Test;
 
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager;
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager.ConfigAttribute;
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager.Configurer;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
 public class ProxyConnectionFactoryTest {
 
@@ -27,7 +27,7 @@ public class ProxyConnectionFactoryTest {
 		startServer(serverSocket, 0);
 		int port = serverSocket.getLocalPort();
 
-		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://proxy?host=localhost&port=" + port));
 		ConfigAttribute portList = configurer.getAttribute("portlist");
@@ -40,7 +40,7 @@ public class ProxyConnectionFactoryTest {
 		startServer(serverSocket, 1);
 		int port = serverSocket.getLocalPort();
 
-		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://proxy?host=localhost&port=" + port));
 		ConfigAttribute portList = configurer.getAttribute("portlist");

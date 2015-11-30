@@ -1,4 +1,4 @@
-package com.github.pfichtner.ardulink.core.connectionmanager;
+package com.github.pfichtner.ardulink.core.linkmanager;
 
 import static com.github.pfichtner.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static java.lang.String.format;
@@ -13,17 +13,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import org.zu.ardulink.util.Preconditions;
 import org.zu.ardulink.util.Primitive;
 
-import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionConfig.Named;
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionConfig.PossibleValueFor;
+import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.guava.Lists;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.Named;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.PossibleValueFor;
 import com.github.pfichtner.beans.Attribute;
 import com.github.pfichtner.beans.BeanProperties;
 
-public abstract class ConnectionManager {
+public abstract class LinkManager {
 
 	public interface ConfigAttribute {
 		void setValue(Object value) throws Exception;
@@ -34,16 +33,16 @@ public abstract class ConnectionManager {
 
 	}
 
-	public static class ConfigAttributeAdapter<T extends ConnectionConfig>
-			implements ConfigAttribute {
+	public static class ConfigAttributeAdapter<T extends LinkConfig> implements
+			ConfigAttribute {
 
-		private final T connectionConfig;
+		private final T linkConfig;
 		private final BeanProperties beanProperties;
 		private final String key;
 
-		public ConfigAttributeAdapter(T connectionConfig,
+		public ConfigAttributeAdapter(T linkConfig,
 				BeanProperties beanProperties, String key) {
-			this.connectionConfig = connectionConfig;
+			this.linkConfig = linkConfig;
 			this.beanProperties = beanProperties;
 			this.key = key;
 		}
@@ -72,7 +71,7 @@ public abstract class ConnectionManager {
 		}
 
 		private Attribute getPossibleValuesFor() {
-			return BeanProperties.builder(connectionConfig)
+			return BeanProperties.builder(linkConfig)
 					.using(propertyAnnotated(PossibleValueFor.class)).build()
 					.getAttribute(key);
 		}
@@ -85,21 +84,21 @@ public abstract class ConnectionManager {
 
 		ConfigAttribute getAttribute(String key);
 
-		Connection newConnection() throws Exception;
+		Link newLink() throws Exception;
 
 		Collection<String> getAttributes();
 
 	}
 
-	public static class DefaultConfigurer<T extends ConnectionConfig>
-			implements Configurer {
+	public static class DefaultConfigurer<T extends LinkConfig> implements
+			Configurer {
 
-		private final ConnectionFactory<T> connectionFactory;
-		private final T connectionConfig;
+		private final LinkFactory<T> linkFactory;
+		private final T linkConfig;
 
-		public DefaultConfigurer(ConnectionFactory<T> connectionFactory) {
-			this.connectionFactory = connectionFactory;
-			this.connectionConfig = connectionFactory.newConnectionConfig();
+		public DefaultConfigurer(LinkFactory<T> connectionFactory) {
+			this.linkFactory = connectionFactory;
+			this.linkConfig = connectionFactory.newLinkConfig();
 		}
 
 		@Override
@@ -112,12 +111,12 @@ public abstract class ConnectionManager {
 		}
 
 		public ConfigAttribute getAttribute(String key) {
-			return new ConfigAttributeAdapter<T>(connectionConfig,
-					beanProperties(), key);
+			return new ConfigAttributeAdapter<T>(linkConfig, beanProperties(),
+					key);
 		}
 
 		private BeanProperties beanProperties() {
-			return BeanProperties.builder(connectionConfig)
+			return BeanProperties.builder(linkConfig)
 					.using(propertyAnnotated(Named.class)).build();
 		}
 
@@ -144,8 +143,8 @@ public abstract class ConnectionManager {
 		}
 
 		@Override
-		public Connection newConnection() throws Exception {
-			return this.connectionFactory.newConnection(this.connectionConfig);
+		public Link newLink() throws Exception {
+			return this.linkFactory.newLink(this.linkConfig);
 		}
 
 		private Object convert(String value, Class<?> targetType) {
@@ -157,8 +156,8 @@ public abstract class ConnectionManager {
 
 	private static final String SCHEMA = "ardulink";
 
-	public static ConnectionManager getInstance() {
-		return new ConnectionManager() {
+	public static LinkManager getInstance() {
+		return new LinkManager() {
 
 			private URI checkSchema(URI uri) {
 				checkArgument(SCHEMA.equalsIgnoreCase(uri.getScheme()),
@@ -168,9 +167,9 @@ public abstract class ConnectionManager {
 
 			@Override
 			public List<URI> listURIs() {
-				List<ConnectionFactory> factories = getConnectionFactories();
+				List<LinkFactory> factories = getConnectionFactories();
 				List<URI> result = new ArrayList<URI>(factories.size());
-				for (ConnectionFactory<?> factory : factories) {
+				for (LinkFactory<?> factory : factories) {
 					String name = factory.getName();
 					try {
 						result.add(new URI(format("%s://%s", SCHEMA, name)));
@@ -181,8 +180,8 @@ public abstract class ConnectionManager {
 				return result;
 			}
 
-			private ConnectionFactory<?> getConnectionFactory(String name) {
-				for (ConnectionFactory<?> connectionFactory : getConnectionFactories()) {
+			private LinkFactory<?> getConnectionFactory(String name) {
+				for (LinkFactory<?> connectionFactory : getConnectionFactories()) {
 					if (connectionFactory.getName().equals(name)) {
 						return connectionFactory;
 					}
@@ -190,15 +189,15 @@ public abstract class ConnectionManager {
 				return null;
 			}
 
-			private List<ConnectionFactory> getConnectionFactories() {
-				return Lists.newArrayList(ServiceLoader.load(
-						ConnectionFactory.class).iterator());
+			private List<LinkFactory> getConnectionFactories() {
+				return Lists.newArrayList(ServiceLoader.load(LinkFactory.class)
+						.iterator());
 			}
 
 			@Override
 			public Configurer getConfigurer(URI uri) {
 				String name = checkSchema(uri).getHost();
-				ConnectionFactory connectionFactory = getConnectionFactory(name);
+				LinkFactory connectionFactory = getConnectionFactory(name);
 				checkArgument(connectionFactory != null,
 						"No factory registered for \"%s\"", name);
 				return new DefaultConfigurer(connectionFactory).configure(uri

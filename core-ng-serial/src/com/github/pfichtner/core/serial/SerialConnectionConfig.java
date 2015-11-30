@@ -8,18 +8,24 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionConfig;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
+import com.github.pfichtner.ardulink.core.proto.api.Protocol;
+import com.github.pfichtner.ardulink.core.proto.api.Protocols;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 
-public class SerialConnectionConfig implements ConnectionConfig {
+public class SerialConnectionConfig implements LinkConfig {
 
 	private static final String PORT = "port";
 
 	private static final String SPEED = "speed";
 
+	private static final String PROTO = "proto";
+
 	private static final int DEFAULT_SPEED = 115200;
 
 	private String port;
 	private int speed = DEFAULT_SPEED;
+	private Protocol proto = ArdulinkProtocol.instance();
 
 	public String getPort() {
 		return port;
@@ -30,13 +36,22 @@ public class SerialConnectionConfig implements ConnectionConfig {
 		this.port = port;
 	}
 
-	public int getSpeed() {
-		return speed;
+	@Named(PROTO)
+	public void setProto(String proto) {
+		this.proto = Protocols.getByName(proto);
 	}
 
 	@Named(SPEED)
 	public void setSpeed(int speed) {
 		this.speed = speed;
+	}
+
+	public int getSpeed() {
+		return speed;
+	}
+
+	public Protocol getProto() {
+		return proto;
 	}
 
 	@PossibleValueFor(PORT)

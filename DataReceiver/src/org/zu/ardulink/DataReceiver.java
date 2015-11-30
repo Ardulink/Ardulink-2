@@ -32,15 +32,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.pfichtner.ardulink.core.Connection;
+import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.StreamBasedLink;
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager;
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager.ConfigAttribute;
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager.Configurer;
 import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.EventListener;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -78,8 +77,6 @@ public class DataReceiver {
 	private static final Logger logger = LoggerFactory
 			.getLogger(DataReceiver.class);
 
-	private Connection connection;
-
 	public static void main(String[] args) throws URISyntaxException, Exception {
 		new DataReceiver().doMain(args);
 	}
@@ -97,8 +94,7 @@ public class DataReceiver {
 	}
 
 	private void work() throws URISyntaxException, Exception {
-		this.connection = createConnection();
-		this.link = new StreamBasedLink(connection, new ArdulinkProtocol());
+		this.link = createLink();
 
 		try {
 			logger.info("Wait a while for Arduino boot");
@@ -114,8 +110,9 @@ public class DataReceiver {
 				link.startListening(digitalPin(digital));
 			}
 
-			if (verbose) {
-				connection.addListener(rawDataListener());
+			if (verbose && link instanceof ConnectionBasedLink) {
+				((ConnectionBasedLink) link).getConnection().addListener(
+						rawDataListener());
 			}
 
 		} catch (InterruptedException e1) {
@@ -147,8 +144,8 @@ public class DataReceiver {
 		};
 	}
 
-	private Connection createConnection() throws Exception, URISyntaxException {
-		Configurer configurer = ConnectionManager.getInstance().getConfigurer(
+	private Link createLink() throws Exception, URISyntaxException {
+		Configurer configurer = LinkManager.getInstance().getConfigurer(
 				new URI(connString));
 
 		// are there possible values?
@@ -163,7 +160,7 @@ public class DataReceiver {
 			}
 		}
 
-		return configurer.newConnection();
+		return configurer.newLink();
 	}
 
 }

@@ -26,23 +26,28 @@ import com.github.pfichtner.ardulink.core.proto.api.ToArduinoPinEvent;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStartListening;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
 
-public class StreamBasedLink implements Link {
+public class ConnectionBasedLink implements Link {
 
-	private static final Logger logger = LoggerFactory.getLogger(StreamBasedLink.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(ConnectionBasedLink.class);
 
 	private final Connection connection;
 	private final Protocol protocol;
 	private final List<EventListener> eventListeners = new CopyOnWriteArrayList<EventListener>();
 
-	public StreamBasedLink(Connection connection, Protocol protocol) {
+	public ConnectionBasedLink(Connection connection, Protocol protocol) {
 		this.connection = connection;
 		this.protocol = protocol;
 		this.connection.addListener(new ListenerAdapter() {
 			@Override
 			public void received(byte[] bytes) throws IOException {
-				StreamBasedLink.this.received(bytes);
+				ConnectionBasedLink.this.received(bytes);
 			}
 		});
+	}
+
+	public Connection getConnection() {
+		return this.connection;
 	}
 
 	@Override
@@ -80,7 +85,7 @@ public class StreamBasedLink implements Link {
 	}
 
 	private boolean listenerLeftFor(Pin pin) {
-		for (EventListener listener : eventListeners) {
+		for (EventListener listener : this.eventListeners) {
 			if (listener instanceof FilteredEventListenerAdapter
 					&& pin.equals(((FilteredEventListenerAdapter) listener)
 							.getPin())) {

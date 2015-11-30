@@ -13,18 +13,19 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager.ConfigAttribute;
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionManager.Configurer;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
-public class SerialConnectionFactoryIntegrationTest {
+public class SerialLinkFactoryIntegrationTest {
 
 	@Test
 	public void canConfigureSerialConnectionViaURI() throws Exception {
-		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://serial?port=anyString&speed=9600"));
 		try {
-			assertNotNull(configurer.newConnection());
+			assertNotNull(configurer.newLink());
 		} catch (Exception e) {
 			if (!"gnu.io.NoSuchPortException".equals(e.getClass().getName())) {
 				throw e;
@@ -34,17 +35,19 @@ public class SerialConnectionFactoryIntegrationTest {
 
 	@Test
 	public void canConfigureSerialConnectionViaConfigurer() throws Exception {
-		ConnectionManager connectionManager = ConnectionManager.getInstance();
+		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://serial"));
 
 		assertThat(new ArrayList<String>(configurer.getAttributes()),
-				is(Arrays.asList("port", "speed")));
+				is(Arrays.asList("port", "proto", "speed")));
 
 		ConfigAttribute port = configurer.getAttribute("port");
+		ConfigAttribute proto = configurer.getAttribute("proto");
 		ConfigAttribute speed = configurer.getAttribute("speed");
 
 		assertThat(port.hasPossibleValues(), is(TRUE));
+		assertThat(proto.hasPossibleValues(), is(FALSE));
 		assertThat(speed.hasPossibleValues(), is(FALSE));
 
 		assertThat(port.getPossibleValues(), is(notNullValue()));

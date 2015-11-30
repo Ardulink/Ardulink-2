@@ -1,10 +1,10 @@
-package com.github.pfichtner.ardulink.core.connectionmanager;
+package com.github.pfichtner.ardulink.core.linkmanager;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 
-public interface ConnectionConfig {
+public interface LinkConfig {
 
 	@Retention(RUNTIME)
 	public @interface Named {

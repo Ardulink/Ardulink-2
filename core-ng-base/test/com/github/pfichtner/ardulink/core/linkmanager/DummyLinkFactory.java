@@ -1,16 +1,20 @@
-package com.github.pfichtner.ardulink.core.connectionmanager;
+package com.github.pfichtner.ardulink.core.linkmanager;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionConfig;
-import com.github.pfichtner.ardulink.core.connectionmanager.ConnectionFactory;
-import com.github.pfichtner.ardulink.core.connectionmanager.DummyConnectionFactory.DummyConnectionConfig;
+import com.github.pfichtner.ardulink.core.Link;
+import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
+import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkFactory.DummyConnectionConfig;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 
-public class DummyConnectionFactory implements
-		ConnectionFactory<DummyConnectionConfig> {
+public class DummyLinkFactory implements LinkFactory<DummyConnectionConfig> {
 
-	public static class DummyConnectionConfig implements ConnectionConfig {
+	public static class DummyConnectionConfig implements LinkConfig {
 
 		public String a;
 		public int b;
@@ -37,6 +41,7 @@ public class DummyConnectionFactory implements
 	public static class DummyConnection implements Connection {
 
 		private final DummyConnectionConfig config;
+		private List<Listener> listeners = new ArrayList<Listener>();
 
 		public DummyConnection(DummyConnectionConfig config) {
 			this.config = config;
@@ -54,12 +59,12 @@ public class DummyConnectionFactory implements
 
 		@Override
 		public void addListener(Listener listener) {
-			throw new UnsupportedOperationException();
+			this.listeners.add(listener);
 		}
-		
+
 		@Override
 		public void removeListener(Listener listener) {
-			throw new UnsupportedOperationException();
+			this.listeners.remove(listener);
 		}
 
 		public DummyConnectionConfig getConfig() {
@@ -74,12 +79,13 @@ public class DummyConnectionFactory implements
 	}
 
 	@Override
-	public Connection newConnection(DummyConnectionConfig config) {
-		return new DummyConnection(config);
+	public Link newLink(DummyConnectionConfig config) {
+		return new ConnectionBasedLink(new DummyConnection(config),
+				ArdulinkProtocol.instance());
 	}
 
 	@Override
-	public DummyConnectionConfig newConnectionConfig() {
+	public DummyConnectionConfig newLinkConfig() {
 		return new DummyConnectionConfig();
 	}
 
