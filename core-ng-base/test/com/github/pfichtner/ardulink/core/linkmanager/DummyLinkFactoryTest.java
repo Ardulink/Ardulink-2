@@ -18,8 +18,9 @@ import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkFactory.DummyConn
 import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkFactory.DummyLinkConfig;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
+import com.github.pfichtner.ardulink.core.proto.impl.DummyProtocol;
 
-public class DummyLinkTest {
+public class DummyLinkFactoryTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void throwsExceptionOnInvalidNames() throws URISyntaxException {
@@ -50,7 +51,7 @@ public class DummyLinkTest {
 		String cValue = "cValue";
 		Link link = (Link) connectionManager.getConfigurer(
 				new URI("ardulink://dummy?a=" + aValue + "&b=" + bValue + "&c="
-						+ cValue)).newLink();
+						+ cValue + "&proto=dummy")).newLink();
 
 		assertThat(link.getClass().getName(),
 				is(ConnectionBasedLink.class.getName()));
@@ -60,6 +61,8 @@ public class DummyLinkTest {
 		assertThat(config.a, is(aValue));
 		assertThat(config.b, is(bValue));
 		assertThat(config.c, is(cValue));
+		assertThat(config.protocol.getClass().getName(), is(DummyProtocol
+				.getInstance().getClass().getName()));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -80,6 +83,10 @@ public class DummyLinkTest {
 
 		assertThat(configurer.getAttribute("b").hasPossibleValues(), is(FALSE));
 		assertThat(configurer.getAttribute("c").hasPossibleValues(), is(FALSE));
+
+		ConfigAttribute proto = configurer.getAttribute("proto");
+		assertThat(proto.hasPossibleValues(), is(TRUE));
+		assertThat(proto.getPossibleValues(), is(new Object[] { "dummy" }));
 	}
 
 	@Test

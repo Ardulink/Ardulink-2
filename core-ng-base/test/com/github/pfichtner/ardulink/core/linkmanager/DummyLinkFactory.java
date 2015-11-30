@@ -10,6 +10,8 @@ import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkFactory.DummyLinkConfig;
+import com.github.pfichtner.ardulink.core.proto.api.Protocol;
+import com.github.pfichtner.ardulink.core.proto.api.Protocols;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 
 public class DummyLinkFactory implements LinkFactory<DummyLinkConfig> {
@@ -20,6 +22,7 @@ public class DummyLinkFactory implements LinkFactory<DummyLinkConfig> {
 		public int b;
 		@Named("c")
 		public String c;
+		public Protocol protocol;
 
 		@Named("a")
 		public void setPort(String a) {
@@ -31,9 +34,20 @@ public class DummyLinkFactory implements LinkFactory<DummyLinkConfig> {
 			this.b = b;
 		}
 
+		@Named("proto")
+		public void setProtocol(String protocol) {
+			this.protocol = Protocols.getByName(protocol);
+		}
+
 		@PossibleValueFor("a")
 		public String[] possibleValuesForAtttribute_A() {
 			return new String[] { "aVal1", "aVal2" };
+		}
+
+		@PossibleValueFor("proto")
+		public static String[] getProtocolsMayAlsoBeStatic() {
+			List<String> names = Protocols.list();
+			return names.toArray(new String[names.size()]);
 		}
 
 	}
