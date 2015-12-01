@@ -1,5 +1,6 @@
 package com.github.pfichtner.core.proxy;
 
+import static com.github.pfichtner.core.proxy.ProxyLinkConfig.ProxyConnectionToRemote.Command.GET_PORT_LIST_CMD;
 import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import static org.zu.ardulink.util.Preconditions.checkState;
 
@@ -23,8 +24,27 @@ public class ProxyLinkConfig implements LinkConfig {
 
 	public static class ProxyConnectionToRemote {
 
-		public static final String GET_PORT_LIST_CMD = "ardulink:networkproxyserver:get_port_list";
-		public static final String CONNECT_CMD = "ardulink:networkproxyserver:connect";
+		public static enum Command {
+
+			GET_PORT_LIST_CMD("get_port_list"), CONNECT_CMD("connect");
+
+			private static final String PREFIX = "ardulink:networkproxyserver:";
+			private final String command;
+
+			private Command(String command) {
+				this.command = PREFIX + command;
+			}
+
+			public String getCommand() {
+				return command;
+			}
+
+			@Override
+			public String toString() {
+				return getCommand();
+			}
+
+		}
 
 		public static final String NUMBER_OF_PORTS = "NUMBER_OF_PORTS=";
 		public static final String OK = "OK";
@@ -52,7 +72,7 @@ public class ProxyLinkConfig implements LinkConfig {
 		}
 
 		public List<String> getPortList() throws IOException {
-			send(GET_PORT_LIST_CMD);
+			send(GET_PORT_LIST_CMD.getCommand());
 			String numberOfPorts = checkNotNull(bufferedReader.readLine(),
 					"invalid response from %s, got null", host);
 			checkState(numberOfPorts.startsWith(NUMBER_OF_PORTS),
@@ -88,7 +108,8 @@ public class ProxyLinkConfig implements LinkConfig {
 			return new Runnable() {
 				@Override
 				public void run() {
-					throw new UnsupportedOperationException("not yet implemented");
+					throw new UnsupportedOperationException(
+							"not yet implemented");
 				}
 			};
 		}
@@ -162,10 +183,10 @@ public class ProxyLinkConfig implements LinkConfig {
 		return this.remote;
 	}
 
-	@PossibleValueFor(PORT)
+	@ChoiceFor(PORT)
 	public List<String> getAvailablePorts() throws IOException {
 		this.remote = new ProxyConnectionToRemote(tcphost, tcpport);
-		return remote.getPortList();
+		return this.remote.getPortList();
 	}
 
 }

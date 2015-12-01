@@ -18,7 +18,7 @@ import org.zu.ardulink.util.Primitive;
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.guava.Lists;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.Named;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.PossibleValueFor;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.ChoiceFor;
 import com.github.pfichtner.beans.Attribute;
 import com.github.pfichtner.beans.BeanProperties;
 
@@ -55,12 +55,12 @@ public abstract class LinkManager {
 
 		@Override
 		public boolean hasPossibleValues() {
-			return getPossibleValuesFor() != null;
+			return getChoicesFor() != null;
 		}
 
 		@Override
 		public Object[] getPossibleValues() throws Exception {
-			Object value = checkNotNull(getPossibleValuesFor().readValue(),
+			Object value = checkNotNull(getChoicesFor().readValue(),
 					"returntype was null (should be an empty Object[] or empty Collection)");
 			if (value instanceof Collection<?>) {
 				value = ((Collection<?>) value).toArray(new Object[0]);
@@ -70,9 +70,9 @@ public abstract class LinkManager {
 			return (Object[]) value;
 		}
 
-		private Attribute getPossibleValuesFor() {
+		private Attribute getChoicesFor() {
 			return BeanProperties.builder(linkConfig)
-					.using(propertyAnnotated(PossibleValueFor.class)).build()
+					.using(propertyAnnotated(ChoiceFor.class)).build()
 					.getAttribute(key);
 		}
 

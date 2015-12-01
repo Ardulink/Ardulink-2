@@ -8,16 +8,12 @@ public interface LinkConfig {
 
 	@Retention(RUNTIME)
 	public @interface Named {
-
 		String value();
-
 	}
 
 	@Retention(RUNTIME)
-	public @interface PossibleValueFor {
-
+	public @interface ChoiceFor {
 		String value();
-
 	}
 
 }

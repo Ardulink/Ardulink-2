@@ -28,12 +28,12 @@ public class DummyLinkConfig implements LinkConfig {
 		this.protocol = Protocols.getByName(protocol);
 	}
 
-	@PossibleValueFor("a")
+	@ChoiceFor("a")
 	public String[] possibleValuesForAtttribute_A() {
 		return new String[] { "aVal1", "aVal2" };
 	}
 
-	@PossibleValueFor("proto")
+	@ChoiceFor("proto")
 	public static String[] getProtocolsMayAlsoBeStatic() {
 		List<String> names = Protocols.list();
 		return names.toArray(new String[names.size()]);

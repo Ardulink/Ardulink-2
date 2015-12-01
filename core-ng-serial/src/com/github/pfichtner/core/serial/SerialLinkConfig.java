@@ -54,7 +54,7 @@ public class SerialLinkConfig implements LinkConfig {
 		return proto;
 	}
 
-	@PossibleValueFor(PORT)
+	@ChoiceFor(PORT)
 	public String[] getPortList() {
 		List<String> ports = new ArrayList<String>();
 		for (CommPortIdentifier portIdentifier : portIdentifiers()) {
