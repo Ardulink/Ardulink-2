@@ -2,8 +2,6 @@ package com.github.pfichtner.ardulink.core.linkmanager;
 
 import java.util.List;
 
-import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.Named;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.PossibleValueFor;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocols;
 
