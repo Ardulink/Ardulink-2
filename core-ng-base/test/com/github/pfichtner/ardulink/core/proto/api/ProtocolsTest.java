@@ -11,9 +11,10 @@ import org.junit.Test;
 public class ProtocolsTest {
 
 	@Test
-	public void test() {
-		assertThat(new HashSet<String>(Protocols.list()),
-				is(new HashSet<String>(Arrays.asList("ardulink", "dummy"))));
+	public void defaultAndDummyProtocolsAreRegistered() {
+		assertThat(
+				new HashSet<String>(Protocols.list()),
+				is(new HashSet<String>(Arrays.asList("ardulink", "dummyProto"))));
 	}
 
 }
