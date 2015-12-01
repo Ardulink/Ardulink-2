@@ -102,13 +102,13 @@ public class ConnectionBasedLink implements Link {
 	}
 
 	@Override
-	public void switchAnalogPin(AnalogPin analogPin, Integer value)
+	public void switchAnalogPin(AnalogPin analogPin, int value)
 			throws IOException {
 		send(analogPin, value);
 	}
 
 	@Override
-	public void switchDigitalPin(DigitalPin digitalPin, Boolean value)
+	public void switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException {
 		send(digitalPin, value);
 	}

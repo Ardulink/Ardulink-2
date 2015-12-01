@@ -17,9 +17,9 @@ public interface Link extends Closeable {
 
 	void stopListening(Pin pin) throws IOException;
 
-	void switchAnalogPin(AnalogPin analogPin, Integer value) throws IOException;
+	void switchAnalogPin(AnalogPin analogPin, int value) throws IOException;
 
-	void switchDigitalPin(DigitalPin digitalPin, Boolean value)
+	void switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException;
 
 	void sendKeyPressEvent(char keychar, int keycode, int keylocation,
