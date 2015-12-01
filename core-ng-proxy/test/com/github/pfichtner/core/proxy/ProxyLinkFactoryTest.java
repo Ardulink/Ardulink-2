@@ -1,9 +1,9 @@
 package com.github.pfichtner.core.proxy;
 
+import static com.github.pfichtner.core.proxy.ProxyLinkConfig.ProxyConnectionToRemote.OK;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,9 +12,12 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.hamcrest.core.IsNull;
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.github.pfichtner.ardulink.core.Link;
@@ -29,7 +32,7 @@ public class ProxyLinkFactoryTest {
 	@Test(timeout = TIMEOUT)
 	public void canConnectWhileConfiguring() throws Exception {
 		ServerSocket serverSocket = new ServerSocket(0);
-		startServer(serverSocket, 0);
+		startServer(serverSocket, makeMap(0));
 		int tcpport = serverSocket.getLocalPort();
 
 		LinkManager connectionManager = LinkManager.getInstance();
@@ -39,10 +42,27 @@ public class ProxyLinkFactoryTest {
 		assertThat(port.getPossibleValues(), is(new Object[0]));
 	}
 
+	private Map<String, List<String>> makeMap(int numberOfPorts) {
+		Map<String, List<String>> answers = new HashMap<String, List<String>>();
+		answers.put("ardulink:networkproxyserver:get_port_list",
+				portList(numberOfPorts));
+		answers.put("ardulink:networkproxyserver:connect", Arrays.asList(OK));
+		return answers;
+	}
+
+	private List<String> portList(int numberOfPorts) {
+		List<String> subAnwser = new ArrayList<String>();
+		subAnwser.add("NUMBER_OF_PORTS=" + numberOfPorts);
+		for (int i = 0; i < numberOfPorts; i++) {
+			subAnwser.add("myPortNr" + i);
+		}
+		return subAnwser;
+	}
+
 	@Test(timeout = TIMEOUT)
 	public void canReadAvailablePorts() throws Exception {
 		ServerSocket serverSocket = new ServerSocket(0);
-		startServer(serverSocket, 1);
+		startServer(serverSocket, makeMap(1));
 		int tcpport = serverSocket.getLocalPort();
 
 		LinkManager connectionManager = LinkManager.getInstance();
@@ -56,7 +76,7 @@ public class ProxyLinkFactoryTest {
 	@Test(timeout = TIMEOUT)
 	public void canConnect() throws Exception {
 		ServerSocket serverSocket = new ServerSocket(0);
-		startServer(serverSocket, 1);
+		startServer(serverSocket, makeMap(1));
 		int tcpport = serverSocket.getLocalPort();
 
 		LinkManager connectionManager = LinkManager.getInstance();
@@ -71,7 +91,7 @@ public class ProxyLinkFactoryTest {
 	}
 
 	private void startServer(final ServerSocket serverSocket,
-			final int numberOfPorts) throws IOException {
+			final Map<String, List<String>> answers) throws IOException {
 		new Thread() {
 			public void run() {
 				try {
@@ -91,17 +111,12 @@ public class ProxyLinkFactoryTest {
 
 				String line;
 				while ((line = in.readLine()) != null) {
-					if ("ardulink:networkproxyserver:get_port_list"
-							.equals(line)) {
-						out.println("NUMBER_OF_PORTS=" + numberOfPorts);
-						for (int i = 0; i < numberOfPorts; i++) {
-							out.println("myPortNr" + i);
+					List<String> responses = answers.get(line);
+					if (responses != null) {
+						for (String response : responses) {
+							out.println(response);
 						}
 					}
-					if ("ardulink:networkproxyserver:connect".equals(line)) {
-						out.println("OK");
-					}
-
 					out.flush();
 				}
 			};
