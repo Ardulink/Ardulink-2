@@ -52,10 +52,16 @@ public class ConnectionBasedLink implements Link {
 
 	@Override
 	public Link addListener(EventListener listener) throws IOException {
-		this.eventListeners.add(listener);
 		if (listener instanceof FilteredEventListenerAdapter) {
-			startListening(((FilteredEventListenerAdapter) listener).getPin());
+			Pin pin = ((FilteredEventListenerAdapter) listener).getPin();
+			// old impl did start "startListening" on each addListener, so
+			// we do too for the moment
+			// TODO should/can we change that behavior?
+			// if (!hasListenerForPin(pin)) {
+			startListening(pin);
+			// }
 		}
+		this.eventListeners.add(listener);
 		return this;
 	}
 
@@ -64,7 +70,7 @@ public class ConnectionBasedLink implements Link {
 		this.eventListeners.remove(listener);
 		if (listener instanceof FilteredEventListenerAdapter) {
 			Pin pin = ((FilteredEventListenerAdapter) listener).getPin();
-			if (!listenerLeftFor(pin)) {
+			if (!hasListenerForPin(pin)) {
 				stopListening(pin);
 			}
 		}
@@ -84,7 +90,7 @@ public class ConnectionBasedLink implements Link {
 		this.connection.write(this.protocol.toArduino(stopListening));
 	}
 
-	private boolean listenerLeftFor(Pin pin) {
+	private boolean hasListenerForPin(Pin pin) {
 		for (EventListener listener : this.eventListeners) {
 			if (listener instanceof FilteredEventListenerAdapter
 					&& pin.equals(((FilteredEventListenerAdapter) listener)
