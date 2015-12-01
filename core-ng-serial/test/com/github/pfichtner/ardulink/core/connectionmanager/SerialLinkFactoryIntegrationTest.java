@@ -11,6 +11,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
@@ -20,17 +21,13 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 public class SerialLinkFactoryIntegrationTest {
 
 	@Test
+	// because JNI dependent
+	@Ignore
 	public void canConfigureSerialConnectionViaURI() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://serial?port=anyString&speed=9600"));
-		try {
-			assertNotNull(configurer.newLink());
-		} catch (Exception e) {
-			if (!"gnu.io.NoSuchPortException".equals(e.getClass().getName())) {
-				throw e;
-			}
-		}
+		assertNotNull(configurer.newLink());
 	}
 
 	@Test

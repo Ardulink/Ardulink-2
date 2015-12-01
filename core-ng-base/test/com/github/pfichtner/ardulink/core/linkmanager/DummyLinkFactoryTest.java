@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.HashSet;
 
 import org.junit.Test;
 
@@ -86,7 +87,9 @@ public class DummyLinkFactoryTest {
 
 		ConfigAttribute proto = configurer.getAttribute("proto");
 		assertThat(proto.hasPossibleValues(), is(TRUE));
-		assertThat(proto.getPossibleValues(), is(new Object[] { "dummy" }));
+		assertThat(
+				new HashSet<Object>(Arrays.asList(proto.getPossibleValues())),
+				is(new HashSet<Object>(Arrays.asList("dummy", "ardulink"))));
 	}
 
 	@Test
