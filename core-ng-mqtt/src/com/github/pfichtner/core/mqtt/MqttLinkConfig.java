@@ -1,19 +1,5 @@
 package com.github.pfichtner.core.mqtt;
 
-import static org.zu.ardulink.util.Preconditions.checkNotNull;
-import static org.zu.ardulink.util.Preconditions.checkState;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 
 public class MqttLinkConfig implements LinkConfig {
@@ -24,9 +10,12 @@ public class MqttLinkConfig implements LinkConfig {
 
 	private static final String TOPIC = "topic";
 
-	private String host;
-	private int port;
-	private String topic;
+	private static final String CLIENTID = "clientid";
+
+	private String host = "localhost";
+	private int port = 1883;
+	private String topic = normalize("home/devices/ardulink/");
+	private String clientId = "ardulink-mqtt-link";
 
 	@Named(HOST)
 	public void setHost(String host) {
@@ -40,7 +29,12 @@ public class MqttLinkConfig implements LinkConfig {
 
 	@Named(TOPIC)
 	public void setTopic(String topic) {
-		this.topic = topic;
+		this.topic = normalize(topic);
+	}
+
+	@Named(CLIENTID)
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
 	}
 
 	public String getHost() {
@@ -53,6 +47,14 @@ public class MqttLinkConfig implements LinkConfig {
 
 	public String getTopic() {
 		return topic;
+	}
+
+	public String getClientId() {
+		return clientId;
+	}
+
+	private static String normalize(String topic) {
+		return topic.endsWith("/") ? topic : topic + "/";
 	}
 
 }

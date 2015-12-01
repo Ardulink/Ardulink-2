@@ -1,6 +1,13 @@
 package com.github.pfichtner.core.mqtt;
 
+import static org.zu.ardulink.util.Preconditions.checkArgument;
+
 import java.io.IOException;
+
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.Pin;
@@ -10,10 +17,17 @@ import com.github.pfichtner.ardulink.core.events.EventListener;
 
 public class MqttLink implements Link {
 
-	private final MqttLinkConfig config;
+	private final String topic;
+	private final MqttClient mqttClient;
 
-	public MqttLink(MqttLinkConfig config) {
-		this.config = config;
+	public MqttLink(MqttLinkConfig config) throws MqttException {
+		checkArgument(config.getHost() != null, "host must not be null");
+		checkArgument(config.getClientId() != null, "clientId must not be null");
+		checkArgument(config.getTopic() != null, "topic must not be null");
+		this.topic = config.getTopic();
+		this.mqttClient = new MqttClient("tcp://" + config.getHost() + ":"
+				+ config.getPort(), config.getClientId());
+		this.mqttClient.connect();
 	}
 
 	@Override
@@ -37,15 +51,27 @@ public class MqttLink implements Link {
 	}
 
 	@Override
-	public void switchAnalogPin(AnalogPin analogPin, Integer value)
+	public void switchAnalogPin(AnalogPin analogPin, int value)
 			throws IOException {
-		throw new UnsupportedOperationException();
+		switchPin("A", analogPin, value);
 	}
 
 	@Override
-	public void switchDigitalPin(DigitalPin digitalPin, Boolean value)
+	public void switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException {
-		throw new UnsupportedOperationException();
+		switchPin("D", digitalPin, value);
+	}
+
+	private void switchPin(String type, Pin pin, Object value)
+			throws IOException {
+		try {
+			this.mqttClient.publish(topic + type + pin.pinNum() + "/set/value",
+					new MqttMessage(String.valueOf(value).getBytes()));
+		} catch (MqttPersistenceException e) {
+			throw new IOException(e);
+		} catch (MqttException e) {
+			throw new IOException(e);
+		}
 	}
 
 	@Override
@@ -56,6 +82,11 @@ public class MqttLink implements Link {
 
 	@Override
 	public void close() throws IOException {
-		throw new UnsupportedOperationException();
+		try {
+			this.mqttClient.disconnect();
+			this.mqttClient.close();
+		} catch (MqttException e) {
+			throw new IOException(e);
+		}
 	}
 }
