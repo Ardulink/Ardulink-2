@@ -15,8 +15,6 @@ import org.junit.Test;
 
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkFactory.DummyConnection;
-import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkFactory.DummyLinkConfig;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 import com.github.pfichtner.ardulink.core.proto.impl.DummyProtocol;
@@ -40,7 +38,7 @@ public class DummyLinkFactoryTest {
 	public void canCreateDummyDonnection() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Link link = connectionManager
-				.getConfigurer(new URI("ardulink://dummy")).newLink();
+				.getConfigurer(new URI("ardulink://dummyLink")).newLink();
 		assertThat(link, is(notNullValue()));
 	}
 
@@ -51,8 +49,8 @@ public class DummyLinkFactoryTest {
 		int bValue = 1;
 		String cValue = "cValue";
 		Link link = (Link) connectionManager.getConfigurer(
-				new URI("ardulink://dummy?a=" + aValue + "&b=" + bValue + "&c="
-						+ cValue + "&proto=dummy")).newLink();
+				new URI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue + "&c="
+						+ cValue + "&proto=dummyProto")).newLink();
 
 		assertThat(link.getClass().getName(),
 				is(ConnectionBasedLink.class.getName()));
@@ -70,14 +68,14 @@ public class DummyLinkFactoryTest {
 	public void throwsExceptionOnInvalidKey() throws URISyntaxException {
 		LinkManager connectionManager = LinkManager.getInstance();
 		connectionManager.getConfigurer(new URI(
-				"ardulink://dummy?nonExistingKey=someValue"));
+				"ardulink://dummyLink?nonExistingKey=someValue"));
 	}
 
 	@Test
 	public void canDefinePossibleValues() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
-				"ardulink://dummy"));
+				"ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
 		assertThat(a.hasPossibleValues(), is(TRUE));
 		assertThat(a.getPossibleValues(), is(new Object[] { "aVal1", "aVal2" }));
@@ -89,14 +87,14 @@ public class DummyLinkFactoryTest {
 		assertThat(proto.hasPossibleValues(), is(TRUE));
 		assertThat(
 				new HashSet<Object>(Arrays.asList(proto.getPossibleValues())),
-				is(new HashSet<Object>(Arrays.asList("dummy", "ardulink"))));
+				is(new HashSet<Object>(Arrays.asList("dummyProto", "ardulink"))));
 	}
 
 	@Test
 	public void canIterateRegisteredFactories() throws URISyntaxException {
 		LinkManager connectionManager = LinkManager.getInstance();
 		assertThat(connectionManager.listURIs(),
-				is(Arrays.asList(new URI("ardulink://dummy"))));
+				is(Arrays.asList(new URI("ardulink://dummyLink"))));
 	}
 
 }

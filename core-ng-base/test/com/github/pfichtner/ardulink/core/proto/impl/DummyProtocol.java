@@ -16,7 +16,7 @@ public class DummyProtocol implements Protocol {
 
 	@Override
 	public String getName() {
-		return "dummy";
+		return "dummyProto";
 	}
 
 	@Override
