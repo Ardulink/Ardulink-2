@@ -9,6 +9,7 @@ import static org.zu.ardulink.util.Preconditions.checkState;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -17,8 +18,8 @@ import org.zu.ardulink.util.Primitive;
 
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.guava.Lists;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.Named;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.ChoiceFor;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.Named;
 import com.github.pfichtner.beans.Attribute;
 import com.github.pfichtner.beans.BeanProperties;
 
@@ -27,9 +28,9 @@ public abstract class LinkManager {
 	public interface ConfigAttribute {
 		void setValue(Object value) throws Exception;
 
-		boolean hasPossibleValues();
+		boolean hasChoiceValues();
 
-		Object[] getPossibleValues() throws Exception;
+		Object[] getChoiceValues() throws Exception;
 
 	}
 
@@ -39,6 +40,7 @@ public abstract class LinkManager {
 		private final T linkConfig;
 		private final BeanProperties beanProperties;
 		private final String key;
+		private List<Object> cachedChoiceValues;
 
 		public ConfigAttributeAdapter(T linkConfig,
 				BeanProperties beanProperties, String key) {
@@ -49,24 +51,39 @@ public abstract class LinkManager {
 
 		@Override
 		public void setValue(Object value) throws Exception {
+			if (hasChoiceValues()) {
+				this.cachedChoiceValues = Arrays.asList(getChoiceValues());
+			}
+			checkArgument(
+					cachedChoiceValues == null
+							|| cachedChoiceValues.contains(value),
+					"%s is not a valid value for %s, valid values are %s",
+					value, key, cachedChoiceValues);
 			Attribute attribute = beanProperties.getAttribute(key);
 			attribute.writeValue(value);
 		}
 
 		@Override
-		public boolean hasPossibleValues() {
+		public boolean hasChoiceValues() {
 			return getChoicesFor() != null;
 		}
 
 		@Override
-		public Object[] getPossibleValues() throws Exception {
+		public Object[] getChoiceValues() throws Exception {
+			Object[] value = loadChoiceValues();
+			this.cachedChoiceValues = Arrays.asList(value);
+			return value;
+		}
+
+		private Object[] loadChoiceValues() throws Exception {
 			Object value = checkNotNull(getChoicesFor().readValue(),
 					"returntype was null (should be an empty Object[] or empty Collection)");
 			if (value instanceof Collection<?>) {
 				value = ((Collection<?>) value).toArray(new Object[0]);
 			}
 			checkState(value instanceof Object[],
-					"returntype is not an Object[] but %s", value.getClass());
+					"returntype is not an Object[] but %s",
+					value == null ? null : value.getClass());
 			return (Object[]) value;
 		}
 

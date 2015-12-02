@@ -37,8 +37,8 @@ public class DummyLinkFactoryTest {
 	@Test
 	public void canCreateDummyDonnection() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Link link = connectionManager
-				.getConfigurer(new URI("ardulink://dummyLink")).newLink();
+		Link link = connectionManager.getConfigurer(
+				new URI("ardulink://dummyLink")).newLink();
 		assertThat(link, is(notNullValue()));
 	}
 
@@ -49,8 +49,8 @@ public class DummyLinkFactoryTest {
 		int bValue = 1;
 		String cValue = "cValue";
 		Link link = (Link) connectionManager.getConfigurer(
-				new URI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue + "&c="
-						+ cValue + "&proto=dummyProto")).newLink();
+				new URI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue
+						+ "&c=" + cValue + "&proto=dummyProto")).newLink();
 
 		assertThat(link.getClass().getName(),
 				is(ConnectionBasedLink.class.getName()));
@@ -77,17 +77,38 @@ public class DummyLinkFactoryTest {
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
-		assertThat(a.hasPossibleValues(), is(TRUE));
-		assertThat(a.getPossibleValues(), is(new Object[] { "aVal1", "aVal2" }));
+		assertThat(a.hasChoiceValues(), is(TRUE));
+		assertThat(a.getChoiceValues(), is(new Object[] { "aVal1", "aVal2" }));
 
-		assertThat(configurer.getAttribute("b").hasPossibleValues(), is(FALSE));
-		assertThat(configurer.getAttribute("c").hasPossibleValues(), is(FALSE));
+		assertThat(configurer.getAttribute("b").hasChoiceValues(), is(FALSE));
+		assertThat(configurer.getAttribute("c").hasChoiceValues(), is(FALSE));
 
 		ConfigAttribute proto = configurer.getAttribute("proto");
-		assertThat(proto.hasPossibleValues(), is(TRUE));
+		assertThat(proto.hasChoiceValues(), is(TRUE));
 		assertThat(
-				new HashSet<Object>(Arrays.asList(proto.getPossibleValues())),
+				new HashSet<Object>(Arrays.asList(proto.getChoiceValues())),
 				is(new HashSet<Object>(Arrays.asList("dummyProto", "ardulink"))));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void cannotSetChoiceValuesThatDoNotExist_WithPreviousQuery()
+			throws Exception {
+		LinkManager connectionManager = LinkManager.getInstance();
+		Configurer configurer = connectionManager.getConfigurer(new URI(
+				"ardulink://dummyLink"));
+		ConfigAttribute a = configurer.getAttribute("a");
+		assertThat(a.getChoiceValues(), is(new Object[] { "aVal1", "aVal2" }));
+		a.setValue("aVal3IsNotAvalidValue");
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void cannotSetChoiceValuesThatDoNotExist_WithoutPreviousQuery()
+			throws Exception {
+		LinkManager connectionManager = LinkManager.getInstance();
+		Configurer configurer = connectionManager.getConfigurer(new URI(
+				"ardulink://dummyLink"));
+		ConfigAttribute a = configurer.getAttribute("a");
+		a.setValue("aVal3IsNotAvalidValue");
 	}
 
 	@Test
