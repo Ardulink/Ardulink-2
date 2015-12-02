@@ -1,5 +1,7 @@
 package com.github.pfichtner.core.mqtt;
 
+import static com.github.pfichtner.ardulink.core.Pins.isAnalog;
+import static com.github.pfichtner.ardulink.core.Pins.isDigital;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.zu.ardulink.util.Preconditions.checkArgument;
@@ -15,7 +17,6 @@ import com.github.pfichtner.ardulink.core.AbstractListenerLink;
 import com.github.pfichtner.ardulink.core.Pin;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
-import com.github.pfichtner.ardulink.core.Pins;
 
 public class MqttLink extends AbstractListenerLink {
 
@@ -50,9 +51,9 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	private static String getType(Pin pin) {
-		if (Pins.isAnalog(pin)) {
+		if (isAnalog(pin)) {
 			return "A";
-		} else if (Pins.isDigital(pin)) {
+		} else if (isDigital(pin)) {
 			return "D";
 		} else {
 			throw new IllegalStateException("Pin " + pin
