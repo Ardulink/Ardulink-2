@@ -4,11 +4,6 @@ import static com.github.pfichtner.ardulink.core.Pins.isAnalog;
 import static com.github.pfichtner.ardulink.core.Pins.isDigital;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.github.pfichtner.ardulink.core.Connection.ListenerAdapter;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
@@ -17,8 +12,6 @@ import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.EventListener;
-import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol.FromArduino;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoCharEvent;
@@ -26,14 +19,10 @@ import com.github.pfichtner.ardulink.core.proto.api.ToArduinoPinEvent;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStartListening;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
 
-public class ConnectionBasedLink implements Link {
-
-	private static final Logger logger = LoggerFactory
-			.getLogger(ConnectionBasedLink.class);
+public class ConnectionBasedLink extends AbstractListenerLink {
 
 	private final Connection connection;
 	private final Protocol protocol;
-	private final List<EventListener> eventListeners = new CopyOnWriteArrayList<EventListener>();
 
 	public ConnectionBasedLink(Connection connection, Protocol protocol) {
 		this.connection = connection;
@@ -51,33 +40,6 @@ public class ConnectionBasedLink implements Link {
 	}
 
 	@Override
-	public Link addListener(EventListener listener) throws IOException {
-		if (listener instanceof FilteredEventListenerAdapter) {
-			Pin pin = ((FilteredEventListenerAdapter) listener).getPin();
-			// old impl did start "startListening" on each addListener, so
-			// we do too for the moment
-			// TODO should/can we change that behavior?
-			// if (!hasListenerForPin(pin)) {
-			startListening(pin);
-			// }
-		}
-		this.eventListeners.add(listener);
-		return this;
-	}
-
-	@Override
-	public Link removeListener(EventListener listener) throws IOException {
-		this.eventListeners.remove(listener);
-		if (listener instanceof FilteredEventListenerAdapter) {
-			Pin pin = ((FilteredEventListenerAdapter) listener).getPin();
-			if (!hasListenerForPin(pin)) {
-				stopListening(pin);
-			}
-		}
-		return this;
-	}
-
-	@Override
 	public void startListening(Pin pin) throws IOException {
 		ToArduinoStartListening startListeningEvent = new ToArduinoStartListening(
 				pin);
@@ -88,17 +50,6 @@ public class ConnectionBasedLink implements Link {
 	public void stopListening(Pin pin) throws IOException {
 		ToArduinoStopListening stopListening = new ToArduinoStopListening(pin);
 		this.connection.write(this.protocol.toArduino(stopListening));
-	}
-
-	private boolean hasListenerForPin(Pin pin) {
-		for (EventListener listener : this.eventListeners) {
-			if (listener instanceof FilteredEventListenerAdapter
-					&& pin.equals(((FilteredEventListenerAdapter) listener)
-							.getPin())) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	@Override
@@ -132,24 +83,12 @@ public class ConnectionBasedLink implements Link {
 		if (isAnalog(pin) && value instanceof Integer) {
 			AnalogPinValueChangedEvent event = new DefaultAnalogPinValueChangedEvent(
 					(AnalogPin) pin, (Integer) value);
-			for (EventListener eventListener : this.eventListeners) {
-				try {
-					eventListener.stateChanged(event);
-				} catch (Exception e) {
-					logger.error("EventListener {} failure", eventListener, e);
-				}
-			}
+			fireStateChanged(event);
 		}
 		if (isDigital(pin) && value instanceof Boolean) {
 			DigitalPinValueChangedEvent event = new DefaultDigitalPinValueChangedEvent(
 					(DigitalPin) pin, (Boolean) value);
-			for (EventListener eventListener : this.eventListeners) {
-				try {
-					eventListener.stateChanged(event);
-				} catch (Exception e) {
-					logger.error("EventListener {} failure", eventListener, e);
-				}
-			}
+			fireStateChanged(event);
 		}
 	}
 

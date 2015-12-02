@@ -1,5 +1,7 @@
 package com.github.pfichtner.core.mqtt;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static org.zu.ardulink.util.Preconditions.checkArgument;
 
 import java.io.IOException;
@@ -9,13 +11,15 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 
-import com.github.pfichtner.ardulink.core.Link;
+import com.github.pfichtner.ardulink.core.AbstractListenerLink;
 import com.github.pfichtner.ardulink.core.Pin;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
-import com.github.pfichtner.ardulink.core.events.EventListener;
+import com.github.pfichtner.ardulink.core.Pins;
 
-public class MqttLink implements Link {
+public class MqttLink extends AbstractListenerLink {
+
+	// TODO subscribe to # add call stateChange
 
 	private final String topic;
 	private final MqttClient mqttClient;
@@ -31,23 +35,29 @@ public class MqttLink implements Link {
 	}
 
 	@Override
-	public Link addListener(EventListener listener) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Link removeListener(EventListener listener) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public void startListening(Pin pin) throws IOException {
-		throw new UnsupportedOperationException();
+		publish(controlTopic(pin), TRUE);
 	}
 
 	@Override
 	public void stopListening(Pin pin) throws IOException {
-		throw new UnsupportedOperationException();
+		publish(controlTopic(pin), FALSE);
+	}
+
+	private String controlTopic(Pin pin) {
+		return topic + "system/listening/" + getType(pin) + pin.pinNum()
+				+ "/set/value";
+	}
+
+	private static String getType(Pin pin) {
+		if (Pins.isAnalog(pin)) {
+			return "A";
+		} else if (Pins.isDigital(pin)) {
+			return "D";
+		} else {
+			throw new IllegalStateException("Pin " + pin
+					+ " is not digital nor analog");
+		}
 	}
 
 	@Override
@@ -64,9 +74,13 @@ public class MqttLink implements Link {
 
 	private void switchPin(String type, Pin pin, Object value)
 			throws IOException {
+		publish(topic + type + pin.pinNum() + "/set/value", value);
+	}
+
+	private void publish(String topic, Object value) throws IOException {
 		try {
-			this.mqttClient.publish(topic + type + pin.pinNum() + "/set/value",
-					new MqttMessage(String.valueOf(value).getBytes()));
+			this.mqttClient.publish(topic, new MqttMessage(String
+					.valueOf(value).getBytes()));
 		} catch (MqttPersistenceException e) {
 			throw new IOException(e);
 		} catch (MqttException e) {
@@ -89,4 +103,5 @@ public class MqttLink implements Link {
 			throw new IOException(e);
 		}
 	}
+
 }
