@@ -37,16 +37,16 @@ public abstract class LinkManager {
 	public static class ConfigAttributeAdapter<T extends LinkConfig> implements
 			ConfigAttribute {
 
-		private final T linkConfig;
-		private final BeanProperties beanProperties;
-		private final String key;
+		private final Attribute attribute;
+		private final Attribute getChoicesFor;
 		private List<Object> cachedChoiceValues;
 
 		public ConfigAttributeAdapter(T linkConfig,
 				BeanProperties beanProperties, String key) {
-			this.linkConfig = linkConfig;
-			this.beanProperties = beanProperties;
-			this.key = key;
+			this.attribute = beanProperties.getAttribute(key);
+			this.getChoicesFor = BeanProperties.builder(linkConfig)
+					.using(propertyAnnotated(ChoiceFor.class)).build()
+					.getAttribute(attribute.getName());
 		}
 
 		@Override
@@ -54,18 +54,16 @@ public abstract class LinkManager {
 			if (hasChoiceValues()) {
 				this.cachedChoiceValues = Arrays.asList(getChoiceValues());
 			}
-			checkArgument(
-					cachedChoiceValues == null
-							|| cachedChoiceValues.contains(value),
+			checkArgument(this.cachedChoiceValues == null
+					|| this.cachedChoiceValues.contains(value),
 					"%s is not a valid value for %s, valid values are %s",
-					value, key, cachedChoiceValues);
-			Attribute attribute = beanProperties.getAttribute(key);
-			attribute.writeValue(value);
+					value, this.attribute.getName(), this.cachedChoiceValues);
+			this.attribute.writeValue(value);
 		}
 
 		@Override
 		public boolean hasChoiceValues() {
-			return getChoicesFor() != null;
+			return this.getChoicesFor != null;
 		}
 
 		@Override
@@ -76,7 +74,7 @@ public abstract class LinkManager {
 		}
 
 		private Object[] loadChoiceValues() throws Exception {
-			Object value = checkNotNull(getChoicesFor().readValue(),
+			Object value = checkNotNull(this.getChoicesFor.readValue(),
 					"returntype was null (should be an empty Object[] or empty Collection)");
 			if (value instanceof Collection<?>) {
 				value = ((Collection<?>) value).toArray(new Object[0]);
@@ -85,12 +83,6 @@ public abstract class LinkManager {
 					"returntype is not an Object[] but %s",
 					value == null ? null : value.getClass());
 			return (Object[]) value;
-		}
-
-		private Attribute getChoicesFor() {
-			return BeanProperties.builder(linkConfig)
-					.using(propertyAnnotated(ChoiceFor.class)).build()
-					.getAttribute(key);
 		}
 
 	}
