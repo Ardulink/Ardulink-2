@@ -1,7 +1,10 @@
 package com.github.pfichtner.core.mqtt;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -13,7 +16,7 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 public class AnotherMqttClient {
 
 	private final MqttClient mqttClient;
-	private final List<Message> messages = new ArrayList<Message>();
+	private final List<Message> messages = new CopyOnWriteArrayList<Message>();
 
 	public AnotherMqttClient(String topic) throws MqttSecurityException,
 			MqttException {
@@ -51,7 +54,18 @@ public class AnotherMqttClient {
 	}
 
 	public List<Message> getMessages() {
+		try {
+			MILLISECONDS.sleep(10);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 		return new ArrayList<Message>(this.messages);
+	}
+
+	public List<Message> pollMessages() {
+		List<Message> messages = new ArrayList<Message>(this.messages);
+		this.messages.clear();
+		return messages;
 	}
 
 	public void disconnect() throws MqttException {
