@@ -151,8 +151,8 @@ public class DataReceiver {
 		// are there possible values?
 		for (String key : configurer.getAttributes()) {
 			ConfigAttribute attribute = configurer.getAttribute(key);
-			if (attribute.hasPossibleValues()) {
-				Object[] possibleValues = attribute.getPossibleValues();
+			if (attribute.hasChoiceValues()) {
+				Object[] possibleValues = attribute.getChoiceValues();
 				// we use the first one for each
 				if (possibleValues.length > 0) {
 					attribute.setValue(possibleValues[0]);
