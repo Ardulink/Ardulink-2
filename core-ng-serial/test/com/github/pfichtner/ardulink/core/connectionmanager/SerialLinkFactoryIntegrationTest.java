@@ -43,11 +43,11 @@ public class SerialLinkFactoryIntegrationTest {
 		ConfigAttribute proto = configurer.getAttribute("proto");
 		ConfigAttribute speed = configurer.getAttribute("speed");
 
-		assertThat(port.hasPossibleValues(), is(TRUE));
-		assertThat(proto.hasPossibleValues(), is(FALSE));
-		assertThat(speed.hasPossibleValues(), is(FALSE));
+		assertThat(port.hasChoiceValues(), is(TRUE));
+		assertThat(proto.hasChoiceValues(), is(FALSE));
+		assertThat(speed.hasChoiceValues(), is(FALSE));
 
-		assertThat(port.getPossibleValues(), is(notNullValue()));
+		assertThat(port.getChoiceValues(), is(notNullValue()));
 
 		port.setValue("anyString");
 		speed.setValue(115200);

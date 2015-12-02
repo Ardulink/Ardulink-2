@@ -39,7 +39,7 @@ public class ProxyLinkFactoryTest {
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://proxy?tcphost=localhost&tcpport=" + tcpport));
 		ConfigAttribute port = configurer.getAttribute("port");
-		assertThat(port.getPossibleValues(), is(new Object[0]));
+		assertThat(port.getChoiceValues(), is(new Object[0]));
 	}
 
 	private Map<String, List<String>> makeMap(int numberOfPorts) {
@@ -69,7 +69,7 @@ public class ProxyLinkFactoryTest {
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://proxy?tcphost=localhost&tcpport=" + tcpport));
 		ConfigAttribute port = configurer.getAttribute("port");
-		assertThat(port.getPossibleValues(),
+		assertThat(port.getChoiceValues(),
 				is((Object[]) new String[] { "myPortNr0" }));
 	}
 
@@ -83,7 +83,7 @@ public class ProxyLinkFactoryTest {
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://proxy?tcphost=localhost&tcpport=" + tcpport));
 		ConfigAttribute port = configurer.getAttribute("port");
-		assertThat(port.getPossibleValues(),
+		assertThat(port.getChoiceValues(),
 				is((Object[]) new String[] { "myPortNr0" }));
 
 		Link newLink = configurer.newLink();
