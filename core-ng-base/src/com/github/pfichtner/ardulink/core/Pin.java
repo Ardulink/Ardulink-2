@@ -1,6 +1,11 @@
 package com.github.pfichtner.ardulink.core;
 
+
 public abstract class Pin {
+
+	public enum Type {
+		ANALOG, DIGITAL;
+	}
 
 	private final int num;
 
@@ -11,6 +16,8 @@ public abstract class Pin {
 	public int pinNum() {
 		return num;
 	}
+
+	public abstract Type getType();
 
 	@Override
 	public int hashCode() {
@@ -38,11 +45,21 @@ public abstract class Pin {
 		private AnalogPin(int num) {
 			super(num);
 		}
+
+		@Override
+		public Type getType() {
+			return Type.ANALOG;
+		}
 	}
 
 	public static class DigitalPin extends Pin {
 		private DigitalPin(int num) {
 			super(num);
+		}
+
+		@Override
+		public Type getType() {
+			return Type.DIGITAL;
 		}
 	}
 
@@ -52,6 +69,10 @@ public abstract class Pin {
 
 	public static DigitalPin digitalPin(int num) {
 		return new DigitalPin(num);
+	}
+
+	public boolean is(Type type) {
+		return getType() == type;
 	}
 
 }

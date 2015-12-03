@@ -1,7 +1,7 @@
 package com.github.pfichtner.ardulink.core;
 
-import static com.github.pfichtner.ardulink.core.Pins.isAnalog;
-import static com.github.pfichtner.ardulink.core.Pins.isDigital;
+import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
+import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
 
 import java.io.IOException;
 
@@ -80,12 +80,12 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		FromArduino fromArduino = this.protocol.fromArduino(bytes);
 		Pin pin = fromArduino.getPin();
 		Object value = fromArduino.getValue();
-		if (isAnalog(pin) && value instanceof Integer) {
+		if (pin.is(ANALOG) && value instanceof Integer) {
 			AnalogPinValueChangedEvent event = new DefaultAnalogPinValueChangedEvent(
 					(AnalogPin) pin, (Integer) value);
 			fireStateChanged(event);
 		}
-		if (isDigital(pin) && value instanceof Boolean) {
+		if (pin.is(DIGITAL) && value instanceof Boolean) {
 			DigitalPinValueChangedEvent event = new DefaultDigitalPinValueChangedEvent(
 					(DigitalPin) pin, (Boolean) value);
 			fireStateChanged(event);

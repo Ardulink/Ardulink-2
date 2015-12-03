@@ -2,8 +2,8 @@ package com.github.pfichtner.ardulink.core.proto.impl;
 
 import static com.github.pfichtner.ardulink.core.Pin.analogPin;
 import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
-import static com.github.pfichtner.ardulink.core.Pins.isAnalog;
-import static com.github.pfichtner.ardulink.core.Pins.isDigital;
+import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
+import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.CHAR_PRESSED;
@@ -54,11 +54,11 @@ public class ArdulinkProtocol implements Protocol {
 	@Override
 	public byte[] toArduino(ToArduinoStartListening startListeningEvent) {
 		Pin pin = startListeningEvent.pin;
-		if (isAnalog(startListeningEvent.pin)) {
+		if (startListeningEvent.pin.is(ANALOG)) {
 			return toBytes(alpProtocolMessage(START_LISTENING_ANALOG).forPin(
 					pin.pinNum()).withoutValue());
 		}
-		if (isDigital(startListeningEvent.pin)) {
+		if (startListeningEvent.pin.is(DIGITAL)) {
 			return toBytes(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(
 					pin.pinNum()).withoutValue());
 		}
@@ -69,11 +69,11 @@ public class ArdulinkProtocol implements Protocol {
 	@Override
 	public byte[] toArduino(ToArduinoStopListening stopListeningEvent) {
 		Pin pin = stopListeningEvent.pin;
-		if (isAnalog(stopListeningEvent.pin)) {
+		if (stopListeningEvent.pin.is(ANALOG)) {
 			return toBytes(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(
 					pin.pinNum()).withoutValue());
 		}
-		if (isDigital(stopListeningEvent.pin)) {
+		if (stopListeningEvent.pin.is(DIGITAL)) {
 			return toBytes(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(
 					pin.pinNum()).withoutValue());
 		}
@@ -83,11 +83,11 @@ public class ArdulinkProtocol implements Protocol {
 
 	@Override
 	public byte[] toArduino(ToArduinoPinEvent pinEvent) {
-		if (isAnalog(pinEvent.pin)) {
+		if (pinEvent.pin.is(ANALOG)) {
 			return toBytes(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(
 					pinEvent.pin.pinNum()).withValue((Integer) pinEvent.value));
 		}
-		if (isDigital(pinEvent.pin)) {
+		if (pinEvent.pin.is(DIGITAL)) {
 			return toBytes(alpProtocolMessage(POWER_PIN_SWITCH).forPin(
 					pinEvent.pin.pinNum()).withState((Boolean) pinEvent.value));
 		}
