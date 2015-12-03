@@ -2,13 +2,16 @@ package com.github.pfichtner.core.mqtt;
 
 import static com.github.pfichtner.ardulink.core.Pin.analogPin;
 import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
+import static com.github.pfichtner.core.mqtt.duplicated.EventMatchers.eventFor;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import org.dna.mqtt.moquette.server.Server;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -17,11 +20,30 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.github.pfichtner.ardulink.core.Link;
+import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.EventListenerAdapter;
 import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
+import com.github.pfichtner.core.mqtt.duplicated.AnotherMqttClient;
+import com.github.pfichtner.core.mqtt.duplicated.EventMatchers.PinValueChangedEventMatcher;
+import com.github.pfichtner.core.mqtt.duplicated.Message;
 
 public class MqttIntegrationTest {
+
+	public static class EventCollector extends EventListenerAdapter {
+
+		private final List<DigitalPinValueChangedEvent> events = new ArrayList<DigitalPinValueChangedEvent>();
+
+		@Override
+		public void stateChanged(DigitalPinValueChangedEvent event) {
+			events.add(event);
+		}
+
+		public void assertReceived(PinValueChangedEventMatcher withValue) {
+			assertThat(this.events, is(withValue));
+		}
+
+	}
 
 	private static final String TOPIC = "myTopic/";
 
@@ -119,6 +141,32 @@ public class MqttIntegrationTest {
 		Message m2 = new Message(TOPIC + "system/listening/D1/set/value",
 				"false");
 		assertThat(amc.getMessages(), is(Arrays.asList(m2)));
+	}
+
+	// ---------------------------------------------------------------------------
+
+	@Test
+	public void canSwitchDigitalPinViaBroker() throws Exception {
+		int pin = 1;
+		boolean value = true;
+		EventCollector eventCollector = new EventCollector();
+		this.link.addListener(eventCollector);
+		amc.sendMessage(new Message(TOPIC + "D" + pin + "/set/value", String
+				.valueOf(value)));
+		eventCollector.assertReceived(eventFor(digitalPin(pin))
+				.withValue(value));
+	}
+
+	@Test
+	public void canSwitchAnalogPinViaBroker() throws Exception {
+		int pin = 2;
+		int value = 123;
+		EventCollector eventCollector = new EventCollector();
+		this.link.addListener(eventCollector);
+		amc.sendMessage(new Message(TOPIC + "A" + pin + "/set/value", String
+				.valueOf(value)));
+		eventCollector
+				.assertReceived(eventFor(analogPin(pin)).withValue(value));
 	}
 
 	private EventListenerAdapter delegate() {

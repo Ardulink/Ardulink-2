@@ -1,5 +1,6 @@
 package com.github.pfichtner.core.mqtt;
 
+import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
 import static com.github.pfichtner.ardulink.core.Pins.isAnalog;
 import static com.github.pfichtner.ardulink.core.Pins.isDigital;
 import static java.lang.Boolean.FALSE;
@@ -8,6 +9,8 @@ import static org.zu.ardulink.util.Preconditions.checkArgument;
 
 import java.io.IOException;
 
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -17,10 +20,9 @@ import com.github.pfichtner.ardulink.core.AbstractListenerLink;
 import com.github.pfichtner.ardulink.core.Pin;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
+import com.github.pfichtner.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 
 public class MqttLink extends AbstractListenerLink {
-
-	// TODO subscribe to # add call stateChange
 
 	private final String topic;
 	private final MqttClient mqttClient;
@@ -33,6 +35,34 @@ public class MqttLink extends AbstractListenerLink {
 		this.mqttClient = new MqttClient("tcp://" + config.getHost() + ":"
 				+ config.getPort(), config.getClientId());
 		this.mqttClient.connect();
+		this.mqttClient.subscribe(topic + '#');
+		this.mqttClient.setCallback(callback());
+	}
+
+	private MqttCallback callback() {
+		// TODO add reconnect logic
+		return new MqttCallback() {
+
+			@Override
+			public void messageArrived(String topic, MqttMessage mqttMessage)
+					throws Exception {
+				if ((MqttLink.this.topic + "D1/set/value").equals(topic)) {
+					fireStateChanged(new DefaultDigitalPinValueChangedEvent(
+							digitalPin(1), Boolean.parseBoolean(new String(
+									mqttMessage.getPayload()))));
+				}
+			}
+
+			@Override
+			public void deliveryComplete(IMqttDeliveryToken deliveryToken) {
+				// do nothing
+			}
+
+			@Override
+			public void connectionLost(Throwable throwable) {
+				throw new UnsupportedOperationException();
+			}
+		};
 	}
 
 	@Override

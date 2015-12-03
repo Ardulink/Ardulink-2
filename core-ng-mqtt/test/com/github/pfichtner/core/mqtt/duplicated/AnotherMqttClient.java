@@ -1,4 +1,4 @@
-package com.github.pfichtner.core.mqtt;
+package com.github.pfichtner.core.mqtt.duplicated;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -11,8 +11,11 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 
+// TODO create a Mqtt test package and move AnotherMQttClient, ... to it
+// TODO create a @MqttBroker Rule
 public class AnotherMqttClient {
 
 	private final MqttClient mqttClient;
@@ -55,7 +58,7 @@ public class AnotherMqttClient {
 
 	public List<Message> getMessages() {
 		try {
-			MILLISECONDS.sleep(10);
+			MILLISECONDS.sleep(25);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
@@ -66,6 +69,12 @@ public class AnotherMqttClient {
 		List<Message> messages = new ArrayList<Message>(this.messages);
 		this.messages.clear();
 		return messages;
+	}
+
+	public void sendMessage(Message message) throws MqttException,
+			MqttPersistenceException {
+		this.mqttClient.publish(message.getTopic(), new MqttMessage(message
+				.getMessage().getBytes()));
 	}
 
 	public void disconnect() throws MqttException {
