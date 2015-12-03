@@ -1,13 +1,17 @@
 package com.github.pfichtner.core.mqtt;
 
+import static com.github.pfichtner.ardulink.core.Pin.analogPin;
 import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
-import static com.github.pfichtner.ardulink.core.Pins.isAnalog;
-import static com.github.pfichtner.ardulink.core.Pins.isDigital;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Collections.unmodifiableMap;
 import static org.zu.ardulink.util.Preconditions.checkArgument;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -15,23 +19,40 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.zu.ardulink.util.Integers;
 
 import com.github.pfichtner.ardulink.core.AbstractListenerLink;
 import com.github.pfichtner.ardulink.core.Pin;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
+import com.github.pfichtner.ardulink.core.Pin.Type;
+import com.github.pfichtner.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 
 public class MqttLink extends AbstractListenerLink {
 
+	private static final String ANALOG = "A";
+	private static final String DIGITAL = "D";
 	private final String topic;
+	private final Pattern mqttReceivePattern;
 	private final MqttClient mqttClient;
+
+	private static final Map<Type, String> typeMap = unmodifiableMap(typeMap());
+
+	private static Map<Type, String> typeMap() {
+		Map<Type, String> typeMap = new HashMap<Type, String>();
+		typeMap.put(Type.ANALOG, ANALOG);
+		typeMap.put(Type.DIGITAL, DIGITAL);
+		return typeMap;
+	}
 
 	public MqttLink(MqttLinkConfig config) throws MqttException {
 		checkArgument(config.getHost() != null, "host must not be null");
 		checkArgument(config.getClientId() != null, "clientId must not be null");
 		checkArgument(config.getTopic() != null, "topic must not be null");
 		this.topic = config.getTopic();
+		this.mqttReceivePattern = Pattern.compile(MqttLink.this.topic
+				+ "([aAdD])(\\d+)/set/value");
 		this.mqttClient = new MqttClient("tcp://" + config.getHost() + ":"
 				+ config.getPort(), config.getClientId());
 		this.mqttClient.connect();
@@ -40,17 +61,40 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	private MqttCallback callback() {
-		// TODO add reconnect logic
 		return new MqttCallback() {
 
 			@Override
 			public void messageArrived(String topic, MqttMessage mqttMessage)
 					throws Exception {
-				if ((MqttLink.this.topic + "D1/set/value").equals(topic)) {
-					fireStateChanged(new DefaultDigitalPinValueChangedEvent(
-							digitalPin(1), Boolean.parseBoolean(new String(
-									mqttMessage.getPayload()))));
+				Matcher matcher = mqttReceivePattern.matcher(topic);
+				if (matcher.matches() && matcher.groupCount() == 2) {
+					Pin pin = pin(matcher.group(1),
+							Integers.tryParse(matcher.group(2)));
+					if (pin != null) {
+						if (pin.is(Type.DIGITAL)) {
+							fireStateChanged(new DefaultDigitalPinValueChangedEvent(
+									(DigitalPin) pin,
+									Boolean.parseBoolean(new String(mqttMessage
+											.getPayload()))));
+						} else if (pin.is(Type.ANALOG)) {
+							fireStateChanged(new DefaultAnalogPinValueChangedEvent(
+									(AnalogPin) pin,
+									Integer.parseInt(new String(mqttMessage
+											.getPayload()))));
+						}
+					}
 				}
+			}
+
+			private Pin pin(String type, Integer pin) {
+				if (pin != null) {
+					if (DIGITAL.equalsIgnoreCase(type)) {
+						return digitalPin(pin.intValue());
+					} else if (ANALOG.equalsIgnoreCase(type)) {
+						return analogPin(pin.intValue());
+					}
+				}
+				return null;
 			}
 
 			@Override
@@ -60,6 +104,7 @@ public class MqttLink extends AbstractListenerLink {
 
 			@Override
 			public void connectionLost(Throwable throwable) {
+				// TODO add reconnect logic
 				throw new UnsupportedOperationException();
 			}
 		};
@@ -80,27 +125,20 @@ public class MqttLink extends AbstractListenerLink {
 				+ "/set/value";
 	}
 
-	private static String getType(Pin pin) {
-		if (isAnalog(pin)) {
-			return "A";
-		} else if (isDigital(pin)) {
-			return "D";
-		} else {
-			throw new IllegalStateException("Pin " + pin
-					+ " is not digital nor analog");
-		}
+	private String getType(Pin pin) {
+		return typeMap.get(pin.getType());
 	}
 
 	@Override
 	public void switchAnalogPin(AnalogPin analogPin, int value)
 			throws IOException {
-		switchPin("A", analogPin, value);
+		switchPin(ANALOG, analogPin, value);
 	}
 
 	@Override
 	public void switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException {
-		switchPin("D", digitalPin, value);
+		switchPin(DIGITAL, digitalPin, value);
 	}
 
 	private void switchPin(String type, Pin pin, Object value)

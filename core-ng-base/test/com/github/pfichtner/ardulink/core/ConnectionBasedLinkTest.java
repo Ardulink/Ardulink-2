@@ -9,6 +9,7 @@ import static com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol.REA
 import static com.github.pfichtner.hamcrest.EventMatchers.eventFor;
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -24,11 +25,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
-import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.Connection.ListenerAdapter;
 import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
@@ -40,7 +40,9 @@ import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 
 public class ConnectionBasedLinkTest {
 
-	private static final int TIMEOUT = 5 * 1000;
+	@Rule
+	public Timeout timeout = new Timeout(5, SECONDS);
+
 	private static final Protocol AL_PROTO = ArdulinkProtocol.instance();
 
 	private PipedOutputStream arduinosOutputStream;
@@ -68,7 +70,7 @@ public class ConnectionBasedLinkTest {
 		this.link.close();
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void canSendAnalogValue() throws IOException {
 		int pin = anyPositive(int.class);
 		int value = anyPositive(int.class);
@@ -77,14 +79,14 @@ public class ConnectionBasedLinkTest {
 				+ "\n"));
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void canSendDigitalValue() throws IOException {
 		int pin = anyPositive(int.class);
 		this.link.switchDigitalPin(digitalPin(pin), true);
 		assertThat(toArduinoWasSent(), is("alp://ppsw/" + pin + "/1\n"));
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void doesSendStartListeningAnalogCommangToArduino()
 			throws IOException {
 		int pin = anyPositive(int.class);
@@ -93,7 +95,7 @@ public class ConnectionBasedLinkTest {
 		assertThat(toArduinoWasSent(), is("alp://srla/" + pin + "\n"));
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void doesSendStopListeningAnalogCommangToArduino()
 			throws IOException {
 		int pin = anyPositive(int.class);
@@ -111,7 +113,7 @@ public class ConnectionBasedLinkTest {
 		assertThat(toArduinoWasSent(), is(m1 + m1 + m2));
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void canReceiveAnalogPinChange() throws IOException {
 		final List<AnalogPinValueChangedEvent> analogEvents = new ArrayList<AnalogPinValueChangedEvent>();
 		EventListenerAdapter listener = new EventListenerAdapter() {
@@ -130,7 +132,7 @@ public class ConnectionBasedLinkTest {
 		assertThat(analogEvents, eventFor(analogPin(pin)).withValue(value));
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void doesSendStartListeningDigitalCommangToArduino()
 			throws IOException {
 		int pin = anyPositive(int.class);
@@ -139,7 +141,7 @@ public class ConnectionBasedLinkTest {
 		assertThat(toArduinoWasSent(), is("alp://srld/" + pin + "\n"));
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void canReceiveDigitalPinChange() throws IOException {
 		final List<DigitalPinValueChangedEvent> digitalEvents = new ArrayList<DigitalPinValueChangedEvent>();
 		EventListenerAdapter listener = new EventListenerAdapter() {
@@ -157,7 +159,7 @@ public class ConnectionBasedLinkTest {
 		assertThat(digitalEvents, eventFor(digitalPin(pin)).withValue(true));
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void canFilterPins() throws IOException {
 		int pin = anyPositive(int.class);
 		final List<DigitalPinValueChangedEvent> digitalEvents = new ArrayList<DigitalPinValueChangedEvent>();
@@ -177,13 +179,13 @@ public class ConnectionBasedLinkTest {
 		assertThat(digitalEvents, is(emptyList));
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void canSendKbdEvents() throws IOException {
 		this.link.sendKeyPressEvent('#', 1, 2, 3, 4);
 		assertThat(toArduinoWasSent(), is("alp://kprs/chr#cod1loc2mod3mex4\n"));
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void canReadRawMessagesRead() throws IOException {
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(
 				anyPositive(int.class)).withState(true);
@@ -199,7 +201,7 @@ public class ConnectionBasedLinkTest {
 		assertThat(sb.toString(), is(message));
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void canReadRawMessagesSent() throws IOException {
 		final StringBuilder sb = new StringBuilder();
 		this.connection.addListener(new ListenerAdapter() {
@@ -214,7 +216,7 @@ public class ConnectionBasedLinkTest {
 		assertThat(sb.toString(), is("alp://ppin/" + pin + "/" + value + "\n"));
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void twoListenersMustNotInference() throws IOException {
 		this.link.addListener(new EventListener() {
 			@Override
@@ -251,7 +253,7 @@ public class ConnectionBasedLinkTest {
 				is("AnalogPinValueChangedEvent, DigitalPinValueChangedEvent"));
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void unparseableInput() throws IOException {
 		String m1 = "eXTRaoRdINARy dATa";
 		simulateArdunoSend(m1);

@@ -1,9 +1,14 @@
 package com.github.pfichtner.core.mqtt.duplicated;
 
+import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
+import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -12,17 +17,30 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
-import org.eclipse.paho.client.mqttv3.MqttSecurityException;
+import org.junit.rules.ExternalResource;
+
+import com.github.pfichtner.ardulink.core.Pin;
+import com.github.pfichtner.ardulink.core.Pin.Type;
 
 // TODO create a Mqtt test package and move AnotherMQttClient, ... to it
 // TODO create a @MqttBroker Rule
-public class AnotherMqttClient {
+public class AnotherMqttClient extends ExternalResource {
 
 	private final MqttClient mqttClient;
 	private final List<Message> messages = new CopyOnWriteArrayList<Message>();
+	private final String topic;
 
-	public AnotherMqttClient(String topic) throws MqttSecurityException,
-			MqttException {
+	private static final Map<Type, String> typeMap = unmodifiableMap(typeMap());
+
+	private static Map<Type, String> typeMap() {
+		Map<Type, String> typeMap = new HashMap<Type, String>();
+		typeMap.put(ANALOG, "A");
+		typeMap.put(DIGITAL, "D");
+		return typeMap;
+	}
+
+	public AnotherMqttClient(String topic) {
+		this.topic = topic;
 		this.mqttClient = mqttClient("localhost", 1883);
 		this.mqttClient.setCallback(new MqttCallback() {
 
@@ -44,16 +62,19 @@ public class AnotherMqttClient {
 		});
 	}
 
-	protected static MqttClient mqttClient(String host, int port)
-			throws MqttException {
-		return new MqttClient("tcp://" + host + ":" + port, "anotherMqttClient");
+	protected static MqttClient mqttClient(String host, int port) {
+		try {
+			return new MqttClient("tcp://" + host + ":" + port,
+					"anotherMqttClient");
+		} catch (MqttException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	public AnotherMqttClient connect() throws MqttSecurityException,
-			MqttException {
+	@Override
+	protected void before() throws Throwable {
 		mqttClient.connect();
 		mqttClient.subscribe("#");
-		return this;
 	}
 
 	public List<Message> getMessages() {
@@ -66,20 +87,31 @@ public class AnotherMqttClient {
 	}
 
 	public List<Message> pollMessages() {
-		List<Message> messages = new ArrayList<Message>(this.messages);
+		List<Message> messages = getMessages();
 		this.messages.clear();
 		return messages;
 	}
 
-	public void sendMessage(Message message) throws MqttException,
+	public void switchPin(Pin pin, Object value) throws MqttException,
+			MqttPersistenceException {
+		sendMessage(new Message(this.topic + typeMap.get(pin.getType())
+				+ pin.pinNum() + "/set/value", String.valueOf(value)));
+	}
+
+	private void sendMessage(Message message) throws MqttException,
 			MqttPersistenceException {
 		this.mqttClient.publish(message.getTopic(), new MqttMessage(message
 				.getMessage().getBytes()));
 	}
 
-	public void disconnect() throws MqttException {
+	@Override
+	protected void after() {
 		if (this.mqttClient.isConnected()) {
-			this.mqttClient.disconnect();
+			try {
+				this.mqttClient.disconnect();
+			} catch (MqttException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 

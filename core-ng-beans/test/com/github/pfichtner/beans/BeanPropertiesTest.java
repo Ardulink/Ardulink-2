@@ -4,7 +4,9 @@ import static com.github.pfichtner.beans.finder.impl.FindByAnnotation.propertyAn
 import static com.github.pfichtner.beans.finder.impl.FindByFieldAccess.directFieldAccess;
 import static com.github.pfichtner.beans.finder.impl.FindByIntrospection.beanAttributes;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertThat;
 
 import java.lang.annotation.Retention;
@@ -13,9 +15,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class BeanPropertiesTest {
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	@Retention(RUNTIME)
 	public @interface ThisAnnotationHasNoValueAttribute {
@@ -177,14 +184,23 @@ public class BeanPropertiesTest {
 		assertThat(attribute.getType().getName(), is(String.class.getName()));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void throwsExceptionsIfAnnotationHasNoValueAttribute() {
-		propertyAnnotated(ThisAnnotationHasNoValueAttribute.class);
+		Class<ThisAnnotationHasNoValueAttribute> clazz = ThisAnnotationHasNoValueAttribute.class;
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage(allOf(containsString(clazz.getName()),
+				containsString("has no attribute named value")));
+		propertyAnnotated(clazz);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void throwsExceptionsIfAnnotationHasValueAttributeWithWrongType() {
-		propertyAnnotated(ThisAnnotationHasAnAttributeThatIsNotAstring.class);
+		Class<ThisAnnotationHasAnAttributeThatIsNotAstring> clazz = ThisAnnotationHasAnAttributeThatIsNotAstring.class;
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage(allOf(containsString(clazz.getName()),
+				containsString(String.class.getName()),
+				containsString(boolean.class.getName())));
+		propertyAnnotated(clazz);
 	}
 
 	@Test

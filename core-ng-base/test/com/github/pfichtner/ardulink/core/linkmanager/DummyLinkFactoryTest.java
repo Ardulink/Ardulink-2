@@ -11,7 +11,9 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Link;
@@ -21,16 +23,23 @@ import com.github.pfichtner.ardulink.core.proto.impl.DummyProtocol;
 
 public class DummyLinkFactoryTest {
 
-	@Test(expected = IllegalArgumentException.class)
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
+
+	@Test
 	public void throwsExceptionOnInvalidNames() throws URISyntaxException {
+		String name = "non.existing.name";
 		LinkManager connectionManager = LinkManager.getInstance();
-		connectionManager.getConfigurer(new URI(
-				"ardulink://non_registered_and_not_existing_name"));
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage("No factory registered for \"" + name + "\"");
+		connectionManager.getConfigurer(new URI("ardulink://" + name + ""));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void schemaHasToBeArdulink() throws URISyntaxException {
 		LinkManager connectionManager = LinkManager.getInstance();
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage("schema not ardulink");
 		connectionManager.getConfigurer(new URI("wrongSchema://dummy"));
 	}
 
@@ -64,11 +73,14 @@ public class DummyLinkFactoryTest {
 				.getInstance().getClass().getName()));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void throwsExceptionOnInvalidKey() throws URISyntaxException {
+		String nonExistingKey = "nonExistingKey";
 		LinkManager connectionManager = LinkManager.getInstance();
-		connectionManager.getConfigurer(new URI(
-				"ardulink://dummyLink?nonExistingKey=someValue"));
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage("Illegal attribute " + nonExistingKey);
+		connectionManager.getConfigurer(new URI("ardulink://dummyLink?"
+				+ nonExistingKey + "=someValue"));
 	}
 
 	@Test
@@ -90,7 +102,7 @@ public class DummyLinkFactoryTest {
 				is(new HashSet<Object>(Arrays.asList("dummyProto", "ardulink"))));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void cannotSetChoiceValuesThatDoNotExist_WithPreviousQuery()
 			throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
@@ -98,17 +110,24 @@ public class DummyLinkFactoryTest {
 				"ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
 		assertThat(a.getChoiceValues(), is(new Object[] { "aVal1", "aVal2" }));
-		a.setValue("aVal3IsNotAvalidValue");
+		exception.expect(IllegalArgumentException.class);
+		String invalidValue = "aVal3IsNotAvalidValue";
+		exception.expectMessage(invalidValue + " is not a valid value for a, "
+				+ "valid values are [aVal1, aVal2]");
+		a.setValue(invalidValue);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void cannotSetChoiceValuesThatDoNotExist_WithoutPreviousQuery()
 			throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
-		a.setValue("aVal3IsNotAvalidValue");
+		String invalidValue = "aVal3IsNotAvalidValue";
+		exception.expectMessage(invalidValue + " is not a valid value for a, "
+				+ "valid values are [aVal1, aVal2]");
+		a.setValue(invalidValue);
 	}
 
 	@Test
