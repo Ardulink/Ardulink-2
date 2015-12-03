@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package com.github.pfichtner.ardulink;
 
 import static com.github.pfichtner.ardulink.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
@@ -27,7 +27,9 @@ import static com.github.pfichtner.ardulink.util.TestUtil.getField;
 import static com.github.pfichtner.ardulink.util.TestUtil.listWithSameOrder;
 import static com.github.pfichtner.ardulink.util.TestUtil.set;
 import static com.github.pfichtner.ardulink.util.TestUtil.toCodepoints;
+import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayOutputStream;
@@ -37,9 +39,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.zu.ardulink.ConnectionContact;
 import org.zu.ardulink.Link;
 import org.zu.ardulink.connection.Connection;
@@ -52,9 +57,12 @@ import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
  * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
 public class MqttAdapterTest {
+
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 
 	private static final String LINKNAME = "testlink";
 
@@ -179,19 +187,30 @@ public class MqttAdapterTest {
 		assertThat(published, is(noMessages()));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void doesNotAcceptNegativeDigitalPins() {
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage(pinMustNotBeNegativeButWas(-1));
 		mqttClient.enableDigitalPinChangeEvents(-1);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void doesNotAcceptNegativeAnalogPins() {
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage(pinMustNotBeNegativeButWas(-1));
 		mqttClient.enableAnalogPinChangeEvents(-1);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void cannotConfigureChangeListenerOnNegativeAnalogPins() {
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage(pinMustNotBeNegativeButWas(-1));
 		mqttClient.configureAnalogReadChangeListener(-1);
+	}
+
+	private Matcher<String> pinMustNotBeNegativeButWas(int pin) {
+		return allOf(containsString("Pin"), containsString("negative"),
+				containsString(String.valueOf(pin)));
 	}
 
 	@Test
