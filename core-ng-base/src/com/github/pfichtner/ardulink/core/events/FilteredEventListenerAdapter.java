@@ -5,9 +5,9 @@ import com.github.pfichtner.ardulink.core.Pin;
 public class FilteredEventListenerAdapter extends EventListenerAdapter {
 
 	private final Pin pin;
-	private final EventListenerAdapter delegate;
+	private final EventListener delegate;
 
-	public FilteredEventListenerAdapter(Pin pin, EventListenerAdapter delegate) {
+	public FilteredEventListenerAdapter(Pin pin, EventListener delegate) {
 		this.pin = pin;
 		this.delegate = delegate;
 	}
