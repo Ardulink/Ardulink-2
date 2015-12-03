@@ -148,14 +148,14 @@ public class DataReceiver {
 		Configurer configurer = LinkManager.getInstance().getConfigurer(
 				new URI(connString));
 
-		// are there possible values?
+		// are there choice values?
 		for (String key : configurer.getAttributes()) {
 			ConfigAttribute attribute = configurer.getAttribute(key);
 			if (attribute.hasChoiceValues()) {
-				Object[] possibleValues = attribute.getChoiceValues();
+				Object[] choiceValues = attribute.getChoiceValues();
 				// we use the first one for each
-				if (possibleValues.length > 0) {
-					attribute.setValue(possibleValues[0]);
+				if (choiceValues.length > 0) {
+					attribute.setValue(choiceValues[0]);
 				}
 			}
 		}
