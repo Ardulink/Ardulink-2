@@ -72,7 +72,7 @@ public class DummyLinkFactoryTest {
 	}
 
 	@Test
-	public void canDefinePossibleValues() throws Exception {
+	public void canDefineChoiceValues() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://dummyLink"));

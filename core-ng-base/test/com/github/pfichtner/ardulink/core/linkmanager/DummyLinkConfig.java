@@ -29,7 +29,7 @@ public class DummyLinkConfig implements LinkConfig {
 	}
 
 	@ChoiceFor("a")
-	public String[] possibleValuesForAtttribute_A() {
+	public String[] choiceValuesForAtttribute_A() {
 		return new String[] { "aVal1", "aVal2" };
 	}
 
