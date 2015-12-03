@@ -13,9 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package com.github.pfichtner.ardulink.util;
 
+import static com.github.pfichtner.ardulink.core.Pin.analogPin;
+import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -27,19 +29,22 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.dna.mqtt.moquette.server.Server;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.zu.ardulink.ConnectionContact;
 import org.zu.ardulink.connection.Connection;
 import org.zu.ardulink.connection.serial.AbstractSerialConnection;
 
 import com.github.pfichtner.ardulink.MqttMain;
+import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
+import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
+import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
+import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
 public final class TestUtil {
 
@@ -109,8 +114,7 @@ public final class TestUtil {
 		return broker;
 	}
 
-	public static MqttMain startAsync(MqttMain mqttMain)
-			throws InterruptedException, MqttSecurityException, MqttException {
+	public static MqttMain startAsync(MqttMain mqttMain) throws Exception {
 		mqttMain.connectToMqttBroker();
 		return waitUntilIsConnected(mqttMain, 5, SECONDS);
 	}
@@ -130,6 +134,38 @@ public final class TestUtil {
 
 	public static <T> List<T> listWithSameOrder(T... t) {
 		return Arrays.asList(t);
+	}
+
+	public static AnalogPinValueChangedEvent analogPinChanged(final int pin,
+			final int value) {
+		return new AnalogPinValueChangedEvent() {
+	
+			@Override
+			public Integer getValue() {
+				return Integer.valueOf(value);
+			}
+	
+			@Override
+			public AnalogPin getPin() {
+				return analogPin(pin);
+			}
+		};
+	}
+
+	public static DigitalPinValueChangedEvent digitalPinChanged(final int pin,
+			final boolean value) {
+		return new DigitalPinValueChangedEvent() {
+	
+			@Override
+			public Boolean getValue() {
+				return Boolean.valueOf(value);
+			}
+	
+			@Override
+			public DigitalPin getPin() {
+				return digitalPin(pin);
+			}
+		};
 	}
 
 }

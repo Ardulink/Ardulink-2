@@ -19,13 +19,11 @@ package com.github.pfichtner.ardulink;
 import static com.github.pfichtner.ardulink.util.TestUtil.startAsync;
 import static com.github.pfichtner.ardulink.util.TestUtil.startBroker;
 import static com.github.pfichtner.ardulink.util.TestUtil.waitUntilIsConnected;
-import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
@@ -34,8 +32,11 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.zu.ardulink.Link;
+import org.junit.rules.Timeout;
+
+import com.github.pfichtner.ardulink.core.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -46,20 +47,12 @@ import org.zu.ardulink.Link;
  */
 public class MqttClientReconnectsToRestartedBrokerIntegrationTest {
 
-	private static final String PORT = "/dev/null";
-
-	private static final int SPEED = 115200;
-
-	private static final long TIMEOUT = 15 * 1000;;
+	@Rule
+	public Timeout timeout = new Timeout(15, SECONDS);;
 
 	private static final String TOPIC = "foo/bar";
 
 	private final Link link = mock(Link.class);
-	{
-		when(link.getPortList()).thenReturn(singletonList(PORT));
-		when(link.connect(PORT, SPEED)).thenReturn(true);
-		when(link.isConnected()).thenReturn(true);
-	}
 
 	private MqttMain client = new MqttMain() {
 		{
@@ -81,7 +74,7 @@ public class MqttClientReconnectsToRestartedBrokerIntegrationTest {
 	}
 
 	@After
-	public void tearDown() throws InterruptedException, MqttException {
+	public void tearDown() throws InterruptedException, MqttException, IOException {
 		if (client.isConnected()) {
 			client.close();
 		}
@@ -90,10 +83,9 @@ public class MqttClientReconnectsToRestartedBrokerIntegrationTest {
 		}
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void clientConnectsWhenAfterBrokerRestartet()
-			throws InterruptedException, MqttSecurityException, MqttException,
-			IOException {
+			throws Exception {
 
 		doNotListenForAnything(client);
 		startAsync(client);

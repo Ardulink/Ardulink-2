@@ -13,16 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package com.github.pfichtner.ardulink;
 
+import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
 import static com.github.pfichtner.ardulink.util.TestUtil.startAsync;
 import static com.github.pfichtner.ardulink.util.TestUtil.startBroker;
-import static java.util.Collections.singletonList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
@@ -31,33 +31,29 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.zu.ardulink.Link;
+import org.junit.rules.Timeout;
 
+import com.github.pfichtner.ardulink.core.Link;
+import com.github.pfichtner.ardulink.core.Pin;
 import com.github.pfichtner.ardulink.util.AnotherMqttClient;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
  * [adsense]
  */
 public class MqttClientIntegrationReceive {
 
-	private static final String PORT = "/dev/null";
-	
-	private static final int SPEED = 115200;
-
-	private static final long TIMEOUT = 10 * 1000;;
+	@Rule
+	public Timeout timeout = new Timeout(15, SECONDS);
 
 	private static final String TOPIC = "foo/bar";
 
 	private final Link link = mock(Link.class);
-	{
-		when(link.getPortList()).thenReturn(singletonList(PORT));
-		when(link.connect(PORT, SPEED)).thenReturn(true);
-		when(link.isConnected()).thenReturn(true);
-	}
 
 	private MqttMain client = new MqttMain() {
 		{
@@ -82,19 +78,18 @@ public class MqttClientIntegrationReceive {
 	}
 
 	@After
-	public void tearDown() throws InterruptedException, MqttException {
+	public void tearDown() throws InterruptedException, MqttException,
+			IOException {
 		client.close();
 		amc.disconnect();
 		broker.stopServer();
 	}
 
-	@Test(timeout = TIMEOUT)
-	public void processesBrokerEventPowerOnDigitalPin()
-			throws InterruptedException, MqttSecurityException, MqttException,
-			IOException {
+	@Test
+	public void processesBrokerEventPowerOnDigitalPin() throws Exception {
 
 		int pin = 1;
-		int value = 1;
+		boolean value = true;
 
 		doNotListenForAnything(client);
 		startAsync(client);
@@ -102,18 +97,13 @@ public class MqttClientIntegrationReceive {
 
 		tearDown();
 
-		verify(link).getPortList();
-		verify(link).connect(PORT, SPEED);
-		verify(link).sendPowerPinSwitch(pin, value);
-		verify(link).isConnected();
-		verify(link).disconnect();
+		verify(link).switchDigitalPin(digitalPin(pin), value);
+		verify(link).close();
 		verifyNoMoreInteractions(link);
 	}
 
-	@Test(timeout = TIMEOUT)
-	public void processesBrokerEventPowerOnAnalogPin()
-			throws InterruptedException, MqttSecurityException, MqttException,
-			IOException {
+	@Test
+	public void processesBrokerEventPowerOnAnalogPin() throws Exception {
 
 		int pin = 1;
 		int value = 123;
@@ -124,11 +114,8 @@ public class MqttClientIntegrationReceive {
 
 		tearDown();
 
-		verify(link).getPortList();
-		verify(link).connect(PORT, SPEED);
-		verify(link).sendPowerPinIntensity(pin, value);
-		verify(link).isConnected();
-		verify(link).disconnect();
+		verify(link).switchAnalogPin(Pin.analogPin(pin), value);
+		verify(link).close();
 		verifyNoMoreInteractions(link);
 	}
 

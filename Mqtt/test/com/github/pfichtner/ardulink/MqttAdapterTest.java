@@ -18,15 +18,9 @@ package com.github.pfichtner.ardulink;
 
 import static com.github.pfichtner.ardulink.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
 import static com.github.pfichtner.ardulink.util.ProtoBuilder.alpProtocolMessage;
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.ANALOG_PIN_READ;
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.DIGITAL_PIN_READ;
 import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.POWER_PIN_INTENSITY;
 import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.POWER_PIN_SWITCH;
-import static com.github.pfichtner.ardulink.util.TestUtil.createConnection;
-import static com.github.pfichtner.ardulink.util.TestUtil.getField;
 import static com.github.pfichtner.ardulink.util.TestUtil.listWithSameOrder;
-import static com.github.pfichtner.ardulink.util.TestUtil.set;
-import static com.github.pfichtner.ardulink.util.TestUtil.toCodepoints;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
@@ -41,39 +35,39 @@ import java.util.regex.Pattern;
 
 import org.hamcrest.Matcher;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.zu.ardulink.ConnectionContact;
-import org.zu.ardulink.Link;
-import org.zu.ardulink.connection.Connection;
 
+import com.github.pfichtner.ardulink.core.Connection;
+import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
+import com.github.pfichtner.ardulink.core.StreamConnection;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 import com.github.pfichtner.ardulink.util.Message;
 import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
+import com.github.pfichtner.ardulink.util.TestUtil;
 
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
  * @author Peter Fichtner
  * 
- *         [adsense]
+ * [adsense]
  */
 public class MqttAdapterTest {
 
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	private static final String LINKNAME = "testlink";
-
 	private final List<Message> published = new ArrayList<Message>();
 
 	private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-	private final ConnectionContact connectionContact = new ConnectionContact(
-			null);
-	private final Connection connection = createConnection(outputStream,
-			connectionContact);
-	private final Link link = Link.createInstance(LINKNAME, connection);
+
+	private final Connection connection = new StreamConnection(null,
+			outputStream);
+
+	private final ConnectionBasedLink link = new ConnectionBasedLink(
+			connection, ArdulinkProtocol.instance());
 
 	private AbstractMqttAdapter mqttClient = new AbstractMqttAdapter(link,
 			Config.DEFAULT) {
@@ -85,27 +79,13 @@ public class MqttAdapterTest {
 
 	private final MqttMessageBuilder mqttMessage = mqttMessageWithBasicTopic(Config.DEFAULT_TOPIC);
 
-	{
-		// there is an extremely high coupling of ConnectionContact and Link
-		// which can not be solved other than injecting the variables through
-		// reflection
-		set(connectionContact, getField(connectionContact, "link"), link);
-		set(link, getField(link, "connectionContact"), connectionContact);
-	}
-
-	@Before
-	public void setup() {
-		link.connect();
-	}
-
 	@After
-	public void tearDown() {
-		link.disconnect();
-		Link.destroyInstance(LINKNAME);
+	public void tearDown() throws IOException {
+		link.close();
 	}
 
 	@Test
-	public void canPowerOnDigitalPin() {
+	public void canPowerOnDigitalPin() throws IOException {
 		int pin = 0;
 		simulateMqttToArduino(mqttMessage.digitalPin(pin).enable());
 		assertThat(serialReceived(), is(alpProtocolMessage(POWER_PIN_SWITCH)
@@ -113,14 +93,14 @@ public class MqttAdapterTest {
 	}
 
 	@Test
-	public void canHandleInvalidTopics() {
+	public void canHandleInvalidTopics() throws IOException {
 		simulateMqttToArduino(mqttMessage.appendTopic(
 				"xxxxxxxxINVALID_TOPICxxxxxxxx").enable());
 		assertThat(serialReceived(), is(empty()));
 	}
 
 	@Test
-	public void canHandleInvalidBooleanPayloads() {
+	public void canHandleInvalidBooleanPayloads() throws IOException {
 		int pin = 3;
 		simulateMqttToArduino(mqttMessage.digitalPin(pin).setValue(
 				"xxxxxxxxINVALID_VALUExxxxxxxx"));
@@ -129,7 +109,7 @@ public class MqttAdapterTest {
 	}
 
 	@Test
-	public void canSetPowerAtAnalogPin() {
+	public void canSetPowerAtAnalogPin() throws IOException {
 		int pin = 3;
 		int value = 127;
 		simulateMqttToArduino(mqttMessage.analogPin(pin).setValue(value));
@@ -138,7 +118,7 @@ public class MqttAdapterTest {
 	}
 
 	@Test
-	public void canHandleInvalidDigitalPayloads() {
+	public void canHandleInvalidDigitalPayloads() throws IOException {
 		int pin = 3;
 		String value = "NaN";
 		simulateMqttToArduino(mqttMessage.analogPin(pin).setValue(value));
@@ -146,56 +126,55 @@ public class MqttAdapterTest {
 	}
 
 	@Test
-	public void doesPublishDigitalPinChanges() {
+	public void doesPublishDigitalPinChanges() throws IOException {
 		int pin = 0;
-		int value = 1;
-		mqttClient.enableDigitalPinChangeEvents(pin);
-		simulateArduinoToMqtt(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin)
-				.withValue(value));
+		boolean value = true;
+		this.mqttClient.enableDigitalPinChangeEvents(pin);
+		this.link.fireStateChanged(TestUtil.digitalPinChanged(pin, value));
 		assertThat(published, is(listWithSameOrder(mqttMessage.digitalPin(pin)
 				.hasValue(value))));
 	}
 
 	@Test
-	public void doesNotPublishDigitalPinChangesOnUnobservedPins() {
+	public void doesNotPublishDigitalPinChangesOnUnobservedPins()
+			throws IOException {
 		int pin = 0;
-		int value = 1;
-		mqttClient.enableDigitalPinChangeEvents(pin);
-		simulateArduinoToMqtt(alpProtocolMessage(DIGITAL_PIN_READ).forPin(
-				anyOtherPinThan(pin)).withValue(value));
+		boolean value = true;
+		this.mqttClient.enableDigitalPinChangeEvents(pin);
+		this.link.fireStateChanged(TestUtil.digitalPinChanged(anyOtherPinThan(pin),
+				value));
 		assertThat(published, is(noMessages()));
 	}
 
 	@Test
-	public void doesPublishAnalogPinChanges() {
+	public void doesPublishAnalogPinChanges() throws IOException {
 		int pin = 9;
 		int value = 123;
-		mqttClient.enableAnalogPinChangeEvents(pin);
-		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.withValue(value));
+		this.mqttClient.enableAnalogPinChangeEvents(pin);
+		link.fireStateChanged(TestUtil.analogPinChanged(pin, value));
 		assertThat(published, is(listWithSameOrder(mqttMessage.analogPin(pin)
 				.hasValue(value))));
 	}
 
 	@Test
-	public void doesNotPublishAnalogPinChangesOnUnobservedPins() {
+	public void doesNotPublishAnalogPinChangesOnUnobservedPins()
+			throws IOException {
 		int pin = 0;
 		int value = 1;
 		mqttClient.enableAnalogPinChangeEvents(pin);
-		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
-				anyOtherPinThan(pin)).withValue(value));
+		link.fireStateChanged(TestUtil.analogPinChanged(anyOtherPinThan(pin), value));
 		assertThat(published, is(noMessages()));
 	}
 
 	@Test
-	public void doesNotAcceptNegativeDigitalPins() {
+	public void doesNotAcceptNegativeDigitalPins() throws IOException {
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage(pinMustNotBeNegativeButWas(-1));
 		mqttClient.enableDigitalPinChangeEvents(-1);
 	}
 
 	@Test
-	public void doesNotAcceptNegativeAnalogPins() {
+	public void doesNotAcceptNegativeAnalogPins() throws IOException {
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage(pinMustNotBeNegativeButWas(-1));
 		mqttClient.enableAnalogPinChangeEvents(-1);
@@ -214,7 +193,7 @@ public class MqttAdapterTest {
 	}
 
 	@Test
-	public void ignoresConfigsWithWrongGroupCountInRegep() {
+	public void ignoresConfigsWithWrongGroupCountInRegep() throws IOException {
 		Config defaultConfig = Config.DEFAULT;
 		Config config = defaultConfig.withTopicPatternAnalogWrite(Pattern
 				.compile(removeAll(defaultConfig.getTopicPatternAnalogWrite()
@@ -225,8 +204,6 @@ public class MqttAdapterTest {
 				published.add(new Message(topic, message));
 			}
 		};
-		set(connectionContact, getField(connectionContact, "link"), link);
-		set(link, getField(link, "connectionContact"), connectionContact);
 		simulateMqttToArduino(mqttMessage.analogPin(3).setValue("123"));
 		assertThat(serialReceived(), is(empty()));
 	}
@@ -235,13 +212,8 @@ public class MqttAdapterTest {
 		return string.replaceAll("[" + remove + "]", "");
 	}
 
-	private void simulateArduinoToMqtt(String message) {
-		int[] codepoints = toCodepoints(message);
-		connectionContact.parseInput(anyId(), codepoints.length, codepoints);
-	}
-
-	private void simulateMqttToArduino(Message message) {
-		mqttClient.toArduino(message.getTopic(), message.getMessage());
+	private void simulateMqttToArduino(Message message) throws IOException {
+		this.mqttClient.toArduino(message.getTopic(), message.getMessage());
 	}
 
 	private String serialReceived() {
@@ -255,10 +227,6 @@ public class MqttAdapterTest {
 
 	private static int anyOtherPinThan(int pin) {
 		return ++pin;
-	}
-
-	private static String anyId() {
-		return "randomId";
 	}
 
 	private static String empty() {

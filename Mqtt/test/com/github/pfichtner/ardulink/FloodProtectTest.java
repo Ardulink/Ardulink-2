@@ -13,41 +13,38 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package com.github.pfichtner.ardulink;
 
 import static com.github.pfichtner.ardulink.AbstractMqttAdapter.CompactStrategy.AVERAGE;
 import static com.github.pfichtner.ardulink.AbstractMqttAdapter.CompactStrategy.LAST_WINS;
 import static com.github.pfichtner.ardulink.compactors.Tolerance.maxTolerance;
 import static com.github.pfichtner.ardulink.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.alpProtocolMessage;
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.ANALOG_PIN_READ;
-import static com.github.pfichtner.ardulink.util.TestUtil.createConnection;
-import static com.github.pfichtner.ardulink.util.TestUtil.getField;
-import static com.github.pfichtner.ardulink.util.TestUtil.set;
-import static com.github.pfichtner.ardulink.util.TestUtil.toCodepoints;
+import static com.github.pfichtner.ardulink.util.TestUtil.analogPinChanged;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.zu.ardulink.ConnectionContact;
-import org.zu.ardulink.Link;
-import org.zu.ardulink.connection.Connection;
 
 import com.github.pfichtner.ardulink.compactors.SlicedAnalogReadChangeListenerAdapter;
 import com.github.pfichtner.ardulink.compactors.TimeSlicer;
+import com.github.pfichtner.ardulink.core.Connection;
+import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
+import com.github.pfichtner.ardulink.core.StreamConnection;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 import com.github.pfichtner.ardulink.util.Message;
 import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
  * [adsense]
@@ -71,19 +68,18 @@ public class FloodProtectTest {
 
 	}
 
-	private static final String LINKNAME = "testlink";
-
 	private final List<Message> published = new ArrayList<Message>();
 
 	private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-	private final ConnectionContact connectionContact = new ConnectionContact(
-			null);
-	private final Connection connection = createConnection(outputStream,
-			connectionContact);
-	private final Link link = Link.createInstance(LINKNAME, connection);
 
-	private final AbstractMqttAdapter mqttClient = new AbstractMqttAdapter(
-			link, Config.DEFAULT) {
+	private final Connection connection = new StreamConnection(null,
+			outputStream);
+
+	private final ConnectionBasedLink link = new ConnectionBasedLink(
+			connection, ArdulinkProtocol.instance());
+
+	private AbstractMqttAdapter mqttClient = new AbstractMqttAdapter(link,
+			Config.DEFAULT) {
 		@Override
 		void fromArduino(String topic, String message) {
 			published.add(new Message(topic, message));
@@ -94,42 +90,27 @@ public class FloodProtectTest {
 
 	private final MqttMessageBuilder mqttMessage = mqttMessageWithBasicTopic(Config.DEFAULT_TOPIC);
 
-	{
-		// there is an extremely high coupling of ConnectionContact and Link
-		// which can not be solved other than injecting the variables through
-		// reflection
-		set(connectionContact, getField(connectionContact, "link"), link);
-		set(link, getField(link, "connectionContact"), connectionContact);
-
-	}
-
 	private List<Message> published() {
 		List<Message> result = new ArrayList<Message>(published);
 		published.clear();
 		return result;
 	}
 
-	@Before
-	public void setup() {
-		link.connect();
-	}
-
 	@After
-	public void tearDown() {
-		link.disconnect();
-		Link.destroyInstance(LINKNAME);
+	public void tearDown() throws IOException {
+		link.close();
 	}
 
 	@Test
-	public void doesNotPublishPinChangesLowerThanToleranceValueWhenIncreasing() {
+	public void doesNotPublishPinChangesLowerThanToleranceValueWhenIncreasing()
+			throws IOException {
 		int pin = 9;
 		int valueLow = 123;
 		int valueHigh = 127;
 		mqttClient.configureAnalogReadChangeListener(pin)
 				.tolerance(maxTolerance(3)).add();
 		for (int i = valueLow; i <= valueHigh; i++) {
-			simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
-					pin).withValue(i));
+			link.fireStateChanged(analogPinChanged(pin, i));
 		}
 		assertThat(published(), is(Arrays.asList(mqttMessage.analogPin(pin)
 				.hasValue(valueLow),
@@ -137,15 +118,15 @@ public class FloodProtectTest {
 	}
 
 	@Test
-	public void doesNotPublishPinChangesLowerThanToleranceValueWhenDecreasing() {
+	public void doesNotPublishPinChangesLowerThanToleranceValueWhenDecreasing()
+			throws IOException {
 		int pin = 9;
 		int valueHigh = 123;
 		int valueLow = 119;
 		mqttClient.configureAnalogReadChangeListener(pin)
 				.tolerance(maxTolerance(3)).add();
 		for (int i = valueHigh; i >= valueLow; i--) {
-			simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
-					pin).withValue(i));
+			link.fireStateChanged(analogPinChanged(pin, i));
 		}
 		assertThat(published(), is(Arrays.asList(mqttMessage.analogPin(pin)
 				.hasValue(valueHigh),
@@ -153,14 +134,13 @@ public class FloodProtectTest {
 	}
 
 	@Test
-	public void whenGettingLowValueMessageIsPublishedAnyhow() {
+	public void whenGettingLowValueMessageIsPublishedAnyhow()
+			throws IOException {
 		int pin = 9;
 		mqttClient.configureAnalogReadChangeListener(pin)
 				.tolerance(maxTolerance(25)).add();
-		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.withValue(1));
-		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.withValue(0));
+		link.fireStateChanged(analogPinChanged(pin, 1));
+		link.fireStateChanged(analogPinChanged(pin, 0));
 		MqttMessageBuilder mqttBuilder = mqttMessage.analogPin(pin);
 		assertThat(
 				published(),
@@ -169,14 +149,13 @@ public class FloodProtectTest {
 	}
 
 	@Test
-	public void whenGettingHighValueMessageIsPublishedAnyhow() {
+	public void whenGettingHighValueMessageIsPublishedAnyhow()
+			throws IOException {
 		int pin = 9;
 		mqttClient.configureAnalogReadChangeListener(pin)
 				.tolerance(maxTolerance(25)).add();
-		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.withValue(254));
-		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.withValue(255));
+		link.fireStateChanged(analogPinChanged(pin, 254));
+		link.fireStateChanged(analogPinChanged(pin, 255));
 		assertThat(published(), is(Arrays.asList(mqttMessage.analogPin(pin)
 				.hasValue(254), mqttMessage.analogPin(pin).hasValue(255))));
 	}
@@ -184,7 +163,7 @@ public class FloodProtectTest {
 	// --------------------------------------------------------------------------------------------------
 
 	@Test
-	public void compactLatestWins() {
+	public void compactLatestWins() throws IOException {
 		int pin = 11;
 		mqttClient.configureAnalogReadChangeListener(pin)
 				.compact(LAST_WINS, dummyTimeSlicer).add();
@@ -196,7 +175,7 @@ public class FloodProtectTest {
 	}
 
 	@Test
-	public void compactAverage() {
+	public void compactAverage() throws IOException {
 		int pin = 11;
 		mqttClient.configureAnalogReadChangeListener(pin)
 				.compact(AVERAGE, dummyTimeSlicer).add();
@@ -210,18 +189,8 @@ public class FloodProtectTest {
 
 	protected void fire(int pin) {
 		for (int value = 0; value < 100; value++) {
-			simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(
-					pin).withValue(value));
+			link.fireStateChanged(analogPinChanged(pin, value));
 		}
-	}
-
-	private void simulateArduinoToMqtt(String message) {
-		int[] codepoints = toCodepoints(message);
-		connectionContact.parseInput(anyId(), codepoints.length, codepoints);
-	}
-
-	private String anyId() {
-		return "randomId";
 	}
 
 }

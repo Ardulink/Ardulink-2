@@ -13,30 +13,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package com.github.pfichtner.ardulink.compactors;
 
-import org.zu.ardulink.event.AnalogReadChangeEvent;
-import org.zu.ardulink.event.AnalogReadChangeListener;
+import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
+import com.github.pfichtner.ardulink.core.events.EventListener;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
 public class TimeSliceCompactorLast extends
 		SlicedAnalogReadChangeListenerAdapter {
 
 	private boolean firstCall = true;
-	private AnalogReadChangeEvent lastEvent;
+	private AnalogPinValueChangedEvent lastEvent;
 
-	public TimeSliceCompactorLast(AnalogReadChangeListener delegate) {
-		super(delegate);
+	public TimeSliceCompactorLast(EventListener active) {
+		super(active);
 	}
 
 	@Override
-	public void stateChanged(AnalogReadChangeEvent event) {
+	public void stateChanged(AnalogPinValueChangedEvent event) {
 		if (this.firstCall) {
 			getDelegate().stateChanged(event);
 			this.firstCall = false;
@@ -47,7 +48,7 @@ public class TimeSliceCompactorLast extends
 
 	@Override
 	public void ticked() {
-		AnalogReadChangeEvent event = this.lastEvent;
+		AnalogPinValueChangedEvent event = this.lastEvent;
 		if (event != null) {
 			getDelegate().stateChanged(event);
 		}

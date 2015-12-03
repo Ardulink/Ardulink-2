@@ -16,7 +16,7 @@ limitations under the License.
 */
 package com.github.pfichtner.ardulink.compactors;
 
-import org.zu.ardulink.event.AnalogReadChangeListener;
+import com.github.pfichtner.ardulink.core.events.EventListener;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -28,8 +28,8 @@ public abstract class SlicedAnalogReadChangeListenerAdapter extends
 		AnalogReadChangeListenerAdapter {
 
 	public SlicedAnalogReadChangeListenerAdapter(
-			AnalogReadChangeListener delegate) {
-		super(delegate);
+			EventListener active) {
+		super(active);
 	}
 
 	public abstract void ticked();

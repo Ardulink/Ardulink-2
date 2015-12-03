@@ -16,16 +16,12 @@ limitations under the License.
 */
 package com.github.pfichtner.ardulink;
 
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.alpProtocolMessage;
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.ANALOG_PIN_READ;
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.DIGITAL_PIN_READ;
-import static com.github.pfichtner.ardulink.util.TestUtil.createConnection;
-import static com.github.pfichtner.ardulink.util.TestUtil.getField;
+import static com.github.pfichtner.ardulink.util.TestUtil.analogPinChanged;
+import static com.github.pfichtner.ardulink.util.TestUtil.digitalPinChanged;
 import static com.github.pfichtner.ardulink.util.TestUtil.listWithSameOrder;
-import static com.github.pfichtner.ardulink.util.TestUtil.set;
 import static com.github.pfichtner.ardulink.util.TestUtil.startAsync;
 import static com.github.pfichtner.ardulink.util.TestUtil.startBroker;
-import static com.github.pfichtner.ardulink.util.TestUtil.toCodepoints;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -37,11 +33,15 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.zu.ardulink.ConnectionContact;
-import org.zu.ardulink.Link;
-import org.zu.ardulink.connection.Connection;
+import org.junit.rules.Timeout;
 
+import com.github.pfichtner.ardulink.core.Connection;
+import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
+import com.github.pfichtner.ardulink.core.Link;
+import com.github.pfichtner.ardulink.core.StreamConnection;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 import com.github.pfichtner.ardulink.util.AnotherMqttClient;
 import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
 
@@ -53,30 +53,18 @@ import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
  */
 public class MqttClientIntegrationSend {
 
-	private static final long TIMEOUT = 10 * 1000;;
+	@Rule
+	public Timeout timeout = new Timeout(15, SECONDS);
 
 	private static final String TOPIC = "foo/bar";
 
-	private static final String LINKNAME = "testlink";
-
 	private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-	private final ConnectionContact connectionContact = new ConnectionContact(
-			null);
+	private final Connection connection = new StreamConnection(null,
+			outputStream);
 
-	private final Connection connection = createConnection(outputStream,
-			connectionContact);
-
-	private final Link link = Link.createInstance(LINKNAME, connection);
-
-	{
-		// there is an extremely high coupling of ConnectionContact and Link
-		// which can not be solved other than injecting the variables through
-		// reflection
-		set(connectionContact, getField(connectionContact, "link"), link);
-		set(link, getField(link, "connectionContact"), connectionContact);
-
-	}
+	private final ConnectionBasedLink link = new ConnectionBasedLink(
+			connection, ArdulinkProtocol.instance());
 
 	private MqttMain client = new MqttMain() {
 		{
@@ -100,16 +88,15 @@ public class MqttClientIntegrationSend {
 	}
 
 	@After
-	public void tearDown() throws InterruptedException, MqttException {
+	public void tearDown() throws InterruptedException, MqttException, IOException {
 		this.client.close();
 		this.amc.disconnect();
 		this.broker.stopServer();
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void generatesBrokerEventOnDigitalPinChange()
-			throws InterruptedException, MqttSecurityException, MqttException,
-			IOException {
+			throws Exception {
 
 		int pin = 1;
 		this.client.setThrottleMillis(0);
@@ -117,8 +104,7 @@ public class MqttClientIntegrationSend {
 		this.client.setDigitals(pin);
 
 		startAsync(client);
-		simulateArduinoToMqtt(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin)
-				.withValue(1));
+		link.fireStateChanged(digitalPinChanged(pin, true));
 
 		tearDown();
 
@@ -128,10 +114,8 @@ public class MqttClientIntegrationSend {
 						.hasValue(1))));
 	}
 
-	@Test(timeout = TIMEOUT)
-	public void generatesBrokerEventOnAnalogPinChange()
-			throws InterruptedException, MqttSecurityException, MqttException,
-			IOException {
+	@Test
+	public void generatesBrokerEventOnAnalogPinChange() throws Exception {
 
 		int pin = 1;
 		int value = 45;
@@ -140,8 +124,7 @@ public class MqttClientIntegrationSend {
 		this.client.setDigitals();
 
 		startAsync(this.client);
-		simulateArduinoToMqtt(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.withValue(value));
+		link.fireStateChanged(analogPinChanged(pin, value));
 
 		tearDown();
 
@@ -151,10 +134,5 @@ public class MqttClientIntegrationSend {
 						.hasValue(value))));
 	}
 
-	private void simulateArduinoToMqtt(String message) {
-		int[] codepoints = toCodepoints(message);
-		this.connectionContact.parseInput("someId", codepoints.length,
-				codepoints);
-	}
 
 }

@@ -22,11 +22,11 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.zu.ardulink.connection.proxy.NetworkProxyConnection.DEFAULT_LISTENING_PORT;
 import static org.zu.ardulink.util.Strings.nullOrEmpty;
 
 import java.io.IOException;
-import java.util.List;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -40,26 +40,30 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zu.ardulink.Link;
-import org.zu.ardulink.connection.proxy.NetworkProxyConnection;
 
 import com.github.pfichtner.ardulink.AbstractMqttAdapter.CompactStrategy;
 import com.github.pfichtner.ardulink.compactors.ThreadTimeSlicer;
 import com.github.pfichtner.ardulink.compactors.TimeSlicer;
+import com.github.pfichtner.ardulink.core.Link;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
 public class MqttMain {
 
-	private static final Logger logger = LoggerFactory.getLogger(MqttMain.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(MqttMain.class);
 
 	@Option(name = "-delay", usage = "Do a n seconds delay after connecting")
 	private int sleepSecs = 10;
-	
+
 	@Option(name = "-brokerTopic", usage = "Topic to register. To switch pins a message of the form $brokerTopic/[A|D]$pinNumber/value/set must be sent. A for analog pins, D for digital pins")
 	private String brokerTopic = Config.DEFAULT_TOPIC;
 
@@ -90,8 +94,8 @@ public class MqttMain {
 	@Option(name = "-athstr", aliases = "--strategy", usage = "Analog throttle strategy")
 	private CompactStrategy compactStrategy = AVERAGE;
 
-	@Option(name = "-remote", usage = "Host (and optional port) of a remote ardulink arduino")
-	private String remote;
+	@Option(name = "-connection", usage = "Connection URI to the arduino")
+	private String connString = "ardulink://serial";
 
 	@Option(name = "-control", usage = "Enable the control of listeners via mqtt")
 	private boolean control;
@@ -114,7 +118,7 @@ public class MqttMain {
 		}
 
 		public MqttClient listenToMqttAndArduino()
-				throws MqttSecurityException, MqttException {
+				throws MqttSecurityException, MqttException, IOException {
 			return listenToMqtt().listenToArduino();
 		}
 
@@ -125,7 +129,7 @@ public class MqttMain {
 			return this;
 		}
 
-		private MqttClient listenToArduino() {
+		private MqttClient listenToArduino() throws IOException {
 			TimeSlicer timeSlicer = null;
 			if (throttleMillis > 0) {
 				timeSlicer = new ThreadTimeSlicer(throttleMillis, MILLISECONDS);
@@ -253,13 +257,11 @@ public class MqttMain {
 
 	}
 
-	public static void main(String[] args) throws MqttSecurityException,
-			MqttException, InterruptedException {
+	public static void main(String[] args) throws Exception {
 		new MqttMain().doMain(args);
 	}
 
-	public void doMain(String... args) throws MqttSecurityException,
-			MqttException, InterruptedException {
+	public void doMain(String... args) throws Exception {
 		CmdLineParser cmdLineParser = new CmdLineParser(this);
 		try {
 			cmdLineParser.parseArgument(args);
@@ -278,9 +280,8 @@ public class MqttMain {
 
 	}
 
-	public void connectToMqttBroker() throws MqttSecurityException,
-			MqttException, InterruptedException {
-		this.link = connect(createLink());
+	public void connectToMqttBroker() throws Exception {
+		this.link = createLink();
 		SECONDS.sleep(this.sleepSecs);
 		// ensure brokerTopic is normalized
 		setBrokerTopic(this.brokerTopic);
@@ -290,42 +291,31 @@ public class MqttMain {
 				.listenToMqttAndArduino();
 	}
 
-	private static Link connect(Link link) throws InterruptedException {
-		List<String> portList = link.getPortList();
-		if (portList == null || portList.isEmpty()) {
-			throw new RuntimeException("No port found!");
-		}
-		if (!link.connect(portList.get(0), 115200)) {
-			throw new RuntimeException("Connection failed!");
-		}
-		return link;
-	}
+	protected Link createLink() throws Exception, URISyntaxException {
+		Configurer configurer = LinkManager.getInstance().getConfigurer(
+				new URI(connString));
 
-	protected Link createLink() {
-		return nullOrEmpty(this.remote) ? Link.getDefaultInstance()
-				: createRemoteLink(this.remote);
-	}
-
-	private static Link createRemoteLink(String remote) {
-		String[] hostAndPort = remote.split("\\:");
-		try {
-			int port = hostAndPort.length == 1 ? DEFAULT_LISTENING_PORT
-					: Integer.parseInt(hostAndPort[1]);
-			return Link.createInstance("network", new NetworkProxyConnection(
-					hostAndPort[0], port));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		// are there choice values?
+		for (String key : configurer.getAttributes()) {
+			ConfigAttribute attribute = configurer.getAttribute(key);
+			if (attribute.hasChoiceValues()) {
+				Object[] choiceValues = attribute.getChoiceValues();
+				// we use the first one for each
+				if (choiceValues.length > 0) {
+					attribute.setValue(choiceValues[0]);
+				}
+			}
 		}
+
+		return configurer.newLink();
 	}
 
 	public boolean isConnected() {
 		return this.mqttClient != null && this.mqttClient.isConnected();
 	}
 
-	public void close() throws MqttException {
-		if (this.link.isConnected()) {
-			this.link.disconnect();
-		}
+	public void close() throws MqttException, IOException {
+		this.link.close();
 		this.mqttClient.close();
 	}
 

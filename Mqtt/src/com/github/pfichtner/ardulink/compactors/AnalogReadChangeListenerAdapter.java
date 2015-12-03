@@ -13,32 +13,34 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package com.github.pfichtner.ardulink.compactors;
 
-import org.zu.ardulink.event.AnalogReadChangeListener;
+import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
+import com.github.pfichtner.ardulink.core.events.EventListener;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
-public abstract class AnalogReadChangeListenerAdapter implements
-		AnalogReadChangeListener {
+public abstract class AnalogReadChangeListenerAdapter implements EventListener {
 
-	private final AnalogReadChangeListener delegate;
+	private final EventListener delegate;
 
-	public AnalogReadChangeListenerAdapter(AnalogReadChangeListener delegate) {
-		this.delegate = delegate;
-	}
-
-	public AnalogReadChangeListener getDelegate() {
-		return delegate;
+	public AnalogReadChangeListenerAdapter(EventListener active) {
+		this.delegate = active;
 	}
 
 	@Override
-	public int getPinListening() {
-		return delegate.getPinListening();
+	public final void stateChanged(DigitalPinValueChangedEvent event) {
+		throw new UnsupportedOperationException();
 	}
+
+	public EventListener getDelegate() {
+		return delegate;
+	}
+
 }

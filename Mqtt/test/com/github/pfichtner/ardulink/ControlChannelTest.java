@@ -22,9 +22,6 @@ import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.ST
 import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.START_LISTENING_DIGITAL;
 import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.STOP_LISTENING_ANALOG;
 import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.STOP_LISTENING_DIGITAL;
-import static com.github.pfichtner.ardulink.util.TestUtil.createConnection;
-import static com.github.pfichtner.ardulink.util.TestUtil.getField;
-import static com.github.pfichtner.ardulink.util.TestUtil.set;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -32,31 +29,31 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.zu.ardulink.ConnectionContact;
-import org.zu.ardulink.Link;
-import org.zu.ardulink.connection.Connection;
 
+import com.github.pfichtner.ardulink.core.Connection;
+import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
+import com.github.pfichtner.ardulink.core.StreamConnection;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 import com.github.pfichtner.ardulink.util.Message;
 import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
- * [adsense]
+* [adsense]
  */
 public class ControlChannelTest {
 
-	private static final String LINKNAME = "testlink";
-
 	private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-	private final ConnectionContact connectionContact = new ConnectionContact(
-			null);
-	private final Connection connection = createConnection(outputStream,
-			connectionContact);
-	private final Link link = Link.createInstance(LINKNAME, connection);
+
+	private final Connection connection = new StreamConnection(null,
+			outputStream);
+
+	private final ConnectionBasedLink link = new ConnectionBasedLink(
+			connection, ArdulinkProtocol.instance());
 
 	private final AbstractMqttAdapter mqttClient = new AbstractMqttAdapter(
 			link, Config.DEFAULT.withControlChannelEnabled()) {
@@ -68,28 +65,13 @@ public class ControlChannelTest {
 
 	private final MqttMessageBuilder mqttMessage = mqttMessageWithBasicTopic(Config.DEFAULT_TOPIC);
 
-	{
-		// there is an extremely high coupling of ConnectionContact and Link
-		// which can not be solved other than injecting the variables through
-		// reflection
-		set(connectionContact, getField(connectionContact, "link"), link);
-		set(link, getField(link, "connectionContact"), connectionContact);
-
-	}
-
-	@Before
-	public void setup() {
-		link.connect();
-	}
-
 	@After
-	public void tearDown() {
-		link.disconnect();
-		Link.destroyInstance(LINKNAME);
+	public void tearDown() throws IOException {
+		link.close();
 	}
 
 	@Test
-	public void canEnableListenerForDigitalPin() {
+	public void canEnableListenerForDigitalPin() throws IOException {
 		int pin = 2;
 		simulateMqttToArduino(mqttMessage.digitalListener(pin).enable());
 		assertThat(serialReceived(),
@@ -98,7 +80,8 @@ public class ControlChannelTest {
 	}
 
 	@Test
-	public void noMessageWhenConfigDoesNotSupportControlChannel() {
+	public void noMessageWhenConfigDoesNotSupportControlChannel()
+			throws IOException {
 		int pin = 2;
 		Message message = mqttMessage.digitalListener(pin).enable();
 		new AbstractMqttAdapter(link, Config.DEFAULT) {
@@ -112,7 +95,7 @@ public class ControlChannelTest {
 	}
 
 	@Test
-	public void canEnableListenerForAnalogPin() {
+	public void canEnableListenerForAnalogPin() throws IOException {
 		int pin = 3;
 		simulateMqttToArduino(mqttMessage.analogListener(pin).enable());
 		assertThat(serialReceived(),
@@ -121,7 +104,7 @@ public class ControlChannelTest {
 	}
 
 	@Test
-	public void canDisableListenerForDigitalPin() {
+	public void canDisableListenerForDigitalPin() throws IOException {
 		int pin = 4;
 		simulateMqttToArduino(mqttMessage.digitalListener(pin).disable());
 		assertThat(serialReceived(),
@@ -130,7 +113,7 @@ public class ControlChannelTest {
 	}
 
 	@Test
-	public void canDisableListenerForAnalogPin() {
+	public void canDisableListenerForAnalogPin() throws IOException {
 		int pin = 5;
 		simulateMqttToArduino(mqttMessage.analogListener(pin).disable());
 		assertThat(serialReceived(),
@@ -139,7 +122,7 @@ public class ControlChannelTest {
 	}
 
 	@Test
-	public void canHandleInvaldTypeOnEnabling() {
+	public void canHandleInvaldTypeOnEnabling() throws IOException {
 		int pin = 6;
 		simulateMqttToArduino(mqttMessage.listener().appendTopic("X" + pin)
 				.enable());
@@ -147,7 +130,7 @@ public class ControlChannelTest {
 	}
 
 	@Test
-	public void canHandleInvaldTypeOnDisabling() {
+	public void canHandleInvaldTypeOnDisabling() throws IOException {
 		int pin = 6;
 		simulateMqttToArduino(mqttMessage.listener().appendTopic("X" + pin)
 				.disable());
@@ -155,7 +138,7 @@ public class ControlChannelTest {
 	}
 
 	@Test
-	public void canHandleInvaldDigitalPins() {
+	public void canHandleInvaldDigitalPins() throws IOException {
 		String pin = "X";
 		simulateMqttToArduino(mqttMessage.listener().appendTopic("D" + pin)
 				.enable());
@@ -163,14 +146,14 @@ public class ControlChannelTest {
 	}
 
 	@Test
-	public void canHandleInvaldAnalogPins() {
+	public void canHandleInvaldAnalogPins() throws IOException {
 		String pin = "X";
 		simulateMqttToArduino(mqttMessage.listener().appendTopic("A" + pin)
 				.enable());
 		assertThat(serialReceived(), is(empty()));
 	}
 
-	private void simulateMqttToArduino(Message message) {
+	private void simulateMqttToArduino(Message message) throws IOException {
 		mqttClient.toArduino(message.getTopic(), message.getMessage());
 	}
 

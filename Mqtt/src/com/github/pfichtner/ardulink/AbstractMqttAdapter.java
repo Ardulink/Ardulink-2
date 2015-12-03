@@ -16,15 +16,16 @@ limitations under the License.
  */
 package com.github.pfichtner.ardulink;
 
+import static com.github.pfichtner.ardulink.core.Pin.analogPin;
+import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
 import static java.util.Collections.unmodifiableList;
-import static org.zu.ardulink.protocol.IProtocol.POWER_HIGH;
-import static org.zu.ardulink.protocol.IProtocol.POWER_LOW;
 import static org.zu.ardulink.util.Integers.tryParse;
 import static org.zu.ardulink.util.Preconditions.checkArgument;
 import static org.zu.ardulink.util.Preconditions.checkNotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -33,11 +34,6 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zu.ardulink.Link;
-import org.zu.ardulink.event.AnalogReadChangeEvent;
-import org.zu.ardulink.event.AnalogReadChangeListener;
-import org.zu.ardulink.event.DigitalReadChangeEvent;
-import org.zu.ardulink.event.DigitalReadChangeListener;
 import org.zu.ardulink.util.ListBuilder;
 
 import com.github.pfichtner.ardulink.Config.DefaultConfig;
@@ -47,13 +43,19 @@ import com.github.pfichtner.ardulink.compactors.TimeSliceCompactorAvg;
 import com.github.pfichtner.ardulink.compactors.TimeSliceCompactorLast;
 import com.github.pfichtner.ardulink.compactors.TimeSlicer;
 import com.github.pfichtner.ardulink.compactors.Tolerance;
+import com.github.pfichtner.ardulink.core.Link;
+import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
+import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
+import com.github.pfichtner.ardulink.core.events.EventListener;
+import com.github.pfichtner.ardulink.core.events.EventListenerAdapter;
+import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
 
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
 public abstract class AbstractMqttAdapter {
 
@@ -61,7 +63,7 @@ public abstract class AbstractMqttAdapter {
 			.getLogger(AbstractMqttAdapter.class);
 
 	public interface Handler {
-		boolean handle(String topic, String message);
+		boolean handle(String topic, String message) throws IOException;
 	}
 
 	public static abstract class AbstractPinHandler implements Handler {
@@ -72,7 +74,7 @@ public abstract class AbstractMqttAdapter {
 			this.pattern = checkNotNull(pattern, "Pattern must not be null");
 		}
 
-		public boolean handle(String topic, String message) {
+		public boolean handle(String topic, String message) throws IOException {
 			Matcher matcher = this.pattern.matcher(topic);
 			if (matcher.matches() && matcher.groupCount() > 0) {
 				Integer pin = tryParse(matcher.group(1));
@@ -83,7 +85,8 @@ public abstract class AbstractMqttAdapter {
 			return false;
 		}
 
-		protected abstract boolean handlePin(int pin, String message);
+		protected abstract boolean handlePin(int pin, String message)
+				throws IOException;
 
 	}
 
@@ -100,9 +103,8 @@ public abstract class AbstractMqttAdapter {
 		}
 
 		@Override
-		protected boolean handlePin(int pin, String message) {
-			this.link.sendPowerPinSwitch(pin,
-					parseBoolean(message) ? POWER_HIGH : POWER_LOW);
+		protected boolean handlePin(int pin, String message) throws IOException {
+			this.link.switchDigitalPin(digitalPin(pin), parseBoolean(message));
 			return true;
 		}
 
@@ -121,12 +123,12 @@ public abstract class AbstractMqttAdapter {
 		}
 
 		@Override
-		protected boolean handlePin(int pin, String message) {
+		protected boolean handlePin(int pin, String message) throws IOException {
 			Integer intensity = tryParse(message);
 			if (intensity == null) {
 				return false;
 			}
-			this.link.sendPowerPinIntensity(pin, intensity.intValue());
+			this.link.switchAnalogPin(analogPin(pin), intensity.intValue());
 			return true;
 		}
 
@@ -164,11 +166,11 @@ public abstract class AbstractMqttAdapter {
 		}
 
 		@Override
-		protected boolean handlePin(int pin, String message) {
+		protected boolean handlePin(int pin, String message) throws IOException {
 			if (parseBoolean(message)) {
-				this.link.startListenDigitalPin(pin);
+				this.link.startListening(digitalPin(pin));
 			} else {
-				this.link.stopListenDigitalPin(pin);
+				this.link.stopListening(digitalPin(pin));
 			}
 			return true;
 		}
@@ -207,11 +209,11 @@ public abstract class AbstractMqttAdapter {
 		}
 
 		@Override
-		protected boolean handlePin(int pin, String message) {
+		protected boolean handlePin(int pin, String message) throws IOException {
 			if (parseBoolean(message)) {
-				this.link.startListenAnalogPin(pin);
+				this.link.startListening(analogPin(pin));
 			} else {
-				this.link.stopListenAnalogPin(pin);
+				this.link.stopListening(analogPin(pin));
 			}
 			return true;
 		}
@@ -261,8 +263,9 @@ public abstract class AbstractMqttAdapter {
 	 *            the message's topic
 	 * @param message
 	 *            the payload
+	 * @throws IOException
 	 */
-	public void toArduino(String topic, String message) {
+	public void toArduino(String topic, String message) throws IOException {
 		for (Handler handler : this.handlers) {
 			if (handler.handle(topic, message)) {
 				logger.info("Message {} {} handled by {}", topic, message,
@@ -272,22 +275,9 @@ public abstract class AbstractMqttAdapter {
 		}
 	}
 
-	public void enableDigitalPinChangeEvents(final int pin) {
+	public void enableDigitalPinChangeEvents(final int pin) throws IOException {
 		checkArgument(pin >= 0, "Pin must not be negative but was %s", pin);
-		this.link.addDigitalReadChangeListener(new DigitalReadChangeListener() {
-			@Override
-			public void stateChanged(DigitalReadChangeEvent e) {
-				fromArduino(
-						format(AbstractMqttAdapter.this.config
-								.getTopicPatternDigitalRead(), e.getPin()),
-						String.valueOf(e.getValue()));
-			}
-
-			@Override
-			public int getPinListening() {
-				return pin;
-			}
-		});
+		this.link.addListener(newDigitalReadChangeListener(pin));
 	}
 
 	public enum CompactStrategy {
@@ -296,7 +286,7 @@ public abstract class AbstractMqttAdapter {
 
 	public class AnalogReadChangeListenerConfigurer {
 
-		private AnalogReadChangeListener active;
+		private EventListener active;
 
 		public AnalogReadChangeListenerConfigurer(int pin) {
 			active = newAnalogReadChangeListener(pin);
@@ -331,16 +321,16 @@ public abstract class AbstractMqttAdapter {
 			}
 		}
 
-		public void decorate(AnalogReadChangeListener newActive) {
+		public void decorate(EventListener newActive) {
 			this.active = newActive;
 		}
 
-		public AnalogReadChangeListener getActive() {
+		public EventListener getActive() {
 			return active;
 		}
 
-		public void add() {
-			link.addAnalogReadChangeListener(active);
+		public void add() throws IOException {
+			link.addListener(active);
 		}
 
 	}
@@ -351,26 +341,41 @@ public abstract class AbstractMqttAdapter {
 		return new AnalogReadChangeListenerConfigurer(pin);
 	}
 
-	public void enableAnalogPinChangeEvents(final int pin) {
+	public void enableAnalogPinChangeEvents(final int pin) throws IOException {
 		checkArgument(pin >= 0, "Pin must not be negative but was %s", pin);
-		this.link.addAnalogReadChangeListener(newAnalogReadChangeListener(pin));
+		this.link.addListener(newAnalogReadChangeListener(pin));
 	}
 
-	private AnalogReadChangeListener newAnalogReadChangeListener(final int pin) {
-		return new AnalogReadChangeListener() {
-			@Override
-			public void stateChanged(AnalogReadChangeEvent e) {
-				fromArduino(
-						format(AbstractMqttAdapter.this.config
-								.getTopicPatternAnalogRead(),
-								e.getPin()), String.valueOf(e.getValue()));
-			}
+	private FilteredEventListenerAdapter newAnalogReadChangeListener(
+			final int pin) {
+		return new FilteredEventListenerAdapter(analogPin(pin),
+				new EventListenerAdapter() {
+					@Override
+					public void stateChanged(AnalogPinValueChangedEvent event) {
+						fromArduino(
+								format(AbstractMqttAdapter.this.config
+										.getTopicPatternAnalogRead(), event
+										.getPin().pinNum()), String
+										.valueOf(event.getValue()));
+					}
 
-			@Override
-			public int getPinListening() {
-				return pin;
-			}
-		};
+				});
+
+	}
+
+	private FilteredEventListenerAdapter newDigitalReadChangeListener(
+			final int pin) {
+		return new FilteredEventListenerAdapter(digitalPin(pin),
+				new EventListenerAdapter() {
+					@Override
+					public void stateChanged(DigitalPinValueChangedEvent event) {
+						fromArduino(
+								format(AbstractMqttAdapter.this.config
+										.getTopicPatternDigitalRead(), event
+										.getPin().pinNum()), String
+										.valueOf(event.getValue()));
+					}
+				});
 	}
 
 	/**

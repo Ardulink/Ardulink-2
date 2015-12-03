@@ -16,8 +16,8 @@ limitations under the License.
 */
 package com.github.pfichtner.ardulink.compactors;
 
-import org.zu.ardulink.event.AnalogReadChangeEvent;
-import org.zu.ardulink.event.AnalogReadChangeListener;
+import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
+import com.github.pfichtner.ardulink.core.events.EventListener;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -32,20 +32,20 @@ public class AnalogReadChangeListenerToleranceAdapter extends
 	private final Tolerance tolerance;
 
 	public AnalogReadChangeListenerToleranceAdapter(Tolerance tolerance,
-			AnalogReadChangeListener delegate) {
-		super(delegate);
+			EventListener active) {
+		super(active);
 		this.tolerance = tolerance;
 	}
-
+	
 	@Override
-	public void stateChanged(AnalogReadChangeEvent e) {
-		int newValue = e.getValue();
+	public void stateChanged(AnalogPinValueChangedEvent event) {
+		int newValue = event.getValue();
 		if (this.cachedValue == null
 				|| !tolerance
 						.inTolerance(this.cachedValue.intValue(), newValue)
 				|| isHighOrLowValue(newValue)) {
 			this.cachedValue = Integer.valueOf(newValue);
-			getDelegate().stateChanged(e);
+			getDelegate().stateChanged(event);
 		}
 	}
 
