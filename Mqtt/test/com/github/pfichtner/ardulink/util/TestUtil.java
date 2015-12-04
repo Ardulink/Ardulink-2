@@ -34,9 +34,9 @@ import org.zu.ardulink.connection.Connection;
 import org.zu.ardulink.connection.serial.AbstractSerialConnection;
 
 import com.github.pfichtner.ardulink.MqttMain;
-import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
-import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
 import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
+import com.github.pfichtner.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
+import com.github.pfichtner.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
 
 /**
@@ -139,34 +139,14 @@ public final class TestUtil {
 
 	public static AnalogPinValueChangedEvent analogPinChanged(final int pin,
 			final int value) {
-		return new AnalogPinValueChangedEvent() {
-	
-			@Override
-			public Integer getValue() {
-				return Integer.valueOf(value);
-			}
-	
-			@Override
-			public AnalogPin getPin() {
-				return analogPin(pin);
-			}
-		};
+		return new DefaultAnalogPinValueChangedEvent(analogPin(pin),
+				Integer.valueOf(value));
 	}
 
 	public static DigitalPinValueChangedEvent digitalPinChanged(final int pin,
 			final boolean value) {
-		return new DigitalPinValueChangedEvent() {
-	
-			@Override
-			public Boolean getValue() {
-				return Boolean.valueOf(value);
-			}
-	
-			@Override
-			public DigitalPin getPin() {
-				return digitalPin(pin);
-			}
-		};
+		return new DefaultDigitalPinValueChangedEvent(digitalPin(pin),
+				Boolean.valueOf(value));
 	}
 
 }
