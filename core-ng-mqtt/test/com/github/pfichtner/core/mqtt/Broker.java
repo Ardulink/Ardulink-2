@@ -11,17 +11,20 @@ public class Broker extends ExternalResource {
 
 	@Override
 	protected void before() throws IOException, InterruptedException {
-		this.mqttServer = startMqttServer();
-	}
-
-	private static Server startMqttServer() throws IOException {
-		Server broker = new Server();
-		broker.startServer();
-		return broker;
+		this.mqttServer = new Server();
+		start();
 	}
 
 	@Override
 	protected void after() {
+		stop();
+	}
+
+	public void start() throws IOException {
+		this.mqttServer.startServer();
+	}
+
+	public void stop() {
 		this.mqttServer.stopServer();
 	}
 

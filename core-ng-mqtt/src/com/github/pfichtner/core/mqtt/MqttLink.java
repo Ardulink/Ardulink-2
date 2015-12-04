@@ -5,6 +5,7 @@ import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.unmodifiableMap;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.zu.ardulink.util.Preconditions.checkArgument;
 
 import java.io.IOException;
@@ -19,6 +20,9 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.eclipse.paho.client.mqttv3.MqttSecurityException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zu.ardulink.util.Integers;
 
 import com.github.pfichtner.ardulink.core.AbstractListenerLink;
@@ -30,6 +34,9 @@ import com.github.pfichtner.ardulink.core.events.DefaultAnalogPinValueChangedEve
 import com.github.pfichtner.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 
 public class MqttLink extends AbstractListenerLink {
+
+	private static final Logger logger = LoggerFactory
+			.getLogger(MqttLink.class);
 
 	private static final String ANALOG = "A";
 	private static final String DIGITAL = "D";
@@ -55,14 +62,25 @@ public class MqttLink extends AbstractListenerLink {
 				+ "([aAdD])(\\d+)/set/value");
 		this.mqttClient = new MqttClient("tcp://" + config.getHost() + ":"
 				+ config.getPort(), config.getClientId());
-		this.mqttClient.connect();
-		this.mqttClient.subscribe(topic + '#');
+		listenToMqtt();
 		this.mqttClient.setCallback(callback());
+	}
+
+	private void listenToMqtt() throws MqttSecurityException, MqttException {
+		this.mqttClient.connect();
+		subscribe();
+	}
+
+	public void subscribe() throws MqttException {
+		this.mqttClient.subscribe(topic + '#');
+	}
+
+	private void unsubscribe() throws MqttException {
+		this.mqttClient.unsubscribe(topic + '#');
 	}
 
 	private MqttCallback callback() {
 		return new MqttCallback() {
-
 			@Override
 			public void messageArrived(String topic, MqttMessage mqttMessage)
 					throws Exception {
@@ -104,8 +122,23 @@ public class MqttLink extends AbstractListenerLink {
 
 			@Override
 			public void connectionLost(Throwable throwable) {
-				// TODO add reconnect logic
-				throw new UnsupportedOperationException();
+				fireConnectionLost();
+				logger.warn("Connection to mqtt broker lost");
+				do {
+					try {
+						SECONDS.sleep(1);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+					try {
+						logger.info("Trying to reconnect");
+						listenToMqtt();
+					} catch (Exception e) {
+						logger.warn("Reconnect failed");
+					}
+				} while (!MqttLink.this.mqttClient.isConnected());
+				logger.info("Successfully reconnected");
+				fireRecconnected();
 			}
 		};
 	}
@@ -166,7 +199,12 @@ public class MqttLink extends AbstractListenerLink {
 	@Override
 	public void close() throws IOException {
 		try {
-			this.mqttClient.disconnect();
+			if (this.mqttClient.isConnected()) {
+				unsubscribe();
+				// "kill" the callback since it retries to reconnect
+				this.mqttClient.setCallback(null);
+				this.mqttClient.disconnect();
+			}
 			this.mqttClient.close();
 		} catch (MqttException e) {
 			throw new IOException(e);

@@ -17,6 +17,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.junit.rules.ExternalResource;
 
 import com.github.pfichtner.ardulink.core.Pin;
@@ -40,7 +41,7 @@ public class AnotherMqttClient extends ExternalResource {
 	}
 
 	public AnotherMqttClient(String topic) {
-		this.topic = topic;
+		this.topic = topic.endsWith("/") ? topic : topic + "/";
 		this.mqttClient = mqttClient("localhost", 1883);
 		this.mqttClient.setCallback(new MqttCallback() {
 
@@ -73,8 +74,14 @@ public class AnotherMqttClient extends ExternalResource {
 
 	@Override
 	protected void before() throws Throwable {
+		connect();
+	}
+
+	public AnotherMqttClient connect() throws MqttSecurityException,
+			MqttException {
 		mqttClient.connect();
 		mqttClient.subscribe("#");
+		return this;
 	}
 
 	public List<Message> getMessages() {
@@ -106,12 +113,17 @@ public class AnotherMqttClient extends ExternalResource {
 
 	@Override
 	protected void after() {
-		if (this.mqttClient.isConnected()) {
-			try {
+		close();
+	}
+
+	public void close() {
+		try {
+			if (this.mqttClient.isConnected()) {
 				this.mqttClient.disconnect();
-			} catch (MqttException e) {
-				throw new RuntimeException(e);
 			}
+			this.mqttClient.close();
+		} catch (MqttException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
