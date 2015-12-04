@@ -49,7 +49,7 @@ import com.github.pfichtner.ardulink.util.AnotherMqttClient;
 public class MqttClientIntegrationReceive {
 
 	@Rule
-	public Timeout timeout = new Timeout(15, SECONDS);
+	public Timeout timeout = new Timeout(5, SECONDS);
 
 	private static final String TOPIC = "foo/bar";
 

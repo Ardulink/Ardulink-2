@@ -115,6 +115,7 @@ public final class TestUtil {
 	}
 
 	public static MqttMain startAsync(MqttMain mqttMain) throws Exception {
+		mqttMain.setSleepSecs(0);
 		mqttMain.connectToMqttBroker();
 		return waitUntilIsConnected(mqttMain, 5, SECONDS);
 	}

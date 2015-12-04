@@ -54,7 +54,7 @@ import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
 public class MqttClientIntegrationSend {
 
 	@Rule
-	public Timeout timeout = new Timeout(15, SECONDS);
+	public Timeout timeout = new Timeout(5, SECONDS);
 
 	private static final String TOPIC = "foo/bar";
 
@@ -111,7 +111,7 @@ public class MqttClientIntegrationSend {
 		assertThat(this.amc.hasReceived(),
 				is(listWithSameOrder(MqttMessageBuilder
 						.mqttMessageWithBasicTopic(TOPIC).digitalPin(pin)
-						.hasValue(1))));
+						.hasState(true))));
 	}
 
 	@Test

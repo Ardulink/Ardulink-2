@@ -21,9 +21,10 @@ import static org.zu.ardulink.util.Preconditions.checkArgument;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
 public class MqttMessageBuilder {
 
@@ -94,6 +95,10 @@ public class MqttMessageBuilder {
 
 	public Message hasValue(Object value) {
 		return value(Type.GET, value);
+	}
+
+	public Message hasState(boolean state) {
+		return value(Type.GET, state);
 	}
 
 	protected Message value(Type type, Object value) {
