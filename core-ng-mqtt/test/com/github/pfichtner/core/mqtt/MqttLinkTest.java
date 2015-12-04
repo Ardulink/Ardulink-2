@@ -6,6 +6,7 @@ import static com.github.pfichtner.core.mqtt.duplicated.EventMatchers.eventFor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.rules.RuleChain.outerRule;
@@ -52,8 +53,8 @@ public class MqttLinkTest {
 
 	private final AnotherMqttClient mqttClient = new AnotherMqttClient(TOPIC);
 
-	 @Rule
-	 public Timeout timeout = new Timeout(5, SECONDS);
+	@Rule
+	public Timeout timeout = new Timeout(5, SECONDS);
 
 	@Rule
 	public RuleChain chain = outerRule(broker).around(mqttClient);
@@ -70,6 +71,7 @@ public class MqttLinkTest {
 		link.close();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testReconnect() throws URISyntaxException, Exception {
 		MqttLinkFactory factory = new MqttLinkFactory();
@@ -85,16 +87,19 @@ public class MqttLinkTest {
 		link.addListener(eventCollector);
 
 		mqttClient.switchPin(digitalPin(1), true);
-		assertThat(eventCollector.events(DIGITAL), is(eventFor(digitalPin(1))
-				.withValue(true)));
+		assertThat(eventCollector.events(DIGITAL),
+				hasItems(eventFor(digitalPin(1)).withValue(true)));
 		this.mqttClient.close();
 
 		restartBroker(connectionListener);
 		waitForLinkRecoonect(connectionListener);
 
 		new AnotherMqttClient(TOPIC).connect().switchPin(digitalPin(2), true);
-		assertThat(eventCollector.events(DIGITAL), is(eventFor(digitalPin(1))
-				.withValue(true).and(eventFor(digitalPin(2)).withValue(true))));
+
+		assertThat(
+				eventCollector.events(DIGITAL),
+				hasItems(eventFor(digitalPin(1)).withValue(true),
+						eventFor(digitalPin(2)).withValue(true)));
 		link.close();
 	}
 

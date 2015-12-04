@@ -10,8 +10,9 @@ import static com.github.pfichtner.hamcrest.EventMatchers.eventFor;
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.core.IsCollectionContaining.hasItems;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,6 +36,7 @@ import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.EventListener;
 import com.github.pfichtner.ardulink.core.events.EventListenerAdapter;
 import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
+import com.github.pfichtner.ardulink.core.events.PinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 
@@ -113,9 +115,10 @@ public class ConnectionBasedLinkTest {
 		assertThat(toArduinoWasSent(), is(m1 + m1 + m2));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void canReceiveAnalogPinChange() throws IOException {
-		final List<AnalogPinValueChangedEvent> analogEvents = new ArrayList<AnalogPinValueChangedEvent>();
+		final List<PinValueChangedEvent> analogEvents = new ArrayList<PinValueChangedEvent>();
 		EventListenerAdapter listener = new EventListenerAdapter() {
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
@@ -129,7 +132,8 @@ public class ConnectionBasedLinkTest {
 				.withValue(value);
 		simulateArdunoSend(message);
 		waitUntilRead(this.bytesRead, message.length());
-		assertThat(analogEvents, eventFor(analogPin(pin)).withValue(value));
+		assertThat(analogEvents,
+				hasItems(eventFor(analogPin(pin)).withValue(value)));
 	}
 
 	@Test
@@ -141,9 +145,10 @@ public class ConnectionBasedLinkTest {
 		assertThat(toArduinoWasSent(), is("alp://srld/" + pin + "\n"));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void canReceiveDigitalPinChange() throws IOException {
-		final List<DigitalPinValueChangedEvent> digitalEvents = new ArrayList<DigitalPinValueChangedEvent>();
+		final List<PinValueChangedEvent> digitalEvents = new ArrayList<PinValueChangedEvent>();
 		EventListenerAdapter listener = new EventListenerAdapter() {
 			@Override
 			public void stateChanged(DigitalPinValueChangedEvent event) {
@@ -156,7 +161,8 @@ public class ConnectionBasedLinkTest {
 				.withState(true);
 		simulateArdunoSend(message);
 		waitUntilRead(this.bytesRead, message.length());
-		assertThat(digitalEvents, eventFor(digitalPin(pin)).withValue(true));
+		assertThat(digitalEvents,
+				hasItems(eventFor(digitalPin(pin)).withValue(true)));
 	}
 
 	@Test

@@ -21,4 +21,10 @@ public class DefaultAnalogPinValueChangedEvent implements
 		return this.value;
 	}
 
+	@Override
+	public String toString() {
+		return "DefaultAnalogPinValueChangedEvent [pin=" + pin + ", value="
+				+ value + "]";
+	}
+
 }

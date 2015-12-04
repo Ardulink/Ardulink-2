@@ -5,8 +5,9 @@ import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
 import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
 import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
 import static com.github.pfichtner.core.mqtt.duplicated.EventMatchers.eventFor;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.rules.RuleChain.outerRule;
 
 import java.io.IOException;
@@ -135,6 +136,7 @@ public class MqttIntegrationTest {
 
 	// ---------------------------------------------------------------------------
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void canSwitchDigitalPinViaBroker() throws Exception {
 		Pin pin = digitalPin(1);
@@ -142,10 +144,11 @@ public class MqttIntegrationTest {
 		EventCollector eventCollector = new EventCollector();
 		this.link.addListener(eventCollector);
 		mqttClient.switchPin(pin, value);
-		assertThat(eventCollector.events(DIGITAL),
-				is(eventFor(pin).withValue(value)));
+		assertThat(eventCollector.events(DIGITAL), hasItems(eventFor(pin)
+				.withValue(value)));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void canSwitchAnalogPinViaBroker() throws Exception {
 		Pin pin = analogPin(2);
@@ -153,8 +156,8 @@ public class MqttIntegrationTest {
 		EventCollector eventCollector = new EventCollector();
 		this.link.addListener(eventCollector);
 		mqttClient.switchPin(pin, value);
-		assertThat(eventCollector.events(ANALOG),
-				is(eventFor(pin).withValue(value)));
+		assertThat(eventCollector.events(ANALOG), hasItems(eventFor(pin)
+				.withValue(value)));
 	}
 
 	private EventListenerAdapter delegate() {

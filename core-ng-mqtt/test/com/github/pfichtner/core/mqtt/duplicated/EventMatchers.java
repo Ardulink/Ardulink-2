@@ -1,8 +1,5 @@
 package com.github.pfichtner.core.mqtt.duplicated;
 
-import java.util.Collection;
-import java.util.Iterator;
-
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
@@ -16,11 +13,10 @@ public class EventMatchers {
 	}
 
 	public static class PinValueChangedEventMatcher extends
-			TypeSafeMatcher<Collection<? extends PinValueChangedEvent>> {
+			TypeSafeMatcher<PinValueChangedEvent> {
 
 		private final Pin pin;
 		private Object value;
-		private PinValueChangedEventMatcher next;
 
 		public PinValueChangedEventMatcher(Pin pin) {
 			this.pin = pin;
@@ -32,47 +28,23 @@ public class EventMatchers {
 		}
 
 		@Override
-		protected void describeMismatchSafely(
-				Collection<? extends PinValueChangedEvent> item,
+		protected void describeMismatchSafely(PinValueChangedEvent event,
 				Description description) {
-			description = description.appendText("was: ");
-			for (Iterator<? extends PinValueChangedEvent> it = item.iterator(); it
-					.hasNext();) {
-				PinValueChangedEvent event = (PinValueChangedEvent) it.next();
-				description = pinState(description, event.getPin(),
-						event.getValue());
-				if (it.hasNext()) {
-					description = description.appendText(" ,");
-				}
-
-			}
+			description = description.appendText(" was ");
+			description = pinState(description, event.getPin(),
+					event.getValue());
 		}
 
 		private Description pinState(Description description, Pin pin,
 				Object value) {
-			return description
-					.appendText(String.valueOf(pin.getClass().getSimpleName()))
-					.appendText("[").appendText(String.valueOf(pin.pinNum()))
-					.appendText("]=").appendText(String.valueOf(value));
+			return description.appendText(pin.getClass().getSimpleName())
+					.appendText("[").appendValue(pin.pinNum()).appendText("]=")
+					.appendValue(value);
 		}
 
 		@Override
-		protected boolean matchesSafely(
-				Collection<? extends PinValueChangedEvent> items) {
-			return matchesSafely(items.iterator());
-		}
-
-		private boolean matchesSafely(
-				Iterator<? extends PinValueChangedEvent> iterator) {
-			if (!iterator.hasNext()) {
-				return false;
-			}
-			PinValueChangedEvent event = iterator.next();
-			if (!pinsAreEqual(event) || !valuesAreEqual(event)) {
-				return false;
-			}
-			return next == null ? !iterator.hasNext() : next
-					.matchesSafely(iterator);
+		protected boolean matchesSafely(PinValueChangedEvent event) {
+			return pinsAreEqual(event) && valuesAreEqual(event);
 		}
 
 		private boolean valuesAreEqual(PinValueChangedEvent event) {
@@ -90,11 +62,6 @@ public class EventMatchers {
 
 		public PinValueChangedEventMatcher withValue(boolean value) {
 			this.value = value;
-			return this;
-		}
-
-		public PinValueChangedEventMatcher and(PinValueChangedEventMatcher next) {
-			this.next = next;
 			return this;
 		}
 

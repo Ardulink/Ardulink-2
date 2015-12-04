@@ -21,4 +21,10 @@ public class DefaultDigitalPinValueChangedEvent implements
 		return this.value;
 	}
 
+	@Override
+	public String toString() {
+		return "DefaultDigitalPinValueChangedEvent [pin=" + pin + ", value="
+				+ value + "]";
+	}
+
 }
