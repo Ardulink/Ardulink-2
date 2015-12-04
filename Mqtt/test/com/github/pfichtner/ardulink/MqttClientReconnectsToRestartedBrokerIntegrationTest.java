@@ -48,7 +48,7 @@ import com.github.pfichtner.ardulink.core.Link;
 public class MqttClientReconnectsToRestartedBrokerIntegrationTest {
 
 	@Rule
-	public Timeout timeout = new Timeout(5, SECONDS);;
+	public Timeout timeout = new Timeout(10, SECONDS);;
 
 	private static final String TOPIC = "foo/bar";
 
