@@ -18,11 +18,11 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
+// because JNI dependent
+@Ignore
 public class SerialLinkFactoryIntegrationTest {
 
 	@Test
-	// because JNI dependent
-	@Ignore
 	public void canConfigureSerialConnectionViaURI() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
