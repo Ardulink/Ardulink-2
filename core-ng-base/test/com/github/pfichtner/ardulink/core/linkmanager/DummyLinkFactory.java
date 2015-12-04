@@ -1,7 +1,6 @@
 package com.github.pfichtner.ardulink.core.linkmanager;
 
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.Link;
 
 public class DummyLinkFactory implements LinkFactory<DummyLinkConfig> {
 
@@ -11,7 +10,7 @@ public class DummyLinkFactory implements LinkFactory<DummyLinkConfig> {
 	}
 
 	@Override
-	public Link newLink(DummyLinkConfig config) {
+	public ConnectionBasedLink newLink(DummyLinkConfig config) {
 		return new ConnectionBasedLink(new DummyConnection(config),
 				config.protocol);
 	}

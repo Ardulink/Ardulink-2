@@ -13,13 +13,11 @@ import gnu.io.UnsupportedCommOperationException;
 
 import java.io.IOException;
 
-import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 
-public class SerialLinkFactory implements
-		LinkFactory<SerialLinkConfig> {
+public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
 	@Override
 	public String getName() {
@@ -27,7 +25,7 @@ public class SerialLinkFactory implements
 	}
 
 	@Override
-	public Link newLink(SerialLinkConfig config)
+	public ConnectionBasedLink newLink(SerialLinkConfig config)
 			throws NoSuchPortException, PortInUseException,
 			UnsupportedCommOperationException, IOException {
 		CommPortIdentifier portIdentifier = CommPortIdentifier

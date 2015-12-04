@@ -8,7 +8,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 import com.github.pfichtner.core.proxy.ProxyLinkConfig.ProxyConnectionToRemote;
@@ -21,8 +20,8 @@ public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
 	}
 
 	@Override
-	public Link newLink(ProxyLinkConfig config) throws UnknownHostException,
-			IOException {
+	public ConnectionBasedLink newLink(ProxyLinkConfig config)
+			throws UnknownHostException, IOException {
 		ProxyConnectionToRemote remote = config.getRemote();
 
 		remote.send(CONNECT_CMD.getCommand());
