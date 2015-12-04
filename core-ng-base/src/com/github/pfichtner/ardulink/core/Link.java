@@ -25,4 +25,8 @@ public interface Link extends Closeable {
 	void sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException;
 
+	Link addConnectionListener(ConnectionListener connectionListener);
+
+	Link removeConnectionListener(ConnectionListener connectionListener);
+
 }
