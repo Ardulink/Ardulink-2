@@ -16,10 +16,10 @@ limitations under the License.
  */
 package com.github.pfichtner.ardulink;
 
+import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
+import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
+import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
 import static com.github.pfichtner.ardulink.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.alpProtocolMessage;
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.POWER_PIN_INTENSITY;
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.POWER_PIN_SWITCH;
 import static com.github.pfichtner.ardulink.util.TestUtil.listWithSameOrder;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
@@ -89,7 +89,7 @@ public class MqttAdapterTest {
 		int pin = 0;
 		simulateMqttToArduino(mqttMessage.digitalPin(pin).enable());
 		assertThat(serialReceived(), is(alpProtocolMessage(POWER_PIN_SWITCH)
-				.forPin(pin).withValue(1)));
+				.forPin(pin).withValue(1) + "\n"));
 	}
 
 	@Test
@@ -105,7 +105,7 @@ public class MqttAdapterTest {
 		simulateMqttToArduino(mqttMessage.digitalPin(pin).setValue(
 				"xxxxxxxxINVALID_VALUExxxxxxxx"));
 		assertThat(serialReceived(), is(alpProtocolMessage(POWER_PIN_SWITCH)
-				.forPin(pin).withValue(0)));
+				.forPin(pin).withValue(0) + "\n"));
 	}
 
 	@Test
@@ -114,7 +114,7 @@ public class MqttAdapterTest {
 		int value = 127;
 		simulateMqttToArduino(mqttMessage.analogPin(pin).setValue(value));
 		assertThat(serialReceived(), is(alpProtocolMessage(POWER_PIN_INTENSITY)
-				.forPin(pin).withValue(value)));
+				.forPin(pin).withValue(value) + "\n"));
 	}
 
 	@Test
@@ -141,8 +141,8 @@ public class MqttAdapterTest {
 		int pin = 0;
 		boolean value = true;
 		this.mqttClient.enableDigitalPinChangeEvents(pin);
-		this.link.fireStateChanged(TestUtil.digitalPinChanged(anyOtherPinThan(pin),
-				value));
+		this.link.fireStateChanged(TestUtil.digitalPinChanged(
+				anyOtherPinThan(pin), value));
 		assertThat(published, is(noMessages()));
 	}
 
@@ -162,7 +162,8 @@ public class MqttAdapterTest {
 		int pin = 0;
 		int value = 1;
 		mqttClient.enableAnalogPinChangeEvents(pin);
-		link.fireStateChanged(TestUtil.analogPinChanged(anyOtherPinThan(pin), value));
+		link.fireStateChanged(TestUtil.analogPinChanged(anyOtherPinThan(pin),
+				value));
 		assertThat(published, is(noMessages()));
 	}
 

@@ -16,12 +16,12 @@ limitations under the License.
  */
 package com.github.pfichtner.ardulink;
 
+import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
+import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
+import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
+import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
+import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static com.github.pfichtner.ardulink.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.alpProtocolMessage;
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.START_LISTENING_ANALOG;
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.START_LISTENING_DIGITAL;
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.STOP_LISTENING_ANALOG;
-import static com.github.pfichtner.ardulink.util.ProtoBuilder.ALPProtocolKeys.STOP_LISTENING_DIGITAL;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -43,7 +43,7 @@ import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
  * 
  * @author Peter Fichtner
  * 
-* [adsense]
+ * [adsense]
  */
 public class ControlChannelTest {
 
@@ -76,7 +76,7 @@ public class ControlChannelTest {
 		simulateMqttToArduino(mqttMessage.digitalListener(pin).enable());
 		assertThat(serialReceived(),
 				is(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(pin)
-						.withoutValue()));
+						.withoutValue() + "\n"));
 	}
 
 	@Test
@@ -100,7 +100,7 @@ public class ControlChannelTest {
 		simulateMqttToArduino(mqttMessage.analogListener(pin).enable());
 		assertThat(serialReceived(),
 				is(alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin)
-						.withoutValue()));
+						.withoutValue() + "\n"));
 	}
 
 	@Test
@@ -109,7 +109,7 @@ public class ControlChannelTest {
 		simulateMqttToArduino(mqttMessage.digitalListener(pin).disable());
 		assertThat(serialReceived(),
 				is(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(pin)
-						.withoutValue()));
+						.withoutValue() + "\n"));
 	}
 
 	@Test
@@ -118,7 +118,7 @@ public class ControlChannelTest {
 		simulateMqttToArduino(mqttMessage.analogListener(pin).disable());
 		assertThat(serialReceived(),
 				is(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(pin)
-						.withoutValue()));
+						.withoutValue() + "\n"));
 	}
 
 	@Test
