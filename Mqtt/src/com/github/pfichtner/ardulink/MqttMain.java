@@ -336,6 +336,10 @@ public class MqttMain {
 		this.throttleMillis = throttleMillis;
 	}
 
+	public void setSleepSecs(int sleepSecs) {
+		this.sleepSecs = sleepSecs;
+	}
+
 	private static void wait4ever() throws InterruptedException {
 		Object blocker = new Object();
 		synchronized (blocker) {
