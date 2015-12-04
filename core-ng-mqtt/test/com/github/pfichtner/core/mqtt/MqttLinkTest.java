@@ -8,9 +8,14 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.junit.Rule;
 import org.junit.Test;
 
 public class MqttLinkTest {
+
+	@Rule
+	// newLnk tries to connection so we need a running broker
+	public Broker broker = new Broker();
 
 	@Test
 	public void defaultHostIsLocalhostAndLinkHasCreatedWithoutConfiguring()
