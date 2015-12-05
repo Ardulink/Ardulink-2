@@ -20,6 +20,11 @@ public class DummyProtocol implements Protocol {
 	}
 
 	@Override
+	public byte[] getReadSeparator() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public byte[] toArduino(ToArduinoStartListening startListeningEvent) {
 		throw new UnsupportedOperationException();
 	}

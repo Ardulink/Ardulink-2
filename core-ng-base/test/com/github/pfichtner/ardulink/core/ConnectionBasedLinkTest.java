@@ -5,7 +5,6 @@ import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
-import static com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol.READ_DIVIDER;
 import static com.github.pfichtner.hamcrest.EventMatchers.eventFor;
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -45,7 +44,7 @@ public class ConnectionBasedLinkTest {
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
 
-	private static final Protocol AL_PROTO = ArdulinkProtocol.instance();
+	private static final Protocol PROTOCOL = ArdulinkProtocol.instance();
 
 	private PipedOutputStream arduinosOutputStream;
 	private final ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -57,8 +56,8 @@ public class ConnectionBasedLinkTest {
 	public void setup() throws IOException {
 		PipedInputStream pis = new PipedInputStream();
 		this.arduinosOutputStream = new PipedOutputStream(pis);
-		this.connection = new StreamConnection(pis, os);
-		this.link = new ConnectionBasedLink(connection, AL_PROTO) {
+		this.connection = new StreamConnection(pis, os, PROTOCOL);
+		this.link = new ConnectionBasedLink(connection, PROTOCOL) {
 			@Override
 			protected void received(byte[] bytes) {
 				super.received(bytes);
@@ -280,7 +279,7 @@ public class ConnectionBasedLinkTest {
 
 	private void simulateArdunoSend(String message) throws IOException {
 		this.arduinosOutputStream.write((message).getBytes());
-		this.arduinosOutputStream.write(READ_DIVIDER);
+		this.arduinosOutputStream.write(PROTOCOL.getReadSeparator());
 	}
 
 	private String toArduinoWasSent() {

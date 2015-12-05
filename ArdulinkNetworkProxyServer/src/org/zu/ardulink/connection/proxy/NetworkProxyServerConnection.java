@@ -25,6 +25,7 @@ import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.OK;
 import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,14 +36,8 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.pfichtner.ardulink.core.AbstractListenerLink;
-import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.StreamConnection;
-import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.EventListener;
+import com.github.pfichtner.ardulink.core.StreamReader;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
@@ -55,7 +50,7 @@ import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
 public class NetworkProxyServerConnection implements Runnable {
 
@@ -79,18 +74,25 @@ public class NetworkProxyServerConnection implements Runnable {
 	@Override
 	public void run() {
 		try {
-			Connection connection = new StreamConnection(
-					socket.getInputStream(), socket.getOutputStream()) {
+
+			OutputStream outputStream = socket.getOutputStream();
+
+			StreamReader streamReader = new StreamReader(
+					socket.getInputStream()) {
 
 				private String handshakeCmd;
 				private List<String> handshakes = new ArrayList<String>();
+
+				private void write(Object object) throws IOException {
+					write((object instanceof String ? ((String) object)
+							: String.valueOf(object)).getBytes());
+				}
 
 				@Override
 				protected void received(byte[] bytes) throws Exception {
 					if (handshakeComplete) {
 						FromArduino fromArduino = protocol.fromArduino(bytes);
 						// TODO must handle start/stop listening
-						super.received(bytes);
 					} else {
 						String inputLine = new String(bytes);
 						if (STOP_SERVER_CMD.equals(inputLine)) {
@@ -128,34 +130,8 @@ public class NetworkProxyServerConnection implements Runnable {
 					}
 
 				}
-
-				private void write(Object object) throws IOException {
-					write((object instanceof String ? ((String) object)
-							: String.valueOf(object)).getBytes());
-				}
-
 			};
-			Link remoteLink = new ConnectionBasedLink(connection, protocol);
-			remoteLink.addListener(new EventListener() {
 
-				@Override
-				public void stateChanged(DigitalPinValueChangedEvent event) {
-					try {
-						link.switchDigitalPin(event.getPin(), event.getValue());
-					} catch (IOException e) {
-						throw new RuntimeException(e);
-					}
-				}
-
-				@Override
-				public void stateChanged(AnalogPinValueChangedEvent event) {
-					try {
-						link.switchAnalogPin(event.getPin(), event.getValue());
-					} catch (IOException e) {
-						throw new RuntimeException(e);
-					}
-				}
-			});
 		} catch (IOException e) {
 		} finally {
 			logger.info("{} connection closed.",

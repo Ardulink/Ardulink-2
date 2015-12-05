@@ -11,6 +11,7 @@ import java.net.UnknownHostException;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 import com.github.pfichtner.core.proxy.ProxyLinkConfig.ProxyConnectionToRemote;
 
 public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
@@ -34,8 +35,8 @@ public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
 
 		Socket socket = remote.getSocket();
 		return new ConnectionBasedLink(new StreamConnection(
-				socket.getInputStream(), socket.getOutputStream()),
-				config.getProto());
+				socket.getInputStream(), socket.getOutputStream(),
+				ArdulinkProtocol.instance()), config.getProto());
 	}
 
 	public ProxyLinkConfig newLinkConfig() {

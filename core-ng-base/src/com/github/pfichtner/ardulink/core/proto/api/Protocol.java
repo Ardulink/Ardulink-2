@@ -3,8 +3,10 @@ package com.github.pfichtner.ardulink.core.proto.api;
 import com.github.pfichtner.ardulink.core.Pin;
 
 public interface Protocol {
-	
+
 	String getName();
+
+	byte[] getReadSeparator();
 
 	interface FromArduino {
 		Pin getPin();

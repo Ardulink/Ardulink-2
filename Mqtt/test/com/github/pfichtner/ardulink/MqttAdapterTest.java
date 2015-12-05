@@ -64,7 +64,7 @@ public class MqttAdapterTest {
 	private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 	private final Connection connection = new StreamConnection(null,
-			outputStream);
+			outputStream, ArdulinkProtocol.instance());
 
 	private final ConnectionBasedLink link = new ConnectionBasedLink(
 			connection, ArdulinkProtocol.instance());

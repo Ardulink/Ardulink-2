@@ -16,6 +16,7 @@ import java.io.IOException;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
+import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 
 public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
@@ -34,9 +35,10 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		checkState(!portIdentifier.isCurrentlyOwned(),
 				"Port %s is currently in use", config.getPort());
 		SerialPort serialPort = serialPort(config, portIdentifier);
+		Protocol protocol = config.getProto();
 		return new ConnectionBasedLink(new StreamConnection(
-				serialPort.getInputStream(), serialPort.getOutputStream()),
-				config.getProto());
+				serialPort.getInputStream(), serialPort.getOutputStream(),
+				protocol), protocol);
 	}
 
 	private SerialPort serialPort(SerialLinkConfig config,

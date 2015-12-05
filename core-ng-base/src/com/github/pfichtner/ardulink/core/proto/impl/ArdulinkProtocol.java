@@ -34,7 +34,7 @@ public class ArdulinkProtocol implements Protocol {
 
 	private static final ArdulinkProtocol instance = new ArdulinkProtocol();
 
-	public static final byte[] READ_DIVIDER = "\n".getBytes();
+	public static final byte[] READ_SEPARATOR = "\n".getBytes();
 
 	private static final Pattern pattern = Pattern
 			.compile("alp:\\/\\/([a-z]+)/([\\d]+)/([\\d]+)");
@@ -46,6 +46,11 @@ public class ArdulinkProtocol implements Protocol {
 	public String getName() {
 		return NAME;
 	};
+
+	@Override
+	public byte[] getReadSeparator() {
+		return READ_SEPARATOR;
+	}
 
 	public static Protocol instance() {
 		return instance;
@@ -127,10 +132,11 @@ public class ArdulinkProtocol implements Protocol {
 	}
 
 	private static byte[] toBytes(String message) {
-		byte[] bytes = new byte[message.length() + READ_DIVIDER.length];
+		byte[] bytes = new byte[message.length() + READ_SEPARATOR.length];
 		byte[] msgBytes = message.getBytes();
 		arraycopy(msgBytes, 0, bytes, 0, msgBytes.length);
-		arraycopy(READ_DIVIDER, 0, bytes, msgBytes.length, READ_DIVIDER.length);
+		arraycopy(READ_SEPARATOR, 0, bytes, msgBytes.length,
+				READ_SEPARATOR.length);
 		return bytes;
 	}
 

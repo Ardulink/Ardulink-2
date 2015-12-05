@@ -11,17 +11,22 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.pfichtner.ardulink.core.proto.api.Protocol;
+
 public class StreamConnection implements Connection {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(StreamConnection.class);
 
 	private final StreamReader streamReader;
+	private final OutputStream outputStream;
 
 	private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
 
-	public StreamConnection(InputStream inputStream, OutputStream outputStream) {
-		this.streamReader = new StreamReader(inputStream, outputStream) {
+	public StreamConnection(InputStream inputStream, OutputStream outputStream,
+			Protocol protocol) {
+		this.outputStream = outputStream;
+		this.streamReader = new StreamReader(inputStream) {
 			@Override
 			protected void received(byte[] bytes) throws Exception {
 				for (Listener listener : StreamConnection.this.listeners) {
@@ -33,13 +38,16 @@ public class StreamConnection implements Connection {
 				}
 			}
 		};
+		if (inputStream != null) {
+			String delimiter = new String(protocol.getReadSeparator());
+			streamReader.runReaderThread(delimiter);
+		}
 	}
 
 	@Override
 	public void write(byte[] bytes) throws IOException {
-		OutputStream os = streamReader.getOutputStream();
-		os.write(checkNotNull(bytes, "bytes must not be null"));
-		os.flush();
+		outputStream.write(checkNotNull(bytes, "bytes must not be null"));
+		outputStream.flush();
 		for (Listener listener : this.listeners) {
 			try {
 				listener.sent(bytes);
@@ -52,9 +60,6 @@ public class StreamConnection implements Connection {
 	@Override
 	public void addListener(Listener listener) {
 		this.listeners.add(listener);
-		if (streamReader.getInputStream() != null) {
-			streamReader.runReaderThread();
-		}
 	}
 
 	@Override
