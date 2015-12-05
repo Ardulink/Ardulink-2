@@ -23,25 +23,27 @@ public class SerialLinkConfig implements LinkConfig {
 
 	private static final int DEFAULT_SPEED = 115200;
 
+	@Named(PORT)
 	private String port;
+
+	@Named(SPEED)
 	private int speed = DEFAULT_SPEED;
+
+	@Named(PROTO)
 	private Protocol proto = ArdulinkProtocol.instance();
 
 	public String getPort() {
 		return port;
 	}
 
-	@Named(PORT)
 	public void setPort(String port) {
 		this.port = port;
 	}
 
-	@Named(PROTO)
 	public void setProto(String proto) {
 		this.proto = Protocols.getByName(proto);
 	}
 
-	@Named(SPEED)
 	public void setSpeed(int speed) {
 		this.speed = speed;
 	}
