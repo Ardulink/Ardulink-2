@@ -6,9 +6,7 @@ import static org.zu.ardulink.util.Preconditions.checkState;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -51,20 +49,16 @@ public class ProxyLinkConfig implements LinkConfig {
 
 		private final String host;
 		private final Socket socket;
-		private final InputStream inputStream;
 		private final BufferedReader bufferedReader;
-		private final OutputStream outputStream;
 		private final PrintWriter printWriter;
 
 		public ProxyConnectionToRemote(String host, int port)
 				throws UnknownHostException, IOException {
 			this.host = host;
 			socket = new Socket(host, port);
-			inputStream = socket.getInputStream();
-			bufferedReader = new BufferedReader(new InputStreamReader(
-					inputStream));
-			outputStream = socket.getOutputStream();
-			printWriter = new PrintWriter(outputStream, true);
+			this.bufferedReader = new BufferedReader(new InputStreamReader(
+					socket.getInputStream()));
+			this.printWriter = new PrintWriter(socket.getOutputStream(), true);
 		}
 
 		public Socket getSocket() {
@@ -73,7 +67,7 @@ public class ProxyLinkConfig implements LinkConfig {
 
 		public List<String> getPortList() throws IOException {
 			send(GET_PORT_LIST_CMD.getCommand());
-			String numberOfPorts = checkNotNull(bufferedReader.readLine(),
+			String numberOfPorts = checkNotNull(read(),
 					"invalid response from %s, got null", host);
 			checkState(numberOfPorts.startsWith(NUMBER_OF_PORTS),
 					"invalid response: did not start with %s", NUMBER_OF_PORTS);
@@ -81,7 +75,7 @@ public class ProxyLinkConfig implements LinkConfig {
 					.substring(NUMBER_OF_PORTS.length()));
 			List<String> retvalue = new ArrayList<String>(numOfPorts);
 			for (int i = 0; i < numOfPorts; i++) {
-				retvalue.add(bufferedReader.readLine());
+				retvalue.add(read());
 			}
 			return retvalue;
 		}
@@ -175,8 +169,8 @@ public class ProxyLinkConfig implements LinkConfig {
 		return speed;
 	}
 
-	public ProxyConnectionToRemote getRemote() throws UnknownHostException,
-			IOException {
+	public synchronized ProxyConnectionToRemote getRemote()
+			throws UnknownHostException, IOException {
 		if (this.remote == null) {
 			this.remote = new ProxyConnectionToRemote(tcphost, tcpport);
 		}
@@ -185,8 +179,7 @@ public class ProxyLinkConfig implements LinkConfig {
 
 	@ChoiceFor(PORT)
 	public List<String> getAvailablePorts() throws IOException {
-		this.remote = new ProxyConnectionToRemote(tcphost, tcpport);
-		return this.remote.getPortList();
+		return getRemote().getPortList();
 	}
 
 }

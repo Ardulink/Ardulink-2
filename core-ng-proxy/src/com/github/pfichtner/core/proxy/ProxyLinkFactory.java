@@ -2,6 +2,7 @@ package com.github.pfichtner.core.proxy;
 
 import static com.github.pfichtner.core.proxy.ProxyLinkConfig.ProxyConnectionToRemote.OK;
 import static com.github.pfichtner.core.proxy.ProxyLinkConfig.ProxyConnectionToRemote.Command.CONNECT_CMD;
+import static org.zu.ardulink.util.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -25,7 +26,7 @@ public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
 		ProxyConnectionToRemote remote = config.getRemote();
 
 		remote.send(CONNECT_CMD.getCommand());
-		remote.send(config.getPort());
+		remote.send(checkNotNull(config.getPort(), "port must not be null"));
 		remote.send(String.valueOf(config.getSpeed()));
 		if (remote.read().equals(OK)) {
 			remote.startBackgroundReader();
