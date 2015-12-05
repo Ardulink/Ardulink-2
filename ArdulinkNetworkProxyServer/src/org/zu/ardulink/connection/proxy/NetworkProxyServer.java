@@ -18,14 +18,14 @@ limitations under the License.
 
 package org.zu.ardulink.connection.proxy;
 
-import static java.lang.Math.max;
 import static org.zu.ardulink.connection.proxy.NetworkProxyConnection.DEFAULT_LISTENING_PORT;
+import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
 
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 import org.kohsuke.args4j.Argument;
@@ -35,22 +35,23 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.spi.SubCommand;
 import org.kohsuke.args4j.spi.SubCommandHandler;
 import org.kohsuke.args4j.spi.SubCommands;
-import org.zu.ardulink.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
- * [adsense]
+ *         [adsense]
  */
-public class NetworkProxyServer implements NetworkProxyMessages {
+public class NetworkProxyServer {
 
 	private interface Command {
 		void execute(int portNumber);
 	}
 
 	public static class StartCommand implements Command {
+
+		private List<LinkContainer> links = new CopyOnWriteArrayList<LinkContainer>();
 
 		@Override
 		public void execute(int portNumber) {
@@ -60,10 +61,8 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 					System.out
 							.println("Ardulink Network Proxy Server running...");
 					while (listening) {
-						NetworkProxyServerConnection connection = new NetworkProxyServerConnection(
-								serverSocket.accept());
-						Thread thread = new Thread(connection);
-						thread.start();
+						new Thread(new NetworkProxyServerConnection(links,
+								serverSocket.accept())).start();
 						TimeUnit.SECONDS.sleep(2);
 					}
 				} finally {
@@ -108,8 +107,6 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 	@Option(name = "-p", aliases = "--port", usage = "Local port to bind to")
 	private int portNumber = DEFAULT_LISTENING_PORT;
 
-	private static Map<String, Integer> linkUsers = new HashMap<String, Integer>();
-
 	public static void main(String[] args) {
 		new NetworkProxyServer().doMain(args);
 	}
@@ -128,54 +125,6 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 
 	public static void stop() {
 		listening = false;
-	}
-
-	public static Link connect(String portName, int baudRate) {
-		Link link = Link.getInstance(portName);
-		if (link == null) {
-			// TODO aggiungere qui la logica per fare link non solo di default
-			link = Link.createInstance(portName);
-		}
-		if (!link.isConnected()) {
-			link.connect(portName, baudRate);
-		}
-		addUserToLink(portName);
-		return link;
-	}
-
-	public static boolean disconnect(String portName) {
-		boolean retvalue = false;
-		if (!Link.getDefaultInstance().getName().equals(portName)) {
-			Link link = Link.getInstance(portName);
-			if (link != null) {
-				int currentUsers = removeUserFromLink(portName);
-				if (currentUsers == 0) {
-					retvalue = link.disconnect();
-					Link.destroyInstance(portName);
-				}
-			} else {
-				removeUserFromLink(portName);
-			}
-		}
-		return retvalue;
-	}
-
-	private static int addUserToLink(String portName) {
-		synchronized (linkUsers) {
-			Integer users = linkUsers.get(portName);
-			int retvalue = users == null ? 1 : users + 1;
-			linkUsers.put(portName, retvalue);
-			return retvalue;
-		}
-	}
-
-	private static int removeUserFromLink(String portName) {
-		synchronized (linkUsers) {
-			Integer users = linkUsers.get(portName);
-			int retvalue = users == null ? 0 : max(0, users - 1);
-			linkUsers.put(portName, retvalue);
-			return retvalue;
-		}
 	}
 
 }

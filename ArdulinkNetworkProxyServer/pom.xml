@@ -46,7 +46,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core</artifactId>
+			<artifactId>core-ng-base</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

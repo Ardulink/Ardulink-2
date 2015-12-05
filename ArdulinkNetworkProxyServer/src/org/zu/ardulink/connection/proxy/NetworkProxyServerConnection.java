@@ -14,175 +14,208 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @author Luciano Zu
-*/
+ */
 
 package org.zu.ardulink.connection.proxy;
 
-import java.io.BufferedReader;
+import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.CONNECT_CMD;
+import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.GET_PORT_LIST_CMD;
+import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.NUMBER_OF_PORTS;
+import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.OK;
+import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zu.ardulink.Link;
-import org.zu.ardulink.RawDataListener;
-import org.zu.ardulink.protocol.IProtocol;
+
+import com.github.pfichtner.ardulink.core.AbstractListenerLink;
+import com.github.pfichtner.ardulink.core.Connection;
+import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
+import com.github.pfichtner.ardulink.core.Link;
+import com.github.pfichtner.ardulink.core.StreamConnection;
+import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
+import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
+import com.github.pfichtner.ardulink.core.events.EventListener;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
+import com.github.pfichtner.ardulink.core.proto.api.Protocol;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ * @author Peter Fichtner
  * 
  * [adsense]
  */
-public class NetworkProxyServerConnection implements Runnable, NetworkProxyMessages, RawDataListener {
+public class NetworkProxyServerConnection implements Runnable {
 
-	private static final Logger logger = LoggerFactory.getLogger(NetworkProxyServerConnection.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(NetworkProxyServerConnection.class);
+
+	private final List<LinkContainer> links;
+	private Socket socket;
 
 	private Link link;
-	private Socket socket;
-	
-	private BufferedReader bufferedReader;
-	private InputStream inputStream;
-	private PrintWriter printWriter;
-	private OutputStream outputStream;
 
-	private boolean closed;
+	private Protocol protocol = ArdulinkProtocol.instance();
+
 	private boolean handshakeComplete;
-		
-	public NetworkProxyServerConnection(Socket socket) {
-		super();
+
+	public NetworkProxyServerConnection(List<LinkContainer> links, Socket socket) {
+		this.links = links;
 		this.socket = socket;
-		this.link = null;
 	}
 
 	@Override
 	public void run() {
 		try {
-			outputStream = socket.getOutputStream();
-			printWriter = new PrintWriter(outputStream, true);
-			
-			inputStream = socket.getInputStream();
-			bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-			
-			String inputLine = bufferedReader.readLine();
-			while (!closed && !handshakeComplete) {
-				processInput(inputLine);
-				if(!closed && !handshakeComplete) {
-					inputLine = bufferedReader.readLine();
+			Connection connection = new StreamConnection(
+					socket.getInputStream(), socket.getOutputStream()) {
+
+				private String handshakeCmd;
+				private List<String> handshakes = new ArrayList<String>();
+
+				@Override
+				protected void received(byte[] bytes) throws Exception {
+					if (handshakeComplete) {
+						super.received(bytes);
+					} else {
+						String inputLine = new String(bytes);
+						if (STOP_SERVER_CMD.equals(inputLine)) {
+							logger.info("Stop request received.");
+							NetworkProxyServer.stop();
+						} else if (inputLine.equals(GET_PORT_LIST_CMD)) {
+							Object[] portList = getPortList();
+							if (portList == null) {
+								portList = new Object[0];
+							}
+							write(NUMBER_OF_PORTS + portList.length);
+							for (Object port : portList) {
+								write(port);
+							}
+						} else if (CONNECT_CMD.equals(inputLine)) {
+							handshakeCmd = inputLine;
+						} else if (CONNECT_CMD.equals(handshakeCmd)
+								&& handshakes.size() == 2) {
+							connect(handshakes.get(0),
+									Integer.parseInt(handshakes.get(1)));
+							try {
+								// wait a wile to avoid messages with connection
+								// not valid.
+								TimeUnit.SECONDS.sleep(1);
+							} catch (InterruptedException e) {
+								throw new RuntimeException(e);
+							}
+							write(OK);
+							handshakeCmd = null;
+							handshakes.clear();
+							handshakeComplete = true;
+						} else {
+							handshakes.add(inputLine);
+						}
+					}
+
 				}
-            }
-			if(!closed) {
-				int dataReceived = bufferedReader.read();
-				while (dataReceived != -1) {
-					String data = String.valueOf((char)dataReceived);
-					// System.out.print(data);
-					writeSerial(data);
-					dataReceived = bufferedReader.read();
-	            }			
-			}
+
+				private void write(Object object) throws IOException {
+					write((object instanceof String ? ((String) object)
+							: String.valueOf(object)).getBytes());
+				}
+
+			};
+			Link remoteLink = new ConnectionBasedLink(connection, protocol);
+			remoteLink.addListener(new EventListener() {
+
+				@Override
+				public void stateChanged(DigitalPinValueChangedEvent event) {
+					// TODO bridge independently
+					((AbstractListenerLink) link).fireStateChanged(event);
+				}
+
+				@Override
+				public void stateChanged(AnalogPinValueChangedEvent event) {
+					// TODO bridge independently
+					((AbstractListenerLink) link).fireStateChanged(event);
+				}
+			});
 		} catch (IOException e) {
-		}
-		finally {
-			logger.info("{} connection closed.", socket.getRemoteSocketAddress());
-			closed = true;
-			if(link != null) {
-				link.removeRawDataListener(this);
-				NetworkProxyServer.disconnect(link.getName());
+		} finally {
+			logger.info("{} connection closed.",
+					socket.getRemoteSocketAddress());
+			if (link != null) {
+				try {
+					disconnect(link);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 			try {
 				socket.close();
 			} catch (IOException socketClosingExceptionTry) {
 			}
-			link = null;
-			socket = null;
-			bufferedReader = null;
-			inputStream = null;
-			printWriter = null;
-			outputStream = null;
-			closed = true;
 		}
 	}
 
-	private void processInput(String inputLine) throws IOException {
-		if(inputLine.equals(STOP_SERVER_CMD)) {
-			logger.info("Stop request received.");
-			NetworkProxyServer.stop();
-			closed = true;
-		} else if(inputLine.equals(GET_PORT_LIST_CMD)) {
-			List<String> portList = getPortList();
-			if(portList == null || portList.isEmpty()) {
-				printWriter.println(NUMBER_OF_PORTS + "0");
-			} else {
-				printWriter.println(NUMBER_OF_PORTS + portList.size());
-				for (String port : portList) {
-					printWriter.println(port);
-				}
-			}
-			printWriter.flush();
-		} else if(inputLine.equals(CONNECT_CMD)) {
-			String portName = bufferedReader.readLine();
-			Integer baudRate = new Integer(bufferedReader.readLine());
-			boolean connected = connect(portName, baudRate);
-			try { // wait a wile to avoid messages with connection not valid.
-				TimeUnit.SECONDS.sleep(1);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
-			if(connected) {
-				printWriter.println(OK);
-				printWriter.flush();
-				handshakeComplete = true;
-				link.addRawDataListener(this);
-			} else {
-				printWriter.println(KO);
-				printWriter.flush();
-			}
-			
-		}
+	private Object[] getPortList() throws URISyntaxException, Exception {
+		return getSerialLink().getAttribute("port").getChoiceValues();
 	}
 
-	private List<String> getPortList() {
-		// TODO aggiungere una configurazione per permettere di usare link diversi e non solo quello di default.
-		// delegare al NetworkProxyServer come per la connect
-		return Link.getDefaultInstance().getPortList();
-	}
-
-	private boolean writeSerial(String message) {
-		boolean retvalue = false;
-		synchronized (link) {
-			retvalue = link.writeSerial(message);
-		}
-		return retvalue;
-	}
-
-	private boolean connect(String portName, int baudRate) {
-		
-		link = NetworkProxyServer.connect(portName, baudRate);
-		boolean isConnected = link.isConnected();
-		return isConnected;
-	}
-
-	@Override
-	public void parseInput(String id, int numBytes, int[] message) {
-		for(int i = 0; i < numBytes; i++) {
-			try {
-				outputStream.write(message[i]);
-			} catch (IOException e) {
-				e.printStackTrace();
+	private void disconnect(Link link) throws IOException {
+		LinkContainer linkContainer = findExisting(link);
+		if (linkContainer != null) {
+			int decreaseUsageCounter = linkContainer.decreaseUsageCounter();
+			if (decreaseUsageCounter == 0) {
+				linkContainer.getLink().close();
+				links.remove(linkContainer);
 			}
 		}
-		try {
-			outputStream.write(IProtocol.DEFAULT_INCOMING_MESSAGE_DIVIDER);
-			outputStream.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
 	}
+
+	private void connect(String portName, int baudRate) throws Exception {
+		Configurer configurer = getSerialLink();
+		configurer.getAttribute("port").setValue(portName);
+		configurer.getAttribute("speed").setValue(baudRate);
+
+		CacheKey cacheKey = new CacheKey(configurer);
+		LinkContainer container = findExisting(cacheKey);
+		if (container == null) {
+			links.add(new LinkContainer(configurer.newLink(), cacheKey));
+		} else {
+			container.increaseUsageCounter();
+		}
+	}
+
+	public Configurer getSerialLink() throws URISyntaxException {
+		Configurer configurer = LinkManager.getInstance().getConfigurer(
+				new URI("ardulink://serial"));
+		return configurer;
+	}
+
+	private LinkContainer findExisting(CacheKey ck) {
+		for (LinkContainer linkContainer : links) {
+			if (linkContainer.getCacheKey().equals(ck)) {
+				return linkContainer;
+			}
+		}
+		return null;
+	}
+
+	private LinkContainer findExisting(Link link) {
+		for (LinkContainer linkContainer : links) {
+			if (linkContainer.getCacheKey().equals(link)) {
+				return linkContainer;
+			}
+		}
+		return null;
+	}
+
 }
