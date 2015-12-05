@@ -1,6 +1,5 @@
 package com.github.pfichtner.ardulink.core;
 
-
 public abstract class Pin {
 
 	public enum Type {
@@ -61,6 +60,7 @@ public abstract class Pin {
 		public Type getType() {
 			return Type.DIGITAL;
 		}
+
 	}
 
 	public static AnalogPin analogPin(int num) {
@@ -73,6 +73,11 @@ public abstract class Pin {
 
 	public boolean is(Type type) {
 		return getType() == type;
+	}
+
+	@Override
+	public String toString() {
+		return getType() + " " + pinNum();
 	}
 
 }
