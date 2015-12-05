@@ -1,6 +1,7 @@
 package com.github.pfichtner.core.proxy;
 
 import static com.github.pfichtner.core.proxy.ProxyLinkConfig.ProxyConnectionToRemote.OK;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -18,7 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
@@ -27,9 +30,10 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
 public class ProxyLinkFactoryTest {
 
-	private static final int TIMEOUT = 5000;
+	@Rule
+	public Timeout timeout = new Timeout(5, SECONDS);
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void canConnectWhileConfiguring() throws Exception {
 		ServerSocket serverSocket = new ServerSocket(0);
 		startServer(serverSocket, makeMap(0));
@@ -59,7 +63,7 @@ public class ProxyLinkFactoryTest {
 		return subAnwser;
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void canReadAvailablePorts() throws Exception {
 		ServerSocket serverSocket = new ServerSocket(0);
 		startServer(serverSocket, makeMap(1));
@@ -73,7 +77,7 @@ public class ProxyLinkFactoryTest {
 				is((Object[]) new String[] { "myPortNr0" }));
 	}
 
-	@Test(timeout = TIMEOUT)
+	@Test
 	public void canConnect() throws Exception {
 		ServerSocket serverSocket = new ServerSocket(0);
 		startServer(serverSocket, makeMap(1));
