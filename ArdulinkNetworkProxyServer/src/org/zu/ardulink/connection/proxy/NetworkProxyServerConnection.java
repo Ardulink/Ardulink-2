@@ -46,6 +46,7 @@ import com.github.pfichtner.ardulink.core.events.EventListener;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
+import com.github.pfichtner.ardulink.core.proto.api.Protocol.FromArduino;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
 
 /**
@@ -87,6 +88,8 @@ public class NetworkProxyServerConnection implements Runnable {
 				@Override
 				protected void received(byte[] bytes) throws Exception {
 					if (handshakeComplete) {
+						FromArduino fromArduino = protocol.fromArduino(bytes);
+						// TODO must handle start/stop listening
 						super.received(bytes);
 					} else {
 						String inputLine = new String(bytes);
@@ -137,14 +140,20 @@ public class NetworkProxyServerConnection implements Runnable {
 
 				@Override
 				public void stateChanged(DigitalPinValueChangedEvent event) {
-					// TODO bridge independently
-					((AbstractListenerLink) link).fireStateChanged(event);
+					try {
+						link.switchDigitalPin(event.getPin(), event.getValue());
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
 				}
 
 				@Override
 				public void stateChanged(AnalogPinValueChangedEvent event) {
-					// TODO bridge independently
-					((AbstractListenerLink) link).fireStateChanged(event);
+					try {
+						link.switchAnalogPin(event.getPin(), event.getValue());
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
 				}
 			});
 		} catch (IOException e) {
