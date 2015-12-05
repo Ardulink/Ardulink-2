@@ -69,23 +69,24 @@ public class StreamConnection implements Connection {
 						logger.debug("Waiting for data");
 						byte[] bytes = this.scanner.next().getBytes();
 						logger.debug("Received data {}", bytes);
-						callListeners(bytes);
+						received(bytes);
 					} catch (Exception e) {
 						logger.error("Error while retrieving data", e);
 					}
 				}
 			}
 
-			private void callListeners(byte[] bytes) {
-				for (Listener listener : StreamConnection.this.listeners) {
-					try {
-						listener.received(bytes);
-					} catch (Exception e) {
-						logger.error("Listener {} failure", listener, e);
-					}
-				}
-			}
 		};
+	}
+
+	protected void received(byte[] bytes) throws Exception {
+		for (Listener listener : StreamConnection.this.listeners) {
+			try {
+				listener.received(bytes);
+			} catch (Exception e) {
+				logger.error("Listener {} failure", listener, e);
+			}
+		}
 	}
 
 	@Override

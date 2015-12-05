@@ -26,6 +26,9 @@ import com.github.pfichtner.beans.BeanProperties;
 public abstract class LinkManager {
 
 	public interface ConfigAttribute {
+
+		Object getValue() throws Exception;
+
 		void setValue(Object value) throws Exception;
 
 		boolean hasChoiceValues();
@@ -47,6 +50,11 @@ public abstract class LinkManager {
 			this.getChoicesFor = BeanProperties.builder(linkConfig)
 					.using(propertyAnnotated(ChoiceFor.class)).build()
 					.getAttribute(attribute.getName());
+		}
+		
+		@Override
+		public Object getValue() throws Exception {
+			return this.attribute.readValue();
 		}
 
 		@Override
