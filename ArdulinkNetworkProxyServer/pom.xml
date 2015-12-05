@@ -16,6 +16,12 @@
 				<directory>resources</directory>
 			</resource>
 		</resources>
+		<testSourceDirectory>test</testSourceDirectory>
+		<testResources>
+			<testResource>
+				<directory>test-resources</directory>
+			</testResource>
+		</testResources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -30,16 +36,16 @@
 					</archive>
 				</configuration>
 			</plugin>
-	      <plugin>
-	        <groupId>org.apache.maven.plugins</groupId>
-	        <artifactId>maven-javadoc-plugin</artifactId>
-	        <version>2.10.3</version>
-	        <configuration>
-	          <show>public</show>
-	          <reportOutputDirectory>${project.basedir}/../JavadocUtils/generated</reportOutputDirectory>
-          	  <destDir>ardulink-networkproxyserver</destDir>
-	        </configuration>
-	      </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.3</version>
+				<configuration>
+					<show>public</show>
+					<reportOutputDirectory>${project.basedir}/../JavadocUtils/generated</reportOutputDirectory>
+					<destDir>ardulink-networkproxyserver</destDir>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -62,6 +68,11 @@
 		<dependency>
 			<groupId>args4j</groupId>
 			<artifactId>args4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
