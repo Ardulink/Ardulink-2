@@ -18,6 +18,10 @@ limitations under the License.
 
 package org.zu.ardulink.connection.proxy;
 
+import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.CONNECT_CMD;
+import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.GET_PORT_LIST_CMD;
+import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.NUMBER_OF_PORTS;
+import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.OK;
 import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import static org.zu.ardulink.util.Preconditions.checkState;
 
@@ -42,7 +46,7 @@ import org.zu.ardulink.protocol.IProtocol;
  * 
  * [adsense]
  */
-public class NetworkProxyConnection implements Connection, NetworkProxyMessages {
+public class NetworkProxyConnection implements Connection {
 
 	public static final int DEFAULT_LISTENING_PORT = 4478;
 

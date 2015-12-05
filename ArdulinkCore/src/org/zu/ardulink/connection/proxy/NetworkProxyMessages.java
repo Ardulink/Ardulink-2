@@ -14,17 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @author Luciano Zu
-*/
+ */
 
 package org.zu.ardulink.connection.proxy;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  */
-public interface NetworkProxyMessages {
+public final class NetworkProxyMessages {
+
 	public static final String NUMBER_OF_PORTS = "NUMBER_OF_PORTS=";
 	public static final String OK = "OK";
 	public static final String KO = "KO";
@@ -32,4 +34,5 @@ public interface NetworkProxyMessages {
 	public static final String STOP_SERVER_CMD = "ardulink:networkproxyserver:stop_server";
 	public static final String GET_PORT_LIST_CMD = "ardulink:networkproxyserver:get_port_list";
 	public static final String CONNECT_CMD = "ardulink:networkproxyserver:connect";
+
 }
