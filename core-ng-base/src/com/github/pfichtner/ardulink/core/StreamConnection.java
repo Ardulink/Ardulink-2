@@ -11,20 +11,33 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StreamConnection extends StreamReader implements Connection {
+public class StreamConnection implements Connection {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(StreamConnection.class);
 
+	private final StreamReader streamReader;
+
 	private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
 
 	public StreamConnection(InputStream inputStream, OutputStream outputStream) {
-		super(inputStream, outputStream);
+		this.streamReader = new StreamReader(inputStream, outputStream) {
+			@Override
+			protected void received(byte[] bytes) throws Exception {
+				for (Listener listener : StreamConnection.this.listeners) {
+					try {
+						listener.received(bytes);
+					} catch (Exception e) {
+						logger.error("Listener {} failure", listener, e);
+					}
+				}
+			}
+		};
 	}
 
 	@Override
 	public void write(byte[] bytes) throws IOException {
-		OutputStream os = getOutputStream();
+		OutputStream os = streamReader.getOutputStream();
 		os.write(checkNotNull(bytes, "bytes must not be null"));
 		os.flush();
 		for (Listener listener : this.listeners) {
@@ -39,8 +52,8 @@ public class StreamConnection extends StreamReader implements Connection {
 	@Override
 	public void addListener(Listener listener) {
 		this.listeners.add(listener);
-		if (getInputStream() != null) {
-			runReaderThread();
+		if (streamReader.getInputStream() != null) {
+			streamReader.runReaderThread();
 		}
 	}
 
@@ -49,14 +62,9 @@ public class StreamConnection extends StreamReader implements Connection {
 		this.listeners.remove(listener);
 	}
 
-	protected void received(byte[] bytes) throws Exception {
-		for (Listener listener : this.listeners) {
-			try {
-				listener.received(bytes);
-			} catch (Exception e) {
-				logger.error("Listener {} failure", listener, e);
-			}
-		}
+	@Override
+	public void close() throws IOException {
+		this.streamReader.close();
 	}
 
 }
