@@ -6,42 +6,41 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Scanner;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StreamConnection implements Connection {
+public class StreamConnection extends StreamReader implements Connection {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(StreamConnection.class);
 
-	private final InputStream inputStream;
-	private final OutputStream outputStream;
 	private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
 
-	private Thread thread;
-
 	public StreamConnection(InputStream inputStream, OutputStream outputStream) {
-		this.inputStream = inputStream;
-		this.outputStream = outputStream;
+		super(inputStream, outputStream);
 	}
 
 	@Override
 	public void write(byte[] bytes) throws IOException {
-		this.outputStream.write(checkNotNull(bytes, "bytes must not be null"));
-		this.outputStream.flush();
+		OutputStream os = getOutputStream();
+		os.write(checkNotNull(bytes, "bytes must not be null"));
+		os.flush();
 		for (Listener listener : this.listeners) {
-			listener.sent(bytes);
+			try {
+				listener.sent(bytes);
+			} catch (Exception e) {
+				logger.error("Listener {} failure", listener, e);
+			}
 		}
 	}
 
 	@Override
 	public void addListener(Listener listener) {
 		this.listeners.add(listener);
-		if (this.inputStream != null) {
-			runReaderThread(this.inputStream);
+		if (getInputStream() != null) {
+			runReaderThread();
 		}
 	}
 
@@ -50,50 +49,13 @@ public class StreamConnection implements Connection {
 		this.listeners.remove(listener);
 	}
 
-	private void runReaderThread(final InputStream inputStream) {
-		this.thread = new Thread(runnable(inputStream));
-		this.thread.setDaemon(true);
-		this.thread.start();
-	}
-
-	private Runnable runnable(final InputStream inputStream) {
-		return new Runnable() {
-
-			private final Scanner scanner = new Scanner(inputStream)
-					.useDelimiter("\n");
-
-			@Override
-			public void run() {
-				while (this.scanner.hasNext()) {
-					try {
-						logger.debug("Waiting for data");
-						byte[] bytes = this.scanner.next().getBytes();
-						logger.debug("Received data {}", bytes);
-						received(bytes);
-					} catch (Exception e) {
-						logger.error("Error while retrieving data", e);
-					}
-				}
-			}
-
-		};
-	}
-
 	protected void received(byte[] bytes) throws Exception {
-		for (Listener listener : StreamConnection.this.listeners) {
+		for (Listener listener : this.listeners) {
 			try {
 				listener.received(bytes);
 			} catch (Exception e) {
 				logger.error("Listener {} failure", listener, e);
 			}
-		}
-	}
-
-	@Override
-	public void close() throws IOException {
-		Thread locThread = this.thread;
-		if (locThread != null) {
-			locThread.interrupt();
 		}
 	}
 

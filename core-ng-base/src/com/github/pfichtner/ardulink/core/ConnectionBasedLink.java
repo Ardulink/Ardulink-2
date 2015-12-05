@@ -71,7 +71,12 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 				keychar, keycode, keylocation, keymodifiers, keymodifiersex)));
 	}
 
-	private void send(Pin pin, Object value) throws IOException {
+	private void send(AnalogPin pin, Integer value) throws IOException {
+		this.connection.write(this.protocol.toArduino(new ToArduinoPinEvent(
+				pin, value)));
+	}
+
+	private void send(DigitalPin pin, Boolean value) throws IOException {
 		this.connection.write(this.protocol.toArduino(new ToArduinoPinEvent(
 				pin, value)));
 	}
