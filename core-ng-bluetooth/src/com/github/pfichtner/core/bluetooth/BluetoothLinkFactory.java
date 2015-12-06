@@ -71,10 +71,10 @@ public class BluetoothLinkFactory implements LinkFactory<BluetoothLinkConfig> {
 	private Map<String, ServiceRecord> getPortList() {
 		// TODO should be replaced by Semaphore
 		Object lock = new Object();
-		DiscoveryAgent agent = getLocalDevice().getDiscoveryAgent();
 		List<RemoteDevice> devices = new ArrayList<RemoteDevice>();
 		Map<String, ServiceRecord> ports = new HashMap<String, ServiceRecord>();
 		DiscoveryListener listener = listener(devices, ports, lock);
+		DiscoveryAgent agent = getLocalDevice().getDiscoveryAgent();
 		try {
 			agent.startInquiry(DiscoveryAgent.GIAC, listener);
 			synchronized (lock) {
@@ -100,7 +100,7 @@ public class BluetoothLinkFactory implements LinkFactory<BluetoothLinkConfig> {
 	}
 
 	public DiscoveryListener listener(final List<RemoteDevice> devices,
-			Map<String, ServiceRecord> ports, final Object lock) {
+			final Map<String, ServiceRecord> ports, final Object lock) {
 		return new DiscoveryListener() {
 
 			private final Map<RemoteDevice, ServiceRecord[]> services = new HashMap<RemoteDevice, ServiceRecord[]>();
@@ -120,9 +120,6 @@ public class BluetoothLinkFactory implements LinkFactory<BluetoothLinkConfig> {
 
 			@Override
 			public void serviceSearchCompleted(int arg0, int arg1) {
-
-				Map<String, ServiceRecord> ports = new HashMap<String, ServiceRecord>();
-
 				for (Entry<RemoteDevice, ServiceRecord[]> entry : services
 						.entrySet()) {
 					RemoteDevice remoteDevice = entry.getKey();
@@ -137,9 +134,8 @@ public class BluetoothLinkFactory implements LinkFactory<BluetoothLinkConfig> {
 			}
 
 			public String getName(RemoteDevice remoteDevice) {
-				String name = getFriendlyName(remoteDevice) + " "
+				return getFriendlyName(remoteDevice) + " "
 						+ remoteDevice.getBluetoothAddress();
-				return name;
 			}
 
 			public String getFriendlyName(RemoteDevice remoteDevice) {
