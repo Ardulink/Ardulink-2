@@ -18,6 +18,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.System.arraycopy;
 import static org.zu.ardulink.util.Integers.tryParse;
+import static org.zu.ardulink.util.Preconditions.checkState;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -111,20 +112,25 @@ public class ArdulinkProtocol implements Protocol {
 	@Override
 	public FromArduino fromArduino(byte[] bytes) {
 		Matcher matcher = pattern.matcher(new String(bytes));
-		if (matcher.matches() && matcher.groupCount() == 3) {
-			ALPProtocolKey key = ALPProtocolKey.fromString(matcher.group(1));
-			Integer pin = tryParse(matcher.group(2));
-			Integer value = tryParse(matcher.group(3));
-			if (key != null && pin != null && value != null) {
-				if (key == ANALOG_PIN_READ) {
-					return new DefaultFromArduino(analogPin(pin), value);
-				} else if (key == DIGITAL_PIN_READ) {
-					return new DefaultFromArduino(digitalPin(pin),
-							toBoolean(value));
-				}
-			}
+		checkState(matcher.matches() && matcher.groupCount() == 3, "%s",
+				new String(bytes));
+		ALPProtocolKey key = ALPProtocolKey.fromString(matcher.group(1));
+		Integer pin = tryParse(matcher.group(2));
+		Integer value = tryParse(matcher.group(3));
+		checkState(key != null && pin != null && value != null,
+				"key %s pin %s value %s", key, pin, value);
+		if (key == ANALOG_PIN_READ) {
+			return new FromArduinoPinStateChanged(analogPin(pin), value);
+		} else if (key == DIGITAL_PIN_READ) {
+			return new FromArduinoPinStateChanged(digitalPin(pin),
+					toBoolean(value));
+		} else if (key == POWER_PIN_SWITCH) {
+			return new ToArduinoChangePinState(digitalPin(pin),
+					toBoolean(value));
+		} else if (key == POWER_PIN_INTENSITY) {
+			return new ToArduinoChangePinState(analogPin(pin), value);
 		}
-		throw new IllegalStateException(new String(bytes));
+		throw new IllegalStateException(key + " " + new String(bytes));
 	}
 
 	private static Boolean toBoolean(Integer value) {
