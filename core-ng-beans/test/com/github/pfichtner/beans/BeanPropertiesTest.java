@@ -239,10 +239,8 @@ public class BeanPropertiesTest {
 	@Test
 	public void canFindPropertyByAnnotatedField() throws Exception {
 		BeanWithAnnoOnField bean = new BeanWithAnnoOnField();
-		BeanProperties bp = BeanProperties
-				.builder(bean)
-				.using(beanAttributes(),
-						propertyAnnotated(OurOwnTestAnno.class)).build();
+		BeanProperties bp = BeanProperties.builder(bean)
+				.using(propertyAnnotated(OurOwnTestAnno.class)).build();
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName(), is("foo"));
 		assertThat(attribute.getType().getName(), is(List.class.getName()));
