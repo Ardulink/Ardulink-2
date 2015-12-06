@@ -24,8 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -35,8 +33,6 @@ import com.github.pfichtner.ardulink.core.Connection;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.StreamReader;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 
@@ -133,12 +129,6 @@ public class NetworkProxyServerConnection implements Runnable {
 			}
 		}
 		return null;
-	}
-
-	public Configurer getSerialLink() throws URISyntaxException {
-		Configurer configurer = LinkManager.getInstance().getConfigurer(
-				new URI("ardulink://serial"));
-		return configurer;
 	}
 
 }
