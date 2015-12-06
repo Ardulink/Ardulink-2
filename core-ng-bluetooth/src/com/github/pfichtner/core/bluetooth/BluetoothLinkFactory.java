@@ -122,10 +122,9 @@ public class BluetoothLinkFactory implements LinkFactory<BluetoothLinkConfig> {
 			public void serviceSearchCompleted(int arg0, int arg1) {
 				for (Entry<RemoteDevice, ServiceRecord[]> entry : services
 						.entrySet()) {
-					RemoteDevice remoteDevice = entry.getKey();
 					ServiceRecord service = findService(entry.getValue());
 					if (service != null) {
-						ports.put(getName(remoteDevice), service);
+						ports.put(getName(entry.getKey()), service);
 					}
 				}
 				synchronized (lock) {
