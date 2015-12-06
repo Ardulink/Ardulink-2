@@ -51,7 +51,7 @@ public class NetworkProxyServer {
 
 	public static class StartCommand implements Command {
 
-		private List<LinkContainer> links = new CopyOnWriteArrayList<LinkContainer>();
+		private final List<LinkContainer> links = new CopyOnWriteArrayList<LinkContainer>();
 
 		@Override
 		public void execute(int portNumber) {
