@@ -18,55 +18,46 @@ limitations under the License.
 
 package org.zu.ardulink.connection.proxy;
 
-import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.CONNECT_CMD;
-import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.GET_PORT_LIST_CMD;
-import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.NUMBER_OF_PORTS;
-import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.OK;
-import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
+import static org.zu.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.pfichtner.ardulink.core.Connection;
+import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.StreamReader;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol.FromArduino;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
 public class NetworkProxyServerConnection implements Runnable {
-
-	private final Protocol tcpProto = ArdulinkProtocolN.instance();
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(NetworkProxyServerConnection.class);
 
+	private final Protocol proto = ArdulinkProtocolN.instance();
+
 	private final List<LinkContainer> links;
-	private Socket socket;
+	private final Socket socket;
 
 	private Link link;
-
-	private Protocol protocol = ArdulinkProtocolN.instance();
-
-	private boolean handshakeComplete;
 
 	public NetworkProxyServerConnection(List<LinkContainer> links, Socket socket) {
 		this.links = links;
@@ -77,66 +68,35 @@ public class NetworkProxyServerConnection implements Runnable {
 	public void run() {
 		try {
 
-			OutputStream outputStream = socket.getOutputStream();
+			final OutputStream osRemote = socket.getOutputStream();
+			InputStream isRemote = socket.getInputStream();
 
-			StreamReader streamReader = new StreamReader(
-					socket.getInputStream()) {
+			Handshaker handshaker = new Handshaker(isRemote, osRemote, links,
+					proto);
 
-				private String handshakeCmd;
-				private List<String> handshakes = new ArrayList<String>();
+			Link link = handshaker.doHandshake();
+			checkState(link instanceof ConnectionBasedLink,
+					"Only %s links supported for now (got %s)",
+					ConnectionBasedLink.class.getName(), link.getClass());
 
-				private void write(Object object) throws IOException {
-					write((object instanceof String ? ((String) object)
-							: String.valueOf(object)).getBytes());
+			final Connection connection = ((ConnectionBasedLink) link)
+					.getConnection();
+			connection.addListener(new Connection.ListenerAdapter() {
+				@Override
+				public void received(byte[] bytes) throws IOException {
+					osRemote.write(bytes);
 				}
+			});
 
+			new StreamReader(isRemote) {
 				@Override
 				protected void received(byte[] bytes) throws Exception {
-					if (handshakeComplete) {
-						FromArduino fromArduino = protocol.fromArduino(bytes);
-						// TODO must handle start/stop listening
-					} else {
-						String inputLine = new String(bytes);
-						if (STOP_SERVER_CMD.equals(inputLine)) {
-							logger.info("Stop request received.");
-							NetworkProxyServer.stop();
-						} else if (inputLine.equals(GET_PORT_LIST_CMD)) {
-							Object[] portList = getPortList();
-							if (portList == null) {
-								portList = new Object[0];
-							}
-							write(NUMBER_OF_PORTS + portList.length);
-							for (Object port : portList) {
-								write(port);
-							}
-						} else if (CONNECT_CMD.equals(inputLine)) {
-							handshakeCmd = inputLine;
-						} else if (CONNECT_CMD.equals(handshakeCmd)
-								&& handshakes.size() == 2) {
-							connect(handshakes.get(0),
-									Integer.parseInt(handshakes.get(1)));
-							try {
-								// wait a wile to avoid messages with connection
-								// not valid.
-								TimeUnit.SECONDS.sleep(1);
-							} catch (InterruptedException e) {
-								throw new RuntimeException(e);
-							}
-							write(OK);
-							handshakeCmd = null;
-							handshakes.clear();
-							handshakeComplete = true;
-						} else {
-							handshakes.add(inputLine);
-						}
-					}
+					connection.write(bytes);
 				}
-			};
 
-			streamReader
-					.runReaderThread(new String(tcpProto.getSeparator()));
-
-		} catch (IOException e) {
+			}.runReaderThread(new String(proto.getSeparator()));
+		} catch (Exception e) {
+			logger.error("Error while doing proxy", e);
 		} finally {
 			logger.info("{} connection closed.",
 					socket.getRemoteSocketAddress());
@@ -144,18 +104,15 @@ public class NetworkProxyServerConnection implements Runnable {
 				try {
 					disconnect(link);
 				} catch (IOException e) {
-					e.printStackTrace();
+					logger.error("Error disconnecting link {}", link, e);
 				}
 			}
 			try {
 				socket.close();
-			} catch (IOException socketClosingExceptionTry) {
+			} catch (IOException e) {
+				logger.error("Error closing socket {}", socket, e);
 			}
 		}
-	}
-
-	private Object[] getPortList() throws URISyntaxException, Exception {
-		return getSerialLink().getAttribute("port").getChoiceValues();
 	}
 
 	private void disconnect(Link link) throws IOException {
@@ -169,35 +126,6 @@ public class NetworkProxyServerConnection implements Runnable {
 		}
 	}
 
-	private void connect(String portName, int baudRate) throws Exception {
-		Configurer configurer = getSerialLink();
-		configurer.getAttribute("port").setValue(portName);
-		configurer.getAttribute("speed").setValue(baudRate);
-
-		CacheKey cacheKey = new CacheKey(configurer);
-		LinkContainer container = findExisting(cacheKey);
-		if (container == null) {
-			links.add(new LinkContainer(configurer.newLink(), cacheKey));
-		} else {
-			container.increaseUsageCounter();
-		}
-	}
-
-	public Configurer getSerialLink() throws URISyntaxException {
-		Configurer configurer = LinkManager.getInstance().getConfigurer(
-				new URI("ardulink://serial"));
-		return configurer;
-	}
-
-	private LinkContainer findExisting(CacheKey ck) {
-		for (LinkContainer linkContainer : links) {
-			if (linkContainer.getCacheKey().equals(ck)) {
-				return linkContainer;
-			}
-		}
-		return null;
-	}
-
 	private LinkContainer findExisting(Link link) {
 		for (LinkContainer linkContainer : links) {
 			if (linkContainer.getCacheKey().equals(link)) {
@@ -205,6 +133,12 @@ public class NetworkProxyServerConnection implements Runnable {
 			}
 		}
 		return null;
+	}
+
+	public Configurer getSerialLink() throws URISyntaxException {
+		Configurer configurer = LinkManager.getInstance().getConfigurer(
+				new URI("ardulink://serial"));
+		return configurer;
 	}
 
 }

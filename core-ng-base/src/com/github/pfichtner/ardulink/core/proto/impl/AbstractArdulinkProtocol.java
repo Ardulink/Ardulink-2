@@ -120,11 +120,6 @@ public class AbstractArdulinkProtocol implements Protocol {
 		} else if (key == DIGITAL_PIN_READ) {
 			return new FromArduinoPinStateChanged(digitalPin(pin),
 					toBoolean(value));
-		} else if (key == POWER_PIN_SWITCH) {
-			return new ToArduinoChangePinState(digitalPin(pin),
-					toBoolean(value));
-		} else if (key == POWER_PIN_INTENSITY) {
-			return new ToArduinoChangePinState(analogPin(pin), value);
 		}
 		throw new IllegalStateException(key + " " + new String(bytes));
 	}

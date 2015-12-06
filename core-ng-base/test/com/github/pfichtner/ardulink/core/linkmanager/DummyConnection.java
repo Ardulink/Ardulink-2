@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.Connection.Listener;
 
 public class DummyConnection implements Connection {
 
