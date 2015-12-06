@@ -15,21 +15,15 @@ import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 
 public class SerialLinkConfig implements LinkConfig {
 
-	private static final String PORT = "port";
-
-	private static final String SPEED = "speed";
-
-	private static final String PROTO = "proto";
-
 	private static final int DEFAULT_SPEED = 115200;
 
-	@Named(PORT)
+	@Named("port")
 	private String port;
 
-	@Named(SPEED)
+	@Named("speed")
 	private int speed = DEFAULT_SPEED;
 
-	@Named(PROTO)
+	@Named("proto")
 	private Protocol proto = ArdulinkProtocolN.instance();
 
 	public String getPort() {
@@ -56,7 +50,7 @@ public class SerialLinkConfig implements LinkConfig {
 		return proto;
 	}
 
-	@ChoiceFor(PORT)
+	@ChoiceFor("port")
 	public String[] getPortList() {
 		List<String> ports = new ArrayList<String>();
 		for (CommPortIdentifier portIdentifier : portIdentifiers()) {
