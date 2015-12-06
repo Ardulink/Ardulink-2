@@ -3,6 +3,7 @@ package com.github.pfichtner.ardulink.core.linkmanager;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
@@ -10,7 +11,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
+import org.hamcrest.Matcher;
+import org.hamcrest.core.IsCollectionContaining;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -97,9 +101,8 @@ public class DummyLinkFactoryTest {
 
 		ConfigAttribute proto = configurer.getAttribute("proto");
 		assertThat(proto.hasChoiceValues(), is(TRUE));
-		assertThat(
-				new HashSet<Object>(Arrays.asList(proto.getChoiceValues())),
-				is(new HashSet<Object>(Arrays.asList("dummyProto", "ardulink"))));
+		assertThat(Arrays.asList(proto.getChoiceValues()),
+				hasItems((Object) "dummyProto", "ardulink", "ardulink255"));
 	}
 
 	@Test
