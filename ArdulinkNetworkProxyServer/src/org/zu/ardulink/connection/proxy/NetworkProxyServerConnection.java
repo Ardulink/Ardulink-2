@@ -42,7 +42,7 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol.FromArduino;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -62,7 +62,7 @@ public class NetworkProxyServerConnection implements Runnable {
 
 	private Link link;
 
-	private Protocol protocol = ArdulinkProtocol.instance();
+	private Protocol protocol = ArdulinkProtocolN.instance();
 
 	private boolean handshakeComplete;
 

@@ -31,26 +31,24 @@ import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStartListening;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
 import com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 
-public class ArdulinkProtocol implements Protocol {
+public class ArdulinkProtocol255 implements Protocol {
 
-	private static final ArdulinkProtocol instance = new ArdulinkProtocol();
+	private static final ArdulinkProtocol255 instance = new ArdulinkProtocol255();
 
-	public static final byte[] READ_SEPARATOR = "\n".getBytes();
+	public static final byte[] SEPARATOR = new byte[] { (byte) 255 };
 
 	private static final Pattern pattern = Pattern
 			.compile("alp:\\/\\/([a-z]+)/([\\d]+)/([\\d]+)");
 
 	private static final String NAME = "ardulink";
 
-	// TODO refactor all analog/digital switches
-
 	public String getName() {
 		return NAME;
 	};
 
 	@Override
-	public byte[] getReadSeparator() {
-		return READ_SEPARATOR;
+	public byte[] getSeparator() {
+		return SEPARATOR;
 	}
 
 	public static Protocol instance() {
@@ -138,11 +136,11 @@ public class ArdulinkProtocol implements Protocol {
 	}
 
 	private static byte[] toBytes(String message) {
-		byte[] bytes = new byte[message.length() + READ_SEPARATOR.length];
+		byte[] bytes = new byte[message.length() + SEPARATOR.length];
 		byte[] msgBytes = message.getBytes();
 		arraycopy(msgBytes, 0, bytes, 0, msgBytes.length);
-		arraycopy(READ_SEPARATOR, 0, bytes, msgBytes.length,
-				READ_SEPARATOR.length);
+		arraycopy(SEPARATOR, 0, bytes, msgBytes.length,
+				SEPARATOR.length);
 		return bytes;
 	}
 

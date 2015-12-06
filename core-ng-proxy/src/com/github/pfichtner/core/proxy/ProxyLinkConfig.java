@@ -16,7 +16,7 @@ import java.util.List;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocols;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 
 public class ProxyLinkConfig implements LinkConfig {
 
@@ -127,7 +127,7 @@ public class ProxyLinkConfig implements LinkConfig {
 	private int tcpport = DEFAULT_LISTENING_PORT;
 
 	private String port;
-	private Protocol proto = ArdulinkProtocol.instance();
+	private Protocol proto = ArdulinkProtocolN.instance();
 	private int speed = DEFAULT_SPEED;
 
 	private ProxyConnectionToRemote remote;

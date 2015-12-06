@@ -20,7 +20,7 @@ public class DummyProtocol implements Protocol {
 	}
 
 	@Override
-	public byte[] getReadSeparator() {
+	public byte[] getSeparator() {
 		throw new UnsupportedOperationException();
 	}
 

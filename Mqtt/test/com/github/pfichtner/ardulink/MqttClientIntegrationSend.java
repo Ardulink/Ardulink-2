@@ -41,7 +41,7 @@ import com.github.pfichtner.ardulink.core.Connection;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.StreamConnection;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 import com.github.pfichtner.ardulink.util.AnotherMqttClient;
 import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
 
@@ -61,10 +61,10 @@ public class MqttClientIntegrationSend {
 	private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 	private final Connection connection = new StreamConnection(null,
-			outputStream, ArdulinkProtocol.instance());
+			outputStream, ArdulinkProtocolN.instance());
 
 	private final ConnectionBasedLink link = new ConnectionBasedLink(
-			connection, ArdulinkProtocol.instance());
+			connection, ArdulinkProtocolN.instance());
 
 	private MqttMain client = new MqttMain() {
 		{

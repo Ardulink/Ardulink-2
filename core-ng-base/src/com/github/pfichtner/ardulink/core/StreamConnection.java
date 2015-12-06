@@ -39,7 +39,7 @@ public class StreamConnection implements Connection {
 			}
 		};
 		if (inputStream != null) {
-			String delimiter = new String(protocol.getReadSeparator());
+			String delimiter = new String(protocol.getSeparator());
 			streamReader.runReaderThread(delimiter);
 		}
 	}

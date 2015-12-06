@@ -34,7 +34,7 @@ import org.junit.Test;
 import com.github.pfichtner.ardulink.core.Connection;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.StreamConnection;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 import com.github.pfichtner.ardulink.util.Message;
 import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
 
@@ -50,10 +50,10 @@ public class ControlChannelTest {
 	private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 	private final Connection connection = new StreamConnection(null,
-			outputStream, ArdulinkProtocol.instance());
+			outputStream, ArdulinkProtocolN.instance());
 
 	private final ConnectionBasedLink link = new ConnectionBasedLink(
-			connection, ArdulinkProtocol.instance());
+			connection, ArdulinkProtocolN.instance());
 
 	private final AbstractMqttAdapter mqttClient = new AbstractMqttAdapter(
 			link, Config.DEFAULT.withControlChannelEnabled()) {

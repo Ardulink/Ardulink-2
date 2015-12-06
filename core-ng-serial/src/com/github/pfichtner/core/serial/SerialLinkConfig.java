@@ -11,7 +11,7 @@ import java.util.List;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocols;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 
 public class SerialLinkConfig implements LinkConfig {
 
@@ -30,7 +30,7 @@ public class SerialLinkConfig implements LinkConfig {
 	private int speed = DEFAULT_SPEED;
 
 	@Named(PROTO)
-	private Protocol proto = ArdulinkProtocol.instance();
+	private Protocol proto = ArdulinkProtocolN.instance();
 
 	public String getPort() {
 		return port;

@@ -1,1 +1,2 @@
-com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol
+com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN
+com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255

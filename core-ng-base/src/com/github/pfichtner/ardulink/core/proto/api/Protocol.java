@@ -6,7 +6,7 @@ public interface Protocol {
 
 	String getName();
 
-	byte[] getReadSeparator();
+	byte[] getSeparator();
 
 	interface FromArduino {
 		Pin getPin();
