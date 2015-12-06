@@ -4,6 +4,7 @@ import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.CONNECT_CMD;
 import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.GET_PORT_LIST_CMD;
 import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.NUMBER_OF_PORTS;
 import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.OK;
+import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,22 +39,34 @@ public class Handshaker {
 		Link link = null;
 		while (scanner.hasNext() && link == null) {
 			String input = read();
-			if (GET_PORT_LIST_CMD.equals(input)) {
-				Object[] portList = getPortList();
-				if (portList == null) {
-					portList = new Object[0];
-				}
-				write(NUMBER_OF_PORTS + portList.length);
-				for (Object port : portList) {
-					write(port);
-				}
+			if (input.equals(STOP_SERVER_CMD)) {
+				NetworkProxyServer.stop();
+			} else if (GET_PORT_LIST_CMD.equals(input)) {
+				handleGetPortList();
 			} else if (CONNECT_CMD.equals(input)) {
-				link = connect(read(), new Integer(read()));
-				write(OK);
+				link = handleConnect();
 			}
 			printWriter.flush();
 		}
 		return link;
+	}
+
+	public Link handleConnect() throws Exception, IOException {
+		Link link = connect(read(), new Integer(read()));
+		write(OK);
+		return link;
+	}
+
+	public void handleGetPortList() throws URISyntaxException, Exception,
+			IOException {
+		Object[] portList = getPortList();
+		if (portList == null) {
+			portList = new Object[0];
+		}
+		write(NUMBER_OF_PORTS + portList.length);
+		for (Object port : portList) {
+			write(port);
+		}
 	}
 
 	public String read() {
