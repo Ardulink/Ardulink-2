@@ -61,10 +61,6 @@ public class ProxyLinkConfig implements LinkConfig {
 			this.printWriter = new PrintWriter(socket.getOutputStream(), true);
 		}
 
-		public Socket getSocket() {
-			return socket;
-		}
-
 		public List<String> getPortList() throws IOException {
 			send(GET_PORT_LIST_CMD.getCommand());
 			String numberOfPorts = checkNotNull(read(),
@@ -80,22 +76,12 @@ public class ProxyLinkConfig implements LinkConfig {
 			return retvalue;
 		}
 
-		public void send(String message) {
-			printWriter.println(message);
-			printWriter.flush();
+		public Socket getSocket() {
+			return socket;
 		}
 
 		public String read() throws IOException {
 			return bufferedReader.readLine();
-		}
-
-		public void startBackgroundReader() {
-			new Thread(runnable()) {
-				{
-					setDaemon(true);
-					start();
-				}
-			};
 		}
 
 		private Runnable runnable() {
@@ -107,66 +93,97 @@ public class ProxyLinkConfig implements LinkConfig {
 				}
 			};
 		}
+
+		public void send(String message) {
+			printWriter.println(message);
+			printWriter.flush();
+		}
+
+		public void startBackgroundReader() {
+			new Thread(runnable()) {
+				{
+					setDaemon(true);
+					start();
+				}
+			};
+		}
 	}
 
 	private static final int DEFAULT_LISTENING_PORT = 4478;
 
 	private static final int DEFAULT_SPEED = 115200;
 
-	private static final String TCP_HOST = "tcphost";
-
-	private static final String TCP_PORT = "tcpport";
-
-	private static final String PORT = "port";
-
-	private static final String PROTO = "proto";
-
-	private static final String SPEED = "speed";
-
+	@Named("tcphost")
 	private String tcphost;
+
+	@Named("tcpport")
 	private int tcpport = DEFAULT_LISTENING_PORT;
 
+	@Named("port")
 	private String port;
-	private Protocol proto = ArdulinkProtocolN.instance();
+
+	@Named("speed")
 	private int speed = DEFAULT_SPEED;
 
+	@Named("proto")
+	private Protocol proto = ArdulinkProtocolN.instance();
+
+	@Named("networkproto")
 	private ProxyConnectionToRemote remote;
 
-	@Named(TCP_HOST)
-	public void setTcpHost(String tcphost) {
-		this.tcphost = tcphost;
-	}
+	private Protocol networkProto = ArdulinkProtocolN.instance();;
 
-	@Named(TCP_PORT)
-	public void setTcpPort(int tcpport) {
-		this.tcpport = tcpport;
-	}
-
-	@Named(PORT)
-	public void setPort(String port) {
-		this.port = port;
-	}
-
-	@Named(PROTO)
-	public void setProto(String proto) {
-		this.proto = Protocols.getByName(proto);
-	}
-
-	@Named(SPEED)
-	public void setSpeed(int speed) {
-		this.speed = speed;
+	public Protocol getNetworkProto() {
+		return networkProto;
 	}
 
 	public String getPort() {
 		return port;
 	}
 
+	public int getSpeed() {
+		return speed;
+	}
+
 	public Protocol getProto() {
 		return proto;
 	}
 
-	public int getSpeed() {
-		return speed;
+	public String getTcphost() {
+		return tcphost;
+	}
+
+	public int getTcpport() {
+		return tcpport;
+	}
+
+	public void setNetworkProto(Protocol networkProto) {
+		this.networkProto = networkProto;
+	}
+
+	public void setPort(String port) {
+		this.port = port;
+	}
+
+	public void setSpeed(int speed) {
+		this.speed = speed;
+	}
+
+	public void setProto(String proto) {
+		this.proto = Protocols.getByName(proto);
+	}
+
+	public void setTcphost(String tcphost) {
+		this.tcphost = tcphost;
+	}
+
+	public void setTcpport(int tcpport) {
+		this.tcpport = tcpport;
+	}
+
+	@ChoiceFor("port")
+	public List<String> getAvailablePorts() throws IOException {
+		return getRemote().getPortList();
 	}
 
 	public synchronized ProxyConnectionToRemote getRemote()
@@ -175,11 +192,6 @@ public class ProxyLinkConfig implements LinkConfig {
 			this.remote = new ProxyConnectionToRemote(tcphost, tcpport);
 		}
 		return this.remote;
-	}
-
-	@ChoiceFor(PORT)
-	public List<String> getAvailablePorts() throws IOException {
-		return getRemote().getPortList();
 	}
 
 }

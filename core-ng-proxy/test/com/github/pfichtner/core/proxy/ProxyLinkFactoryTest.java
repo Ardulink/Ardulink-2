@@ -20,7 +20,7 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 public class ProxyLinkFactoryTest {
 
 	@Rule
-	public Timeout timeout = new Timeout(5, SECONDS);
+	public Timeout timeout = new Timeout(500, SECONDS);
 
 	@Rule
 	public ProxyServerDouble proxyServerDouble = new ProxyServerDouble();
