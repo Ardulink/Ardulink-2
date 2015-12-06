@@ -1,5 +1,6 @@
 package com.github.pfichtner.core.bluetooth;
 
+import static javax.bluetooth.ServiceRecord.NOAUTHENTICATE_NOENCRYPT;
 import static org.zu.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
@@ -18,12 +19,11 @@ import javax.bluetooth.LocalDevice;
 import javax.bluetooth.RemoteDevice;
 import javax.bluetooth.ServiceRecord;
 import javax.bluetooth.UUID;
-import javax.microedition.io.Connection;
 import javax.microedition.io.Connector;
-import javax.microedition.io.StreamConnection;
 import javax.microedition.io.StreamConnectionNotifier;
 
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
+import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
@@ -40,28 +40,34 @@ public class BluetoothLinkFactory implements LinkFactory<BluetoothLinkConfig> {
 	@Override
 	public ConnectionBasedLink newLink(BluetoothLinkConfig config)
 			throws IOException {
-		Map<String, ServiceRecord> ports = getPortList();
-		ServiceRecord serviceRecord = ports.get(config.getDeviceName());
-		checkState(serviceRecord != null,
-				"The connection could not be made. Device not discovered");
-		String url = serviceRecord.getConnectionURL(
-				ServiceRecord.NOAUTHENTICATE_NOENCRYPT, false);
+		String url = getURL(config);
 		checkState(url != null,
 				"The connection could not be made. Connection url not found");
-		StreamConnection streamConnection = getStreamConnection(Connector
+		javax.microedition.io.StreamConnection streamConnection = getStreamConnection(Connector
 				.open(url));
-		return new ConnectionBasedLink(
-				new com.github.pfichtner.ardulink.core.StreamConnection(
-						streamConnection.openInputStream(),
-						streamConnection.openOutputStream(), proto), proto);
+		return new ConnectionBasedLink(new StreamConnection(
+				streamConnection.openInputStream(),
+				streamConnection.openOutputStream(), proto), proto);
 	}
 
-	public StreamConnection getStreamConnection(Connection connection)
-			throws IOException {
+	public String getURL(BluetoothLinkConfig config) {
+		return getServiceRecord(config).getConnectionURL(
+				NOAUTHENTICATE_NOENCRYPT, false);
+	}
+
+	public ServiceRecord getServiceRecord(BluetoothLinkConfig config) {
+		ServiceRecord serviceRecord = getPortList().get(config.getDeviceName());
+		checkState(serviceRecord != null,
+				"The connection could not be made. Device not discovered");
+		return serviceRecord;
+	}
+
+	public javax.microedition.io.StreamConnection getStreamConnection(
+			javax.microedition.io.Connection connection) throws IOException {
 		if (connection instanceof StreamConnectionNotifier) {
 			return ((StreamConnectionNotifier) connection).acceptAndOpen();
 		} else if (connection instanceof StreamConnection) {
-			return (StreamConnection) connection;
+			return (javax.microedition.io.StreamConnection) connection;
 		} else {
 			throw new IllegalStateException("Connection class not known. "
 					+ connection.getClass().getName());
