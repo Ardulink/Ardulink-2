@@ -54,6 +54,8 @@ import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
  */
 public class NetworkProxyServerConnection implements Runnable {
 
+	private final Protocol tcpProto = ArdulinkProtocolN.instance();
+
 	private static final Logger logger = LoggerFactory
 			.getLogger(NetworkProxyServerConnection.class);
 
@@ -128,9 +130,11 @@ public class NetworkProxyServerConnection implements Runnable {
 							handshakes.add(inputLine);
 						}
 					}
-
 				}
 			};
+
+			streamReader
+					.runReaderThread(new String(tcpProto.getSeparator()));
 
 		} catch (IOException e) {
 		} finally {

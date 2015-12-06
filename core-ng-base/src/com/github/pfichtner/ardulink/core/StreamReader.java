@@ -25,7 +25,7 @@ public abstract class StreamReader implements Closeable {
 		return inputStream;
 	}
 
-	protected void runReaderThread(final String delimiter) {
+	public void runReaderThread(final String delimiter) {
 		this.thread = new Thread() {
 
 			private final Scanner scanner = new Scanner(inputStream)

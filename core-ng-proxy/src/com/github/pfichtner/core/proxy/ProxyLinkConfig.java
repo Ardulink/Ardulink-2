@@ -49,16 +49,18 @@ public class ProxyLinkConfig implements LinkConfig {
 
 		private final String host;
 		private final Socket socket;
+		private final Protocol protocol;
 		private final BufferedReader bufferedReader;
 		private final PrintWriter printWriter;
 
-		public ProxyConnectionToRemote(String host, int port)
+		public ProxyConnectionToRemote(String host, int port, Protocol protocol)
 				throws UnknownHostException, IOException {
 			this.host = host;
+			this.protocol = protocol;
 			socket = new Socket(host, port);
 			this.bufferedReader = new BufferedReader(new InputStreamReader(
 					socket.getInputStream()));
-			this.printWriter = new PrintWriter(socket.getOutputStream(), true);
+			this.printWriter = new PrintWriter(socket.getOutputStream(), false);
 		}
 
 		public List<String> getPortList() throws IOException {
@@ -95,7 +97,8 @@ public class ProxyLinkConfig implements LinkConfig {
 		}
 
 		public void send(String message) {
-			printWriter.println(message);
+			printWriter.print(message);
+			printWriter.print(new String(protocol.getSeparator()));
 			printWriter.flush();
 		}
 
@@ -118,6 +121,9 @@ public class ProxyLinkConfig implements LinkConfig {
 
 	@Named("tcpport")
 	private int tcpport = DEFAULT_LISTENING_PORT;
+
+	@Named("tcpproto")
+	private Protocol tcpproto = ArdulinkProtocolN.instance();
 
 	@Named("port")
 	private String port;
@@ -157,6 +163,10 @@ public class ProxyLinkConfig implements LinkConfig {
 		return tcpport;
 	}
 
+	public Protocol getTcpproto() {
+		return tcpproto;
+	}
+
 	public void setNetworkProto(Protocol networkProto) {
 		this.networkProto = networkProto;
 	}
@@ -181,6 +191,10 @@ public class ProxyLinkConfig implements LinkConfig {
 		this.tcpport = tcpport;
 	}
 
+	public void setTcpproto(String tcpproto) {
+		this.tcpproto = Protocols.getByName(tcpproto);
+	}
+
 	@ChoiceFor("port")
 	public List<String> getAvailablePorts() throws IOException {
 		return getRemote().getPortList();
@@ -189,7 +203,8 @@ public class ProxyLinkConfig implements LinkConfig {
 	public synchronized ProxyConnectionToRemote getRemote()
 			throws UnknownHostException, IOException {
 		if (this.remote == null) {
-			this.remote = new ProxyConnectionToRemote(tcphost, tcpport);
+			this.remote = new ProxyConnectionToRemote(tcphost, tcpport,
+					tcpproto);
 		}
 		return this.remote;
 	}
