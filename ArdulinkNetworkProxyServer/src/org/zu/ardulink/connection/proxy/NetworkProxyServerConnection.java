@@ -50,7 +50,7 @@ import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * @author Peter Fichtner
  * 
- *         [adsense]
+ * [adsense]
  */
 public class NetworkProxyServerConnection implements Runnable {
 

@@ -19,7 +19,12 @@ import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.pfichtner.ardulink.core.proto.api.Protocol;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
+
 public class ProxyServerDouble extends ExternalResource {
+	
+	private final Protocol tcpProto = ArdulinkProtocolN.instance();
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(ProxyServerDouble.class);
@@ -50,7 +55,7 @@ public class ProxyServerDouble extends ExternalResource {
 				try {
 					Socket clientSocket = serverSocket.accept();
 					PrintWriter out = new PrintWriter(
-							clientSocket.getOutputStream(), true);
+							clientSocket.getOutputStream(), false);
 					BufferedReader in = new BufferedReader(
 							new InputStreamReader(clientSocket.getInputStream()));
 
@@ -62,7 +67,8 @@ public class ProxyServerDouble extends ExternalResource {
 						if (responses != null) {
 							for (String response : responses) {
 								logger.info("Responding {}", response);
-								out.println(response);
+								out.print(response);
+								out.print(new String(tcpProto.getSeparator()));
 								out.flush();
 							}
 						}
