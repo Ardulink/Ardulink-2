@@ -10,11 +10,7 @@ import static org.junit.Assert.assertThat;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 
-import org.hamcrest.Matcher;
-import org.hamcrest.core.IsCollectionContaining;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
