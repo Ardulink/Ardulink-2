@@ -46,7 +46,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 			UnsupportedCommOperationException {
 		SerialPort serialPort = (SerialPort) portIdentifier.open(
 				"RTBug_network", 2000);
-		serialPort.setSerialPortParams(config.getSpeed(), DATABITS_8,
+		serialPort.setSerialPortParams(config.getBaudrate(), DATABITS_8,
 				STOPBITS_1, PARITY_NONE);
 		return serialPort;
 	}

@@ -15,13 +15,11 @@ import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 
 public class SerialLinkConfig implements LinkConfig {
 
-	private static final int DEFAULT_SPEED = 115200;
-
 	@Named("port")
 	private String port;
 
-	@Named("speed")
-	private int speed = DEFAULT_SPEED;
+	@Named("baudrate")
+	private int baudrate = 115200;
 
 	@Named("proto")
 	private Protocol proto = ArdulinkProtocolN.instance();
@@ -38,12 +36,12 @@ public class SerialLinkConfig implements LinkConfig {
 		this.proto = Protocols.getByName(proto);
 	}
 
-	public void setSpeed(int speed) {
-		this.speed = speed;
+	public void setBaudrate(int baudrate) {
+		this.baudrate = baudrate;
 	}
 
-	public int getSpeed() {
-		return speed;
+	public int getBaudrate() {
+		return baudrate;
 	}
 
 	public Protocol getProto() {
