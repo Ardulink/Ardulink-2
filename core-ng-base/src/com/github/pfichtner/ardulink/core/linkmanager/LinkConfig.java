@@ -16,4 +16,9 @@ public interface LinkConfig {
 		String value();
 	}
 
+	@Retention(RUNTIME)
+	public @interface I18n {
+		String value();
+	}
+
 }

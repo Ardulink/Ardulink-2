@@ -2,9 +2,11 @@ package com.github.pfichtner.ardulink.core.linkmanager;
 
 import java.util.List;
 
+import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.I18n;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocols;
 
+@I18n("message")
 public class DummyLinkConfig implements LinkConfig {
 
 	public String a;

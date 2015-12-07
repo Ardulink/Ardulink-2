@@ -12,14 +12,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 
+import org.zu.ardulink.util.Preconditions;
 import org.zu.ardulink.util.Primitive;
 
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.guava.Lists;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.ChoiceFor;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.Named;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.I18n;
 import com.github.pfichtner.beans.Attribute;
 import com.github.pfichtner.beans.BeanProperties;
 
@@ -27,13 +30,43 @@ public abstract class LinkManager {
 
 	public interface ConfigAttribute {
 
-		Object getValue() throws Exception;
+		/**
+		 * Returns the current value of this attribute.
+		 * 
+		 * @return current value
+		 */
+		Object getValue();
 
-		void setValue(Object value) throws Exception;
+		/**
+		 * Sets the new value of this attribute. If this attribute
+		 * hasChoiceValues only one of those values can be set!
+		 */
+		void setValue(Object value);
 
+		/**
+		 * Returns <code>true</code> if this attribute has predefined choice
+		 * values.
+		 * 
+		 * @return <code>true</code> if this attribute has predefined choice
+		 *         values
+		 * @see #getChoiceValues()
+		 */
 		boolean hasChoiceValues();
 
-		Object[] getChoiceValues() throws Exception;
+		/**
+		 * Returns the choice values (if any) of this attribute.
+		 * 
+		 * @return the available choice values
+		 * @see #hasChoiceValues()
+		 */
+		Object[] getChoiceValues();
+
+		/**
+		 * Returns the localized name of this attribute.
+		 * 
+		 * @return localized name of this attribute
+		 */
+		String getLocalizedName();
 
 	}
 
@@ -42,6 +75,7 @@ public abstract class LinkManager {
 
 		private final Attribute attribute;
 		private final Attribute getChoicesFor;
+		private final ResourceBundle nls;
 		private List<Object> cachedChoiceValues;
 
 		public ConfigAttributeAdapter(T linkConfig,
@@ -50,23 +84,38 @@ public abstract class LinkManager {
 			this.getChoicesFor = BeanProperties.builder(linkConfig)
 					.using(propertyAnnotated(ChoiceFor.class)).build()
 					.getAttribute(attribute.getName());
-		}
-		
-		@Override
-		public Object getValue() throws Exception {
-			return this.attribute.readValue();
+			I18n nls = linkConfig.getClass().getAnnotation(I18n.class);
+			this.nls = nls == null ? null : ResourceBundle.getBundle(nls
+					.value());
 		}
 
 		@Override
-		public void setValue(Object value) throws Exception {
+		public Object getValue() {
+			try {
+				return this.attribute.readValue();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		@Override
+		public void setValue(Object value) {
 			if (hasChoiceValues()) {
-				this.cachedChoiceValues = Arrays.asList(getChoiceValues());
+				try {
+					this.cachedChoiceValues = Arrays.asList(getChoiceValues());
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
 			}
 			checkArgument(this.cachedChoiceValues == null
 					|| this.cachedChoiceValues.contains(value),
 					"%s is not a valid value for %s, valid values are %s",
 					value, this.attribute.getName(), this.cachedChoiceValues);
-			this.attribute.writeValue(value);
+			try {
+				this.attribute.writeValue(value);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		@Override
@@ -75,10 +124,16 @@ public abstract class LinkManager {
 		}
 
 		@Override
-		public Object[] getChoiceValues() throws Exception {
-			Object[] value = loadChoiceValues();
-			this.cachedChoiceValues = Arrays.asList(value);
-			return value;
+		public Object[] getChoiceValues() {
+			checkState(hasChoiceValues(),
+					"attribute does not have choiceValues");
+			try {
+				Object[] value = loadChoiceValues();
+				this.cachedChoiceValues = Arrays.asList(value);
+				return value;
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		private Object[] loadChoiceValues() throws Exception {
@@ -91,6 +146,12 @@ public abstract class LinkManager {
 					"returntype is not an Object[] but %s",
 					value == null ? null : value.getClass());
 			return (Object[]) value;
+		}
+
+		@Override
+		public String getLocalizedName() {
+			return nls == null || !nls.containsKey(this.attribute.getName()) ? null
+					: nls.getString(this.attribute.getName());
 		}
 
 	}
