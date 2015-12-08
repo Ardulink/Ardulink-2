@@ -15,14 +15,13 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 
-import org.zu.ardulink.util.Preconditions;
 import org.zu.ardulink.util.Primitive;
 
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.guava.Lists;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.ChoiceFor;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.Named;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.I18n;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.Named;
 import com.github.pfichtner.beans.Attribute;
 import com.github.pfichtner.beans.BeanProperties;
 
