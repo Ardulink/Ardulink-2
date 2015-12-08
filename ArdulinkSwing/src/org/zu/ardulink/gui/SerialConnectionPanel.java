@@ -18,18 +18,20 @@ limitations under the License.
 
 package org.zu.ardulink.gui;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import org.zu.ardulink.Link;
@@ -49,8 +51,7 @@ public class SerialConnectionPanel extends JPanel implements Linkable {
 	private static final long serialVersionUID = 1290277902714226253L;
 
 	private JComboBox connectionPortComboBox;
-	private JTextField baudRateTextField;
-	private JButton discoverButton;
+	private JFormattedTextField baudRateTextField;
 	private JLabel lblBaudRate;
 	
 	private Link link = Link.getDefaultInstance();
@@ -89,13 +90,15 @@ public class SerialConnectionPanel extends JPanel implements Linkable {
 		lblBaudRate.setBounds(6, 44, 91, 16);
 		add(lblBaudRate);
 		
-		baudRateTextField = new JTextField();
+		DecimalFormat df = new DecimalFormat();
+		df.setGroupingUsed(false);
+		baudRateTextField = new JFormattedTextField(df);
 		baudRateTextField.setText(String.valueOf(Link.DEFAULT_BAUDRATE));
 		baudRateTextField.setColumns(10);
 		baudRateTextField.setBounds(108, 38, 122, 28);
 		add(baudRateTextField);
 		
-		discoverButton = new JButton("");
+		JButton discoverButton = new JButton("");
 		discoverButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				List<String> portList = link.getPortList();
@@ -123,18 +126,13 @@ public class SerialConnectionPanel extends JPanel implements Linkable {
 	 * @return the connection port name selected or set
 	 */
 	public String getConnectionPort() {
-		String retvalue = "";
 		Object selectedItem = connectionPortComboBox.getSelectedItem();
-		if(selectedItem != null) {
-			retvalue = selectedItem.toString();
-		}
-		return retvalue;
+		return selectedItem == null ? "" : selectedItem.toString();
 	}
 
 	/**
 	 * @return the baud rate set
 	 */
-	//TODO if not numeric take default from Link class.
 	public String getBaudRate() {
 		return baudRateTextField.getText();
 	}
@@ -142,9 +140,11 @@ public class SerialConnectionPanel extends JPanel implements Linkable {
 	@Override
 	public void setEnabled(boolean enabled) {
 		super.setEnabled(enabled);
-		connectionPortComboBox.setEnabled(enabled);
-		baudRateTextField.setEnabled(enabled);
-		discoverButton.setEnabled(enabled);
+		for (Component component : this.getComponents()) {
+			if (!(component instanceof JLabel)) {
+				component.setEnabled(enabled);
+			}
+		}
 	}
 
 	public Link getLink() {
@@ -167,4 +167,5 @@ public class SerialConnectionPanel extends JPanel implements Linkable {
 		baudRateTextField.setVisible(visibility);
 		lblBaudRate.setVisible(visibility);
 	}
+
 }
