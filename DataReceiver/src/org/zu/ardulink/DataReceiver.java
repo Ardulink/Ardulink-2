@@ -155,6 +155,7 @@ public class DataReceiver {
 				Object[] choiceValues = attribute.getChoiceValues();
 				// we use the first one for each
 				if (choiceValues.length > 0) {
+					logger.info("Setting {} to {}", key, choiceValues[0]);
 					attribute.setValue(choiceValues[0]);
 				}
 			}

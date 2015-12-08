@@ -5,6 +5,9 @@ import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.pfichtner.ardulink.core.Connection.ListenerAdapter;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
@@ -20,6 +23,9 @@ import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStartListening;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
 
 public class ConnectionBasedLink extends AbstractListenerLink {
+
+	private static final Logger logger = LoggerFactory
+			.getLogger(ConnectionBasedLink.class);
 
 	private final Connection connection;
 	private final Protocol protocol;
@@ -41,6 +47,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 
 	@Override
 	public void startListening(Pin pin) throws IOException {
+		logger.info("Starting listening on pin {}", pin);
 		ToArduinoStartListening startListeningEvent = new ToArduinoStartListening(
 				pin);
 		this.connection.write(this.protocol.toArduino(startListeningEvent));
@@ -50,6 +57,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	public void stopListening(Pin pin) throws IOException {
 		ToArduinoStopListening stopListening = new ToArduinoStopListening(pin);
 		this.connection.write(this.protocol.toArduino(stopListening));
+		logger.info("Stopped listening on pin {}", pin);
 	}
 
 	@Override
