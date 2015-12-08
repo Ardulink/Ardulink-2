@@ -41,4 +41,27 @@ public class DummyLinkConfig implements LinkConfig {
 		return names.toArray(new String[names.size()]);
 	}
 
+	@Named("a")
+	public String getA() {
+		return a;
+	}
+
+	@Named("b")
+	public int getB() {
+		return b;
+	}
+
+	public String getC() {
+		return c;
+	}
+
+	@Named("proto")
+	public String needAgetterForProtoOfTypeString_thisIsUsedByCacheKey() {
+		return protocol == null ? null : protocol.getName();
+	}
+
+	public Protocol getProto() {
+		return protocol;
+	}
+
 }

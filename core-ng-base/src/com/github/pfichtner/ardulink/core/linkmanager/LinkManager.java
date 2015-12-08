@@ -79,7 +79,8 @@ public abstract class LinkManager {
 
 		public ConfigAttributeAdapter(T linkConfig,
 				BeanProperties beanProperties, String key) {
-			this.attribute = beanProperties.getAttribute(key);
+			this.attribute = checkNotNull(beanProperties.getAttribute(key),
+					"Could not determine attribute %s", key);
 			this.getChoicesFor = BeanProperties.builder(linkConfig)
 					.using(propertyAnnotated(ChoiceFor.class)).build()
 					.getAttribute(attribute.getName());
@@ -275,8 +276,10 @@ public abstract class LinkManager {
 			public Configurer getConfigurer(URI uri) {
 				String name = checkSchema(uri).getHost();
 				LinkFactory connectionFactory = getConnectionFactory(name);
-				checkArgument(connectionFactory != null,
-						"No factory registered for \"%s\"", name);
+				checkArgument(
+						connectionFactory != null,
+						"No factory registered for \"%s\", available names are %s",
+						name, listURIs());
 				return new DefaultConfigurer(connectionFactory).configure(uri
 						.getQuery() == null ? new String[0] : uri.getQuery()
 						.split("\\&"));
