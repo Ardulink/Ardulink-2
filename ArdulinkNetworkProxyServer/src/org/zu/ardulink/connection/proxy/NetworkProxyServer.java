@@ -21,12 +21,14 @@ package org.zu.ardulink.connection.proxy;
 import static org.zu.ardulink.connection.proxy.NetworkProxyConnection.DEFAULT_LISTENING_PORT;
 import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -36,22 +38,26 @@ import org.kohsuke.args4j.spi.SubCommand;
 import org.kohsuke.args4j.spi.SubCommandHandler;
 import org.kohsuke.args4j.spi.SubCommands;
 
+import com.github.pfichtner.ardulink.core.Link;
+import com.github.pfichtner.ardulink.core.convenience.Links;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
- *         [adsense]
+ * [adsense]
  */
 public class NetworkProxyServer {
+
+	private final static ConcurrentMap<Link, AtomicInteger> usageCounter = new ConcurrentHashMap<Link, AtomicInteger>();
 
 	private interface Command {
 		void execute(int portNumber);
 	}
 
 	public static class StartCommand implements Command {
-
-		private final List<LinkContainer> links = new CopyOnWriteArrayList<LinkContainer>();
 
 		@Override
 		public void execute(int portNumber) {
@@ -61,8 +67,23 @@ public class NetworkProxyServer {
 					System.out
 							.println("Ardulink Network Proxy Server running...");
 					while (listening) {
-						new Thread(new NetworkProxyServerConnection(links,
-								serverSocket.accept())).start();
+						new Thread(new NetworkProxyServerConnection(
+								serverSocket.accept()) {
+
+							@Override
+							protected Link newLink(Configurer configurer)
+									throws Exception {
+								return increaseUsageCounter(Links
+										.getLink(configurer));
+							}
+
+							@Override
+							protected void disconnect(Link link)
+									throws IOException {
+								decreaseUsageCounter(link).close();
+							}
+
+						}).start();
 						TimeUnit.SECONDS.sleep(2);
 					}
 				} finally {
@@ -125,6 +146,29 @@ public class NetworkProxyServer {
 
 	public static void stop() {
 		listening = false;
+	}
+
+	private static Link increaseUsageCounter(Link link) {
+		AtomicInteger counter = usageCounter.get(link);
+		if (counter == null) {
+			AtomicInteger tmp = usageCounter.putIfAbsent(link,
+					new AtomicInteger());
+			if (tmp != null) {
+				counter = tmp;
+			}
+		}
+		counter.incrementAndGet();
+		return link;
+	}
+
+	private static Link decreaseUsageCounter(Link link) {
+		AtomicInteger counter = usageCounter.get(link);
+		if (counter != null) {
+			if (counter.decrementAndGet() == 0) {
+				usageCounter.remove(link);
+			}
+		}
+		return link;
 	}
 
 }

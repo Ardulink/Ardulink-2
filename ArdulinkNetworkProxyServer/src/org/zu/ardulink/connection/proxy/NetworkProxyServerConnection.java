@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.List;
+import java.net.URI;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +33,8 @@ import com.github.pfichtner.ardulink.core.Connection;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.StreamReader;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 
@@ -41,22 +43,20 @@ import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
  * 
  * @author Peter Fichtner
  * 
- *         [adsense]
+ * [adsense]
  */
-public class NetworkProxyServerConnection implements Runnable {
+public abstract class NetworkProxyServerConnection implements Runnable {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(NetworkProxyServerConnection.class);
 
 	private final Protocol proto = ArdulinkProtocolN.instance();
 
-	private final List<LinkContainer> links;
 	private final Socket socket;
 
 	private Link link;
 
-	public NetworkProxyServerConnection(List<LinkContainer> links, Socket socket) {
-		this.links = links;
+	public NetworkProxyServerConnection(Socket socket) {
 		this.socket = socket;
 	}
 
@@ -67,8 +67,19 @@ public class NetworkProxyServerConnection implements Runnable {
 			final OutputStream osRemote = socket.getOutputStream();
 			InputStream isRemote = socket.getInputStream();
 
-			Handshaker handshaker = new Handshaker(isRemote, osRemote, links,
-					proto);
+			final Configurer configurer = LinkManager.getInstance()
+					.getConfigurer(new URI("ardulink://serial"));
+
+			Handshaker handshaker = new Handshaker(isRemote, osRemote,
+					configurer, proto) {
+
+				@Override
+				protected Link newLink(Configurer configurer) throws Exception {
+					return NetworkProxyServerConnection.this
+							.newLink(configurer);
+				}
+
+			};
 
 			Link link = handshaker.doHandshake();
 			checkState(link instanceof ConnectionBasedLink,
@@ -96,39 +107,31 @@ public class NetworkProxyServerConnection implements Runnable {
 		} finally {
 			logger.info("{} connection closed.",
 					socket.getRemoteSocketAddress());
-			if (link != null) {
-				try {
-					disconnect(link);
-				} catch (IOException e) {
-					logger.error("Error disconnecting link {}", link, e);
-				}
-			}
+			close(link);
+			close(socket);
+		}
+	}
+
+	private void close(Socket socket) {
+		try {
+			socket.close();
+		} catch (IOException e) {
+			logger.error("Error closing socket {}", socket, e);
+		}
+	}
+
+	private void close(Link link) {
+		if (link != null) {
 			try {
-				socket.close();
-			} catch (IOException e) {
-				logger.error("Error closing socket {}", socket, e);
+				disconnect(link);
+			} catch (Exception e) {
+				logger.error("Error disconnecting link {}", link, e);
 			}
 		}
 	}
 
-	private void disconnect(Link link) throws IOException {
-		LinkContainer linkContainer = findExisting(link);
-		if (linkContainer != null) {
-			int decreaseUsageCounter = linkContainer.decreaseUsageCounter();
-			if (decreaseUsageCounter == 0) {
-				linkContainer.getLink().close();
-				links.remove(linkContainer);
-			}
-		}
-	}
+	protected abstract Link newLink(Configurer configurer) throws Exception;
 
-	private LinkContainer findExisting(Link link) {
-		for (LinkContainer linkContainer : links) {
-			if (linkContainer.getCacheKey().equals(link)) {
-				return linkContainer;
-			}
-		}
-		return null;
-	}
+	protected abstract void disconnect(Link link) throws Exception;
 
 }
