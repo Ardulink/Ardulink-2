@@ -47,7 +47,7 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
  * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
- * [adsense]
+ *         [adsense]
  */
 public class NetworkProxyServer {
 
@@ -151,8 +151,8 @@ public class NetworkProxyServer {
 	private static Link increaseUsageCounter(Link link) {
 		AtomicInteger counter = usageCounter.get(link);
 		if (counter == null) {
-			AtomicInteger tmp = usageCounter.putIfAbsent(link,
-					new AtomicInteger());
+			counter = new AtomicInteger();
+			AtomicInteger tmp = usageCounter.putIfAbsent(link, counter);
 			if (tmp != null) {
 				counter = tmp;
 			}
