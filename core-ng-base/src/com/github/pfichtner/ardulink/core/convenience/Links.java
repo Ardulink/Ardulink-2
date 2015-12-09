@@ -12,10 +12,17 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
 public class Links {
 
+	// TODO Handle #close call to shared Link instances
+
 	private static final ConcurrentMap<CacheKey, Link> cachedLinks = new ConcurrentHashMap<CacheKey, Link>();
 
 	private static Link defaultLink = createDefaultLink();
 
+	/**
+	 * Returns the default Link which is a connection to the first serial port.
+	 * 
+	 * @return default Link
+	 */
 	public static Link getDefault() {
 		return defaultLink;
 	}
@@ -30,7 +37,7 @@ public class Links {
 		}
 	}
 
-	public static Configurer getConfigurer() {
+	private static Configurer getConfigurer() {
 		URI serial = serialURI();
 		LinkManager linkManager = linkManager();
 		List<URI> availableURIs = linkManager.listURIs();
@@ -42,11 +49,11 @@ public class Links {
 		throw new IllegalStateException("No factory registered");
 	}
 
-	public static LinkManager linkManager() {
+	private static LinkManager linkManager() {
 		return LinkManager.getInstance();
 	}
 
-	public static URI serialURI() {
+	private static URI serialURI() {
 		try {
 			return new URI("ardulink://serial");
 		} catch (URISyntaxException e) {
@@ -54,6 +61,16 @@ public class Links {
 		}
 	}
 
+	/**
+	 * Returns a shared Link to the passed URI. If the Link alreay was created
+	 * the cached Link is returned.
+	 * 
+	 * @param uri
+	 *            the URI to create the Link for
+	 * @return shared Link for the passed URI or a newly created one if no Link
+	 *         for that URI exists
+	 * @throws Exception
+	 */
 	public static Link getLink(URI uri) throws Exception {
 		return getLink(linkManager().getConfigurer(uri));
 	}
@@ -65,7 +82,7 @@ public class Links {
 			link = configurer.newLink();
 			Link tmp = cachedLinks.putIfAbsent(cacheKey, link);
 			if (tmp != null) {
-				return tmp;
+				link = tmp;
 			}
 		}
 		return link;

@@ -33,4 +33,13 @@ public class LinksTest {
 		assertThat(link1, sameInstance(link2));
 	}
 
+	@Test
+	public void doesCacheLinksWhenUsingDefaultValues() throws Exception {
+		Link link1 = Links.getLink(new URI("ardulink://dummyLink"));
+		Link link2 = Links.getLink(new URI("ardulink://dummyLink?a=&b=42&c="));
+		assertThat(link1, notNullValue());
+		assertThat(link2, notNullValue());
+		assertThat(link1, sameInstance(link2));
+	}
+
 }

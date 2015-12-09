@@ -10,7 +10,7 @@ import com.github.pfichtner.ardulink.core.proto.api.Protocols;
 public class DummyLinkConfig implements LinkConfig {
 
 	public String a;
-	public int b;
+	public int b = 42;
 	@Named("c")
 	public String c;
 	public Protocol protocol;
