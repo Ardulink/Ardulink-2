@@ -11,13 +11,17 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
-public class Links {
+public final class Links {
 
 	// TODO Handle #close call to shared Link instances
 
 	private static final ConcurrentMap<CacheKey, Link> cachedLinks = new ConcurrentHashMap<CacheKey, Link>();
 
 	private static Link defaultLink = createDefaultLink();
+
+	private Links() {
+		super();
+	}
 
 	/**
 	 * Returns the default Link which is a connection to the first serial port.
