@@ -68,7 +68,7 @@ public class BeanProperties {
 
 		@Override
 		public Object readValue() throws Exception {
-			checkState(canRead(), "cannot read");
+			checkState(canRead(), "cannot read %s", name);
 			return reader.getValue();
 		}
 
