@@ -288,8 +288,25 @@ public abstract class LinkManager {
 		};
 	}
 
+	/**
+	 * Returns a newly created {@link Configurer} for the passed {@link URI}.
+	 * Configurers should <b>not</b> be shared amongst threads since there is no
+	 * guarantee that they are threadsafe. Beside that their values are
+	 * retrieved to calculate cache keys for sharing Link instances which should
+	 * not be done in parallel, too.
+	 * 
+	 * @param uri
+	 *            the URI to create the new Configurer for
+	 * @return newly created Configurer for the passed URI
+	 */
 	public abstract Configurer getConfigurer(URI uri);
 
+	/**
+	 * List all available (registered) URIs. Can be empty if no factory is
+	 * registered but never is <code>null</code>.
+	 * 
+	 * @return all available URIs.
+	 */
 	public abstract List<URI> listURIs();
 
 }
