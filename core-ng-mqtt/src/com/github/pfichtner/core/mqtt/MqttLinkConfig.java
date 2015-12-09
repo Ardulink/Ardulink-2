@@ -4,53 +4,48 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 
 public class MqttLinkConfig implements LinkConfig {
 
-	private static final String HOST = "host";
-
-	private static final String PORT = "port";
-
-	private static final String TOPIC = "topic";
-
-	private static final String CLIENTID = "clientid";
-
+	@Named("host")
 	private String host = "localhost";
+
+	@Named("port")
 	private int port = 1883;
+
+	@Named("topic")
 	private String topic = normalize("home/devices/ardulink/");
+
+	@Named("clientid")
 	private String clientId = "ardulink-mqtt-link";
-
-	@Named(HOST)
-	public void setHost(String host) {
-		this.host = host;
-	}
-
-	@Named(PORT)
-	public void setPort(int port) {
-		this.port = port;
-	}
-
-	@Named(TOPIC)
-	public void setTopic(String topic) {
-		this.topic = normalize(topic);
-	}
-
-	@Named(CLIENTID)
-	public void setClientId(String clientId) {
-		this.clientId = clientId;
-	}
 
 	public String getHost() {
 		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
 	}
 
 	public int getPort() {
 		return port;
 	}
 
+	public void setPort(int port) {
+		this.port = port;
+	}
+
 	public String getTopic() {
 		return topic;
 	}
 
+	public void setTopic(String topic) {
+		this.topic = topic;
+	}
+
 	public String getClientId() {
 		return clientId;
+	}
+
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
 	}
 
 	private static String normalize(String topic) {
