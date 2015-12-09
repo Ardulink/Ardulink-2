@@ -37,7 +37,7 @@ public class MqttLinkConfig implements LinkConfig {
 	}
 
 	public void setTopic(String topic) {
-		this.topic = topic;
+		this.topic = normalize(topic);
 	}
 
 	public String getClientId() {
