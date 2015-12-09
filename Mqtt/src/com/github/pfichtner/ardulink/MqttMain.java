@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.dna.mqtt.moquette.server.Server;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -54,7 +55,7 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
  * 
  * @author Peter Fichtner
  * 
- *         [adsense]
+ * [adsense]
  */
 public class MqttMain {
 
@@ -100,9 +101,14 @@ public class MqttMain {
 	@Option(name = "-control", usage = "Enable the control of listeners via mqtt")
 	private boolean control;
 
+	@Option(name = "-standalone", usage = "Start a mqtt server on this host")
+	private boolean standalone;
+
 	private MqttClient mqttClient;
 
 	private Link link;
+
+	private Server standaloneServer;
 
 	private class MqttClient extends AbstractMqttAdapter {
 
@@ -283,12 +289,19 @@ public class MqttMain {
 	public void connectToMqttBroker() throws Exception {
 		this.link = createLink();
 		SECONDS.sleep(this.sleepSecs);
-		// ensure brokerTopic is normalized
-		setBrokerTopic(this.brokerTopic);
+		ensureBrokerTopicIsnormalized();
+		if (standalone) {
+			this.standaloneServer = MqttBroker.builder().host(this.brokerHost)
+					.port(this.brokerPort).startBroker();
+		}
 		Config config = Config.withTopic(this.brokerTopic);
 		this.mqttClient = new MqttClient(link,
 				this.control ? config.withControlChannelEnabled() : config)
 				.listenToMqttAndArduino();
+	}
+
+	public void ensureBrokerTopicIsnormalized() {
+		setBrokerTopic(this.brokerTopic);
 	}
 
 	protected Link createLink() throws Exception, URISyntaxException {
@@ -317,6 +330,10 @@ public class MqttMain {
 	public void close() throws MqttException, IOException {
 		this.link.close();
 		this.mqttClient.close();
+		Server tmp = this.standaloneServer;
+		if (tmp != null) {
+			tmp.stopServer();
+		}
 	}
 
 	public void setBrokerTopic(String brokerTopic) {
@@ -338,6 +355,10 @@ public class MqttMain {
 
 	public void setSleepSecs(int sleepSecs) {
 		this.sleepSecs = sleepSecs;
+	}
+
+	public void setStandalone(boolean standalone) {
+		this.standalone = standalone;
 	}
 
 	private static void wait4ever() throws InterruptedException {
