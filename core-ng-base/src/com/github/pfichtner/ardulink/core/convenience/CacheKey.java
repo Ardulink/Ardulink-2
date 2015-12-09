@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
-public class CacheKey {
+class CacheKey {
 
 	private final Map<String, Object> values = new HashMap<String, Object>();
 
