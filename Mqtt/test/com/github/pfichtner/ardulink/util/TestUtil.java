@@ -20,12 +20,9 @@ import static com.github.pfichtner.ardulink.core.Pin.analogPin;
 import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import org.dna.mqtt.moquette.server.Server;
 
 import com.github.pfichtner.ardulink.MqttMain;
 import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
@@ -38,18 +35,12 @@ import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
  * 
  * @author Peter Fichtner
  * 
- *         [adsense]
+ * [adsense]
  */
 public final class TestUtil {
 
 	private TestUtil() {
 		super();
-	}
-
-	public static Server startBroker() throws IOException, InterruptedException {
-		Server broker = new Server();
-		broker.startServer();
-		return broker;
 	}
 
 	public static MqttMain startAsync(MqttMain mqttMain) throws Exception {

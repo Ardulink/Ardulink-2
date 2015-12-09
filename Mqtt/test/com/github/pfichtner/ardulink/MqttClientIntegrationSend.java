@@ -13,14 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-*/
+ */
 package com.github.pfichtner.ardulink;
 
 import static com.github.pfichtner.ardulink.util.TestUtil.analogPinChanged;
 import static com.github.pfichtner.ardulink.util.TestUtil.digitalPinChanged;
 import static com.github.pfichtner.ardulink.util.TestUtil.listWithSameOrder;
 import static com.github.pfichtner.ardulink.util.TestUtil.startAsync;
-import static com.github.pfichtner.ardulink.util.TestUtil.startBroker;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -30,9 +29,7 @@ import java.io.IOException;
 
 import org.dna.mqtt.moquette.server.Server;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -47,6 +44,7 @@ import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
  * [adsense]
@@ -77,26 +75,21 @@ public class MqttClientIntegrationSend {
 		}
 	};
 
-	private Server broker;
-	private AnotherMqttClient amc;
+	private final Server broker = MqttBroker.builder().startBroker();
 
-	@Before
-	public void setup() throws IOException, InterruptedException,
-			MqttSecurityException, MqttException {
-		this.broker = startBroker();
-		this.amc = new AnotherMqttClient(TOPIC).connect();
-	}
+	private final AnotherMqttClient amc = AnotherMqttClient.builder()
+			.topic(TOPIC).connect();
 
 	@After
-	public void tearDown() throws InterruptedException, MqttException, IOException {
+	public void tearDown() throws InterruptedException, MqttException,
+			IOException {
 		this.client.close();
 		this.amc.disconnect();
 		this.broker.stopServer();
 	}
 
 	@Test
-	public void generatesBrokerEventOnDigitalPinChange()
-			throws Exception {
+	public void generatesBrokerEventOnDigitalPinChange() throws Exception {
 
 		int pin = 1;
 		this.client.setThrottleMillis(0);
@@ -133,6 +126,5 @@ public class MqttClientIntegrationSend {
 						.mqttMessageWithBasicTopic(TOPIC).analogPin(pin)
 						.hasValue(value))));
 	}
-
 
 }

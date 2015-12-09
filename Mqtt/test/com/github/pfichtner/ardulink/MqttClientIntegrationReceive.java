@@ -18,7 +18,6 @@ package com.github.pfichtner.ardulink;
 
 import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
 import static com.github.pfichtner.ardulink.util.TestUtil.startAsync;
-import static com.github.pfichtner.ardulink.util.TestUtil.startBroker;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -28,9 +27,7 @@ import java.io.IOException;
 
 import org.dna.mqtt.moquette.server.Server;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -66,16 +63,10 @@ public class MqttClientIntegrationReceive {
 		}
 	};
 
-	private Server broker;
+	private final Server broker = MqttBroker.builder().startBroker();
 
-	private AnotherMqttClient amc;
-
-	@Before
-	public void setup() throws IOException, InterruptedException,
-			MqttSecurityException, MqttException {
-		broker = startBroker();
-		amc = new AnotherMqttClient(TOPIC).connect();
-	}
+	private final AnotherMqttClient amc = AnotherMqttClient.builder()
+			.topic(TOPIC).connect();
 
 	@After
 	public void tearDown() throws InterruptedException, MqttException,

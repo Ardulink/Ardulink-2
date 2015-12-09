@@ -16,6 +16,9 @@ limitations under the License.
  */
 package com.github.pfichtner.ardulink.util;
 
+import static com.github.pfichtner.ardulink.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
+import static java.lang.String.format;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,24 +28,60 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
-import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 
 /**
  * [ardulinktitle] [ardulinkversion]
+ * 
  * @author Peter Fichtner
  * 
  * [adsense]
  */
 public class AnotherMqttClient {
 
+	public static class Builder {
+
+		private String host = "localhost";
+		private int port = 1883;
+		private String topic;
+		public String clientId = "anotherMqttClient";
+
+		public Builder host(String host) {
+			this.host = host;
+			return this;
+		}
+
+		public Builder port(int port) {
+			this.port = port;
+			return this;
+		}
+
+		public Builder topic(String topic) {
+			this.topic = topic;
+			return this;
+		}
+
+		public Builder clientId(String clientId) {
+			this.clientId = clientId;
+			return this;
+		}
+
+		public AnotherMqttClient connect() {
+			return new AnotherMqttClient(this).connect();
+		}
+
+	}
+
 	private final String topic;
 	private final MqttClient mqttClient;
 	private final List<Message> messages = new ArrayList<Message>();
 
-	public AnotherMqttClient(String topic) throws MqttSecurityException,
-			MqttException {
-		this.topic = topic;
-		this.mqttClient = mqttClient("localhost", 1883);
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	public AnotherMqttClient(Builder builder) {
+		this.topic = builder.topic;
+		this.mqttClient = mqttClient(builder);
 		this.mqttClient.setCallback(new MqttCallback() {
 
 			@Override
@@ -63,16 +102,23 @@ public class AnotherMqttClient {
 		});
 	}
 
-	protected static MqttClient mqttClient(String host, int port)
-			throws MqttException {
-		return new MqttClient("tcp://" + host + ":" + port, "anotherMqttClient");
+	private static MqttClient mqttClient(Builder builder) {
+		try {
+			return new MqttClient(format("tcp://%s:%s", builder.host,
+					builder.port), builder.clientId);
+		} catch (MqttException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	public AnotherMqttClient connect() throws MqttSecurityException,
-			MqttException {
-		mqttClient.connect();
-		mqttClient.subscribe("#");
-		return this;
+	public AnotherMqttClient connect() {
+		try {
+			mqttClient.connect();
+			mqttClient.subscribe("#");
+			return this;
+		} catch (MqttException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public void switchDigitalPin(int pin, boolean value)
@@ -90,7 +136,7 @@ public class AnotherMqttClient {
 	}
 
 	private MqttMessageBuilder newMsgBuilder() {
-		return MqttMessageBuilder.mqttMessageWithBasicTopic(topic);
+		return mqttMessageWithBasicTopic(topic);
 	}
 
 	private void sendMessage(Message msg) throws MqttException,

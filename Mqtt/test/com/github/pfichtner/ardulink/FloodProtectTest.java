@@ -38,7 +38,6 @@ import com.github.pfichtner.ardulink.compactors.TimeSlicer;
 import com.github.pfichtner.ardulink.core.Connection;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.StreamConnection;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 import com.github.pfichtner.ardulink.util.Message;
 import com.github.pfichtner.ardulink.util.MqttMessageBuilder;

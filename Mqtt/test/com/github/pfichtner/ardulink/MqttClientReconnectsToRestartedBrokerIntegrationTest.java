@@ -17,7 +17,6 @@ limitations under the License.
 package com.github.pfichtner.ardulink;
 
 import static com.github.pfichtner.ardulink.util.TestUtil.startAsync;
-import static com.github.pfichtner.ardulink.util.TestUtil.startBroker;
 import static com.github.pfichtner.ardulink.util.TestUtil.waitUntilIsConnected;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -70,7 +69,7 @@ public class MqttClientReconnectsToRestartedBrokerIntegrationTest {
 	@Before
 	public void setup() throws IOException, InterruptedException,
 			MqttSecurityException, MqttException {
-		broker = startBroker();
+		broker = MqttBroker.builder().startBroker();
 	}
 
 	@After
@@ -95,7 +94,7 @@ public class MqttClientReconnectsToRestartedBrokerIntegrationTest {
 		MILLISECONDS.sleep(250);
 		assertThat(client.isConnected(), is(false));
 		
-		broker = startBroker();
+		broker = MqttBroker.builder().startBroker();
 		waitUntilIsConnected(client, 3, SECONDS);
 		assertThat(client.isConnected(), is(true));
 
