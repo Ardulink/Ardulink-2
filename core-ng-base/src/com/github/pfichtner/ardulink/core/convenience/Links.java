@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
 public class Links {
@@ -29,7 +30,7 @@ public class Links {
 
 	private static Link createDefaultLink() {
 		try {
-			return getConfigurer().newLink();
+			return setChoiceValues(getConfigurer()).newLink();
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		} catch (Exception e) {
@@ -86,6 +87,20 @@ public class Links {
 			}
 		}
 		return link;
+	}
+
+	public static Configurer setChoiceValues(Configurer configurer) {
+		for (String key : configurer.getAttributes()) {
+			ConfigAttribute attribute = configurer.getAttribute(key);
+			if (attribute.hasChoiceValues()) {
+				Object[] choiceValues = attribute.getChoiceValues();
+				// we use the first one for each
+				if (choiceValues.length > 0) {
+					attribute.setValue(choiceValues[0]);
+				}
+			}
+		}
+		return configurer;
 	}
 
 }

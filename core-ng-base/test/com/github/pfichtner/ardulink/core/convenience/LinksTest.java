@@ -13,6 +13,7 @@ import com.github.pfichtner.ardulink.core.Connection;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.linkmanager.DummyConnection;
+import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkConfig;
 
 public class LinksTest {
 
@@ -22,6 +23,14 @@ public class LinksTest {
 		Connection connection = ((ConnectionBasedLink) link).getConnection();
 		assertThat(connection.getClass().getName(),
 				is(DummyConnection.class.getName()));
+	}
+
+	@Test
+	public void isConfiguredForAllChoiceValues() {
+		Link link = Links.getDefault();
+		DummyLinkConfig config = ((DummyConnection) ((ConnectionBasedLink) link)
+				.getConnection()).getConfig();
+		assertThat(config.getA(), is("aVal1"));
 	}
 
 	@Test
