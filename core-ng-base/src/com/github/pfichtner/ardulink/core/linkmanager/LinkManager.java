@@ -30,6 +30,13 @@ public abstract class LinkManager {
 	public interface ConfigAttribute {
 
 		/**
+		 * Returns the type of this attribute.
+		 * 
+		 * @return type
+		 */
+		Class<?> getType();
+
+		/**
 		 * Returns the current value of this attribute.
 		 * 
 		 * @return current value
@@ -79,7 +86,8 @@ public abstract class LinkManager {
 
 		public ConfigAttributeAdapter(T linkConfig,
 				BeanProperties beanProperties, String key) {
-			this.attribute = checkNotNull(beanProperties.getAttribute(key),
+			this.attribute = beanProperties.getAttribute(key);
+			checkArgument(attribute != null,
 					"Could not determine attribute %s", key);
 			this.getChoicesFor = BeanProperties.builder(linkConfig)
 					.using(propertyAnnotated(ChoiceFor.class)).build()
@@ -87,6 +95,11 @@ public abstract class LinkManager {
 			I18n nls = linkConfig.getClass().getAnnotation(I18n.class);
 			this.nls = nls == null ? null : ResourceBundle.getBundle(nls
 					.value());
+		}
+
+		@Override
+		public Class<?> getType() {
+			return attribute.getType();
 		}
 
 		@Override
@@ -158,13 +171,11 @@ public abstract class LinkManager {
 
 	public interface Configurer {
 
-		Configurer configure(String[] params);
-
+		Collection<String> getAttributes();
+		
 		ConfigAttribute getAttribute(String key);
 
 		Link newLink() throws Exception;
-
-		Collection<String> getAttributes();
 
 	}
 
@@ -173,61 +184,32 @@ public abstract class LinkManager {
 
 		private final LinkFactory<T> linkFactory;
 		private final T linkConfig;
+		private BeanProperties beanProperties;
 
 		public DefaultConfigurer(LinkFactory<T> connectionFactory) {
 			this.linkFactory = connectionFactory;
 			this.linkConfig = connectionFactory.newLinkConfig();
+			this.beanProperties = BeanProperties.builder(linkConfig)
+					.using(propertyAnnotated(Named.class)).build();
 		}
 
 		@Override
 		public Collection<String> getAttributes() {
 			try {
-				return beanProperties().attributeNames();
+				return beanProperties.attributeNames();
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
 		}
 
 		public ConfigAttribute getAttribute(String key) {
-			return new ConfigAttributeAdapter<T>(linkConfig, beanProperties(),
+			return new ConfigAttributeAdapter<T>(linkConfig, beanProperties,
 					key);
-		}
-
-		private BeanProperties beanProperties() {
-			return BeanProperties.builder(linkConfig)
-					.using(propertyAnnotated(Named.class)).build();
-		}
-
-		@Override
-		public Configurer configure(String[] params) {
-			for (String param : params) {
-				String[] split = param.split("\\=");
-				if (split.length == 2) {
-					setValue(split[0], split[1]);
-				}
-			}
-			return this;
-		}
-
-		private void setValue(String key, String value) {
-			Attribute attribute = beanProperties().getAttribute(key);
-			checkArgument(attribute != null, "Illegal attribute %s", key);
-			try {
-				attribute.writeValue(convert(value, attribute.getType()));
-			} catch (Exception e) {
-				throw new RuntimeException(
-						"Cannot set " + key + " to " + value, e);
-			}
 		}
 
 		@Override
 		public Link newLink() throws Exception {
 			return this.linkFactory.newLink(this.linkConfig);
-		}
-
-		private Object convert(String value, Class<?> targetType) {
-			return targetType.isInstance(value) ? value : Primitive.parseAs(
-					targetType, value);
 		}
 
 	}
@@ -280,9 +262,29 @@ public abstract class LinkManager {
 						connectionFactory != null,
 						"No factory registered for \"%s\", available names are %s",
 						name, listURIs());
-				return new DefaultConfigurer(connectionFactory).configure(uri
-						.getQuery() == null ? new String[0] : uri.getQuery()
-						.split("\\&"));
+				DefaultConfigurer defaultConfigurer = new DefaultConfigurer(
+						connectionFactory);
+				return configure(defaultConfigurer,
+						uri.getQuery() == null ? new String[0] : uri.getQuery()
+								.split("\\&"));
+			}
+
+			private Configurer configure(Configurer configurer, String[] params) {
+				for (String param : params) {
+					String[] split = param.split("\\=");
+					if (split.length == 2) {
+						ConfigAttribute attribute = configurer
+								.getAttribute(split[0]);
+						attribute.setValue(convert(split[1],
+								attribute.getType()));
+					}
+				}
+				return configurer;
+			}
+
+			private Object convert(String value, Class<?> targetType) {
+				return targetType.isInstance(value) ? value : Primitive
+						.parseAs(targetType, value);
 			}
 
 		};

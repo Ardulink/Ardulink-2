@@ -56,7 +56,7 @@ public class DummyLinkFactoryTest {
 	@Test
 	public void canConfigureDummyConnection() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
-		String aValue = "aValue";
+		String aValue = "aVal1";
 		int bValue = 1;
 		String cValue = "cValue";
 		Link link = (Link) connectionManager.getConfigurer(
@@ -80,7 +80,7 @@ public class DummyLinkFactoryTest {
 		String nonExistingKey = "nonExistingKey";
 		LinkManager connectionManager = LinkManager.getInstance();
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("Illegal attribute " + nonExistingKey);
+		exception.expectMessage("Could not determine attribute " + nonExistingKey);
 		connectionManager.getConfigurer(new URI("ardulink://dummyLink?"
 				+ nonExistingKey + "=someValue"));
 	}
