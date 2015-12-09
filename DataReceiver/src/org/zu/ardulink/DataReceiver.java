@@ -19,6 +19,7 @@ package org.zu.ardulink;
 
 import static com.github.pfichtner.ardulink.core.Pin.analogPin;
 import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
+import static com.github.pfichtner.ardulink.core.convenience.Links.setChoiceValues;
 import static java.lang.String.format;
 
 import java.net.URI;
@@ -38,8 +39,6 @@ import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.EventListener;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -145,23 +144,9 @@ public class DataReceiver {
 	}
 
 	private Link createLink() throws Exception, URISyntaxException {
-		Configurer configurer = LinkManager.getInstance().getConfigurer(
-				new URI(connString));
-
-		// are there choice values?
-		for (String key : configurer.getAttributes()) {
-			ConfigAttribute attribute = configurer.getAttribute(key);
-			if (attribute.hasChoiceValues()) {
-				Object[] choiceValues = attribute.getChoiceValues();
-				// we use the first one for each
-				if (choiceValues.length > 0) {
-					logger.info("Setting {} to {}", key, choiceValues[0]);
-					attribute.setValue(choiceValues[0]);
-				}
-			}
-		}
-
-		return configurer.newLink();
+		return setChoiceValues(
+				LinkManager.getInstance().getConfigurer(new URI(connString)))
+				.newLink();
 	}
 
 }
