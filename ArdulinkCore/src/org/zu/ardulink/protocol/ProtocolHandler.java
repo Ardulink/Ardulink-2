@@ -20,7 +20,6 @@ package org.zu.ardulink.protocol;
 
 import static java.util.Collections.synchronizedMap;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;

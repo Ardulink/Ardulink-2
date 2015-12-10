@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 
 import javax.bluetooth.BluetoothStateException;
 import javax.bluetooth.DiscoveryAgent;
@@ -51,7 +50,6 @@ import org.zu.ardulink.connection.serial.AbstractSerialConnection;
  */
 public class BluetoothConnection extends AbstractSerialConnection implements Connection {
 
-	// TODO should be replaced by Semaphore
 	private final Object lock = new Object();
 	private final ArdulinkDiscoveryListener listener = new ArdulinkDiscoveryListener(this, lock);
 
