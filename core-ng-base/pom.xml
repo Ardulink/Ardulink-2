@@ -27,6 +27,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>
+			<artifactId>core-ng-util</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>

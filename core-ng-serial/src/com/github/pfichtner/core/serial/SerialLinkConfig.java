@@ -1,7 +1,7 @@
 package com.github.pfichtner.core.serial;
 
-import static com.github.pfichtner.ardulink.core.guava.Iterables.forEnumeration;
 import static gnu.io.CommPortIdentifier.PORT_SERIAL;
+import static org.zu.ardulink.util.Iterables.forEnumeration;
 import gnu.io.CommPortIdentifier;
 
 import java.util.ArrayList;

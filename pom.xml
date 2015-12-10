@@ -48,6 +48,7 @@
 		<module>core-ng-beans</module>
 		<module>core-ng-proxy</module>
 		<module>core-ng-mqtt</module>
+		<module>core-ng-util</module>
 	</modules>
 
 	<build>

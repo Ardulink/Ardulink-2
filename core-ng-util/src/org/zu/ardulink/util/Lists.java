@@ -1,4 +1,4 @@
-package com.github.pfichtner.ardulink.core.guava;
+package org.zu.ardulink.util;
 
 import java.util.ArrayList;
 import java.util.Iterator;
