@@ -7,13 +7,16 @@ import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.CHAR_PRESSED;
+import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.CUSTOM_MESSAGE;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.NOTONE;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
+import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.TONE;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.System.arraycopy;
@@ -25,10 +28,13 @@ import java.util.regex.Pattern;
 
 import com.github.pfichtner.ardulink.core.Pin;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoCharEvent;
+import com.github.pfichtner.ardulink.core.proto.api.ToArduinoCustomMessage;
+import com.github.pfichtner.ardulink.core.proto.api.ToArduinoKeyPressEvent;
+import com.github.pfichtner.ardulink.core.proto.api.ToArduinoNoTone;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoPinEvent;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStartListening;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
+import com.github.pfichtner.ardulink.core.proto.api.ToArduinoTone;
 import com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 
 public class AbstractArdulinkProtocol implements Protocol {
@@ -64,8 +70,7 @@ public class AbstractArdulinkProtocol implements Protocol {
 			return toBytes(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(
 					pin.pinNum()).withoutValue());
 		}
-		throw new IllegalStateException("Illegal Pin type "
-				+ startListeningEvent.pin);
+		throw illegalPinType(startListeningEvent.pin);
 	}
 
 	@Override
@@ -79,8 +84,7 @@ public class AbstractArdulinkProtocol implements Protocol {
 			return toBytes(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(
 					pin.pinNum()).withoutValue());
 		}
-		throw new IllegalStateException("Illegal Pin type "
-				+ stopListeningEvent.pin);
+		throw illegalPinType(stopListeningEvent.pin);
 	}
 
 	@Override
@@ -93,16 +97,36 @@ public class AbstractArdulinkProtocol implements Protocol {
 			return toBytes(alpProtocolMessage(POWER_PIN_SWITCH).forPin(
 					pinEvent.pin.pinNum()).withState((Boolean) pinEvent.value));
 		}
-		throw new IllegalStateException("Illegal Pin type " + pinEvent.pin);
+		throw illegalPinType(pinEvent.pin);
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoCharEvent charEvent) {
+	public byte[] toArduino(ToArduinoKeyPressEvent charEvent) {
 		return toBytes(alpProtocolMessage(CHAR_PRESSED).withValue(
 				"chr" + charEvent.keychar + "cod" + charEvent.keycode + "loc"
 						+ charEvent.keylocation + "mod"
 						+ charEvent.keymodifiers + "mex"
 						+ charEvent.keymodifiersex));
+	}
+
+	@Override
+	public byte[] toArduino(ToArduinoTone toArduinoTone) {
+		Long duration = toArduinoTone.tone.getDurationInMillis();
+		return toBytes(alpProtocolMessage(TONE).withValue(
+				toArduinoTone.tone.getPin().pinNum() + "/"
+						+ toArduinoTone.tone.getHertz() + "/"
+						+ (duration == null ? -1 : duration.longValue())));
+	}
+
+	@Override
+	public byte[] toArduino(ToArduinoNoTone noTone) {
+		return toBytes(alpProtocolMessage(NOTONE).withValue(""));
+	}
+
+	@Override
+	public byte[] toArduino(ToArduinoCustomMessage customMessage) {
+		return toBytes(alpProtocolMessage(CUSTOM_MESSAGE).withValue(
+				customMessage.message));
 	}
 
 	@Override
@@ -124,10 +148,22 @@ public class AbstractArdulinkProtocol implements Protocol {
 		throw new IllegalStateException(key + " " + new String(bytes));
 	}
 
+	private IllegalStateException illegalPinType(Pin pin) {
+		return new IllegalStateException("Illegal type of pin " + pin);
+	}
+
 	private static Boolean toBoolean(Integer value) {
 		return value.intValue() == 1 ? TRUE : FALSE;
 	}
 
+	/**
+	 * Appends the separator to the passed message. This is not done using
+	 * string concatenations but in a byte[] for performance reasons.
+	 * 
+	 * @param message
+	 *            the message to send
+	 * @return byte[] holding the passed message and the protocol's divider
+	 */
 	private byte[] toBytes(String message) {
 		byte[] bytes = new byte[message.length() + separator.length];
 		byte[] msgBytes = message.getBytes();

@@ -197,6 +197,30 @@ public class ConnectionBasedLinkTest {
 	}
 
 	@Test
+	public void canSendToneWithDuration() throws IOException {
+		this.link.sendTone(Tone.forPin(analogPin(2)).withHertz(3000).withDuration(5, SECONDS));
+		assertThat(toArduinoWasSent(), is("alp://tone/2/3000/5000\n"));
+	}
+
+	@Test
+	public void canSendEndlessTone() throws IOException {
+		this.link.sendTone(Tone.forPin(analogPin(2)).withHertz(3000).endless());
+		assertThat(toArduinoWasSent(), is("alp://tone/2/3000/-1\n"));
+	}
+	@Test
+	public void canSendNoTone() throws IOException {
+		this.link.sendNoTone();
+		assertThat(toArduinoWasSent(), is("alp://notn/\n"));
+	}
+
+	@Test
+	public void canSendCustomMessage() throws IOException {
+		String message = "myMessage";
+		this.link.sendCustomMessage(message);
+		assertThat(toArduinoWasSent(), is("alp://cust/" + message + "\n"));
+	}
+
+	@Test
 	public void canReadRawMessagesRead() throws IOException {
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(
 				anyPositive(int.class)).withState(true);

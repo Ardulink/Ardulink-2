@@ -25,6 +25,12 @@ public interface Link extends Closeable {
 	void sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException;
 
+	void sendTone(Tone tone) throws IOException;
+	
+	void sendNoTone() throws IOException;
+	
+	void sendCustomMessage(String message) throws IOException;
+
 	Link addConnectionListener(ConnectionListener connectionListener);
 
 	Link removeConnectionListener(ConnectionListener connectionListener);

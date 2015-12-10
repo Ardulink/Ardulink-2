@@ -27,6 +27,7 @@ import org.zu.ardulink.util.Integers;
 
 import com.github.pfichtner.ardulink.core.AbstractListenerLink;
 import com.github.pfichtner.ardulink.core.Pin;
+import com.github.pfichtner.ardulink.core.Tone;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
 import com.github.pfichtner.ardulink.core.Pin.Type;
@@ -193,6 +194,21 @@ public class MqttLink extends AbstractListenerLink {
 	@Override
 	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void sendTone(Tone tone) throws IOException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void sendNoTone() throws IOException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void sendCustomMessage(String message) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 

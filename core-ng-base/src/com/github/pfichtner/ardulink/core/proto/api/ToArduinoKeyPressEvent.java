@@ -1,6 +1,6 @@
 package com.github.pfichtner.ardulink.core.proto.api;
 
-public class ToArduinoCharEvent {
+public class ToArduinoKeyPressEvent {
 
 	public final char keychar;
 	public final int keycode;
@@ -8,7 +8,7 @@ public class ToArduinoCharEvent {
 	public final int keymodifiers;
 	public final int keymodifiersex;
 
-	public ToArduinoCharEvent(char keychar, int keycode, int keylocation,
+	public ToArduinoKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) {
 		this.keychar = keychar;
 		this.keycode = keycode;

@@ -17,10 +17,13 @@ import com.github.pfichtner.ardulink.core.events.DefaultDigitalPinValueChangedEv
 import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol.FromArduino;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoCharEvent;
+import com.github.pfichtner.ardulink.core.proto.api.ToArduinoCustomMessage;
+import com.github.pfichtner.ardulink.core.proto.api.ToArduinoKeyPressEvent;
+import com.github.pfichtner.ardulink.core.proto.api.ToArduinoNoTone;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoPinEvent;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStartListening;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
+import com.github.pfichtner.ardulink.core.proto.api.ToArduinoTone;
 
 public class ConnectionBasedLink extends AbstractListenerLink {
 
@@ -75,8 +78,25 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	@Override
 	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
-		this.connection.write(this.protocol.toArduino(new ToArduinoCharEvent(
-				keychar, keycode, keylocation, keymodifiers, keymodifiersex)));
+		this.connection.write(this.protocol
+				.toArduino(new ToArduinoKeyPressEvent(keychar, keycode,
+						keylocation, keymodifiers, keymodifiersex)));
+	}
+
+	@Override
+	public void sendTone(Tone tone) throws IOException {
+		this.connection.write(this.protocol.toArduino(new ToArduinoTone(tone)));
+	}
+	
+	@Override
+	public void sendNoTone() throws IOException {
+		this.connection.write(this.protocol.toArduino(new ToArduinoNoTone()));
+	}
+
+	@Override
+	public void sendCustomMessage(String message) throws IOException {
+		this.connection.write(this.protocol
+				.toArduino(new ToArduinoCustomMessage(message)));
 	}
 
 	private void send(AnalogPin pin, Integer value) throws IOException {

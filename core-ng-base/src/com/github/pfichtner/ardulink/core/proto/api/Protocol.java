@@ -20,8 +20,14 @@ public interface Protocol {
 
 	byte[] toArduino(ToArduinoPinEvent pinEvent);
 
-	byte[] toArduino(ToArduinoCharEvent charEvent);
+	byte[] toArduino(ToArduinoKeyPressEvent charEvent);
 
+	byte[] toArduino(ToArduinoTone tone);
+	
+	byte[] toArduino(ToArduinoNoTone noTone);
+	
+	byte[] toArduino(ToArduinoCustomMessage customMessage);
+	
 	FromArduino fromArduino(byte[] bytes);
 
 }
