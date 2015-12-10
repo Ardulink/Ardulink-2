@@ -1,10 +1,13 @@
 package com.github.pfichtner.ardulink.core.convenience;
 
+import static org.zu.ardulink.util.Preconditions.checkNotNull;
+
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
@@ -13,11 +16,7 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
 public final class Links {
 
-	// TODO Handle #close call to shared Link instances
-
-	private static final ConcurrentMap<CacheKey, Link> cachedLinks = new ConcurrentHashMap<CacheKey, Link>();
-
-	private static Link defaultLink = createDefaultLink();
+	private static final Map<CacheKey, CacheValue> cache = new HashMap<CacheKey, CacheValue>();
 
 	private Links() {
 		super();
@@ -29,12 +28,8 @@ public final class Links {
 	 * @return default Link
 	 */
 	public static Link getDefault() {
-		return defaultLink;
-	}
-
-	private static Link createDefaultLink() {
 		try {
-			return setChoiceValues(getConfigurer()).newLink();
+			return getLink(setChoiceValues(getConfigurer()));
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		} catch (Exception e) {
@@ -81,16 +76,34 @@ public final class Links {
 	}
 
 	public static Link getLink(Configurer configurer) throws Exception {
-		CacheKey cacheKey = new CacheKey(configurer);
-		Link link = cachedLinks.get(cacheKey);
-		if (link == null) {
-			link = configurer.newLink();
-			Link tmp = cachedLinks.putIfAbsent(cacheKey, link);
-			if (tmp != null) {
-				link = tmp;
+		final CacheKey cacheKey = new CacheKey(configurer);
+		synchronized (cache) {
+			CacheValue cacheValue = cache.get(cacheKey);
+			if (cacheValue == null) {
+				cache.put(
+						cacheKey,
+						(cacheValue = new CacheValue(newDelegate(cacheKey,
+								configurer.newLink()))));
 			}
+			cacheValue.increaseUsageCounter();
+			return cacheValue.getLink();
 		}
-		return link;
+	}
+
+	private static LinkDelegate newDelegate(final CacheKey cacheKey, Link link) {
+		return new LinkDelegate(link) {
+			@Override
+			public void close() throws IOException {
+				synchronized (cache) {
+					if (checkNotNull(cache.get(cacheKey),
+							"Link retrieved from cache but not found inside it")
+							.decreaseUsageCounter() == 0) {
+						cache.remove(cacheKey);
+					}
+				}
+				super.close();
+			}
+		};
 	}
 
 	public static Configurer setChoiceValues(Configurer configurer) {
