@@ -33,6 +33,7 @@ import com.github.pfichtner.ardulink.core.Connection;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.StreamReader;
+import com.github.pfichtner.ardulink.core.convenience.Links;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
@@ -43,9 +44,9 @@ import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
  * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
-public abstract class NetworkProxyServerConnection implements Runnable {
+public class NetworkProxyServerConnection implements Runnable {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(NetworkProxyServerConnection.class);
@@ -75,8 +76,7 @@ public abstract class NetworkProxyServerConnection implements Runnable {
 
 				@Override
 				protected Link newLink(Configurer configurer) throws Exception {
-					return NetworkProxyServerConnection.this
-							.newLink(configurer);
+					return Links.getLink(configurer);
 				}
 
 			};
@@ -100,7 +100,6 @@ public abstract class NetworkProxyServerConnection implements Runnable {
 				protected void received(byte[] bytes) throws Exception {
 					connection.write(bytes);
 				}
-
 			}.runReaderThread(new String(proto.getSeparator()));
 		} catch (Exception e) {
 			logger.error("Error while doing proxy", e);
@@ -123,15 +122,11 @@ public abstract class NetworkProxyServerConnection implements Runnable {
 	private void close(Link link) {
 		if (link != null) {
 			try {
-				disconnect(link);
+				link.close();
 			} catch (Exception e) {
 				logger.error("Error disconnecting link {}", link, e);
 			}
 		}
 	}
-
-	protected abstract Link newLink(Configurer configurer) throws Exception;
-
-	protected abstract void disconnect(Link link) throws Exception;
 
 }
