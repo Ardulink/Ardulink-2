@@ -24,8 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import org.zu.ardulink.Link;
-import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -65,12 +64,4 @@ public class KeyPressController extends JPanel implements Linkable {
 		keyPressListener.setLink(link);
 	}
 
-	public ReplyMessageCallback getReplyMessageCallback() {
-		throw new RuntimeException("Not developed yet");
-	}
-
-	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
-		throw new RuntimeException("Not developed yet");
-	}	
-	
 }

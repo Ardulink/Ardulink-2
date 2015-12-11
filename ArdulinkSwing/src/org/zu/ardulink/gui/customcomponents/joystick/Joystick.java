@@ -35,14 +35,10 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.Linkable;
 import org.zu.ardulink.gui.event.PositionEvent;
 import org.zu.ardulink.gui.event.PositionListener;
-import org.zu.ardulink.protocol.ReplyMessageCallback;
-import org.zu.ardulink.protocol.custommessages.CustomMessageMaker;
-import org.zu.ardulink.protocol.custommessages.CustomMessageSender;
-import org.zu.ardulink.protocol.custommessages.SimpleCustomMessageMaker;
+import org.zu.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -50,10 +46,9 @@ import org.zu.ardulink.protocol.custommessages.SimpleCustomMessageMaker;
  * 
  * [adsense]
  */
-public class Joystick extends JPanel implements Linkable, CustomMessageSender {
+public class Joystick extends JPanel implements Linkable {
 
 	private Link link = Link.getDefaultInstance();
-	private ReplyMessageCallback replyMessageCallback;
 	private final List<PositionListener> positionListeners = new LinkedList<PositionListener>();
 	private String id = "none";
 	
@@ -74,8 +69,6 @@ public class Joystick extends JPanel implements Linkable, CustomMessageSender {
     private int mouseX, mouseY;
     private Stroke lineStroke = new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
     private final Point position;
-    
-    private CustomMessageMaker customMessageMaker = new SimpleCustomMessageMaker();
     
     public Joystick() {
     	this(255, 128);
@@ -189,9 +182,9 @@ public class Joystick extends JPanel implements Linkable, CustomMessageSender {
 	}
 
     private void sendMessage() {
-		if(link != null) {
-			String message = customMessageMaker.getCustomMessage(getId(), String.valueOf(getValueX()), String.valueOf(getValueY()));
-			link.sendCustomMessage(message, replyMessageCallback);
+		if (link != null) {
+			link.sendCustomMessage(getId(), String.valueOf(getValueX()),
+					String.valueOf(getValueY()));
 		}
 	}
 
@@ -229,16 +222,6 @@ public class Joystick extends JPanel implements Linkable, CustomMessageSender {
 
 	public Point getPosition() {
 		return position;
-	}
-
-	@Override
-	public ReplyMessageCallback getReplyMessageCallback() {
-		return replyMessageCallback;
-	}
-
-	@Override
-	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
-		this.replyMessageCallback = replyMessageCallback;
 	}
 
 	@Override
@@ -285,11 +268,4 @@ public class Joystick extends JPanel implements Linkable, CustomMessageSender {
         this.joySize = joyWidth / 2;
 	}
 
-	public CustomMessageMaker getCustomMessageMaker() {
-		return customMessageMaker;
-	}
-
-	public void setCustomMessageMaker(CustomMessageMaker customMessageMaker) {
-		this.customMessageMaker = customMessageMaker;
-	}
 }

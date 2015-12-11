@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @author Luciano Zu
-*/
+ */
 
 package org.zu.ardulink.gui;
 
@@ -22,7 +22,8 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.LinkedList;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -32,36 +33,40 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
-import org.zu.ardulink.Link;
-import org.zu.ardulink.event.ConnectionEvent;
-import org.zu.ardulink.event.ConnectionListener;
-import org.zu.ardulink.event.DisconnectionEvent;
 import org.zu.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
-import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.gui.legacy.BluetoothConnectionPanel;
+import org.zu.ardulink.gui.legacy.ConnectionStatus;
+import org.zu.ardulink.legacy.Link;
+import org.zu.ardulink.util.Lists;
+
+import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
+import com.github.pfichtner.ardulink.core.ConnectionListener;
+import com.github.pfichtner.ardulink.core.convenience.Links;
 
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
- * [adsense]
+ *         [adsense]
  *
  */
-public class JoystickSmartCarDriver extends JFrame implements ConnectionListener, Linkable {
+public class JoystickSmartCarDriver extends JFrame implements
+		ConnectionListener, Linkable {
 
 	private static final long serialVersionUID = 1402473246181814940L;
 
 	private JPanel contentPane;
 	private Link link;
-	private List<Linkable> linkables = new LinkedList<Linkable>();
-	
+	private List<Linkable> linkables = Lists.newArrayList();
+
 	private BluetoothConnectionPanel bluetoothConnectionPanel;
 	private JButton btnConnect;
 	private JButton btnDisconnect;
 	private JPanel controlPanel;
 	private ModifiableJoystick joystick;
 	private MotorDriver motorDriver = new MotorDriver();
-	
+
 	/**
 	 * Launch the application.
 	 */
@@ -69,7 +74,8 @@ public class JoystickSmartCarDriver extends JFrame implements ConnectionListener
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					for (LookAndFeelInfo laf : UIManager.getInstalledLookAndFeels()) {
+					for (LookAndFeelInfo laf : UIManager
+							.getInstalledLookAndFeels()) {
 						if ("Nimbus".equals(laf.getName())) {
 							UIManager.setLookAndFeel(laf.getClassName());
 						}
@@ -94,65 +100,77 @@ public class JoystickSmartCarDriver extends JFrame implements ConnectionListener
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
-		
+
 		JPanel connectionPanel = new JPanel();
 		contentPane.add(connectionPanel, BorderLayout.SOUTH);
-		
+
 		bluetoothConnectionPanel = new BluetoothConnectionPanel();
 		connectionPanel.add(bluetoothConnectionPanel);
-		
+
 		btnConnect = new JButton("Connect");
 		btnConnect.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if(link != null) {
-					String deviceName = bluetoothConnectionPanel.getSelectedDevice();
-					link.connect(deviceName);
+			public void actionPerformed(ActionEvent event) {
+				if (link != null) {
+					String deviceName = bluetoothConnectionPanel
+							.getSelectedDevice();
+					try {
+						link = new Link.LegacyLinkAdapter(Links
+								.getLink(new URI(
+										"ardulink://bluetooth?deviceName="
+												+ deviceName)));
+					} catch (URISyntaxException e) {
+						throw new RuntimeException(e);
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
 				}
 			}
 		});
 		connectionPanel.add(btnConnect);
-		
+
 		btnDisconnect = new JButton("Disconnect");
 		btnDisconnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(link != null) {
+				if (link != null) {
 					link.disconnect();
 				}
 			}
 		});
 		btnDisconnect.setEnabled(false);
 		connectionPanel.add(btnDisconnect);
-		
+
 		ConnectionStatus connectionStatus = new ConnectionStatus();
 		connectionPanel.add(connectionStatus);
 		linkables.add(connectionStatus);
-		
+
 		controlPanel = new JPanel();
 		contentPane.add(controlPanel, BorderLayout.CENTER);
 		controlPanel.setLayout(new BorderLayout(0, 0));
-		
+
 		joystick = new ModifiableJoystick();
-		// not use Joystick link, PositionEvents will be captured and managed with a specific class
+		// not use Joystick link, PositionEvents will be captured and managed
+		// with a specific class
 		joystick.setLink(null);
 		joystick.setId("joy");
 		joystick.addPositionListener(motorDriver);
 		controlPanel.add(joystick, BorderLayout.CENTER);
-		
+
 		linkables.add(motorDriver);
-		
+
 		setLink(bluetoothConnectionPanel.getLink());
 	}
 
 	@Override
 	public void setLink(Link link) {
-		if(this.link != null) {
-			this.link.removeConnectionListener(this);
-		} 
+		com.github.pfichtner.ardulink.core.Link delegate = link.getDelegate();
+		if (delegate instanceof ConnectionBasedLink) {
+			((ConnectionBasedLink) delegate).removeConnectionListener(this);
+		}
 		this.link = link;
-		if(link != null) {
-			link.addConnectionListener(this);
+		if (delegate instanceof ConnectionBasedLink) {
+			((ConnectionBasedLink) delegate).addConnectionListener(this);
 		} else {
-			disconnected(new DisconnectionEvent());
+			connectionLost();
 		}
 		for (Linkable linkable : linkables) {
 			linkable.setLink(link);
@@ -160,24 +178,14 @@ public class JoystickSmartCarDriver extends JFrame implements ConnectionListener
 	}
 
 	@Override
-	public ReplyMessageCallback getReplyMessageCallback() {
-		throw new RuntimeException("Not developed yet");
-	}
-
-	@Override
-	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
-		throw new RuntimeException("Not developed yet");
-	}
-
-	@Override
-	public void connected(ConnectionEvent e) {
+	public void reconnected() {
 		bluetoothConnectionPanel.setEnabled(false);
 		btnConnect.setEnabled(false);
 		btnDisconnect.setEnabled(true);
 	}
 
 	@Override
-	public void disconnected(DisconnectionEvent e) {
+	public void connectionLost() {
 		bluetoothConnectionPanel.setEnabled(true);
 		btnConnect.setEnabled(true);
 		btnDisconnect.setEnabled(false);

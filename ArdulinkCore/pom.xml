@@ -46,18 +46,13 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>core-ng-util</artifactId>
+			<artifactId>core-ng-base</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.rxtx</groupId>
-			<artifactId>rxtx</artifactId>
-			<version>2.1.7</version>
-		</dependency>
-		<dependency>
-			<groupId>ch.ntb</groupId>
-			<artifactId>usb</artifactId>
-			<version>0.5.9</version>
+			<groupId>org.ardulink</groupId>
+			<artifactId>core-ng-util</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.bluecove</groupId>

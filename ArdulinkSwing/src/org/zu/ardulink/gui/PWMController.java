@@ -40,11 +40,10 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.event.PWMChangeEvent;
 import org.zu.ardulink.gui.event.PWMControllerListener;
 import org.zu.ardulink.gui.facility.IntMinMaxModel;
-import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -247,14 +246,6 @@ public class PWMController extends JPanel implements Linkable {
 		this.link = link;
 	}
 
-	public ReplyMessageCallback getReplyMessageCallback() {
-		throw new RuntimeException("Not developed yet");
-	}
-
-	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
-		throw new RuntimeException("Not developed yet");
-	}
-	
 	public void setTitle(String title) {
 		lblPowerPinController.setText(title);
 	}

@@ -20,10 +20,9 @@ package org.zu.ardulink.gui;
 
 import java.awt.Point;
 
-import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.event.PositionEvent;
 import org.zu.ardulink.gui.event.PositionListener;
-import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -36,7 +35,6 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
 public class MotorDriver implements PositionListener, Linkable {
 
 	private Link link = null;
-	private ReplyMessageCallback replyMessageCallback;
 	
 	private int maxSize = 255;
 	private int x = 0;
@@ -51,16 +49,6 @@ public class MotorDriver implements PositionListener, Linkable {
 	@Override
 	public void setLink(Link link) {
 		this.link = link;
-	}
-
-	@Override
-	public ReplyMessageCallback getReplyMessageCallback() {
-		return replyMessageCallback;
-	}
-
-	@Override
-	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
-		this.replyMessageCallback = replyMessageCallback;
 	}
 
 	@Override
@@ -106,7 +94,7 @@ public class MotorDriver implements PositionListener, Linkable {
 		if(link != null) {
 			String message = id + "(" + leftDirection + leftPower + ")[" + rightDirection + rightPower + "]";
 			System.out.println(message);
-			link.sendCustomMessage(message, replyMessageCallback);
+			link.sendCustomMessage(message);
 		}
 	}
 }

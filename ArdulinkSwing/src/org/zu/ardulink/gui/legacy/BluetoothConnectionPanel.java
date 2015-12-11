@@ -16,7 +16,7 @@ limitations under the License.
 @author Luciano Zu
  */
 
-package org.zu.ardulink.gui;
+package org.zu.ardulink.gui.legacy;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
@@ -24,7 +24,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import javax.swing.DefaultComboBoxModel;
@@ -36,10 +35,10 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.zu.ardulink.Link;
-import org.zu.ardulink.connection.bluetooth.BluetoothConnection;
+import org.zu.ardulink.gui.Linkable;
+import org.zu.ardulink.gui.PortListCallbackDialog;
 import org.zu.ardulink.gui.facility.UtilityGeometry;
-import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion] This component is Able to search for
@@ -56,8 +55,7 @@ public class BluetoothConnectionPanel extends JPanel implements Linkable {
 	private final JComboBox deviceComboBox;
 	private final JButton discoverButton;
 
-	private Link link = Link.createInstance("bluetoothConnection",
-			new BluetoothConnection());
+	private Link link = Link.createInstance("bluetooth");
 
 	/**
 	 * Create the panel.
@@ -108,8 +106,7 @@ public class BluetoothConnectionPanel extends JPanel implements Linkable {
 		newSingleThreadExecutor().submit(new Callable<Void>() {
 			@Override
 			public Void call() {
-				final List<String> ports = BluetoothConnectionPanel.this.link
-						.getPortList();
+				final String[] ports = (String[]) link.getChoiceValues("portlist");
 				// We are not on the EDT so use SwingUtilities#invokeLater
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
@@ -117,9 +114,8 @@ public class BluetoothConnectionPanel extends JPanel implements Linkable {
 						// TODO Do we really need to check #isDisplayable?
 						if (dialog.isDisplayable()) {
 							DefaultComboBoxModel model = new DefaultComboBoxModel(
-									ports == null || ports.isEmpty() ? new String[0]
-											: ports.toArray(new String[ports
-													.size()]));
+									ports == null || ports.length == 0 ? new String[0]
+											: ports);
 							comboBox.setModel(model);
 							if (model.getSize() == 0) {
 								dialog.setTitle("Nothing found.");
@@ -156,15 +152,6 @@ public class BluetoothConnectionPanel extends JPanel implements Linkable {
 
 	public void setLink(Link link) {
 		this.link = link;
-	}
-
-	public ReplyMessageCallback getReplyMessageCallback() {
-		throw new RuntimeException("Not developed yet");
-	}
-
-	public void setReplyMessageCallback(
-			ReplyMessageCallback replyMessageCallback) {
-		throw new RuntimeException("Not developed yet");
 	}
 
 	public String getSelectedDevice() {

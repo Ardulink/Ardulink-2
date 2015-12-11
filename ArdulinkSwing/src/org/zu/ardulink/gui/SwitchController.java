@@ -28,10 +28,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
-import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.facility.IntMinMaxModel;
-import org.zu.ardulink.protocol.IProtocol;
-import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -73,10 +71,10 @@ public class SwitchController extends JPanel implements Linkable {
 				int pin = pinComboBoxModel.getSelectedItem().intValue();
 				if(e.getStateChange() == ItemEvent.SELECTED) {
 					switchToggleButton.setText("On");
-					link.sendPowerPinSwitch(pin, IProtocol.POWER_HIGH);
+					link.sendPowerPinSwitch(pin, true);
 				} else if(e.getStateChange() == ItemEvent.DESELECTED) {
 					switchToggleButton.setText("Off");
-					link.sendPowerPinSwitch(pin, IProtocol.POWER_LOW);
+					link.sendPowerPinSwitch(pin, false);
 				}
 			}
 		});
@@ -95,13 +93,5 @@ public class SwitchController extends JPanel implements Linkable {
 	public void setLink(Link link) {
 		this.link = link;
 	}
-
-	public ReplyMessageCallback getReplyMessageCallback() {
-		throw new RuntimeException("Not developed yet");
-	}
-
-	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
-		throw new RuntimeException("Not developed yet");
-	}	
 
 }

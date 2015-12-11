@@ -35,11 +35,10 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.event.PWMChangeEvent;
 import org.zu.ardulink.gui.event.PWMControllerListener;
 import org.zu.ardulink.gui.facility.UtilityColor;
-import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -139,14 +138,6 @@ public class RGBController extends JPanel implements Linkable, PWMControllerList
 		redController.setLink(link);
 		greenController.setLink(link);
 		blueController.setLink(link);
-	}
-
-	public ReplyMessageCallback getReplyMessageCallback() {
-		throw new RuntimeException("Not developed yet");
-	}
-
-	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
-		throw new RuntimeException("Not developed yet");
 	}
 
 	@Override

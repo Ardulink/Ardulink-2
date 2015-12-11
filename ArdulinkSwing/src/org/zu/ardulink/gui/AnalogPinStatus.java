@@ -18,6 +18,7 @@ limitations under the License.
 
 package org.zu.ardulink.gui;
 
+import static com.github.pfichtner.ardulink.core.Pin.analogPin;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -36,11 +37,13 @@ import javax.swing.JProgressBar;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
-import org.zu.ardulink.Link;
-import org.zu.ardulink.event.AnalogReadChangeEvent;
-import org.zu.ardulink.event.AnalogReadChangeListener;
 import org.zu.ardulink.gui.facility.IntMinMaxModel;
-import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.legacy.Link;
+
+import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
+import com.github.pfichtner.ardulink.core.events.EventListener;
+import com.github.pfichtner.ardulink.core.events.EventListenerAdapter;
+import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -52,7 +55,7 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  * [adsense]
  *
  */
-public class AnalogPinStatus extends JPanel implements Linkable, AnalogReadChangeListener {
+public class AnalogPinStatus extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = 7927439571760351922L;
 
@@ -67,6 +70,28 @@ public class AnalogPinStatus extends JPanel implements Linkable, AnalogReadChang
 	private IntMinMaxModel pinComboBoxModel;
 	private JLabel lblPowerPinController;
 	private JToggleButton tglbtnSensor;
+	
+	private EventListener listener;
+
+	private FilteredEventListenerAdapter listener() {
+		return new FilteredEventListenerAdapter(
+				analogPin(pinComboBoxModel.getSelectedItem().intValue()),
+				new EventListenerAdapter() {
+					@Override
+					public void stateChanged(
+							AnalogPinValueChangedEvent event) {
+						Integer value = event.getValue();
+						valueLabel.setText(Integer.toString(value));
+
+						float volt = ((float) (((float) value) * 5.0f)) / 1023.0f;
+						voltValueLbl.setText(String.valueOf(volt) + "V");
+
+						float progress = ((float) (((float) (value - getMinValue())) * 100.0f))
+								/ ((float) getMaxValue() - (float) getMinValue());
+						progressBar.setValue((int) progress);
+					}
+				});
+	}
 
 	private Link link = Link.getDefaultInstance();
 
@@ -147,9 +172,10 @@ public class AnalogPinStatus extends JPanel implements Linkable, AnalogReadChang
 		
 		tglbtnSensor = new JToggleButton("Off");
 		tglbtnSensor.addItemListener(new ItemListener() {
+
 			public void itemStateChanged(ItemEvent e) {
 				if(e.getStateChange() == ItemEvent.SELECTED) {
-					link.addAnalogReadChangeListener((AnalogReadChangeListener)tglbtnSensor.getParent());
+					link.addAnalogReadChangeListener((listener = listener()));
 					
 					tglbtnSensor.setText("On");
 					pinComboBox.setEnabled(false);
@@ -160,7 +186,7 @@ public class AnalogPinStatus extends JPanel implements Linkable, AnalogReadChang
 					
 					
 				} else if(e.getStateChange() == ItemEvent.DESELECTED) {
-					link.removeAnalogReadChangeListener((AnalogReadChangeListener)tglbtnSensor.getParent());
+					link.removeAnalogReadChangeListener(listener);
 					
 					tglbtnSensor.setText("Off");
 					pinComboBox.setEnabled(true);
@@ -210,17 +236,12 @@ public class AnalogPinStatus extends JPanel implements Linkable, AnalogReadChang
 	}
 
 	public void setLink(Link link) {
+		if (this.link != null && this.listener != null) {
+			this.link.removeAnalogReadChangeListener(this.listener);
+		}
 		this.link = link;
 	}
 
-	public ReplyMessageCallback getReplyMessageCallback() {
-		throw new RuntimeException("Not developed yet");
-	}
-
-	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
-		throw new RuntimeException("Not developed yet");
-	}
-	
 	public void setTitle(String title) {
 		lblPowerPinController.setText(title);
 	}
@@ -246,21 +267,4 @@ public class AnalogPinStatus extends JPanel implements Linkable, AnalogReadChang
 		setValue(getValue());
 	}
 
-	@Override
-	public void stateChanged(AnalogReadChangeEvent e) {
-		int value = e.getValue();
-		valueLabel.setText(Integer.toString(value));
-
-        float volt = ((float)(((float)value)*5.0f))/1023.0f;
-		voltValueLbl.setText(String.valueOf(volt) + "V");
-
-		float progress  = ((float)(((float)(value - getMinValue()))*100.0f))/((float)getMaxValue() - (float)getMinValue());
-        progressBar.setValue((int)progress);
-		
-	}
-
-	@Override
-	public int getPinListening() {
-		return pinComboBoxModel.getSelectedItem().intValue();
-	}
 }

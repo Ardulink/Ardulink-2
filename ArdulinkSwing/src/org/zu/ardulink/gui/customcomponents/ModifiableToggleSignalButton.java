@@ -31,11 +31,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.Linkable;
-import org.zu.ardulink.protocol.ReplyMessageCallback;
-import org.zu.ardulink.protocol.custommessages.CustomMessageMaker;
-import org.zu.ardulink.protocol.custommessages.CustomMessageSender;
+import org.zu.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -45,7 +42,7 @@ import org.zu.ardulink.protocol.custommessages.CustomMessageSender;
  * [adsense]
  *
  */
-public class ModifiableToggleSignalButton extends JPanel implements Linkable, CustomMessageSender {
+public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = 7024281203061769142L;
 
@@ -233,16 +230,6 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable, Cu
 		signalButton.setLink(link);
 	}
 
-	@Override
-	public ReplyMessageCallback getReplyMessageCallback() {
-		return signalButton.getReplyMessageCallback();
-	}
-
-	@Override
-	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
-		signalButton.setReplyMessageCallback(replyMessageCallback);
-	}
-
 	public TogggleSignalButton getSignalButton() {
 		return signalButton;
 	}
@@ -346,11 +333,4 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable, Cu
 		idTextField.setText(id);
 	}
 	
-	public CustomMessageMaker getCustomMessageMaker() {
-		return signalButton.getCustomMessageMaker();
-	}
-
-	public void setCustomMessageMaker(CustomMessageMaker customMessageMaker) {
-		signalButton.setCustomMessageMaker(customMessageMaker);
-	}	
 }

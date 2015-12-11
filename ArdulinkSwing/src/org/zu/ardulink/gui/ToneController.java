@@ -39,16 +39,14 @@ import javax.swing.JToggleButton;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 
-import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.facility.IntMinMaxModel;
-import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.legacy.Link;
 
 public class ToneController extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = 1754259889096759199L;
 
 	private Link link = Link.getDefaultInstance();
-	private ReplyMessageCallback replyMessageCallback = null;
 
 	private JSpinner frequencySpinner;
 	private JToggleButton toneButton;
@@ -277,14 +275,6 @@ public class ToneController extends JPanel implements Linkable {
 		} else {
 			toneButton.setText(toneButtonOffText);
 		}
-	}
-
-	public ReplyMessageCallback getReplyMessageCallback() {
-		return replyMessageCallback;
-	}
-
-	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
-		this.replyMessageCallback = replyMessageCallback;
 	}
 
 	public void setIcon(Icon defaultIcon) {

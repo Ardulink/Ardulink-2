@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.zu.ardulink.gui.customcomponents;
 
+import static java.awt.event.ItemEvent.SELECTED;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ItemEvent;
@@ -31,12 +33,8 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
-import org.zu.ardulink.Link;
 import org.zu.ardulink.gui.Linkable;
-import org.zu.ardulink.protocol.ReplyMessageCallback;
-import org.zu.ardulink.protocol.custommessages.CustomMessageMaker;
-import org.zu.ardulink.protocol.custommessages.CustomMessageSender;
-import org.zu.ardulink.protocol.custommessages.SimpleCustomMessageMaker;
+import org.zu.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -44,12 +42,11 @@ import org.zu.ardulink.protocol.custommessages.SimpleCustomMessageMaker;
  * 
  * [adsense]
  */
-public class TogggleSignalButton extends JPanel implements Linkable, CustomMessageSender {
+public class TogggleSignalButton extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = -5162326079507604871L;
 
 	private Link link = Link.getDefaultInstance();
-	private ReplyMessageCallback replyMessageCallback;
 
 	private JTextField textFieldOn;
 	private JToggleButton signalButton;
@@ -64,8 +61,6 @@ public class TogggleSignalButton extends JPanel implements Linkable, CustomMessa
 	private String signalButtonOnText = "On";
 	private String signalButtonOffText = "Off";
 	
-    private CustomMessageMaker customMessageMaker = new SimpleCustomMessageMaker();
-
     /**
 	 * Create the valuePanelOff.
 	 */
@@ -104,17 +99,10 @@ public class TogggleSignalButton extends JPanel implements Linkable, CustomMessa
 		signalButton = new JToggleButton("Off");
 		signalButton.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				if(e.getStateChange() == ItemEvent.SELECTED) {
-					String message = customMessageMaker.getCustomMessage(getId(), getValueOn());;
-					link.sendCustomMessage(message, replyMessageCallback);
-					
-					updateSignalButtonText();
-				} else if(e.getStateChange() == ItemEvent.DESELECTED) {
-					String message = customMessageMaker.getCustomMessage(getId(), getValueOff());;
-					link.sendCustomMessage(message, replyMessageCallback);
-
-					updateSignalButtonText();
-				}
+				link.sendCustomMessage(getId(),
+						e.getStateChange() == SELECTED ? getValueOn()
+								: getValueOff());
+				updateSignalButtonText();
 			}
 		});
 		
@@ -274,14 +262,6 @@ public class TogggleSignalButton extends JPanel implements Linkable, CustomMessa
 		this.id = id;
 	}
 
-	public ReplyMessageCallback getReplyMessageCallback() {
-		return replyMessageCallback;
-	}
-
-	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
-		this.replyMessageCallback = replyMessageCallback;
-	}
-
 	public void setIcon(Icon defaultIcon) {
 		signalButton.setIcon(defaultIcon);
 	}
@@ -330,12 +310,4 @@ public class TogggleSignalButton extends JPanel implements Linkable, CustomMessa
 		}
 	}
 
-	public CustomMessageMaker getCustomMessageMaker() {
-		return customMessageMaker;
-	}
-
-	public void setCustomMessageMaker(CustomMessageMaker customMessageMaker) {
-		this.customMessageMaker = customMessageMaker;
-	}
-	
 }

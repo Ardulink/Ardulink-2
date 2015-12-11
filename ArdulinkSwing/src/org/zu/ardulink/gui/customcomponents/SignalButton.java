@@ -18,26 +18,19 @@ limitations under the License.
 
 package org.zu.ardulink.gui.customcomponents;
 
-import javax.swing.JPanel;
-
-import org.zu.ardulink.Link;
-import org.zu.ardulink.gui.Linkable;
-import org.zu.ardulink.protocol.ReplyMessageCallback;
-import org.zu.ardulink.protocol.custommessages.CustomMessageMaker;
-import org.zu.ardulink.protocol.custommessages.CustomMessageSender;
-import org.zu.ardulink.protocol.custommessages.SimpleCustomMessageMaker;
-
-import javax.swing.JButton;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.Icon;
-import javax.swing.JTextField;
+import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
+import org.zu.ardulink.gui.Linkable;
+import org.zu.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -45,12 +38,11 @@ import java.awt.event.ActionEvent;
  * 
  * [adsense]
  */
-public class SignalButton extends JPanel implements Linkable, CustomMessageSender {
+public class SignalButton extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = -5162326079507604871L;
 
 	private Link link = Link.getDefaultInstance();
-	private ReplyMessageCallback replyMessageCallback;
 
 	private JTextField textField;
 	private JButton signalButton;
@@ -58,8 +50,6 @@ public class SignalButton extends JPanel implements Linkable, CustomMessageSende
 	private String id = "none";
 	private JLabel valueLabel;
 	
-    private CustomMessageMaker customMessageMaker = new SimpleCustomMessageMaker();
-
 	/**
 	 * Create the panel.
 	 */
@@ -69,8 +59,7 @@ public class SignalButton extends JPanel implements Linkable, CustomMessageSende
 		signalButton = new JButton("Send");
 		signalButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String message = customMessageMaker.getCustomMessage(getId(), getValue());;
-				link.sendCustomMessage(message, replyMessageCallback);
+				link.sendCustomMessage(getId(), getValue());
 			}
 		});
 		add(signalButton);
@@ -169,14 +158,6 @@ public class SignalButton extends JPanel implements Linkable, CustomMessageSende
 		this.id = id;
 	}
 
-	public ReplyMessageCallback getReplyMessageCallback() {
-		return replyMessageCallback;
-	}
-
-	public void setReplyMessageCallback(ReplyMessageCallback replyMessageCallback) {
-		this.replyMessageCallback = replyMessageCallback;
-	}
-
 	public void setIcon(Icon defaultIcon) {
 		signalButton.setIcon(defaultIcon);
 	}
@@ -225,11 +206,4 @@ public class SignalButton extends JPanel implements Linkable, CustomMessageSende
 		}
 	}
 	
-	public CustomMessageMaker getCustomMessageMaker() {
-		return customMessageMaker;
-	}
-
-	public void setCustomMessageMaker(CustomMessageMaker customMessageMaker) {
-		this.customMessageMaker = customMessageMaker;
-	}
 }

@@ -18,13 +18,7 @@ limitations under the License.
 
 package org.zu.ardulink.gui;
 
-import java.awt.Component;
-
-import javax.swing.JOptionPane;
-
-import org.zu.ardulink.protocol.IProtocol;
-import org.zu.ardulink.protocol.MessageInfo;
-import org.zu.ardulink.protocol.ReplyMessageCallback;
+import org.zu.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -32,22 +26,8 @@ import org.zu.ardulink.protocol.ReplyMessageCallback;
  * 
  * [adsense]
  */
-public class OptionMessageCallback implements ReplyMessageCallback {
-
-	private Component component;
+public interface Linkable {
 	
-	public OptionMessageCallback(Component component) {
-		super();
-		this.component = component;
-	}
-
-	@Override
-	public void replyInfo(MessageInfo messageInfo) {
-		if(messageInfo.getReply() == IProtocol.REPLY_OK) {
-			JOptionPane.showMessageDialog(component, "Done", "Ok", JOptionPane.INFORMATION_MESSAGE);
-		} else {
-			JOptionPane.showMessageDialog(component, "Error", "Ko", JOptionPane.ERROR_MESSAGE);
-		}
-	}
+	void setLink(Link link);
 
 }

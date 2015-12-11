@@ -18,7 +18,6 @@ limitations under the License.
 
 package org.zu.ardulink.connection.proxy;
 
-import static org.zu.ardulink.connection.proxy.NetworkProxyConnection.DEFAULT_LISTENING_PORT;
 import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
 
 import java.io.PrintWriter;
@@ -92,6 +91,8 @@ public class NetworkProxyServer {
 		}
 
 	}
+
+	private static final int DEFAULT_LISTENING_PORT = 4478;
 
 	private static boolean listening = true;
 

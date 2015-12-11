@@ -23,7 +23,7 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JLabel;
 
-import org.zu.ardulink.Link;
+import org.zu.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
