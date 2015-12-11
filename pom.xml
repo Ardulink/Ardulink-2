@@ -45,12 +45,12 @@
 		<module>Mqtt</module>
 		<module>ArdulinkSwing</module>
 		<module>ArdulinkConsole</module>
-		<module>Deploy</module>
 <!--
 		<module>ArdulinkMail</module>
 -->
 		<module>JoystickSmartCarDriver</module>
 		<module>SimpleSmartCarDriver</module>
+		<module>Deploy</module>
 	</modules>
 
 	<build>
