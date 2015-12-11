@@ -14,18 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @author Luciano Zu
-*/
+ */
 
 package org.zu.ardulink.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -47,11 +52,14 @@ import org.zu.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.zu.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.zu.ardulink.legacy.Link;
 
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
+
 /**
- * [ardulinktitle] [ardulinkversion]
- * This is the ready ardulink console a complete SWING application to manage an Arduino board.
- * Console has several tabs with all ready arduino components. Each tab is able to
- * do a specific action sending or listening for messages to arduino or from arduino board.
+ * [ardulinktitle] [ardulinkversion] This is the ready ardulink console a
+ * complete SWING application to manage an Arduino board. Console has several
+ * tabs with all ready arduino components. Each tab is able to do a specific
+ * action sending or listening for messages to arduino or from arduino board.
+ * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
@@ -60,19 +68,21 @@ import org.zu.ardulink.legacy.Link;
 public class Console extends JFrame implements Linkable {
 
 	private static final long serialVersionUID = -5288916405936436557L;
-	
+
 	private JPanel contentPane;
 	private JTabbedPane tabbedPane;
 	private KeyPressController keyControlPanel;
 	private JButton btnConnect;
 	private JButton btnDisconnect;
-	
+
 	private Link link;
-	
+
 	private final List<Linkable> linkables = new LinkedList<Linkable>();
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(Console.class);
-	
+
+	private GenericConnectionPanel genericConnectionPanel;
+
 	/**
 	 * Launch the application.
 	 */
@@ -86,15 +96,14 @@ public class Console extends JFrame implements Linkable {
 							UIManager.setLookAndFeel(laf.getClassName());
 						}
 					}
-					Console frame = new Console();					
-					frame.setVisible(true);					
+					Console frame = new Console();
+					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
 	}
-
 
 	/**
 	 * Create the frame.
@@ -109,68 +118,86 @@ public class Console extends JFrame implements Linkable {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
-		
+
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		contentPane.add(tabbedPane, BorderLayout.CENTER);
-		
+
 		JPanel configurationPanel = new JPanel();
 		tabbedPane.addTab("Configuration", null, configurationPanel, null);
 		configurationPanel.setLayout(new BorderLayout(0, 0));
-		
+
 		JPanel connectPanel = new JPanel();
 		configurationPanel.add(connectPanel, BorderLayout.SOUTH);
-		
+
 		btnConnect = new JButton("Connect");
 		btnConnect.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				link = Link.getDefaultInstance();
+			public void actionPerformed(ActionEvent event) {
+				String uri = genericConnectionPanel.getURI();
+				try {
+					link = new Link.LegacyLinkAdapter(LinkManager.getInstance()
+							.getConfigurer(new URI(uri)).newLink());
+				} catch (URISyntaxException e) {
+					throw new RuntimeException(e);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
 			}
 		});
 		connectPanel.add(btnConnect);
-		
+
 		btnDisconnect = new JButton("Disconnect");
 		btnDisconnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(link != null) {
-					boolean connected = !link.disconnect();
-					logConnectState(connected);
+				if (link != null) {
+					logger.info("Connection status: ", !link.disconnect());
 				}
 			}
 
 		});
 		connectPanel.add(btnDisconnect);
-		
+
 		JPanel allConnectionsPanel = new JPanel();
 		configurationPanel.add(allConnectionsPanel, BorderLayout.CENTER);
 		GridBagLayout gbl_allConnectionsPanel = new GridBagLayout();
-		gbl_allConnectionsPanel.columnWeights = new double[]{0.0, 0.0};
-		gbl_allConnectionsPanel.rowWeights = new double[]{0.0, 0.0};
+		gbl_allConnectionsPanel.columnWeights = new double[] { 0.0, 0.0 };
+		gbl_allConnectionsPanel.rowWeights = new double[] { 0.0, 0.0 };
 		allConnectionsPanel.setLayout(gbl_allConnectionsPanel);
-		
+
+		genericConnectionPanel = new GenericConnectionPanel();
+		genericConnectionPanel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
+		GridBagConstraints gbc_genericConnectionPanel = new GridBagConstraints();
+		gbc_genericConnectionPanel.insets = new Insets(0, 0, 0, 10);
+		gbc_genericConnectionPanel.anchor = GridBagConstraints.NORTH;
+		gbc_genericConnectionPanel.fill = GridBagConstraints.HORIZONTAL;
+		gbc_genericConnectionPanel.gridx = 0;
+		gbc_genericConnectionPanel.gridy = 1;
+		allConnectionsPanel.add(genericConnectionPanel,
+				gbc_genericConnectionPanel);
+
 		keyControlPanel = new KeyPressController();
 		linkables.add(keyControlPanel);
 		tabbedPane.addTab("Key Control", null, keyControlPanel, null);
-				
+
 		JPanel powerPanel = new JPanel();
 		tabbedPane.addTab("Power Panel", null, powerPanel, null);
 		powerPanel.setLayout(new GridLayout(2, 3, 0, 0));
-		
+
 		for (int pin = 3; pin <= 11; pin++) {
 			powerPanel.add(pwmController(pin));
 		}
-		
+
 		JPanel switchPanel = new JPanel();
 		tabbedPane.addTab("Switch Panel", null, switchPanel, null);
 		switchPanel.setLayout(new GridLayout(5, 3, 0, 0));
-				
+
 		for (int pin = 3; pin <= 13; pin++) {
 			switchPanel.add(switchController(pin));
 		}
-		
+
 		JPanel joystickPanel = new JPanel();
 		tabbedPane.addTab("Joystick Panel", null, joystickPanel, null);
 		joystickPanel.setLayout(new GridLayout(2, 2, 0, 0));
-		
+
 		ModifiableJoystick joy1 = modifiableJoystick("Left");
 		joystickPanel.add(joy1);
 		joystickPanel.add(simplePositionListener(joy1));
@@ -178,15 +205,16 @@ public class Console extends JFrame implements Linkable {
 		ModifiableJoystick joy2 = modifiableJoystick("Right");
 		joystickPanel.add(joy2);
 		joystickPanel.add(simplePositionListener(joy2));
-		
+
 		JPanel sensorDigitalPanel = new JPanel();
-		tabbedPane.addTab("Digital Sensor Panel", null, sensorDigitalPanel, null);
+		tabbedPane.addTab("Digital Sensor Panel", null, sensorDigitalPanel,
+				null);
 		sensorDigitalPanel.setLayout(new GridLayout(4, 3, 0, 0));
-		
+
 		for (int pin = 2; pin <= 12; pin++) {
 			sensorDigitalPanel.add(digitalPinStatus(pin));
 		}
-		
+
 		JPanel sensorAnalogPanel = new JPanel();
 		sensorAnalogPanel.setLayout(new GridLayout(2, 3, 0, 0));
 		tabbedPane.addTab("Analog Sensor Panel", null, sensorAnalogPanel, null);
@@ -194,7 +222,7 @@ public class Console extends JFrame implements Linkable {
 		for (int pin = 0; pin <= 5; pin++) {
 			sensorAnalogPanel.add(analogPinStatus(pin));
 		}
-		
+
 		JPanel customPanel = new JPanel();
 		tabbedPane.addTab("Custom Components", null, customPanel, null);
 		customPanel.setLayout(new GridLayout(2, 3, 10, 15));
@@ -206,21 +234,21 @@ public class Console extends JFrame implements Linkable {
 		for (int i = 0; i <= 2; i++) {
 			customPanel.add(modifiableToggleSignalButton());
 		}
-		
+
 		JPanel tonePanel = new JPanel();
 		tabbedPane.addTab("Tone Panel", null, tonePanel, null);
-		
+
 		ToneController toneController = new ToneController();
 		tonePanel.add(toneController);
 		linkables.add(toneController);
-		
+
 		JPanel rgbPanel = new JPanel();
 		tabbedPane.addTab("RGB Panel", null, rgbPanel, null);
-		
+
 		RGBController rgbController = new RGBController();
 		linkables.add(rgbController);
 		rgbPanel.add(rgbController);
-		
+
 		JPanel stateBar = new JPanel();
 		FlowLayout flowLayout_1 = (FlowLayout) stateBar.getLayout();
 		flowLayout_1.setVgap(0);
@@ -229,19 +257,11 @@ public class Console extends JFrame implements Linkable {
 
 		tabbedPane.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				if(tabbedPane.getSelectedComponent().equals(keyControlPanel)) {
+				if (tabbedPane.getSelectedComponent().equals(keyControlPanel)) {
 					keyControlPanel.requestFocus();
 				}
 			}
 		});
-
-		setLink(makeLink());
-	}
-
-
-	// TODO PF make a POC panel with TextField
-	private Link makeLink() {
-		return Link.getDefaultInstance();
 	}
 
 	private PWMController pwmController(int pin) {
@@ -250,7 +270,6 @@ public class Console extends JFrame implements Linkable {
 		linkables.add(pwmController);
 		return pwmController;
 	}
-
 
 	private SimplePositionListener simplePositionListener(
 			ModifiableJoystick joystick) {
@@ -266,15 +285,11 @@ public class Console extends JFrame implements Linkable {
 		return joy1;
 	}
 
-
-
-
 	private ModifiableToggleSignalButton modifiableToggleSignalButton() {
 		ModifiableToggleSignalButton modifiableToggleSignalButton1 = new ModifiableToggleSignalButton();
 		linkables.add(modifiableToggleSignalButton1);
 		return modifiableToggleSignalButton1;
 	}
-
 
 	private SwitchController switchController(int pin) {
 		SwitchController switchController = new SwitchController();
@@ -295,14 +310,14 @@ public class Console extends JFrame implements Linkable {
 		linkables.add(modifiableSignalButton1);
 		return modifiableSignalButton1;
 	}
-	
+
 	private DigitalPinStatus digitalPinStatus(int pin) {
 		DigitalPinStatus digitalPinStatus2 = new DigitalPinStatus();
 		digitalPinStatus2.setPin(pin);
 		linkables.add(digitalPinStatus2);
 		return digitalPinStatus2;
 	}
-	
+
 	public void setLink(Link link) {
 		this.link = link;
 		if (link == null) {
@@ -321,10 +336,6 @@ public class Console extends JFrame implements Linkable {
 	private void disconnected() {
 		btnConnect.setEnabled(true);
 		btnDisconnect.setEnabled(false);
-	}
-
-	private void logConnectState(boolean connected) {
-		logger.info("Connection status: ", connected);
 	}
 
 }
