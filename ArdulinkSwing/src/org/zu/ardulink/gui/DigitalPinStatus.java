@@ -58,7 +58,7 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 	private IntMinMaxModel pinComboBoxModel;
 	private JLabel lblPin;
 
-	private Link link = Link.getDefaultInstance();
+	private Link link;
 
 	private static final String HIGH = "High";
 	private static final String LOW = "Low";

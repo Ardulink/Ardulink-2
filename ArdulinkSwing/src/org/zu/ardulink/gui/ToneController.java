@@ -46,7 +46,7 @@ public class ToneController extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = 1754259889096759199L;
 
-	private Link link = Link.getDefaultInstance();
+	private Link link;
 
 	private JSpinner frequencySpinner;
 	private JToggleButton toneButton;

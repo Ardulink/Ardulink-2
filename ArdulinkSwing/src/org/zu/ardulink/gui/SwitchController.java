@@ -47,7 +47,7 @@ public class SwitchController extends JPanel implements Linkable {
 	private IntMinMaxModel pinComboBoxModel;
 	private JToggleButton switchToggleButton;
 	
-	private Link link = Link.getDefaultInstance();
+	private Link link;
 
 	/**
 	 * Create the panel.

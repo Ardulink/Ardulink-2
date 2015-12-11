@@ -93,7 +93,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 				});
 	}
 
-	private Link link = Link.getDefaultInstance();
+	private Link link;
 
 	/**
 	 * Create the panel.

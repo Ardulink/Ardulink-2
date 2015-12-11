@@ -36,7 +36,7 @@ import org.zu.ardulink.legacy.Link;
 public class KeyPressListener extends KeyAdapter {
 
 	private JLabel guiInteractionLabel;
-	private Link link = Link.getDefaultInstance();
+	private Link link;
 	
 	public JLabel getGuiInteractionLabel() {
 		return guiInteractionLabel;

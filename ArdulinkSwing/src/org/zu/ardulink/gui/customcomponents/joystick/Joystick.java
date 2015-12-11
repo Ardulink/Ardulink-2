@@ -39,6 +39,7 @@ import org.zu.ardulink.gui.Linkable;
 import org.zu.ardulink.gui.event.PositionEvent;
 import org.zu.ardulink.gui.event.PositionListener;
 import org.zu.ardulink.legacy.Link;
+import org.zu.ardulink.util.Lists;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -48,8 +49,9 @@ import org.zu.ardulink.legacy.Link;
  */
 public class Joystick extends JPanel implements Linkable {
 
-	private Link link = Link.getDefaultInstance();
-	private final List<PositionListener> positionListeners = new LinkedList<PositionListener>();
+	private Link link;
+	
+	private final List<PositionListener> positionListeners = Lists.newArrayList();
 	private String id = "none";
 	
 	// TODO rendere parametrico il border size e trasformare questo in un valore di defalut
