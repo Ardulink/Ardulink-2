@@ -42,7 +42,7 @@ public abstract class StreamReader implements Closeable {
 					try {
 						logger.debug("Waiting for data");
 						byte[] bytes = this.scanner.next().getBytes();
-						logger.debug("Received data {}", bytes);
+						logger.debug("Stream read {}", bytes);
 						received(bytes);
 					} catch (Exception e) {
 						logger.error("Error while retrieving data", e);
