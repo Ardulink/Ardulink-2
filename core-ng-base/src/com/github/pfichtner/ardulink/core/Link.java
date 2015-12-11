@@ -27,9 +27,9 @@ public interface Link extends Closeable {
 
 	void sendTone(Tone tone) throws IOException;
 	
-	void sendNoTone() throws IOException;
+	void sendNoTone(AnalogPin analogPin) throws IOException;
 	
-	void sendCustomMessage(String message) throws IOException;
+	void sendCustomMessage(String... messages) throws IOException;
 
 	Link addConnectionListener(ConnectionListener connectionListener);
 

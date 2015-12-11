@@ -16,16 +16,24 @@ limitations under the License.
  */
 package com.github.pfichtner.ardulink.core.proto.impl;
 
+import static java.util.Collections.addAll;
 import static org.zu.ardulink.util.Preconditions.checkArgument;
+
+import java.util.List;
+
+import org.zu.ardulink.util.Joiner;
+import org.zu.ardulink.util.Lists;
 
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
  * @author Peter Fichtner
  * 
- *         [adsense]
+ * [adsense]
  */
 public class ALProtoBuilder {
+
+	private static final Joiner joiner = Joiner.on("/");
 
 	private final String command;
 	private Object pin;
@@ -67,15 +75,20 @@ public class ALProtoBuilder {
 	}
 
 	public String withoutValue() {
-		return "alp://" + command + pin();
-	}
-
-	private String pin() {
-		return pin == null ? "" : "/" + pin;
+		return withValues();
 	}
 
 	public String withValue(Object value) {
-		return "alp://" + command + pin() + "/" + value;
+		return withValues(String.valueOf(value));
+	}
+
+	public String withValues(String... values) {
+		List<Object> concat = Lists.<Object> newArrayList(command);
+		if (pin != null) {
+			concat.add(pin);
+		}
+		addAll(concat, values);
+		return "alp://" + joiner.join(concat);
 	}
 
 	public String withState(boolean value) {

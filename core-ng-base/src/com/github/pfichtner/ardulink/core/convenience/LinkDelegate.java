@@ -58,13 +58,13 @@ public class LinkDelegate implements Link {
 	}
 
 	@Override
-	public void sendNoTone() throws IOException {
-		getDelegate().sendNoTone();
+	public void sendNoTone(AnalogPin analogPin) throws IOException {
+		getDelegate().sendNoTone(analogPin);
 	}
 
 	@Override
-	public void sendCustomMessage(String message) throws IOException {
-		getDelegate().sendCustomMessage(message);
+	public void sendCustomMessage(String... messages) throws IOException {
+		getDelegate().sendCustomMessage(messages);
 	}
 
 	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,

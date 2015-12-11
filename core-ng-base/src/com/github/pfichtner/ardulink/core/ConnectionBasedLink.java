@@ -89,14 +89,15 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	}
 	
 	@Override
-	public void sendNoTone() throws IOException {
-		this.connection.write(this.protocol.toArduino(new ToArduinoNoTone()));
+	public void sendNoTone(AnalogPin analogPin) throws IOException {
+		this.connection.write(this.protocol.toArduino(new ToArduinoNoTone(
+				analogPin)));
 	}
 
 	@Override
-	public void sendCustomMessage(String message) throws IOException {
+	public void sendCustomMessage(String... messages) throws IOException {
 		this.connection.write(this.protocol
-				.toArduino(new ToArduinoCustomMessage(message)));
+				.toArduino(new ToArduinoCustomMessage(messages)));
 	}
 
 	private void send(AnalogPin pin, Integer value) throws IOException {

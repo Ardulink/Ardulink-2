@@ -120,13 +120,15 @@ public class AbstractArdulinkProtocol implements Protocol {
 
 	@Override
 	public byte[] toArduino(ToArduinoNoTone noTone) {
-		return toBytes(alpProtocolMessage(NOTONE).withValue(""));
+		return toBytes(alpProtocolMessage(NOTONE).withValue(
+				noTone.analogPin.pinNum()));
 	}
 
 	@Override
 	public byte[] toArduino(ToArduinoCustomMessage customMessage) {
-		return toBytes(alpProtocolMessage(CUSTOM_MESSAGE).withValue(
-				customMessage.message));
+		String[] messages = customMessage.messages;
+		return toBytes(alpProtocolMessage(CUSTOM_MESSAGE).withValues(
+				messages));
 	}
 
 	@Override

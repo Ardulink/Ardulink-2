@@ -207,17 +207,23 @@ public class ConnectionBasedLinkTest {
 		this.link.sendTone(Tone.forPin(analogPin(2)).withHertz(3000).endless());
 		assertThat(toArduinoWasSent(), is("alp://tone/2/3000/-1\n"));
 	}
+	
 	@Test
 	public void canSendNoTone() throws IOException {
-		this.link.sendNoTone();
-		assertThat(toArduinoWasSent(), is("alp://notn/\n"));
+		this.link.sendNoTone(analogPin(5));
+		assertThat(toArduinoWasSent(), is("alp://notn/5\n"));
 	}
 
 	@Test
-	public void canSendCustomMessage() throws IOException {
+	public void canSendCustomMessageSingleValue() throws IOException {
 		String message = "myMessage";
 		this.link.sendCustomMessage(message);
 		assertThat(toArduinoWasSent(), is("alp://cust/" + message + "\n"));
+	}
+	@Test
+	public void canSendCustomMessageMultiValue() throws IOException {
+		this.link.sendCustomMessage("1","2", "3");
+		assertThat(toArduinoWasSent(), is("alp://cust/1/2/3\n"));
 	}
 
 	@Test

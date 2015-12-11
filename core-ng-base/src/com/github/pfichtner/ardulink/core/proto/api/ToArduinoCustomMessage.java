@@ -2,10 +2,10 @@ package com.github.pfichtner.ardulink.core.proto.api;
 
 public class ToArduinoCustomMessage {
 
-	public final String message;
+	public final String[] messages;
 
-	public ToArduinoCustomMessage(String message) {
-		this.message = message;
+	public ToArduinoCustomMessage(String... messages) {
+		this.messages = messages.clone();
 	}
 
 }

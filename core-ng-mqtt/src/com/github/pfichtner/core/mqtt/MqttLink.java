@@ -203,12 +203,12 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public void sendNoTone() throws IOException {
+	public void sendNoTone(AnalogPin analogPin) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void sendCustomMessage(String message) throws IOException {
+	public void sendCustomMessage(String... messages) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 

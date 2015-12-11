@@ -32,16 +32,6 @@
 	</properties>
 
 	<modules>
-		<module>ArdulinkCore</module>
-		<module>ArdulinkSwing</module>
-		<module>ArdulinkConsole</module>
-		<module>ArdulinkMail</module>
-		<module>ArdulinkNetworkProxyServer</module>
-		<module>Mqtt</module>
-		<module>DataReceiver</module>
-		<module>JoystickSmartCarDriver</module>
-		<module>SimpleSmartCarDriver</module>
-		<module>Deploy</module>
 		<module>core-ng-base</module>
 		<module>core-ng-serial</module>
 		<module>core-ng-bluetooth</module>
@@ -49,6 +39,18 @@
 		<module>core-ng-proxy</module>
 		<module>core-ng-mqtt</module>
 		<module>core-ng-util</module>
+		<module>ArdulinkCore</module>
+		<module>DataReceiver</module>
+		<module>ArdulinkNetworkProxyServer</module>
+		<module>Mqtt</module>
+		<module>ArdulinkSwing</module>
+		<module>ArdulinkConsole</module>
+		<module>Deploy</module>
+<!--
+		<module>ArdulinkMail</module>
+-->
+		<module>JoystickSmartCarDriver</module>
+		<module>SimpleSmartCarDriver</module>
 	</modules>
 
 	<build>
