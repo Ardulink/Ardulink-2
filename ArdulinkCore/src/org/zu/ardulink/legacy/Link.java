@@ -165,6 +165,80 @@ public abstract class Link {
 
 	}
 
+	public static final Link NO_LINK = new Link() {
+
+		@Override
+		public com.github.pfichtner.ardulink.core.Link getDelegate() {
+			return null;
+		}
+
+		@Override
+		public Object[] getChoiceValues(String attribute) {
+			return null;
+		}
+
+		@Override
+		public void sendCustomMessage(String... messages) {
+			// do nothing
+		}
+
+		@Override
+		public void addAnalogReadChangeListener(EventListener listener) {
+			// do nothing
+		}
+
+		@Override
+		public void removeAnalogReadChangeListener(EventListener listener) {
+			// do nothing
+		}
+
+		@Override
+		public void addDigitalReadChangeListener(EventListener listener) {
+			// do nothing
+		}
+
+		@Override
+		public void removeDigitalReadChangeListener(EventListener listener) {
+			// do nothing
+		}
+
+		@Override
+		public void sendKeyPressEvent(char keyChar, int keyCode,
+				int keyLocation, int modifiers, int modifiersEx) {
+			// do nothing
+		}
+
+		@Override
+		public void sendPowerPinIntensity(int pin, int powerValue) {
+			// do nothing
+		}
+
+		@Override
+		public void sendPowerPinSwitch(int pin, boolean b) {
+			// do nothing
+		}
+
+		@Override
+		public void sendToneMessage(int pin, Integer frequency) {
+			// do nothing
+		}
+
+		@Override
+		public void sendToneMessage(int pin, Integer frequency, Integer duration) {
+			// do nothing
+		}
+
+		@Override
+		public void sendNoToneMessage(int pin) {
+			// do nothing
+		}
+
+		@Override
+		public boolean disconnect() {
+			return false;
+		}
+	};
+
 	private static Link defaultInstance;
 
 	public static Link getDefaultInstance() {

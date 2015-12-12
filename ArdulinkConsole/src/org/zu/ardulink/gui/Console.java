@@ -150,10 +150,7 @@ public class Console extends JFrame implements Linkable {
 		btnDisconnect = new JButton("Disconnect");
 		btnDisconnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (link != null) {
-					logger.info("Connection status: {}", !link.disconnect());
-					setLink(null);
-				}
+				disconnect();
 			}
 
 		});
@@ -327,6 +324,15 @@ public class Console extends JFrame implements Linkable {
 		digitalPinStatus2.setPin(pin);
 		linkables.add(digitalPinStatus2);
 		return digitalPinStatus2;
+	}
+
+	private void disconnect() {
+		logger.info("Connection status: {}", !link.disconnect());
+		this.link = Link.NO_LINK;
+		disconnected();
+		for (Linkable linkable : linkables) {
+			linkable.setLink(link);
+		}
 	}
 
 	public void setLink(Link link) {
