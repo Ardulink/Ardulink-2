@@ -20,8 +20,10 @@ public abstract class AbstractListenerLink implements Link {
 	private final List<EventListener> eventListeners = new CopyOnWriteArrayList<EventListener>();
 	private final List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
 
+	private boolean closed;
+
 	public Link addListener(EventListener listener) throws IOException {
-		if (listener instanceof FilteredEventListenerAdapter) {
+		if (!closed && listener instanceof FilteredEventListenerAdapter) {
 			Pin pin = ((FilteredEventListenerAdapter) listener).getPin();
 			// old impl did start "startListening" on each addListener, so
 			// we do too for the moment
@@ -36,7 +38,7 @@ public abstract class AbstractListenerLink implements Link {
 
 	public Link removeListener(EventListener listener) throws IOException {
 		this.eventListeners.remove(listener);
-		if (listener instanceof FilteredEventListenerAdapter) {
+		if (!closed && listener instanceof FilteredEventListenerAdapter) {
 			Pin pin = ((FilteredEventListenerAdapter) listener).getPin();
 			if (!hasListenerForPin(pin)) {
 				stopListening(pin);
@@ -107,11 +109,16 @@ public abstract class AbstractListenerLink implements Link {
 		connectionListeners.remove(connectionListener);
 		return this;
 	}
-	
+
 	public void deregisterAllEventListeners() throws IOException {
 		for (EventListener eventListener : this.eventListeners) {
 			removeListener(eventListener);
 		}
+	}
+
+	@Override
+	public void close() throws IOException {
+		this.closed = true;
 	}
 
 }

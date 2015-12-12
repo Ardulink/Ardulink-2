@@ -130,6 +130,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	public void close() throws IOException {
 		deregisterAllEventListeners();
 		this.connection.close();
+		super.close();
 	}
 
 }

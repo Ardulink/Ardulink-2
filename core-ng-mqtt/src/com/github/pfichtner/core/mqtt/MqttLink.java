@@ -181,15 +181,13 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	private void publish(String topic, Object value) throws IOException {
-		if (this.mqttClient.isConnected()) {
-			try {
-				this.mqttClient.publish(topic,
-						new MqttMessage(String.valueOf(value).getBytes()));
-			} catch (MqttPersistenceException e) {
-				throw new IOException(e);
-			} catch (MqttException e) {
-				throw new IOException(e);
-			}
+		try {
+			this.mqttClient.publish(topic, new MqttMessage(String
+					.valueOf(value).getBytes()));
+		} catch (MqttPersistenceException e) {
+			throw new IOException(e);
+		} catch (MqttException e) {
+			throw new IOException(e);
 		}
 	}
 
@@ -228,6 +226,7 @@ public class MqttLink extends AbstractListenerLink {
 		} catch (MqttException e) {
 			throw new IOException(e);
 		}
+		super.close();
 	}
 
 }
