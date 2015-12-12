@@ -21,7 +21,8 @@ import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
 
 public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
-	// TODO Ardulink sends with  ArdulinkProtocol255 but receives with ArdulinkProtocolN
+	// TODO Ardulink sends with ArdulinkProtocol255 but receives with
+	// ArdulinkProtocolN
 	private static final Protocol READ_PROTO = ArdulinkProtocol255.instance();
 
 	@Override
@@ -38,11 +39,17 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 						"port must not be null"));
 		checkState(!portIdentifier.isCurrentlyOwned(),
 				"Port %s is currently in use", config.getPort());
-		SerialPort serialPort = serialPort(config, portIdentifier);
+		final SerialPort serialPort = serialPort(config, portIdentifier);
 		Protocol protocol = config.getProto();
 		return new ConnectionBasedLink(new StreamConnection(
 				serialPort.getInputStream(), serialPort.getOutputStream(),
-				READ_PROTO), protocol);
+				READ_PROTO), protocol) {
+			@Override
+			public void close() throws IOException {
+				super.close();
+				serialPort.close();
+			}
+		};
 	}
 
 	private SerialPort serialPort(SerialLinkConfig config,
