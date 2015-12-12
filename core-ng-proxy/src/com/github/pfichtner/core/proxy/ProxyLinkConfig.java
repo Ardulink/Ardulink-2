@@ -5,6 +5,7 @@ import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import static org.zu.ardulink.util.Preconditions.checkState;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -20,7 +21,7 @@ import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 
 public class ProxyLinkConfig implements LinkConfig {
 
-	public static class ProxyConnectionToRemote {
+	public static class ProxyConnectionToRemote implements Closeable {
 
 		public static enum Command {
 
@@ -89,6 +90,13 @@ public class ProxyLinkConfig implements LinkConfig {
 			printWriter.print(message);
 			printWriter.print(new String(protocol.getSeparator()));
 			printWriter.flush();
+		}
+
+		@Override
+		public void close() throws IOException {
+			bufferedReader.close();
+			printWriter.close();
+			socket.close();
 		}
 
 	}

@@ -26,7 +26,7 @@ public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
 	@Override
 	public ConnectionBasedLink newLink(ProxyLinkConfig config)
 			throws UnknownHostException, IOException {
-		ProxyConnectionToRemote remote = config.getRemote();
+		final ProxyConnectionToRemote remote = config.getRemote();
 
 		remote.send(CONNECT_CMD.getCommand());
 		remote.send(checkNotNull(config.getPort(), "port must not be null"));
@@ -37,7 +37,13 @@ public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
 		Socket socket = remote.getSocket();
 		return new ConnectionBasedLink(new StreamConnection(
 				socket.getInputStream(), socket.getOutputStream(),
-				ArdulinkProtocol255.instance()), ArdulinkProtocolN.instance());
+				ArdulinkProtocol255.instance()), ArdulinkProtocolN.instance()) {
+			@Override
+			public void close() throws IOException {
+				super.close();
+				remote.close();
+			}
+		};
 	}
 
 	public ProxyLinkConfig newLinkConfig() {
