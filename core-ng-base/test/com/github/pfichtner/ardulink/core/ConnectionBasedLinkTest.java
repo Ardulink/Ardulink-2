@@ -198,7 +198,8 @@ public class ConnectionBasedLinkTest {
 
 	@Test
 	public void canSendToneWithDuration() throws IOException {
-		this.link.sendTone(Tone.forPin(analogPin(2)).withHertz(3000).withDuration(5, SECONDS));
+		this.link.sendTone(Tone.forPin(analogPin(2)).withHertz(3000)
+				.withDuration(5, SECONDS));
 		assertThat(toArduinoWasSent(), is("alp://tone/2/3000/5000\n"));
 	}
 
@@ -207,7 +208,7 @@ public class ConnectionBasedLinkTest {
 		this.link.sendTone(Tone.forPin(analogPin(2)).withHertz(3000).endless());
 		assertThat(toArduinoWasSent(), is("alp://tone/2/3000/-1\n"));
 	}
-	
+
 	@Test
 	public void canSendNoTone() throws IOException {
 		this.link.sendNoTone(analogPin(5));
@@ -220,9 +221,10 @@ public class ConnectionBasedLinkTest {
 		this.link.sendCustomMessage(message);
 		assertThat(toArduinoWasSent(), is("alp://cust/" + message + "\n"));
 	}
+
 	@Test
 	public void canSendCustomMessageMultiValue() throws IOException {
-		this.link.sendCustomMessage("1","2", "3");
+		this.link.sendCustomMessage("1", "2", "3");
 		assertThat(toArduinoWasSent(), is("alp://cust/1/2/3\n"));
 	}
 
@@ -304,6 +306,25 @@ public class ConnectionBasedLinkTest {
 		simulateArdunoSend(m2);
 		simulateArdunoSend(m2);
 		waitUntilRead(this.bytesRead, 2 * m2.length());
+	}
+
+	@Test
+	public void doesDeregisterAllListenersBeforeClosing() throws IOException {
+		final StringBuilder sb = new StringBuilder();
+		this.link.addListener(new EventListener() {
+			@Override
+			public void stateChanged(AnalogPinValueChangedEvent event) {
+				sb.append(event);
+			}
+			@Override
+			public void stateChanged(DigitalPinValueChangedEvent event) {
+				sb.append(event);
+			}
+		});
+		this.link.close();
+		this.link.switchAnalogPin(analogPin(anyPositive(int.class)),
+				anyPositive(int.class));
+		assertThat(sb.toString(), is(""));
 	}
 
 	private int anyPositive(Class<? extends Number> numClass) {

@@ -214,6 +214,7 @@ public class MqttLink extends AbstractListenerLink {
 
 	@Override
 	public void close() throws IOException {
+		deregisterAllEventListeners();
 		try {
 			if (this.mqttClient.isConnected()) {
 				unsubscribe();

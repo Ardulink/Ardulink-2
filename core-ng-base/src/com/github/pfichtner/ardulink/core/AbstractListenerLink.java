@@ -107,5 +107,11 @@ public abstract class AbstractListenerLink implements Link {
 		connectionListeners.remove(connectionListener);
 		return this;
 	}
+	
+	public void deregisterAllEventListeners() throws IOException {
+		for (EventListener eventListener : this.eventListeners) {
+			removeListener(eventListener);
+		}
+	}
 
 }
