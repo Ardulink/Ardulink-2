@@ -49,14 +49,13 @@ public class ProxyLinkConfig implements LinkConfig {
 
 		private final String host;
 		private final Socket socket;
-		private final Protocol protocol;
+		private final Protocol protocol = ArdulinkProtocolN.instance();
 		private final BufferedReader bufferedReader;
 		private final PrintWriter printWriter;
 
-		public ProxyConnectionToRemote(String host, int port, Protocol protocol)
+		public ProxyConnectionToRemote(String host, int port)
 				throws UnknownHostException, IOException {
 			this.host = host;
-			this.protocol = protocol;
 			socket = new Socket(host, port);
 			this.bufferedReader = new BufferedReader(new InputStreamReader(
 					socket.getInputStream()));
@@ -86,30 +85,12 @@ public class ProxyLinkConfig implements LinkConfig {
 			return bufferedReader.readLine();
 		}
 
-		private Runnable runnable() {
-			return new Runnable() {
-				@Override
-				public void run() {
-					throw new UnsupportedOperationException(
-							"not yet implemented");
-				}
-			};
-		}
-
 		public void send(String message) {
 			printWriter.print(message);
 			printWriter.print(new String(protocol.getSeparator()));
 			printWriter.flush();
 		}
 
-		public void startBackgroundReader() {
-			new Thread(runnable()) {
-				{
-					setDaemon(true);
-					start();
-				}
-			};
-		}
 	}
 
 	private static final int DEFAULT_LISTENING_PORT = 4478;
@@ -122,9 +103,6 @@ public class ProxyLinkConfig implements LinkConfig {
 	@Named("tcpport")
 	private int tcpport = DEFAULT_LISTENING_PORT;
 
-	@Named("tcpproto")
-	private Protocol tcpproto = ArdulinkProtocolN.instance();
-
 	@Named("port")
 	private String port;
 
@@ -134,14 +112,7 @@ public class ProxyLinkConfig implements LinkConfig {
 	@Named("proto")
 	private Protocol proto = ArdulinkProtocolN.instance();
 
-	@Named("networkproto")
 	private ProxyConnectionToRemote remote;
-
-	private Protocol networkProto = ArdulinkProtocolN.instance();;
-
-	public Protocol getNetworkProto() {
-		return networkProto;
-	}
 
 	public String getPort() {
 		return port;
@@ -151,24 +122,12 @@ public class ProxyLinkConfig implements LinkConfig {
 		return speed;
 	}
 
-	public Protocol getProto() {
-		return proto;
-	}
-
 	public String getTcphost() {
 		return tcphost;
 	}
 
 	public int getTcpport() {
 		return tcpport;
-	}
-
-	public Protocol getTcpproto() {
-		return tcpproto;
-	}
-
-	public void setNetworkProto(Protocol networkProto) {
-		this.networkProto = networkProto;
 	}
 
 	public void setPort(String port) {
@@ -191,10 +150,6 @@ public class ProxyLinkConfig implements LinkConfig {
 		this.tcpport = tcpport;
 	}
 
-	public void setTcpproto(String tcpproto) {
-		this.tcpproto = Protocols.getByName(tcpproto);
-	}
-
 	@ChoiceFor("port")
 	public List<String> getAvailablePorts() throws IOException {
 		return getRemote().getPortList();
@@ -203,8 +158,7 @@ public class ProxyLinkConfig implements LinkConfig {
 	public synchronized ProxyConnectionToRemote getRemote()
 			throws UnknownHostException, IOException {
 		if (this.remote == null) {
-			this.remote = new ProxyConnectionToRemote(tcphost, tcpport,
-					tcpproto);
+			this.remote = new ProxyConnectionToRemote(tcphost, tcpport);
 		}
 		return this.remote;
 	}
