@@ -75,7 +75,7 @@ public class Console extends JFrame implements Linkable {
 	private JButton btnConnect;
 	private JButton btnDisconnect;
 
-	private Link link;
+	 private Link link;
 
 	private final List<Linkable> linkables = new LinkedList<Linkable>();
 
@@ -134,8 +134,9 @@ public class Console extends JFrame implements Linkable {
 			public void actionPerformed(ActionEvent event) {
 				String uri = genericConnectionPanel.getURI();
 				try {
-					link = new Link.LegacyLinkAdapter(LinkManager.getInstance()
-							.getConfigurer(new URI(uri)).newLink());
+					setLink(new Link.LegacyLinkAdapter(LinkManager
+							.getInstance().getConfigurer(new URI(uri))
+							.newLink()));
 				} catch (URISyntaxException e) {
 					throw new RuntimeException(e);
 				} catch (Exception e) {
