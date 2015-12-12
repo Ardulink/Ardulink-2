@@ -102,7 +102,7 @@ public class AnotherMqttClient extends ExternalResource {
 	public void switchPin(Pin pin, Object value) throws MqttException,
 			MqttPersistenceException {
 		sendMessage(new Message(this.topic + typeMap.get(pin.getType())
-				+ pin.pinNum() + "/set/value", String.valueOf(value)));
+				+ pin.pinNum() + "/value/get", String.valueOf(value)));
 	}
 
 	private void sendMessage(Message message) throws MqttException,
