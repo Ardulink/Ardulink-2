@@ -174,7 +174,7 @@ public abstract class Link {
 
 		@Override
 		public Object[] getChoiceValues(String attribute) {
-			return null;
+			return new Object[0];
 		}
 
 		@Override
