@@ -18,15 +18,13 @@ limitations under the License.
 
 package org.zu.ardulink.gui;
 
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.net.URI;
 import java.util.List;
 
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 
 import org.zu.ardulink.legacy.Link;
 
@@ -36,7 +34,7 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = 1290277902714226253L;
 
-	private JTextField uri;
+	private JComboBox uris;
 
 	private Link link;
 
@@ -49,22 +47,23 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 		JLabel connectionPortLabel = new JLabel("URI");
 		add(connectionPortLabel);
 
-		uri = new JTextField();
+		uris = new JComboBox();
+		uris.setEditable(true);
 		List<URI> listURIs = LinkManager.getInstance().listURIs();
-		if (!listURIs.isEmpty()) {
-			uri.setText(listURIs.get(0).toASCIIString());
+		for (URI uri : listURIs) {
+			uris.addItem(uri.toASCIIString());
 		}
-		add(uri);
+		add(uris);
 	}
 
 	public String getURI() {
-		return uri.getText();
+		return uris.getSelectedItem().toString();
 	}
 
 	@Override
 	public void setEnabled(boolean enabled) {
 		super.setEnabled(enabled);
-		uri.setEnabled(enabled);
+		uris.setEnabled(enabled);
 	}
 
 	private Link getLink() {
@@ -76,6 +75,6 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 	}
 
 	public void setBaudRateVisible(boolean visibility) {
-		uri.setVisible(visibility);
+		uris.setVisible(visibility);
 	}
 }
