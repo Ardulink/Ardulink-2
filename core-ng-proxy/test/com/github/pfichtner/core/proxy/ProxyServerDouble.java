@@ -1,6 +1,6 @@
 package com.github.pfichtner.core.proxy;
 
-import static com.github.pfichtner.core.proxy.ProxyLinkConfig.ProxyConnectionToRemote.OK;
+import static com.github.pfichtner.core.proxy.ProxyLinkFactory.OK;
 
 import java.io.BufferedReader;
 import java.io.IOException;

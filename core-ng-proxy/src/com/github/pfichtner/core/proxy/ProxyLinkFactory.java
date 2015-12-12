@@ -1,7 +1,6 @@
 package com.github.pfichtner.core.proxy;
 
-import static com.github.pfichtner.core.proxy.ProxyLinkConfig.ProxyConnectionToRemote.OK;
-import static com.github.pfichtner.core.proxy.ProxyLinkConfig.ProxyConnectionToRemote.Command.CONNECT_CMD;
+import static com.github.pfichtner.core.proxy.ProxyConnectionToRemote.Command.CONNECT_CMD;
 import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import static org.zu.ardulink.util.Preconditions.checkState;
 
@@ -14,9 +13,10 @@ import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
-import com.github.pfichtner.core.proxy.ProxyLinkConfig.ProxyConnectionToRemote;
 
 public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
+
+	public static final String OK = "OK";
 
 	@Override
 	public String getName() {
