@@ -60,7 +60,7 @@ public class MqttLink extends AbstractListenerLink {
 		checkArgument(config.getTopic() != null, "topic must not be null");
 		this.topic = config.getTopic();
 		this.mqttReceivePattern = Pattern.compile(MqttLink.this.topic
-				+ "([aAdD])(\\d+)/set/value");
+				+ "([aAdD])(\\d+)\\/value\\/get");
 		this.mqttClient = new MqttClient("tcp://" + config.getHost() + ":"
 				+ config.getPort(), config.getClientId());
 		listenToMqtt();
