@@ -327,22 +327,20 @@ public class Console extends JFrame implements Linkable {
 	}
 
 	private void disconnect() {
-		logger.info("Connection status: {}", !link.disconnect());
+		logger.info("Connection status: {}", !this.link.disconnect());
 		this.link = Link.NO_LINK;
 		disconnected();
-		for (Linkable linkable : linkables) {
-			linkable.setLink(link);
-		}
+		callLinkables(link);
 	}
 
 	public void setLink(Link link) {
 		this.link = link;
-		if (link == null) {
-			disconnected();
-		} else {
-			connected();
-			connectionStatus.reconnected();
-		}
+		connected();
+		connectionStatus.reconnected();
+		callLinkables(link);
+	}
+
+	private void callLinkables(Link link) {
 		for (Linkable linkable : linkables) {
 			linkable.setLink(link);
 		}
