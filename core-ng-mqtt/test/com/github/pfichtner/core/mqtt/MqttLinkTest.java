@@ -12,10 +12,11 @@ import static org.junit.Assert.assertThat;
 import static org.junit.rules.RuleChain.outerRule;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
@@ -73,7 +74,8 @@ public class MqttLinkTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testReconnect() throws URISyntaxException, Exception {
+	@Ignore
+	public void testReconnect() throws Exception {
 		MqttLinkFactory factory = new MqttLinkFactory();
 		MqttLinkConfig config = factory.newLinkConfig();
 		config.setTopic(TOPIC);

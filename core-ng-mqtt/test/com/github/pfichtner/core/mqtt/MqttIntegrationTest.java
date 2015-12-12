@@ -5,6 +5,7 @@ import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
 import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
 import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
 import static com.github.pfichtner.core.mqtt.duplicated.EventMatchers.eventFor;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
@@ -18,9 +19,11 @@ import java.util.Collections;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
+import org.junit.rules.Timeout;
 
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.Pin;
@@ -38,6 +41,9 @@ public class MqttIntegrationTest {
 
 	@Rule
 	public RuleChain chain = outerRule(new Broker()).around(mqttClient);
+
+	@Rule
+	public Timeout timeout = new Timeout(5, MINUTES);
 
 	private Link link;
 
@@ -138,6 +144,7 @@ public class MqttIntegrationTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
+	@Ignore
 	public void canSwitchDigitalPinViaBroker() throws Exception {
 		Pin pin = digitalPin(1);
 		boolean value = true;
@@ -150,6 +157,7 @@ public class MqttIntegrationTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
+	@Ignore
 	public void canSwitchAnalogPinViaBroker() throws Exception {
 		Pin pin = analogPin(2);
 		int value = 123;
