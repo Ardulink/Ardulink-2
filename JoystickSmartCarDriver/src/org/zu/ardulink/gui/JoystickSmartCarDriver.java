@@ -34,8 +34,6 @@ import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
 import org.zu.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
-import org.zu.ardulink.gui.legacy.BluetoothConnectionPanel;
-import org.zu.ardulink.gui.legacy.ConnectionStatus;
 import org.zu.ardulink.legacy.Link;
 import org.zu.ardulink.util.Lists;
 

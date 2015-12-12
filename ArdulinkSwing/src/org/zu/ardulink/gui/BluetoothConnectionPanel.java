@@ -16,7 +16,7 @@ limitations under the License.
 @author Luciano Zu
  */
 
-package org.zu.ardulink.gui.legacy;
+package org.zu.ardulink.gui;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
@@ -35,8 +35,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.zu.ardulink.gui.Linkable;
-import org.zu.ardulink.gui.PortListCallbackDialog;
 import org.zu.ardulink.gui.facility.UtilityGeometry;
 import org.zu.ardulink.legacy.Link;
 

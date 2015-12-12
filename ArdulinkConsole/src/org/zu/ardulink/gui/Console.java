@@ -74,8 +74,9 @@ public class Console extends JFrame implements Linkable {
 	private KeyPressController keyControlPanel;
 	private JButton btnConnect;
 	private JButton btnDisconnect;
+	private ConnectionStatus connectionStatus;
 
-	 private Link link;
+	private Link link;
 
 	private final List<Linkable> linkables = new LinkedList<Linkable>();
 
@@ -150,7 +151,8 @@ public class Console extends JFrame implements Linkable {
 		btnDisconnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (link != null) {
-					logger.info("Connection status: ", !link.disconnect());
+					logger.info("Connection status: {}", !link.disconnect());
+					setLink(null);
 				}
 			}
 
@@ -256,6 +258,13 @@ public class Console extends JFrame implements Linkable {
 		flowLayout_1.setAlignment(FlowLayout.LEFT);
 		contentPane.add(stateBar, BorderLayout.SOUTH);
 
+		connectionStatus = new ConnectionStatus();
+		linkables.add(connectionStatus);
+		FlowLayout flowLayout = (FlowLayout) connectionStatus.getLayout();
+		flowLayout.setVgap(0);
+		flowLayout.setAlignment(FlowLayout.LEFT);
+		stateBar.add(connectionStatus, BorderLayout.SOUTH);
+
 		tabbedPane.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				if (tabbedPane.getSelectedComponent().equals(keyControlPanel)) {
@@ -263,6 +272,7 @@ public class Console extends JFrame implements Linkable {
 				}
 			}
 		});
+		disconnected();
 	}
 
 	private PWMController pwmController(int pin) {
@@ -323,20 +333,25 @@ public class Console extends JFrame implements Linkable {
 		this.link = link;
 		if (link == null) {
 			disconnected();
+		} else {
+			connected();
+			connectionStatus.reconnected();
 		}
 		for (Linkable linkable : linkables) {
 			linkable.setLink(link);
 		}
 	}
 
-	public void connected() {
+	private void connected() {
 		btnConnect.setEnabled(false);
 		btnDisconnect.setEnabled(true);
+		genericConnectionPanel.setEnabled(false);
 	}
 
 	private void disconnected() {
 		btnConnect.setEnabled(true);
 		btnDisconnect.setEnabled(false);
+		genericConnectionPanel.setEnabled(true);
 	}
 
 }

@@ -16,16 +16,12 @@ limitations under the License.
 @author Luciano Zu
  */
 
-package org.zu.ardulink.gui.legacy;
+package org.zu.ardulink.gui;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-
-
-
-import org.zu.ardulink.gui.Linkable;
 import org.zu.ardulink.legacy.Link;
 
 import com.github.pfichtner.ardulink.core.ConnectionListener;
