@@ -127,7 +127,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 			handlePinChanged((FromArduinoPinStateChanged) fromArduino);
 		} else if (fromArduino instanceof FromArduinoReply) {
 			FromArduinoReply reply = (FromArduinoReply) fromArduino;
-			fireReplyReceived(new DefaultRplyEvent(reply.ok, reply.id));
+			fireReplyReceived(new DefaultRplyEvent(reply.isOk(), reply.getId()));
 		} else {
 			throw new IllegalStateException("Cannot handle " + fromArduino);
 		}
