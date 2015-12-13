@@ -36,12 +36,13 @@ import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
  */
 public class HALink extends ConnectionBasedLink implements RplyListener {
 
-	public static class MessageIdHolderInvocationHandler implements
+	private static class MessageIdHolderInvocationHandler implements
 			InvocationHandler {
+
+		private static final Method messageIdHolderGetIdMethod = getMessageIdHolderGetIdMethod();
 
 		private final Object delegate;
 		private final long messageId;
-		private static final Method messageIdHolderGetIdMethod = getMessageIdHolderGetIdMethod();
 
 		private static Method getMessageIdHolderGetIdMethod() {
 			try {
