@@ -5,6 +5,9 @@ import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import static org.zu.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
@@ -17,9 +20,12 @@ import org.slf4j.LoggerFactory;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.events.RplyEvent;
 import com.github.pfichtner.ardulink.core.events.RplyListener;
+import com.github.pfichtner.ardulink.core.proto.api.MessageIdHolder;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoNoTone;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoTone;
+import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoKeyPressEvent;
+import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoNoTone;
+import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
 
 /**
  * Arduino sends ok/ko messages directly aftere receiving the work message. So
@@ -53,10 +59,23 @@ public class HALink extends ConnectionBasedLink implements RplyListener {
 	}
 
 	@Override
-	public void sendTone(Tone tone) throws IOException {
+	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,
+			int keymodifiers, int keymodifiersex) throws IOException {
 		long messageId = nextId();
 		getConnection().write(
-				getProtocol().toArduino(new ToArduinoTone(messageId, tone)));
+				getProtocol().toArduino(
+						proxy(new DefaultToArduinoKeyPressEvent(keychar, keycode,
+								keylocation, keymodifiers, keymodifiersex),
+								messageId)));
+		waitFor(messageId);
+	}
+
+	@Override
+	public void sendTone(Tone tone) throws IOException {
+		long messageId = nextId();
+		ToArduinoTone a = new DefaultToArduinoTone(tone);
+		ToArduinoTone b = proxy(a, messageId);
+		getConnection().write(getProtocol().toArduino(b));
 		waitFor(messageId);
 	}
 
@@ -65,8 +84,29 @@ public class HALink extends ConnectionBasedLink implements RplyListener {
 		long messageId = nextId();
 		getConnection().write(
 				getProtocol().toArduino(
-						new ToArduinoNoTone(messageId, analogPin)));
+						proxy(new DefaultToArduinoNoTone(analogPin), messageId)));
 		waitFor(messageId);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> T proxy(final T t, final long messageId) {
+		InvocationHandler h = new InvocationHandler() {
+			@Override
+			public Object invoke(Object proxy, Method method, Object[] args)
+					throws Throwable {
+				if (method.equals(MessageIdHolder.class.getMethod("getId"))) {
+					return messageId;
+				}
+				return method.invoke(t, args);
+			}
+		};
+		Class<?>[] existingInterfaces = t.getClass().getInterfaces();
+		Class<?>[] newInterfaces = new Class<?>[existingInterfaces.length + 1];
+		newInterfaces[0] = MessageIdHolder.class;
+		System.arraycopy(existingInterfaces, 0, newInterfaces, 1,
+				existingInterfaces.length);
+		return (T) Proxy.newProxyInstance(t.getClass().getClassLoader(),
+				newInterfaces, h);
 	}
 
 	private long nextId() {

@@ -18,13 +18,15 @@ import com.github.pfichtner.ardulink.core.events.DefaultRplyEvent;
 import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol.FromArduino;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoCustomMessage;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoKeyPressEvent;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoNoTone;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoPinEvent;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStartListening;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoTone;
+import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoCustomMessage;
+import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoKeyPressEvent;
+import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoNoTone;
+import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoPinEvent;
+import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoStartListening;
+import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoStopListening;
+import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
 import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoPinStateChanged;
 import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoReply;
 
@@ -58,14 +60,15 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	@Override
 	public void startListening(Pin pin) throws IOException {
 		logger.info("Starting listening on pin {}", pin);
-		ToArduinoStartListening startListeningEvent = new ToArduinoStartListening(
+		ToArduinoStartListening startListeningEvent = new DefaultToArduinoStartListening(
 				pin);
 		this.connection.write(this.protocol.toArduino(startListeningEvent));
 	}
 
 	@Override
 	public void stopListening(Pin pin) throws IOException {
-		ToArduinoStopListening stopListening = new ToArduinoStopListening(pin);
+		ToArduinoStopListening stopListening = new DefaultToArduinoStopListening(
+				pin);
 		this.connection.write(this.protocol.toArduino(stopListening));
 		logger.info("Stopped listening on pin {}", pin);
 	}
@@ -86,35 +89,36 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
 		this.connection.write(this.protocol
-				.toArduino(new ToArduinoKeyPressEvent(keychar, keycode,
+				.toArduino(new DefaultToArduinoKeyPressEvent(keychar, keycode,
 						keylocation, keymodifiers, keymodifiersex)));
 	}
 
 	@Override
 	public void sendTone(Tone tone) throws IOException {
-		this.connection.write(this.protocol.toArduino(new ToArduinoTone(tone)));
+		this.connection.write(this.protocol.toArduino(new DefaultToArduinoTone(
+				tone)));
 	}
 
 	@Override
 	public void sendNoTone(AnalogPin analogPin) throws IOException {
-		this.connection.write(this.protocol.toArduino(new ToArduinoNoTone(
-				analogPin)));
+		this.connection.write(this.protocol
+				.toArduino(new DefaultToArduinoNoTone(analogPin)));
 	}
 
 	@Override
 	public void sendCustomMessage(String... messages) throws IOException {
 		this.connection.write(this.protocol
-				.toArduino(new ToArduinoCustomMessage(messages)));
+				.toArduino(new DefaultToArduinoCustomMessage(messages)));
 	}
 
 	private void send(AnalogPin pin, Integer value) throws IOException {
-		this.connection.write(this.protocol.toArduino(new ToArduinoPinEvent(
-				pin, value)));
+		this.connection.write(this.protocol
+				.toArduino(new DefaultToArduinoPinEvent(pin, value)));
 	}
 
 	private void send(DigitalPin pin, Boolean value) throws IOException {
-		this.connection.write(this.protocol.toArduino(new ToArduinoPinEvent(
-				pin, value)));
+		this.connection.write(this.protocol
+				.toArduino(new DefaultToArduinoPinEvent(pin, value)));
 	}
 
 	protected void received(byte[] bytes) {

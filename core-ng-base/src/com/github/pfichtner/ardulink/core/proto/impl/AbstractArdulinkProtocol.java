@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import org.zu.ardulink.util.Longs;
 
 import com.github.pfichtner.ardulink.core.Pin;
+import com.github.pfichtner.ardulink.core.proto.api.MessageIdHolder;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoCustomMessage;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoKeyPressEvent;
@@ -64,73 +65,78 @@ public class AbstractArdulinkProtocol implements Protocol {
 
 	@Override
 	public byte[] toArduino(ToArduinoStartListening startListeningEvent) {
-		Pin pin = startListeningEvent.pin;
-		if (startListeningEvent.pin.is(ANALOG)) {
+		Pin pin = startListeningEvent.getPin();
+		if (startListeningEvent.getPin().is(ANALOG)) {
 			return toBytes(alpProtocolMessage(START_LISTENING_ANALOG).forPin(
 					pin.pinNum()).withoutValue());
 		}
-		if (startListeningEvent.pin.is(DIGITAL)) {
+		if (startListeningEvent.getPin().is(DIGITAL)) {
 			return toBytes(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(
 					pin.pinNum()).withoutValue());
 		}
-		throw illegalPinType(startListeningEvent.pin);
+		throw illegalPinType(startListeningEvent.getPin());
 	}
 
 	@Override
 	public byte[] toArduino(ToArduinoStopListening stopListeningEvent) {
-		Pin pin = stopListeningEvent.pin;
-		if (stopListeningEvent.pin.is(ANALOG)) {
+		Pin pin = stopListeningEvent.getPin();
+		if (stopListeningEvent.getPin().is(ANALOG)) {
 			return toBytes(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(
 					pin.pinNum()).withoutValue());
 		}
-		if (stopListeningEvent.pin.is(DIGITAL)) {
+		if (stopListeningEvent.getPin().is(DIGITAL)) {
 			return toBytes(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(
 					pin.pinNum()).withoutValue());
 		}
-		throw illegalPinType(stopListeningEvent.pin);
+		throw illegalPinType(stopListeningEvent.getPin());
 	}
 
 	@Override
 	public byte[] toArduino(ToArduinoPinEvent pinEvent) {
-		if (pinEvent.pin.is(ANALOG)) {
-			return toBytes(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(
-					pinEvent.pin.pinNum()).withValue((Integer) pinEvent.value));
+		if (pinEvent.getPin().is(ANALOG)) {
+			return toBytes(builder(pinEvent, POWER_PIN_INTENSITY).forPin(
+					pinEvent.getPin().pinNum()).withValue((Integer) pinEvent.getValue()));
 		}
-		if (pinEvent.pin.is(DIGITAL)) {
-			return toBytes(alpProtocolMessage(POWER_PIN_SWITCH).forPin(
-					pinEvent.pin.pinNum()).withState((Boolean) pinEvent.value));
+		if (pinEvent.getPin().is(DIGITAL)) {
+			return toBytes(builder(pinEvent, POWER_PIN_SWITCH).forPin(
+					pinEvent.getPin().pinNum()).withState((Boolean) pinEvent.getValue()));
 		}
-		throw illegalPinType(pinEvent.pin);
+		throw illegalPinType(pinEvent.getPin());
+	}
+
+	private ALProtoBuilder builder(Object event, ALPProtocolKey key) {
+		ALProtoBuilder builder = alpProtocolMessage(key);
+		return event instanceof MessageIdHolder ? builder
+				.usingMessageId(((MessageIdHolder) event).getId()) : builder;
 	}
 
 	@Override
 	public byte[] toArduino(ToArduinoKeyPressEvent charEvent) {
-		return toBytes(alpProtocolMessage(CHAR_PRESSED).withValue(
-				"chr" + charEvent.keychar + "cod" + charEvent.keycode + "loc"
-						+ charEvent.keylocation + "mod"
-						+ charEvent.keymodifiers + "mex"
-						+ charEvent.keymodifiersex));
+		return toBytes(builder(charEvent, CHAR_PRESSED).withValue(
+				"chr" + charEvent.getKeychar() + "cod" + charEvent.getKeycode() + "loc"
+						+ charEvent.getKeylocation() + "mod"
+						+ charEvent.getKeymodifiers() + "mex"
+						+ charEvent.getKeymodifiersex()));
 	}
 
 	@Override
 	public byte[] toArduino(ToArduinoTone toArduinoTone) {
-		Long duration = toArduinoTone.tone.getDurationInMillis();
-		return toBytes(alpProtocolMessage(TONE).usingMessageId(
-				toArduinoTone.messageId).withValue(
-				toArduinoTone.tone.getPin().pinNum() + "/"
-						+ toArduinoTone.tone.getHertz() + "/"
+		Long duration = toArduinoTone.getTone().getDurationInMillis();
+		return toBytes(builder(toArduinoTone, TONE).withValue(
+				toArduinoTone.getTone().getPin().pinNum() + "/"
+						+ toArduinoTone.getTone().getHertz() + "/"
 						+ (duration == null ? -1 : duration.longValue())));
 	}
 
 	@Override
 	public byte[] toArduino(ToArduinoNoTone noTone) {
-		return toBytes(alpProtocolMessage(NOTONE).usingMessageId(
-				noTone.messageId).withValue(noTone.analogPin.pinNum()));
+		return toBytes(builder(noTone, NOTONE).withValue(
+				noTone.getAnalogPin().pinNum()));
 	}
 
 	@Override
 	public byte[] toArduino(ToArduinoCustomMessage customMessage) {
-		String[] messages = customMessage.messages;
+		String[] messages = customMessage.getMessages();
 		return toBytes(alpProtocolMessage(CUSTOM_MESSAGE).withValues(messages));
 	}
 

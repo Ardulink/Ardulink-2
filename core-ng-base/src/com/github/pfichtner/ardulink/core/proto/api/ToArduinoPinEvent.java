@@ -1,22 +1,11 @@
 package com.github.pfichtner.ardulink.core.proto.api;
 
 import com.github.pfichtner.ardulink.core.Pin;
-import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
-import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
 
-public class ToArduinoPinEvent {
+public interface ToArduinoPinEvent {
 
-	public final Pin pin;
-	public final Object value;
+	Pin getPin();
 
-	public ToArduinoPinEvent(DigitalPin pin, Boolean value) {
-		this.pin = pin;
-		this.value = value;
-	}
-
-	public ToArduinoPinEvent(AnalogPin pin, Integer value) {
-		this.pin = pin;
-		this.value = value;
-	}
+	Object getValue();
 
 }
