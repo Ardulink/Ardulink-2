@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @author Luciano Zu
-*/
+ */
 
 package org.zu.ardulink.mail.server.links.configuration;
 
@@ -36,20 +36,21 @@ import org.zu.ardulink.io.WritingException;
  * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
- * [adsense]
+ *         [adsense]
  *
  */
 public class ConfigurationFacade {
 
-	private static final Logger logger = LoggerFactory.getLogger(ConfigurationFacade.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(ConfigurationFacade.class);
 	private static AConfiguration configuration;
 	private static final Map<String, ALink> linksMap = synchronizedMap(new HashMap<String, ALink>());
-	private static final Map<String, AConnection> connectionsMap = synchronizedMap(new HashMap<String, AConnection>());
-	
+
 	static {
 		try {
 			loadConfiguration();
-		} catch (ReadingException e) { // maybe config file doesn't exist I'll write it with default values
+		} catch (ReadingException e) { // maybe config file doesn't exist I'll
+										// write it with default values
 			try {
 				configuration = new AConfiguration(); // Default
 				saveConfiguration();
@@ -60,55 +61,62 @@ public class ConfigurationFacade {
 			}
 		}
 	}
-	
+
 	public static AConfiguration getConfiguration() {
 		return configuration;
 	}
-	
+
 	public static void saveConfiguration() throws WritingException {
-		ConfigurationSerializer.write(configuration, ConfigurationSerializer.CONFIGURATION_FILE_NAME);
+		ConfigurationSerializer.write(configuration,
+				ConfigurationSerializer.CONFIGURATION_FILE_NAME);
 	}
-	
+
 	public static AConfiguration loadConfiguration() throws ReadingException {
-		
+
 		configuration = loadConfigurationInClassPath();
-		if(configuration == null) {
-			configuration = ConfigurationSerializer.read(ConfigurationSerializer.CONFIGURATION_FILE_NAME);
+		if (configuration == null) {
+			configuration = ConfigurationSerializer
+					.read(ConfigurationSerializer.CONFIGURATION_FILE_NAME);
 		}
-		
+
 		return configuration;
 	}
-	
-	private static AConfiguration loadConfigurationInClassPath() throws ReadingException {
-		
+
+	private static AConfiguration loadConfigurationInClassPath()
+			throws ReadingException {
+
 		AConfiguration retvalue = null;
 		ClassLoader classLoader = ConfigurationFacade.class.getClassLoader();
-		InputStream is = classLoader.getResourceAsStream(ConfigurationSerializer.CONFIGURATION_FILE_NAME);
-		if(is == null) {
-			is = ClassLoader.getSystemResourceAsStream(ConfigurationSerializer.CONFIGURATION_FILE_NAME);
+		InputStream is = classLoader
+				.getResourceAsStream(ConfigurationSerializer.CONFIGURATION_FILE_NAME);
+		if (is == null) {
+			is = ClassLoader
+					.getSystemResourceAsStream(ConfigurationSerializer.CONFIGURATION_FILE_NAME);
 		}
-		
-		if(is != null) {
+
+		if (is != null) {
 			retvalue = ConfigurationSerializer.read(is);
 		}
 		return retvalue;
 	}
 
 	/**
-	 * search for a list of ACommand that has a content hooks right for this content.
+	 * search for a list of ACommand that has a content hooks right for this
+	 * content.
+	 * 
 	 * @param content
 	 * @return
 	 */
 	public static List<ACommand> findCommands(String content) {
 		List<ACommand> retvalue = new LinkedList<ACommand>();
 		for (ACommand aCommand : configuration.getaCommandList().getACommands()) {
-			if(aCommand.isForContent(content)) {
+			if (aCommand.isForContent(content)) {
 				retvalue.add(aCommand);
 			}
 		}
 		return retvalue;
 	}
-	
+
 	public static List<ALink> getALinks(List<String> aLinkNames) {
 		List<ALink> retvalue = new LinkedList<ALink>();
 		for (String aLinkName : aLinkNames) {
@@ -116,9 +124,7 @@ public class ConfigurationFacade {
 			if (aLink == null) {
 				aLink = linkByName(aLinkName, configuration.getaLinkList()
 						.getALinks());
-				linksMap.put(
-						aLinkName,
-						aLink);
+				linksMap.put(aLinkName, aLink);
 			}
 			retvalue.add(aLink);
 		}
@@ -134,25 +140,6 @@ public class ConfigurationFacade {
 		throw new RuntimeException(
 				"ALink name in ACommand is not found in ALinksList please check this name in config file: "
 						+ aLinkName);
-	}
-
-	public static AConnection getAConnection(String aConnectionName) {
-		AConnection retvalue = connectionsMap.get(aConnectionName);
-		if (retvalue == null) {
-			retvalue = connectionByName(aConnectionName, configuration.getaConnectionList().getAConnections());
-			
-			connectionsMap.put(	aConnectionName, retvalue);
-		}
-		return retvalue;
-	}
-	
-	private static AConnection connectionByName(String aConnectionName, Iterable<AConnection> connections) {
-		for (AConnection aConnection : connections) {
-			if (aConnectionName.equals(aConnection.getName())) {
-				return aConnection;
-			}
-		}
-		throw new RuntimeException("AConnection name in ALink is not found in AConnectionsList please check this name in config file: " + aConnectionName);
 	}
 
 }

@@ -32,18 +32,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name="configuration")
 public class AConfiguration {
 
-	private AConnectionList aConnectionList;
 	private ALinkList aLinkList;
 	private ACommandList aCommandList;
 	
-	@XmlElement(name="aConnectionList")
-	public AConnectionList getaConnectionList() {
-		return aConnectionList;
-	}
-	public void setaConnectionList(AConnectionList aConnectionList) {
-		this.aConnectionList = aConnectionList;
-	}
-
 	@XmlElement(name="aLinkList")
 	public ALinkList getaLinkList() {
 		return aLinkList;
