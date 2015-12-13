@@ -24,6 +24,9 @@ public class SerialLinkConfig implements LinkConfig {
 	@Named("proto")
 	private Protocol proto = ArdulinkProtocolN.instance();
 
+	@Named("qos")
+	private boolean qos;
+
 	public String getPort() {
 		return port;
 	}
@@ -46,6 +49,14 @@ public class SerialLinkConfig implements LinkConfig {
 
 	public Protocol getProto() {
 		return proto;
+	}
+
+	public void setQos(boolean qos) {
+		this.qos = qos;
+	}
+
+	public boolean isQos() {
+		return this.qos;
 	}
 
 	@ChoiceFor("port")

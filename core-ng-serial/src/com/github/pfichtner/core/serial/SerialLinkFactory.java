@@ -18,6 +18,7 @@ import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
+import com.github.pfichtner.ardulink.core.qos.QosLink;
 
 public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
@@ -41,9 +42,20 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 				"Port %s is currently in use", config.getPort());
 		final SerialPort serialPort = serialPort(config, portIdentifier);
 		Protocol protocol = config.getProto();
-		return new ConnectionBasedLink(new StreamConnection(
+		StreamConnection connection = new StreamConnection(
 				serialPort.getInputStream(), serialPort.getOutputStream(),
-				READ_PROTO), protocol) {
+				READ_PROTO);
+
+		if (config.isQos()) {
+			return new QosLink(connection, protocol) {
+				@Override
+				public void close() throws IOException {
+					super.close();
+					serialPort.close();
+				}
+			};
+		}
+		return new ConnectionBasedLink(connection, protocol) {
 			@Override
 			public void close() throws IOException {
 				super.close();
