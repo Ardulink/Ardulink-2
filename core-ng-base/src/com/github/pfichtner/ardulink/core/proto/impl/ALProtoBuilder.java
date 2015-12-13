@@ -45,7 +45,7 @@ public class ALProtoBuilder {
 				"dred"), ANALOG_PIN_READ("ared"), START_LISTENING_DIGITAL(
 				"srld"), START_LISTENING_ANALOG("srla"), STOP_LISTENING_DIGITAL(
 				"spld"), STOP_LISTENING_ANALOG("spla"), CHAR_PRESSED("kprs"), TONE(
-				"tone"), NOTONE("notn"), CUSTOM_MESSAGE("cust");
+				"tone"), NOTONE("notn"), CUSTOM_MESSAGE("cust"), RPLY("rply");
 
 		private String proto;
 

@@ -12,6 +12,7 @@ import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPPr
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.NOTONE;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
+import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.RPLY;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
@@ -44,7 +45,7 @@ import com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolK
 public class AbstractArdulinkProtocol implements Protocol {
 
 	private static final Pattern pattern = Pattern
-			.compile("alp:\\/\\/([a-z]+)/([\\d]+)/([\\d]+)");
+			.compile("alp:\\/\\/([a-z]+)\\/([^\\?]+)(?:\\?id=(\\d+))?");
 
 	private final String name;
 	private final byte[] separator;
@@ -95,11 +96,13 @@ public class AbstractArdulinkProtocol implements Protocol {
 	public byte[] toArduino(ToArduinoPinEvent pinEvent) {
 		if (pinEvent.getPin().is(ANALOG)) {
 			return toBytes(builder(pinEvent, POWER_PIN_INTENSITY).forPin(
-					pinEvent.getPin().pinNum()).withValue((Integer) pinEvent.getValue()));
+					pinEvent.getPin().pinNum()).withValue(
+					(Integer) pinEvent.getValue()));
 		}
 		if (pinEvent.getPin().is(DIGITAL)) {
 			return toBytes(builder(pinEvent, POWER_PIN_SWITCH).forPin(
-					pinEvent.getPin().pinNum()).withState((Boolean) pinEvent.getValue()));
+					pinEvent.getPin().pinNum()).withState(
+					(Boolean) pinEvent.getValue()));
 		}
 		throw illegalPinType(pinEvent.getPin());
 	}
@@ -113,8 +116,8 @@ public class AbstractArdulinkProtocol implements Protocol {
 	@Override
 	public byte[] toArduino(ToArduinoKeyPressEvent charEvent) {
 		return toBytes(builder(charEvent, CHAR_PRESSED).withValue(
-				"chr" + charEvent.getKeychar() + "cod" + charEvent.getKeycode() + "loc"
-						+ charEvent.getKeylocation() + "mod"
+				"chr" + charEvent.getKeychar() + "cod" + charEvent.getKeycode()
+						+ "loc" + charEvent.getKeylocation() + "mod"
 						+ charEvent.getKeymodifiers() + "mex"
 						+ charEvent.getKeymodifiersex()));
 	}
@@ -143,20 +146,29 @@ public class AbstractArdulinkProtocol implements Protocol {
 	@Override
 	public FromArduino fromArduino(byte[] bytes) {
 		String in = new String(bytes);
-		if (in.startsWith("alp://rply/")) {
-			String substring = in.substring("alp://rply/".length());
-			String[] split = substring.split("\\?");
-			String[] id = split[1].split("\\=");
-			Long tryParse2 = Longs.tryParse(id[1]);
-			return new FromArduinoReply(split[0].equalsIgnoreCase("ok"),
-					checkNotNull(tryParse2, "%s not a long value", id[1])
+		Matcher matcher = pattern.matcher(in);
+
+		checkState(matcher.matches(), "No match %s", in);
+		checkState(matcher.groupCount() >= 2, "GroupCount %s",
+				matcher.groupCount());
+		ALPProtocolKey key = ALPProtocolKey.fromString(matcher.group(1));
+
+		if (key == RPLY) {
+			checkState(matcher.groupCount() >= 3, "GroupCount %s",
+					matcher.groupCount());
+			String id = matcher.group(3);
+			return new FromArduinoReply(
+					matcher.group(2).equalsIgnoreCase("ok"), checkNotNull(
+							Longs.tryParse(id), "%s not a long value", id)
 							.longValue());
 		}
-		Matcher matcher = pattern.matcher(in);
-		checkState(matcher.matches() && matcher.groupCount() == 3, "%s", in);
-		ALPProtocolKey key = ALPProtocolKey.fromString(matcher.group(1));
-		Integer pin = tryParse(matcher.group(2));
-		Integer value = tryParse(matcher.group(3));
+
+		String pinAndState = matcher.group(2);
+		String[] split = pinAndState.split("\\/");
+		checkState(split.length == 2, "Error splitting %s", pinAndState);
+
+		Integer pin = tryParse(split[0]);
+		Integer value = tryParse(split[1]);
 		checkState(key != null && pin != null && value != null,
 				"key %s pin %s value %s", key, pin, value);
 		if (key == ANALOG_PIN_READ) {
