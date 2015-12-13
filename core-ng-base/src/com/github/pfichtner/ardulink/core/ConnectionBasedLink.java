@@ -111,12 +111,12 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 				.toArduino(new DefaultToArduinoCustomMessage(messages)));
 	}
 
-	private void send(AnalogPin pin, Integer value) throws IOException {
+	private void send(AnalogPin pin, int value) throws IOException {
 		this.connection.write(this.protocol
 				.toArduino(new DefaultToArduinoPinEvent(pin, value)));
 	}
 
-	private void send(DigitalPin pin, Boolean value) throws IOException {
+	private void send(DigitalPin pin, boolean value) throws IOException {
 		this.connection.write(this.protocol
 				.toArduino(new DefaultToArduinoPinEvent(pin, value)));
 	}

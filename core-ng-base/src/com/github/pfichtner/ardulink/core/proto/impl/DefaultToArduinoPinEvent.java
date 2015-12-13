@@ -10,12 +10,12 @@ public class DefaultToArduinoPinEvent implements ToArduinoPinEvent {
 	private final Pin pin;
 	private final Object value;
 
-	public DefaultToArduinoPinEvent(DigitalPin pin, Boolean value) {
+	public DefaultToArduinoPinEvent(DigitalPin pin, boolean value) {
 		this.pin = pin;
 		this.value = value;
 	}
 
-	public DefaultToArduinoPinEvent(AnalogPin pin, Integer value) {
+	public DefaultToArduinoPinEvent(AnalogPin pin, int value) {
 		this.pin = pin;
 		this.value = value;
 	}
