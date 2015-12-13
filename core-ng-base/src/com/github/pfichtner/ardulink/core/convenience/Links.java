@@ -29,12 +29,16 @@ public final class Links {
 	 */
 	public static Link getDefault() {
 		try {
-			return getLink(setChoiceValues(getConfigurer()));
+			return getLink(getDefaultConfigurer());
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static Configurer getDefaultConfigurer() {
+		return setChoiceValues(getConfigurer());
 	}
 
 	private static Configurer getConfigurer() {
