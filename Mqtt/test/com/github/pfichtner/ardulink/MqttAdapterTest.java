@@ -20,6 +20,8 @@ import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.alpPr
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
 import static com.github.pfichtner.ardulink.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
+import static com.github.pfichtner.ardulink.util.TestUtil.analogPinChanged;
+import static com.github.pfichtner.ardulink.util.TestUtil.digitalPinChanged;
 import static com.github.pfichtner.ardulink.util.TestUtil.listWithSameOrder;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
@@ -130,7 +132,7 @@ public class MqttAdapterTest {
 		int pin = 0;
 		boolean value = true;
 		this.mqttClient.enableDigitalPinChangeEvents(pin);
-		this.link.fireStateChanged(TestUtil.digitalPinChanged(pin, value));
+		this.link.fireStateChanged(digitalPinChanged(pin, value));
 		assertThat(published, is(listWithSameOrder(mqttMessage.digitalPin(pin)
 				.hasValue(value))));
 	}
@@ -162,8 +164,7 @@ public class MqttAdapterTest {
 		int pin = 0;
 		int value = 1;
 		mqttClient.enableAnalogPinChangeEvents(pin);
-		link.fireStateChanged(TestUtil.analogPinChanged(anyOtherPinThan(pin),
-				value));
+		link.fireStateChanged(analogPinChanged(anyOtherPinThan(pin), value));
 		assertThat(published, is(noMessages()));
 	}
 

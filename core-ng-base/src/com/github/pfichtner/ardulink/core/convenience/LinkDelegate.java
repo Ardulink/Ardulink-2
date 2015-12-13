@@ -9,6 +9,7 @@ import com.github.pfichtner.ardulink.core.Tone;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
 import com.github.pfichtner.ardulink.core.events.EventListener;
+import com.github.pfichtner.ardulink.core.events.RplyListener;
 
 public class LinkDelegate implements Link {
 
@@ -28,6 +29,16 @@ public class LinkDelegate implements Link {
 
 	public Link removeListener(EventListener listener) throws IOException {
 		return getDelegate().removeListener(listener);
+	}
+
+	@Override
+	public Link addRplyListener(RplyListener listener) throws IOException {
+		return getDelegate().addRplyListener(listener);
+	}
+
+	@Override
+	public Link removeRplyListener(RplyListener listener) throws IOException {
+		return getDelegate().removeRplyListener(listener);
 	}
 
 	public void startListening(Pin pin) throws IOException {

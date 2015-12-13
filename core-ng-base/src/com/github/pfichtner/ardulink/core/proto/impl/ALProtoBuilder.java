@@ -29,12 +29,13 @@ import org.zu.ardulink.util.Lists;
  * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
 public class ALProtoBuilder {
 
 	private static final Joiner joiner = Joiner.on("/");
 
+	private Long messageId;
 	private final String command;
 	private Object pin;
 
@@ -88,7 +89,9 @@ public class ALProtoBuilder {
 			concat.add(pin);
 		}
 		addAll(concat, values);
-		return "alp://" + joiner.join(concat);
+		String message = "alp://" + joiner.join(concat);
+		return messageId == null ? message : message + "?id="
+				+ messageId.longValue();
 	}
 
 	public String withState(boolean value) {
@@ -103,6 +106,11 @@ public class ALProtoBuilder {
 
 	public ALProtoBuilder forChar(char ch) {
 		this.pin = ch;
+		return this;
+	}
+
+	public ALProtoBuilder usingMessageId(Long messageId) {
+		this.messageId = messageId;
 		return this;
 	}
 

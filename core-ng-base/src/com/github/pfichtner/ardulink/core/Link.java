@@ -6,12 +6,17 @@ import java.io.IOException;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
 import com.github.pfichtner.ardulink.core.events.EventListener;
+import com.github.pfichtner.ardulink.core.events.RplyListener;
 
 public interface Link extends Closeable {
 
 	Link addListener(EventListener listener) throws IOException;
 
 	Link removeListener(EventListener listener) throws IOException;
+
+	Link addRplyListener(RplyListener listener) throws IOException;
+
+	Link removeRplyListener(RplyListener listener) throws IOException;
 
 	void startListening(Pin pin) throws IOException;
 
@@ -26,9 +31,9 @@ public interface Link extends Closeable {
 			int keymodifiers, int keymodifiersex) throws IOException;
 
 	void sendTone(Tone tone) throws IOException;
-	
+
 	void sendNoTone(AnalogPin analogPin) throws IOException;
-	
+
 	void sendCustomMessage(String... messages) throws IOException;
 
 	Link addConnectionListener(ConnectionListener connectionListener);

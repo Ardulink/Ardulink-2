@@ -14,6 +14,7 @@ import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
 import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
+import com.github.pfichtner.ardulink.core.events.DefaultRplyEvent;
 import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol.FromArduino;
@@ -24,6 +25,8 @@ import com.github.pfichtner.ardulink.core.proto.api.ToArduinoPinEvent;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStartListening;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoTone;
+import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoPinStateChanged;
+import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoReply;
 
 public class ConnectionBasedLink extends AbstractListenerLink {
 
@@ -46,6 +49,10 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 
 	public Connection getConnection() {
 		return this.connection;
+	}
+
+	public Protocol getProtocol() {
+		return protocol;
 	}
 
 	@Override
@@ -87,7 +94,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	public void sendTone(Tone tone) throws IOException {
 		this.connection.write(this.protocol.toArduino(new ToArduinoTone(tone)));
 	}
-	
+
 	@Override
 	public void sendNoTone(AnalogPin analogPin) throws IOException {
 		this.connection.write(this.protocol.toArduino(new ToArduinoNoTone(
@@ -112,17 +119,31 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 
 	protected void received(byte[] bytes) {
 		FromArduino fromArduino = this.protocol.fromArduino(bytes);
-		Pin pin = fromArduino.getPin();
-		Object value = fromArduino.getValue();
+		if (fromArduino instanceof FromArduinoPinStateChanged) {
+			handlePinChanged((FromArduinoPinStateChanged) fromArduino);
+		} else if (fromArduino instanceof FromArduinoReply) {
+			FromArduinoReply reply = (FromArduinoReply) fromArduino;
+			fireReplyReceived(new DefaultRplyEvent(reply.ok, reply.id));
+		} else {
+			throw new IllegalStateException("Cannot handle " + fromArduino);
+		}
+	}
+
+	private void handlePinChanged(FromArduinoPinStateChanged pinChanged) {
+		Pin pin = pinChanged.getPin();
+		Object value = pinChanged.getValue();
 		if (pin.is(ANALOG) && value instanceof Integer) {
 			AnalogPinValueChangedEvent event = new DefaultAnalogPinValueChangedEvent(
 					(AnalogPin) pin, (Integer) value);
 			fireStateChanged(event);
-		}
-		if (pin.is(DIGITAL) && value instanceof Boolean) {
+		} else if (pin.is(DIGITAL) && value instanceof Boolean) {
 			DigitalPinValueChangedEvent event = new DefaultDigitalPinValueChangedEvent(
 					(DigitalPin) pin, (Boolean) value);
 			fireStateChanged(event);
+		} else {
+			throw new IllegalStateException(
+					"Cannot handle pin change event for pin " + pin
+							+ " with value " + value);
 		}
 	}
 

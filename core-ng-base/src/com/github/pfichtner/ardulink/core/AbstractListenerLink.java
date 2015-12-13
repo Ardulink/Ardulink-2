@@ -11,6 +11,8 @@ import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.EventListener;
 import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
+import com.github.pfichtner.ardulink.core.events.RplyEvent;
+import com.github.pfichtner.ardulink.core.events.RplyListener;
 
 public abstract class AbstractListenerLink implements Link {
 
@@ -19,6 +21,7 @@ public abstract class AbstractListenerLink implements Link {
 
 	private final List<EventListener> eventListeners = new CopyOnWriteArrayList<EventListener>();
 	private final List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
+	private final List<RplyListener> rplyListeners = new CopyOnWriteArrayList<RplyListener>();
 
 	private boolean closed;
 
@@ -47,6 +50,18 @@ public abstract class AbstractListenerLink implements Link {
 		return this;
 	}
 
+	@Override
+	public Link addRplyListener(RplyListener listener) throws IOException {
+		this.rplyListeners.add(listener);
+		return this;
+	}
+
+	@Override
+	public Link removeRplyListener(RplyListener listener) throws IOException {
+		this.rplyListeners.remove(listener);
+		return this;
+	}
+
 	public void fireStateChanged(AnalogPinValueChangedEvent event) {
 		for (EventListener eventListener : this.eventListeners) {
 			try {
@@ -63,6 +78,16 @@ public abstract class AbstractListenerLink implements Link {
 				eventListener.stateChanged(event);
 			} catch (Exception e) {
 				logger.error("EventListener {} failure", eventListener, e);
+			}
+		}
+	}
+
+	public void fireReplyReceived(RplyEvent event) {
+		for (RplyListener rplyListener : this.rplyListeners) {
+			try {
+				rplyListener.rplyReceived(event);
+			} catch (Exception e) {
+				logger.error("EventListener {} failure", rplyListener, e);
 			}
 		}
 	}

@@ -26,6 +26,8 @@ import static org.zu.ardulink.util.Preconditions.checkState;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.zu.ardulink.util.Longs;
+
 import com.github.pfichtner.ardulink.core.Pin;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoCustomMessage;
@@ -120,22 +122,29 @@ public class AbstractArdulinkProtocol implements Protocol {
 
 	@Override
 	public byte[] toArduino(ToArduinoNoTone noTone) {
-		return toBytes(alpProtocolMessage(NOTONE).withValue(
-				noTone.analogPin.pinNum()));
+		return toBytes(alpProtocolMessage(NOTONE).usingMessageId(
+				noTone.messageId).withValue(noTone.analogPin.pinNum()));
 	}
 
 	@Override
 	public byte[] toArduino(ToArduinoCustomMessage customMessage) {
 		String[] messages = customMessage.messages;
-		return toBytes(alpProtocolMessage(CUSTOM_MESSAGE).withValues(
-				messages));
+		return toBytes(alpProtocolMessage(CUSTOM_MESSAGE).withValues(messages));
 	}
 
 	@Override
 	public FromArduino fromArduino(byte[] bytes) {
-		Matcher matcher = pattern.matcher(new String(bytes));
-		checkState(matcher.matches() && matcher.groupCount() == 3, "%s",
-				new String(bytes));
+		String in = new String(bytes);
+		if (in.startsWith("alp://rply/")) {
+			String substring = in.substring("alp://rply/".length());
+			String[] split = substring.split("\\?");
+			String[] id = split[1].split("\\=");
+			Long tryParse2 = Longs.tryParse(id[1]);
+			return new FromArduinoReply(split[0].equalsIgnoreCase("ok"),
+					tryParse2.longValue());
+		}
+		Matcher matcher = pattern.matcher(in);
+		checkState(matcher.matches() && matcher.groupCount() == 3, "%s", in);
 		ALPProtocolKey key = ALPProtocolKey.fromString(matcher.group(1));
 		Integer pin = tryParse(matcher.group(2));
 		Integer value = tryParse(matcher.group(3));
@@ -147,7 +156,7 @@ public class AbstractArdulinkProtocol implements Protocol {
 			return new FromArduinoPinStateChanged(digitalPin(pin),
 					toBoolean(value));
 		}
-		throw new IllegalStateException(key + " " + new String(bytes));
+		throw new IllegalStateException(key + " " + in);
 	}
 
 	private IllegalStateException illegalPinType(Pin pin) {

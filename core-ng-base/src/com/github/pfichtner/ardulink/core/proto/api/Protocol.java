@@ -1,6 +1,5 @@
 package com.github.pfichtner.ardulink.core.proto.api;
 
-import com.github.pfichtner.ardulink.core.Pin;
 
 public interface Protocol {
 
@@ -9,9 +8,7 @@ public interface Protocol {
 	byte[] getSeparator();
 
 	interface FromArduino {
-		Pin getPin();
-
-		Object getValue();
+		// marker interface
 	}
 
 	byte[] toArduino(ToArduinoStartListening startListeningEvent);
@@ -23,11 +20,11 @@ public interface Protocol {
 	byte[] toArduino(ToArduinoKeyPressEvent charEvent);
 
 	byte[] toArduino(ToArduinoTone tone);
-	
+
 	byte[] toArduino(ToArduinoNoTone noTone);
-	
+
 	byte[] toArduino(ToArduinoCustomMessage customMessage);
-	
+
 	FromArduino fromArduino(byte[] bytes);
 
 }
