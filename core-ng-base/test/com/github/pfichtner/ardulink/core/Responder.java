@@ -88,6 +88,10 @@ public class Responder {
 			return groups;
 		}
 
+		public void thenDoNotRespond() {
+			// does nothing
+		}
+
 	}
 
 	private final List<ReponseGenerator> data = Lists.newArrayList();
@@ -107,6 +111,8 @@ public class Responder {
 						outputStream.write(response.getBytes());
 						outputStream.write(protocol.getSeparator());
 						outputStream.flush();
+					}else {
+						logger.warn("No responder for {}", received);
 					}
 				}
 			}

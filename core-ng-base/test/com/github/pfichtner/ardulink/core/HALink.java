@@ -19,6 +19,7 @@ import com.github.pfichtner.ardulink.core.events.RplyEvent;
 import com.github.pfichtner.ardulink.core.events.RplyListener;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoNoTone;
+import com.github.pfichtner.ardulink.core.proto.api.ToArduinoTone;
 
 /**
  * Arduino sends ok/ko messages directly aftere receiving the work message. So
@@ -52,12 +53,24 @@ public class HALink extends ConnectionBasedLink implements RplyListener {
 	}
 
 	@Override
+	public void sendTone(Tone tone) throws IOException {
+		long messageId = nextId();
+		getConnection().write(
+				getProtocol().toArduino(new ToArduinoTone(messageId, tone)));
+		waitFor(messageId);
+	}
+
+	@Override
 	public void sendNoTone(AnalogPin analogPin) throws IOException {
-		long messageId = messageCounter.getAndIncrement();
+		long messageId = nextId();
 		getConnection().write(
 				getProtocol().toArduino(
 						new ToArduinoNoTone(messageId, analogPin)));
 		waitFor(messageId);
+	}
+
+	private long nextId() {
+		return messageCounter.incrementAndGet();
 	}
 
 	// TODO register a listener that interrupts if ANY other message received in
@@ -67,8 +80,10 @@ public class HALink extends ConnectionBasedLink implements RplyListener {
 		try {
 			logger.debug("Wait for {}", idToWaitFor);
 			try {
-				checkState(condition.await(timeout, timeUnit),
-						"No response received within %s %s", timeout, timeUnit);
+				checkState(
+						condition.await(timeout, timeUnit),
+						"No response received while waiting for messageId %s within %s %s",
+						idToWaitFor, timeout, timeUnit);
 				long idReceived = checkNotNull(event,
 						"No event received but condition signalled").getId();
 				checkState(idReceived == idToWaitFor,

@@ -21,6 +21,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.System.arraycopy;
 import static org.zu.ardulink.util.Integers.tryParse;
+import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import static org.zu.ardulink.util.Preconditions.checkState;
 
 import java.util.regex.Matcher;
@@ -114,7 +115,8 @@ public class AbstractArdulinkProtocol implements Protocol {
 	@Override
 	public byte[] toArduino(ToArduinoTone toArduinoTone) {
 		Long duration = toArduinoTone.tone.getDurationInMillis();
-		return toBytes(alpProtocolMessage(TONE).withValue(
+		return toBytes(alpProtocolMessage(TONE).usingMessageId(
+				toArduinoTone.messageId).withValue(
 				toArduinoTone.tone.getPin().pinNum() + "/"
 						+ toArduinoTone.tone.getHertz() + "/"
 						+ (duration == null ? -1 : duration.longValue())));
@@ -141,7 +143,8 @@ public class AbstractArdulinkProtocol implements Protocol {
 			String[] id = split[1].split("\\=");
 			Long tryParse2 = Longs.tryParse(id[1]);
 			return new FromArduinoReply(split[0].equalsIgnoreCase("ok"),
-					tryParse2.longValue());
+					checkNotNull(tryParse2, "%s not a long value", id[1])
+							.longValue());
 		}
 		Matcher matcher = pattern.matcher(in);
 		checkState(matcher.matches() && matcher.groupCount() == 3, "%s", in);
