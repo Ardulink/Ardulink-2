@@ -18,13 +18,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
+import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
 import com.github.pfichtner.ardulink.core.events.RplyEvent;
 import com.github.pfichtner.ardulink.core.events.RplyListener;
 import com.github.pfichtner.ardulink.core.proto.api.MessageIdHolder;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoTone;
+import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoCustomMessage;
 import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoKeyPressEvent;
 import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoNoTone;
+import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoPinEvent;
+import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoStartListening;
+import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoStopListening;
 import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
 
 /**
@@ -91,34 +95,85 @@ public class HALink extends ConnectionBasedLink implements RplyListener {
 	}
 
 	@Override
+	public void startListening(Pin pin) throws IOException {
+		long messageId = nextId();
+		sendAndWait(
+				getProtocol().toArduino(
+						proxy(new DefaultToArduinoStartListening(pin),
+								messageId)), messageId);
+	}
+
+	@Override
+	public void stopListening(Pin pin) throws IOException {
+		long messageId = nextId();
+		sendAndWait(
+				getProtocol()
+						.toArduino(
+								proxy(new DefaultToArduinoStopListening(pin),
+										messageId)), messageId);
+	}
+
+	@Override
+	public void switchAnalogPin(AnalogPin analogPin, int value)
+			throws IOException {
+		long messageId = nextId();
+		sendAndWait(
+				getProtocol().toArduino(
+						proxy(new DefaultToArduinoPinEvent(analogPin, value),
+								messageId)), messageId);
+	}
+
+	@Override
+	public void switchDigitalPin(DigitalPin digitalPin, boolean value)
+			throws IOException {
+		long messageId = nextId();
+		sendAndWait(
+				getProtocol().toArduino(
+						proxy(new DefaultToArduinoPinEvent(digitalPin, value),
+								messageId)), messageId);
+	}
+
+	@Override
 	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
 		long messageId = nextId();
-		getConnection().write(
+		sendAndWait(
 				getProtocol().toArduino(
 						proxy(new DefaultToArduinoKeyPressEvent(keychar,
 								keycode, keylocation, keymodifiers,
-								keymodifiersex), messageId)));
-		waitFor(messageId);
+								keymodifiersex), messageId)), messageId);
 	}
 
 	@Override
 	public void sendTone(Tone tone) throws IOException {
 		long messageId = nextId();
-		ToArduinoTone a = new DefaultToArduinoTone(tone);
-		ToArduinoTone b = proxy(a, messageId);
-		getConnection().write(getProtocol().toArduino(b));
-		waitFor(messageId);
+		sendAndWait(
+				getProtocol().toArduino(
+						proxy(new DefaultToArduinoTone(tone), messageId)),
+				messageId);
 	}
 
 	@Override
 	public void sendNoTone(AnalogPin analogPin) throws IOException {
 		long messageId = nextId();
-		getConnection().write(
+		sendAndWait(
 				getProtocol()
 						.toArduino(
 								proxy(new DefaultToArduinoNoTone(analogPin),
-										messageId)));
+										messageId)), messageId);
+	}
+
+	@Override
+	public void sendCustomMessage(String... messages) throws IOException {
+		long messageId = nextId();
+		sendAndWait(
+				getProtocol().toArduino(
+						proxy(new DefaultToArduinoCustomMessage(messages),
+								messageId)), messageId);
+	}
+
+	private void sendAndWait(byte[] bytes, long messageId) throws IOException {
+		getConnection().write(bytes);
 		waitFor(messageId);
 	}
 
