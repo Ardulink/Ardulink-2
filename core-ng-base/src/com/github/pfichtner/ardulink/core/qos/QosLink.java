@@ -1,4 +1,4 @@
-package com.github.pfichtner.ardulink.core;
+package com.github.pfichtner.ardulink.core.qos;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.zu.ardulink.util.Preconditions.checkNotNull;
@@ -17,6 +17,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.pfichtner.ardulink.core.Connection;
+import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
+import com.github.pfichtner.ardulink.core.Pin;
+import com.github.pfichtner.ardulink.core.Tone;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
 import com.github.pfichtner.ardulink.core.events.RplyEvent;
@@ -38,7 +42,7 @@ import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
  * 
  * @author Peter Fichtner
  */
-public class HALink extends ConnectionBasedLink implements RplyListener {
+public class QosLink extends ConnectionBasedLink implements RplyListener {
 
 	private static class MessageIdHolderInvocationHandler implements
 			InvocationHandler {
@@ -72,7 +76,7 @@ public class HALink extends ConnectionBasedLink implements RplyListener {
 
 	}
 
-	private static final Logger logger = LoggerFactory.getLogger(HALink.class);
+	private static final Logger logger = LoggerFactory.getLogger(QosLink.class);
 
 	private static final AtomicLong messageCounter = new AtomicLong();
 	private final Lock lock = new ReentrantLock(false);
@@ -82,11 +86,11 @@ public class HALink extends ConnectionBasedLink implements RplyListener {
 	private final long timeout;
 	private final TimeUnit timeUnit;
 
-	public HALink(Connection connection, Protocol protocol) throws IOException {
+	public QosLink(Connection connection, Protocol protocol) throws IOException {
 		this(connection, protocol, 5, SECONDS);
 	}
 
-	public HALink(Connection connection, Protocol protocol, int timeout,
+	public QosLink(Connection connection, Protocol protocol, int timeout,
 			TimeUnit timeUnit) throws IOException {
 		super(connection, protocol);
 		this.timeout = timeout;

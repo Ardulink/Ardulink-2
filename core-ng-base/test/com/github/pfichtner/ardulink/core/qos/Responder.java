@@ -1,4 +1,4 @@
-package com.github.pfichtner.ardulink.core;
+package com.github.pfichtner.ardulink.core.qos;
 
 import java.io.InputStream;
 import java.io.PipedOutputStream;
@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zu.ardulink.util.Lists;
 
+import com.github.pfichtner.ardulink.core.StreamReader;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
 

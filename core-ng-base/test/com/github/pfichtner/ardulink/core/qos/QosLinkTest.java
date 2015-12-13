@@ -1,4 +1,4 @@
-package com.github.pfichtner.ardulink.core;
+package com.github.pfichtner.ardulink.core.qos;
 
 import static com.github.pfichtner.ardulink.core.Pin.analogPin;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -15,10 +15,14 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
 
+import com.github.pfichtner.ardulink.core.Connection;
+import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
+import com.github.pfichtner.ardulink.core.StreamConnection;
+import com.github.pfichtner.ardulink.core.Tone;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 
-public class HALinkTest {
+public class QosLinkTest {
 
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
@@ -42,13 +46,13 @@ public class HALinkTest {
 
 		Connection connection = new StreamConnection(is2, os1,
 				ArdulinkProtocolN.instance());
-		ConnectionBasedLink haLink = new HALink(connection,
+		ConnectionBasedLink qosLink = new QosLink(connection,
 				ArdulinkProtocol255.instance());
 
 		try {
-			haLink.sendNoTone(analogPin(3));
+			qosLink.sendNoTone(analogPin(3));
 		} finally {
-			haLink.close();
+			qosLink.close();
 		}
 	}
 
@@ -60,16 +64,16 @@ public class HALinkTest {
 
 		Connection connection = new StreamConnection(null, os1,
 				ArdulinkProtocolN.instance());
-		ConnectionBasedLink haLink = new HALink(connection,
+		ConnectionBasedLink qosLink = new QosLink(connection,
 				ArdulinkProtocol255.instance(), 500, MILLISECONDS);
 
 		try {
 			exceptions.expect(IllegalStateException.class);
 			exceptions.expectMessage(allOf(containsString("response"),
 					containsString("500 MILLISECONDS")));
-			haLink.sendNoTone(analogPin(3));
+			qosLink.sendNoTone(analogPin(3));
 		} finally {
-			haLink.close();
+			qosLink.close();
 		}
 	}
 
@@ -88,16 +92,16 @@ public class HALinkTest {
 
 		Connection connection = new StreamConnection(is2, os1,
 				ArdulinkProtocolN.instance());
-		ConnectionBasedLink haLink = new HALink(connection,
+		ConnectionBasedLink qosLink = new QosLink(connection,
 				ArdulinkProtocol255.instance(), 500, MILLISECONDS);
 
 		try {
 			exceptions.expect(IllegalStateException.class);
 			exceptions.expectMessage(allOf(containsString("status"),
 					containsString("not ok")));
-			haLink.sendNoTone(analogPin(3));
+			qosLink.sendNoTone(analogPin(3));
 		} finally {
-			haLink.close();
+			qosLink.close();
 		}
 	}
 
@@ -111,7 +115,7 @@ public class HALinkTest {
 
 		Connection connection = new StreamConnection(is2, os1,
 				ArdulinkProtocolN.instance());
-		ConnectionBasedLink haLink = new HALink(connection,
+		ConnectionBasedLink qosLink = new QosLink(connection,
 				ArdulinkProtocol255.instance(), 500, MILLISECONDS);
 
 		Responder responder = new Responder(is1, os2,
@@ -125,12 +129,12 @@ public class HALinkTest {
 			exceptions.expect(IllegalStateException.class);
 			exceptions.expectMessage(allOf(containsString("response"),
 					containsString("500 MILLISECONDS")));
-			haLink.sendTone(Tone.forPin(analogPin(4)).withHertz(5)
+			qosLink.sendTone(Tone.forPin(analogPin(4)).withHertz(5)
 					.withDuration(6, MILLISECONDS));
 			exceptions = ExpectedException.none();
-			haLink.sendNoTone(analogPin(3));
+			qosLink.sendNoTone(analogPin(3));
 		} finally {
-			haLink.close();
+			qosLink.close();
 		}
 	}
 
