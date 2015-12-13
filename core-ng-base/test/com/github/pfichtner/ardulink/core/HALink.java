@@ -36,6 +36,37 @@ import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
  */
 public class HALink extends ConnectionBasedLink implements RplyListener {
 
+	public static class MessageIdHolderInvocationHandler implements
+			InvocationHandler {
+
+		private final Object delegate;
+		private final long messageId;
+		private static final Method messageIdHolderGetIdMethod = getMessageIdHolderGetIdMethod();
+
+		private static Method getMessageIdHolderGetIdMethod() {
+			try {
+				return MessageIdHolder.class.getMethod("getId");
+			} catch (SecurityException e) {
+				throw new RuntimeException(e);
+			} catch (NoSuchMethodException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		public MessageIdHolderInvocationHandler(Object delegate, long messageId) {
+			this.delegate = delegate;
+			this.messageId = messageId;
+		}
+
+		@Override
+		public Object invoke(Object proxy, Method method, Object[] args)
+				throws Throwable {
+			return messageIdHolderGetIdMethod.equals(method) ? messageId
+					: method.invoke(delegate, args);
+		}
+
+	}
+
 	private static final Logger logger = LoggerFactory.getLogger(HALink.class);
 
 	private static final AtomicLong messageCounter = new AtomicLong();
@@ -90,25 +121,17 @@ public class HALink extends ConnectionBasedLink implements RplyListener {
 		waitFor(messageId);
 	}
 
-	@SuppressWarnings("unchecked")
 	private <T> T proxy(final T t, final long messageId) {
-		InvocationHandler h = new InvocationHandler() {
-			@Override
-			public Object invoke(Object proxy, Method method, Object[] args)
-					throws Throwable {
-				if (method.equals(MessageIdHolder.class.getMethod("getId"))) {
-					return messageId;
-				}
-				return method.invoke(t, args);
-			}
-		};
 		Class<?>[] existingInterfaces = t.getClass().getInterfaces();
 		Class<?>[] newInterfaces = new Class<?>[existingInterfaces.length + 1];
 		newInterfaces[0] = MessageIdHolder.class;
 		System.arraycopy(existingInterfaces, 0, newInterfaces, 1,
 				existingInterfaces.length);
-		return (T) Proxy.newProxyInstance(t.getClass().getClassLoader(),
-				newInterfaces, h);
+		@SuppressWarnings("unchecked")
+		T proxy = (T) Proxy.newProxyInstance(t.getClass().getClassLoader(),
+				newInterfaces, new MessageIdHolderInvocationHandler(t,
+						messageId));
+		return proxy;
 	}
 
 	private long nextId() {
