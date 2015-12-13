@@ -28,7 +28,7 @@ import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoNoTone;
 import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
 
 /**
- * Arduino sends ok/ko messages directly aftere receiving the work message. So
+ * Arduino sends ok/ko messages directly after receiving the work message. So
  * there is no need for a queue because if the next message read is not the
  * ok/ko response it never will arrive.
  * 
@@ -122,16 +122,16 @@ public class HALink extends ConnectionBasedLink implements RplyListener {
 		waitFor(messageId);
 	}
 
-	private <T> T proxy(final T t, final long messageId) {
-		Class<?>[] existingInterfaces = t.getClass().getInterfaces();
+	private <T> T proxy(T delegateTo, long messageId) {
+		Class<?>[] existingInterfaces = delegateTo.getClass().getInterfaces();
 		Class<?>[] newInterfaces = new Class<?>[existingInterfaces.length + 1];
 		newInterfaces[0] = MessageIdHolder.class;
 		System.arraycopy(existingInterfaces, 0, newInterfaces, 1,
 				existingInterfaces.length);
 		@SuppressWarnings("unchecked")
-		T proxy = (T) Proxy.newProxyInstance(t.getClass().getClassLoader(),
-				newInterfaces, new MessageIdHolderInvocationHandler(t,
-						messageId));
+		T proxy = (T) Proxy.newProxyInstance(delegateTo.getClass()
+				.getClassLoader(), newInterfaces,
+				new MessageIdHolderInvocationHandler(delegateTo, messageId));
 		return proxy;
 	}
 
