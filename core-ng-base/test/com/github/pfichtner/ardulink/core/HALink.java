@@ -64,9 +64,9 @@ public class HALink extends ConnectionBasedLink implements RplyListener {
 		long messageId = nextId();
 		getConnection().write(
 				getProtocol().toArduino(
-						proxy(new DefaultToArduinoKeyPressEvent(keychar, keycode,
-								keylocation, keymodifiers, keymodifiersex),
-								messageId)));
+						proxy(new DefaultToArduinoKeyPressEvent(keychar,
+								keycode, keylocation, keymodifiers,
+								keymodifiersex), messageId)));
 		waitFor(messageId);
 	}
 
@@ -83,8 +83,10 @@ public class HALink extends ConnectionBasedLink implements RplyListener {
 	public void sendNoTone(AnalogPin analogPin) throws IOException {
 		long messageId = nextId();
 		getConnection().write(
-				getProtocol().toArduino(
-						proxy(new DefaultToArduinoNoTone(analogPin), messageId)));
+				getProtocol()
+						.toArduino(
+								proxy(new DefaultToArduinoNoTone(analogPin),
+										messageId)));
 		waitFor(messageId);
 	}
 
@@ -128,6 +130,7 @@ public class HALink extends ConnectionBasedLink implements RplyListener {
 						"No event received but condition signalled").getId();
 				checkState(idReceived == idToWaitFor,
 						"Waited for %s but got %s", idToWaitFor, idReceived);
+				checkState(event.isOk(), "Response status is not ok");
 				logger.debug("Condition wait {}", idReceived);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
