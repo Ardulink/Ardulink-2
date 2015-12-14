@@ -52,7 +52,7 @@ public class AbstractArdulinkProtocol implements Protocol {
 
 	public AbstractArdulinkProtocol(String name, byte[] separator) {
 		this.name = name;
-		this.separator = separator;
+		this.separator = separator.clone();
 	}
 
 	public String getName() {
@@ -116,10 +116,11 @@ public class AbstractArdulinkProtocol implements Protocol {
 	@Override
 	public byte[] toArduino(ToArduinoKeyPressEvent charEvent) {
 		return toBytes(builder(charEvent, CHAR_PRESSED).withValue(
-				"chr" + charEvent.getKeychar() + "cod" + charEvent.getKeycode()
-						+ "loc" + charEvent.getKeylocation() + "mod"
-						+ charEvent.getKeymodifiers() + "mex"
-						+ charEvent.getKeymodifiersex()));
+				String.format("chr%scod%sloc%smod%smex%s",
+						charEvent.getKeychar(), charEvent.getKeycode(),
+						charEvent.getKeylocation(),
+						charEvent.getKeymodifiers(),
+						charEvent.getKeymodifiersex())));
 	}
 
 	@Override
