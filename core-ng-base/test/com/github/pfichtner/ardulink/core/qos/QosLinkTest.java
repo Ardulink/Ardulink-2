@@ -6,17 +6,17 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.StringContains.containsString;
 
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.IOException;
 import java.util.regex.Pattern;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
 
 import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.Tone;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
@@ -30,23 +30,27 @@ public class QosLinkTest {
 	@Rule
 	public ExpectedException exceptions = ExpectedException.none();
 
+	private Responder responder;
+
+	@Before
+	public void setup() throws IOException {
+		responder = new Responder();
+	}
+
+	@After
+	public void tearDown() throws IOException {
+		responder.close();
+	}
+
 	@Test
 	public void canDoGuranteedDelivery() throws Exception {
-
-		PipedInputStream is1 = new PipedInputStream();
-		PipedOutputStream os1 = new PipedOutputStream(is1);
-
-		PipedInputStream is2 = new PipedInputStream();
-		PipedOutputStream os2 = new PipedOutputStream(is2);
-
-		Responder responder = new Responder(is1, os2,
-				ArdulinkProtocolN.instance());
 		responder.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ok?id=%s");
 
-		Connection connection = new StreamConnection(is2, os1,
+		Connection connection = new StreamConnection(
+				responder.getInputStream(), responder.getOutputStream(),
 				ArdulinkProtocolN.instance());
-		ConnectionBasedLink qosLink = new QosLink(connection,
+		ConnectionBasedQosLink qosLink = new ConnectionBasedQosLink(connection,
 				ArdulinkProtocol255.instance());
 
 		try {
@@ -59,12 +63,10 @@ public class QosLinkTest {
 	@Test
 	public void doesThrowExceptionIfNotResponseReceivedWithinHalfAsecond()
 			throws Exception {
-		PipedInputStream is1 = new PipedInputStream();
-		PipedOutputStream os1 = new PipedOutputStream(is1);
-
-		Connection connection = new StreamConnection(null, os1,
+		Connection connection = new StreamConnection(
+				responder.getInputStream(), responder.getOutputStream(),
 				ArdulinkProtocolN.instance());
-		ConnectionBasedLink qosLink = new QosLink(connection,
+		ConnectionBasedQosLink qosLink = new ConnectionBasedQosLink(connection,
 				ArdulinkProtocol255.instance(), 500, MILLISECONDS);
 
 		try {
@@ -79,20 +81,13 @@ public class QosLinkTest {
 
 	@Test
 	public void doesThrowExceptionIfKoResponse() throws Exception {
-		PipedInputStream is1 = new PipedInputStream();
-		PipedOutputStream os1 = new PipedOutputStream(is1);
-
-		PipedInputStream is2 = new PipedInputStream();
-		PipedOutputStream os2 = new PipedOutputStream(is2);
-
-		Responder responder = new Responder(is1, os2,
-				ArdulinkProtocolN.instance());
 		responder.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ko?id=%s");
 
-		Connection connection = new StreamConnection(is2, os1,
+		Connection connection = new StreamConnection(
+				responder.getInputStream(), responder.getOutputStream(),
 				ArdulinkProtocolN.instance());
-		ConnectionBasedLink qosLink = new QosLink(connection,
+		ConnectionBasedQosLink qosLink = new ConnectionBasedQosLink(connection,
 				ArdulinkProtocol255.instance(), 500, MILLISECONDS);
 
 		try {
@@ -107,23 +102,16 @@ public class QosLinkTest {
 
 	@Test
 	public void secondCallPassesIfFirstOnKeepsUnresponded() throws Exception {
-		PipedInputStream is1 = new PipedInputStream();
-		PipedOutputStream os1 = new PipedOutputStream(is1);
-
-		PipedInputStream is2 = new PipedInputStream();
-		PipedOutputStream os2 = new PipedOutputStream(is2);
-
-		Connection connection = new StreamConnection(is2, os1,
-				ArdulinkProtocolN.instance());
-		ConnectionBasedLink qosLink = new QosLink(connection,
-				ArdulinkProtocol255.instance(), 500, MILLISECONDS);
-
-		Responder responder = new Responder(is1, os2,
-				ArdulinkProtocolN.instance());
 		responder.whenReceive(regex("alp:\\/\\/tone\\/4/5/6\\?id\\=(\\d)"))
 				.thenDoNotRespond();
 		responder.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ok?id=%s");
+
+		Connection connection = new StreamConnection(
+				responder.getInputStream(), responder.getOutputStream(),
+				ArdulinkProtocolN.instance());
+		ConnectionBasedQosLink qosLink = new ConnectionBasedQosLink(connection,
+				ArdulinkProtocol255.instance(), 500, MILLISECONDS);
 
 		try {
 			exceptions.expect(IllegalStateException.class);

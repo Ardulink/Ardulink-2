@@ -1,6 +1,8 @@
 package com.github.pfichtner.ardulink.core.qos;
 
-import java.io.InputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -13,8 +15,9 @@ import org.zu.ardulink.util.Lists;
 import com.github.pfichtner.ardulink.core.StreamReader;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 
-public class Responder {
+public class Responder implements Closeable {
 
 	private final static Logger logger = LoggerFactory
 			.getLogger(Responder.class);
@@ -96,10 +99,18 @@ public class Responder {
 	}
 
 	private final List<ReponseGenerator> data = Lists.newArrayList();
+	private final PipedInputStream is2;
+	private final PipedOutputStream os1;
 
-	public Responder(InputStream inputStream,
-			final PipedOutputStream outputStream, final Protocol protocol) {
-		new StreamReader(inputStream) {
+	public Responder() throws IOException {
+		final Protocol protocol = ArdulinkProtocolN.instance();
+		PipedInputStream is1 = new PipedInputStream();
+		os1 = new PipedOutputStream(is1);
+
+		is2 = new PipedInputStream();
+		final PipedOutputStream os2 = new PipedOutputStream(is2);
+
+		new StreamReader(is1) {
 			@Override
 			protected void received(byte[] bytes) throws Exception {
 				String received = new String(bytes);
@@ -109,16 +120,24 @@ public class Responder {
 					if (generator.matches(received)) {
 						String response = generator.getResponse();
 						logger.info("Responding {}", response);
-						outputStream.write(response.getBytes());
-						outputStream.write(protocol.getSeparator());
-						outputStream.flush();
-					}else {
+						os2.write(response.getBytes());
+						os2.write(protocol.getSeparator());
+						os2.flush();
+					} else {
 						logger.warn("No responder for {}", received);
 					}
 				}
 			}
 		}.runReaderThread(new String(ArdulinkProtocol255.instance()
 				.getSeparator()));
+	}
+
+	public PipedOutputStream getOutputStream() {
+		return os1;
+	}
+
+	public PipedInputStream getInputStream() {
+		return is2;
 	}
 
 	public Adder whenReceive(String whenReceived) {
@@ -128,4 +147,11 @@ public class Responder {
 	public RegexAdder whenReceive(Pattern pattern) {
 		return new RegexAdder(pattern);
 	}
+
+	@Override
+	public void close() throws IOException {
+		is2.close();
+		os1.close();
+	}
+
 }

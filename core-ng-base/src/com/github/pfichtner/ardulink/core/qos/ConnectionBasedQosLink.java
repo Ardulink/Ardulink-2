@@ -17,12 +17,12 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.pfichtner.ardulink.core.AbstractConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Pin;
-import com.github.pfichtner.ardulink.core.Tone;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
+import com.github.pfichtner.ardulink.core.Tone;
 import com.github.pfichtner.ardulink.core.events.RplyEvent;
 import com.github.pfichtner.ardulink.core.events.RplyListener;
 import com.github.pfichtner.ardulink.core.proto.api.MessageIdHolder;
@@ -42,7 +42,8 @@ import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
  * 
  * @author Peter Fichtner
  */
-public class QosLink extends ConnectionBasedLink implements RplyListener {
+public class ConnectionBasedQosLink extends AbstractConnectionBasedLink
+		implements RplyListener {
 
 	private static class MessageIdHolderInvocationHandler implements
 			InvocationHandler {
@@ -76,7 +77,8 @@ public class QosLink extends ConnectionBasedLink implements RplyListener {
 
 	}
 
-	private static final Logger logger = LoggerFactory.getLogger(QosLink.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(ConnectionBasedQosLink.class);
 
 	private static final AtomicLong messageCounter = new AtomicLong();
 	private final Lock lock = new ReentrantLock(false);
@@ -86,12 +88,13 @@ public class QosLink extends ConnectionBasedLink implements RplyListener {
 	private final long timeout;
 	private final TimeUnit timeUnit;
 
-	public QosLink(Connection connection, Protocol protocol) throws IOException {
+	public ConnectionBasedQosLink(Connection connection, Protocol protocol)
+			throws IOException {
 		this(connection, protocol, 5, SECONDS);
 	}
 
-	public QosLink(Connection connection, Protocol protocol, int timeout,
-			TimeUnit timeUnit) throws IOException {
+	public ConnectionBasedQosLink(Connection connection, Protocol protocol,
+			int timeout, TimeUnit timeUnit) throws IOException {
 		super(connection, protocol);
 		this.timeout = timeout;
 		this.timeUnit = timeUnit;
@@ -100,6 +103,7 @@ public class QosLink extends ConnectionBasedLink implements RplyListener {
 
 	@Override
 	public void startListening(Pin pin) throws IOException {
+		logger.info("Starting listening on pin {}", pin);
 		long messageId = nextId();
 		sendAndWait(
 				getProtocol().toArduino(
@@ -115,6 +119,7 @@ public class QosLink extends ConnectionBasedLink implements RplyListener {
 						.toArduino(
 								proxy(new DefaultToArduinoStopListening(pin),
 										messageId)), messageId);
+		logger.info("Stopped listening on pin {}", pin);
 	}
 
 	@Override

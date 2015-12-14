@@ -8,7 +8,6 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.pfichtner.ardulink.core.Connection.ListenerAdapter;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
 import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
@@ -30,31 +29,13 @@ import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
 import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoPinStateChanged;
 import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoReply;
 
-public class ConnectionBasedLink extends AbstractListenerLink {
+public class ConnectionBasedLink extends AbstractConnectionBasedLink {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(ConnectionBasedLink.class);
 
-	private final Connection connection;
-	private final Protocol protocol;
-
 	public ConnectionBasedLink(Connection connection, Protocol protocol) {
-		this.connection = connection;
-		this.protocol = protocol;
-		this.connection.addListener(new ListenerAdapter() {
-			@Override
-			public void received(byte[] bytes) throws IOException {
-				ConnectionBasedLink.this.received(bytes);
-			}
-		});
-	}
-
-	public Connection getConnection() {
-		return this.connection;
-	}
-
-	public Protocol getProtocol() {
-		return protocol;
+		super(connection, protocol);
 	}
 
 	@Override
@@ -62,14 +43,14 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		logger.info("Starting listening on pin {}", pin);
 		ToArduinoStartListening startListeningEvent = new DefaultToArduinoStartListening(
 				pin);
-		this.connection.write(this.protocol.toArduino(startListeningEvent));
+		getConnection().write(getProtocol().toArduino(startListeningEvent));
 	}
 
 	@Override
 	public void stopListening(Pin pin) throws IOException {
 		ToArduinoStopListening stopListening = new DefaultToArduinoStopListening(
 				pin);
-		this.connection.write(this.protocol.toArduino(stopListening));
+		getConnection().write(getProtocol().toArduino(stopListening));
 		logger.info("Stopped listening on pin {}", pin);
 	}
 
@@ -88,41 +69,45 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	@Override
 	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
-		this.connection.write(this.protocol
-				.toArduino(new DefaultToArduinoKeyPressEvent(keychar, keycode,
-						keylocation, keymodifiers, keymodifiersex)));
+		getConnection().write(
+				getProtocol().toArduino(
+						new DefaultToArduinoKeyPressEvent(keychar, keycode,
+								keylocation, keymodifiers, keymodifiersex)));
 	}
 
 	@Override
 	public void sendTone(Tone tone) throws IOException {
-		this.connection.write(this.protocol.toArduino(new DefaultToArduinoTone(
-				tone)));
+		getConnection().write(
+				getProtocol().toArduino(new DefaultToArduinoTone(tone)));
 	}
 
 	@Override
 	public void sendNoTone(AnalogPin analogPin) throws IOException {
-		this.connection.write(this.protocol
-				.toArduino(new DefaultToArduinoNoTone(analogPin)));
+		getConnection().write(
+				getProtocol().toArduino(new DefaultToArduinoNoTone(analogPin)));
 	}
 
 	@Override
 	public void sendCustomMessage(String... messages) throws IOException {
-		this.connection.write(this.protocol
-				.toArduino(new DefaultToArduinoCustomMessage(messages)));
+		getConnection().write(
+				getProtocol().toArduino(
+						new DefaultToArduinoCustomMessage(messages)));
 	}
 
 	private void send(AnalogPin pin, int value) throws IOException {
-		this.connection.write(this.protocol
-				.toArduino(new DefaultToArduinoPinEvent(pin, value)));
+		getConnection().write(
+				getProtocol().toArduino(
+						new DefaultToArduinoPinEvent(pin, value)));
 	}
 
 	private void send(DigitalPin pin, boolean value) throws IOException {
-		this.connection.write(this.protocol
-				.toArduino(new DefaultToArduinoPinEvent(pin, value)));
+		getConnection().write(
+				getProtocol().toArduino(
+						new DefaultToArduinoPinEvent(pin, value)));
 	}
 
 	protected void received(byte[] bytes) {
-		FromArduino fromArduino = this.protocol.fromArduino(bytes);
+		FromArduino fromArduino = getProtocol().fromArduino(bytes);
 		if (fromArduino instanceof FromArduinoPinStateChanged) {
 			handlePinChanged((FromArduinoPinStateChanged) fromArduino);
 		} else if (fromArduino instanceof FromArduinoReply) {
@@ -149,13 +134,6 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 					"Cannot handle pin change event for pin " + pin
 							+ " with value " + value);
 		}
-	}
-
-	@Override
-	public void close() throws IOException {
-		deregisterAllEventListeners();
-		this.connection.close();
-		super.close();
 	}
 
 }

@@ -13,12 +13,14 @@ import gnu.io.UnsupportedCommOperationException;
 
 import java.io.IOException;
 
+import com.github.pfichtner.ardulink.core.AbstractConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.StreamConnection;
+import com.github.pfichtner.ardulink.core.convenience.LinkDelegate;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
-import com.github.pfichtner.ardulink.core.qos.QosLink;
+import com.github.pfichtner.ardulink.core.qos.ConnectionBasedQosLink;
 
 public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
@@ -32,7 +34,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 	}
 
 	@Override
-	public ConnectionBasedLink newLink(SerialLinkConfig config)
+	public LinkDelegate newLink(SerialLinkConfig config)
 			throws NoSuchPortException, PortInUseException,
 			UnsupportedCommOperationException, IOException {
 		CommPortIdentifier portIdentifier = CommPortIdentifier
@@ -41,27 +43,25 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		checkState(!portIdentifier.isCurrentlyOwned(),
 				"Port %s is currently in use", config.getPort());
 		final SerialPort serialPort = serialPort(config, portIdentifier);
-		Protocol protocol = config.getProto();
 		StreamConnection connection = new StreamConnection(
 				serialPort.getInputStream(), serialPort.getOutputStream(),
 				READ_PROTO);
 
-		if (config.isQos()) {
-			return new QosLink(connection, protocol) {
-				@Override
-				public void close() throws IOException {
-					super.close();
-					serialPort.close();
-				}
-			};
-		}
-		return new ConnectionBasedLink(connection, protocol) {
+		return new LinkDelegate(createDelegateTo(config, connection)) {
 			@Override
 			public void close() throws IOException {
 				super.close();
 				serialPort.close();
 			}
 		};
+	}
+
+	@SuppressWarnings("resource")
+	private AbstractConnectionBasedLink createDelegateTo(SerialLinkConfig config,
+			StreamConnection connection) throws IOException {
+		Protocol proto = config.getProto();
+		return config.isQos() ? new ConnectionBasedQosLink(connection, proto)
+				: new ConnectionBasedLink(connection, proto);
 	}
 
 	private SerialPort serialPort(SerialLinkConfig config,
