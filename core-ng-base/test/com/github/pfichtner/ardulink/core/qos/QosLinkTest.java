@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -30,100 +29,69 @@ public class QosLinkTest {
 	@Rule
 	public ExpectedException exceptions = ExpectedException.none();
 
-	private Responder responder;
+	@Rule
+	public Arduino arduino = Arduino.newArduino();
 
-	@Before
-	public void setup() throws IOException {
-		responder = new Responder();
-	}
+	private ConnectionBasedQosLink qosLink;
 
 	@After
 	public void tearDown() throws IOException {
-		responder.close();
+		qosLink.close();
 	}
 
 	@Test
 	public void canDoGuranteedDelivery() throws Exception {
-		responder.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
+		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ok?id=%s");
-
-		Connection connection = new StreamConnection(
-				responder.getInputStream(), responder.getOutputStream(),
-				ArdulinkProtocolN.instance());
-		ConnectionBasedQosLink qosLink = new ConnectionBasedQosLink(connection,
+		qosLink = new ConnectionBasedQosLink(connectionTo(arduino),
 				ArdulinkProtocol255.instance());
-
-		try {
-			qosLink.sendNoTone(analogPin(3));
-		} finally {
-			qosLink.close();
-		}
+		qosLink.sendNoTone(analogPin(3));
 	}
 
 	@Test
 	public void doesThrowExceptionIfNotResponseReceivedWithinHalfAsecond()
 			throws Exception {
-		Connection connection = new StreamConnection(
-				responder.getInputStream(), responder.getOutputStream(),
-				ArdulinkProtocolN.instance());
-		ConnectionBasedQosLink qosLink = new ConnectionBasedQosLink(connection,
+		qosLink = new ConnectionBasedQosLink(connectionTo(arduino),
 				ArdulinkProtocol255.instance(), 500, MILLISECONDS);
-
-		try {
-			exceptions.expect(IllegalStateException.class);
-			exceptions.expectMessage(allOf(containsString("response"),
-					containsString("500 MILLISECONDS")));
-			qosLink.sendNoTone(analogPin(3));
-		} finally {
-			qosLink.close();
-		}
+		exceptions.expect(IllegalStateException.class);
+		exceptions.expectMessage(allOf(containsString("response"),
+				containsString("500 MILLISECONDS")));
+		qosLink.sendNoTone(analogPin(3));
 	}
 
 	@Test
 	public void doesThrowExceptionIfKoResponse() throws Exception {
-		responder.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
+		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ko?id=%s");
-
-		Connection connection = new StreamConnection(
-				responder.getInputStream(), responder.getOutputStream(),
-				ArdulinkProtocolN.instance());
-		ConnectionBasedQosLink qosLink = new ConnectionBasedQosLink(connection,
+		Connection connection = connectionTo(arduino);
+		qosLink = new ConnectionBasedQosLink(connection,
 				ArdulinkProtocol255.instance(), 500, MILLISECONDS);
-
-		try {
-			exceptions.expect(IllegalStateException.class);
-			exceptions.expectMessage(allOf(containsString("status"),
-					containsString("not ok")));
-			qosLink.sendNoTone(analogPin(3));
-		} finally {
-			qosLink.close();
-		}
+		exceptions.expect(IllegalStateException.class);
+		exceptions.expectMessage(allOf(containsString("status"),
+				containsString("not ok")));
+		qosLink.sendNoTone(analogPin(3));
 	}
 
 	@Test
 	public void secondCallPassesIfFirstOnKeepsUnresponded() throws Exception {
-		responder.whenReceive(regex("alp:\\/\\/tone\\/4/5/6\\?id\\=(\\d)"))
+		arduino.whenReceive(regex("alp:\\/\\/tone\\/4/5/6\\?id\\=(\\d)"))
 				.thenDoNotRespond();
-		responder.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
+		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ok?id=%s");
-
-		Connection connection = new StreamConnection(
-				responder.getInputStream(), responder.getOutputStream(),
-				ArdulinkProtocolN.instance());
-		ConnectionBasedQosLink qosLink = new ConnectionBasedQosLink(connection,
+		qosLink = new ConnectionBasedQosLink(connectionTo(arduino),
 				ArdulinkProtocol255.instance(), 500, MILLISECONDS);
+		exceptions.expect(IllegalStateException.class);
+		exceptions.expectMessage(allOf(containsString("response"),
+				containsString("500 MILLISECONDS")));
+		qosLink.sendTone(Tone.forPin(analogPin(4)).withHertz(5)
+				.withDuration(6, MILLISECONDS));
+		exceptions = ExpectedException.none();
+		qosLink.sendNoTone(analogPin(3));
+	}
 
-		try {
-			exceptions.expect(IllegalStateException.class);
-			exceptions.expectMessage(allOf(containsString("response"),
-					containsString("500 MILLISECONDS")));
-			qosLink.sendTone(Tone.forPin(analogPin(4)).withHertz(5)
-					.withDuration(6, MILLISECONDS));
-			exceptions = ExpectedException.none();
-			qosLink.sendNoTone(analogPin(3));
-		} finally {
-			qosLink.close();
-		}
+	private StreamConnection connectionTo(Arduino arduino) {
+		return new StreamConnection(arduino.getInputStream(),
+				arduino.getOutputStream(), ArdulinkProtocolN.instance());
 	}
 
 	private Pattern regex(String regex) {

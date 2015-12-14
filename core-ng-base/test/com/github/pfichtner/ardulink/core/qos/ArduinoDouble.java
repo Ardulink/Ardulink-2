@@ -17,10 +17,10 @@ import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 
-public class Responder implements Closeable {
+public class ArduinoDouble implements Closeable {
 
 	private final static Logger logger = LoggerFactory
-			.getLogger(Responder.class);
+			.getLogger(ArduinoDouble.class);
 
 	interface ReponseGenerator {
 
@@ -102,7 +102,7 @@ public class Responder implements Closeable {
 	private final PipedInputStream is2;
 	private final PipedOutputStream os1;
 
-	public Responder() throws IOException {
+	public ArduinoDouble() throws IOException {
 		final Protocol protocol = ArdulinkProtocolN.instance();
 		PipedInputStream is1 = new PipedInputStream();
 		os1 = new PipedOutputStream(is1);
