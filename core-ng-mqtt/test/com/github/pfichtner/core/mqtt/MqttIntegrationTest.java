@@ -67,14 +67,14 @@ public class MqttIntegrationTest {
 		this.link.switchDigitalPin(digitalPin(30), true);
 		assertThat(
 				mqttClient.getMessages(),
-				is(Arrays.asList(new Message(TOPIC + "/D30/set/value", "true"))));
+				is(Arrays.asList(new Message(TOPIC + "/D30/value/set", "true"))));
 	}
 
 	@Test
 	public void canSwitchAnalogPin() throws IOException {
 		this.link.switchAnalogPin(analogPin(12), 34);
 		assertThat(mqttClient.getMessages(),
-				is(Arrays.asList(new Message(TOPIC + "/A12/set/value", "34"))));
+				is(Arrays.asList(new Message(TOPIC + "/A12/value/set", "34"))));
 	}
 
 	@Test
@@ -85,7 +85,7 @@ public class MqttIntegrationTest {
 		assertThat(
 				mqttClient.getMessages(),
 				is(Arrays.asList(new Message(TOPIC
-						+ "/system/listening/A1/set/value", "true"))));
+						+ "/system/listening/A1/value/set", "true"))));
 	}
 
 	@Test
@@ -96,7 +96,7 @@ public class MqttIntegrationTest {
 		assertThat(
 				mqttClient.getMessages(),
 				is(Arrays.asList(new Message(TOPIC
-						+ "/system/listening/D2/set/value", "true"))));
+						+ "/system/listening/D2/value/set", "true"))));
 	}
 
 	@Test
@@ -106,7 +106,7 @@ public class MqttIntegrationTest {
 				analogPin(1), delegate());
 		this.link.addListener(listener);
 		this.link.addListener(listener);
-		Message m = new Message(TOPIC + "/system/listening/A1/set/value",
+		Message m = new Message(TOPIC + "/system/listening/A1/value/set",
 				"true");
 		// at the moment this is sent twice (see ListenerSupport)
 		assertThat(mqttClient.pollMessages(), is(Arrays.asList(m, m)));
@@ -114,7 +114,7 @@ public class MqttIntegrationTest {
 		assertThat(mqttClient.getMessages(),
 				is(Collections.<Message> emptyList()));
 		this.link.removeListener(listener);
-		Message m2 = new Message(TOPIC + "/system/listening/A1/set/value",
+		Message m2 = new Message(TOPIC + "/system/listening/A1/value/set",
 				"false");
 		assertThat(mqttClient.getMessages(), is(Arrays.asList(m2)));
 	}
@@ -126,7 +126,7 @@ public class MqttIntegrationTest {
 				digitalPin(1), delegate());
 		this.link.addListener(listener);
 		this.link.addListener(listener);
-		Message m = new Message(TOPIC + "/system/listening/D1/set/value",
+		Message m = new Message(TOPIC + "/system/listening/D1/value/set",
 				"true");
 		// at the moment this is sent twice (see ListenerSupport)
 		assertThat(mqttClient.pollMessages(), is(Arrays.asList(m, m)));
@@ -134,7 +134,7 @@ public class MqttIntegrationTest {
 		assertThat(mqttClient.getMessages(),
 				is(Collections.<Message> emptyList()));
 		this.link.removeListener(listener);
-		Message m2 = new Message(TOPIC + "/system/listening/D1/set/value",
+		Message m2 = new Message(TOPIC + "/system/listening/D1/value/set",
 				"false");
 		assertThat(mqttClient.getMessages(), is(Arrays.asList(m2)));
 	}

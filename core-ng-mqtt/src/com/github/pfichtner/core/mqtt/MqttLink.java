@@ -156,7 +156,7 @@ public class MqttLink extends AbstractListenerLink {
 
 	private String controlTopic(Pin pin) {
 		return topic + "system/listening/" + getType(pin) + pin.pinNum()
-				+ "/set/value";
+				+ "/value/set";
 	}
 
 	private String getType(Pin pin) {
@@ -177,7 +177,7 @@ public class MqttLink extends AbstractListenerLink {
 
 	private void switchPin(String type, Pin pin, Object value)
 			throws IOException {
-		publish(topic + type + pin.pinNum() + "/set/value", value);
+		publish(topic + type + pin.pinNum() + "/value/set", value);
 	}
 
 	private void publish(String topic, Object value) throws IOException {
