@@ -2,6 +2,7 @@ package com.github.pfichtner.ardulink.core.qos;
 
 import static com.github.pfichtner.ardulink.core.Pin.analogPin;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.StringContains.containsString;
@@ -44,7 +45,7 @@ public class QosLinkTest {
 		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ok?id=%s");
 		qosLink = new ConnectionBasedQosLink(connectionTo(arduino),
-				ArdulinkProtocol255.instance());
+				ArdulinkProtocol255.instance(), 15, MINUTES);
 		qosLink.sendNoTone(analogPin(3));
 	}
 
