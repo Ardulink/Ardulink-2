@@ -24,7 +24,7 @@ import static org.zu.ardulink.util.Preconditions.checkArgument;
  * 
  * @author Peter Fichtner
  * 
- *         [adsense]
+ * [adsense]
  */
 public class MqttMessageBuilder {
 

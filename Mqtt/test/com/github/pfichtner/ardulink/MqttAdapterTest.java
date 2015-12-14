@@ -47,7 +47,6 @@ import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
 import com.github.pfichtner.ardulink.util.Message;
 import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
-import com.github.pfichtner.ardulink.util.TestUtil;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -143,8 +142,8 @@ public class MqttAdapterTest {
 		int pin = 0;
 		boolean value = true;
 		this.mqttClient.enableDigitalPinChangeEvents(pin);
-		this.link.fireStateChanged(TestUtil.digitalPinChanged(
-				anyOtherPinThan(pin), value));
+		this.link.fireStateChanged(digitalPinChanged(anyOtherPinThan(pin),
+				value));
 		assertThat(published, is(noMessages()));
 	}
 
@@ -153,7 +152,7 @@ public class MqttAdapterTest {
 		int pin = 9;
 		int value = 123;
 		this.mqttClient.enableAnalogPinChangeEvents(pin);
-		link.fireStateChanged(TestUtil.analogPinChanged(pin, value));
+		link.fireStateChanged(analogPinChanged(pin, value));
 		assertThat(published, is(listWithSameOrder(mqttMessage.analogPin(pin)
 				.hasValue(value))));
 	}
