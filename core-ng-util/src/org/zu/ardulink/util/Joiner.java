@@ -15,11 +15,13 @@ public final class Joiner {
 	}
 
 	public String join(Iterable<Object> values) {
-		StringBuilder sb = new StringBuilder();
-		for (Iterator<Object> iterator = values.iterator(); iterator.hasNext();) {
-			Object next = iterator.next();
-			sb = sb.append(next);
-			sb = iterator.hasNext() ? sb.append(separator) : sb;
+		Iterator<Object> iterator = values.iterator();
+		if (!iterator.hasNext()) {
+			return "";
+		}
+		StringBuilder sb = new StringBuilder().append(iterator.next());
+		while (iterator.hasNext()) {
+			sb = sb.append(separator).append(iterator.next());
 		}
 		return sb.toString();
 	}
