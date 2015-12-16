@@ -4,6 +4,7 @@ import static com.github.pfichtner.ardulink.core.Pin.analogPin;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.StringContains.containsString;
 
@@ -75,19 +76,20 @@ public class QosLinkTest {
 
 	@Test
 	public void secondCallPassesIfFirstOnKeepsUnresponded() throws Exception {
-		arduino.whenReceive(regex("alp:\\/\\/tone\\/4/5/6\\?id\\=(\\d)"))
+		arduino.whenReceive(regex("alp:\\/\\/tone\\/1/2/3\\?id\\=(\\d)"))
 				.thenDoNotRespond();
-		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
+		arduino.whenReceive(regex("alp:\\/\\/tone\\/4/5/6\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ok?id=%s");
 		qosLink = new ConnectionBasedQosLink(connectionTo(arduino),
 				ArdulinkProtocol255.instance(), 500, MILLISECONDS);
-		exceptions.expect(IllegalStateException.class);
-		exceptions.expectMessage(allOf(containsString("response"),
-				containsString("500 MILLISECONDS")));
+		try {
+			qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2)
+					.withDuration(3, MILLISECONDS));
+		} catch (IllegalStateException e) {
+			assertThat(e.getMessage(), containsString("No response"));
+		}
 		qosLink.sendTone(Tone.forPin(analogPin(4)).withHertz(5)
 				.withDuration(6, MILLISECONDS));
-		exceptions = ExpectedException.none();
-		qosLink.sendNoTone(analogPin(3));
 	}
 
 	private StreamConnection connectionTo(Arduino arduino) {
