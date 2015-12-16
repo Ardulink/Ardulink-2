@@ -18,9 +18,11 @@ limitations under the License.
 
 package org.zu.ardulink.connection.proxy;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
 
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +40,7 @@ import org.kohsuke.args4j.spi.SubCommands;
  * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
- *         [adsense]
+ * [adsense]
  */
 public class NetworkProxyServer {
 
@@ -55,10 +57,9 @@ public class NetworkProxyServer {
 				try {
 					System.out
 							.println("Ardulink Network Proxy Server running...");
-					while (listening) {
+					while (true) {
 						new Thread(new NetworkProxyServerConnection(
 								serverSocket.accept())).start();
-						TimeUnit.SECONDS.sleep(2);
 					}
 				} finally {
 					serverSocket.close();
@@ -77,7 +78,10 @@ public class NetworkProxyServer {
 		@Override
 		public void execute(int portNumber) {
 			try {
-				Socket socket = new Socket("127.0.0.1", portNumber);
+				InetAddress localHost = InetAddress.getLocalHost();
+				Socket socket = new Socket("127.0.0.1",
+						portNumber);
+				socket.setSoTimeout((int) SECONDS.toMillis(5));
 				PrintWriter writer = new PrintWriter(socket.getOutputStream(),
 						true);
 				writer.println(STOP_SERVER_CMD);
@@ -93,8 +97,6 @@ public class NetworkProxyServer {
 	}
 
 	private static final int DEFAULT_LISTENING_PORT = 4478;
-
-	private static boolean listening = true;
 
 	@Argument(required = true, usage = "command", handler = SubCommandHandler.class)
 	@SubCommands({ @SubCommand(name = "start", impl = StartCommand.class),
@@ -120,8 +122,5 @@ public class NetworkProxyServer {
 		command.execute(portNumber);
 	}
 
-	public static void stop() {
-		listening = false;
-	}
 
 }

@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.URI;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +33,6 @@ import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.StreamReader;
 import com.github.pfichtner.ardulink.core.convenience.Links;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
@@ -44,7 +42,7 @@ import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
  * 
  * @author Peter Fichtner
  * 
- *         [adsense]
+ * [adsense]
  */
 public class NetworkProxyServerConnection implements Runnable {
 
@@ -64,21 +62,14 @@ public class NetworkProxyServerConnection implements Runnable {
 	@Override
 	public void run() {
 		try {
-
 			final OutputStream osRemote = socket.getOutputStream();
 			InputStream isRemote = socket.getInputStream();
 
-			final Configurer configurer = LinkManager.getInstance()
-					.getConfigurer(new URI("ardulink://serial"));
-
-			Handshaker handshaker = new Handshaker(isRemote, osRemote,
-					configurer, proto) {
-
+			Handshaker handshaker = new Handshaker(isRemote, osRemote, proto) {
 				@Override
 				protected Link newLink(Configurer configurer) throws Exception {
 					return Links.getLink(configurer);
 				}
-
 			};
 
 			Link link = handshaker.doHandshake();
