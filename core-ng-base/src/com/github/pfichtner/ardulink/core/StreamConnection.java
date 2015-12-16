@@ -47,8 +47,10 @@ public class StreamConnection implements Connection {
 	@Override
 	public void write(byte[] bytes) throws IOException {
 		logger.debug("Stream write {}", bytes);
-		outputStream.write(checkNotNull(bytes, "bytes must not be null"));
-		outputStream.flush();
+		synchronized (outputStream) {
+			outputStream.write(checkNotNull(bytes, "bytes must not be null"));
+			outputStream.flush();
+		}
 		for (Listener listener : this.listeners) {
 			try {
 				listener.sent(bytes);

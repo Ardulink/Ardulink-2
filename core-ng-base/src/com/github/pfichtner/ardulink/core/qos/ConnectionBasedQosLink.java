@@ -9,7 +9,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -80,7 +79,7 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink
 	private static final Logger logger = LoggerFactory
 			.getLogger(ConnectionBasedQosLink.class);
 
-	private static final AtomicLong messageCounter = new AtomicLong();
+	private static long messageCounter;
 	private final Lock lock = new ReentrantLock(false);
 	private final Condition condition = lock.newCondition();
 	private RplyEvent event;
@@ -104,81 +103,97 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink
 	@Override
 	public void startListening(Pin pin) throws IOException {
 		logger.info("Starting listening on pin {}", pin);
-		long messageId = nextId();
-		sendAndWait(
-				getProtocol().toArduino(
-						proxy(new DefaultToArduinoStartListening(pin),
-								messageId)), messageId);
+		synchronized (getConnection()) {
+			long messageId = nextId();
+			sendAndWait(
+					getProtocol().toArduino(
+							proxy(new DefaultToArduinoStartListening(pin),
+									messageId)), messageId);
+		}
 	}
 
 	@Override
 	public void stopListening(Pin pin) throws IOException {
-		long messageId = nextId();
-		sendAndWait(
-				getProtocol()
-						.toArduino(
-								proxy(new DefaultToArduinoStopListening(pin),
-										messageId)), messageId);
+		synchronized (getConnection()) {
+			long messageId = nextId();
+			sendAndWait(
+					getProtocol().toArduino(
+							proxy(new DefaultToArduinoStopListening(pin),
+									messageId)), messageId);
+		}
 		logger.info("Stopped listening on pin {}", pin);
 	}
 
 	@Override
 	public void switchAnalogPin(AnalogPin analogPin, int value)
 			throws IOException {
-		long messageId = nextId();
-		sendAndWait(
-				getProtocol().toArduino(
-						proxy(new DefaultToArduinoPinEvent(analogPin, value),
-								messageId)), messageId);
+		synchronized (getConnection()) {
+			long messageId = nextId();
+			sendAndWait(
+					getProtocol()
+							.toArduino(
+									proxy(new DefaultToArduinoPinEvent(
+											analogPin, value), messageId)),
+					messageId);
+		}
 	}
 
 	@Override
 	public void switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException {
-		long messageId = nextId();
-		sendAndWait(
-				getProtocol().toArduino(
-						proxy(new DefaultToArduinoPinEvent(digitalPin, value),
-								messageId)), messageId);
+		synchronized (getConnection()) {
+			long messageId = nextId();
+			sendAndWait(
+					getProtocol().toArduino(
+							proxy(new DefaultToArduinoPinEvent(digitalPin,
+									value), messageId)), messageId);
+		}
 	}
 
 	@Override
 	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
-		long messageId = nextId();
-		sendAndWait(
-				getProtocol().toArduino(
-						proxy(new DefaultToArduinoKeyPressEvent(keychar,
-								keycode, keylocation, keymodifiers,
-								keymodifiersex), messageId)), messageId);
+		synchronized (getConnection()) {
+			long messageId = nextId();
+			sendAndWait(
+					getProtocol().toArduino(
+							proxy(new DefaultToArduinoKeyPressEvent(keychar,
+									keycode, keylocation, keymodifiers,
+									keymodifiersex), messageId)), messageId);
+		}
 	}
 
 	@Override
 	public void sendTone(Tone tone) throws IOException {
-		long messageId = nextId();
-		sendAndWait(
-				getProtocol().toArduino(
-						proxy(new DefaultToArduinoTone(tone), messageId)),
-				messageId);
+		synchronized (getConnection()) {
+			long messageId = nextId();
+			sendAndWait(
+					getProtocol().toArduino(
+							proxy(new DefaultToArduinoTone(tone), messageId)),
+					messageId);
+		}
 	}
 
 	@Override
 	public void sendNoTone(AnalogPin analogPin) throws IOException {
-		long messageId = nextId();
-		sendAndWait(
-				getProtocol()
-						.toArduino(
-								proxy(new DefaultToArduinoNoTone(analogPin),
-										messageId)), messageId);
+		synchronized (getConnection()) {
+			long messageId = nextId();
+			sendAndWait(
+					getProtocol().toArduino(
+							proxy(new DefaultToArduinoNoTone(analogPin),
+									messageId)), messageId);
+		}
 	}
 
 	@Override
 	public void sendCustomMessage(String... messages) throws IOException {
-		long messageId = nextId();
-		sendAndWait(
-				getProtocol().toArduino(
-						proxy(new DefaultToArduinoCustomMessage(messages),
-								messageId)), messageId);
+		synchronized (getConnection()) {
+			long messageId = nextId();
+			sendAndWait(
+					getProtocol().toArduino(
+							proxy(new DefaultToArduinoCustomMessage(messages),
+									messageId)), messageId);
+		}
 	}
 
 	private void sendAndWait(byte[] bytes, long messageId) throws IOException {
@@ -200,7 +215,7 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink
 	}
 
 	private long nextId() {
-		return messageCounter.incrementAndGet();
+		return ++messageCounter;
 	}
 
 	// TODO register a listener that interrupts if ANY other message received in
