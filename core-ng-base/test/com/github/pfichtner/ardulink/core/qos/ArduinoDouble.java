@@ -54,6 +54,10 @@ public class ArduinoDouble implements Closeable {
 			return thenRespond;
 		}
 
+		public void thenDoNotRespond() {
+			// do nothing
+		}
+
 	}
 
 	public Matcher matcher;
@@ -127,6 +131,7 @@ public class ArduinoDouble implements Closeable {
 						logger.warn("No responder for {}", received);
 					}
 				}
+
 			}
 		}.runReaderThread(new String(ArdulinkProtocol255.instance()
 				.getSeparator()));
