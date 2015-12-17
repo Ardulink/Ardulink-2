@@ -3,6 +3,7 @@ package com.github.pfichtner.core.serial;
 import static gnu.io.SerialPort.DATABITS_8;
 import static gnu.io.SerialPort.PARITY_NONE;
 import static gnu.io.SerialPort.STOPBITS_1;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import static org.zu.ardulink.util.Preconditions.checkState;
 import gnu.io.CommPortIdentifier;
@@ -47,7 +48,8 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 				serialPort.getInputStream(), serialPort.getOutputStream(),
 				READ_PROTO);
 
-		return new LinkDelegate(createDelegateTo(config, connection)) {
+		return new LinkDelegate(waitForArdulink(config,
+				createDelegateTo(config, connection))) {
 			@Override
 			public void close() throws IOException {
 				super.close();
@@ -56,9 +58,26 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		};
 	}
 
+	private AbstractConnectionBasedLink waitForArdulink(
+			SerialLinkConfig config, AbstractConnectionBasedLink link) {
+		if (config.isPingprobe()) {
+			checkState(
+					link.waitForArduinoToBoot(config.getWaitsecs(), SECONDS),
+					"Waited for arduino to boot but no response received");
+		} else {
+			try {
+				SECONDS.sleep(config.getWaitsecs());
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		}
+		return link;
+	}
+
 	@SuppressWarnings("resource")
-	private AbstractConnectionBasedLink createDelegateTo(SerialLinkConfig config,
-			StreamConnection connection) throws IOException {
+	private AbstractConnectionBasedLink createDelegateTo(
+			SerialLinkConfig config, StreamConnection connection)
+			throws IOException {
 		Protocol proto = config.getProto();
 		return config.isQos() ? new ConnectionBasedQosLink(connection, proto)
 				: new ConnectionBasedLink(connection, proto);

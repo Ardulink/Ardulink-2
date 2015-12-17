@@ -27,8 +27,59 @@ public class SerialLinkConfig implements LinkConfig {
 	@Named("qos")
 	private boolean qos;
 
+	@Named("waitsecs")
+	private int waitsecs = 10;
+
+	@Named("pingprobe")
+	private boolean pingprobe = true;
+
+	public int getBaudrate() {
+		return baudrate;
+	}
+
 	public String getPort() {
 		return port;
+	}
+
+	@ChoiceFor("port")
+	public String[] listPorts() {
+		List<String> ports = new ArrayList<String>();
+		for (CommPortIdentifier portIdentifier : portIdentifiers()) {
+			if (portIdentifier.getPortType() == PORT_SERIAL) {
+				ports.add(portIdentifier.getName());
+			}
+		}
+		return ports.toArray(new String[ports.size()]);
+	}
+
+	public Protocol getProto() {
+		return proto;
+	}
+
+	public int getWaitsecs() {
+		return waitsecs;
+	}
+
+	public boolean isPingprobe() {
+		return pingprobe;
+	}
+
+	public boolean isQos() {
+		return this.qos;
+	}
+
+	@SuppressWarnings("unchecked")
+	private Iterable<CommPortIdentifier> portIdentifiers() {
+		return forEnumeration((Enumeration<CommPortIdentifier>) CommPortIdentifier
+				.getPortIdentifiers());
+	}
+
+	public void setBaudrate(int baudrate) {
+		this.baudrate = baudrate;
+	}
+
+	public void setPingprobe(boolean pingprobe) {
+		this.pingprobe = pingprobe;
 	}
 
 	public void setPort(String port) {
@@ -39,41 +90,12 @@ public class SerialLinkConfig implements LinkConfig {
 		this.proto = Protocols.getByName(proto);
 	}
 
-	public void setBaudrate(int baudrate) {
-		this.baudrate = baudrate;
-	}
-
-	public int getBaudrate() {
-		return baudrate;
-	}
-
-	public Protocol getProto() {
-		return proto;
-	}
-
 	public void setQos(boolean qos) {
 		this.qos = qos;
 	}
 
-	public boolean isQos() {
-		return this.qos;
-	}
-
-	@ChoiceFor("port")
-	public String[] getPortList() {
-		List<String> ports = new ArrayList<String>();
-		for (CommPortIdentifier portIdentifier : portIdentifiers()) {
-			if (portIdentifier.getPortType() == PORT_SERIAL) {
-				ports.add(portIdentifier.getName());
-			}
-		}
-		return ports.toArray(new String[ports.size()]);
-	}
-
-	@SuppressWarnings("unchecked")
-	private Iterable<CommPortIdentifier> portIdentifiers() {
-		return forEnumeration((Enumeration<CommPortIdentifier>) CommPortIdentifier
-				.getPortIdentifiers());
+	public void setWaitsecs(int waitsecs) {
+		this.waitsecs = waitsecs;
 	}
 
 }

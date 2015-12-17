@@ -166,7 +166,8 @@ public class AbstractArdulinkProtocol implements Protocol {
 
 		String pinAndState = matcher.group(2);
 		String[] split = pinAndState.split("\\/");
-		checkState(split.length == 2, "Error splitting %s", pinAndState);
+		checkState(split.length == 2, "Error splitting %s, cannot process %s",
+				pinAndState, in);
 
 		Integer pin = tryParse(split[0]);
 		Integer value = tryParse(split[1]);

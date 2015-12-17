@@ -1,13 +1,11 @@
 package com.github.pfichtner.ardulink.core.qos;
 
+import static com.github.pfichtner.ardulink.core.proto.api.MessageIdHolders.proxy;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import static org.zu.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -24,7 +22,6 @@ import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
 import com.github.pfichtner.ardulink.core.Tone;
 import com.github.pfichtner.ardulink.core.events.RplyEvent;
 import com.github.pfichtner.ardulink.core.events.RplyListener;
-import com.github.pfichtner.ardulink.core.proto.api.MessageIdHolder;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoCustomMessage;
 import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoKeyPressEvent;
@@ -43,38 +40,6 @@ import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
  */
 public class ConnectionBasedQosLink extends AbstractConnectionBasedLink
 		implements RplyListener {
-
-	private static class MessageIdHolderInvocationHandler implements
-			InvocationHandler {
-
-		private static final Method messageIdHolderGetIdMethod = getMessageIdHolderGetIdMethod();
-
-		private final Object delegate;
-		private final long messageId;
-
-		private static Method getMessageIdHolderGetIdMethod() {
-			try {
-				return MessageIdHolder.class.getMethod("getId");
-			} catch (SecurityException e) {
-				throw new RuntimeException(e);
-			} catch (NoSuchMethodException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		public MessageIdHolderInvocationHandler(Object delegate, long messageId) {
-			this.delegate = delegate;
-			this.messageId = messageId;
-		}
-
-		@Override
-		public Object invoke(Object proxy, Method method, Object[] args)
-				throws Throwable {
-			return messageIdHolderGetIdMethod.equals(method) ? messageId
-					: method.invoke(delegate, args);
-		}
-
-	}
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(ConnectionBasedQosLink.class);
@@ -199,19 +164,6 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink
 	private void sendAndWait(byte[] bytes, long messageId) throws IOException {
 		getConnection().write(bytes);
 		waitFor(messageId);
-	}
-
-	private <T> T proxy(T delegateTo, long messageId) {
-		Class<?>[] existingInterfaces = delegateTo.getClass().getInterfaces();
-		Class<?>[] newInterfaces = new Class<?>[existingInterfaces.length + 1];
-		newInterfaces[0] = MessageIdHolder.class;
-		System.arraycopy(existingInterfaces, 0, newInterfaces, 1,
-				existingInterfaces.length);
-		@SuppressWarnings("unchecked")
-		T proxy = (T) Proxy.newProxyInstance(delegateTo.getClass()
-				.getClassLoader(), newInterfaces,
-				new MessageIdHolderInvocationHandler(delegateTo, messageId));
-		return proxy;
 	}
 
 	private long nextId() {
