@@ -36,10 +36,10 @@ public class MqttIntegrationTest {
 
 	private static final String TOPIC = "myTopic" + System.currentTimeMillis();
 
-	private AnotherMqttClient mqttClient = new AnotherMqttClient(TOPIC);
+	private AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC);
 
 	@Rule
-	public RuleChain chain = outerRule(new Broker()).around(mqttClient);
+	public RuleChain chain = outerRule(Broker.newBroker()).around(mqttClient);
 
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);

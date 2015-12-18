@@ -8,6 +8,14 @@ import org.junit.rules.ExternalResource;
 public class Broker extends ExternalResource {
 
 	private Server mqttServer;
+	
+	private Broker() {
+		super();
+	}
+	
+	public static Broker newBroker() {
+		return new Broker();
+	}
 
 	@Override
 	protected void before() throws IOException, InterruptedException {
