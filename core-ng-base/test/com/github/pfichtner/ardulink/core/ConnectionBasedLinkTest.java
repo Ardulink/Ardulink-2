@@ -8,7 +8,6 @@ import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPPr
 import static com.github.pfichtner.hamcrest.EventMatchers.eventFor;
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -22,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
@@ -41,7 +39,6 @@ import com.github.pfichtner.ardulink.core.events.PinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
-import com.github.pfichtner.ardulink.core.qos.ArduinoDouble;
 
 public class ConnectionBasedLinkTest {
 
@@ -53,10 +50,11 @@ public class ConnectionBasedLinkTest {
 	// arduino sends messages separated by 255
 	private static final Protocol readProto = ArdulinkProtocol255.instance();
 
+	// TODO PF Migrate to @Rule Arduino
 	private PipedOutputStream arduinosOutputStream;
 	private final ByteArrayOutputStream os = new ByteArrayOutputStream();
 	private Connection connection;
-	private Link link;
+	private ConnectionBasedLink link;
 	private final AtomicInteger bytesRead = new AtomicInteger();
 
 	@Before
@@ -329,43 +327,6 @@ public class ConnectionBasedLinkTest {
 		this.link.switchAnalogPin(analogPin(anyPositive(int.class)),
 				anyPositive(int.class));
 		assertThat(sb.toString(), is(""));
-	}
-
-	@Test
-	public void noNeedToWait10SecondsIfArduinoResponds() throws IOException,
-			InterruptedException {
-
-		ArduinoDouble arduinoDouble = new ArduinoDouble();
-		arduinoDouble.whenReceive("alp://notn/0?id=0").thenRespond(
-				"alp://rply/ok?id=0");
-
-		StreamConnection connectionTo = connectionTo(arduinoDouble);
-		ConnectionBasedLink xlink = new ConnectionBasedLink(connectionTo,
-				ArdulinkProtocol255.instance());
-
-		boolean waitForArduino = xlink.waitForArduinoToBoot(10, MINUTES);
-		System.out.println(os.toString());
-		TimeUnit.MILLISECONDS.sleep(500);
-		System.out.println(os.toString());
-		assertThat(waitForArduino, is(true));
-	}
-
-	private StreamConnection connectionTo(ArduinoDouble arduino) {
-		return new StreamConnection(arduino.getInputStream(),
-				arduino.getOutputStream(), ArdulinkProtocolN.instance());
-	}
-
-	@Test
-	public void ifNoResponseReceivedWaitWillReturnFalse() throws IOException,
-			InterruptedException {
-		ArduinoDouble arduinoDouble = new ArduinoDouble();
-		arduinoDouble.whenReceive("alp://notn/0?id=0").thenDoNotRespond();
-
-		StreamConnection connectionTo = connectionTo(arduinoDouble);
-		ConnectionBasedLink xlink = new ConnectionBasedLink(connectionTo,
-				ArdulinkProtocol255.instance());
-
-		assertThat(xlink.waitForArduinoToBoot(2, SECONDS), is(false));
 	}
 
 	private int anyPositive(Class<? extends Number> numClass) {

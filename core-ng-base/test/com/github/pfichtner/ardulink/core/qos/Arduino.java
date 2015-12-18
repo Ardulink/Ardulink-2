@@ -7,19 +7,23 @@ import java.util.regex.Pattern;
 
 import org.junit.rules.ExternalResource;
 
+import com.github.pfichtner.ardulink.core.qos.ArduinoDouble.Adder;
 import com.github.pfichtner.ardulink.core.qos.ArduinoDouble.RegexAdder;
 
 public class Arduino extends ExternalResource {
 
-	private ArduinoDouble arduinoDouble;
+	private final ArduinoDouble arduinoDouble = create();
 
 	public static Arduino newArduino() {
 		return new Arduino();
 	}
 
-	@Override
-	protected void before() throws IOException {
-		this.arduinoDouble = new ArduinoDouble();
+	private static ArduinoDouble create() {
+		try {
+			return new ArduinoDouble();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -29,6 +33,10 @@ public class Arduino extends ExternalResource {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public Adder whenReceive(String string) {
+		return arduinoDouble.whenReceive(string);
 	}
 
 	public RegexAdder whenReceive(Pattern pattern) {

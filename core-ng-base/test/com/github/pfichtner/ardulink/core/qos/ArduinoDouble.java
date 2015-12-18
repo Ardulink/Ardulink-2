@@ -105,16 +105,17 @@ public class ArduinoDouble implements Closeable {
 	private final List<ReponseGenerator> data = Lists.newArrayList();
 	private final PipedInputStream is2;
 	private final PipedOutputStream os1;
+	private StreamReader streamReader;
+	private PipedOutputStream os2;
 
 	public ArduinoDouble() throws IOException {
 		final Protocol protocol = ArdulinkProtocolN.instance();
 		PipedInputStream is1 = new PipedInputStream();
 		os1 = new PipedOutputStream(is1);
-
 		is2 = new PipedInputStream();
-		final PipedOutputStream os2 = new PipedOutputStream(is2);
 
-		new StreamReader(is1) {
+		os2 = new PipedOutputStream(is2);
+		streamReader = new StreamReader(is1) {
 			@Override
 			protected void received(byte[] bytes) throws Exception {
 				String received = new String(bytes);
@@ -133,7 +134,8 @@ public class ArduinoDouble implements Closeable {
 				}
 
 			}
-		}.runReaderThread(new String(ArdulinkProtocol255.instance()
+		};
+		streamReader.runReaderThread(new String(ArdulinkProtocol255.instance()
 				.getSeparator()));
 	}
 
@@ -157,6 +159,8 @@ public class ArduinoDouble implements Closeable {
 	public void close() throws IOException {
 		is2.close();
 		os1.close();
+		streamReader.close();
+		os2.close();
 	}
 
 }
