@@ -62,9 +62,6 @@ public class MqttMain {
 	private static final Logger logger = LoggerFactory
 			.getLogger(MqttMain.class);
 
-	@Option(name = "-delay", usage = "Do a n seconds delay after connecting")
-	private int sleepSecs = 10;
-
 	@Option(name = "-brokerTopic", usage = "Topic to register. To switch pins a message of the form $brokerTopic/[A|D]$pinNumber/value/set must be sent. A for analog pins, D for digital pins")
 	private String brokerTopic = Config.DEFAULT_TOPIC;
 
@@ -288,7 +285,6 @@ public class MqttMain {
 
 	public void connectToMqttBroker() throws Exception {
 		this.link = createLink();
-		SECONDS.sleep(this.sleepSecs);
 		ensureBrokerTopicIsnormalized();
 		if (standalone) {
 			this.standaloneServer = MqttBroker.builder().host(this.brokerHost)
@@ -351,10 +347,6 @@ public class MqttMain {
 
 	public void setThrottleMillis(int throttleMillis) {
 		this.throttleMillis = throttleMillis;
-	}
-
-	public void setSleepSecs(int sleepSecs) {
-		this.sleepSecs = sleepSecs;
 	}
 
 	public void setStandalone(boolean standalone) {
