@@ -19,6 +19,8 @@ package com.github.pfichtner.ardulink.util;
 import static com.github.pfichtner.ardulink.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
 import static java.lang.String.format;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,9 +36,9 @@ import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
  * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
-public class AnotherMqttClient {
+public class AnotherMqttClient implements Closeable {
 
 	public static class Builder {
 
@@ -66,7 +68,9 @@ public class AnotherMqttClient {
 		}
 
 		public AnotherMqttClient connect() {
-			return new AnotherMqttClient(this).connect();
+			AnotherMqttClient client = new AnotherMqttClient(this);
+			client.connect();
+			return client;
 		}
 
 	}
@@ -145,9 +149,15 @@ public class AnotherMqttClient {
 				.getBytes()));
 	}
 
-	public void disconnect() throws MqttException {
-		if (this.mqttClient.isConnected()) {
-			this.mqttClient.disconnect();
+	@Override
+	public void close() throws IOException {
+		try {
+			if (this.mqttClient.isConnected()) {
+				this.mqttClient.disconnect();
+			}
+			this.mqttClient.close();
+		} catch (MqttException e) {
+			throw new RuntimeException(e);
 		}
 	}
 

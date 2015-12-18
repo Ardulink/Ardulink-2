@@ -29,7 +29,6 @@ public class MqttMainStandaloneTest {
 				return link;
 			}
 		};
-		mqttMain.setSleepSecs(0);
 		mqttMain.setStandalone(true);
 		mqttMain.setBrokerTopic(topic);
 

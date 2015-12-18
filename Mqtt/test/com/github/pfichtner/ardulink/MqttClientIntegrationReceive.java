@@ -72,7 +72,7 @@ public class MqttClientIntegrationReceive {
 	public void tearDown() throws InterruptedException, MqttException,
 			IOException {
 		client.close();
-		amc.disconnect();
+		amc.close();
 		broker.stopServer();
 	}
 
