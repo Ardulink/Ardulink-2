@@ -8,7 +8,7 @@ public class DefaultDigitalPinValueChangedEvent implements
 	private final DigitalPin pin;
 	private final Boolean value;
 
-	public DefaultDigitalPinValueChangedEvent(DigitalPin pin, Boolean value) {
+	public DefaultDigitalPinValueChangedEvent(DigitalPin pin, boolean value) {
 		this.pin = pin;
 		this.value = value;
 	}

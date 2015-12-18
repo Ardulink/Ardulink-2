@@ -8,7 +8,7 @@ public class DefaultAnalogPinValueChangedEvent implements
 	private final AnalogPin pin;
 	private final Integer value;
 
-	public DefaultAnalogPinValueChangedEvent(AnalogPin pin, Integer value) {
+	public DefaultAnalogPinValueChangedEvent(AnalogPin pin, int value) {
 		this.pin = pin;
 		this.value = value;
 	}
