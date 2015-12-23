@@ -60,6 +60,9 @@ void setup() {
   
   // Read from 4 this is needed just as example for this sketch
 //  pinMode(4, INPUT);
+
+  // In order to work with analog input signal you have to set pinMode to INPUT please add Ax pinMode statement if you need for it
+  //pinMode(A0, INPUT);
 }
 
 void loop() {
