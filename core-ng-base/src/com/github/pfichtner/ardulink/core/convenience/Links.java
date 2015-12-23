@@ -99,9 +99,9 @@ public final class Links {
 			@Override
 			public void close() throws IOException {
 				synchronized (cache) {
-					if (checkNotNull(cache.get(cacheKey),
-							"Link retrieved from cache but not found inside it")
-							.decreaseUsageCounter() == 0) {
+					CacheValue cacheValue = cache.get(cacheKey);
+					if (cacheValue != null
+							&& cacheValue.decreaseUsageCounter() == 0) {
 						cache.remove(cacheKey);
 					}
 				}
