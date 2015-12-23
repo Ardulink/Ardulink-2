@@ -221,7 +221,7 @@ public abstract class LinkManager {
 
 			private URI checkSchema(URI uri) {
 				checkArgument(SCHEMA.equalsIgnoreCase(uri.getScheme()),
-						"schema not %s", SCHEMA);
+						"schema not %s (was %s)", SCHEMA, uri.getScheme());
 				return uri;
 			}
 
