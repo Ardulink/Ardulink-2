@@ -18,8 +18,9 @@ limitations under the License.
 
 package org.zu.ardulink.mail.server.links.configuration;
 
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -29,35 +30,16 @@ import javax.xml.bind.annotation.XmlRootElement;
  * [adsense]
  *
  */
-@XmlRootElement(name="configuration")
-public class AConfiguration {
+public class AConnectionList {
 
-	private AConnectionList aConnectionList;
-	private ALinkList aLinkList;
-	private ACommandList aCommandList;
-	
-	@XmlElement(name="aConnectionList")
-	public AConnectionList getaConnectionList() {
-		return aConnectionList;
-	}
-	public void setaConnectionList(AConnectionList aConnectionList) {
-		this.aConnectionList = aConnectionList;
+	private List<AConnection> aconnections;
+
+	@XmlElement(name = "aconnections")
+	public List<AConnection> getAConnections() {
+		return aconnections;
 	}
 
-	@XmlElement(name="aLinkList")
-	public ALinkList getaLinkList() {
-		return aLinkList;
+	public void setAConnections(List<AConnection> connections) {
+		this.aconnections = connections;
 	}
-	public void setaLinkList(ALinkList aLinkList) {
-		this.aLinkList = aLinkList;
-	}
-
-	@XmlElement(name="aCommandList")
-	public ACommandList getaCommandList() {
-		return aCommandList;
-	}
-	public void setaCommandList(ACommandList aCommandList) {
-		this.aCommandList = aCommandList;
-	}
-	
 }

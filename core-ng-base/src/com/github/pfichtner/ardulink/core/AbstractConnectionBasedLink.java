@@ -21,7 +21,6 @@ import com.github.pfichtner.ardulink.core.events.DefaultAnalogPinValueChangedEve
 import com.github.pfichtner.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.DefaultRplyEvent;
 import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.proto.api.MessageIdHolders;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol.FromArduino;
 import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoNoTone;
@@ -82,6 +81,16 @@ public abstract class AbstractConnectionBasedLink extends AbstractListenerLink {
 		}
 	}
 
+	/**
+	 * Will wait for the arduino to respond to our messages sent.
+	 * 
+	 * @param wait
+	 *            the maximum time to wait
+	 * @param timeUnit
+	 *            the units to wait
+	 * @return <code>true</code> if the arduino did response within the given
+	 *         time otherwise <code>false</code>
+	 */
 	public boolean waitForArduinoToBoot(int wait, TimeUnit timeUnit) {
 		final ReentrantLock lock = new ReentrantLock();
 		final Condition condition = lock.newCondition();
