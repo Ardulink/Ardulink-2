@@ -7,6 +7,7 @@ import static com.icegreen.greenmail.util.ServerSetupTest.SMTP_IMAP;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -47,10 +48,6 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	public void tearDown() throws IOException {
 		link.close();
 	}
-
-	// TODO how to pass link parameters/how to separate link parameters
-	// from camel parameters
-	// TODO Mail response
 
 	@Test
 	public void canProcessViaImap() throws Exception {
@@ -128,6 +125,11 @@ public class ArdulinkMailOnCamelIntegrationTest {
 			link2.close();
 		}
 
+	}
+
+	@Test
+	public void canRespondViaMail() {
+		fail("Not yet implemented");
 	}
 
 	private String encode(String string) {
