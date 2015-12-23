@@ -32,6 +32,7 @@ public class ArdulinkComponent extends UriEndpointComponent {
 
 		ArdulinkEndpoint.Config config = new ArdulinkEndpoint.Config();
 		config.setType(remaining);
+		config.setTypeParams(getOptional(parameters, "linkparams"));
 		config.setValidFroms(get(parameters, "validfroms").split("\\;"));
 
 		handleScenarios(parameters, config);
@@ -74,9 +75,17 @@ public class ArdulinkComponent extends UriEndpointComponent {
 	}
 
 	private String get(Map<String, Object> parameters, String key) {
-		String value = String.valueOf(parameters.get(key));
-		parameters.remove(key);
-		return value;
+		return checkNotNull(getOptional(parameters, key), "%s not configured",
+				key);
+	}
+
+	private String getOptional(Map<String, Object> parameters, String key) {
+		if (parameters.containsKey(key)) {
+			String value = String.valueOf(parameters.get(key));
+			parameters.remove(key);
+			return value;
+		}
+		return null;
 	}
 
 	private int getInt(String string) {

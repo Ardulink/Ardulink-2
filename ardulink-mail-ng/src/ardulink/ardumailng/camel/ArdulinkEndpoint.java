@@ -20,9 +20,10 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements
 
 	public static class Config {
 
-		private List<String> validfroms;
 		private String type;
-		private ListMultiMap<String, Command> commands = new ListMultiMap<String, Command>();;
+		private String typeParams;
+		private List<String> validfroms;
+		private ListMultiMap<String, Command> commands = new ListMultiMap<String, Command>();
 
 		public void setValidFroms(String... validfroms) {
 			this.validfroms = Arrays.asList(validfroms.clone());
@@ -36,6 +37,10 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements
 			this.commands.put(name, command);
 		}
 
+		public void setTypeParams(String typeParams) {
+			this.typeParams = typeParams;
+		}
+
 	}
 
 	public ArdulinkEndpoint(String uri, ArdulinkComponent ardulinkComponent,
@@ -47,7 +52,7 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements
 	@Override
 	public Producer createProducer() throws Exception {
 		ArdulinkProducer ardulinkProducer = new ArdulinkProducer(this,
-				config.type);
+				config.type, config.typeParams);
 		ardulinkProducer.setValidFroms(config.validfroms);
 		for (Entry<String, List<Command>> entry : config.commands.asMap().entrySet()) {
 			ardulinkProducer.setCommands(entry.getKey(), entry.getValue());

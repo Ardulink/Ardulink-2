@@ -25,11 +25,15 @@ public class ArdulinkProducer extends DefaultProducer {
 
 	private final Link link;
 
-	public ArdulinkProducer(Endpoint endpoint, String type) {
+	public ArdulinkProducer(Endpoint endpoint, String type, String typeParams) {
 		super(endpoint);
 		try {
-			link = Links.getLink(new URI("ardulink://"
-					+ checkNotNull(type, "type must not be null")));
+			String str = "ardulink://"
+					+ checkNotNull(type, "type must not be null");
+			if (typeParams != null && !typeParams.isEmpty()) {
+				str += "?" + typeParams;
+			}
+			link = Links.getLink(new URI(str));
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		} catch (Exception e) {

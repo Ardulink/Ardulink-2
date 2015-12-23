@@ -50,7 +50,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	// TODO how to pass link parameters/how to separate link parameters
 	// from camel parameters
-	// TODO multi link test
+	// TODO Mail response
 
 	@Test
 	public void canProcessViaImap() throws Exception {
@@ -82,6 +82,55 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		verifyNoMoreInteractions(mock);
 	}
 
+	@Test
+	public void canProcessMultipleLinks() throws Exception {
+		String receiver = "receiver@localhost.invalid";
+		mailMock.setUser(receiver, "loginId1", "secret1");
+
+		String validSender = "valid.sender@localhost.invalid";
+		sendMailTo(receiver).from(validSender).withSubject("Subject")
+				.andText("usedScenario");
+
+		Link link1 = Links.getLink(new URI(mockURI + "?num=1"));
+		Link link2 = Links.getLink(new URI(mockURI + "?num=2"));
+
+		try {
+			String from = "imap://" + receiver + "?host=localhost&port="
+					+ imapServerPort() + "&username=" + "loginId1"
+					+ "&password=" + "secret1" + "&folderName=" + "INBOX"
+					+ "&unseen=true" + "&delete=" + "true" + "&consumer.delay="
+					+ MINUTES.toMillis(10);
+			String to1 = mockURI + "?validfroms=" + validSender
+					+ "&linkparams=" + encode("num=1")
+					+ "&scenario.xxx=D13:false;A2:42"
+					+ "&scenario.usedScenario=D13:true;A2:123"
+					+ "&scenario.yyy=D13:false;A2:21";
+			String to2 = mockURI + "?validfroms=" + validSender
+					+ "&linkparams=" + encode("num=2")
+					+ "&scenario.xxx=D13:false;A2:42"
+					+ "&scenario.usedScenario=D13:true;A2:123"
+					+ "&scenario.yyy=D13:false;A2:21";
+
+			ArdulinkMail ardulinkMail = new ArdulinkMail(from, to1).start();
+			waitUntilMailWasFetched();
+			ardulinkMail.stop();
+
+			Link mock = getMock(link1);
+			verify(mock).switchDigitalPin(digitalPin(13), true);
+			verify(mock).switchAnalogPin(analogPin(2), 123);
+			verify(mock, times(2)).close();
+			verifyNoMoreInteractions(mock);
+		} finally {
+			link1.close();
+			link2.close();
+		}
+
+	}
+
+	private String encode(String string) {
+		return "RAW(" + string + ")";
+	}
+
 	private void waitUntilMailWasFetched() throws InterruptedException {
 		while (mailMock.getReceivedMessages().length > 0) {
 			MILLISECONDS.sleep(50);
@@ -93,7 +142,11 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	private Link getMock() {
-		return ((LinkDelegate) link).getDelegate();
+		return getMock(link);
+	}
+
+	private Link getMock(Link l) {
+		return ((LinkDelegate) l).getDelegate();
 	}
 
 }

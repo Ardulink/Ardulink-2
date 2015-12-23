@@ -33,7 +33,8 @@ public class ArdulinkProducerTest {
 	public ExpectedException expectedException = ExpectedException.none();
 
 	private ArdulinkProducer producer = new ArdulinkProducer(
-			mock(Endpoint.class), "mock");
+			mock(Endpoint.class), "mock", null);
+
 	private Message message = new DefaultMessage();
 
 	private final String uri = "ardulink://mock";
