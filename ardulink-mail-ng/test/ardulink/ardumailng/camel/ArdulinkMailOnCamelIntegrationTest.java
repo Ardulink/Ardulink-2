@@ -91,8 +91,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		sendMailTo(receiver).from(validSender).withSubject("Subject")
 				.andText("usedScenario");
 
-		Link link1 = Links.getLink(new URI(mockURI + "?num=1"));
-		Link link2 = Links.getLink(new URI(mockURI + "?num=2"));
+		Link link1 = Links.getLink(new URI(mockURI + "?num=1&foo=bar"));
+		Link link2 = Links.getLink(new URI(mockURI + "?num=2&foo=bar"));
 
 		try {
 			String from = "imap://" + receiver + "?host=localhost&port="
@@ -101,13 +101,14 @@ public class ArdulinkMailOnCamelIntegrationTest {
 					+ "&unseen=true" + "&delete=" + "true" + "&consumer.delay="
 					+ MINUTES.toMillis(10);
 			String to1 = mockURI + "?validfroms=" + validSender
-					+ "&linkparams=" + encode("num=1")
+					+ "&linkparams=" + encode("num=1&foo=bar")
 					+ "&scenario.usedScenario=D11:true;A12:11";
 			String to2 = mockURI + "?validfroms=" + validSender
-					+ "&linkparams=" + encode("num=2")
+					+ "&linkparams=" + encode("num=2&foo=bar")
 					+ "&scenario.usedScenario=D21:true;A22:23";
 
-			ArdulinkMail ardulinkMail = new ArdulinkMail(from, to1,to2).start();
+			ArdulinkMail ardulinkMail = new ArdulinkMail(from, to1, to2)
+					.start();
 			waitUntilMailWasFetched();
 			ardulinkMail.stop();
 

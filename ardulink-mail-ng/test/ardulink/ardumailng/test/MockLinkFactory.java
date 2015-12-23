@@ -12,6 +12,8 @@ public class MockLinkFactory implements LinkFactory<MockLinkConfig> {
 	public static class MockLinkConfig implements LinkConfig {
 		@Named("num")
 		private int num;
+		@Named("foo")
+		private String foo;
 
 		public int getNum() {
 			return num;
@@ -19,6 +21,14 @@ public class MockLinkFactory implements LinkFactory<MockLinkConfig> {
 
 		public void setNum(int num) {
 			this.num = num;
+		}
+
+		public String getFoo() {
+			return foo;
+		}
+
+		public void setFoo(String foo) {
+			this.foo = foo;
 		}
 	}
 
