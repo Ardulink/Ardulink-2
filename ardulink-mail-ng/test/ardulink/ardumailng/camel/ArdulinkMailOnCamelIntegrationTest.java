@@ -102,24 +102,26 @@ public class ArdulinkMailOnCamelIntegrationTest {
 					+ MINUTES.toMillis(10);
 			String to1 = mockURI + "?validfroms=" + validSender
 					+ "&linkparams=" + encode("num=1")
-					+ "&scenario.xxx=D13:false;A2:42"
-					+ "&scenario.usedScenario=D13:true;A2:123"
-					+ "&scenario.yyy=D13:false;A2:21";
+					+ "&scenario.usedScenario=D11:true;A12:11";
 			String to2 = mockURI + "?validfroms=" + validSender
 					+ "&linkparams=" + encode("num=2")
-					+ "&scenario.xxx=D13:false;A2:42"
-					+ "&scenario.usedScenario=D13:true;A2:123"
-					+ "&scenario.yyy=D13:false;A2:21";
+					+ "&scenario.usedScenario=D21:true;A22:23";
 
-			ArdulinkMail ardulinkMail = new ArdulinkMail(from, to1).start();
+			ArdulinkMail ardulinkMail = new ArdulinkMail(from, to1,to2).start();
 			waitUntilMailWasFetched();
 			ardulinkMail.stop();
 
-			Link mock = getMock(link1);
-			verify(mock).switchDigitalPin(digitalPin(13), true);
-			verify(mock).switchAnalogPin(analogPin(2), 123);
-			verify(mock, times(2)).close();
-			verifyNoMoreInteractions(mock);
+			Link mock1 = getMock(link1);
+			verify(mock1).switchDigitalPin(digitalPin(11), true);
+			verify(mock1).switchAnalogPin(analogPin(12), 11);
+			verify(mock1, times(2)).close();
+			verifyNoMoreInteractions(mock1);
+
+			Link mock2 = getMock(link2);
+			verify(mock2).switchDigitalPin(digitalPin(21), true);
+			verify(mock2).switchAnalogPin(analogPin(22), 23);
+			verify(mock2, times(2)).close();
+			verifyNoMoreInteractions(mock2);
 		} finally {
 			link1.close();
 			link2.close();

@@ -3,14 +3,15 @@ package ardulink.ardumailng;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.model.RouteDefinition;
 
 public class ArdulinkMail {
 
 	private final CamelContext context;
 
-	public ArdulinkMail(String from, String to) throws Exception {
+	public ArdulinkMail(String from, String... tos) throws Exception {
 		context = new DefaultCamelContext();
-		context.addRoutes(addRoute(from, to));
+		context.addRoutes(addRoute(from, tos));
 	}
 
 	public ArdulinkMail start() throws Exception {
@@ -22,11 +23,14 @@ public class ArdulinkMail {
 		context.stop();
 	}
 
-	private RouteBuilder addRoute(final String from, final String to) {
+	private RouteBuilder addRoute(final String from, final String... tos) {
 		return new RouteBuilder() {
 			@Override
 			public void configure() {
-				from(from).to(to);
+				RouteDefinition routeDef = from(from);
+				for (String to : tos) {
+					routeDef = routeDef.to(to);
+				}
 			}
 		};
 	}
