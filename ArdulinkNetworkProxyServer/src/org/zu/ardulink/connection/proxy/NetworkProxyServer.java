@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -32,10 +33,12 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.spi.BooleanOptionHandler;
 import org.kohsuke.args4j.spi.SubCommand;
 import org.kohsuke.args4j.spi.SubCommandHandler;
 import org.kohsuke.args4j.spi.SubCommands;
 import org.zu.ardulink.Link;
+import org.zu.ardulink.connection.pi.RaspberryPIConnection;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -108,6 +111,9 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 	@Option(name = "-p", aliases = "--port", usage = "Local port to bind to")
 	private int portNumber = DEFAULT_LISTENING_PORT;
 
+	@Option(name = "-rasp", aliases = "--raspberryGPIO", handler=BooleanOptionHandler.class, usage = "Link used is for Raspberry PI GPIO")
+	private static boolean raspGPIOConnection;
+	
 	private static Map<String, Integer> linkUsers = new HashMap<String, Integer>();
 
 	public static void main(String[] args) {
@@ -133,8 +139,7 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 	public static Link connect(String portName, int baudRate) {
 		Link link = Link.getInstance(portName);
 		if (link == null) {
-			// TODO aggiungere qui la logica per fare link non solo di default
-			link = Link.createInstance(portName);
+			link = retrieveInstance(portName);
 		}
 		if (!link.isConnected()) {
 			link.connect(portName, baudRate);
@@ -178,4 +183,23 @@ public class NetworkProxyServer implements NetworkProxyMessages {
 		}
 	}
 
+	public static List<String> getPortList() {
+		List<String> retvalue = null;
+		if(raspGPIOConnection) {
+			retvalue = retrieveInstance(RaspberryPIConnection.CONNECTION_NAME).getPortList();
+		} else {
+			retvalue = Link.getDefaultInstance().getPortList();
+		}
+		return retvalue;
+	}
+
+	private static Link retrieveInstance(String portName) {
+		Link retvalue;
+		if(raspGPIOConnection) {
+			retvalue = Link.createInstance(portName, new RaspberryPIConnection());
+		} else {
+			retvalue = Link.createInstance(portName);
+		}
+		return retvalue;
+	}
 }

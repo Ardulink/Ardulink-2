@@ -29,6 +29,13 @@ public final class Preconditions {
 		super();
 	}
 
+	public static <T> T checkNull(T t, String message, Object... args) {
+		if (t != null) {
+			throw new IllegalStateException(String.format(message, args));
+		}
+		return t;
+	}
+
 	public static <T> T checkNotNull(T t, String message, Object... args) {
 		if (t == null) {
 			throw new IllegalStateException(String.format(message, args));
@@ -36,8 +43,7 @@ public final class Preconditions {
 		return t;
 	}
 
-	public static void checkArgument(boolean state, String message,
-			Object... args) {
+	public static void checkArgument(boolean state, String message, Object... args) {
 		if (!state) {
 			throw new IllegalArgumentException(String.format(message, args));
 		}

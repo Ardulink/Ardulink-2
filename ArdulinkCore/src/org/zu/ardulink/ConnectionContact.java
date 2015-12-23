@@ -115,8 +115,7 @@ public class ConnectionContact {
 	public boolean addAnalogReadChangeListener(AnalogReadChangeListener listener) {
 		int pinListening = listener.getPinListening();
 		synchronized (analogReadChangeListeners) {
-			boolean added = analogReadChangeListeners.put(pinListening,
-					listener);
+			boolean added = analogReadChangeListeners.put(pinListening, listener);
 			if (pinListening != AnalogReadChangeListener.ALL_PINS) {
 				link.startListenAnalogPin(pinListening);
 			}
@@ -138,9 +137,10 @@ public class ConnectionContact {
 			boolean removed = analogReadChangeListeners.remove(pinListening,
 					listener);
 			if (removed
-					&& pinListening != AnalogReadChangeListener.ALL_PINS
-					&& analogReadChangeListeners.asMap().get(pinListening)
-							.isEmpty()) {
+					&& (analogReadChangeListeners.asMap().get(pinListening) == null
+					    ||
+					    analogReadChangeListeners.asMap().get(pinListening).isEmpty())
+				&& pinListening != AnalogReadChangeListener.ALL_PINS) {
 				link.stopListenAnalogPin(pinListening);
 			}
 			return removed;
@@ -179,8 +179,9 @@ public class ConnectionContact {
 			boolean removed = digitalReadChangeListeners.remove(pinListening,
 					listener);
 			if (removed
-					&& digitalReadChangeListeners.asMap().get(pinListening)
-							.isEmpty()
+					&& (digitalReadChangeListeners.asMap().get(pinListening) == null
+					    ||
+					    digitalReadChangeListeners.asMap().get(pinListening).isEmpty())
 					&& pinListening != DigitalReadChangeListener.ALL_PINS) {
 				link.stopListenDigitalPin(pinListening);
 			}

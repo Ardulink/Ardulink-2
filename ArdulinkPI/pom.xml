@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ardulink-core</artifactId>
+	<artifactId>ardulink-pi</artifactId>
 
 	<parent>
 		<groupId>org.ardulink</groupId>
@@ -11,7 +11,6 @@
 
 	<build>
 		<sourceDirectory>src</sourceDirectory>
-		<testSourceDirectory>test</testSourceDirectory>
 		<resources>
 			<resource>
 				<directory>resources</directory>
@@ -22,14 +21,15 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.4</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-						</manifest>
-					</archive>
-				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.12.4</version>
+				<configuration>
+					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>			
 	      <plugin>
 	        <groupId>org.apache.maven.plugins</groupId>
 	        <artifactId>maven-javadoc-plugin</artifactId>
@@ -37,7 +37,7 @@
 	        <configuration>
 	          <show>public</show>
 	          <reportOutputDirectory>${project.basedir}/../JavadocUtils/generated</reportOutputDirectory>
-          	  <destDir>ardulink-core</destDir>
+          	  <destDir>ardulink-pi</destDir>
 	        </configuration>
 	      </plugin>
 		</plugins>
@@ -45,29 +45,19 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.rxtx</groupId>
-			<artifactId>rxtx</artifactId>
-			<version>2.1.7</version>
-		</dependency>
-		<dependency>
-			<groupId>ch.ntb</groupId>
-			<artifactId>usb</artifactId>
-			<version>0.5.9</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.bluecove</groupId>
-			<artifactId>bluecove</artifactId>
-			<version>2.1.1-SNAPSHOT</version>
+			<groupId>org.ardulink</groupId>
+			<artifactId>ardulink-core</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
+			<artifactId>slf4j-jdk14</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-		    <groupId>com.pi4j</groupId>
-		    <artifactId>pi4j-core</artifactId>
-		   <version>1.0</version>
-		</dependency>		
+			<groupId>args4j</groupId>
+			<artifactId>args4j</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

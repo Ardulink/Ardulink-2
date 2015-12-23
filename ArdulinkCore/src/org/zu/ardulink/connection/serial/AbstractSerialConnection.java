@@ -281,6 +281,7 @@ public abstract class AbstractSerialConnection implements Connection {
 				outputStream.flush();
 				success = true;
 			} catch (IOException e) {
+				e.printStackTrace();
 				disconnect();
 			}
 		} else {

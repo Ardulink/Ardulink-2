@@ -20,7 +20,6 @@ package org.zu.ardulink.protocol;
 
 import static java.util.Collections.synchronizedMap;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -30,8 +29,6 @@ import java.util.Set;
  * Class to manage the protocol available set. With this class you can install (and set as preferred) a new protocol for ardulink.
  * For instance you can supply a Firmata protocol implementation and install it.
  * A protocol for Ardulink must implements IProtocol interface.
- * 
- * At the moment the only ready protocol is ALProtocol (Ardulink Protocol)
  * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * @see IProtocol
@@ -67,7 +64,7 @@ public class ProtocolHandler {
 	}
 
 	/**
-	 * @return all available protocol implementation
+	 * @return all available protocol implementations
 	 */
 	public static Set<String> getInstalledProtocolImplementationNames() {
 		return installedProtocolImplementations.keySet();
