@@ -53,6 +53,8 @@ public class QosLinkTest {
 	@Test
 	public void doesThrowExceptionIfNotResponseReceivedWithinHalfAsecond()
 			throws Exception {
+		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
+				.thenDoNotRespond();
 		qosLink = new ConnectionBasedQosLink(connectionTo(arduino),
 				ArdulinkProtocol255.instance(), 500, MILLISECONDS);
 		exceptions.expect(IllegalStateException.class);

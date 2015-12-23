@@ -40,15 +40,14 @@ public class WaitForArduinoToBootTest {
 
 	@Test
 	public void ifNoResponseReceivedWithin1SecondWaitWillReturnFalse()
-			throws IOException, InterruptedException {
+			throws IOException {
 		arduino.whenReceive(regex("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))
 				.thenDoNotRespond();
 		assertThat(link.waitForArduinoToBoot(1, SECONDS), is(false));
 	}
 
 	@Test
-	public void noNeedToWait10SecondsIfArduinoResponds() throws IOException,
-			InterruptedException {
+	public void noNeedToIfArduinoResponds() throws IOException {
 		arduino.whenReceive(regex("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ok?id=%s");
 		assertThat(link.waitForArduinoToBoot(3, DAYS), is(true));
