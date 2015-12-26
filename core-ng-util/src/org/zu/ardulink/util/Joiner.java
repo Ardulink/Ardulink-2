@@ -14,8 +14,8 @@ public final class Joiner {
 		return new Joiner(separator);
 	}
 
-	public String join(Iterable<Object> values) {
-		Iterator<Object> iterator = values.iterator();
+	public String join(Iterable<? extends Object> values) {
+		Iterator<? extends Object> iterator = values.iterator();
 		if (!iterator.hasNext()) {
 			return "";
 		}
