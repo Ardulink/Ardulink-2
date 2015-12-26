@@ -7,7 +7,7 @@ import static com.icegreen.greenmail.util.ServerSetupTest.SMTP_IMAP;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -17,11 +17,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
 import ardulink.ardumailng.ArdulinkMail;
+import ardulink.ardumailng.ArdulinkMail.Builder;
 
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.convenience.LinkDelegate;
@@ -58,17 +60,16 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		sendMailTo(receiver).from(validSender).withSubject("Subject")
 				.andText("usedScenario");
 
-		String from = "imap://" + receiver + "?host=localhost&port="
-				+ imapServerPort() + "&username=" + "loginId1" + "&password="
-				+ "secret1" + "&folderName=" + "INBOX" + "&unseen=true"
-				+ "&delete=" + "true" + "&consumer.delay="
-				+ MINUTES.toMillis(10);
-		String to = mockURI + "?validfroms=" + validSender
-				+ "&scenario.xxx=D13:false;A2:42"
-				+ "&scenario.usedScenario=D13:true;A2:123"
-				+ "&scenario.yyy=D13:false;A2:21";
+		Builder b1 = ArdulinkMail.builder().imap().user(receiver)
+				.login("loginId1").password("secret1").host("localhost")
+				.port(imapServerPort()).folderName("INBOX").unseen(true)
+				.delete(true).consumerDelay(10, MINUTES).useAsFrom();
+		Builder b2 = b1.ardulink().uri(mockURI).validFroms(validSender)
+				.addScenario("xxx", "D13:false;A2:42")
+				.addScenario("usedScenario", "D13:true;A2:123")
+				.addScenario("yyy", "D13:false;A2:21").addAsTo();
+		ArdulinkMail ardulinkMail = b2.build().start();
 
-		ArdulinkMail ardulinkMail = new ArdulinkMail(from, to).start();
 		waitUntilMailWasFetched();
 		ardulinkMail.stop();
 
@@ -92,20 +93,18 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		Link link2 = Links.getLink(new URI(mockURI + "?num=2&foo=bar"));
 
 		try {
-			String from = "imap://" + receiver + "?host=localhost&port="
-					+ imapServerPort() + "&username=" + "loginId1"
-					+ "&password=" + "secret1" + "&folderName=" + "INBOX"
-					+ "&unseen=true" + "&delete=" + "true" + "&consumer.delay="
-					+ MINUTES.toMillis(10);
-			String to1 = mockURI + "?validfroms=" + validSender
-					+ "&linkparams=" + encode("num=1&foo=bar")
-					+ "&scenario.usedScenario=D11:true;A12:11";
-			String to2 = mockURI + "?validfroms=" + validSender
-					+ "&linkparams=" + encode("num=2&foo=bar")
-					+ "&scenario.usedScenario=D21:true;A22:23";
+			Builder b1 = ArdulinkMail.builder().imap().user(receiver)
+					.login("loginId1").password("secret1").host("localhost")
+					.port(imapServerPort()).folderName("INBOX").unseen(true)
+					.delete(true).consumerDelay(10, MINUTES).useAsFrom();
+			Builder b2 = b1.ardulink().uri(mockURI).linkParams("num=1&foo=bar")
+					.validFroms(validSender)
+					.addScenario("usedScenario", "D11:true;A12:11").addAsTo();
+			Builder b3 = b2.ardulink().uri(mockURI).linkParams("num=2&foo=bar")
+					.validFroms(validSender)
+					.addScenario("usedScenario", "D21:true;A22:23").addAsTo();
+			ArdulinkMail ardulinkMail = b3.build().start();
 
-			ArdulinkMail ardulinkMail = new ArdulinkMail(from, to1, to2)
-					.start();
 			waitUntilMailWasFetched();
 			ardulinkMail.stop();
 
@@ -128,12 +127,9 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	@Test
+	@Ignore
 	public void canRespondViaMail() {
 		fail("Not yet implemented");
-	}
-
-	private String encode(String string) {
-		return "RAW(" + string + ")";
 	}
 
 	private void waitUntilMailWasFetched() throws InterruptedException {
