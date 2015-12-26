@@ -17,7 +17,23 @@ public class ArdulinkMail {
 		public String from;
 		public List<String> tos = new ArrayList<String>();
 
-		public class ImapBuilder {
+		public abstract class EndpointBuilder {
+
+			abstract String makeURI();
+
+			public Builder useAsFrom() {
+				Builder.this.from = makeURI();
+				return Builder.this;
+			}
+
+			public Builder addAsTo() {
+				Builder.this.tos.add(makeURI());
+				return Builder.this;
+			}
+
+		}
+
+		public class ImapBuilder extends EndpointBuilder {
 
 			private String user;
 			private String login;
@@ -74,18 +90,17 @@ public class ArdulinkMail {
 				return this;
 			}
 
-			public Builder useAsFrom() {
-				Builder.this.from = "imap://" + user + "?host=" + host
-						+ "&port=" + port + "&username=" + login + "&password="
-						+ password + "&folderName=" + folderName + "&unseen="
-						+ unseen + "&delete=" + delete + "&consumer.delay="
-						+ delay;
-				return Builder.this;
+			@Override
+			String makeURI() {
+				return "imap://" + user + "?host=" + host + "&port=" + port
+						+ "&username=" + login + "&password=" + password
+						+ "&folderName=" + folderName + "&unseen=" + unseen
+						+ "&delete=" + delete + "&consumer.delay=" + delay;
 			}
 
 		}
 
-		public class ArdulinkBuilder {
+		public class ArdulinkBuilder extends EndpointBuilder {
 
 			private String uri;
 			private String linkParams;
@@ -112,10 +127,10 @@ public class ArdulinkMail {
 				return this;
 			}
 
-			public Builder addAsTo() {
-				Builder.this.tos.add(uri + "?validfroms=" + validFroms + "&"
-						+ Joiner.on("&").join(scenarios) + linkparams());
-				return Builder.this;
+			@Override
+			String makeURI() {
+				return uri + "?validfroms=" + validFroms + "&"
+						+ Joiner.on("&").join(scenarios) + linkparams();
 			}
 
 			private String linkparams() {
