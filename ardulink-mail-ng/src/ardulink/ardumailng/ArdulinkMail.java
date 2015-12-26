@@ -1,7 +1,11 @@
 package ardulink.ardumailng;
 
+import static org.zu.ardulink.util.MapBuilder.newMapBuilder;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
@@ -9,6 +13,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.model.RouteDefinition;
 import org.zu.ardulink.util.Joiner;
+import org.zu.ardulink.util.MapBuilder;
 
 public class ArdulinkMail {
 
@@ -75,10 +80,13 @@ public class ArdulinkMail {
 
 		@Override
 		String makeURI() {
-			return "imap://" + user + "?host=" + host + "&port=" + port
-					+ "&username=" + login + "&password=" + password
-					+ "&folderName=" + folderName + "&unseen=" + unseen
-					+ "&delete=" + delete + "&consumer.delay=" + delay;
+			Map<Object, Object> values = newMapBuilder().put("host", host)
+					.put("port", port).put("username", login)
+					.put("password", password).put("folderName", folderName)
+					.put("unseen", unseen).put("delete", delete)
+					.put("consumer.delay", delay).build();
+			return "imap://" + user + "?"
+					+ Joiner.on("&").withKeyValueSeparator("=").join(values);
 		}
 
 	}
@@ -88,7 +96,7 @@ public class ArdulinkMail {
 		private String uri;
 		private String linkParams;
 		private String validFroms;
-		private final List<String> scenarios = new ArrayList<String>();
+		private final Map<String, String> scenarios = new HashMap<String, String>();
 
 		public ArdulinkBuilder uri(String uri) {
 			this.uri = uri;
@@ -106,19 +114,21 @@ public class ArdulinkMail {
 		}
 
 		public ArdulinkBuilder addScenario(String name, String content) {
-			this.scenarios.add("scenario." + name + "=" + content);
+			this.scenarios.put("scenario." + name, content);
 			return this;
 		}
 
 		@Override
 		String makeURI() {
-			return uri + "?validfroms=" + validFroms + "&"
-					+ Joiner.on("&").join(scenarios) + linkparams();
-		}
-
-		private String linkparams() {
-			return linkParams == null ? "" : "&linkparams="
-					+ encode(linkParams);
+			MapBuilder<Object, Object> kv = newMapBuilder().put("validfroms",
+					validFroms).putAll(scenarios);
+			if (linkParams != null) {
+				kv = kv.put("linkparams", encode(linkParams));
+			}
+			return uri
+					+ "?"
+					+ Joiner.on("&").withKeyValueSeparator("=")
+							.join(kv.build());
 		}
 
 		private String encode(String string) {
@@ -149,12 +159,20 @@ public class ArdulinkMail {
 		}
 
 		public Builder from(EndpointBuilder builder) {
-			Builder.this.from = builder.makeURI();
+			return from(builder.makeURI());
+		}
+
+		private Builder from(String uri) {
+			Builder.this.from = uri;
 			return Builder.this;
 		}
 
 		public Builder to(EndpointBuilder builder) {
-			Builder.this.tos.add(builder.makeURI());
+			return to(builder.makeURI());
+		}
+
+		private Builder to(String uri) {
+			Builder.this.tos.add(uri);
 			return Builder.this;
 		}
 
