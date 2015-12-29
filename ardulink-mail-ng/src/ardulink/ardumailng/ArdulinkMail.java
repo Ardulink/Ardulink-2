@@ -203,10 +203,7 @@ public class ArdulinkMail {
 			@Override
 			public void configure() {
 				RouteDefinition routeDef = from(from);
-//				routeDef = routeDef.pipeline(tos);
-				for (String to : tos) {
-					routeDef = routeDef.to(to);
-				}
+				routeDef.multicast().to(tos);
 			}
 		};
 	}

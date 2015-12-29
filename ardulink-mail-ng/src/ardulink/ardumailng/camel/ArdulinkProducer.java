@@ -44,9 +44,18 @@ public class ArdulinkProducer extends DefaultProducer {
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		process(exchange.getIn());
-		checkState(exchange.getPattern().isOutCapable(),
-				"Exchange not out capable");
-		exchange.getOut().setBody("OK", String.class);
+		getMessageTarget(exchange).setBody("OK", String.class);
+	}
+
+	private Message getMessageTarget(Exchange exchange) {
+		Message in = exchange.getIn();
+		if (exchange.getPattern().isOutCapable()) {
+			Message out = exchange.getOut();
+			out.setHeaders(in.getHeaders());
+			out.setAttachments(in.getAttachments());
+			return out;
+		}
+		return in;
 	}
 
 	@Override
@@ -73,7 +82,8 @@ public class ArdulinkProducer extends DefaultProducer {
 		for (Entry<String, List<Command>> entry : commands.asMap().entrySet()) {
 			String key = entry.getKey();
 			if (commandName.equals(key)) {
-				for (Command command : entry.getValue()) {
+				List<Command> values = entry.getValue();
+				for (Command command : values) {
 					try {
 						command.execute(link);
 					} catch (Exception e) {

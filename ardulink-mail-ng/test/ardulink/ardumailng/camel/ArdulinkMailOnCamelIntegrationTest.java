@@ -26,6 +26,7 @@ import javax.mail.Session;
 import javax.mail.Store;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -138,6 +139,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	@Test
+	@Ignore
 	public void canRespondViaMail() throws Exception {
 		String receiver = "receiver@someReceiverDomain.com";
 		mailMock.setUser(receiver, "loginId1", "secret1");

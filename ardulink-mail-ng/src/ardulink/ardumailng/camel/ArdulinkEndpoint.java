@@ -54,7 +54,8 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements
 		ArdulinkProducer ardulinkProducer = new ArdulinkProducer(this,
 				config.type, config.typeParams);
 		ardulinkProducer.setValidFroms(config.validfroms);
-		for (Entry<String, List<Command>> entry : config.commands.asMap().entrySet()) {
+		for (Entry<String, List<Command>> entry : config.commands.asMap()
+				.entrySet()) {
 			ardulinkProducer.setCommands(entry.getKey(), entry.getValue());
 		}
 		return ardulinkProducer;
