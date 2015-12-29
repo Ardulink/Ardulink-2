@@ -124,7 +124,7 @@ public class PiLink extends AbstractListenerLink {
 			com.pi4j.io.gpio.Pin pin = gpioPin.getPin();
 			if (pin.getAddress() == address) {
 				checkState(pin.getSupportedPinModes().contains(pinMode),
-						"Pin %sdoes not provide %s", pin, pinMode);
+						"Pin %s does not provide %s", pin, pinMode);
 				return gpioPin;
 			}
 		}
