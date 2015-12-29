@@ -10,6 +10,7 @@ import static com.pi4j.io.gpio.PinPullResistance.PULL_DOWN;
 import static com.pi4j.io.gpio.RaspiPin.getPinByName;
 import static com.pi4j.io.gpio.event.PinEventType.ANALOG_VALUE_CHANGE;
 import static com.pi4j.io.gpio.event.PinEventType.DIGITAL_STATE_CHANGE;
+import static org.zu.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,6 +29,7 @@ import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioPin;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.io.gpio.GpioPinPwmOutput;
+import com.pi4j.io.gpio.PinMode;
 import com.pi4j.io.gpio.event.GpioPinAnalogValueChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListener;
@@ -41,28 +43,30 @@ public class PiLink extends AbstractListenerLink {
 
 	@Override
 	public void close() throws IOException {
-		gpioController.shutdown();
+		this.gpioController.shutdown();
 		super.close();
 	}
 
 	@Override
 	public void startListening(final Pin pin) throws IOException {
-		GpioPin gpioPin = getByAddress(pin.pinNum());
+		GpioPin gpioPin;
+		GpioPinListener listener;
 		if (pin.is(ANALOG)) {
-			gpioPin.setMode(ANALOG_INPUT);
-			gpioPin.setPullResistance(PULL_DOWN);
-			addListener(gpioPin, analogAdapter(pin));
+			gpioPin = getByAddress(pin.pinNum(), ANALOG_INPUT);
+			listener = analogAdapter(pin);
 		} else if (pin.is(DIGITAL)) {
-			gpioPin.setMode(DIGITAL_INPUT);
-			gpioPin.setPullResistance(PULL_DOWN);
-			addListener(gpioPin, digitalAdapter(pin));
+			gpioPin = getByAddress(pin.pinNum(), DIGITAL_INPUT);
+			listener = digitalAdapter(pin);
+		} else {
+			throw new IllegalStateException("Unknown pin type of pin " + pin);
 		}
-		throw new IllegalStateException("Unknown pin type of pin " + pin);
+		gpioPin.setPullResistance(PULL_DOWN);
+		addListener(gpioPin, listener);
 	}
 
 	@Override
 	public void stopListening(Pin pin) throws IOException {
-		GpioPin gpioPin = getByAddress(pin.pinNum());
+		GpioPin gpioPin = getByAddress(pin.pinNum(), pi4jInputMode(pin));
 		List<GpioPinListener> list = listeners.asMap().get(gpioPin);
 		if (list != null) {
 			for (GpioPinListener gpioPinListener : list) {
@@ -75,20 +79,16 @@ public class PiLink extends AbstractListenerLink {
 	@Override
 	public void switchAnalogPin(AnalogPin analogPin, int value)
 			throws IOException {
-		// TODO getByAddress digital/analog collisions?
-		GpioPinPwmOutput pin = (GpioPinPwmOutput) getByAddress(analogPin
-				.pinNum());
-		pin.setMode(PWM_OUTPUT);
+		GpioPinPwmOutput pin = (GpioPinPwmOutput) getByAddress(
+				analogPin.pinNum(), PWM_OUTPUT);
 		pin.setPwm(value);
 	}
 
 	@Override
 	public void switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException {
-		// TODO getByAddress digital/analog collisions?
-		GpioPinDigitalOutput pin = (GpioPinDigitalOutput) getByAddress(digitalPin
-				.pinNum());
-		pin.setMode(DIGITAL_OUTPUT);
+		GpioPinDigitalOutput pin = (GpioPinDigitalOutput) getByAddress(
+				digitalPin.pinNum(), DIGITAL_OUTPUT);
 		if (value) {
 			pin.high();
 		} else {
@@ -122,14 +122,17 @@ public class PiLink extends AbstractListenerLink {
 		listeners.put(gpioPin, listener);
 	}
 
-	private GpioPin getByAddress(int address) {
+	private GpioPin getByAddress(int address, PinMode pinMode) {
 		for (GpioPin gpioPin : gpioController.getProvisionedPins()) {
-			if (gpioPin.getPin().getAddress() == address) {
+			com.pi4j.io.gpio.Pin pin = gpioPin.getPin();
+			if (pin.getAddress() == address) {
+				checkState(pin.getSupportedPinModes().contains(pinMode),
+						"Pin %sdoes not provide %s", pin, pinMode);
 				return gpioPin;
 			}
 		}
 		return gpioController.provisionPin(getPinByName("GPIO " + address),
-				DIGITAL_OUTPUT);
+				pinMode);
 	}
 
 	private GpioPinListenerDigital digitalAdapter(final Pin pin) {
@@ -154,10 +157,17 @@ public class PiLink extends AbstractListenerLink {
 					fireStateChanged(new DefaultAnalogPinValueChangedEvent(
 							(AnalogPin) pin, (int) event.getValue()));
 				}
-
 			}
-
 		};
+	}
+
+	private static PinMode pi4jInputMode(Pin pin) {
+		if (pin.is(ANALOG)) {
+			return ANALOG_INPUT;
+		} else if (pin.is(DIGITAL)) {
+			return DIGITAL_INPUT;
+		}
+		throw new IllegalStateException("Illegal pin type of pin " + pin);
 	}
 
 	private UnsupportedOperationException notSupported() {
