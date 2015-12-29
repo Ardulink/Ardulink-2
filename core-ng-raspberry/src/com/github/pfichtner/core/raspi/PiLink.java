@@ -1,5 +1,7 @@
 package com.github.pfichtner.core.raspi;
 
+import static com.github.pfichtner.ardulink.core.Pin.analogPin;
+import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
 import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
 import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
 import static com.pi4j.io.gpio.PinMode.ANALOG_INPUT;
@@ -40,6 +42,8 @@ public class PiLink extends AbstractListenerLink {
 
 	private final GpioController gpioController = GpioFactory.getInstance();
 	private final ListMultiMap<GpioPin, GpioPinListener> listeners = new ListMultiMap<GpioPin, GpioPinListener>();
+	private final GpioPinListenerAnalog analogAdapter = analogAdapter();
+	private final GpioPinListenerDigital digitalAdapter = digitalAdapter();
 
 	@Override
 	public void close() throws IOException {
@@ -50,9 +54,9 @@ public class PiLink extends AbstractListenerLink {
 	@Override
 	public void startListening(final Pin pin) throws IOException {
 		if (pin.is(ANALOG)) {
-			addListener(pin, ANALOG_INPUT, analogAdapter(pin));
+			addListener(pin, ANALOG_INPUT, analogAdapter);
 		} else if (pin.is(DIGITAL)) {
-			addListener(pin, DIGITAL_INPUT, digitalAdapter(pin));
+			addListener(pin, DIGITAL_INPUT, digitalAdapter);
 		} else {
 			throw new IllegalStateException("Unknown pin type of pin " + pin);
 		}
@@ -132,27 +136,29 @@ public class PiLink extends AbstractListenerLink {
 				pinMode);
 	}
 
-	private GpioPinListenerDigital digitalAdapter(final Pin pin) {
+	private GpioPinListenerDigital digitalAdapter() {
 		return new GpioPinListenerDigital() {
 			@Override
 			public void handleGpioPinDigitalStateChangeEvent(
 					GpioPinDigitalStateChangeEvent event) {
 				if (event.getEventType() == DIGITAL_STATE_CHANGE) {
 					fireStateChanged(new DefaultDigitalPinValueChangedEvent(
-							(DigitalPin) pin, event.getState().isHigh()));
+							digitalPin(event.getPin().getPin().getAddress()),
+							event.getState().isHigh()));
 				}
 			}
 		};
 	}
 
-	private GpioPinListenerAnalog analogAdapter(final Pin pin) {
+	private GpioPinListenerAnalog analogAdapter() {
 		return new GpioPinListenerAnalog() {
 			@Override
 			public void handleGpioPinAnalogValueChangeEvent(
 					GpioPinAnalogValueChangeEvent event) {
 				if (event.getEventType() == ANALOG_VALUE_CHANGE) {
 					fireStateChanged(new DefaultAnalogPinValueChangedEvent(
-							(AnalogPin) pin, (int) event.getValue()));
+							analogPin(event.getPin().getPin().getAddress()),
+							(int) event.getValue()));
 				}
 			}
 		};
