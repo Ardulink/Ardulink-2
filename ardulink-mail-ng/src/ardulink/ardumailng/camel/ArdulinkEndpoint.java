@@ -62,9 +62,7 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements
 
 	@Override
 	public Consumer createConsumer(Processor processor) throws Exception {
-		ArdulinkConsumer consumer = new ArdulinkConsumer(this, processor);
-		configureConsumer(consumer);
-		return consumer;
+		throw new UnsupportedOperationException("not implemented");
 	}
 
 	@Override

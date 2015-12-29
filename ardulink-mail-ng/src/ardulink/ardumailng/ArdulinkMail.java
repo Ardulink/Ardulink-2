@@ -17,11 +17,11 @@ import org.zu.ardulink.util.MapBuilder;
 
 public class ArdulinkMail {
 
-	public static abstract class EndpointBuilder {
+	public static abstract class EndpointURIBuilder {
 		abstract String makeURI();
 	}
 
-	public static class ImapBuilder extends EndpointBuilder {
+	public static class ImapBuilder extends EndpointURIBuilder {
 
 		private String user;
 		private String login;
@@ -91,7 +91,7 @@ public class ArdulinkMail {
 
 	}
 
-	public static class ArdulinkBuilder extends EndpointBuilder {
+	public static class ArdulinkBuilder extends EndpointURIBuilder {
 
 		private String uri;
 		private String linkParams;
@@ -158,20 +158,20 @@ public class ArdulinkMail {
 			return build().start();
 		}
 
-		public Builder from(EndpointBuilder builder) {
+		public Builder from(EndpointURIBuilder builder) {
 			return from(builder.makeURI());
 		}
 
-		private Builder from(String uri) {
+		public Builder from(String uri) {
 			Builder.this.from = uri;
 			return Builder.this;
 		}
 
-		public Builder to(EndpointBuilder builder) {
+		public Builder to(EndpointURIBuilder builder) {
 			return to(builder.makeURI());
 		}
 
-		private Builder to(String uri) {
+		public Builder to(String uri) {
 			Builder.this.tos.add(uri);
 			return Builder.this;
 		}
@@ -203,6 +203,7 @@ public class ArdulinkMail {
 			@Override
 			public void configure() {
 				RouteDefinition routeDef = from(from);
+//				routeDef = routeDef.pipeline(tos);
 				for (String to : tos) {
 					routeDef = routeDef.to(to);
 				}

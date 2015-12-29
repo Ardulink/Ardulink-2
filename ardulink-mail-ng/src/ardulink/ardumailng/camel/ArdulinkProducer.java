@@ -33,7 +33,7 @@ public class ArdulinkProducer extends DefaultProducer {
 			if (typeParams != null && !typeParams.isEmpty()) {
 				str += "?" + typeParams;
 			}
-			link = Links.getLink(new URI(str));
+			this.link = Links.getLink(new URI(str));
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		} catch (Exception e) {
@@ -44,11 +44,14 @@ public class ArdulinkProducer extends DefaultProducer {
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		process(exchange.getIn());
+		checkState(exchange.getPattern().isOutCapable(),
+				"Exchange not out capable");
+		exchange.getOut().setBody("OK", String.class);
 	}
 
 	@Override
 	public void stop() throws Exception {
-		link.close();
+		this.link.close();
 		super.stop();
 	}
 

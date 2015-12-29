@@ -9,7 +9,6 @@ import static com.icegreen.greenmail.util.ServerSetupTest.SMTP_IMAP;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -17,9 +16,16 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Store;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -31,7 +37,9 @@ import ardulink.ardumailng.ArdulinkMail.ImapBuilder;
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.convenience.LinkDelegate;
 import com.github.pfichtner.ardulink.core.convenience.Links;
+import com.icegreen.greenmail.imap.ImapServer;
 import com.icegreen.greenmail.junit.GreenMailRule;
+import com.icegreen.greenmail.smtp.SmtpServer;
 
 public class ArdulinkMailOnCamelIntegrationTest {
 
@@ -56,10 +64,10 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	@Test
 	public void canProcessViaImap() throws Exception {
-		String receiver = "receiver@localhost.invalid";
+		String receiver = "receiver@someReceiverDomain.com";
 		mailMock.setUser(receiver, "loginId1", "secret1");
 
-		String validSender = "valid.sender@localhost.invalid";
+		String validSender = "valid.sender@someSenderDomain.com";
 		sendMailTo(receiver).from(validSender).withSubject("Subject")
 				.andText("usedScenario");
 
@@ -81,19 +89,17 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	private ImapBuilder localImap(String receiver) {
-		ImapBuilder from = imap().user(receiver).login("loginId1")
-				.password("secret1").host("localhost").port(imapServerPort())
-				.folderName("INBOX").unseen(true).delete(true)
-				.consumerDelay(10, MINUTES);
-		return from;
+		return imap().user(receiver).login("loginId1").password("secret1")
+				.host("localhost").port(imapServerPort()).folderName("INBOX")
+				.unseen(true).delete(true).consumerDelay(10, MINUTES);
 	}
 
 	@Test
 	public void canProcessMultipleLinks() throws Exception {
-		String receiver = "receiver@localhost.invalid";
+		String receiver = "receiver@someReceiverDomain.com";
 		mailMock.setUser(receiver, "loginId1", "secret1");
 
-		String validSender = "valid.sender@localhost.invalid";
+		String validSender = "valid.sender@someSenderDomain.com";
 		sendMailTo(receiver).from(validSender).withSubject("Subject")
 				.andText("usedScenario");
 
@@ -132,9 +138,56 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	@Test
-	@Ignore
-	public void canRespondViaMail() {
-		fail("Not yet implemented");
+	public void canRespondViaMail() throws Exception {
+		String receiver = "receiver@someReceiverDomain.com";
+		mailMock.setUser(receiver, "loginId1", "secret1");
+
+		String validSender = "valid.sender@someSenderDomain.com";
+		mailMock.setUser(validSender, "loginId2", "secret2");
+		sendMailTo(receiver).from(validSender).withSubject("Subject")
+				.andText("usedScenario");
+
+		SmtpServer smtpd = mailMock.getSmtp();
+		ArdulinkBuilder ardulink = ardulink(mockURI).validFroms(validSender)
+				.addScenario("usedScenario", "D1:true");
+		String smtp = "smtp://" + smtpd.getBindTo() + ":" + smtpd.getPort()
+				+ "?username=" + "loginId1" + "&password=" + "secret1";
+
+		ArdulinkMail ardulinkMail = ArdulinkMail.builder()
+				.from(localImap(receiver)).to(ardulink).to(smtp).start();
+
+		// TODO fetch response mail for invalid.sender
+//		 waitUntilMailWasFetched();
+
+		ImapServer imapd = mailMock.getImap();
+		Message msg = null;
+		while ((msg = retrieveViaImap(imapd.getBindTo(), imapd.getPort(),
+				"loginId2", "secret2")) == null) {
+			TimeUnit.MILLISECONDS.sleep(100);
+		}
+
+		System.out.println("*****************" + msg.getContent());
+
+		ardulinkMail.stop();
+
+		Link mock = getMock();
+		verify(mock).switchDigitalPin(digitalPin(1), true);
+		verify(mock, times(2)).close();
+		verifyNoMoreInteractions(mock);
+	}
+
+	private Message retrieveViaImap(String host, int port, String user,
+			String password) throws MessagingException {
+		Properties props = new Properties();
+		props.setProperty("mail.store.protocol", "imap");
+		props.setProperty("mail.imap.port", String.valueOf(port));
+		Session session = Session.getInstance(props, null);
+		Store store = session.getStore();
+		store.connect(host, user, password);
+		Folder inbox = store.getFolder("INBOX");
+		inbox.open(Folder.READ_ONLY);
+		int messageCount = inbox.getMessageCount();
+		return messageCount == 0 ? null : inbox.getMessage(1);
 	}
 
 	private void waitUntilMailWasFetched() throws InterruptedException {
