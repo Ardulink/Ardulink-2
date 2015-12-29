@@ -18,16 +18,45 @@ package org.zu.ardulink.util;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
-public abstract class AbstractMultiMap<K, V> {
+public abstract class AbstractMultiMap<K, V> implements
+		Iterable<Map.Entry<K, V>> {
+
+	public static class MapEntry<K, V> implements Entry<K, V> {
+
+		private final K key;
+		private final V value;
+
+		public MapEntry(K key, V value) {
+			this.key = key;
+			this.value = value;
+		}
+
+		@Override
+		public K getKey() {
+			return key;
+		}
+
+		@Override
+		public V getValue() {
+			return value;
+		}
+
+		@Override
+		public V setValue(V value) {
+			throw new UnsupportedOperationException();
+		}
+	}
 
 	protected final Map<K, Collection<V>> data = new HashMap<K, Collection<V>>();
 
@@ -56,6 +85,42 @@ public abstract class AbstractMultiMap<K, V> {
 
 	public void clear() {
 		this.data.clear();
+	}
+
+	@Override
+	public Iterator<Entry<K, V>> iterator() {
+		return new Iterator<Map.Entry<K, V>>() {
+
+			private final Iterator<Entry<K, Collection<V>>> it = data
+					.entrySet().iterator();
+			private K key;
+			private Iterator<V> cur;
+
+			@Override
+			public boolean hasNext() {
+				fetch();
+				return cur != null && cur.hasNext();
+			}
+
+			private void fetch() {
+				while ((cur == null || !cur.hasNext()) && it.hasNext()) {
+					Entry<K, Collection<V>> next = it.next();
+					key = next.getKey();
+					cur = next.getValue().iterator();
+				}
+			}
+
+			public Entry<K, V> next() {
+				fetch();
+				return new MapEntry<K, V>(key, cur.next());
+			}
+
+			@Override
+			public void remove() {
+				fetch();
+				cur.remove();
+			}
+		};
 	}
 
 }
