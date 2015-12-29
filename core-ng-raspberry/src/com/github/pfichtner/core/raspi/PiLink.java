@@ -49,19 +49,21 @@ public class PiLink extends AbstractListenerLink {
 
 	@Override
 	public void startListening(final Pin pin) throws IOException {
-		GpioPin gpioPin;
-		GpioPinListener listener;
 		if (pin.is(ANALOG)) {
-			gpioPin = getByAddress(pin.pinNum(), ANALOG_INPUT);
-			listener = analogAdapter(pin);
+			addListener(pin, ANALOG_INPUT, analogAdapter(pin));
 		} else if (pin.is(DIGITAL)) {
-			gpioPin = getByAddress(pin.pinNum(), DIGITAL_INPUT);
-			listener = digitalAdapter(pin);
+			addListener(pin, DIGITAL_INPUT, digitalAdapter(pin));
 		} else {
 			throw new IllegalStateException("Unknown pin type of pin " + pin);
 		}
+	}
+
+	private void addListener(final Pin pin, PinMode pinMode,
+			GpioPinListener listener) {
+		GpioPin gpioPin = getByAddress(pin.pinNum(), pinMode);
 		gpioPin.setPullResistance(PULL_DOWN);
-		addListener(gpioPin, listener);
+		gpioPin.addListener(listener);
+		this.listeners.put(gpioPin, listener);
 	}
 
 	@Override
@@ -115,11 +117,6 @@ public class PiLink extends AbstractListenerLink {
 	@Override
 	public void sendCustomMessage(String... messages) throws IOException {
 		throw notSupported();
-	}
-
-	private void addListener(GpioPin gpioPin, GpioPinListener listener) {
-		gpioPin.addListener(listener);
-		listeners.put(gpioPin, listener);
 	}
 
 	private GpioPin getByAddress(int address, PinMode pinMode) {
