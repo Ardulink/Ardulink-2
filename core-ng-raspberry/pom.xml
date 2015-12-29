@@ -1,0 +1,48 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>core-ng-raspberry</artifactId>
+
+	<parent>
+		<groupId>org.ardulink</groupId>
+		<artifactId>parent</artifactId>
+		<version>0.6.1-SNAPSHOT</version>
+	</parent>
+
+	<!-- pi4j depends on Java7 -->
+	<properties>
+		<compilerVersion>1.7</compilerVersion>
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
+	</properties>
+
+
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>resources</directory>
+			</resource>
+		</resources>
+		<testSourceDirectory>test</testSourceDirectory>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.ardulink</groupId>
+			<artifactId>core-ng-base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.pi4j</groupId>
+			<artifactId>pi4j-core</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+</project>

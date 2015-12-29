@@ -35,6 +35,7 @@
 		<module>core-ng-base</module>
 		<module>core-ng-serial</module>
 		<module>core-ng-bluetooth</module>
+		<module>core-ng-raspberry</module>
 		<module>core-ng-beans</module>
 		<module>core-ng-proxy</module>
 		<module>core-ng-mqtt</module>
