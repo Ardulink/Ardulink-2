@@ -12,6 +12,7 @@ import static com.pi4j.io.gpio.PinPullResistance.PULL_DOWN;
 import static com.pi4j.io.gpio.RaspiPin.getPinByName;
 import static com.pi4j.io.gpio.event.PinEventType.ANALOG_VALUE_CHANGE;
 import static com.pi4j.io.gpio.event.PinEventType.DIGITAL_STATE_CHANGE;
+import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import static org.zu.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
@@ -42,8 +43,6 @@ public class PiLink extends AbstractListenerLink {
 
 	private final GpioController gpioController = GpioFactory.getInstance();
 	private final ListMultiMap<GpioPin, GpioPinListener> listeners = new ListMultiMap<GpioPin, GpioPinListener>();
-	private final GpioPinListenerAnalog analogAdapter = analogAdapter();
-	private final GpioPinListenerDigital digitalAdapter = digitalAdapter();
 
 	@Override
 	public void close() throws IOException {
@@ -54,9 +53,9 @@ public class PiLink extends AbstractListenerLink {
 	@Override
 	public void startListening(final Pin pin) throws IOException {
 		if (pin.is(ANALOG)) {
-			addListener(pin, ANALOG_INPUT, analogAdapter);
+			addListener(pin, ANALOG_INPUT, analogAdapter());
 		} else if (pin.is(DIGITAL)) {
-			addListener(pin, DIGITAL_INPUT, digitalAdapter);
+			addListener(pin, DIGITAL_INPUT, digitalAdapter());
 		} else {
 			throw new IllegalStateException("Unknown pin type of pin " + pin);
 		}
@@ -64,7 +63,7 @@ public class PiLink extends AbstractListenerLink {
 
 	private void addListener(final Pin pin, PinMode pinMode,
 			GpioPinListener listener) {
-		GpioPin gpioPin = getByAddress(pin.pinNum(), pinMode);
+		GpioPin gpioPin = getOrCreate(pin.pinNum(), pinMode);
 		gpioPin.setPullResistance(PULL_DOWN);
 		gpioPin.addListener(listener);
 		this.listeners.put(gpioPin, listener);
@@ -72,7 +71,7 @@ public class PiLink extends AbstractListenerLink {
 
 	@Override
 	public void stopListening(Pin pin) throws IOException {
-		GpioPin gpioPin = getByAddress(pin.pinNum(), pi4jInputMode(pin));
+		GpioPin gpioPin = getOrCreate(pin.pinNum(), pi4jInputMode(pin));
 		List<GpioPinListener> list = listeners.asMap().get(gpioPin);
 		if (list != null) {
 			for (GpioPinListener gpioPinListener : list) {
@@ -85,15 +84,16 @@ public class PiLink extends AbstractListenerLink {
 	@Override
 	public void switchAnalogPin(AnalogPin analogPin, int value)
 			throws IOException {
-		GpioPinPwmOutput pin = (GpioPinPwmOutput) getByAddress(
-				analogPin.pinNum(), PWM_OUTPUT);
+		GpioPinPwmOutput pin = (GpioPinPwmOutput) getOrCreate(
+				analogPin.pinNum(), DIGITAL_OUTPUT);
+		pin.setMode(PWM_OUTPUT);
 		pin.setPwm(value);
 	}
 
 	@Override
 	public void switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException {
-		GpioPinDigitalOutput pin = (GpioPinDigitalOutput) getByAddress(
+		GpioPinDigitalOutput pin = (GpioPinDigitalOutput) getOrCreate(
 				digitalPin.pinNum(), DIGITAL_OUTPUT);
 		if (value) {
 			pin.high();
@@ -123,7 +123,7 @@ public class PiLink extends AbstractListenerLink {
 		throw notSupported();
 	}
 
-	private GpioPin getByAddress(int address, PinMode pinMode) {
+	private GpioPin getOrCreate(int address, PinMode pinMode) {
 		for (GpioPin gpioPin : gpioController.getProvisionedPins()) {
 			com.pi4j.io.gpio.Pin pin = gpioPin.getPin();
 			if (pin.getAddress() == address) {
@@ -132,8 +132,14 @@ public class PiLink extends AbstractListenerLink {
 				return gpioPin;
 			}
 		}
-		return gpioController.provisionPin(getPinByName("GPIO " + address),
-				pinMode);
+		return create(address, pinMode);
+	}
+
+	private GpioPin create(int address, PinMode pinMode) {
+		String name = "GPIO " + address;
+		return gpioController.provisionPin(
+				checkNotNull(getPinByName(name),
+						"Pin with name %s does not exist", name), pinMode);
 	}
 
 	private GpioPinListenerDigital digitalAdapter() {
