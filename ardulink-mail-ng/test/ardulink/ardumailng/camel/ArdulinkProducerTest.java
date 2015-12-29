@@ -16,6 +16,7 @@ import java.util.Collections;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.DefaultExchange;
 import org.apache.camel.impl.DefaultMessage;
 import org.junit.After;
@@ -124,7 +125,7 @@ public class ArdulinkProducerTest {
 	}
 
 	private Exchange exchange() {
-		Exchange exchange = new DefaultExchange(mock(Endpoint.class));
+		Exchange exchange = new DefaultExchange(new DefaultCamelContext());
 		exchange.setIn(message);
 		return exchange;
 	}
