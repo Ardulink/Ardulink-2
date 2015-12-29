@@ -51,19 +51,18 @@ public class PiLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public void startListening(final Pin pin) throws IOException {
+	public void startListening(Pin pin) throws IOException {
 		if (pin.is(ANALOG)) {
-			addListener(pin, ANALOG_INPUT, analogAdapter());
+			addListener(pin, analogAdapter());
 		} else if (pin.is(DIGITAL)) {
-			addListener(pin, DIGITAL_INPUT, digitalAdapter());
+			addListener(pin, digitalAdapter());
 		} else {
 			throw new IllegalStateException("Unknown pin type of pin " + pin);
 		}
 	}
 
-	private void addListener(final Pin pin, PinMode pinMode,
-			GpioPinListener listener) {
-		GpioPin gpioPin = getOrCreate(pin.pinNum(), pinMode);
+	private void addListener(Pin pin, GpioPinListener listener) {
+		GpioPin gpioPin = getOrCreate(pin.pinNum(), pi4jInputMode(pin));
 		gpioPin.setPullResistance(PULL_DOWN);
 		gpioPin.addListener(listener);
 		this.listeners.put(gpioPin, listener);
@@ -73,11 +72,12 @@ public class PiLink extends AbstractListenerLink {
 	public void stopListening(Pin pin) throws IOException {
 		GpioPin gpioPin = getOrCreate(pin.pinNum(), pi4jInputMode(pin));
 		List<GpioPinListener> list = listeners.asMap().get(gpioPin);
-		if (list != null) {
-			for (GpioPinListener gpioPinListener : list) {
-				gpioPin.removeListener(gpioPinListener);
-				listeners.remove(gpioPin, gpioPinListener);
-			}
+		if (list == null) {
+			return;
+		}
+		for (GpioPinListener gpioPinListener : list) {
+			gpioPin.removeListener(gpioPinListener);
+			listeners.remove(gpioPin, gpioPinListener);
 		}
 	}
 
