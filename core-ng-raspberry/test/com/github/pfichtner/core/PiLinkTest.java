@@ -1,23 +1,27 @@
 package com.github.pfichtner.core;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.net.URI;
 
-import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
-@Ignore // ignored since jni load
 public class PiLinkTest {
 
+	@Rule
+	public ExpectedException exceptions = ExpectedException.none();
+
 	@Test
-	public void canCreateIstances() throws Exception {
+	public void creatingInstanceWillFailOnX86withUnsatisfiedLinkError()
+			throws Exception {
+		// TODO should do a Assume if we are on a raspi or not
 		Configurer configurer = LinkManager.getInstance().getConfigurer(
 				new URI("ardulink://raspberry"));
-		assertNotNull(configurer.newLink());
+		exceptions.expect(UnsatisfiedLinkError.class);
+		configurer.newLink();
 	}
 
 }
