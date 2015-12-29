@@ -25,6 +25,9 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
 
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.MulticastDefinition;
+import org.apache.camel.processor.aggregate.UseOriginalAggregationStrategy;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -52,7 +55,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	public GreenMailRule mailMock = new GreenMailRule(SMTP_IMAP);
 
 	@Rule
-	public Timeout timeout = new Timeout(10, SECONDS);
+	public Timeout timeout = new Timeout(10, TimeUnit.DAYS);
 
 	@Before
 	public void setup() throws URISyntaxException, Exception {
@@ -65,19 +68,23 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	@Test
 	public void canProcessViaImap() throws Exception {
-		String receiver = "receiver@someReceiverDomain.com";
+		final String receiver = "receiver@someReceiverDomain.com";
 		mailMock.setUser(receiver, "loginId1", "secret1");
 
 		String validSender = "valid.sender@someSenderDomain.com";
 		sendMailTo(receiver).from(validSender).withSubject("Subject")
 				.andText("usedScenario");
 
-		ArdulinkBuilder to = ardulink(mockURI).validFroms(validSender)
+		final ArdulinkBuilder to = ardulink(mockURI).validFroms(validSender)
 				.addScenario("xxx", "D13:false;A2:42")
 				.addScenario("usedScenario", "D13:true;A2:123")
 				.addScenario("yyy", "D13:false;A2:21");
-		ArdulinkMail ardulinkMail = ArdulinkMail.builder()
-				.from(localImap(receiver)).to(to).start();
+		ArdulinkMail ardulinkMail = new ArdulinkMail(new RouteBuilder() {
+			@Override
+			public void configure() {
+				from(localImap(receiver).makeURI()).to(to.makeURI());
+			}
+		}).start();
 
 		waitUntilMailWasFetched();
 		ardulinkMail.stop();
@@ -97,7 +104,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	@Test
 	public void canProcessMultipleLinks() throws Exception {
-		String receiver = "receiver@someReceiverDomain.com";
+		final String receiver = "receiver@someReceiverDomain.com";
 		mailMock.setUser(receiver, "loginId1", "secret1");
 
 		String validSender = "valid.sender@someSenderDomain.com";
@@ -108,14 +115,22 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		Link link2 = Links.getLink(new URI(mockURI + "?num=2&foo=bar"));
 
 		try {
-			ArdulinkBuilder to1 = ardulink(mockURI).linkParams("num=1&foo=bar")
-					.validFroms(validSender)
+			final ArdulinkBuilder to1 = ardulink(mockURI)
+					.linkParams("num=1&foo=bar").validFroms(validSender)
 					.addScenario("usedScenario", "D11:true;A12:11");
-			ArdulinkBuilder to2 = ardulink(mockURI).linkParams("num=2&foo=bar")
-					.validFroms(validSender)
+			final ArdulinkBuilder to2 = ardulink(mockURI)
+					.linkParams("num=2&foo=bar").validFroms(validSender)
 					.addScenario("usedScenario", "D21:true;A22:23");
-			ArdulinkMail ardulinkMail = ArdulinkMail.builder()
-					.from(localImap(receiver)).to(to1).to(to2).start();
+
+			ArdulinkMail ardulinkMail = new ArdulinkMail(new RouteBuilder() {
+				@Override
+				public void configure() {
+					MulticastDefinition md = from(localImap(receiver).makeURI())
+							.multicast();
+					md.setAggregationStrategy(new UseOriginalAggregationStrategy());
+					md.to(to1.makeURI(), to2.makeURI());
+				}
+			}).start();
 
 			waitUntilMailWasFetched();
 			ardulinkMail.stop();
@@ -141,7 +156,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	@Test
 	@Ignore
 	public void canRespondViaMail() throws Exception {
-		String receiver = "receiver@someReceiverDomain.com";
+		final String receiver = "receiver@someReceiverDomain.com";
 		mailMock.setUser(receiver, "loginId1", "secret1");
 
 		String validSender = "valid.sender@someSenderDomain.com";
@@ -150,16 +165,22 @@ public class ArdulinkMailOnCamelIntegrationTest {
 				.andText("usedScenario");
 
 		SmtpServer smtpd = mailMock.getSmtp();
-		ArdulinkBuilder ardulink = ardulink(mockURI).validFroms(validSender)
-				.addScenario("usedScenario", "D1:true");
-		String smtp = "smtp://" + smtpd.getBindTo() + ":" + smtpd.getPort()
-				+ "?username=" + "loginId1" + "&password=" + "secret1";
+		final ArdulinkBuilder ardulink = ardulink(mockURI).validFroms(
+				validSender).addScenario("usedScenario", "D1:true");
+		final String smtp = "smtp://" + smtpd.getBindTo() + ":"
+				+ smtpd.getPort() + "?username=" + "loginId1" + "&password="
+				+ "secret1";
 
-		ArdulinkMail ardulinkMail = ArdulinkMail.builder()
-				.from(localImap(receiver)).to(ardulink).to(smtp).start();
+		ArdulinkMail ardulinkMail = new ArdulinkMail(new RouteBuilder() {
+			@Override
+			public void configure() {
+				from(localImap(receiver).makeURI()).to(ardulink.makeURI()).to(
+						smtp);
+			}
+		}).start();
 
 		// TODO fetch response mail for invalid.sender
-//		 waitUntilMailWasFetched();
+		// waitUntilMailWasFetched();
 
 		ImapServer imapd = mailMock.getImap();
 		Message msg = null;

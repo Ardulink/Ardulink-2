@@ -2,16 +2,13 @@ package ardulink.ardumailng;
 
 import static org.zu.ardulink.util.MapBuilder.newMapBuilder;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.model.RouteDefinition;
 import org.zu.ardulink.util.Joiner;
 import org.zu.ardulink.util.MapBuilder;
 
@@ -79,7 +76,7 @@ public class ArdulinkMail {
 		}
 
 		@Override
-		String makeURI() {
+		public String makeURI() {
 			Map<Object, Object> values = newMapBuilder().put("host", host)
 					.put("port", port).put("username", login)
 					.put("password", password).put("folderName", folderName)
@@ -119,7 +116,7 @@ public class ArdulinkMail {
 		}
 
 		@Override
-		String makeURI() {
+		public String makeURI() {
 			MapBuilder<Object, Object> kv = newMapBuilder().put("validfroms",
 					validFroms).putAll(scenarios);
 			if (linkParams != null) {
@@ -137,10 +134,11 @@ public class ArdulinkMail {
 
 	}
 
-	public static class Builder {
+	public static final class Builder {
 
-		public String from;
-		public List<String> tos = new ArrayList<String>();
+		private Builder() {
+			super();
+		}
 
 		public static ImapBuilder imap() {
 			return new ImapBuilder();
@@ -150,43 +148,18 @@ public class ArdulinkMail {
 			return new ArdulinkBuilder().uri(uri);
 		}
 
-		public ArdulinkMail build() throws Exception {
-			return new ArdulinkMail(this);
-		}
-
-		public ArdulinkMail start() throws Exception {
-			return build().start();
-		}
-
-		public Builder from(EndpointURIBuilder builder) {
-			return from(builder.makeURI());
-		}
-
-		public Builder from(String uri) {
-			Builder.this.from = uri;
-			return Builder.this;
-		}
-
-		public Builder to(EndpointURIBuilder builder) {
-			return to(builder.makeURI());
-		}
-
-		public Builder to(String uri) {
-			Builder.this.tos.add(uri);
-			return Builder.this;
-		}
-
 	}
 
 	private final CamelContext context;
 
-	public ArdulinkMail(String from, String... tos) throws Exception {
-		context = new DefaultCamelContext();
-		context.addRoutes(addRoute(from, tos));
+	public ArdulinkMail(RouteBuilder routeBuilder) throws Exception {
+		this(new DefaultCamelContext(), routeBuilder);
 	}
 
-	public ArdulinkMail(Builder builder) throws Exception {
-		this(builder.from, builder.tos.toArray(new String[builder.tos.size()]));
+	public ArdulinkMail(CamelContext context, RouteBuilder routeBuilder)
+			throws Exception {
+		this.context = context;
+		this.context.addRoutes(routeBuilder);
 	}
 
 	public ArdulinkMail start() throws Exception {
@@ -196,20 +169,6 @@ public class ArdulinkMail {
 
 	public void stop() throws Exception {
 		context.stop();
-	}
-
-	private RouteBuilder addRoute(final String from, final String... tos) {
-		return new RouteBuilder() {
-			@Override
-			public void configure() {
-				RouteDefinition routeDef = from(from);
-				routeDef.multicast().to(tos);
-			}
-		};
-	}
-
-	public static Builder builder() {
-		return new Builder();
 	}
 
 }

@@ -24,6 +24,12 @@ public class Commands {
 			link.switchDigitalPin(digitalPin(pin), value);
 		}
 
+		@Override
+		public String toString() {
+			return "SwitchDigitalPinCommand [pin=" + pin + ", value=" + value
+					+ "]";
+		}
+
 	}
 
 	private static class SwitchAnalogPinCommand implements Command {
@@ -39,6 +45,12 @@ public class Commands {
 		@Override
 		public void execute(Link link) throws URISyntaxException, Exception {
 			link.switchAnalogPin(analogPin(pin), value);
+		}
+
+		@Override
+		public String toString() {
+			return "SwitchAnalogPinCommand [pin=" + pin + ", value=" + value
+					+ "]";
 		}
 
 	}

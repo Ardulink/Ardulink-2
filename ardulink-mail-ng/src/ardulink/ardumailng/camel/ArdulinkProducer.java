@@ -43,8 +43,10 @@ public class ArdulinkProducer extends DefaultProducer {
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		process(exchange.getIn());
-		getMessageTarget(exchange).setBody("OK", String.class);
+		String out = process(exchange.getIn());
+		if (out != null) {
+			getMessageTarget(exchange).setBody(out, String.class);
+		}
 	}
 
 	private Message getMessageTarget(Exchange exchange) {
@@ -69,7 +71,7 @@ public class ArdulinkProducer extends DefaultProducer {
 	private final List<String> validFroms = new ArrayList<String>();
 	private final ListMultiMap<String, Command> commands = new ListMultiMap<String, Command>();
 
-	private void process(Message message) {
+	private String process(Message message) {
 		String from = message.getHeader("From", String.class);
 		checkState(from != null && !from.isEmpty(), "No from set in message");
 		checkState(validFroms.contains(from),
@@ -83,19 +85,20 @@ public class ArdulinkProducer extends DefaultProducer {
 			String key = entry.getKey();
 			if (commandName.equals(key)) {
 				List<Command> values = entry.getValue();
+				StringBuilder sb = new StringBuilder();
 				for (Command command : values) {
+					sb = sb.append(command);
 					try {
 						command.execute(link);
+						sb = sb.append("=OK");
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						sb = sb.append("=KO");
 					}
 				}
-				return;
+				return sb.toString();
 			}
 		}
 		throw new IllegalStateException("Command " + commandName + " not known");
-
 	}
 
 	public void setValidFroms(List<String> validFroms) {
