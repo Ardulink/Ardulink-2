@@ -2,6 +2,7 @@ package com.github.pfichtner.core.mqtt.duplicated;
 
 import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
 import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
+import static java.lang.Math.min;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -69,8 +70,7 @@ public class AnotherMqttClient extends ExternalResource {
 
 	protected static MqttClient mqttClient(String host, int port) {
 		try {
-			return new MqttClient("tcp://" + host + ":" + port,
-					"anotherMqttClient");
+			return new MqttClient("tcp://" + host + ":" + port, "amc");
 		} catch (MqttException e) {
 			throw new RuntimeException(e);
 		}
@@ -128,6 +128,11 @@ public class AnotherMqttClient extends ExternalResource {
 			this.mqttClient.close();
 		} catch (MqttException e) {
 			throw new RuntimeException(e);
+		}
+		try {
+			MILLISECONDS.sleep(50);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 		}
 	}
 
