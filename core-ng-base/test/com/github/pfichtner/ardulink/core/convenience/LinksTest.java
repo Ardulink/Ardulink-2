@@ -44,7 +44,7 @@ public class LinksTest {
 		Link link2 = Links.getLink(new URI("ardulink://dummyLink"));
 		assertThat(link1, notNullValue());
 		assertThat(link2, notNullValue());
-		assertThat(link1, sameInstance(link2));
+		assertAllSameInstances(link1, link2);
 		close(link1, link2);
 	}
 
@@ -54,7 +54,7 @@ public class LinksTest {
 		Link link2 = Links.getLink(new URI("ardulink://dummyLink?a=&b=42&c="));
 		assertThat(link1, notNullValue());
 		assertThat(link2, notNullValue());
-		assertThat(link1, sameInstance(link2));
+		assertAllSameInstances(link1, link2);
 		close(link1, link2);
 	}
 
@@ -73,10 +73,8 @@ public class LinksTest {
 		Link[] links = { createConnectionBasedLink(randomURI),
 				createConnectionBasedLink(randomURI),
 				createConnectionBasedLink(randomURI) };
-		assertSameInstances(links);
-
 		// all links point to the same instance, so choose one of them
-		Link link = links[0];
+		Link link = assertAllSameInstances(links)[0];
 		link.close();
 		link.close();
 		assertThat(getConnection(links[0]).getCloseCalls(), is(0));
@@ -84,23 +82,24 @@ public class LinksTest {
 		assertThat(getConnection(link).getCloseCalls(), is(1));
 	}
 
-	private void assertSameInstances(Link[] links) {
-		for (int i = 0; i < links.length - 1; i++) {
-			assertThat(links[i], sameInstance(links[i + 1]));
-		}
-	}
-
 	@Test
 	public void afterClosingWeGetAfreshLink() throws Exception {
 		URI randomURI = getRandomURI();
 		Link link1 = createConnectionBasedLink(randomURI);
 		Link link2 = createConnectionBasedLink(randomURI);
-		assertThat(link1, sameInstance(link2));
+		assertAllSameInstances(link1, link2);
 		close(link1, link2);
 		Link link3 = createConnectionBasedLink(randomURI);
 		assertThat(link3, not(sameInstance(link1)));
 		assertThat(link3, not(sameInstance(link2)));
 		close(link3);
+	}
+
+	private static <T> T[] assertAllSameInstances(T... objects) {
+		for (int i = 0; i < objects.length - 1; i++) {
+			assertThat(objects[i], sameInstance(objects[i + 1]));
+		}
+		return objects;
 	}
 
 	private void close(Link... links) throws IOException {

@@ -1,5 +1,6 @@
 package com.github.pfichtner.ardulink.core.proto.api;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -43,15 +44,25 @@ public final class MessageIdHolders {
 	}
 
 	public static <T> T proxy(T delegateTo, long messageId) {
-		Class<?>[] existingInterfaces = delegateTo.getClass().getInterfaces();
-		Class<?>[] newInterfaces = new Class<?>[existingInterfaces.length + 1];
-		newInterfaces[0] = MessageIdHolder.class;
-		System.arraycopy(existingInterfaces, 0, newInterfaces, 1,
-				existingInterfaces.length);
 		@SuppressWarnings("unchecked")
-		T proxy = (T) Proxy.newProxyInstance(delegateTo.getClass()
-				.getClassLoader(), newInterfaces,
+		T proxy = (T) Proxy.newProxyInstance(
+				delegateTo.getClass().getClassLoader(),
+				insertInto(Class.class, MessageIdHolder.class, delegateTo
+						.getClass().getInterfaces()),
 				new MessageIdHolderInvocationHandler(delegateTo, messageId));
 		return proxy;
 	}
+
+	private static <T> T[] insertInto(Class<T> type, T toAdd, T[] src) {
+		T[] newArray = newArray(type, src.length + 1);
+		newArray[0] = toAdd;
+		System.arraycopy(src, 0, newArray, 1, src.length);
+		return newArray;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> T[] newArray(Class<T> type, int length) {
+		return (T[]) Array.newInstance(type, length);
+	}
+
 }
