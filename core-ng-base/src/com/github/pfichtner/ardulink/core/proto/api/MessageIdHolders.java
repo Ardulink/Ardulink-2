@@ -43,6 +43,20 @@ public final class MessageIdHolders {
 
 	}
 
+	/**
+	 * Creates a dynamic proxy that implements MessageIdHolder automatically.
+	 * Calls to {@link MessageIdHolder#getId()} will return the passed
+	 * <code>messageId</code>. All other calls are forwarded to the passed
+	 * <code>delegateTo</code>.
+	 * 
+	 * @param delegateTo
+	 *            the instance to delegate all calls except
+	 *            {@link MessageIdHolder#getId()}
+	 * @param messageId
+	 *            the messageId to return when {@link MessageIdHolder#getId()}
+	 *            is called
+	 * @return dynamic proxy implementing {@link MessageIdHolder}
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T proxy(T delegateTo, long messageId) {
 		return (T) Proxy.newProxyInstance(
