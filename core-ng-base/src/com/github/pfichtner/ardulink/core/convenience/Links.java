@@ -12,8 +12,15 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
+/**
+ * This is a convenience layer for retrieving links. Links retrieved via this
+ * class are cached and shared.
+ * 
+ * @author Peter Fichtner
+ */
 public final class Links {
 
+	// TODO use a WeakHashMap and use PhantomReferences to close GCed Links
 	private static final Map<CacheKey, CacheValue> cache = new HashMap<CacheKey, CacheValue>();
 
 	private Links() {
@@ -64,8 +71,10 @@ public final class Links {
 	}
 
 	/**
-	 * Returns a shared Link to the passed URI. If the Link alreay was created
-	 * the cached Link is returned.
+	 * Returns a shared Link to the passed URI. If the Link already was created
+	 * the cached Link is returned. If the Link is not used anymore it should be
+	 * closed by calling {@link Link#close()} on it. Doing so will decrease the
+	 * usage counter and finally in cache eviction if it's unused.
 	 * 
 	 * @param uri
 	 *            the URI to create the Link for
@@ -101,9 +110,9 @@ public final class Links {
 					if (cacheValue != null
 							&& cacheValue.decreaseUsageCounter() == 0) {
 						cache.remove(cacheKey);
+						super.close();
 					}
 				}
-				super.close();
 			}
 		};
 	}

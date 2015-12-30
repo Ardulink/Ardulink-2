@@ -3,7 +3,7 @@ package com.github.pfichtner.ardulink.core.convenience;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.core.IsSame.sameInstance;
+import static org.hamcrest.core.IsSame.*;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -65,6 +65,29 @@ public class LinksTest {
 		assertThat(connection.getCloseCalls(), is(0));
 		close(link);
 		assertThat(connection.getCloseCalls(), is(1));
+	}
+
+	@Test
+	public void doesNotCloseConnectionIfStillInUse() throws Exception {
+		URI randomURI = getRandomURI();
+		Link[] links = { createConnectionBasedLink(randomURI),
+				createConnectionBasedLink(randomURI),
+				createConnectionBasedLink(randomURI) };
+		assertSameInstances(links);
+
+		// all links point to the same instance, so choose one of them
+		Link link = links[0];
+		link.close();
+		link.close();
+		assertThat(getConnection(links[0]).getCloseCalls(), is(0));
+		link.close();
+		assertThat(getConnection(link).getCloseCalls(), is(1));
+	}
+
+	private void assertSameInstances(Link[] links) {
+		for (int i = 0; i < links.length - 1; i++) {
+			assertThat(links[i], sameInstance(links[i + 1]));
+		}
 	}
 
 	@Test
