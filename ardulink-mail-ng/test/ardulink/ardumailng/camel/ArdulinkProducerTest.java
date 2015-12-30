@@ -5,7 +5,12 @@ import static ardulink.ardumailng.Commands.switchDigitalPin;
 import static com.github.pfichtner.ardulink.core.Pin.analogPin;
 import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
 import static java.util.Collections.singletonList;
+import static org.apache.camel.ExchangePattern.InOut;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.IsNull.nullValue;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -75,16 +80,16 @@ public class ArdulinkProducerTest {
 	}
 
 	@Test
-	public void throwsExceptionIfCommandNotKnown() throws Exception {
+	public void returnsNullIfCommandIsNotKnown() throws Exception {
 		String anyUser = "anyuser";
 		message.setHeader("From", anyUser);
 		String commandName = "unknown command name";
 		message.setBody(commandName);
 		producer.setValidFroms(singletonList(anyUser));
-		expectedException.expect(IllegalStateException.class);
-		expectedException.expectMessage(containsString("Command " + commandName
-				+ " not known"));
-		process();
+		Exchange exchange = process();
+
+		verifyNoMoreInteractions(getMock());
+		assertThat(exchange.getOut().getBody(), nullValue());
 	}
 
 	@Test
@@ -96,7 +101,8 @@ public class ArdulinkProducerTest {
 		producer.setValidFroms(Collections.singletonList(anyUser));
 		producer.setCommands(commandName,
 				singletonList(switchDigitalPin(7, true)));
-		process();
+		Exchange exchange = process();
+		assertThat(exchange.getOut().getBody(), is(not(nullValue())));
 
 		Link mock = getMock();
 		verify(mock).switchDigitalPin(digitalPin(7), true);
@@ -120,12 +126,15 @@ public class ArdulinkProducerTest {
 		verifyNoMoreInteractions(mock);
 	}
 
-	private void process() throws Exception {
-		producer.process(exchange());
+	private Exchange process() throws Exception {
+		Exchange exchange = exchange();
+		producer.process(exchange);
+		return exchange;
 	}
 
 	private Exchange exchange() {
 		Exchange exchange = new DefaultExchange(new DefaultCamelContext());
+		exchange.setPattern(InOut);
 		exchange.setIn(message);
 		return exchange;
 	}

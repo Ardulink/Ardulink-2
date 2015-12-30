@@ -98,7 +98,7 @@ public class ArdulinkProducer extends DefaultProducer {
 				return sb.toString();
 			}
 		}
-		throw new IllegalStateException("Command " + commandName + " not known");
+		return null;
 	}
 
 	public void setValidFroms(List<String> validFroms) {
