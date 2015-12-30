@@ -27,10 +27,10 @@ import org.zu.ardulink.util.Integers;
 
 import com.github.pfichtner.ardulink.core.AbstractListenerLink;
 import com.github.pfichtner.ardulink.core.Pin;
-import com.github.pfichtner.ardulink.core.Tone;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
 import com.github.pfichtner.ardulink.core.Pin.Type;
+import com.github.pfichtner.ardulink.core.Tone;
 import com.github.pfichtner.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 

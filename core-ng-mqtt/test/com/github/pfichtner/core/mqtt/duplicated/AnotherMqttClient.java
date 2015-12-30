@@ -2,7 +2,6 @@ package com.github.pfichtner.core.mqtt.duplicated;
 
 import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
 import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
-import static java.lang.Math.min;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
