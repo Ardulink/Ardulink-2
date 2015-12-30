@@ -14,8 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @author Luciano Zu
-*/
+ */
 package org.zu.ardulink.io;
+
+import static java.lang.Boolean.TRUE;
+import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,6 +29,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
@@ -34,86 +38,91 @@ import javax.xml.bind.Unmarshaller;
  * 
  * @author Luciano Zu project Ardulink http://www.ardulink.org/
  * 
- * [adsense]
+ *         [adsense]
  *
  */
+@Deprecated
+// Obsolete with ardulink-mail based on camel
 public class JAXBReaderWriter<T> {
-	
-	private Class<T> tClass;
-	
-	public JAXBReaderWriter(Class<T> tClass) {
-		this.tClass = tClass;
+
+	private final Class<T> type;
+
+	public JAXBReaderWriter(Class<T> type) {
+		this.type = type;
 	}
 
 	public T read(String file) throws ReadingException {
 		return read(new File(file));
-	} 
-	
+	}
+
 	public T read(File file) throws ReadingException {
 		try {
-		    FileInputStream is = new FileInputStream(file);
-			T retvalue = read(is);
-		    
-		    return retvalue;
-		}
-		catch (Exception e) {
+			FileInputStream is = new FileInputStream(file);
+			try {
+				return read(is);
+			} finally {
+				is.close();
+			}
+		} catch (Exception e) {
 			throw new ReadingException(e);
 		}
-	} 
+	}
 
 	public T read(InputStream is) throws ReadingException {
 		try {
-		    // create JAXB context and instantiate Unmarshaller
-		    JAXBContext context = JAXBContext.newInstance(tClass);
-
-		    InputStreamReader reader = new InputStreamReader(is, "UTF-8");
-		    
-		    // get variables from our xml file
-		    Unmarshaller um = context.createUnmarshaller();
-		    @SuppressWarnings("unchecked")
-			T retvalue = (T)um.unmarshal(reader);
-		    
-		    return retvalue;
-		}
-		catch (Exception e) {
+			InputStreamReader reader = new InputStreamReader(is, "UTF-8");
+			try {
+				return type.cast(createUnmarshaller().unmarshal(reader));
+			} finally {
+				reader.close();
+			}
+		} catch (Exception e) {
 			throw new ReadingException(e);
 		}
-	} 
+	}
 
 	public void write(T t, String file) throws WritingException {
 		write(t, new File(file));
-	} 
-	
+	}
+
 	public void write(T t, File file) throws WritingException {
 		try {
-
-		    FileOutputStream os = new FileOutputStream(file);
-		    write(t, os);
+			FileOutputStream os = new FileOutputStream(file);
+			try {
+				write(t, os);
+			} finally {
+				os.close();
+			}
+		} catch (Exception e) {
+			throw new WritingException(e);
 		}
-		catch (Exception e) {
+	}
+
+	public void write(T t, OutputStream os) throws WritingException {
+		try {
+			OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8");
+			try {
+				createMarshaller().marshal(t, writer);
+			} finally {
+				writer.close();
+			}
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new WritingException(e);
 		}
 	}
-	
-	public void write(T t, OutputStream os) throws WritingException {
-		try {
-		    // create JAXB context and instantiate marshaller
-		    JAXBContext context = JAXBContext.newInstance(t.getClass());
-		    Marshaller m = context.createMarshaller();
-		    m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 
-		    OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8");
-		    
-		    // Write to File
-		    m.marshal(t, writer);
-		    
-		    writer.close();
-		    os.close();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			throw new WritingException(e);
-		}
+	private Marshaller createMarshaller() throws JAXBException {
+		Marshaller marshaller = createContext().createMarshaller();
+		marshaller.setProperty(JAXB_FORMATTED_OUTPUT, TRUE);
+		return marshaller;
+	}
+
+	private Unmarshaller createUnmarshaller() throws JAXBException {
+		return createContext().createUnmarshaller();
+	}
+
+	private JAXBContext createContext() throws JAXBException {
+		return JAXBContext.newInstance(type);
 	}
 }

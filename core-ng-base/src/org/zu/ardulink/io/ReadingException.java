@@ -25,6 +25,8 @@ package org.zu.ardulink.io;
  * [adsense]
  *
  */
+@Deprecated
+//Obsolete with ardulink-mail based on camel
 public class ReadingException extends Exception {
 
 	private static final long serialVersionUID = -4573858746170282126L;
