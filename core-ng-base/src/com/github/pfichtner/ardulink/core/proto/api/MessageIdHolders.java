@@ -43,14 +43,13 @@ public final class MessageIdHolders {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <T> T proxy(T delegateTo, long messageId) {
-		@SuppressWarnings("unchecked")
-		T proxy = (T) Proxy.newProxyInstance(
+		return (T) Proxy.newProxyInstance(
 				delegateTo.getClass().getClassLoader(),
 				insertInto(Class.class, MessageIdHolder.class, delegateTo
 						.getClass().getInterfaces()),
 				new MessageIdHolderInvocationHandler(delegateTo, messageId));
-		return proxy;
 	}
 
 	private static <T> T[] insertInto(Class<T> type, T toAdd, T[] src) {
