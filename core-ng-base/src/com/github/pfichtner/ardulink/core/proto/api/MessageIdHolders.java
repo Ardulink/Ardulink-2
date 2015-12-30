@@ -17,7 +17,7 @@ public final class MessageIdHolders {
 		private static final Method messageIdHolderGetIdMethod = getMessageIdHolderGetIdMethod();
 
 		private final Object delegate;
-		private final long messageId;
+		private final Long messageId;
 
 		private static Method getMessageIdHolderGetIdMethod() {
 			try {
@@ -31,7 +31,7 @@ public final class MessageIdHolders {
 
 		public MessageIdHolderInvocationHandler(Object delegate, long messageId) {
 			this.delegate = delegate;
-			this.messageId = messageId;
+			this.messageId = Long.valueOf(messageId);
 		}
 
 		@Override
