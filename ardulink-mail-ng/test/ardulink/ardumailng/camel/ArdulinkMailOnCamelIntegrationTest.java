@@ -9,7 +9,6 @@ import static com.icegreen.greenmail.util.ServerSetupTest.SMTP_IMAP;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -55,7 +54,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	public GreenMailRule mailMock = new GreenMailRule(SMTP_IMAP);
 
 	@Rule
-	public Timeout timeout = new Timeout(10, TimeUnit.DAYS);
+	public Timeout timeout = new Timeout(10, SECONDS);
 
 	@Before
 	public void setup() throws URISyntaxException, Exception {
@@ -92,7 +91,6 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		Link mock = getMock();
 		verify(mock).switchDigitalPin(digitalPin(13), true);
 		verify(mock).switchAnalogPin(analogPin(2), 123);
-		verify(mock, times(2)).close();
 		verifyNoMoreInteractions(mock);
 	}
 
@@ -138,13 +136,62 @@ public class ArdulinkMailOnCamelIntegrationTest {
 			Link mock1 = getMock(link1);
 			verify(mock1).switchDigitalPin(digitalPin(11), true);
 			verify(mock1).switchAnalogPin(analogPin(12), 11);
-			verify(mock1, times(2)).close();
+			verify(mock1).close();
 			verifyNoMoreInteractions(mock1);
 
 			Link mock2 = getMock(link2);
 			verify(mock2).switchDigitalPin(digitalPin(21), true);
 			verify(mock2).switchAnalogPin(analogPin(22), 23);
-			verify(mock2, times(2)).close();
+			verify(mock2).close();
+			verifyNoMoreInteractions(mock2);
+		} finally {
+			link1.close();
+			link2.close();
+		}
+
+	}
+
+	@Test
+	public void canProcessMultipleLinksWhenCommandNotKnownOnLink2()
+			throws Exception {
+		final String receiver = "receiver@someReceiverDomain.com";
+		mailMock.setUser(receiver, "loginId1", "secret1");
+
+		String validSender = "valid.sender@someSenderDomain.com";
+		sendMailTo(receiver).from(validSender).withSubject("Subject")
+				.andText("usedScenario");
+
+		Link link1 = Links.getLink(new URI(mockURI + "?num=1&foo=bar"));
+		Link link2 = Links.getLink(new URI(mockURI + "?num=2&foo=bar"));
+
+		try {
+			final ArdulinkBuilder to1 = ardulink(mockURI)
+					.linkParams("num=1&foo=bar").validFroms(validSender)
+					.addScenario("usedScenario", "D11:true;A12:11");
+			final ArdulinkBuilder to2 = ardulink(mockURI).linkParams(
+					"num=2&foo=bar").validFroms(validSender);
+
+			ArdulinkMail ardulinkMail = new ArdulinkMail(new RouteBuilder() {
+				@Override
+				public void configure() {
+					MulticastDefinition md = from(localImap(receiver).makeURI())
+							.multicast();
+					md.setAggregationStrategy(new UseOriginalAggregationStrategy());
+					md.to(to1.makeURI(), to2.makeURI());
+				}
+			}).start();
+
+			waitUntilMailWasFetched();
+			ardulinkMail.stop();
+
+			Link mock1 = getMock(link1);
+			verify(mock1).switchDigitalPin(digitalPin(11), true);
+			verify(mock1).switchAnalogPin(analogPin(12), 11);
+			verify(mock1).close();
+			verifyNoMoreInteractions(mock1);
+
+			Link mock2 = getMock(link2);
+			verify(mock2).close();
 			verifyNoMoreInteractions(mock2);
 		} finally {
 			link1.close();
@@ -195,7 +242,6 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 		Link mock = getMock();
 		verify(mock).switchDigitalPin(digitalPin(1), true);
-		verify(mock, times(2)).close();
 		verifyNoMoreInteractions(mock);
 	}
 
