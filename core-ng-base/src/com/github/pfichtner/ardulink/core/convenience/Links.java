@@ -1,7 +1,5 @@
 package com.github.pfichtner.ardulink.core.convenience;
 
-import static org.zu.ardulink.util.Preconditions.checkNotNull;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
