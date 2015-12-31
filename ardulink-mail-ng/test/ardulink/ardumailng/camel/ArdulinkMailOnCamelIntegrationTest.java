@@ -9,6 +9,8 @@ import static com.icegreen.greenmail.util.ServerSetupTest.SMTP_IMAP;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -28,7 +30,6 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.model.MulticastDefinition;
-import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.processor.aggregate.UseOriginalAggregationStrategy;
 import org.junit.After;
 import org.junit.Before;
@@ -259,31 +260,31 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		ArdulinkMail ardulinkMail = new ArdulinkMail(new RouteBuilder() {
 			@Override
 			public void configure() {
-				from(localImap(receiver).makeURI())
-						.to(ardulink.makeURI())
-						.setHeader("in.header.to", simple("${out.header.from}"))
-						.setHeader("in.header.from", simple("${out.header.to}"))
-						.to(smtp);
+				from(localImap(receiver).makeURI()).to(ardulink.makeURI())
+						.setHeader("to", simple("${in.header.from}"))
+						.setHeader("from", simple("${in.header.to}")).to(smtp);
 			}
 		}).start();
 
-		// TODO fetch response mail for invalid.sender
-		// waitUntilMailWasFetched();
+		try {
+			assertThat(
+					((String) fetchMail("loginId2", "secret2").getContent()),
+					is("SwitchDigitalPinCommand [pin=1, value=true]=OK"));
+		} finally {
+			ardulinkMail.stop();
+		}
 
+	}
+
+	private Message fetchMail(String loginId, String password)
+			throws MessagingException, InterruptedException {
 		ImapServer imapd = mailMock.getImap();
 		Message msg = null;
 		while ((msg = retrieveViaImap(imapd.getBindTo(), imapd.getPort(),
-				"loginId2", "secret2")) == null) {
+				loginId, password)) == null) {
 			TimeUnit.MILLISECONDS.sleep(100);
 		}
-
-		System.out.println("*****************" + msg.getContent());
-
-		ardulinkMail.stop();
-
-		Link mock = getMock();
-		verify(mock).switchDigitalPin(digitalPin(1), true);
-		verifyNoMoreInteractions(mock);
+		return msg;
 	}
 
 	private Message retrieveViaImap(String host, int port, String user,
