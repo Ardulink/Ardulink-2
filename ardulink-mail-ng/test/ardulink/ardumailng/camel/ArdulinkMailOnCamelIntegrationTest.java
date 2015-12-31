@@ -25,8 +25,11 @@ import javax.mail.Session;
 import javax.mail.Store;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.model.MulticastDefinition;
 import org.apache.camel.processor.aggregate.UseOriginalAggregationStrategy;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -61,6 +64,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		link = Links.getLink(new URI(mockURI));
 	}
 
+	@After
 	public void tearDown() throws IOException {
 		link.close();
 	}
@@ -91,6 +95,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		Link mock = getMock();
 		verify(mock).switchDigitalPin(digitalPin(13), true);
 		verify(mock).switchAnalogPin(analogPin(2), 123);
+		verify(mock).close();
 		verifyNoMoreInteractions(mock);
 	}
 
@@ -197,12 +202,46 @@ public class ArdulinkMailOnCamelIntegrationTest {
 			link1.close();
 			link2.close();
 		}
+	}
 
+	@Test
+	public void writesResultToMock() throws Exception {
+		final String receiver = "receiver@someReceiverDomain.com";
+		mailMock.setUser(receiver, "loginId1", "secret1");
+
+		String validSender = "valid.sender@someSenderDomain.com";
+		mailMock.setUser(validSender, "loginId2", "secret2");
+		sendMailTo(receiver).from(validSender).withSubject("Subject")
+				.andText("usedScenario");
+
+		final ArdulinkBuilder ardulink = ardulink(mockURI).validFroms(
+				validSender).addScenario("usedScenario", "D1:true");
+
+		DefaultCamelContext context = new DefaultCamelContext();
+		final MockEndpoint mockEndpoint = context.getEndpoint("mock:result",
+				MockEndpoint.class);
+
+		ArdulinkMail ardulinkMail = new ArdulinkMail(context,
+				new RouteBuilder() {
+					@Override
+					public void configure() {
+						from(localImap(receiver).makeURI()).to(
+								ardulink.makeURI()).to(mockEndpoint);
+					}
+				}).start();
+		try {
+			mockEndpoint.expectedMessageCount(1);
+			mockEndpoint.expectedBodiesReceived("SwitchDigitalPinCommand "
+					+ "[pin=1, value=true]=OK");
+			mockEndpoint.assertIsSatisfied();
+		} finally {
+			ardulinkMail.stop();
+		}
 	}
 
 	@Test
 	@Ignore
-	public void canRespondViaMail() throws Exception {
+	public void writesResultToSender() throws Exception {
 		final String receiver = "receiver@someReceiverDomain.com";
 		mailMock.setUser(receiver, "loginId1", "secret1");
 
