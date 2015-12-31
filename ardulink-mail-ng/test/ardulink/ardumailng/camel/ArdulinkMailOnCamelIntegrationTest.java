@@ -28,10 +28,10 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.model.MulticastDefinition;
+import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.processor.aggregate.UseOriginalAggregationStrategy;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -240,7 +240,6 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	@Test
-	@Ignore
 	public void writesResultToSender() throws Exception {
 		final String receiver = "receiver@someReceiverDomain.com";
 		mailMock.setUser(receiver, "loginId1", "secret1");
@@ -255,13 +254,16 @@ public class ArdulinkMailOnCamelIntegrationTest {
 				validSender).addScenario("usedScenario", "D1:true");
 		final String smtp = "smtp://" + smtpd.getBindTo() + ":"
 				+ smtpd.getPort() + "?username=" + "loginId1" + "&password="
-				+ "secret1";
+				+ "secret1" + "&debugMode=true";
 
 		ArdulinkMail ardulinkMail = new ArdulinkMail(new RouteBuilder() {
 			@Override
 			public void configure() {
-				from(localImap(receiver).makeURI()).to(ardulink.makeURI()).to(
-						smtp);
+				from(localImap(receiver).makeURI())
+						.to(ardulink.makeURI())
+						.setHeader("in.header.to", simple("${out.header.from}"))
+						.setHeader("in.header.from", simple("${out.header.to}"))
+						.to(smtp);
 			}
 		}).start();
 
