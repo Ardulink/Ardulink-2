@@ -8,9 +8,11 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
 class CacheKey {
 
+	private final Class<? extends Configurer> configurerType;
 	private final Map<String, Object> values;
 
 	public CacheKey(Configurer configurer) throws Exception {
+		this.configurerType = configurer.getClass();
 		this.values = Collections.unmodifiableMap(extractData(configurer));
 	}
 
@@ -26,6 +28,8 @@ class CacheKey {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result
+				+ ((configurerType == null) ? 0 : configurerType.hashCode());
 		result = prime * result + ((values == null) ? 0 : values.hashCode());
 		return result;
 	}
@@ -39,6 +43,11 @@ class CacheKey {
 		if (getClass() != obj.getClass())
 			return false;
 		CacheKey other = (CacheKey) obj;
+		if (configurerType == null) {
+			if (other.configurerType != null)
+				return false;
+		} else if (!configurerType.equals(other.configurerType))
+			return false;
 		if (values == null) {
 			if (other.values != null)
 				return false;
@@ -49,7 +58,8 @@ class CacheKey {
 
 	@Override
 	public String toString() {
-		return "CacheKey [values=" + values + "]";
+		return "CacheKey [configurerType=" + configurerType + ", values="
+				+ values + "]";
 	}
 
 }
