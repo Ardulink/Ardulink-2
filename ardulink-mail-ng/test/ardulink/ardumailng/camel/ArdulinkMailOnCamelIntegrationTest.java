@@ -25,6 +25,7 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
@@ -37,8 +38,6 @@ import org.junit.rules.Timeout;
 import org.zu.ardulink.util.Joiner;
 import org.zu.ardulink.util.MapBuilder;
 
-import ardulink.ardumailng.ArdulinkMail;
-
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.convenience.LinkDelegate;
 import com.github.pfichtner.ardulink.core.convenience.Links;
@@ -50,7 +49,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	private static final String mockURI = "ardulink://mock";
 
-	private static final Map<? extends String, ? extends Object> imapDefaults = MapBuilder
+	private static final Map<? extends String, ? extends Object> IMAP_DEFAULTS = MapBuilder
 			.<String, Object> newMapBuilder().put("host", "localhost")
 			.put("port", 143).put("folderName", "INBOX").put("unseen", true)
 			.build();
@@ -89,15 +88,17 @@ public class ArdulinkMailOnCamelIntegrationTest {
 						.put("scenario.usedScenario", "D13:true;A2:123")
 						.put("scenario.yyy", "D13:false;A2:21").build());
 
-		ArdulinkMail ardulinkMail = new ArdulinkMail(new RouteBuilder() {
+		CamelContext context = new DefaultCamelContext();
+		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
 				from(localImap(receiver)).to(to);
 			}
-		}).start();
+		});
+		context.start();
 
 		waitUntilMailWasFetched();
-		ardulinkMail.stop();
+		context.stop();
 
 		Link mock = getMock();
 		verify(mock).switchDigitalPin(digitalPin(13), true);
@@ -109,7 +110,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	private String localImap(String receiver) {
 		return makeURI(
 				"imap://" + receiver,
-				newMapBuilder().putAll(imapDefaults)
+				newMapBuilder().putAll(IMAP_DEFAULTS)
 						.put("username", "loginId1").put("password", "secret1")
 						.put("port", imapServerPort()).put("unseen", true)
 						.put("delete", true)
@@ -143,8 +144,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 						.build());
 
 		try {
-
-			ArdulinkMail ardulinkMail = new ArdulinkMail(new RouteBuilder() {
+			CamelContext context = new DefaultCamelContext();
+			context.addRoutes(new RouteBuilder() {
 				@Override
 				public void configure() {
 					from(localImap(receiver))
@@ -153,10 +154,11 @@ public class ArdulinkMailOnCamelIntegrationTest {
 									new UseOriginalAggregationStrategy())
 							.to(to1, to2);
 				}
-			}).start();
+			});
+			context.start();
 
 			waitUntilMailWasFetched();
-			ardulinkMail.stop();
+			context.stop();
 
 			Link mock1 = getMock(link1);
 			verify(mock1).switchDigitalPin(digitalPin(11), true);
@@ -201,7 +203,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 						.put("validfroms", validSender).build());
 
 		try {
-			ArdulinkMail ardulinkMail = new ArdulinkMail(new RouteBuilder() {
+			CamelContext context = new DefaultCamelContext();
+			context.addRoutes(new RouteBuilder() {
 				@Override
 				public void configure() {
 					from(localImap(receiver))
@@ -210,10 +213,11 @@ public class ArdulinkMailOnCamelIntegrationTest {
 									new UseOriginalAggregationStrategy())
 							.to(to1, to2);
 				}
-			}).start();
+			});
+			context.start();
 
 			waitUntilMailWasFetched();
-			ardulinkMail.stop();
+			context.stop();
 
 			Link mock1 = getMock(link1);
 			verify(mock1).switchDigitalPin(digitalPin(11), true);
@@ -245,24 +249,24 @@ public class ArdulinkMailOnCamelIntegrationTest {
 				newMapBuilder().put("validfroms", validSender)
 						.put("scenario.usedScenario", "D1:true").build());
 
-		DefaultCamelContext context = new DefaultCamelContext();
+		CamelContext context = new DefaultCamelContext();
 		final MockEndpoint mockEndpoint = context.getEndpoint("mock:result",
 				MockEndpoint.class);
 
-		ArdulinkMail ardulinkMail = new ArdulinkMail(context,
-				new RouteBuilder() {
-					@Override
-					public void configure() {
-						from(localImap(receiver)).to(ardulink).to(mockEndpoint);
-					}
-				}).start();
+		context.addRoutes(new RouteBuilder() {
+			@Override
+			public void configure() {
+				from(localImap(receiver)).to(ardulink).to(mockEndpoint);
+			}
+		});
+		context.start();
 		try {
 			mockEndpoint.expectedMessageCount(1);
 			mockEndpoint.expectedBodiesReceived("SwitchDigitalPinCommand "
 					+ "[pin=1, value=true]=OK");
 			mockEndpoint.assertIsSatisfied();
 		} finally {
-			ardulinkMail.stop();
+			context.stop();
 		}
 	}
 
@@ -287,21 +291,23 @@ public class ArdulinkMailOnCamelIntegrationTest {
 				+ smtpd.getPort() + "?username=" + "loginId1" + "&password="
 				+ "secret1" + "&debugMode=true";
 
-		ArdulinkMail ardulinkMail = new ArdulinkMail(new RouteBuilder() {
+		CamelContext context = new DefaultCamelContext();
+		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
 				from(localImap(receiver)).to(ardulink)
 						.setHeader("to", simple("${in.header.from}"))
 						.setHeader("from", simple("${in.header.to}")).to(smtp);
 			}
-		}).start();
+		});
+		context.start();
 
 		try {
 			assertThat(
 					((String) fetchMail("loginId2", "secret2").getContent()),
 					is("SwitchDigitalPinCommand [pin=1, value=true]=OK"));
 		} finally {
-			ardulinkMail.stop();
+			context.stop();
 		}
 
 	}
