@@ -38,8 +38,7 @@ import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
  * 
  * @author Peter Fichtner
  */
-public class ConnectionBasedQosLink extends AbstractConnectionBasedLink
-		implements RplyListener {
+public class ConnectionBasedQosLink extends AbstractConnectionBasedLink {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(ConnectionBasedQosLink.class);
@@ -62,7 +61,19 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink
 		super(connection, protocol);
 		this.timeout = timeout;
 		this.timeUnit = timeUnit;
-		addRplyListener(this);
+		addRplyListener(new RplyListener() {
+			@Override
+			public void rplyReceived(RplyEvent event) {
+				logger.debug("Received {}", event.getId());
+				ConnectionBasedQosLink.this.event = event;
+				lock.lock();
+				try {
+					ConnectionBasedQosLink.this.condition.signal();
+				} finally {
+					ConnectionBasedQosLink.this.lock.unlock();
+				}
+			}
+		});
 	}
 
 	@Override
@@ -190,18 +201,6 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			}
-		} finally {
-			lock.unlock();
-		}
-	}
-
-	@Override
-	public void rplyReceived(RplyEvent event) {
-		logger.debug("Received {}", event.getId());
-		this.event = event;
-		lock.lock();
-		try {
-			condition.signal();
 		} finally {
 			lock.unlock();
 		}
