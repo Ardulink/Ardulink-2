@@ -8,6 +8,6 @@
 		<setHeader headerName="from">
 			<simple>${in.header.to}</simple>
 		</setHeader>
-		<to uri="smtp://${smtphost}:${smtpport}?username=loginId1&amp;password=secret1&amp;debugMode=true"/>
+		<to uri="smtp://${smtphost}:${smtpport}?username=loginId1&amp;password=secret1"/>
 	</route>
 </routes>
