@@ -90,9 +90,9 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		final String to = makeURI(
 				mockURI,
 				newMapBuilder().put("validfroms", validSender)
-						.put("scenario.xxx", "D13:false;A2:42")
-						.put("scenario.usedScenario", "D13:true;A2:123")
-						.put("scenario.yyy", "D13:false;A2:21").build());
+						.put("scenario.xxx", "D13=false;A2=42")
+						.put("scenario.usedScenario", "D13=true;A2=123")
+						.put("scenario.yyy", "D13=false;A2=21").build());
 
 		CamelContext context = new DefaultCamelContext();
 		context.addRoutes(new RouteBuilder() {
@@ -140,14 +140,14 @@ public class ArdulinkMailOnCamelIntegrationTest {
 				mockURI,
 				newMapBuilder().put("linkparams", encode("num=1&foo=bar"))
 						.put("validfroms", validSender)
-						.put("scenario.usedScenario", "D11:true;A12:11")
+						.put("scenario.usedScenario", "D11=true;A12=11")
 						.build());
 
 		final String to2 = makeURI(
 				mockURI,
 				newMapBuilder().put("linkparams", encode("num=2&foo=bar"))
 						.put("validfroms", validSender)
-						.put("scenario.usedScenario", "D21:true;A22:23")
+						.put("scenario.usedScenario", "D21=true;A22=23")
 						.build());
 
 		try {
@@ -202,7 +202,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 				mockURI,
 				newMapBuilder().put("linkparams", encode("num=1&foo=bar"))
 						.put("validfroms", validSender)
-						.put("scenario.usedScenario", "D11:true;A12:11")
+						.put("scenario.usedScenario", "D11=true;A12=11")
 						.build());
 		final String to2 = makeURI(
 				mockURI,
@@ -254,7 +254,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		final String ardulink = makeURI(
 				mockURI,
 				newMapBuilder().put("validfroms", validSender)
-						.put("scenario.usedScenario", "D1:true").build());
+						.put("scenario.usedScenario", "D1=true").build());
 
 		CamelContext context = new DefaultCamelContext();
 		final MockEndpoint mockEndpoint = context.getEndpoint("mock:result",
@@ -290,7 +290,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		final String ardulink = makeURI(
 				mockURI,
 				newMapBuilder().put("validfroms", validSender)
-						.put("scenario.usedScenario", "D1:true;A2:123").build());
+						.put("scenario.usedScenario", "D1=true;A2=123").build());
 
 		SmtpServer smtpd = mailMock.getSmtp();
 		final String smtp = "smtp://" + smtpd.getBindTo() + ":"
@@ -337,7 +337,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 				.put("imaphost", imapd.getBindTo())
 				.put("imapport", imapd.getPort())
 				.put("commandname", commandName)
-				.put("command", "D1:true;A2:123")
+				.put("command", "D1=true;A2=123")
 				.put("smtphost", smtpd.getBindTo())
 				.put("smtpport", smtpd.getPort()).build();
 		String xml = setPlaceHolders(

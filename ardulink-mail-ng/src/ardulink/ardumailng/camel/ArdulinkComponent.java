@@ -54,7 +54,7 @@ public class ArdulinkComponent extends UriEndpointComponent {
 				String name = entry.getKey()
 						.substring(SCENARIO_PREFIX.length());
 				for (String pinAndValue : scenario.split("\\;")) {
-					String[] pv = pinAndValue.split("\\:");
+					String[] pv = pinAndValue.split("\\=");
 					String pinType = pv[0].substring(0, 1);
 					int pin = checkNotNull(tryParse(pv[0].substring(1)),
 							"Could not parse %s as int", pv[0].substring(1))
