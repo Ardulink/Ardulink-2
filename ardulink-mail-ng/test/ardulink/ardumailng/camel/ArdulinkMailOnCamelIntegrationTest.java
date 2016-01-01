@@ -13,9 +13,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.zu.ardulink.util.MapBuilder.newMapBuilder;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -36,6 +39,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 import org.zu.ardulink.util.Joiner;
+import org.zu.ardulink.util.Lists;
 import org.zu.ardulink.util.MapBuilder;
 
 import com.github.pfichtner.ardulink.core.Link;
@@ -280,13 +284,12 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		sendMailTo(receiver).from(validSender).withSubject(anySubject())
 				.andText("usedScenario");
 
-		SmtpServer smtpd = mailMock.getSmtp();
-
 		final String ardulink = makeURI(
 				mockURI,
 				newMapBuilder().put("validfroms", validSender)
 						.put("scenario.usedScenario", "D1:true").build());
 
+		SmtpServer smtpd = mailMock.getSmtp();
 		final String smtp = "smtp://" + smtpd.getBindTo() + ":"
 				+ smtpd.getPort() + "?username=" + "loginId1" + "&password="
 				+ "secret1" + "&debugMode=true";
@@ -310,6 +313,75 @@ public class ArdulinkMailOnCamelIntegrationTest {
 			context.stop();
 		}
 
+	}
+
+	@Test
+	public void writesResultToSender_ConfiguredViaXML() throws Exception {
+		final String receiver = "receiver@someReceiverDomain.com";
+		createMailUser(receiver, "loginId1", "secret1");
+
+		String validSender = "valid.sender@someSenderDomain.com";
+		createMailUser(validSender, "loginId2", "secret2");
+		sendMailTo(receiver).from(validSender).withSubject(anySubject())
+				.andText("usedScenario");
+
+		String xml = xml();
+		System.out.println(xml);
+		InputStream is = new ByteArrayInputStream(xml.getBytes());
+		try {
+			CamelContext context = new DefaultCamelContext();
+			context.addRouteDefinitions(context.loadRoutesDefinition(is)
+					.getRoutes());
+			context.start();
+
+			try {
+				assertThat(((String) fetchMail("loginId2", "secret2")
+						.getContent()),
+						is("SwitchDigitalPinCommand [pin=1, value=true]=OK"));
+			} finally {
+				context.stop();
+			}
+		} finally {
+			is.close();
+		}
+	}
+
+	private String xml() {
+		String from = "imap://"
+				+ "receiver"
+				+ "@someReceiverDomain.com?username="
+				+ "loginId1"
+				+ "&amp;password="
+				+ "secret1"
+				+ "&amp;port="
+				+ "3143"
+				+ "&amp;host="
+				+ "localhost"
+				+ "&amp;folderName=INBOX&amp;delete=true&amp;consumer.delay=600000&amp;unseen=true";
+		SmtpServer smtpd = mailMock.getSmtp();
+		String ardulink = "ardulink://mock?scenario.usedScenario=D1:true&amp;validfroms="
+				+ "valid.sender@someSenderDomain.com";
+		String to = "smtp://" + smtpd.getBindTo() + ":" + smtpd.getPort()
+				+ "?username=" + "loginId1" + "&amp;password=" + "secret1"
+				+ "&amp;debugMode=true";
+
+		List<String> xml = Lists.newArrayList();
+		xml.add("<routes xmlns=\"http://camel.apache.org/schema/spring\">");
+		xml.add("	<route id=\"bar\">");
+		xml.add("		<from uri=\"" + from + "\"/>");
+		xml.add("		<to uri=\"" + ardulink + "\"/>");
+
+		xml.add("		<setHeader headerName=\"to\">");
+		xml.add("			<simple>${in.header.from}</simple>");
+		xml.add("		</setHeader>");
+		xml.add("		<setHeader headerName=\"from\">");
+		xml.add("			<simple>${in.header.to}</simple>");
+		xml.add("		</setHeader>");
+
+		xml.add("		<to uri=\"" + to + "\"/>");
+		xml.add("	</route>");
+		xml.add("</routes>");
+		return Joiner.on("\n").join(xml);
 	}
 
 	private void createMailUser(String receiver, String id, String password) {
