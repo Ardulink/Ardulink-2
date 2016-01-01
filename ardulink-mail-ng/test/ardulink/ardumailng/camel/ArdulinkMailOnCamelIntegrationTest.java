@@ -20,7 +20,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Scanner;
 
 import javax.mail.Folder;
 import javax.mail.Message;
@@ -32,6 +34,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.processor.aggregate.UseOriginalAggregationStrategy;
 import org.junit.After;
 import org.junit.Before;
@@ -39,7 +42,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 import org.zu.ardulink.util.Joiner;
-import org.zu.ardulink.util.Lists;
 import org.zu.ardulink.util.MapBuilder;
 
 import com.github.pfichtner.ardulink.core.Link;
@@ -112,11 +114,12 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	private String localImap(String receiver) {
+		ImapServer imapd = mailMock.getImap();
 		return makeURI(
 				"imap://" + receiver,
 				newMapBuilder().putAll(IMAP_DEFAULTS)
 						.put("username", "loginId1").put("password", "secret1")
-						.put("port", imapServerPort()).put("unseen", true)
+						.put("port", imapd.getPort()).put("unseen", true)
 						.put("delete", true)
 						.put("consumer.delay", MINUTES.toMillis(10)).build());
 	}
@@ -287,7 +290,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		final String ardulink = makeURI(
 				mockURI,
 				newMapBuilder().put("validfroms", validSender)
-						.put("scenario.usedScenario", "D1:true").build());
+						.put("scenario.usedScenario", "D1:true;A2:123").build());
 
 		SmtpServer smtpd = mailMock.getSmtp();
 		final String smtp = "smtp://" + smtpd.getBindTo() + ":"
@@ -308,7 +311,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		try {
 			assertThat(
 					((String) fetchMail("loginId2", "secret2").getContent()),
-					is("SwitchDigitalPinCommand [pin=1, value=true]=OK"));
+					is("SwitchDigitalPinCommand [pin=1, value=true]=OK\r\n"
+							+ "SwitchAnalogPinCommand [pin=2, value=123]=OK"));
 		} finally {
 			context.stop();
 		}
@@ -317,27 +321,43 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	@Test
 	public void writesResultToSender_ConfiguredViaXML() throws Exception {
-		final String receiver = "receiver@someReceiverDomain.com";
+		String receiver = "receiver@someReceiverDomain.com";
 		createMailUser(receiver, "loginId1", "secret1");
 
 		String validSender = "valid.sender@someSenderDomain.com";
 		createMailUser(validSender, "loginId2", "secret2");
+		String commandName = "nameMe";
 		sendMailTo(receiver).from(validSender).withSubject(anySubject())
-				.andText("usedScenario");
+				.andText(commandName);
 
-		String xml = xml();
-		System.out.println(xml);
+		SmtpServer smtpd = mailMock.getSmtp();
+		ImapServer imapd = mailMock.getImap();
+		Map<String, Object> values = MapBuilder
+				.<String, Object> newMapBuilder()
+				.put("imaphost", imapd.getBindTo())
+				.put("imapport", imapd.getPort())
+				.put("commandname", commandName)
+				.put("command", "D1:true;A2:123")
+				.put("smtphost", smtpd.getBindTo())
+				.put("smtpport", smtpd.getPort()).build();
+		String xml = setPlaceHolders(
+				load(getClass().getResourceAsStream("/ardulinkmail.xml")),
+				values);
+
 		InputStream is = new ByteArrayInputStream(xml.getBytes());
 		try {
 			CamelContext context = new DefaultCamelContext();
-			context.addRouteDefinitions(context.loadRoutesDefinition(is)
-					.getRoutes());
+			List<RouteDefinition> routes = context.loadRoutesDefinition(is)
+					.getRoutes();
+			System.out.println(routes);
+			context.addRouteDefinitions(routes);
 			context.start();
 
 			try {
-				assertThat(((String) fetchMail("loginId2", "secret2")
-						.getContent()),
-						is("SwitchDigitalPinCommand [pin=1, value=true]=OK"));
+				assertThat(
+						((String) fetchMail("loginId2", "secret2").getContent()),
+						is("SwitchDigitalPinCommand [pin=1, value=true]=OK\r\n"
+								+ "SwitchAnalogPinCommand [pin=2, value=123]=OK"));
 			} finally {
 				context.stop();
 			}
@@ -346,42 +366,26 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		}
 	}
 
-	private String xml() {
-		String from = "imap://"
-				+ "receiver"
-				+ "@someReceiverDomain.com?username="
-				+ "loginId1"
-				+ "&amp;password="
-				+ "secret1"
-				+ "&amp;port="
-				+ "3143"
-				+ "&amp;host="
-				+ "localhost"
-				+ "&amp;folderName=INBOX&amp;delete=true&amp;consumer.delay=600000&amp;unseen=true";
-		SmtpServer smtpd = mailMock.getSmtp();
-		String ardulink = "ardulink://mock?scenario.usedScenario=D1:true&amp;validfroms="
-				+ "valid.sender@someSenderDomain.com";
-		String to = "smtp://" + smtpd.getBindTo() + ":" + smtpd.getPort()
-				+ "?username=" + "loginId1" + "&amp;password=" + "secret1"
-				+ "&amp;debugMode=true";
+	private String setPlaceHolders(String in, Map<String, Object> values) {
+		StringBuilder builder = new StringBuilder(in);
+		for (Entry<String, Object> entry : values.entrySet()) {
+			int start;
+			String pattern = "${" + entry.getKey() + "}";
+			String value = entry.getValue().toString();
+			while ((start = builder.indexOf(pattern)) != -1) {
+				builder.replace(start, start + pattern.length(), value);
+			}
+		}
+		return builder.toString();
+	}
 
-		List<String> xml = Lists.newArrayList();
-		xml.add("<routes xmlns=\"http://camel.apache.org/schema/spring\">");
-		xml.add("	<route id=\"bar\">");
-		xml.add("		<from uri=\"" + from + "\"/>");
-		xml.add("		<to uri=\"" + ardulink + "\"/>");
-
-		xml.add("		<setHeader headerName=\"to\">");
-		xml.add("			<simple>${in.header.from}</simple>");
-		xml.add("		</setHeader>");
-		xml.add("		<setHeader headerName=\"from\">");
-		xml.add("			<simple>${in.header.to}</simple>");
-		xml.add("		</setHeader>");
-
-		xml.add("		<to uri=\"" + to + "\"/>");
-		xml.add("	</route>");
-		xml.add("</routes>");
-		return Joiner.on("\n").join(xml);
+	private String load(InputStream inputStream) {
+		Scanner scanner = new Scanner(inputStream, "UTF-8");
+		try {
+			return scanner.useDelimiter("\\A").next();
+		} finally {
+			scanner.close();
+		}
 	}
 
 	private void createMailUser(String receiver, String id, String password) {
@@ -430,10 +434,6 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		while (mailMock.getReceivedMessages().length > 0) {
 			MILLISECONDS.sleep(50);
 		}
-	}
-
-	private int imapServerPort() {
-		return mailMock.getImap().getPort();
 	}
 
 	private Link getMock() {
