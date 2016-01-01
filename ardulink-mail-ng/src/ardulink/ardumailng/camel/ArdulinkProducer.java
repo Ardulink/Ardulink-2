@@ -14,7 +14,9 @@ import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultProducer;
+import org.zu.ardulink.util.Joiner;
 import org.zu.ardulink.util.ListMultiMap;
+import org.zu.ardulink.util.Lists;
 
 import ardulink.ardumailng.Command;
 
@@ -85,17 +87,16 @@ public class ArdulinkProducer extends DefaultProducer {
 			String key = entry.getKey();
 			if (commandName.equals(key)) {
 				List<Command> values = entry.getValue();
-				StringBuilder sb = new StringBuilder();
+				List<String> results = Lists.newArrayList();
 				for (Command command : values) {
-					sb = sb.append(command);
 					try {
 						command.execute(link);
-						sb = sb.append("=OK");
+						results.add(command + "=OK");
 					} catch (Exception e) {
-						sb = sb.append("=KO");
+						results.add(command + "=KO");
 					}
 				}
-				return sb.toString();
+				return Joiner.on("\n").join(results);
 			}
 		}
 		return null;
