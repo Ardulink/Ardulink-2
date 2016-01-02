@@ -172,7 +172,7 @@ public abstract class LinkManager {
 	public interface Configurer {
 
 		Collection<String> getAttributes();
-		
+
 		ConfigAttribute getAttribute(String key);
 
 		Link newLink() throws Exception;
@@ -219,12 +219,6 @@ public abstract class LinkManager {
 	public static LinkManager getInstance() {
 		return new LinkManager() {
 
-			private URI checkSchema(URI uri) {
-				checkArgument(SCHEMA.equalsIgnoreCase(uri.getScheme()),
-						"schema not %s (was %s)", SCHEMA, uri.getScheme());
-				return uri;
-			}
-
 			@Override
 			public List<URI> listURIs() {
 				List<LinkFactory> factories = getConnectionFactories();
@@ -256,7 +250,7 @@ public abstract class LinkManager {
 
 			@Override
 			public Configurer getConfigurer(URI uri) {
-				String name = checkSchema(uri).getHost();
+				String name = getHostFromCheckedSchema(uri);
 				LinkFactory connectionFactory = getConnectionFactory(name);
 				checkArgument(
 						connectionFactory != null,
@@ -288,6 +282,16 @@ public abstract class LinkManager {
 			}
 
 		};
+	}
+
+	public static String getHostFromCheckedSchema(URI uri) {
+		return checkSchema(uri).getHost();
+	}
+
+	private static URI checkSchema(URI uri) {
+		checkArgument(SCHEMA.equalsIgnoreCase(uri.getScheme()),
+				"schema not %s (was %s)", SCHEMA, uri.getScheme());
+		return uri;
 	}
 
 	/**

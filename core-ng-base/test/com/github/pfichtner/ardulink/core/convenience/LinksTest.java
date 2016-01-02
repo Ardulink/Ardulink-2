@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.hamcrest.core.IsSame;
 import org.junit.Test;
 
 import com.github.pfichtner.ardulink.core.Connection;
@@ -35,6 +36,13 @@ public class LinksTest {
 		Link link = Links.getDefault();
 		DummyLinkConfig config = getConnection(link).getConfig();
 		assertThat(config.getA(), is("aVal1"));
+		close(link);
+	}
+
+	@Test
+	public void registeredSpecialNameDefault() throws Exception {
+		Link link = Links.getLink(new URI("ardulink://default"));
+		assertThat(link, sameInstance(Links.getDefault()));
 		close(link);
 	}
 
