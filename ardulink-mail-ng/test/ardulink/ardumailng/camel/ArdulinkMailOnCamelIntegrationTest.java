@@ -81,7 +81,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	@Test
 	public void canProcessViaImap() throws Exception {
 		final String receiver = "receiver@someReceiverDomain.com";
-		createMailUser(receiver, "loginId1", "secret1");
+		createMailUser(receiver, "loginIdReceiver", "secretOfReceiver");
 
 		String validSender = "valid.sender@someSenderDomain.com";
 		sendMailTo(receiver).from(validSender).withSubject(anySubject())
@@ -118,7 +118,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		return makeURI(
 				"imap://" + receiver,
 				newMapBuilder().putAll(IMAP_DEFAULTS)
-						.put("username", "loginId1").put("password", "secret1")
+						.put("username", "loginIdReceiver")
+						.put("password", "secretOfReceiver")
 						.put("port", imapd.getPort()).put("unseen", true)
 						.put("delete", true)
 						.put("consumer.delay", MINUTES.toMillis(10)).build());
@@ -127,7 +128,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	@Test
 	public void canProcessMultipleLinks() throws Exception {
 		final String receiver = "receiver@someReceiverDomain.com";
-		createMailUser(receiver, "loginId1", "secret1");
+		createMailUser(receiver, "loginIdReceiver", "secretOfReceiver");
 
 		String validSender = "valid.sender@someSenderDomain.com";
 		sendMailTo(receiver).from(validSender).withSubject(anySubject())
@@ -189,7 +190,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	public void canProcessMultipleLinksWhenCommandNotKnownOnLink2()
 			throws Exception {
 		final String receiver = "receiver@someReceiverDomain.com";
-		createMailUser(receiver, "loginId1", "secret1");
+		createMailUser(receiver, "loginIdReceiver", "secretOfReceiver");
 
 		String validSender = "valid.sender@someSenderDomain.com";
 		sendMailTo(receiver).from(validSender).withSubject(anySubject())
@@ -244,10 +245,10 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	@Test
 	public void writesResultToMock() throws Exception {
 		final String receiver = "receiver@someReceiverDomain.com";
-		createMailUser(receiver, "loginId1", "secret1");
+		createMailUser(receiver, "loginIdReceiver", "secretOfReceiver");
 
 		String validSender = "valid.sender@someSenderDomain.com";
-		createMailUser(validSender, "loginId2", "secret2");
+		createMailUser(validSender, "loginIdSender", "secretOfSender");
 		sendMailTo(receiver).from(validSender).withSubject(anySubject())
 				.andText("usedScenario");
 
@@ -280,10 +281,10 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	@Test
 	public void writesResultToSender() throws Exception {
 		final String receiver = "receiver@someReceiverDomain.com";
-		createMailUser(receiver, "loginId1", "secret1");
+		createMailUser(receiver, "loginIdReceiver", "secretOfReceiver");
 
 		String validSender = "valid.sender@someSenderDomain.com";
-		createMailUser(validSender, "loginId2", "secret2");
+		createMailUser(validSender, "loginIdSender", "secretOfSender");
 		sendMailTo(receiver).from(validSender).withSubject(anySubject())
 				.andText("usedScenario");
 
@@ -294,8 +295,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 		SmtpServer smtpd = mailMock.getSmtp();
 		final String smtp = "smtp://" + smtpd.getBindTo() + ":"
-				+ smtpd.getPort() + "?username=" + "loginId1" + "&password="
-				+ "secret1" + "&debugMode=true";
+				+ smtpd.getPort() + "?username=" + "loginIdReceiver"
+				+ "&password=" + "secretOfReceiver" + "&debugMode=true";
 
 		CamelContext context = new DefaultCamelContext();
 		context.addRoutes(new RouteBuilder() {
@@ -309,8 +310,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		context.start();
 
 		try {
-			assertThat(
-					((String) fetchMail("loginId2", "secret2").getContent()),
+			assertThat(((String) fetchMail("loginIdSender", "secretOfSender")
+					.getContent()),
 					is("SwitchDigitalPinCommand [pin=1, value=true]=OK\r\n"
 							+ "SwitchAnalogPinCommand [pin=2, value=123]=OK"));
 		} finally {
@@ -322,10 +323,10 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	@Test
 	public void writesResultToSender_ConfiguredViaXML() throws Exception {
 		String receiver = "receiver@someReceiverDomain.com";
-		createMailUser(receiver, "loginId1", "secret1");
+		createMailUser(receiver, "loginIdReceiver", "secretOfReceiver");
 
 		String validSender = "valid.sender@someSenderDomain.com";
-		createMailUser(validSender, "loginId2", "secret2");
+		createMailUser(validSender, "loginIdSender", "secretOfSender");
 		String commandName = "nameMe";
 		sendMailTo(receiver).from(validSender).withSubject(anySubject())
 				.andText(commandName);
@@ -340,9 +341,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 				.put("command", "D1=true;A2=123")
 				.put("smtphost", smtpd.getBindTo())
 				.put("smtpport", smtpd.getPort()).build();
-		String xml = setPlaceHolders(
-				load(getClass().getResourceAsStream("/ardulinkmail.xml")),
-				values);
+		String xml = replacePlaceHolders(toString(getClass()
+				.getResourceAsStream("/ardulinkmail.xml")), values);
 
 		InputStream is = new ByteArrayInputStream(xml.getBytes());
 		try {
@@ -355,7 +355,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 			try {
 				assertThat(
-						((String) fetchMail("loginId2", "secret2").getContent()),
+						((String) fetchMail("loginIdSender", "secretOfSender")
+								.getContent()),
 						is("SwitchDigitalPinCommand [pin=1, value=true]=OK\r\n"
 								+ "SwitchAnalogPinCommand [pin=2, value=123]=OK"));
 			} finally {
@@ -366,12 +367,12 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		}
 	}
 
-	private String setPlaceHolders(String in, Map<String, Object> values) {
+	private static String replacePlaceHolders(String in, Map<?, ?> values) {
 		StringBuilder builder = new StringBuilder(in);
-		for (Entry<String, Object> entry : values.entrySet()) {
-			int start;
+		for (Entry<?, ?> entry : values.entrySet()) {
 			String pattern = "${" + entry.getKey() + "}";
 			String value = entry.getValue().toString();
+			int start;
 			while ((start = builder.indexOf(pattern)) != -1) {
 				builder.replace(start, start + pattern.length(), value);
 			}
@@ -379,7 +380,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		return builder.toString();
 	}
 
-	private String load(InputStream inputStream) {
+	private static String toString(InputStream inputStream) {
 		Scanner scanner = new Scanner(inputStream, "UTF-8");
 		try {
 			return scanner.useDelimiter("\\A").next();
