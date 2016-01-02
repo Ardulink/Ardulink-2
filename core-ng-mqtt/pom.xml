@@ -73,6 +73,12 @@
 			<artifactId>moquette-broker</artifactId>
 			<version>0.6</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>org.osgi.compendium</artifactId>
+					<groupId>org.apache.felix</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 	</dependencies>
 
