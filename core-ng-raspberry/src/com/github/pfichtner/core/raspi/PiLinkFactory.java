@@ -1,13 +1,12 @@
 package com.github.pfichtner.core.raspi;
 
+import static com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
+
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 
 public class PiLinkFactory implements LinkFactory<LinkConfig> {
-
-	private static final LinkConfig NO_ARG = new LinkConfig() {
-	};
 
 	@Override
 	public String getName() {
@@ -21,7 +20,7 @@ public class PiLinkFactory implements LinkFactory<LinkConfig> {
 
 	@Override
 	public LinkConfig newLinkConfig() {
-		return NO_ARG;
+		return NO_ATTRIBUTES;
 	}
 
 }
