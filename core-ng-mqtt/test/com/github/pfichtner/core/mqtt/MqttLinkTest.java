@@ -16,8 +16,6 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsCollectionContaining;
 import org.junit.Rule;
@@ -58,7 +56,7 @@ public class MqttLinkTest {
 
 	private final Broker broker = Broker.newBroker();
 
-	private AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC);
+	private final AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC);
 
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
@@ -68,7 +66,7 @@ public class MqttLinkTest {
 
 	@Test
 	public void defaultHostIsLocalhostAndLinkHasCreatedWithoutConfiguring()
-			throws UnknownHostException, IOException, MqttException {
+			throws UnknownHostException, IOException {
 		MqttLinkFactory factory = new MqttLinkFactory();
 		MqttLinkConfig config = makeConfig(factory);
 		String host = config.getHost();
@@ -103,20 +101,17 @@ public class MqttLinkTest {
 	}
 
 	private void breedReconnectedState(MqttLink link) throws IOException,
-			MqttException, MqttPersistenceException, InterruptedException {
+			InterruptedException {
 		TrackStateConnectionListener connectionListener = new TrackStateConnectionListener();
 		link.addConnectionListener(connectionListener);
 		assertThat(connectionListener.isConnected(), is(true));
-		this.mqttClient.close();
 
 		restartBroker(connectionListener);
 		waitForLinkReconnect(connectionListener);
-
-		this.mqttClient = AnotherMqttClient.newClient(TOPIC).connect();
 	}
 
 	private MqttLink makeLink(EventCollector eventCollector)
-			throws UnknownHostException, IOException, MqttException {
+			throws UnknownHostException, IOException {
 		MqttLinkFactory factory = new MqttLinkFactory();
 		MqttLink link = factory.newLink(makeConfig(factory));
 		link.addListener(eventCollector);

@@ -3,8 +3,6 @@ package com.github.pfichtner.core.mqtt;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
-
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 
 public class MqttLinkFactory implements LinkFactory<MqttLinkConfig> {
@@ -16,7 +14,7 @@ public class MqttLinkFactory implements LinkFactory<MqttLinkConfig> {
 
 	@Override
 	public MqttLink newLink(MqttLinkConfig config) throws UnknownHostException,
-			IOException, MqttException {
+			IOException {
 		return new MqttLink(config);
 	}
 

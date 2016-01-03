@@ -16,7 +16,6 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -57,8 +56,7 @@ public class MqttIntegrationTest {
 	}
 
 	@After
-	public void tearDown() throws InterruptedException, MqttException,
-			IOException {
+	public void tearDown() throws InterruptedException, IOException {
 		link.close();
 	}
 
