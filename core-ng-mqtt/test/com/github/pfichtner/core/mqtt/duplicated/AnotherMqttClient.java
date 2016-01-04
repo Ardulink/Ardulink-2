@@ -78,8 +78,8 @@ public class AnotherMqttClient extends ExternalResource {
 					try {
 						org.fusesource.mqtt.client.Message message = exec(connection
 								.receive());
-						messages.add(new Message(message.getTopic(), new String(
-								message.getPayload())));
+						messages.add(new Message(message.getTopic(),
+								new String(message.getPayload())));
 						message.ack();
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
@@ -129,6 +129,7 @@ public class AnotherMqttClient extends ExternalResource {
 
 	public void close() throws IOException {
 		if (this.connection.isConnected()) {
+			exec(connection.unsubscribe(new String[] { new String("#") }));
 			exec(this.connection.disconnect());
 		}
 	}
