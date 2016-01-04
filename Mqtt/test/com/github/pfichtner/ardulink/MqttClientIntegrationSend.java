@@ -28,7 +28,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.dna.mqtt.moquette.server.Server;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -81,8 +80,7 @@ public class MqttClientIntegrationSend {
 			.topic(TOPIC).connect();
 
 	@After
-	public void tearDown() throws InterruptedException, MqttException,
-			IOException {
+	public void tearDown() throws InterruptedException, IOException {
 		this.client.close();
 		this.amc.close();
 		this.broker.stopServer();

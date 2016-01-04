@@ -22,6 +22,8 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
+import static org.fusesource.mqtt.client.QoS.AT_MOST_ONCE;
 import static org.zu.ardulink.util.Strings.nullOrEmpty;
 
 import java.io.IOException;
@@ -29,13 +31,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.dna.mqtt.moquette.server.Server;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
-import org.eclipse.paho.client.mqttv3.MqttSecurityException;
+import org.fusesource.mqtt.client.Future;
+import org.fusesource.mqtt.client.FutureConnection;
+import org.fusesource.mqtt.client.MQTT;
+import org.fusesource.mqtt.client.Topic;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -55,7 +54,7 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
  * 
  * @author Peter Fichtner
  * 
- * [adsense]
+ *         [adsense]
  */
 public class MqttMain {
 
@@ -111,22 +110,25 @@ public class MqttMain {
 
 		private static final boolean RETAINED = true;
 
-		private org.eclipse.paho.client.mqttv3.MqttClient client;
+		private final MQTT client;
+		private FutureConnection connection;
 
-		private MqttClient(Link link, Config config)
-				throws MqttSecurityException, MqttException {
+		private boolean subscribeDone;
+
+		private MqttClient(Link link, Config config) {
 			super(link, config);
-			this.client = newClient(brokerHost, brokerPort, clientId);
-			this.client.setCallback(createCallback());
+			try {
+				this.client = newClient(brokerHost, brokerPort, clientId);
+			} catch (URISyntaxException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
-		public MqttClient listenToMqttAndArduino()
-				throws MqttSecurityException, MqttException, IOException {
+		public MqttClient listenToMqttAndArduino() throws IOException {
 			return listenToMqtt().listenToArduino();
 		}
 
-		private MqttClient listenToMqtt() throws MqttSecurityException,
-				MqttException {
+		private MqttClient listenToMqtt() throws IOException {
 			connect();
 			subscribe();
 			return this;
@@ -151,111 +153,101 @@ public class MqttMain {
 			return this;
 		}
 
-		private MqttCallback createCallback() {
-			return new MqttCallback() {
-				public void connectionLost(Throwable cause) {
-					logger.warn("Connection to mqtt broker lost");
-					do {
-						try {
-							SECONDS.sleep(1);
-						} catch (InterruptedException e1) {
-							Thread.currentThread().interrupt();
-						}
-						try {
-							logger.info("Trying to reconnect");
-							listenToMqtt();
-						} catch (Exception e) {
-							logger.warn("Reconnect failed", e);
-						}
-					} while (!MqttClient.this.client.isConnected());
-					logger.info("Successfully reconnected");
-				}
-
-				public void messageArrived(String topic, MqttMessage message)
-						throws IOException {
-					String payload = new String(message.getPayload());
-					logger.debug(
-							"Received mqtt message, sending to arduino {} {}",
-							topic, payload);
-					MqttClient.this.toArduino(topic, payload);
-				}
-
-				public void deliveryComplete(IMqttDeliveryToken token) {
-					// nothing to do
-				}
-			};
-		}
-
-		private org.eclipse.paho.client.mqttv3.MqttClient newClient(
-				String host, int port, String clientId) throws MqttException,
-				MqttSecurityException {
-			return new org.eclipse.paho.client.mqttv3.MqttClient("tcp://"
-					+ host + ":" + port, clientId);
+		private MQTT newClient(String host, int port, String clientId)
+				throws URISyntaxException {
+			MQTT client = new MQTT();
+			client.setCleanSession(true);
+			client.setClientId(clientId);
+			client.setHost("tcp://" + host + ":" + port);
+			return client;
 		}
 
 		@Override
 		public void fromArduino(String topic, String message) {
+			logger.info("Publishing arduino state change {} {}", topic, message);
 			try {
-				logger.info("Publishing arduino state change {} {}", topic,
-						message);
 				publish(topic, message);
-			} catch (MqttPersistenceException e) {
-				throw new RuntimeException(e);
-			} catch (MqttException e) {
+			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		}
 
-		private void connect() throws MqttSecurityException, MqttException {
-			this.client.connect(mqttConnectOptions());
+		private void connect() throws IOException {
+			mqttConnectOptions();
+			connection = client.futureConnection();
+			exec(connection.connect());
+			new Thread() {
+				@Override
+				public void run() {
+					while (true) {
+						try {
+							org.fusesource.mqtt.client.Message message = exec(connection
+									.receive());
+							String payload = new String(message.getPayload());
+							String topic = message.getTopic();
+							logger.debug(
+									"Received mqtt message, sending to arduino {} {}",
+									topic, payload);
+							MqttClient.this.toArduino(topic, payload);
+							message.ack();
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}.start();
+
 			logger.info("Connected to mqtt broker");
 			publishClientStatus(TRUE);
 		}
 
-		public void subscribe() throws MqttException {
-			this.client.subscribe(brokerTopic + '#');
+		public void subscribe() throws IOException {
+			exec(connection.subscribe(new Topic[] { new Topic(
+					brokerTopic + "#", AT_LEAST_ONCE) }));
+			this.subscribeDone = true;
 		}
 
-		private void unsubscribe() throws MqttException {
-			this.client.unsubscribe(brokerTopic + '#');
-		}
-
-		public void close() throws MqttException {
-			if (this.client.isConnected()) {
-				unsubscribe();
-				// "kill" the callback since it retries to reconnect
-				this.client.setCallback(null);
+		public void close() throws IOException {
+			if (this.connection.isConnected()) {
+				exec(connection.unsubscribe(new String[] { new String(
+						brokerTopic + "#") }));
 				publishClientStatus(FALSE);
-				this.client.disconnect();
+				exec(this.connection.disconnect());
+				this.subscribeDone = false;
 			}
-			this.client.close();
 		}
 
-		private MqttConnectOptions mqttConnectOptions() {
-			MqttConnectOptions options = new MqttConnectOptions();
+		private void mqttConnectOptions() {
 			String clientInfoTopic = publishClientInfoTopic;
 			if (!nullOrEmpty(clientInfoTopic)) {
-				options.setWill(clientInfoTopic, FALSE.toString().getBytes(),
-						0, RETAINED);
+				client.setWillTopic(clientInfoTopic);
+				client.setWillMessage(FALSE.toString());
+				client.setWillRetain(RETAINED);
 			}
-			return options;
 		}
 
-		private void publish(String topic, String message)
-				throws MqttException, MqttPersistenceException {
-			client.publish(topic, new MqttMessage(message.getBytes()));
+		private void publish(String topic, String message) throws IOException {
+			try {
+				if (connection.isConnected()) {
+					connection.publish(topic, message.getBytes(),
+							AT_LEAST_ONCE, false).await(3, SECONDS);
+				}
+			} catch (Exception e) {
+				throw new IOException(e);
+			}
+
 		}
 
-		private void publishClientStatus(Boolean state) throws MqttException,
-				MqttPersistenceException {
+		private void publishClientStatus(Boolean state) throws IOException {
 			if (!nullOrEmpty(publishClientInfoTopic)) {
-				client.publish(publishClientInfoTopic, state.toString()
-						.getBytes(), 0, RETAINED);
+				exec(connection.publish(publishClientInfoTopic, state
+						.toString().getBytes(), AT_MOST_ONCE, RETAINED));
 			}
 		}
 
 		public boolean isConnected() {
-			return client.isConnected();
+			return connection.isConnected() && this.subscribeDone;
 		}
 
 	}
@@ -323,7 +315,7 @@ public class MqttMain {
 		return this.mqttClient != null && this.mqttClient.isConnected();
 	}
 
-	public void close() throws MqttException, IOException {
+	public void close() throws IOException {
 		this.link.close();
 		this.mqttClient.close();
 		Server tmp = this.standaloneServer;
@@ -335,6 +327,10 @@ public class MqttMain {
 	public void setBrokerTopic(String brokerTopic) {
 		this.brokerTopic = brokerTopic.endsWith("/") ? brokerTopic
 				: brokerTopic + '/';
+	}
+
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
 	}
 
 	public void setAnalogs(int... analogs) {
@@ -351,6 +347,14 @@ public class MqttMain {
 
 	public void setStandalone(boolean standalone) {
 		this.standalone = standalone;
+	}
+
+	private static <T> T exec(Future<T> future) throws IOException {
+		try {
+			return future.await();
+		} catch (Exception e) {
+			throw new IOException();
+		}
 	}
 
 	private static void wait4ever() throws InterruptedException {

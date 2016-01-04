@@ -16,20 +16,28 @@ limitations under the License.
  */
 package com.github.pfichtner.ardulink.util;
 
-import static com.github.pfichtner.ardulink.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
-import static java.lang.String.format;
+import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
+import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.fusesource.mqtt.client.Future;
+import org.fusesource.mqtt.client.FutureConnection;
+import org.fusesource.mqtt.client.MQTT;
+import org.fusesource.mqtt.client.Topic;
+
+import com.github.pfichtner.ardulink.core.Pin;
+import com.github.pfichtner.ardulink.core.Pin.Type;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -68,96 +76,116 @@ public class AnotherMqttClient implements Closeable {
 		}
 
 		public AnotherMqttClient connect() {
-			AnotherMqttClient client = new AnotherMqttClient(this);
-			client.connect();
-			return client;
+			try {
+				AnotherMqttClient client = new AnotherMqttClient(this);
+				client.connect();
+				return client;
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 	}
-
-	private final String topic;
-	private final MqttClient mqttClient;
-	private final List<Message> messages = new ArrayList<Message>();
 
 	public static Builder builder() {
 		return new Builder();
 	}
 
-	public AnotherMqttClient(Builder builder) {
-		this.topic = builder.topic;
-		this.mqttClient = mqttClient(builder);
-		this.mqttClient.setCallback(new MqttCallback() {
+	private final MQTT mqttClient;
+	private FutureConnection connection;
+	private final List<Message> messages = new CopyOnWriteArrayList<Message>();
+	private final String topic;
 
-			@Override
-			public void messageArrived(String topic, MqttMessage message)
-					throws Exception {
-				messages.add(new Message(topic,
-						new String(message.getPayload())));
-			}
+	private static final Map<Type, String> typeMap = unmodifiableMap(typeMap());
 
-			@Override
-			public void deliveryComplete(IMqttDeliveryToken deliveryToken) {
-			}
-
-			@Override
-			public void connectionLost(Throwable throwable) {
-			}
-
-		});
+	private static Map<Type, String> typeMap() {
+		Map<Type, String> typeMap = new HashMap<Type, String>();
+		typeMap.put(ANALOG, "A");
+		typeMap.put(DIGITAL, "D");
+		return typeMap;
 	}
 
-	private static MqttClient mqttClient(Builder builder) {
+	private AnotherMqttClient(Builder builder) {
+		this.topic = builder.topic.endsWith("/") ? builder.topic
+				: builder.topic + "/";
+		this.mqttClient = mqttClient(builder.host, builder.port);
+	}
+
+	protected static MQTT mqttClient(String host, int port) {
 		try {
-			return new MqttClient(format("tcp://%s:%s", builder.host,
-					builder.port), builder.clientId);
-		} catch (MqttException e) {
+			MQTT client = new MQTT();
+			client.setCleanSession(true);
+			client.setClientId("amc-" + Thread.currentThread().getId() + "-"
+					+ System.currentTimeMillis());
+			client.setHost("tcp://" + host + ":" + port);
+			return client;
+		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public AnotherMqttClient connect() {
+	public AnotherMqttClient connect() throws IOException {
+		connection = mqttClient.futureConnection();
+		exec(connection.connect());
+		new Thread() {
+			@Override
+			public void run() {
+				while (true) {
+					try {
+						org.fusesource.mqtt.client.Message message = exec(connection
+								.receive());
+						messages.add(new Message(message.getTopic(),
+								new String(message.getPayload())));
+						message.ack();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}.start();
+		exec(connection
+				.subscribe(new Topic[] { new Topic("#", AT_LEAST_ONCE) }));
+		return this;
+	}
+
+	public List<Message> getMessages() {
 		try {
-			mqttClient.connect();
-			mqttClient.subscribe("#");
-			return this;
-		} catch (MqttException e) {
+			MILLISECONDS.sleep(25);
+		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
+		return new ArrayList<Message>(this.messages);
 	}
 
-	public void switchDigitalPin(int pin, boolean value)
-			throws MqttPersistenceException, MqttException {
-		sendMessage(createSetMessage(newMsgBuilder().digitalPin(pin), value));
+	public List<Message> pollMessages() {
+		List<Message> messages = getMessages();
+		this.messages.clear();
+		return messages;
 	}
 
-	public void switchAnalogPin(int pin, Object value)
-			throws MqttPersistenceException, MqttException {
-		sendMessage(createSetMessage(newMsgBuilder().analogPin(pin), value));
+	public void switchPin(Pin pin, Object value) throws IOException {
+		sendMessage(new Message(this.topic + typeMap.get(pin.getType())
+				+ pin.pinNum() + "/value/set", String.valueOf(value)));
 	}
 
-	private Message createSetMessage(MqttMessageBuilder msgBuilder, Object value) {
-		return msgBuilder.setValue(value);
+	private void sendMessage(final Message message) throws IOException {
+		exec(connection.publish(message.getTopic(), message.getMessage()
+				.getBytes(), AT_LEAST_ONCE, false));
 	}
 
-	private MqttMessageBuilder newMsgBuilder() {
-		return mqttMessageWithBasicTopic(topic);
-	}
-
-	private void sendMessage(Message msg) throws MqttException,
-			MqttPersistenceException {
-		mqttClient.publish(msg.getTopic(), new MqttMessage(msg.getMessage()
-				.getBytes()));
-	}
-
-	@Override
 	public void close() throws IOException {
+		if (this.connection.isConnected()) {
+			exec(connection.unsubscribe(new String[] { new String("#") }));
+			exec(this.connection.disconnect());
+		}
+	}
+
+	private static <T> T exec(Future<T> future) throws IOException {
 		try {
-			if (this.mqttClient.isConnected()) {
-				this.mqttClient.disconnect();
-			}
-			this.mqttClient.close();
-		} catch (MqttException e) {
-			throw new RuntimeException(e);
+			return future.await();
+		} catch (Exception e) {
+			throw new IOException();
 		}
 	}
 

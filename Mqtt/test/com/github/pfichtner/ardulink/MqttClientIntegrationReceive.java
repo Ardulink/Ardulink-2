@@ -16,17 +16,19 @@ limitations under the License.
  */
 package com.github.pfichtner.ardulink;
 
+import static com.github.pfichtner.ardulink.core.Pin.analogPin;
 import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
 import static com.github.pfichtner.ardulink.util.TestUtil.startAsync;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.dna.mqtt.moquette.server.Server;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,6 +57,8 @@ public class MqttClientIntegrationReceive {
 	private MqttMain client = new MqttMain() {
 		{
 			setBrokerTopic(TOPIC);
+			setClientId("lnk-" + Thread.currentThread().getId() + "-"
+					+ System.currentTimeMillis());
 		}
 
 		@Override
@@ -69,8 +73,7 @@ public class MqttClientIntegrationReceive {
 			.topic(TOPIC).connect();
 
 	@After
-	public void tearDown() throws InterruptedException, MqttException,
-			IOException {
+	public void tearDown() throws InterruptedException, IOException {
 		client.close();
 		amc.close();
 		broker.stopServer();
@@ -84,7 +87,7 @@ public class MqttClientIntegrationReceive {
 
 		doNotListenForAnything(client);
 		startAsync(client);
-		amc.switchDigitalPin(pin, true);
+		amc.switchPin(digitalPin(pin), true);
 
 		tearDown();
 
@@ -101,7 +104,7 @@ public class MqttClientIntegrationReceive {
 
 		doNotListenForAnything(client);
 		startAsync(client);
-		amc.switchAnalogPin(pin, value);
+		amc.switchPin(analogPin(pin), value);
 
 		tearDown();
 

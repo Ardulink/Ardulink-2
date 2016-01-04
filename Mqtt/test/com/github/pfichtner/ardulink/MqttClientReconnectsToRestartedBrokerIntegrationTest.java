@@ -29,7 +29,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.dna.mqtt.moquette.server.Server;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,7 +53,7 @@ import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
 public class MqttClientReconnectsToRestartedBrokerIntegrationTest {
 
 	@Rule
-	public Timeout timeout = new Timeout(10, SECONDS);;
+	public Timeout timeout = new Timeout(20, SECONDS);
 
 	private static final String TOPIC = "foo/bar";
 
@@ -69,6 +68,8 @@ public class MqttClientReconnectsToRestartedBrokerIntegrationTest {
 	private MqttMain client = new MqttMain() {
 		{
 			setBrokerTopic(TOPIC);
+			setClientId("lnk-" + Thread.currentThread().getId() + "-"
+					+ System.currentTimeMillis());
 		}
 
 		@Override
@@ -80,8 +81,7 @@ public class MqttClientReconnectsToRestartedBrokerIntegrationTest {
 	private Server broker = MqttBroker.builder().startBroker();
 
 	@After
-	public void tearDown() throws InterruptedException, MqttException,
-			IOException {
+	public void tearDown() throws InterruptedException, IOException {
 		client.close();
 		link.close();
 		if (broker != null) {
@@ -90,7 +90,7 @@ public class MqttClientReconnectsToRestartedBrokerIntegrationTest {
 	}
 
 	@Test
-	public void clientConnectsWhenAfterBrokerRestarted() throws Exception {
+	public void clientConnectsAfterBrokerRestarted() throws Exception {
 		doNotListenForAnything(client);
 		startAsync(client);
 
