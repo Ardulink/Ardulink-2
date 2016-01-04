@@ -46,9 +46,6 @@
 		<module>Mqtt</module>
 		<module>ArdulinkSwing</module>
 		<module>ArdulinkConsole</module>
-<!--
-		<module>ArdulinkMail</module>
--->
 		<module>ardulink-mail-ng</module>
 		<module>JoystickSmartCarDriver</module>
 		<module>SimpleSmartCarDriver</module>
