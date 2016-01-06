@@ -31,8 +31,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.dna.mqtt.moquette.server.Server;
-import org.fusesource.mqtt.client.Future;
-import org.fusesource.mqtt.client.FutureConnection;
+import org.fusesource.mqtt.client.BlockingConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.Topic;
 import org.kohsuke.args4j.CmdLineException;
@@ -54,7 +53,7 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
  * 
  * @author Peter Fichtner
  * 
- *         [adsense]
+ * [adsense]
  */
 public class MqttMain {
 
@@ -111,7 +110,7 @@ public class MqttMain {
 		private static final boolean RETAINED = true;
 
 		private final MQTT client;
-		private FutureConnection connection;
+		private BlockingConnection connection;
 
 		private boolean subscribeDone;
 
@@ -174,15 +173,19 @@ public class MqttMain {
 
 		private void connect() throws IOException {
 			mqttConnectOptions();
-			connection = client.futureConnection();
-			exec(connection.connect());
+			connection = client.blockingConnection();
+			try {
+				connection.connect();
+			} catch (Exception e) {
+				throw new IOException(e);
+			}
 			new Thread() {
 				@Override
 				public void run() {
 					while (true) {
 						try {
-							org.fusesource.mqtt.client.Message message = exec(connection
-									.receive());
+							org.fusesource.mqtt.client.Message message = connection
+									.receive();
 							String payload = new String(message.getPayload());
 							String topic = message.getTopic();
 							logger.debug(
@@ -203,18 +206,26 @@ public class MqttMain {
 		}
 
 		public void subscribe() throws IOException {
-			exec(connection.subscribe(new Topic[] { new Topic(
-					brokerTopic + "#", AT_LEAST_ONCE) }));
+			try {
+				connection.subscribe(new Topic[] { new Topic(brokerTopic + "#",
+						AT_LEAST_ONCE) });
+			} catch (Exception e) {
+				throw new IOException(e);
+			}
 			this.subscribeDone = true;
 		}
 
 		public void close() throws IOException {
 			if (this.connection.isConnected()) {
-				exec(connection.unsubscribe(new String[] { new String(
-						brokerTopic + "#") }));
-				publishClientStatus(FALSE);
-				exec(this.connection.disconnect());
-				this.subscribeDone = false;
+				try {
+					connection.unsubscribe(new String[] { new String(
+							brokerTopic + "#") });
+					publishClientStatus(FALSE);
+					this.connection.disconnect();
+					this.subscribeDone = false;
+				} catch (Exception e) {
+					throw new IOException(e);
+				}
 			}
 		}
 
@@ -228,21 +239,24 @@ public class MqttMain {
 		}
 
 		private void publish(String topic, String message) throws IOException {
-			try {
-				if (connection.isConnected()) {
+			if (connection.isConnected()) {
+				try {
 					connection.publish(topic, message.getBytes(),
-							AT_LEAST_ONCE, false).await(3, SECONDS);
+							AT_LEAST_ONCE, false);
+				} catch (Exception e) {
+					throw new IOException(e);
 				}
-			} catch (Exception e) {
-				throw new IOException(e);
 			}
-
 		}
 
 		private void publishClientStatus(Boolean state) throws IOException {
 			if (!nullOrEmpty(publishClientInfoTopic)) {
-				exec(connection.publish(publishClientInfoTopic, state
-						.toString().getBytes(), AT_MOST_ONCE, RETAINED));
+				try {
+					connection.publish(publishClientInfoTopic, state.toString()
+							.getBytes(), AT_MOST_ONCE, RETAINED);
+				} catch (Exception e) {
+					throw new IOException(e);
+				}
 			}
 		}
 
@@ -347,14 +361,6 @@ public class MqttMain {
 
 	public void setStandalone(boolean standalone) {
 		this.standalone = standalone;
-	}
-
-	private static <T> T exec(Future<T> future) throws IOException {
-		try {
-			return future.await();
-		} catch (Exception e) {
-			throw new IOException();
-		}
 	}
 
 	private static void wait4ever() throws InterruptedException {
