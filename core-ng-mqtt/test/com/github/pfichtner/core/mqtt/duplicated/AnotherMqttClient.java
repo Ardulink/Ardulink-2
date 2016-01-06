@@ -110,7 +110,7 @@ public class AnotherMqttClient extends ExternalResource {
 
 	public void switchPin(Pin pin, Object value) throws IOException {
 		sendMessage(new Message(this.topic + typeMap.get(pin.getType())
-				+ pin.pinNum() + "/value/get", String.valueOf(value)));
+				+ pin.pinNum() + "/value/set", String.valueOf(value)));
 	}
 
 	private void sendMessage(final Message message) throws IOException {
