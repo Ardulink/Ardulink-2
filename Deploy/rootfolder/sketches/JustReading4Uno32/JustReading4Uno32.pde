@@ -27,5 +27,5 @@ int highPrecisionAnalogRead(int pin) {
   int value3 = analogRead(pin);
   int value4 = analogRead(pin);
   
-  int retvalue = (value1 + value2 + value3 + value4) / 4;
+  return (value1 + value2 + value3 + value4) / 4;
 }
