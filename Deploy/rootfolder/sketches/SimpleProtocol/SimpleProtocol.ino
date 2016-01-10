@@ -54,7 +54,7 @@ void get_input() {
     if (Serial.available()) {
       // something to read
       lastRead = Serial.read();
-      if (lastRead == 255) {
+      if (lastRead == '\r') {
         break; // when we get a divider message, break out of loop
       } else {
         // add it to the inputString:
