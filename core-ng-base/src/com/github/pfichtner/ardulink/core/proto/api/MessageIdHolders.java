@@ -2,6 +2,7 @@ package com.github.pfichtner.ardulink.core.proto.api;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
@@ -19,16 +20,6 @@ public final class MessageIdHolders {
 		private final Object delegate;
 		private final Long messageId;
 
-		private static Method getMessageIdHolderGetIdMethod() {
-			try {
-				return MessageIdHolder.class.getMethod("getId");
-			} catch (SecurityException e) {
-				throw new RuntimeException(e);
-			} catch (NoSuchMethodException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
 		public MessageIdHolderInvocationHandler(Object delegate, long messageId) {
 			this.delegate = delegate;
 			this.messageId = Long.valueOf(messageId);
@@ -37,10 +28,29 @@ public final class MessageIdHolders {
 		@Override
 		public Object invoke(Object proxy, Method method, Object[] args)
 				throws Throwable {
-			return messageIdHolderGetIdMethod.equals(method) ? messageId
-					: method.invoke(delegate, args);
+			return isMessageIdHolderGetIdMethod(method) ? messageId : delegate(
+					method, args);
 		}
 
+		private boolean isMessageIdHolderGetIdMethod(Method method) {
+			return messageIdHolderGetIdMethod.equals(method);
+		}
+
+		private Object delegate(Method method, Object[] args)
+				throws IllegalAccessException, InvocationTargetException {
+			return method.invoke(delegate, args);
+		}
+
+	}
+
+	private static Method getMessageIdHolderGetIdMethod() {
+		try {
+			return MessageIdHolder.class.getMethod("getId");
+		} catch (SecurityException e) {
+			throw new RuntimeException(e);
+		} catch (NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
