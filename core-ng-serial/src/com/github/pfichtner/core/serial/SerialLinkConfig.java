@@ -11,7 +11,7 @@ import java.util.List;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocols;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 public class SerialLinkConfig implements LinkConfig {
 
@@ -22,7 +22,7 @@ public class SerialLinkConfig implements LinkConfig {
 	private int baudrate = 115200;
 
 	@Named("proto")
-	private Protocol proto = ArdulinkProtocolN.instance();
+	private Protocol proto = ArdulinkProtocol2.instance();
 
 	@Named("qos")
 	private boolean qos;

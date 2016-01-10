@@ -14,8 +14,7 @@ import org.zu.ardulink.util.Lists;
 
 import com.github.pfichtner.ardulink.core.StreamReader;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 public class ArduinoDouble implements Closeable {
 
@@ -109,7 +108,7 @@ public class ArduinoDouble implements Closeable {
 	private PipedOutputStream os2;
 
 	public ArduinoDouble() throws IOException {
-		final Protocol protocol = ArdulinkProtocolN.instance();
+		final Protocol protocol = ArdulinkProtocol2.instance();
 		PipedInputStream is1 = new PipedInputStream();
 		os1 = new PipedOutputStream(is1);
 		is2 = new PipedInputStream();
@@ -135,8 +134,7 @@ public class ArduinoDouble implements Closeable {
 
 			}
 		};
-		streamReader.runReaderThread(new String(ArdulinkProtocol255.instance()
-				.getSeparator()));
+		streamReader.runReaderThread(new String(protocol.getSeparator()));
 	}
 
 	public PipedOutputStream getOutputStream() {

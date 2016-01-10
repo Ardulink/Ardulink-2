@@ -7,7 +7,7 @@ import java.util.List;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocols;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 public class ProxyLinkConfig implements LinkConfig {
 
@@ -28,7 +28,7 @@ public class ProxyLinkConfig implements LinkConfig {
 	private int speed = DEFAULT_SPEED;
 
 	@Named("proto")
-	private Protocol proto = ArdulinkProtocolN.instance();
+	private Protocol proto = ArdulinkProtocol2.instance();
 
 	private ProxyConnectionToRemote remote;
 

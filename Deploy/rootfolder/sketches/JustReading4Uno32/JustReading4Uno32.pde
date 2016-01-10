@@ -15,7 +15,7 @@ void loop() {
     Serial.print(INDEX);
     Serial.print("/");
     Serial.print(value);
-    Serial.write(255); // End of Message
+    Serial.print('\n'); // End of Message
     Serial.flush();
   }
 }

@@ -38,7 +38,7 @@ import com.github.pfichtner.ardulink.compactors.TimeSlicer;
 import com.github.pfichtner.ardulink.core.Connection;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.StreamConnection;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 import com.github.pfichtner.ardulink.util.Message;
 import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
 
@@ -73,10 +73,10 @@ public class FloodProtectTest {
 	private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 	private final Connection connection = new StreamConnection(null,
-			outputStream, ArdulinkProtocolN.instance());
+			outputStream, ArdulinkProtocol2.instance());
 
 	private final ConnectionBasedLink link = new ConnectionBasedLink(
-			connection, ArdulinkProtocolN.instance());
+			connection, ArdulinkProtocol2.instance());
 
 	private AbstractMqttAdapter mqttClient = new AbstractMqttAdapter(link,
 			Config.DEFAULT) {

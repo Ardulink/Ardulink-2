@@ -35,7 +35,7 @@ import com.github.pfichtner.ardulink.core.StreamReader;
 import com.github.pfichtner.ardulink.core.convenience.Links;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -49,7 +49,7 @@ public class NetworkProxyServerConnection implements Runnable {
 	private static final Logger logger = LoggerFactory
 			.getLogger(NetworkProxyServerConnection.class);
 
-	private final Protocol proto = ArdulinkProtocolN.instance();
+	private final Protocol proto = ArdulinkProtocol2.instance();
 
 	private final Socket socket;
 

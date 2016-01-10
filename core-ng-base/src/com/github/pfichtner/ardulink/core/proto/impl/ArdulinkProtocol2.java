@@ -42,17 +42,18 @@ import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoTone;
 import com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 
-public class AbstractArdulinkProtocol implements Protocol {
+public class ArdulinkProtocol2 implements Protocol {
 
 	private static final Pattern pattern = Pattern
 			.compile("alp:\\/\\/([a-z]+)\\/([^\\?]+)(?:\\?id=(\\d+))?");
 
-	private final String name;
-	private final byte[] separator;
+	private final String name = "ardulink2";
+	private final byte[] separator = "\n".getBytes();
 
-	public AbstractArdulinkProtocol(String name, byte[] separator) {
-		this.name = name;
-		this.separator = separator.clone();
+	private static final ArdulinkProtocol2 instance = new ArdulinkProtocol2();
+
+	public static Protocol instance() {
+		return instance;
 	}
 
 	public String getName() {

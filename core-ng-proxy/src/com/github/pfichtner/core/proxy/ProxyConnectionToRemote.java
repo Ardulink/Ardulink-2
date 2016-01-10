@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 public class ProxyConnectionToRemote implements Closeable {
 
@@ -45,7 +45,7 @@ public class ProxyConnectionToRemote implements Closeable {
 
 	private final String host;
 	private final Socket socket;
-	private final Protocol protocol = ArdulinkProtocolN.instance();
+	private final Protocol proto = ArdulinkProtocol2.instance();
 	private final BufferedReader bufferedReader;
 	private final PrintWriter printWriter;
 
@@ -83,7 +83,7 @@ public class ProxyConnectionToRemote implements Closeable {
 
 	public void send(String message) {
 		printWriter.print(message);
-		printWriter.print(new String(protocol.getSeparator()));
+		printWriter.print(new String(proto.getSeparator()));
 		printWriter.flush();
 	}
 

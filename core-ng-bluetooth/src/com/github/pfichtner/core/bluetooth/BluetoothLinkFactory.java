@@ -26,11 +26,11 @@ import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 public class BluetoothLinkFactory implements LinkFactory<BluetoothLinkConfig> {
 
-	private Protocol proto = ArdulinkProtocolN.instance();
+	private final Protocol proto = ArdulinkProtocol2.instance();
 
 	@Override
 	public String getName() {

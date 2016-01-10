@@ -14,14 +14,12 @@ import org.junit.Test;
 import org.junit.rules.Timeout;
 
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 import com.github.pfichtner.ardulink.core.qos.Arduino;
 
 public class WaitForArduinoToBootTest {
 
-	private static final Protocol writeProto = ArdulinkProtocolN.instance();
-	private static final Protocol readProto = ArdulinkProtocol255.instance();
+	private static final Protocol proto = ArdulinkProtocol2.instance();
 
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
@@ -31,7 +29,7 @@ public class WaitForArduinoToBootTest {
 
 	private final ConnectionBasedLink link = new ConnectionBasedLink(
 			new StreamConnection(arduino.getInputStream(),
-					arduino.getOutputStream(), writeProto), readProto);
+					arduino.getOutputStream(), proto), proto);
 
 	@After
 	public void tearDown() throws IOException {

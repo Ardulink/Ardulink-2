@@ -37,18 +37,14 @@ import com.github.pfichtner.ardulink.core.events.EventListenerAdapter;
 import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
 import com.github.pfichtner.ardulink.core.events.PinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 public class ConnectionBasedLinkTest {
 
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
 
-	// we send messages separated by \n to arduino
-	private static final Protocol writeProto = ArdulinkProtocolN.instance();
-	// arduino sends messages separated by 255
-	private static final Protocol readProto = ArdulinkProtocol255.instance();
+	private static final Protocol proto = ArdulinkProtocol2.instance();
 
 	// TODO PF Migrate to @Rule Arduino
 	private PipedOutputStream arduinosOutputStream;
@@ -61,8 +57,8 @@ public class ConnectionBasedLinkTest {
 	public void setup() throws IOException {
 		PipedInputStream pis = new PipedInputStream();
 		this.arduinosOutputStream = new PipedOutputStream(pis);
-		this.connection = new StreamConnection(pis, os, readProto);
-		this.link = new ConnectionBasedLink(connection, writeProto) {
+		this.connection = new StreamConnection(pis, os, proto);
+		this.link = new ConnectionBasedLink(connection, proto) {
 			@Override
 			protected void received(byte[] bytes) {
 				super.received(bytes);
@@ -82,7 +78,7 @@ public class ConnectionBasedLinkTest {
 		int value = anyPositive(int.class);
 		this.link.switchAnalogPin(analogPin(pin), value);
 		assertThat(toArduinoWasSent(), is("alp://ppin/" + pin + "/" + value
-				+ new String(writeProto.getSeparator())));
+				+ new String(proto.getSeparator())));
 	}
 
 	@Test
@@ -99,7 +95,7 @@ public class ConnectionBasedLinkTest {
 		this.link.addListener(new FilteredEventListenerAdapter(analogPin(pin),
 				null));
 		assertThat(toArduinoWasSent(), is("alp://srla/" + pin
-				+ new String(writeProto.getSeparator())));
+				+ new String(proto.getSeparator())));
 	}
 
 	@Test
@@ -112,11 +108,11 @@ public class ConnectionBasedLinkTest {
 				analogPin(pin), null);
 		this.link.addListener(l1);
 		this.link.addListener(l2);
-		String m1 = "alp://srla/" + pin + new String(writeProto.getSeparator());
+		String m1 = "alp://srla/" + pin + new String(proto.getSeparator());
 		assertThat(toArduinoWasSent(), is(m1 + m1));
 		this.link.removeListener(l1);
 		this.link.removeListener(l2);
-		String m2 = "alp://spla/" + pin + new String(writeProto.getSeparator());
+		String m2 = "alp://spla/" + pin + new String(proto.getSeparator());
 		assertThat(toArduinoWasSent(), is(m1 + m1 + m2));
 	}
 
@@ -148,7 +144,7 @@ public class ConnectionBasedLinkTest {
 		this.link.addListener(new FilteredEventListenerAdapter(digitalPin(pin),
 				null));
 		assertThat(toArduinoWasSent(), is("alp://srld/" + pin
-				+ new String(writeProto.getSeparator())));
+				+ new String(proto.getSeparator())));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -258,7 +254,7 @@ public class ConnectionBasedLinkTest {
 		int value = anyPositive(int.class);
 		this.link.switchAnalogPin(analogPin(pin), value);
 		assertThat(sb.toString(), is("alp://ppin/" + pin + "/" + value
-				+ new String(writeProto.getSeparator())));
+				+ new String(proto.getSeparator())));
 	}
 
 	@Test
@@ -339,7 +335,7 @@ public class ConnectionBasedLinkTest {
 
 	private void simulateArdunoSend(String message) throws IOException {
 		this.arduinosOutputStream.write((message).getBytes());
-		this.arduinosOutputStream.write(readProto.getSeparator());
+		this.arduinosOutputStream.write(proto.getSeparator());
 	}
 
 	private String toArduinoWasSent() {

@@ -366,7 +366,9 @@ public class MqttMain {
 	private static void wait4ever() throws InterruptedException {
 		Object blocker = new Object();
 		synchronized (blocker) {
-			blocker.wait();
+			while(true) {
+				blocker.wait();
+			}
 		}
 	}
 

@@ -11,8 +11,8 @@ import java.net.UnknownHostException;
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
+import com.github.pfichtner.ardulink.core.proto.api.Protocol;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
 
@@ -35,9 +35,10 @@ public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
 		checkState(OK.equals(response),
 				"Did not receive ok from remote, got {}", response);
 		Socket socket = remote.getSocket();
+		Protocol proto = ArdulinkProtocol2.instance();
 		return new ConnectionBasedLink(new StreamConnection(
-				socket.getInputStream(), socket.getOutputStream(),
-				ArdulinkProtocol255.instance()), ArdulinkProtocolN.instance()) {
+				socket.getInputStream(), socket.getOutputStream(), proto),
+				proto) {
 			@Override
 			public void close() throws IOException {
 				super.close();

@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -34,7 +33,6 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.processor.aggregate.UseOriginalAggregationStrategy;
 import org.junit.After;
 import org.junit.Before;
@@ -331,26 +329,10 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		sendMailTo(receiver).from(validSender).withSubject(anySubject())
 				.andText(commandName);
 
-		SmtpServer smtpd = mailMock.getSmtp();
-		ImapServer imapd = mailMock.getImap();
-		Map<String, Object> values = MapBuilder
-				.<String, Object> newMapBuilder()
-				.put("imaphost", imapd.getBindTo())
-				.put("imapport", imapd.getPort())
-				.put("commandname", commandName)
-				.put("command", "D1=true;A2=123")
-				.put("smtphost", smtpd.getBindTo())
-				.put("smtpport", smtpd.getPort()).build();
-		String xml = replacePlaceHolders(toString(getClass()
-				.getResourceAsStream("/ardulinkmail.xml")), values);
-
-		InputStream is = new ByteArrayInputStream(xml.getBytes());
+		InputStream is = getClass().getResourceAsStream("/ardulinkmail.xml");
 		try {
 			CamelContext context = new DefaultCamelContext();
-			List<RouteDefinition> routes = context.loadRoutesDefinition(is)
-					.getRoutes();
-			System.out.println(routes);
-			context.addRouteDefinitions(routes);
+			loadRoutesDefinition(is, context, commandName);
 			context.start();
 
 			try {
@@ -362,6 +344,29 @@ public class ArdulinkMailOnCamelIntegrationTest {
 			} finally {
 				context.stop();
 			}
+		} finally {
+			is.close();
+		}
+
+	}
+
+	private void loadRoutesDefinition(InputStream resourceAsStream,
+			CamelContext context, String commandName) throws Exception {
+		SmtpServer smtpd = mailMock.getSmtp();
+		ImapServer imapd = mailMock.getImap();
+		Map<String, Object> values = MapBuilder
+				.<String, Object> newMapBuilder()
+				.put("imaphost", imapd.getBindTo())
+				.put("imapport", imapd.getPort())
+				.put("commandname", commandName)
+				.put("command", "D1=true;A2=123")
+				.put("smtphost", smtpd.getBindTo())
+				.put("smtpport", smtpd.getPort()).build();
+		String xml = replacePlaceHolders(toString(resourceAsStream), values);
+		InputStream is = new ByteArrayInputStream(xml.getBytes());
+		try {
+			context.addRouteDefinitions(context.loadRoutesDefinition(is)
+					.getRoutes());
 		} finally {
 			is.close();
 		}

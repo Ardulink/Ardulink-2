@@ -39,7 +39,7 @@ import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 import com.github.pfichtner.ardulink.util.AnotherMqttClient;
 import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
 
@@ -60,10 +60,10 @@ public class MqttClientReconnectsToRestartedBrokerIntegrationTest {
 	private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
 	private final Connection connection = new StreamConnection(null,
-			outputStream, ArdulinkProtocolN.instance());
+			outputStream, ArdulinkProtocol2.instance());
 
 	private final ConnectionBasedLink link = new ConnectionBasedLink(
-			connection, ArdulinkProtocolN.instance());
+			connection, ArdulinkProtocol2.instance());
 
 	private MqttMain client = new MqttMain() {
 		{

@@ -20,11 +20,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocolN;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 public class ProxyServerDouble extends ExternalResource {
 	
-	private final Protocol tcpProto = ArdulinkProtocolN.instance();
+	private final Protocol tcpProto = ArdulinkProtocol2.instance();
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(ProxyServerDouble.class);

@@ -30,8 +30,7 @@ public class EventMatchers {
 		@Override
 		protected void describeMismatchSafely(PinValueChangedEvent event,
 				Description description) {
-			description = description.appendText(" was ");
-			description = pinState(description, event.getPin(),
+			pinState(description.appendText(" was "), event.getPin(),
 					event.getValue());
 		}
 

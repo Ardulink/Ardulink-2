@@ -100,7 +100,7 @@ public class DummyLinkFactoryTest {
 		ConfigAttribute proto = configurer.getAttribute("proto");
 		assertThat(proto.hasChoiceValues(), is(TRUE));
 		assertThat(Arrays.asList(proto.getChoiceValues()),
-				hasItems((Object) "dummyProto", "ardulink", "ardulink255"));
+				hasItems((Object) "dummyProto", "ardulink2"));
 	}
 
 	@Test

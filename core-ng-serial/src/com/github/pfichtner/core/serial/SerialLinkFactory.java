@@ -20,14 +20,12 @@ import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.convenience.LinkDelegate;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 import com.github.pfichtner.ardulink.core.qos.ConnectionBasedQosLink;
 
 public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
-	// TODO Ardulink sends with ArdulinkProtocol255 but receives with
-	// ArdulinkProtocolN
-	private static final Protocol READ_PROTO = ArdulinkProtocol255.instance();
+	private static final Protocol proto = ArdulinkProtocol2.instance();
 
 	@Override
 	public String getName() {
@@ -46,7 +44,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		final SerialPort serialPort = serialPort(config, portIdentifier);
 		StreamConnection connection = new StreamConnection(
 				serialPort.getInputStream(), serialPort.getOutputStream(),
-				READ_PROTO);
+				proto);
 
 		return new LinkDelegate(waitForArdulink(config,
 				createDelegateTo(config, connection))) {

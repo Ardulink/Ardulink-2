@@ -188,7 +188,7 @@ void loop() {
           Serial.print("ko?id=");
         }
         Serial.print(id);
-        Serial.write(255); // End of Message
+        Serial.print('\n'); // End of Message
         Serial.flush();
       }
     }
@@ -209,7 +209,7 @@ void loop() {
         Serial.print(index);
         Serial.print("/");
         Serial.print(value);
-        Serial.write(255); // End of Message
+        Serial.print('\n'); // End of Message
         Serial.flush();
       }
     }
@@ -223,7 +223,7 @@ void loop() {
         Serial.print(index);
         Serial.print("/");
         Serial.print(value);
-        Serial.write(255); // End of Message
+        Serial.print('\n'); // End of Message
         Serial.flush();
       }
     }

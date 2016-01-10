@@ -49,7 +49,7 @@ void get_input() {
       // something to read
       lastRead = DigiUSB.read();
       DigiUSB.print(lastRead);
-      if (lastRead == 255) {
+      if (lastRead == '\r') {
         break; // when we get a divider message, break out of loop
       } else {
         // add it to the inputString:
