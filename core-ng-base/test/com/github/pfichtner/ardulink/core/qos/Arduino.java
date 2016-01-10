@@ -7,20 +7,30 @@ import java.util.regex.Pattern;
 
 import org.junit.rules.ExternalResource;
 
+import com.github.pfichtner.ardulink.core.proto.api.Protocol;
+import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 import com.github.pfichtner.ardulink.core.qos.ArduinoDouble.Adder;
 import com.github.pfichtner.ardulink.core.qos.ArduinoDouble.RegexAdder;
 
 public class Arduino extends ExternalResource {
 
-	private final ArduinoDouble arduinoDouble = create();
+	private final ArduinoDouble arduinoDouble;
 
 	public static Arduino newArduino() {
-		return new Arduino();
+		return newArduino(ArdulinkProtocol2.instance());
 	}
 
-	private static ArduinoDouble create() {
+	public static Arduino newArduino(Protocol protocol) {
+		return new Arduino(protocol);
+	}
+
+	public Arduino(Protocol protocol) {
+		this.arduinoDouble = createArduinoDouble(protocol);
+	}
+
+	private ArduinoDouble createArduinoDouble(Protocol protocol) {
 		try {
-			return new ArduinoDouble();
+			return new ArduinoDouble(protocol);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
