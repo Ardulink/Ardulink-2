@@ -11,7 +11,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 
@@ -185,6 +187,7 @@ public abstract class LinkManager {
 		private final LinkFactory<T> linkFactory;
 		private final T linkConfig;
 		private BeanProperties beanProperties;
+		private final Map<String, ConfigAttributeAdapter<T>> cache = new HashMap<String, ConfigAttributeAdapter<T>>();
 
 		public DefaultConfigurer(LinkFactory<T> connectionFactory) {
 			this.linkFactory = connectionFactory;
@@ -203,8 +206,13 @@ public abstract class LinkManager {
 		}
 
 		public ConfigAttribute getAttribute(String key) {
-			return new ConfigAttributeAdapter<T>(linkConfig, beanProperties,
-					key);
+			ConfigAttributeAdapter<T> configAttributeAdapter = cache.get(key);
+			if (configAttributeAdapter == null) {
+				cache.put(key,
+						configAttributeAdapter = new ConfigAttributeAdapter<T>(
+								linkConfig, beanProperties, key));
+			}
+			return configAttributeAdapter;
 		}
 
 		@Override

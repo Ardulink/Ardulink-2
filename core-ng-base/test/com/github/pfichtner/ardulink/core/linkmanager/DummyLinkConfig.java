@@ -14,6 +14,9 @@ public class DummyLinkConfig implements LinkConfig {
 	@Named("c")
 	public String c;
 	public Protocol protocol;
+	@Named("d")
+	public String d;
+	public static final ThreadLocal<String[]> choiceValuesOfD = new ThreadLocal<String[]>();
 
 	@Named("a")
 	public void setPort(String a) {
@@ -62,6 +65,19 @@ public class DummyLinkConfig implements LinkConfig {
 
 	public Protocol getProto() {
 		return protocol;
+	}
+
+	public String getD() {
+		return d;
+	}
+
+	public void setD(String d) {
+		this.d = d;
+	}
+
+	@ChoiceFor("d")
+	public static String[] choiceValuesCanBeSetViaThreadLocalForTesting() {
+		return choiceValuesOfD.get();
 	}
 
 }
