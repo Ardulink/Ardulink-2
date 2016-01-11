@@ -113,7 +113,7 @@ public abstract class LinkManager {
 
 		@Override
 		public void setValue(Object value) {
-			if (hasChoiceValues()) {
+			if (hasChoiceValues() && this.cachedChoiceValues == null) {
 				try {
 					this.cachedChoiceValues = Arrays.asList(getChoiceValues());
 				} catch (Exception e) {
