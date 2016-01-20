@@ -3,6 +3,7 @@ package com.github.pfichtner.ardulink.core.qos;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.junit.rules.ExternalResource;
@@ -11,6 +12,7 @@ import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 import com.github.pfichtner.ardulink.core.qos.ArduinoDouble.Adder;
 import com.github.pfichtner.ardulink.core.qos.ArduinoDouble.RegexAdder;
+import com.github.pfichtner.ardulink.core.qos.ArduinoDouble.WaitThenDoBuilder;
 
 public class Arduino extends ExternalResource {
 
@@ -51,6 +53,10 @@ public class Arduino extends ExternalResource {
 
 	public RegexAdder whenReceive(Pattern pattern) {
 		return arduinoDouble.whenReceive(pattern);
+	}
+
+	public WaitThenDoBuilder after(int i, TimeUnit timeUnit) {
+		return arduinoDouble.after(i,timeUnit);
 	}
 
 	public InputStream getInputStream() {

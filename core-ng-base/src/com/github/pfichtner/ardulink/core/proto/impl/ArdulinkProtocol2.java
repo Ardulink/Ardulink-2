@@ -12,6 +12,7 @@ import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPPr
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.NOTONE;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
+import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.READY;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.RPLY;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
 import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
@@ -45,7 +46,7 @@ import com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolK
 public class ArdulinkProtocol2 implements Protocol {
 
 	private static final Pattern pattern = Pattern
-			.compile("alp:\\/\\/([a-z]+)\\/([^\\?]+)(?:\\?id=(\\d+))?");
+			.compile("alp:\\/\\/([a-z]+)\\/([^\\?]*)(?:\\?id=(\\d+))?");
 
 	private final String name = "ardulink2";
 	private final byte[] separator = "\n".getBytes();
@@ -155,7 +156,9 @@ public class ArdulinkProtocol2 implements Protocol {
 				matcher.groupCount());
 		ALPProtocolKey key = ALPProtocolKey.fromString(matcher.group(1));
 
-		if (key == RPLY) {
+		if (key == READY) {
+			return new FromArduinoReady();
+		} else if (key == RPLY) {
 			checkState(matcher.groupCount() >= 3, "GroupCount %s",
 					matcher.groupCount());
 			String id = matcher.group(3);

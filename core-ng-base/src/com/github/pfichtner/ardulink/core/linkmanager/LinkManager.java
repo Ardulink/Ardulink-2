@@ -181,7 +181,7 @@ public abstract class LinkManager {
 
 	}
 
-	public static class DefaultConfigurer<T extends LinkConfig> implements
+	private static class DefaultConfigurer<T extends LinkConfig> implements
 			Configurer {
 
 		private final LinkFactory<T> linkFactory;

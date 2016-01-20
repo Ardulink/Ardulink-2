@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,6 +102,33 @@ public class ArduinoDouble implements Closeable {
 
 	}
 
+	public class WaitThenDoBuilder {
+
+		private int i;
+		private TimeUnit timeUnit;
+
+		public WaitThenDoBuilder(int i, TimeUnit timeUnit) {
+			this.i = i;
+			this.timeUnit = timeUnit;
+		}
+
+		public void send(final String message) {
+			Executors.newSingleThreadExecutor().submit(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						timeUnit.sleep(i);
+						ArduinoDouble.this.send(message);
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+				}
+			});
+		}
+
+	}
+
+	private final Protocol protocol;
 	private final List<ReponseGenerator> data = Lists.newArrayList();
 	private final PipedInputStream is2;
 	private final PipedOutputStream os1;
@@ -107,6 +136,7 @@ public class ArduinoDouble implements Closeable {
 	private PipedOutputStream os2;
 
 	public ArduinoDouble(final Protocol protocol) throws IOException {
+		this.protocol = protocol;
 		PipedInputStream is1 = new PipedInputStream();
 		os1 = new PipedOutputStream(is1);
 		is2 = new PipedInputStream();
@@ -122,8 +152,7 @@ public class ArduinoDouble implements Closeable {
 					if (generator.matches(received)) {
 						String response = generator.getResponse();
 						logger.info("Responding {}", response);
-						os2.write(response.getBytes());
-						os2.write(protocol.getSeparator());
+						send(response);
 						os2.flush();
 					} else {
 						logger.warn("No responder for {}", received);
@@ -131,8 +160,14 @@ public class ArduinoDouble implements Closeable {
 				}
 
 			}
+
 		};
 		streamReader.runReaderThread(new String(protocol.getSeparator()));
+	}
+
+	protected void send(String message) throws IOException {
+		os2.write(message.getBytes());
+		os2.write(protocol.getSeparator());
 	}
 
 	public PipedOutputStream getOutputStream() {
@@ -149,6 +184,10 @@ public class ArduinoDouble implements Closeable {
 
 	public RegexAdder whenReceive(Pattern pattern) {
 		return new RegexAdder(pattern);
+	}
+
+	public WaitThenDoBuilder after(int i, TimeUnit timeUnit) {
+		return new WaitThenDoBuilder(i, timeUnit);
 	}
 
 	@Override

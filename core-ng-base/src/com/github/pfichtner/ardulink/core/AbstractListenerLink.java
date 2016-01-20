@@ -103,6 +103,17 @@ public abstract class AbstractListenerLink implements Link {
 		}
 	}
 
+	public void fireConnectionReady() {
+		for (ConnectionListener connectionListener : this.connectionListeners) {
+			try {
+				connectionListener.connectionReady();
+			} catch (Exception e) {
+				logger.error("ConnectionListener {} failure",
+						connectionListener, e);
+			}
+		}
+	}
+
 	public void fireRecconnected() {
 		for (ConnectionListener connectionListener : this.connectionListeners) {
 			try {

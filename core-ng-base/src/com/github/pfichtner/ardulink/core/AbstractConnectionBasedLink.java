@@ -3,7 +3,7 @@ package com.github.pfichtner.ardulink.core;
 import static com.github.pfichtner.ardulink.core.Pin.analogPin;
 import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
 import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
-import static com.github.pfichtner.ardulink.core.proto.api.MessageIdHolders.proxy;
+import static com.github.pfichtner.ardulink.core.proto.api.MessageIdHolders.addMessageId;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.IOException;
@@ -13,6 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.zu.ardulink.util.StopWatch;
 
+import com.github.pfichtner.ardulink.core.Connection.Listener;
 import com.github.pfichtner.ardulink.core.Connection.ListenerAdapter;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
@@ -82,7 +83,8 @@ public abstract class AbstractConnectionBasedLink extends AbstractListenerLink {
 	}
 
 	/**
-	 * Will wait for the arduino to respond to our messages sent.
+	 * Will wait for the arduino to received the "ready" paket or the arduino to
+	 * respond to our messages sent.
 	 * 
 	 * @param wait
 	 *            the maximum time to wait
@@ -92,11 +94,43 @@ public abstract class AbstractConnectionBasedLink extends AbstractListenerLink {
 	 *         time otherwise <code>false</code>
 	 */
 	public boolean waitForArduinoToBoot(int wait, TimeUnit timeUnit) {
+		return waitForArduinoToBoot(wait, timeUnit, Mode.ANY_MESSAGE_RECEIVED);
+	}
+
+	public enum Mode {
+		/**
+		 * interpret any message received from arduino to be ok
+		 */
+		ANY_MESSAGE_RECEIVED, /**
+		 * only interpret "ready" packets to be ok
+		 */
+		READY_MESSAGE_ONLY;
+	}
+
+	/**
+	 * Will wait for the arduino to received the "ready" paket or the arduino to
+	 * respond to our messages sent.
+	 * 
+	 * @param wait
+	 *            the maximum time to wait
+	 * @param timeUnit
+	 *            the units to wait
+	 * @param mode
+	 *            the messages to be interpreted as "ok"
+	 * 
+	 * @return <code>true</code> if the arduino did response within the given
+	 *         time otherwise <code>false</code>
+	 */
+	public boolean waitForArduinoToBoot(int wait, TimeUnit timeUnit, Mode mode) {
 		final ReentrantLock lock = new ReentrantLock();
 		final Condition condition = lock.newCondition();
-		ListenerAdapter listener = new ListenerAdapter() {
+		Listener listener = mode == Mode.ANY_MESSAGE_RECEIVED ? signalIfBytesReceived(
+				lock, condition) : Listener.NULL;
+		this.connection.addListener(listener);
+
+		ConnectionListener cl = new ConnectionListener() {
 			@Override
-			public void received(byte[] bytes) throws IOException {
+			public void connectionReady() {
 				lock.lock();
 				try {
 					condition.signalAll();
@@ -104,8 +138,19 @@ public abstract class AbstractConnectionBasedLink extends AbstractListenerLink {
 					lock.unlock();
 				}
 			}
+
+			@Override
+			public void connectionLost() {
+				// do nothing
+			}
+
+			@Override
+			public void reconnected() {
+				// do nothing
+			}
 		};
-		this.connection.addListener(listener);
+		addConnectionListener(cl);
+
 		StopWatch stopwatch = new StopWatch().start();
 		try {
 			while (true) {
@@ -126,8 +171,25 @@ public abstract class AbstractConnectionBasedLink extends AbstractListenerLink {
 		} catch (InterruptedException e) {
 			return false;
 		} finally {
+			removeConnectionListener(cl);
 			this.connection.removeListener(listener);
 		}
+	}
+
+	private ListenerAdapter signalIfBytesReceived(final ReentrantLock lock,
+			final Condition condition) {
+		ListenerAdapter listener = new ListenerAdapter() {
+			@Override
+			public void received(byte[] bytes) throws IOException {
+				lock.lock();
+				try {
+					condition.signalAll();
+				} finally {
+					lock.unlock();
+				}
+			}
+		};
+		return listener;
 	}
 
 	private void ping() {
@@ -135,10 +197,9 @@ public abstract class AbstractConnectionBasedLink extends AbstractListenerLink {
 		// (yet). So let's write something that the arduino tries to respond to.
 		try {
 			long messageId = 0;
-			connection
-					.write(getProtocol().toArduino(
-							proxy(new DefaultToArduinoNoTone(analogPin(0)),
-									messageId)));
+			connection.write(getProtocol().toArduino(
+					addMessageId(new DefaultToArduinoNoTone(analogPin(0)),
+							messageId)));
 		} catch (IOException e) {
 			// ignore
 		}

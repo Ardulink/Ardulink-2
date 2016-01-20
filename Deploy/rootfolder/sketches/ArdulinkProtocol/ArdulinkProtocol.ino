@@ -37,6 +37,10 @@ void setup() {
   // initialize serial: (this is general code you can reuse)
   Serial.begin(115200);
   
+  Serial.print("alp://rply/");
+  Serial.print('\n'); // End of Message
+  Serial.flush();
+  
   //set to false all listen variable
   int index = 0;
   for (index = 0; index < digitalPinListeningNum; index++) {

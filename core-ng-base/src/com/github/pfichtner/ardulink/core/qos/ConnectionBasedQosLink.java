@@ -1,6 +1,6 @@
 package com.github.pfichtner.ardulink.core.qos;
 
-import static com.github.pfichtner.ardulink.core.proto.api.MessageIdHolders.proxy;
+import static com.github.pfichtner.ardulink.core.proto.api.MessageIdHolders.addMessageId;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import static org.zu.ardulink.util.Preconditions.checkState;
@@ -83,7 +83,8 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink {
 			long messageId = nextId();
 			sendAndWait(
 					getProtocol().toArduino(
-							proxy(new DefaultToArduinoStartListening(pin),
+							addMessageId(
+									new DefaultToArduinoStartListening(pin),
 									messageId)), messageId);
 		}
 	}
@@ -94,7 +95,8 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink {
 			long messageId = nextId();
 			sendAndWait(
 					getProtocol().toArduino(
-							proxy(new DefaultToArduinoStopListening(pin),
+							addMessageId(
+									new DefaultToArduinoStopListening(pin),
 									messageId)), messageId);
 		}
 		logger.info("Stopped listening on pin {}", pin);
@@ -106,11 +108,9 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink {
 		synchronized (getConnection()) {
 			long messageId = nextId();
 			sendAndWait(
-					getProtocol()
-							.toArduino(
-									proxy(new DefaultToArduinoPinEvent(
-											analogPin, value), messageId)),
-					messageId);
+					getProtocol().toArduino(
+							addMessageId(new DefaultToArduinoPinEvent(
+									analogPin, value), messageId)), messageId);
 		}
 	}
 
@@ -121,8 +121,8 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink {
 			long messageId = nextId();
 			sendAndWait(
 					getProtocol().toArduino(
-							proxy(new DefaultToArduinoPinEvent(digitalPin,
-									value), messageId)), messageId);
+							addMessageId(new DefaultToArduinoPinEvent(
+									digitalPin, value), messageId)), messageId);
 		}
 	}
 
@@ -133,9 +133,10 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink {
 			long messageId = nextId();
 			sendAndWait(
 					getProtocol().toArduino(
-							proxy(new DefaultToArduinoKeyPressEvent(keychar,
-									keycode, keylocation, keymodifiers,
-									keymodifiersex), messageId)), messageId);
+							addMessageId(new DefaultToArduinoKeyPressEvent(
+									keychar, keycode, keylocation,
+									keymodifiers, keymodifiersex), messageId)),
+					messageId);
 		}
 	}
 
@@ -145,8 +146,8 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink {
 			long messageId = nextId();
 			sendAndWait(
 					getProtocol().toArduino(
-							proxy(new DefaultToArduinoTone(tone), messageId)),
-					messageId);
+							addMessageId(new DefaultToArduinoTone(tone),
+									messageId)), messageId);
 		}
 	}
 
@@ -156,7 +157,7 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink {
 			long messageId = nextId();
 			sendAndWait(
 					getProtocol().toArduino(
-							proxy(new DefaultToArduinoNoTone(analogPin),
+							addMessageId(new DefaultToArduinoNoTone(analogPin),
 									messageId)), messageId);
 		}
 	}
@@ -167,8 +168,8 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink {
 			long messageId = nextId();
 			sendAndWait(
 					getProtocol().toArduino(
-							proxy(new DefaultToArduinoCustomMessage(messages),
-									messageId)), messageId);
+							addMessageId(new DefaultToArduinoCustomMessage(
+									messages), messageId)), messageId);
 		}
 	}
 

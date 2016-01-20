@@ -1,5 +1,6 @@
 package com.github.pfichtner.ardulink.core;
 
+import static com.github.pfichtner.ardulink.core.AbstractConnectionBasedLink.Mode.READY_MESSAGE_ONLY;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,10 +46,24 @@ public class WaitForArduinoToBootTest {
 	}
 
 	@Test
-	public void noNeedToIfArduinoResponds() throws IOException {
+	public void noNeedToWaitIfArduinoResponds() throws IOException {
 		arduino.whenReceive(regex("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ok?id=%s");
 		assertThat(link.waitForArduinoToBoot(3, DAYS), is(true));
+	}
+
+	@Test
+	public void canDetectReadyPaket() throws IOException {
+		arduino.after(1, SECONDS).send("alp://ready/");
+		assertThat(link.waitForArduinoToBoot(3, DAYS, READY_MESSAGE_ONLY),
+				is(true));
+	}
+
+	@Test
+	public void ignoresMisformedReadyPaket() throws IOException {
+		arduino.after(1, SECONDS).send("alp://XXXXXreadyXXXXX/");
+		assertThat(link.waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY),
+				is(false));
 	}
 
 	private Pattern regex(String regex) {
