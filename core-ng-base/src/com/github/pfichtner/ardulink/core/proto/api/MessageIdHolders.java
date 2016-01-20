@@ -68,7 +68,7 @@ public final class MessageIdHolders {
 	 * @return dynamic proxy implementing {@link MessageIdHolder}
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T proxy(T delegateTo, long messageId) {
+	public static <T> T addMessageId(T delegateTo, long messageId) {
 		return (T) Proxy.newProxyInstance(
 				delegateTo.getClass().getClassLoader(),
 				insertInto(Class.class, MessageIdHolder.class, delegateTo

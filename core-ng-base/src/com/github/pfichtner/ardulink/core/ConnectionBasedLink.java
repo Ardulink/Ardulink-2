@@ -27,6 +27,7 @@ import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoStartListen
 import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoStopListening;
 import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
 import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoPinStateChanged;
+import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoReady;
 import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoReply;
 
 public class ConnectionBasedLink extends AbstractConnectionBasedLink {
@@ -113,6 +114,8 @@ public class ConnectionBasedLink extends AbstractConnectionBasedLink {
 		} else if (fromArduino instanceof FromArduinoReply) {
 			FromArduinoReply reply = (FromArduinoReply) fromArduino;
 			fireReplyReceived(new DefaultRplyEvent(reply.isOk(), reply.getId()));
+		} else if (fromArduino instanceof FromArduinoReady) {
+			fireConnectionReady();
 		} else {
 			throw new IllegalStateException("Cannot handle " + fromArduino);
 		}
