@@ -56,7 +56,11 @@ public class Arduino extends ExternalResource {
 	}
 
 	public WaitThenDoBuilder after(int i, TimeUnit timeUnit) {
-		return arduinoDouble.after(i,timeUnit);
+		return arduinoDouble.after(i, timeUnit);
+	}
+
+	public void send(String message) throws IOException {
+		arduinoDouble.send(message);
 	}
 
 	public InputStream getInputStream() {

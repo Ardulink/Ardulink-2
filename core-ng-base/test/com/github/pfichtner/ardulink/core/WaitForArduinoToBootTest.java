@@ -66,6 +66,13 @@ public class WaitForArduinoToBootTest {
 				is(false));
 	}
 
+	@Test
+	public void detectAlreadySentReadyPaket() throws IOException {
+		arduino.send("alp://ready/");
+		assertThat(link.waitForArduinoToBoot(3, DAYS, READY_MESSAGE_ONLY),
+				is(true));
+	}
+
 	private Pattern regex(String regex) {
 		return Pattern.compile(regex);
 	}

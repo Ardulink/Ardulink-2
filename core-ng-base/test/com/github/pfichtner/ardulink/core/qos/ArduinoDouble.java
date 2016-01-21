@@ -165,7 +165,7 @@ public class ArduinoDouble implements Closeable {
 		streamReader.runReaderThread(new String(protocol.getSeparator()));
 	}
 
-	protected void send(String message) throws IOException {
+	public void send(String message) throws IOException {
 		os2.write(message.getBytes());
 		os2.write(protocol.getSeparator());
 	}

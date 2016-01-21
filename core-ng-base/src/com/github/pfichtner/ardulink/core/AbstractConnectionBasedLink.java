@@ -1,5 +1,6 @@
 package com.github.pfichtner.ardulink.core;
 
+import static com.github.pfichtner.ardulink.core.AbstractConnectionBasedLink.Mode.ANY_MESSAGE_RECEIVED;
 import static com.github.pfichtner.ardulink.core.Pin.analogPin;
 import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
 import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
@@ -13,7 +14,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.zu.ardulink.util.StopWatch;
 
-import com.github.pfichtner.ardulink.core.Connection.Listener;
 import com.github.pfichtner.ardulink.core.Connection.ListenerAdapter;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
@@ -26,12 +26,14 @@ import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol.FromArduino;
 import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoNoTone;
 import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoPinStateChanged;
+import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoReady;
 import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoReply;
 
 public abstract class AbstractConnectionBasedLink extends AbstractListenerLink {
 
 	private final Connection connection;
 	private final Protocol protocol;
+	private boolean readyMsgReceived;
 
 	public AbstractConnectionBasedLink(Connection connection, Protocol protocol) {
 		this.connection = connection;
@@ -53,18 +55,23 @@ public abstract class AbstractConnectionBasedLink extends AbstractListenerLink {
 	}
 
 	protected void received(byte[] bytes) {
-		FromArduino fromArduino = this.protocol.fromArduino(bytes);
+		received(this.protocol.fromArduino(bytes));
+	}
+
+	protected void received(FromArduino fromArduino) {
 		if (fromArduino instanceof FromArduinoPinStateChanged) {
 			handlePinChanged((FromArduinoPinStateChanged) fromArduino);
 		} else if (fromArduino instanceof FromArduinoReply) {
 			FromArduinoReply reply = (FromArduinoReply) fromArduino;
 			fireReplyReceived(new DefaultRplyEvent(reply.isOk(), reply.getId()));
+		} else if (fromArduino instanceof FromArduinoReady) {
+			this.readyMsgReceived = true;
 		} else {
 			throw new IllegalStateException("Cannot handle " + fromArduino);
 		}
 	}
 
-	private void handlePinChanged(FromArduinoPinStateChanged pinChanged) {
+	protected void handlePinChanged(FromArduinoPinStateChanged pinChanged) {
 		Pin pin = pinChanged.getPin();
 		Object value = pinChanged.getValue();
 		if (pin.is(ANALOG) && value instanceof Integer) {
@@ -121,35 +128,23 @@ public abstract class AbstractConnectionBasedLink extends AbstractListenerLink {
 	 * @return <code>true</code> if the arduino did response within the given
 	 *         time otherwise <code>false</code>
 	 */
-	public boolean waitForArduinoToBoot(int wait, TimeUnit timeUnit, Mode mode) {
+	public boolean waitForArduinoToBoot(int wait, TimeUnit timeUnit,
+			final Mode mode) {
 		final ReentrantLock lock = new ReentrantLock();
 		final Condition condition = lock.newCondition();
-		Listener listener = mode == Mode.ANY_MESSAGE_RECEIVED ? signalIfBytesReceived(
-				lock, condition) : Listener.NULL;
-		this.connection.addListener(listener);
-
-		ConnectionListener cl = new ConnectionListener() {
+		ListenerAdapter listener = new ListenerAdapter() {
 			@Override
-			public void connectionReady() {
+			public void received(byte[] bytes) throws IOException {
 				lock.lock();
 				try {
-					condition.signalAll();
+					if (mode == ANY_MESSAGE_RECEIVED || readyMsgReceived == true)
+						condition.signalAll();
 				} finally {
 					lock.unlock();
 				}
 			}
-
-			@Override
-			public void connectionLost() {
-				// do nothing
-			}
-
-			@Override
-			public void reconnected() {
-				// do nothing
-			}
 		};
-		addConnectionListener(cl);
+		this.connection.addListener(listener);
 
 		StopWatch stopwatch = new StopWatch().start();
 		try {
@@ -171,25 +166,8 @@ public abstract class AbstractConnectionBasedLink extends AbstractListenerLink {
 		} catch (InterruptedException e) {
 			return false;
 		} finally {
-			removeConnectionListener(cl);
 			this.connection.removeListener(listener);
 		}
-	}
-
-	private ListenerAdapter signalIfBytesReceived(final ReentrantLock lock,
-			final Condition condition) {
-		ListenerAdapter listener = new ListenerAdapter() {
-			@Override
-			public void received(byte[] bytes) throws IOException {
-				lock.lock();
-				try {
-					condition.signalAll();
-				} finally {
-					lock.unlock();
-				}
-			}
-		};
-		return listener;
 	}
 
 	private void ping() {
