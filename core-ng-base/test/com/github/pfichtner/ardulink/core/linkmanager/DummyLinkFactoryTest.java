@@ -5,7 +5,6 @@ import static java.lang.Boolean.TRUE;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.net.URI;
@@ -80,7 +79,8 @@ public class DummyLinkFactoryTest {
 		String nonExistingKey = "nonExistingKey";
 		LinkManager connectionManager = LinkManager.getInstance();
 		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("Could not determine attribute " + nonExistingKey);
+		exception.expectMessage("Could not determine attribute "
+				+ nonExistingKey);
 		connectionManager.getConfigurer(new URI("ardulink://dummyLink?"
 				+ nonExistingKey + "=someValue"));
 	}
@@ -155,39 +155,36 @@ public class DummyLinkFactoryTest {
 	@Test
 	public void i18n_english() throws URISyntaxException {
 		Locale.setDefault(Locale.ENGLISH);
-		assertThat(getLocalizedName("a"),
+		assertThat(getName("a"),
 				is("A is meant just to be an example attribute"));
 	}
 
 	@Test
 	public void i18n_german() throws URISyntaxException {
 		Locale.setDefault(Locale.GERMAN);
-		assertThat(getLocalizedName("a"),
-				is("A ist einfach ein Beispielattribut"));
+		assertThat(getName("a"), is("A ist einfach ein Beispielattribut"));
 	}
 
 	@Test
 	public void i18n_localeWithoutMessageFileWillFallbackToEnglish()
 			throws URISyntaxException {
 		Locale.setDefault(Locale.CHINESE);
-		assertThat(getLocalizedName("a"),
+		assertThat(getName("a"),
 				is("A is meant just to be an example attribute"));
 	}
 
 	@Test
-	public void i18n_english_untagged_attribute_returns_null()
+	public void i18n_english_untagged_attribute_returns_the_attributes_name()
 			throws URISyntaxException {
 		Locale.setDefault(Locale.ENGLISH);
-		assertThat(getLocalizedName("b"), nullValue());
+		assertThat(getName("b"), is("b"));
 	}
 
-	private static String getLocalizedName(String name)
-			throws URISyntaxException {
+	private static String getName(String name) throws URISyntaxException {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://dummyLink"));
-		ConfigAttribute attribute = configurer.getAttribute(name);
-		return attribute.getLocalizedName();
+		return configurer.getAttribute(name).getName();
 	}
 
 }

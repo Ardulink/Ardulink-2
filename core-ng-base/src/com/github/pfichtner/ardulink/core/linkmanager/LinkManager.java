@@ -32,6 +32,14 @@ public abstract class LinkManager {
 	public interface ConfigAttribute {
 
 		/**
+		 * Returns the name of this attribute. If there is a localized name
+		 * available the localized named is returned.
+		 * 
+		 * @return name of this attribute
+		 */
+		String getName();
+		
+		/**
 		 * Returns the type of this attribute.
 		 * 
 		 * @return type
@@ -69,13 +77,6 @@ public abstract class LinkManager {
 		 */
 		Object[] getChoiceValues();
 
-		/**
-		 * Returns the localized name of this attribute.
-		 * 
-		 * @return localized name of this attribute
-		 */
-		String getLocalizedName();
-
 	}
 
 	public static class ConfigAttributeAdapter<T extends LinkConfig> implements
@@ -97,6 +98,12 @@ public abstract class LinkManager {
 			I18n nls = linkConfig.getClass().getAnnotation(I18n.class);
 			this.nls = nls == null ? null : ResourceBundle.getBundle(nls
 					.value());
+		}
+		
+		@Override
+		public String getName() {
+			return nls == null || !nls.containsKey(this.attribute.getName()) ? this.attribute
+					.getName() : nls.getString(this.attribute.getName());
 		}
 
 		@Override
@@ -161,12 +168,6 @@ public abstract class LinkManager {
 					"returntype is not an Object[] but %s",
 					value == null ? null : value.getClass());
 			return (Object[]) value;
-		}
-
-		@Override
-		public String getLocalizedName() {
-			return nls == null || !nls.containsKey(this.attribute.getName()) ? null
-					: nls.getString(this.attribute.getName());
 		}
 
 	}
