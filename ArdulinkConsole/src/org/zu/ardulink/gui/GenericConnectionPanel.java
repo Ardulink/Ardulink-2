@@ -18,42 +18,88 @@ limitations under the License.
 
 package org.zu.ardulink.gui;
 
+import static java.awt.event.ItemEvent.SELECTED;
+
 import java.awt.FlowLayout;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.net.URI;
-import java.util.List;
+import java.net.URISyntaxException;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import org.zu.ardulink.legacy.Link;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
 public class GenericConnectionPanel extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = 1290277902714226253L;
 
-	private JComboBox uris;
+	private final JComboBox uris = new JComboBox();
 
 	private Link link;
+
+	private JPanel subPanel;
 
 	/**
 	 * Create the panel.
 	 */
 	public GenericConnectionPanel() {
 		setLayout(new FlowLayout());
-
-		JLabel connectionPortLabel = new JLabel("URI");
-		add(connectionPortLabel);
-
-		uris = new JComboBox();
-		uris.setEditable(true);
-		List<URI> listURIs = LinkManager.getInstance().listURIs();
-		for (URI uri : listURIs) {
+		add(new JLabel("URI"));
+		uris.addItemListener(itemListener());
+		add(uris);
+		subPanel = subPanel();
+		for (URI uri : LinkManager.getInstance().listURIs()) {
 			uris.addItem(uri.toASCIIString());
 		}
-		add(uris);
+		add(subPanel);
+	}
+
+	private ItemListener itemListener() {
+		return new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent event) {
+				if (event.getStateChange() == SELECTED) {
+					subPanel.removeAll();
+					String selectedItem = (String) event.getItem();
+					try {
+						Configurer configurer = LinkManager.getInstance()
+								.getConfigurer(new URI(selectedItem));
+						for (String name : configurer.getAttributes()) {
+							ConfigAttribute attribute = configurer
+									.getAttribute(name);
+							subPanel.add(new JLabel(attribute.getName()));
+							if (attribute.hasChoiceValues()) {
+								JComboBox comboBox = new JComboBox(
+										attribute.getChoiceValues());
+								if (comboBox.getModel().getSize() > 0) {
+									comboBox.setSelectedIndex(0);
+								}
+								subPanel.add(comboBox);
+							} else {
+								subPanel.add(new JTextField(String
+										.valueOf(attribute.getValue())));
+							}
+						}
+					} catch (URISyntaxException e) {
+						throw new RuntimeException(e);
+					}
+
+				}
+			}
+		};
+	}
+
+	private JPanel subPanel() {
+		JPanel subPanel = new JPanel();
+		return subPanel;
 	}
 
 	public String getURI() {
