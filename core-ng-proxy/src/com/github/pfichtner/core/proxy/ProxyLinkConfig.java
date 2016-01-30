@@ -2,6 +2,7 @@ package com.github.pfichtner.core.proxy;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.List;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
@@ -59,6 +60,15 @@ public class ProxyLinkConfig implements LinkConfig {
 	public void setProto(String proto) {
 		this.proto = Protocols.getByName(proto);
 	}
+	
+	public String getProto() {
+		return proto == null ? null : proto.getName();
+	}
+	
+	@ChoiceFor("proto")
+	public List<String> getProtos() {
+		return Protocols.list();
+	}
 
 	public void setTcphost(String tcphost) {
 		this.tcphost = tcphost;
@@ -70,7 +80,8 @@ public class ProxyLinkConfig implements LinkConfig {
 
 	@ChoiceFor("port")
 	public List<String> getAvailablePorts() throws IOException {
-		return getRemote().getPortList();
+		return tcphost == null ? Collections.<String> emptyList() : getRemote()
+				.getPortList();
 	}
 
 	public synchronized ProxyConnectionToRemote getRemote()

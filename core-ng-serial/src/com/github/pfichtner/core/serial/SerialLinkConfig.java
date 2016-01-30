@@ -22,7 +22,7 @@ public class SerialLinkConfig implements LinkConfig {
 	private int baudrate = 115200;
 
 	@Named("proto")
-	private Protocol proto = ArdulinkProtocol2.instance();
+	private Protocol protoName = defaultProto();
 
 	@Named("qos")
 	private boolean qos;
@@ -35,6 +35,18 @@ public class SerialLinkConfig implements LinkConfig {
 
 	public int getBaudrate() {
 		return baudrate;
+	}
+
+	private Protocol defaultProto() {
+		List<String> available = availableProtos();
+		Protocol pref = ArdulinkProtocol2.instance();
+		if (available.contains(pref.getName())) {
+			return pref;
+		} else if (!available.isEmpty()) {
+			return Protocols.getByName(available.get(0));
+		} else {
+			return null;
+		}
 	}
 
 	public String getPort() {
@@ -52,8 +64,17 @@ public class SerialLinkConfig implements LinkConfig {
 		return ports.toArray(new String[ports.size()]);
 	}
 
+	@ChoiceFor("proto")
+	public List<String> availableProtos() {
+		return Protocols.list();
+	}
+
+	public String getProtoName() {
+		return protoName == null ? null : protoName.getName();
+	}
+
 	public Protocol getProto() {
-		return proto;
+		return Protocols.getByName(getProtoName());
 	}
 
 	public int getWaitsecs() {
@@ -86,8 +107,8 @@ public class SerialLinkConfig implements LinkConfig {
 		this.port = port;
 	}
 
-	public void setProto(String proto) {
-		this.proto = Protocols.getByName(proto);
+	public void setProtoName(String protoName) {
+		this.protoName = Protocols.getByName(protoName);
 	}
 
 	public void setQos(boolean qos) {
