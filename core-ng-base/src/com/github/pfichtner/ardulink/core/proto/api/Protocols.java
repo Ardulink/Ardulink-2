@@ -1,5 +1,7 @@
 package com.github.pfichtner.ardulink.core.proto.api;
 
+import static org.zu.ardulink.util.Preconditions.checkArgument;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -12,14 +14,20 @@ public final class Protocols {
 	}
 
 	public static Protocol getByName(String name) {
+		Protocol protocol = tryByName(name);
+		checkArgument(protocol != null, "No protocol with name " + name
+				+ " registered");
+		return protocol;
+	}
+
+	public static Protocol tryByName(String name) {
 		for (Iterator<Protocol> it = iterator(); it.hasNext();) {
 			Protocol protocol = it.next();
 			if (protocol.getName().equals(name)) {
 				return protocol;
 			}
 		}
-		throw new IllegalArgumentException("No protocol with name " + name
-				+ " registered");
+		return null;
 	}
 
 	public static List<String> list() {
