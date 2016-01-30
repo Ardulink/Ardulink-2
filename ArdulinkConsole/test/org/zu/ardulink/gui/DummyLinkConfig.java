@@ -13,6 +13,9 @@ public class DummyLinkConfig implements LinkConfig {
 	@Named("b")
 	private String b;
 
+	@Named("c")
+	private Boolean c = Boolean.TRUE;
+
 	public int getA() {
 		return a;
 	}
@@ -24,6 +27,14 @@ public class DummyLinkConfig implements LinkConfig {
 	@ChoiceFor("b")
 	public List<String> someValuesForB() {
 		return Arrays.asList("foo", "bar");
+	}
+
+	public Boolean getC() {
+		return c;
+	}
+
+	public void setC(Boolean c) {
+		this.c = c;
 	}
 
 }

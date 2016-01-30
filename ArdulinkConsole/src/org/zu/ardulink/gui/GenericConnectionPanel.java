@@ -20,12 +20,15 @@ package org.zu.ardulink.gui;
 
 import static java.awt.event.ItemEvent.SELECTED;
 
+import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -51,15 +54,15 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 	 * Create the panel.
 	 */
 	public GenericConnectionPanel() {
-		setLayout(new FlowLayout());
-		add(new JLabel("URI"));
+		setLayout(new BorderLayout());
+		add(new JLabel("URI"), BorderLayout.WEST);
 		uris.addItemListener(itemListener());
-		add(uris);
+		add(uris, BorderLayout.EAST);
 		subPanel = subPanel();
 		for (URI uri : LinkManager.getInstance().listURIs()) {
 			uris.addItem(uri.toASCIIString());
 		}
-		add(subPanel);
+		add(subPanel, BorderLayout.SOUTH);
 	}
 
 	private ItemListener itemListener() {
@@ -76,7 +79,14 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 							ConfigAttribute attribute = configurer
 									.getAttribute(name);
 							subPanel.add(new JLabel(attribute.getName()));
-							if (attribute.hasChoiceValues()) {
+							if (attribute.getType().equals(Boolean.class)
+									|| attribute.getType()
+											.equals(boolean.class)) {
+								JCheckBox checkBox = new JCheckBox();
+								checkBox.setSelected(Boolean
+										.valueOf((Boolean) attribute.getValue()));
+								subPanel.add(checkBox);
+							} else if (attribute.hasChoiceValues()) {
 								JComboBox comboBox = new JComboBox(
 										attribute.getChoiceValues());
 								if (comboBox.getModel().getSize() > 0) {
@@ -99,6 +109,7 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 
 	private JPanel subPanel() {
 		JPanel subPanel = new JPanel();
+		subPanel.setLayout(new GridLayout(10, 2));
 		return subPanel;
 	}
 

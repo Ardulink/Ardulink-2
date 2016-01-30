@@ -159,8 +159,6 @@ public class Console extends JFrame implements Linkable {
 		JPanel allConnectionsPanel = new JPanel();
 		configurationPanel.add(allConnectionsPanel, BorderLayout.CENTER);
 		GridBagLayout gbl_allConnectionsPanel = new GridBagLayout();
-		gbl_allConnectionsPanel.columnWeights = new double[] { 0.0, 0.0 };
-		gbl_allConnectionsPanel.rowWeights = new double[] { 0.0, 0.0 };
 		allConnectionsPanel.setLayout(gbl_allConnectionsPanel);
 
 		genericConnectionPanel = new GenericConnectionPanel();
@@ -168,9 +166,11 @@ public class Console extends JFrame implements Linkable {
 		GridBagConstraints gbc_genericConnectionPanel = new GridBagConstraints();
 		gbc_genericConnectionPanel.insets = new Insets(0, 0, 0, 10);
 		gbc_genericConnectionPanel.anchor = GridBagConstraints.NORTH;
-		gbc_genericConnectionPanel.fill = GridBagConstraints.HORIZONTAL;
+		gbc_genericConnectionPanel.fill = GridBagConstraints.BOTH;
 		gbc_genericConnectionPanel.gridx = 0;
 		gbc_genericConnectionPanel.gridy = 1;
+		gbc_genericConnectionPanel.weightx = 1;
+		gbc_genericConnectionPanel.weighty = 1;
 		allConnectionsPanel.add(genericConnectionPanel,
 				gbc_genericConnectionPanel);
 
@@ -270,6 +270,7 @@ public class Console extends JFrame implements Linkable {
 			}
 		});
 		disconnected();
+		pack();
 	}
 
 	private PWMController pwmController(int pin) {

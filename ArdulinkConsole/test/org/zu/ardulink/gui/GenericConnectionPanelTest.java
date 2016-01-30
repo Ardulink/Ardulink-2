@@ -1,5 +1,7 @@
 package org.zu.ardulink.gui;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -39,6 +41,8 @@ public class GenericConnectionPanelTest {
 		assertThat(panel, has(row(0).withLabel("a").withValue(42)));
 		assertThat(panel, has(row(1).withLabel("b").withChoice("foo", "bar")
 				.withValue("foo")));
+		assertThat(panel, has(row(2).withLabel("c").withChoice(TRUE, FALSE)
+				.withValue(TRUE)));
 	}
 
 	private <T> T findFirst(Class<T> clazz, List<? extends Component> components) {

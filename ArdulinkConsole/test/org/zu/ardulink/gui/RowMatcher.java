@@ -6,6 +6,7 @@ import java.awt.Component;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -33,6 +34,12 @@ public class RowMatcher<T> extends TypeSafeMatcher<JPanel> {
 	}
 
 	@Override
+	protected void describeMismatchSafely(JPanel item,
+			Description mismatchDescription) {
+		mismatchDescription.appendText(Arrays.toString(item.getComponents()));
+	}
+
+	@Override
 	protected boolean matchesSafely(JPanel jPanel) {
 		List<? extends Component> componentsOfSubPanel = componentsOf(jPanel);
 		return labelEq(componentsOfSubPanel) && valueEq(componentsOfSubPanel)
@@ -41,16 +48,26 @@ public class RowMatcher<T> extends TypeSafeMatcher<JPanel> {
 
 	private boolean valueEq(List<? extends Component> componentsOfSubPanel) {
 		Component component = componentsOfSubPanel.get(row * 2 + 1);
-		return (component instanceof JTextField && String.valueOf(value)
-				.equals(((JTextField) component).getText()))
-				|| (component instanceof JComboBox && String.valueOf(value)
-						.equals(((JComboBox) component).getSelectedItem()));
+		boolean b2 = component instanceof JComboBox
+				&& String.valueOf(value).equals(
+						((JComboBox) component).getSelectedItem());
+		boolean b1 = component instanceof JTextField
+				&& String.valueOf(value).equals(
+						((JTextField) component).getText());
+		boolean b3 = component instanceof JCheckBox
+				&& Boolean.valueOf((Boolean) value).booleanValue() == ((JCheckBox) component)
+						.isSelected();
+		return b1 || b2 || b3;
 	}
 
 	private boolean choiceEq(List<? extends Component> componentsOfSubPanel) {
 		Component component = componentsOfSubPanel.get(row * 2 + 1);
-		return choice == null || component instanceof JComboBox
+		boolean b1 = component instanceof JComboBox
 				&& Arrays.equals(items((JComboBox) component), choice);
+		boolean b2 = component instanceof JCheckBox
+				&& Arrays.equals(new Object[] { Boolean.TRUE, Boolean.FALSE },
+						choice);
+		return choice == null || b1 || b2;
 	}
 
 	private boolean labelEq(List<? extends Component> componentsOfSubPanel) {
