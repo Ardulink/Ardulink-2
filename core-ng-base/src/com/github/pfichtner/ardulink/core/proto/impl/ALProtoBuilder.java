@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.zu.ardulink.util.Joiner;
 import org.zu.ardulink.util.Lists;
+import org.zu.ardulink.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -54,13 +55,13 @@ public class ALProtoBuilder {
 			this.proto = proto;
 		}
 
-		public static ALPProtocolKey fromString(String string) {
+		public static Optional<ALPProtocolKey> fromString(String string) {
 			for (ALPProtocolKey alpProtocolKeys : values()) {
 				if (alpProtocolKeys.proto.equals(string)) {
-					return alpProtocolKeys;
+					return Optional.of(alpProtocolKeys);
 				}
 			}
-			return null;
+			return Optional.absent();
 		}
 	}
 

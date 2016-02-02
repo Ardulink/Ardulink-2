@@ -9,6 +9,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.zu.ardulink.util.Optional;
+
 import com.github.pfichtner.beans.Attribute.AttributeReader;
 import com.github.pfichtner.beans.Attribute.AttributeWriter;
 import com.github.pfichtner.beans.Attribute.TypedAttributeProvider;
@@ -103,55 +105,62 @@ public class BeanProperties {
 
 	public Attribute getAttribute(final String name) {
 		try {
-			AttributeReader reader = findReader(name);
-			AttributeWriter writer = findWriter(name);
-			Class<?> type = determineType(reader, writer);
-			return (reader == null && writer == null) || type == null ? null
-					: new DefaultAttribute(name, type, reader, writer);
+			Optional<AttributeReader> reader = findReader(name);
+			Optional<AttributeWriter> writer = findWriter(name);
+			Optional<Class<?>> type = determineType(reader, writer);
+			return (reader == null && writer == null) || !type.isPresent() ? null
+					: new DefaultAttribute(name, type.orNull(),
+							reader.orNull(), writer.orNull());
 		} catch (final Exception e) {
 			return null;
 		}
 	}
 
-	private static Class<?> determineType(AttributeReader reader,
-			AttributeWriter writer) {
-		Class<?> readerType = reader == null ? null : reader.getType();
-		Class<?> writerType = writer == null ? null : writer.getType();
-		if (readerType == null) {
+	private static Optional<Class<?>> determineType(
+			Optional<AttributeReader> reader, Optional<AttributeWriter> writer) {
+		Optional<Class<?>> readerType = reader.isPresent() ? Optional
+				.<Class<?>> of(reader.get().getType()) : Optional
+				.<Class<?>> absent();
+		Optional<Class<?>> writerType = writer.isPresent() ? Optional
+				.<Class<?>> of(writer.get().getType()) : Optional
+				.<Class<?>> absent();
+		if (!readerType.isPresent()) {
 			return writerType;
 		}
-		if (writerType == null) {
+		if (!writerType.isPresent()) {
 			return readerType;
 		}
-		if (readerType.isAssignableFrom(writerType)) {
+		if (readerType.get().isAssignableFrom(writerType.get())) {
 			return readerType;
 		}
-		if (writerType.isAssignableFrom(readerType)) {
+		if (writerType.get().isAssignableFrom(readerType.get())) {
 			return writerType;
 		}
-		return null;
+		return Optional.absent();
 	}
 
-	private AttributeReader findReader(final String name) throws Exception {
+	private Optional<AttributeReader> findReader(final String name)
+			throws Exception {
 		for (AttributeFinder finder : finders) {
 			for (AttributeReader reader : finder.listReaders(bean)) {
 				if (name.equals(reader.getName())) {
-					return reader;
+					return Optional.of(reader);
 				}
 			}
 		}
-		return null;
+		return Optional.absent();
 	}
 
-	private AttributeWriter findWriter(final String name) throws Exception {
+	private Optional<AttributeWriter> findWriter(final String name)
+			throws Exception {
 		for (AttributeFinder finder : finders) {
 			for (AttributeWriter writer : finder.listWriters(bean)) {
 				if (name.equals(writer.getName())) {
-					return writer;
+					return Optional.of(writer);
 				}
 			}
 		}
-		return null;
+		return Optional.absent();
 	}
 
 	public Collection<String> attributeNames() throws Exception {

@@ -1,6 +1,6 @@
 package com.github.pfichtner.ardulink.core.convenience;
 
-import static com.github.pfichtner.ardulink.core.linkmanager.LinkManager.getHostFromCheckedSchema;
+import static com.github.pfichtner.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 
 import java.io.IOException;
 import java.net.URI;
@@ -90,7 +90,7 @@ public final class Links {
 	}
 
 	private static boolean isDefault(URI uri) {
-		return "default".equalsIgnoreCase(getHostFromCheckedSchema(uri));
+		return "default".equalsIgnoreCase(extractNameFromURI(uri));
 	}
 
 	public static Link getLink(Configurer configurer) throws Exception {

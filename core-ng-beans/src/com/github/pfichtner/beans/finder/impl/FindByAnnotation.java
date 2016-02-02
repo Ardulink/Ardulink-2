@@ -12,6 +12,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.zu.ardulink.util.Optional;
+
 import com.github.pfichtner.beans.Attribute.AttributeReader;
 import com.github.pfichtner.beans.Attribute.AttributeWriter;
 import com.github.pfichtner.beans.finder.api.AttributeFinder;
@@ -125,11 +127,11 @@ public class FindByAnnotation implements AttributeFinder {
 
 		for (Field field : bean.getClass().getDeclaredFields()) {
 			if (field.isAnnotationPresent(annotationClass)) {
-				AttributeReader readMethodForAttribute = readMethodForAttribute(
+				Optional<AttributeReader> readMethodForAttribute = readMethodForAttribute(
 						bean, field.getName());
-				if (readMethodForAttribute != null) {
+				if (readMethodForAttribute.isPresent()) {
 					readers.add(new AttributeReaderDelegate(
-							readMethodForAttribute, annoValue(field
+							readMethodForAttribute.get(), annoValue(field
 									.getAnnotation(annotationClass))));
 				} else if (isPublic(field.getModifiers())) {
 					readers.add(new FieldAccess(bean, annoValue(field
@@ -153,11 +155,11 @@ public class FindByAnnotation implements AttributeFinder {
 
 		for (Field field : bean.getClass().getDeclaredFields()) {
 			if (field.isAnnotationPresent(annotationClass)) {
-				AttributeWriter writeMethodForAttribute = writeMethodForAttribute(
+				Optional<AttributeWriter> writeMethodForAttribute = writeMethodForAttribute(
 						bean, field.getName());
-				if (writeMethodForAttribute != null) {
+				if (writeMethodForAttribute.isPresent()) {
 					writers.add(new AttributeWriterDelegate(
-							writeMethodForAttribute, annoValue(field
+							writeMethodForAttribute.get(), annoValue(field
 									.getAnnotation(annotationClass))));
 				} else if (isPublic(field.getModifiers())) {
 					writers.add(new FieldAccess(bean, annoValue(field
@@ -169,27 +171,27 @@ public class FindByAnnotation implements AttributeFinder {
 		return writers;
 	}
 
-	private AttributeReader readMethodForAttribute(Object bean,
+	private Optional<AttributeReader> readMethodForAttribute(Object bean,
 			final String name) throws Exception {
 		for (AttributeReader reader : FindByIntrospection.beanAttributes()
 				.listReaders(bean)) {
 			if (reader.getName().equals(name)) {
-				return reader;
+				return Optional.of(reader);
 			}
 		}
-		return null;
+		return Optional.absent();
 
 	}
 
-	private AttributeWriter writeMethodForAttribute(Object bean,
+	private Optional<AttributeWriter> writeMethodForAttribute(Object bean,
 			final String name) throws Exception {
 		for (AttributeWriter writer : FindByIntrospection.beanAttributes()
 				.listWriters(bean)) {
 			if (writer.getName().equals(name)) {
-				return writer;
+				return Optional.of(writer);
 			}
 		}
-		return null;
+		return Optional.absent();
 
 	}
 

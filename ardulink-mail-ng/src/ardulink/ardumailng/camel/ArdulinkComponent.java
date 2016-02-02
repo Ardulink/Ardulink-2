@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.UriEndpointComponent;
 import org.apache.camel.spi.UriEndpoint;
+import org.zu.ardulink.util.Optional;
 
 import ardulink.ardumailng.Command;
 
@@ -32,7 +33,7 @@ public class ArdulinkComponent extends UriEndpointComponent {
 
 		ArdulinkEndpoint.Config config = new ArdulinkEndpoint.Config();
 		config.setType(remaining);
-		config.setTypeParams(getOptional(parameters, "linkparams"));
+		config.setTypeParams(getOptional(parameters, "linkparams").orNull());
 		config.setValidFroms(get(parameters, "validfroms").split("\\;"));
 
 		handleScenarios(parameters, config);
@@ -75,17 +76,14 @@ public class ArdulinkComponent extends UriEndpointComponent {
 	}
 
 	private String get(Map<String, Object> parameters, String key) {
-		return checkNotNull(getOptional(parameters, key), "%s not configured",
-				key);
+		return getOptional(parameters, key)
+				.getOrThrow("%s not configured", key);
 	}
 
-	private String getOptional(Map<String, Object> parameters, String key) {
-		if (parameters.containsKey(key)) {
-			String value = String.valueOf(parameters.get(key));
-			parameters.remove(key);
-			return value;
-		}
-		return null;
+	private Optional<String> getOptional(Map<String, Object> parameters,
+			String key) {
+		return parameters.containsKey(key) ? Optional.of(String
+				.valueOf(parameters.remove(key))) : Optional.<String> absent();
 	}
 
 	private int getInt(String string) {

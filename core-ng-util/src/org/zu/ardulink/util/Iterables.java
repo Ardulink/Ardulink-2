@@ -19,4 +19,8 @@ public final class Iterables {
 		};
 	}
 
+	public static <T> Optional<T> getFirst(Iterable<T> iterable) {
+		return Iterators.getFirst(iterable.iterator());
+	}
+
 }

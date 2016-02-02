@@ -18,19 +18,23 @@ limitations under the License.
 
 package org.zu.ardulink.gui;
 
+import static com.github.pfichtner.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static java.awt.event.ItemEvent.SELECTED;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
+import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -44,29 +48,28 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = 1290277902714226253L;
 
-	private final JComboBox uris = new JComboBox();
+	private final JComboBox uris = createURICombo();
 
-	private Link link;
+	private JComboBox createURICombo() {
+		JComboBox uris = new JComboBox();
+		uris.setRenderer(new DefaultListCellRenderer() {
 
-	private JPanel subPanel;
+			private static final long serialVersionUID = 2756587449741341859L;
 
-	/**
-	 * Create the panel.
-	 */
-	public GenericConnectionPanel() {
-		setLayout(new BorderLayout());
-		add(new JLabel("URI"), BorderLayout.WEST);
-		uris.addItemListener(itemListener());
-		add(uris, BorderLayout.EAST);
-		subPanel = subPanel();
-		for (URI uri : LinkManager.getInstance().listURIs()) {
-			uris.addItem(uri.toASCIIString());
-		}
-		add(subPanel, BorderLayout.SOUTH);
-	}
-
-	private ItemListener itemListener() {
-		return new ItemListener() {
+			@Override
+			public Component getListCellRendererComponent(JList list,
+					Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				try {
+					return super.getListCellRendererComponent(list,
+							extractNameFromURI(new URI((String) value)), index,
+							isSelected, cellHasFocus);
+				} catch (URISyntaxException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		});
+		uris.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent event) {
 				if (event.getStateChange() == SELECTED) {
@@ -79,32 +82,68 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 							ConfigAttribute attribute = configurer
 									.getAttribute(name);
 							subPanel.add(new JLabel(attribute.getName()));
-							if (attribute.getType().equals(Boolean.class)
-									|| attribute.getType()
-											.equals(boolean.class)) {
-								JCheckBox checkBox = new JCheckBox();
-								checkBox.setSelected(Boolean
-										.valueOf((Boolean) attribute.getValue()));
-								subPanel.add(checkBox);
-							} else if (attribute.hasChoiceValues()) {
-								JComboBox comboBox = new JComboBox(
-										attribute.getChoiceValues());
-								if (comboBox.getModel().getSize() > 0) {
-									comboBox.setSelectedIndex(0);
-								}
-								subPanel.add(comboBox);
-							} else {
-								subPanel.add(new JTextField(String
-										.valueOf(attribute.getValue())));
-							}
+							subPanel.add(createComponent(attribute));
 						}
 					} catch (URISyntaxException e) {
 						throw new RuntimeException(e);
 					}
-
+					subPanel.repaint();
 				}
 			}
-		};
+
+			private JComponent createComponent(ConfigAttribute attribute) {
+				if (isBoolean(attribute)) {
+					return setState(new JCheckBox(), attribute);
+				} else if (isChoice(attribute)) {
+					return selectFirstValue(new JComboBox(attribute
+							.getChoiceValues()));
+				} else {
+					return new JTextField(String.valueOf(attribute.getValue()));
+				}
+			}
+
+			private JComponent setState(JCheckBox checkBox,
+					ConfigAttribute attribute) {
+				checkBox.setSelected(Boolean.valueOf((Boolean) attribute
+						.getValue()));
+				return checkBox;
+			}
+
+			private JComponent selectFirstValue(JComboBox comboBox) {
+				comboBox.setSelectedIndex(comboBox.getModel().getSize() > 0 ? 0
+						: -1);
+				return comboBox;
+			}
+
+			private boolean isChoice(ConfigAttribute attribute) {
+				return attribute.hasChoiceValues();
+			}
+
+			private boolean isBoolean(ConfigAttribute attribute) {
+				return attribute.getType().equals(Boolean.class)
+						|| attribute.getType().equals(boolean.class);
+			}
+		});
+		return uris;
+	}
+
+	private Link link;
+
+	private JPanel subPanel;
+
+	/**
+	 * Create the panel.
+	 */
+	public GenericConnectionPanel() {
+		setLayout(new BorderLayout());
+		add(new JLabel("URI"), BorderLayout.WEST);
+		add(uris, BorderLayout.EAST);
+		subPanel = subPanel();
+		LinkManager linkManager = LinkManager.getInstance();
+		for (URI uri : linkManager.listURIs()) {
+			uris.addItem(uri.toASCIIString());
+		}
+		add(subPanel, BorderLayout.SOUTH);
 	}
 
 	private JPanel subPanel() {

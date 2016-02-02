@@ -154,7 +154,9 @@ public class ArdulinkProtocol2 implements Protocol {
 		checkState(matcher.matches(), "No match %s", in);
 		checkState(matcher.groupCount() >= 2, "GroupCount %s",
 				matcher.groupCount());
-		ALPProtocolKey key = ALPProtocolKey.fromString(matcher.group(1));
+		String command = matcher.group(1);
+		ALPProtocolKey key = ALPProtocolKey.fromString(command).getOrThrow(
+				"command %s not known", command);
 
 		if (key == READY) {
 			return new FromArduinoReady();

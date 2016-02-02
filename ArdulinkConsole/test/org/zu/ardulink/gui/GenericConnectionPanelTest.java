@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 
 import org.hamcrest.Matcher;
 import org.junit.Test;
+import org.zu.ardulink.util.Optional;
 
 public class GenericConnectionPanelTest {
 
@@ -24,7 +25,7 @@ public class GenericConnectionPanelTest {
 	public void panelHasComboBoxWithValues() {
 		List<? extends Component> componentsOfConnectionsPanel = componentsOf(new GenericConnectionPanel());
 		JComboBox comboBox = findFirst(JComboBox.class,
-				componentsOfConnectionsPanel);
+				componentsOfConnectionsPanel).get();
 		assertThat(comboBox, not(nullValue()));
 		Object[] items = RowMatcher.items(comboBox);
 		assertThat(items, is(new Object[] { "ardulink://dummy",
@@ -35,9 +36,10 @@ public class GenericConnectionPanelTest {
 	public void hasSubPanelWithConnectionIndividualComponents() {
 		List<? extends Component> componentsOfConnectionsPanel = componentsOf(new GenericConnectionPanel());
 		JComboBox comboBox = findFirst(JComboBox.class,
-				componentsOfConnectionsPanel);
+				componentsOfConnectionsPanel).get();
 		comboBox.setSelectedItem("ardulink://dummy");
-		JPanel panel = findFirst(JPanel.class, componentsOfConnectionsPanel);
+		JPanel panel = findFirst(JPanel.class, componentsOfConnectionsPanel)
+				.get();
 		assertThat(panel, has(row(0).withLabel("a").withValue(42)));
 		assertThat(panel, has(row(1).withLabel("b").withChoice("foo", "bar")
 				.withValue("foo")));
@@ -45,13 +47,14 @@ public class GenericConnectionPanelTest {
 				.withValue(TRUE)));
 	}
 
-	private <T> T findFirst(Class<T> clazz, List<? extends Component> components) {
+	private <T> Optional<T> findFirst(Class<T> clazz,
+			List<? extends Component> components) {
 		for (Component component : components) {
 			if (clazz.isInstance(component)) {
-				return clazz.cast(component);
+				return Optional.of(clazz.cast(component));
 			}
 		}
-		return null;
+		return Optional.<T> absent();
 	}
 
 	private <T> Matcher<T> has(Matcher<T> matcher) {

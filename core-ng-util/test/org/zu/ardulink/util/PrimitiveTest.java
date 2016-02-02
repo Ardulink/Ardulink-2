@@ -10,11 +10,26 @@ import org.junit.Test;
 public class PrimitiveTest {
 
 	@Test
-	public void testParseAs() {
+	public void canParseIntAsInt() {
 		assertThat(Primitive.parseAs(int.class, "123"),
 				Is.<Object> is(Integer.valueOf(123)));
+	}
+
+	@Test
+	public void canParseIntAsDouble() {
 		assertThat(Primitive.parseAs(double.class, "123"),
 				Is.<Object> is(Double.valueOf(123)));
+	}
+
+	@Test
+	public void canParseDoubleAsDouble() {
+		assertThat(Primitive.parseAs(double.class, "123.456"),
+				Is.<Object> is(Double.valueOf(123.456)));
+	}
+
+	@Test(expected = NumberFormatException.class)
+	public void cannotParseDoubleAsInt() {
+		Primitive.parseAs(int.class, "123.456");
 	}
 
 	@Test

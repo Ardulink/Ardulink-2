@@ -39,4 +39,9 @@ public final class Iterators {
 		return new EnumerationIteratorAdapter<T>(enumeration);
 	}
 
+	public static <T> Optional<T> getFirst(Iterator<T> iterator) {
+		return iterator.hasNext() ? Optional.<T> of(iterator.next()) : Optional
+				.<T> absent();
+	}
+
 }

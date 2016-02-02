@@ -17,6 +17,7 @@ import org.apache.camel.impl.DefaultProducer;
 import org.zu.ardulink.util.Joiner;
 import org.zu.ardulink.util.ListMultiMap;
 import org.zu.ardulink.util.Lists;
+import org.zu.ardulink.util.Optional;
 
 import ardulink.ardumailng.Command;
 
@@ -45,9 +46,9 @@ public class ArdulinkProducer extends DefaultProducer {
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		String out = process(exchange.getIn());
-		if (out != null) {
-			getMessageTarget(exchange).setBody(out, String.class);
+		Optional<String> out = process(exchange.getIn());
+		if (out.isPresent()) {
+			getMessageTarget(exchange).setBody(out.get(), String.class);
 		}
 	}
 
@@ -73,7 +74,7 @@ public class ArdulinkProducer extends DefaultProducer {
 	private final List<String> validFroms = new ArrayList<String>();
 	private final ListMultiMap<String, Command> commands = new ListMultiMap<String, Command>();
 
-	private String process(Message message) {
+	private Optional<String> process(Message message) {
 		String from = message.getHeader("From", String.class);
 		checkState(from != null && !from.isEmpty(), "No from set in message");
 		checkState(validFroms.contains(from),
@@ -96,10 +97,10 @@ public class ArdulinkProducer extends DefaultProducer {
 						results.add(command + "=KO");
 					}
 				}
-				return Joiner.on("\n").join(results);
+				return Optional.of(Joiner.on("\n").join(results));
 			}
 		}
-		return null;
+		return Optional.absent();
 	}
 
 	public void setValidFroms(List<String> validFroms) {

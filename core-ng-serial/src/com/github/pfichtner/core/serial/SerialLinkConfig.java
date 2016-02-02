@@ -2,11 +2,16 @@ package com.github.pfichtner.core.serial;
 
 import static gnu.io.CommPortIdentifier.PORT_SERIAL;
 import static org.zu.ardulink.util.Iterables.forEnumeration;
+import static org.zu.ardulink.util.Iterables.getFirst;
 import gnu.io.CommPortIdentifier;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
+
+import org.zu.ardulink.util.Iterables;
+import org.zu.ardulink.util.Optional;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
@@ -39,14 +44,18 @@ public class SerialLinkConfig implements LinkConfig {
 
 	private Protocol defaultProto() {
 		List<String> available = availableProtos();
-		Protocol pref = ArdulinkProtocol2.instance();
-		if (available.contains(pref.getName())) {
-			return pref;
-		} else if (!available.isEmpty()) {
-			return Protocols.getByName(available.get(0));
-		} else {
-			return null;
+		Optional<Protocol> proto = isAvailable(ArdulinkProtocol2.instance());
+		if (proto.isPresent()) {
+			return proto.get();
 		}
+		Optional<String> firstProtoName = getFirst(available);
+		return firstProtoName.isPresent() ? Protocols.getByName(firstProtoName
+				.get()) : null;
+	}
+
+	private Optional<Protocol> isAvailable(Protocol prefered) {
+		return availableProtos().contains(prefered.getName()) ? Optional
+				.of(prefered) : Optional.<Protocol> absent();
 	}
 
 	public String getPort() {

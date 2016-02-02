@@ -18,6 +18,7 @@ import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 
 import org.zu.ardulink.util.Lists;
+import org.zu.ardulink.util.Optional;
 import org.zu.ardulink.util.Primitive;
 
 import com.github.pfichtner.ardulink.core.Link;
@@ -38,7 +39,7 @@ public abstract class LinkManager {
 		 * @return name of this attribute
 		 */
 		String getName();
-		
+
 		/**
 		 * Returns the type of this attribute.
 		 * 
@@ -99,7 +100,7 @@ public abstract class LinkManager {
 			this.nls = nls == null ? null : ResourceBundle.getBundle(nls
 					.value());
 		}
-		
+
 		@Override
 		public String getName() {
 			return nls == null || !nls.containsKey(this.attribute.getName()) ? this.attribute
@@ -243,13 +244,13 @@ public abstract class LinkManager {
 				return result;
 			}
 
-			private LinkFactory<?> getConnectionFactory(String name) {
+			private Optional<LinkFactory<?>> getConnectionFactory(String name) {
 				for (LinkFactory<?> connectionFactory : getConnectionFactories()) {
 					if (connectionFactory.getName().equals(name)) {
-						return connectionFactory;
+						return Optional.<LinkFactory<?>> of(connectionFactory);
 					}
 				}
-				return null;
+				return Optional.<LinkFactory<?>> absent();
 			}
 
 			private List<LinkFactory> getConnectionFactories() {
@@ -259,12 +260,11 @@ public abstract class LinkManager {
 
 			@Override
 			public Configurer getConfigurer(URI uri) {
-				String name = getHostFromCheckedSchema(uri);
-				LinkFactory connectionFactory = getConnectionFactory(name);
-				checkArgument(
-						connectionFactory != null,
-						"No factory registered for \"%s\", available names are %s",
-						name, listURIs());
+				String name = extractNameFromURI(uri);
+				LinkFactory connectionFactory = getConnectionFactory(name)
+						.getOrThrow(IllegalArgumentException.class,
+								"No factory registered for \"%s\", available names are %s",
+								name, listURIs());
 				DefaultConfigurer defaultConfigurer = new DefaultConfigurer(
 						connectionFactory);
 				return configure(defaultConfigurer,
@@ -293,7 +293,7 @@ public abstract class LinkManager {
 		};
 	}
 
-	public static String getHostFromCheckedSchema(URI uri) {
+	public static String extractNameFromURI(URI uri) {
 		return checkSchema(uri).getHost();
 	}
 
