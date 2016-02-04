@@ -2,6 +2,9 @@ package com.github.pfichtner.ardulink.core.linkmanager;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Locale.CHINESE;
+import static java.util.Locale.ENGLISH;
+import static java.util.Locale.GERMAN;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -106,30 +109,36 @@ public class DummyLinkFactoryTest {
 	@Test
 	public void cannotSetChoiceValuesThatDoNotExist_WithPreviousQuery()
 			throws Exception {
+		Locale.setDefault(ENGLISH);
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
 		assertThat(a.getChoiceValues(), is(new Object[] { "aVal1", "aVal2" }));
 		String invalidValue = "aVal3IsNotAvalidValue";
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage(invalidValue + " is not a valid value for a, "
-				+ "valid values are [aVal1, aVal2]");
 		a.setValue(invalidValue);
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage(invalidValue + " is not a valid value for "
+				+ "A is meant just to be an example attribute"
+				+ ", valid values are [aVal1, aVal2]");
+		configurer.newLink();
 	}
 
 	@Test
 	public void cannotSetChoiceValuesThatDoNotExist_WithoutPreviousQuery()
 			throws Exception {
+		Locale.setDefault(ENGLISH);
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
 		String invalidValue = "aVal3IsNotAvalidValue";
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage(invalidValue + " is not a valid value for a, "
-				+ "valid values are [aVal1, aVal2]");
 		a.setValue(invalidValue);
+		exception.expect(IllegalArgumentException.class);
+		exception.expectMessage(invalidValue + " is not a valid value for "
+				+ "A is meant just to be an example attribute"
+				+ ", valid values are [aVal1, aVal2]");
+		configurer.newLink();
 	}
 
 	@Test
@@ -148,27 +157,28 @@ public class DummyLinkFactoryTest {
 	@Test
 	public void canIterateRegisteredFactories() throws URISyntaxException {
 		LinkManager connectionManager = LinkManager.getInstance();
-		assertThat(connectionManager.listURIs(),
-				is(Arrays.asList(new URI("ardulink://dummyLink"))));
+		assertThat(connectionManager.listURIs(), is(Arrays.asList(new URI(
+				"ardulink://dummyLink"), new URI(
+				"ardulink://dependendAttributes"))));
 	}
 
 	@Test
 	public void i18n_english() throws URISyntaxException {
-		Locale.setDefault(Locale.ENGLISH);
+		Locale.setDefault(ENGLISH);
 		assertThat(getName("a"),
 				is("A is meant just to be an example attribute"));
 	}
 
 	@Test
 	public void i18n_german() throws URISyntaxException {
-		Locale.setDefault(Locale.GERMAN);
+		Locale.setDefault(GERMAN);
 		assertThat(getName("a"), is("A ist einfach ein Beispielattribut"));
 	}
 
 	@Test
 	public void i18n_localeWithoutMessageFileWillFallbackToEnglish()
 			throws URISyntaxException {
-		Locale.setDefault(Locale.CHINESE);
+		Locale.setDefault(CHINESE);
 		assertThat(getName("a"),
 				is("A is meant just to be an example attribute"));
 	}
@@ -176,7 +186,7 @@ public class DummyLinkFactoryTest {
 	@Test
 	public void i18n_english_untagged_attribute_returns_the_attributes_name()
 			throws URISyntaxException {
-		Locale.setDefault(Locale.ENGLISH);
+		Locale.setDefault(ENGLISH);
 		assertThat(getName("b"), is("b"));
 	}
 

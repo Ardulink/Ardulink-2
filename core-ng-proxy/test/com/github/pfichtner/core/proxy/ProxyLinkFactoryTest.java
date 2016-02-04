@@ -63,6 +63,7 @@ public class ProxyLinkFactoryTest {
 		configurer.newLink().close();
 		assertThat(proxyServerDouble.getReceived(), is(Arrays.asList(
 				"ardulink:networkproxyserver:get_port_list",
+				"ardulink:networkproxyserver:get_port_list",
 				"ardulink:networkproxyserver:connect", "myPortNr0", "115200")));
 	}
 

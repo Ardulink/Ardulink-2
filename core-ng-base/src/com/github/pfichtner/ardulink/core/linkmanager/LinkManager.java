@@ -80,99 +80,6 @@ public abstract class LinkManager {
 
 	}
 
-	public static class ConfigAttributeAdapter<T extends LinkConfig> implements
-			ConfigAttribute {
-
-		private final Attribute attribute;
-		private final Attribute getChoicesFor;
-		private final ResourceBundle nls;
-		private List<Object> cachedChoiceValues;
-
-		public ConfigAttributeAdapter(T linkConfig,
-				BeanProperties beanProperties, String key) {
-			this.attribute = beanProperties.getAttribute(key);
-			checkArgument(attribute != null,
-					"Could not determine attribute %s", key);
-			this.getChoicesFor = BeanProperties.builder(linkConfig)
-					.using(propertyAnnotated(ChoiceFor.class)).build()
-					.getAttribute(attribute.getName());
-			I18n nls = linkConfig.getClass().getAnnotation(I18n.class);
-			this.nls = nls == null ? null : ResourceBundle.getBundle(nls
-					.value());
-		}
-
-		@Override
-		public String getName() {
-			return nls == null || !nls.containsKey(this.attribute.getName()) ? this.attribute
-					.getName() : nls.getString(this.attribute.getName());
-		}
-
-		@Override
-		public Class<?> getType() {
-			return attribute.getType();
-		}
-
-		@Override
-		public Object getValue() {
-			try {
-				return this.attribute.readValue();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		@Override
-		public void setValue(Object value) {
-			if (hasChoiceValues() && this.cachedChoiceValues == null) {
-				try {
-					this.cachedChoiceValues = Arrays.asList(getChoiceValues());
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-			}
-			checkArgument(this.cachedChoiceValues == null
-					|| this.cachedChoiceValues.contains(value),
-					"%s is not a valid value for %s, valid values are %s",
-					value, this.attribute.getName(), this.cachedChoiceValues);
-			try {
-				this.attribute.writeValue(value);
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		@Override
-		public boolean hasChoiceValues() {
-			return this.getChoicesFor != null;
-		}
-
-		@Override
-		public Object[] getChoiceValues() {
-			checkState(hasChoiceValues(),
-					"attribute does not have choiceValues");
-			try {
-				Object[] value = loadChoiceValues();
-				this.cachedChoiceValues = Arrays.asList(value);
-				return value;
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		private Object[] loadChoiceValues() throws Exception {
-			Object value = checkNotNull(this.getChoicesFor.readValue(),
-					"returntype was null (should be an empty Object[] or empty Collection)");
-			if (value instanceof Collection<?>) {
-				value = ((Collection<?>) value).toArray(new Object[0]);
-			}
-			checkState(value instanceof Object[],
-					"returntype is not an Object[] but %s",
-					value == null ? null : value.getClass());
-			return (Object[]) value;
-		}
-
-	}
-
 	public interface Configurer {
 
 		Collection<String> getAttributes();
@@ -186,10 +93,101 @@ public abstract class LinkManager {
 	private static class DefaultConfigurer<T extends LinkConfig> implements
 			Configurer {
 
+		public class ConfigAttributeAdapter<T extends LinkConfig> implements
+				ConfigAttribute {
+
+			private final Attribute attribute;
+			private final Attribute getChoicesFor;
+			private List<Object> cachedChoiceValues;
+			private final ResourceBundle nls;
+
+			public ConfigAttributeAdapter(T linkConfig,
+					BeanProperties beanProperties, String key) {
+				this.attribute = beanProperties.getAttribute(key);
+				checkArgument(attribute != null,
+						"Could not determine attribute %s", key);
+				this.getChoicesFor = BeanProperties.builder(linkConfig)
+						.using(propertyAnnotated(ChoiceFor.class)).build()
+						.getAttribute(attribute.getName());
+				I18n nls = linkConfig.getClass().getAnnotation(I18n.class);
+				this.nls = nls == null ? null : ResourceBundle.getBundle(nls
+						.value());
+			}
+
+			@Override
+			public String getName() {
+				return nls == null
+						|| !nls.containsKey(this.attribute.getName()) ? this.attribute
+						.getName() : nls.getString(this.attribute.getName());
+			}
+
+			@Override
+			public Class<?> getType() {
+				return attribute.getType();
+			}
+
+			@Override
+			public Object getValue() {
+				try {
+					return this.attribute.readValue();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			@Override
+			public void setValue(Object value) {
+				try {
+					this.attribute.writeValue(value);
+					changed = true;
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			@Override
+			public boolean hasChoiceValues() {
+				return this.getChoicesFor != null;
+			}
+
+			@Override
+			public Object[] getChoiceValues() {
+				checkState(hasChoiceValues(),
+						"attribute does not have choiceValues");
+				try {
+					if (this.cachedChoiceValues == null || changed) {
+						Object[] value = loadChoiceValues();
+						this.cachedChoiceValues = Arrays.asList(value);
+						changed = false;
+					}
+					return this.cachedChoiceValues
+							.toArray(new Object[this.cachedChoiceValues.size()]);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			private Object[] loadChoiceValues() throws Exception {
+				Object value = checkNotNull(
+						this.getChoicesFor.readValue(),
+						"returntype for choice of %s was null (should be an empty Object[] or empty Collection)",
+						getName());
+				if (value instanceof Collection<?>) {
+					value = ((Collection<?>) value).toArray(new Object[0]);
+				}
+				checkState(value instanceof Object[],
+						"returntype is not an Object[] but %s",
+						value == null ? null : value.getClass());
+				return (Object[]) value;
+			}
+
+		}
+
 		private final LinkFactory<T> linkFactory;
 		private final T linkConfig;
 		private BeanProperties beanProperties;
 		private final Map<String, ConfigAttributeAdapter<T>> cache = new HashMap<String, ConfigAttributeAdapter<T>>();
+		private boolean changed = true;
 
 		public DefaultConfigurer(LinkFactory<T> connectionFactory) {
 			this.linkFactory = connectionFactory;
@@ -219,7 +217,28 @@ public abstract class LinkManager {
 
 		@Override
 		public Link newLink() throws Exception {
+			validate();
 			return this.linkFactory.newLink(this.linkConfig);
+		}
+
+		private void validate() {
+			for (String name : getAttributes()) {
+				ConfigAttribute attribute = getAttribute(name);
+				if (attribute.hasChoiceValues()) {
+					checkIfValid(attribute);
+				}
+			}
+		}
+
+		private void checkIfValid(ConfigAttribute attribute) {
+			Object value = attribute.getValue();
+			if (value != null) {
+				List<Object> validValues = Arrays.asList(attribute
+						.getChoiceValues());
+				checkArgument(validValues.contains(value),
+						"%s is not a valid value for %s, valid values are %s",
+						value, attribute.getName(), validValues);
+			}
 		}
 
 	}
@@ -262,7 +281,8 @@ public abstract class LinkManager {
 			public Configurer getConfigurer(URI uri) {
 				String name = extractNameFromURI(uri);
 				LinkFactory connectionFactory = getConnectionFactory(name)
-						.getOrThrow(IllegalArgumentException.class,
+						.getOrThrow(
+								IllegalArgumentException.class,
 								"No factory registered for \"%s\", available names are %s",
 								name, listURIs());
 				DefaultConfigurer defaultConfigurer = new DefaultConfigurer(
