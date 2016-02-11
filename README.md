@@ -1,7 +1,7 @@
 Ardulink-1
 ========
 
-This is the repository for Ardulink 1. Ardulink 1 isa complete, open source, java solution for the control and coordination of Arduino boards. This repository contains Ardulink Version 0.6.1 – MAGNUM PI and of course all the previous releases.
+This is the repository for Ardulink 1. Ardulink 1 is a complete, open source, java solution for the control and coordination of Arduino boards. This repository contains Ardulink Version 0.6.1 – MAGNUM PI and of course all the previous releases.
 
 Ardulink is heavily re engineerd in order to adhere to several international IoT standards. So, please, see Ardulink-2 repository for the last release.
 
