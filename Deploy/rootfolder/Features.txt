@@ -1,4 +1,10 @@
-Version 0.6.1-SNAPSHOT.20151017 Gutenberg
+Version 0.6.1.20151225 Magnum PI
+
+- Added Raspberry PI GPIO support. Ardulink PI module has a connection that wrap the Raspberry PI as an Arduino board.
+- Added Protocol Parser feature. Used from Ardulink PI Connection it can be used to parse a message from an Ardulink Protocol implementation
+- BUG FIX: remove listeners now works better, sketches have pinMode(Ax, INPUT) to manage analog reads.
+
+Version 0.6.0.20151017 Gutenberg
 
 - Added MQTT support. Ardulink MQTT is a command line application that can control Arduino boards receiving messages from a MQTT broker.
 - Added Mail support. Ardulink Mail is a command line application that can control Arduino boards receiving messages from an email inbox.
