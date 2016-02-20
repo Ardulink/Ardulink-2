@@ -22,7 +22,7 @@
 	</repositories>
 
 	<properties>
-		<project.build.sourceEncoding>CP1252</project.build.sourceEncoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<compilerVersion>1.6</compilerVersion>
 		<maven.compiler.source>1.6</maven.compiler.source>
 		<maven.compiler.target>1.6</maven.compiler.target>
