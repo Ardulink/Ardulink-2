@@ -19,14 +19,13 @@ package com.github.pfichtner.ardulink.core.convenience;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.core.IsSame.*;
+import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.hamcrest.core.IsSame;
 import org.junit.Test;
 
 import com.github.pfichtner.ardulink.core.Connection;
