@@ -53,6 +53,7 @@ public class ThreadTimeSlicer implements TimeSlicer {
 		};
 	}
 
+	@Override
 	public void add(SlicedAnalogReadChangeListenerAdapter runnable) {
 		this.runnables.add(runnable);
 	};

@@ -60,6 +60,7 @@ public class KeyPressController extends JPanel implements Linkable {
 		setFocusTraversalKeysEnabled(false);
 	}
 
+	@Override
 	public void setLink(Link link) {
 		keyPressListener.setLink(link);
 	}

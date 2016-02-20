@@ -70,6 +70,7 @@ public class JoystickSmartCarDriver extends JFrame implements
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					for (LookAndFeelInfo laf : UIManager
@@ -107,6 +108,7 @@ public class JoystickSmartCarDriver extends JFrame implements
 
 		btnConnect = new JButton("Connect");
 		btnConnect.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent event) {
 				if (link != null) {
 					String deviceName = bluetoothConnectionPanel
@@ -128,6 +130,7 @@ public class JoystickSmartCarDriver extends JFrame implements
 
 		btnDisconnect = new JButton("Disconnect");
 		btnDisconnect.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (link != null) {
 					link.disconnect();

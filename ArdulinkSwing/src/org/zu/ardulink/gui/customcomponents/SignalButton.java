@@ -58,6 +58,7 @@ public class SignalButton extends JPanel implements Linkable {
 		
 		signalButton = new JButton("Send");
 		signalButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				link.sendCustomMessage(getId(), getValue());
 			}
@@ -194,12 +195,14 @@ public class SignalButton extends JPanel implements Linkable {
 		signalButton.setRolloverEnabled(b);
 	}
 
+	@Override
 	public void setForeground(Color fg) {
 		if(signalButton != null) {
 			signalButton.setForeground(fg);
 		}
 	}
 
+	@Override
 	public void setBackground(Color bg) {
 		if(signalButton != null) {
 			signalButton.setBackground(bg);

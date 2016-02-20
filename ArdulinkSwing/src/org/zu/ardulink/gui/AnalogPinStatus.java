@@ -83,10 +83,10 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 						Integer value = event.getValue();
 						valueLabel.setText(Integer.toString(value));
 
-						float volt = ((float) (((float) value) * 5.0f)) / 1023.0f;
+						float volt = (((float) value) * 5.0f) / 1023.0f;
 						voltValueLbl.setText(String.valueOf(volt) + "V");
 
-						float progress = ((float) (((float) (value - getMinValue())) * 100.0f))
+						float progress = ((value - getMinValue()) * 100.0f)
 								/ ((float) getMaxValue() - (float) getMinValue());
 						progressBar.setValue((int) progress);
 					}
@@ -173,6 +173,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		tglbtnSensor = new JToggleButton("Off");
 		tglbtnSensor.addItemListener(new ItemListener() {
 
+			@Override
 			public void itemStateChanged(ItemEvent e) {
 				if(e.getStateChange() == ItemEvent.SELECTED) {
 					link.addAnalogReadChangeListener((listener = listener()));
@@ -201,6 +202,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		add(tglbtnSensor);
 		
 		minValueComboBox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				int maximum = getMaxValue();
 				int minimum = getMinValue();
@@ -213,6 +215,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		});
 
 		maxValueComboBox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				int maximum = getMaxValue();
 				int minimum = getMinValue();
@@ -235,6 +238,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		pinComboBoxModel.setSelectedItem(pin);
 	}
 
+	@Override
 	public void setLink(Link link) {
 		if (this.link != null && this.listener != null) {
 			this.link.removeAnalogReadChangeListener(this.listener);
@@ -247,7 +251,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	}
 		
 	public int getValue() {
-		return Integer.parseInt((String)valueLabel.getText());
+		return Integer.parseInt(valueLabel.getText());
 	}
 
 	public void setValue(int value) {

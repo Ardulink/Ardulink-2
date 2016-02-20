@@ -1,3 +1,19 @@
+/**
+Copyright 2013 project Ardulink http://www.ardulink.org/
+ 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+ 
+    http://www.apache.org/licenses/LICENSE-2.0
+ 
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+ */
+
 package com.github.pfichtner.core.proxy;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -25,6 +41,8 @@ public class ProxyLinkFactoryTest {
 	@Rule
 	public ProxyServerDouble proxyServerDouble = new ProxyServerDouble();
 
+	private static final Object[] emptyArray = new Object[0];
+
 	@Test
 	public void canConnectWhileConfiguring() throws Exception {
 		proxyServerDouble.setNumberOfPorts(0);
@@ -33,7 +51,7 @@ public class ProxyLinkFactoryTest {
 				"ardulink://proxy?tcphost=localhost&tcpport="
 						+ proxyServerDouble.getLocalPort()));
 		ConfigAttribute port = configurer.getAttribute("port");
-		assertThat(port.getChoiceValues(), is(new Object[0]));
+		assertThat(port.getChoiceValues(), is(emptyArray));
 	}
 
 	@Test
@@ -56,7 +74,7 @@ public class ProxyLinkFactoryTest {
 				"ardulink://proxy?tcphost=localhost&tcpport="
 						+ proxyServerDouble.getLocalPort()));
 		ConfigAttribute port = configurer.getAttribute("port");
-		Object[] values = (Object[]) new String[] { "myPortNr0" };
+		Object[] values = new String[] { "myPortNr0" };
 		assertThat(port.getChoiceValues(), is(values));
 		port.setValue(values[0]);
 
@@ -73,7 +91,7 @@ public class ProxyLinkFactoryTest {
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://proxy?tcphost=localhost&tcpport="
 						+ proxyServerDouble.getLocalPort()));
-		Object[] values = (Object[]) new String[] { "myPortNr0" };
+		Object[] values = new String[] { "myPortNr0" };
 		configurer.getAttribute("port").setValue(values[0]);
 		Link newLink = configurer.newLink();
 

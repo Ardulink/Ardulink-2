@@ -166,6 +166,7 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 		return link;
 	}
 
+	@Override
 	public void setLink(Link link) {
 		this.link = link;
 	}

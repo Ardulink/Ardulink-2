@@ -98,6 +98,7 @@ public class TogggleSignalButton extends JPanel implements Linkable {
 		
 		signalButton = new JToggleButton("Off");
 		signalButton.addItemListener(new ItemListener() {
+			@Override
 			public void itemStateChanged(ItemEvent e) {
 				link.sendCustomMessage(getId(),
 						e.getStateChange() == SELECTED ? getValueOn()
@@ -298,12 +299,14 @@ public class TogggleSignalButton extends JPanel implements Linkable {
 		signalButton.setRolloverEnabled(b);
 	}
 
+	@Override
 	public void setForeground(Color fg) {
 		if(signalButton != null) {
 			signalButton.setForeground(fg);
 		}
 	}
 
+	@Override
 	public void setBackground(Color bg) {
 		if(signalButton != null) {
 			signalButton.setBackground(bg);

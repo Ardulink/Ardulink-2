@@ -57,30 +57,37 @@ public abstract class Config {
 			this.topicPatternAnalogControl = c.getTopicPatternAnalogControl();
 		}
 
+		@Override
 		public String getTopic() {
 			return topic;
 		}
 
+		@Override
 		public Pattern getTopicPatternDigitalWrite() {
 			return topicPatternDigitalWrite;
 		}
 
+		@Override
 		public String getTopicPatternDigitalRead() {
 			return topicPatternDigitalRead;
 		}
 
+		@Override
 		public Pattern getTopicPatternAnalogWrite() {
 			return topicPatternAnalogWrite;
 		}
 
+		@Override
 		public String getTopicPatternAnalogRead() {
 			return topicPatternAnalogRead;
 		}
 
+		@Override
 		public Pattern getTopicPatternDigitalControl() {
 			return topicPatternDigitalControl;
 		}
 
+		@Override
 		public Pattern getTopicPatternAnalogControl() {
 			return topicPatternAnalogControl;
 		}

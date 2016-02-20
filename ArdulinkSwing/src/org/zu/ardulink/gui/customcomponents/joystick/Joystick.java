@@ -29,7 +29,7 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.LinkedList;
+import java.awt.geom.Point2D;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -145,7 +145,7 @@ public class Joystick extends JPanel implements Linkable {
         }
         if (isMouseTracking) {
             curJoyAngle = (float) Math.atan2(dy, dx);
-            curJoySize = (float) Point.distance(mouseX, mouseY,
+            curJoySize = (float) Point2D.distance(mouseX, mouseY,
                     joyCenterX, joyCenterY);
         } else {
             curJoySize = 0;

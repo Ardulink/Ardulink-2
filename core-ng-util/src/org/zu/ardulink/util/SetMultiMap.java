@@ -32,6 +32,7 @@ import java.util.Set;
  */
 public class SetMultiMap<K, V> extends AbstractMultiMap<K, V> {
 
+	@Override
 	protected Collection<V> make() {
 		return new HashSet<V>();
 	}

@@ -38,6 +38,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
@@ -89,6 +90,7 @@ public class Console extends JFrame implements Linkable {
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					for (LookAndFeelInfo laf : UIManager
@@ -120,7 +122,7 @@ public class Console extends JFrame implements Linkable {
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
 
-		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane = new JTabbedPane(SwingConstants.TOP);
 		contentPane.add(tabbedPane, BorderLayout.CENTER);
 
 		JPanel configurationPanel = new JPanel();
@@ -132,6 +134,7 @@ public class Console extends JFrame implements Linkable {
 
 		btnConnect = new JButton("Connect");
 		btnConnect.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent event) {
 				String uri = genericConnectionPanel.getURI();
 				try {
@@ -149,6 +152,7 @@ public class Console extends JFrame implements Linkable {
 
 		btnDisconnect = new JButton("Disconnect");
 		btnDisconnect.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				disconnect();
 			}
@@ -263,6 +267,7 @@ public class Console extends JFrame implements Linkable {
 		stateBar.add(connectionStatus, BorderLayout.SOUTH);
 
 		tabbedPane.addChangeListener(new ChangeListener() {
+			@Override
 			public void stateChanged(ChangeEvent e) {
 				if (tabbedPane.getSelectedComponent().equals(keyControlPanel)) {
 					keyControlPanel.requestFocus();
@@ -334,6 +339,7 @@ public class Console extends JFrame implements Linkable {
 		callLinkables(link);
 	}
 
+	@Override
 	public void setLink(Link link) {
 		this.link = link;
 		connected();

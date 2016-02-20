@@ -27,10 +27,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JCheckBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.WindowConstants;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -117,7 +117,7 @@ public class RGBController extends JPanel implements Linkable, PWMControllerList
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				ColorChooserDialog dialog = new ColorChooserDialog(instance);
-				dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+				dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 				dialog.setVisible(true);
 			}
 		});
@@ -134,6 +134,7 @@ public class RGBController extends JPanel implements Linkable, PWMControllerList
 		colorTextField.getDocument().addDocumentListener(this);
 	}
 	
+	@Override
 	public void setLink(Link link) {
 		redController.setLink(link);
 		greenController.setLink(link);

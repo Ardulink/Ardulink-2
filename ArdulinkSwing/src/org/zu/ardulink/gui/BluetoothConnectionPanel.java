@@ -76,6 +76,7 @@ public class BluetoothConnectionPanel extends JPanel implements Linkable {
 
 		discoverButton = new JButton("");
 		discoverButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				deviceComboBox.removeAllItems();
 				PortListCallbackDialog dialog = new PortListCallbackDialog();
@@ -148,6 +149,7 @@ public class BluetoothConnectionPanel extends JPanel implements Linkable {
 		return link;
 	}
 
+	@Override
 	public void setLink(Link link) {
 		this.link = link;
 	}

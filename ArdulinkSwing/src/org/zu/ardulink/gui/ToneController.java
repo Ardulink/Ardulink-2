@@ -118,6 +118,7 @@ public class ToneController extends JPanel implements Linkable {
 		durationCheckBox = new JCheckBox("Duration enabled");
 		durationCheckBox.setSelected(true);
 		durationCheckBox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(durationCheckBox.isSelected()) {
 					durationLabel.setEnabled(true);
@@ -133,6 +134,7 @@ public class ToneController extends JPanel implements Linkable {
 		
 		toneButton = new JToggleButton("Off");
 		toneButton.addItemListener(new ItemListener() {
+			@Override
 			public void itemStateChanged(ItemEvent e) {
 				int pin = pinComboBoxModel.getSelectedItem().intValue();
 				if(e.getStateChange() == ItemEvent.SELECTED) {
@@ -313,12 +315,14 @@ public class ToneController extends JPanel implements Linkable {
 		toneButton.setRolloverEnabled(b);
 	}
 
+	@Override
 	public void setForeground(Color fg) {
 		if(toneButton != null) {
 			toneButton.setForeground(fg);
 		}
 	}
 
+	@Override
 	public void setBackground(Color bg) {
 		if(toneButton != null) {
 			toneButton.setBackground(bg);

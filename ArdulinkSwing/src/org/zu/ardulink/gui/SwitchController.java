@@ -67,6 +67,7 @@ public class SwitchController extends JPanel implements Linkable {
 		
 		switchToggleButton = new JToggleButton("Off");
 		switchToggleButton.addItemListener(new ItemListener() {
+			@Override
 			public void itemStateChanged(ItemEvent e) {
 				int pin = pinComboBoxModel.getSelectedItem().intValue();
 				if(e.getStateChange() == ItemEvent.SELECTED) {
@@ -90,6 +91,7 @@ public class SwitchController extends JPanel implements Linkable {
 		pinComboBoxModel.setSelectedItem(pin);
 	}
 
+	@Override
 	public void setLink(Link link) {
 		this.link = link;
 	}

@@ -111,6 +111,7 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 		tglbtnSensor = new JToggleButton("Sensor off");
 		tglbtnSensor.addItemListener(new ItemListener() {
 
+			@Override
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
 					link.addDigitalReadChangeListener((listener = listener()));
@@ -137,6 +138,7 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 		pinComboBoxModel.setSelectedItem(pin);
 	}
 
+	@Override
 	public void setLink(Link link) {
 		if (this.link != null && listener != null) {
 			this.link.removeDigitalReadChangeListener(listener);

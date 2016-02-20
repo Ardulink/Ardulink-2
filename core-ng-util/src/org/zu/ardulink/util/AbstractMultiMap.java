@@ -110,6 +110,7 @@ public abstract class AbstractMultiMap<K, V> implements
 				}
 			}
 
+			@Override
 			public Entry<K, V> next() {
 				fetch();
 				return new MapEntry<K, V>(key, cur.next());

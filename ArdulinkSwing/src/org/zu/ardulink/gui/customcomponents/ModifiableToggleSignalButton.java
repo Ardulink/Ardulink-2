@@ -60,7 +60,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 	public ModifiableToggleSignalButton() {
 		setLayout(new BorderLayout(0, 0));
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.TOP);
 		add(tabbedPane);
 		
 		tabbedPane.addTab("Play", null, signalButton, null);
@@ -71,6 +71,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 		
 		chckbxValueOnFieldIs = new JCheckBox("Value field ON is visible");
 		chckbxValueOnFieldIs.addChangeListener(new ChangeListener() {
+			@Override
 			public void stateChanged(ChangeEvent e) {
 				signalButton.setValueOnVisible(chckbxValueOnFieldIs.isSelected());
 			}
@@ -81,6 +82,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 
 		chckbxValueOffFieldIs = new JCheckBox("Value field OFF is visible");
 		chckbxValueOffFieldIs.addChangeListener(new ChangeListener() {
+			@Override
 			public void stateChanged(ChangeEvent e) {
 				signalButton.setValueOffVisible(chckbxValueOffFieldIs.isSelected());
 			}

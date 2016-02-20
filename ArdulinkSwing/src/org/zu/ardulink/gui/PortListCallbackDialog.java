@@ -27,6 +27,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
 public class PortListCallbackDialog extends JDialog {
@@ -48,7 +49,7 @@ public class PortListCallbackDialog extends JDialog {
 	 * Create the dialog.
 	 */
 	public PortListCallbackDialog() {
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setResizable(false);
 		setModal(true);
 		setTitle("Searching...");
@@ -69,6 +70,7 @@ public class PortListCallbackDialog extends JDialog {
 			{
 				cancelButton = new JButton("Cancel");
 				cancelButton.addActionListener(new ActionListener() {
+					@Override
 					public void actionPerformed(ActionEvent e) {
 						dispose();
 					}

@@ -32,6 +32,7 @@ import java.util.Map.Entry;
  */
 public class ListMultiMap<K, V> extends AbstractMultiMap<K, V> {
 
+	@Override
 	protected Collection<V> make() {
 		return new ArrayList<V>();
 	}

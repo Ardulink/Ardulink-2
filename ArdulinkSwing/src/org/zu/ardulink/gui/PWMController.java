@@ -158,6 +158,7 @@ public class PWMController extends JPanel implements Linkable {
 		valueComboBoxModel = new IntMinMaxModel(0, 255).withFirstItemSelected();
 		valueComboBox = new JComboBox(valueComboBoxModel);
 		valueComboBox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				int comboBoxCurrentValue = valueComboBoxModel.getSelectedItem().intValue();
 				int powerSliderCurrentValue = powerSlider.getValue();
@@ -184,13 +185,14 @@ public class PWMController extends JPanel implements Linkable {
 		add(chckbxContChange);
 		
 		powerSlider.addChangeListener(new ChangeListener() {
+			@Override
 			public void stateChanged(ChangeEvent e) {
 				if (!powerSlider.getValueIsAdjusting() || chckbxContChange.isSelected()) {
-			        int powerValue = (int)powerSlider.getValue();
+			        int powerValue = powerSlider.getValue();
 			        valueComboBoxModel.setSelectedItem(powerValue);
-			        float volt = ((float)(((float)powerValue)*5.0f))/255.0f;
+			        float volt = ((powerValue)*5.0f)/255.0f;
 					voltValueLbl.setText(String.valueOf(volt) + "V");
-			        float progress  = ((float)(((float)(powerValue - powerSlider.getMinimum()))*100.0f))/((float)powerSlider.getMaximum() - (float)powerSlider.getMinimum());
+			        float progress  = ((powerValue - powerSlider.getMinimum())*100.0f)/((float)powerSlider.getMaximum() - (float)powerSlider.getMinimum());
 			        progressBar.setValue((int)progress);
 			        
 			        notifyListeners(powerValue);
@@ -203,6 +205,7 @@ public class PWMController extends JPanel implements Linkable {
 		});
 		
 		minValueComboBox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				int maximum = maxValueComboBoxModel.getSelectedItem().intValue();
 				int minimum = minValueComboBoxModel.getSelectedItem().intValue();
@@ -218,6 +221,7 @@ public class PWMController extends JPanel implements Linkable {
 		});
 
 		maxValueComboBox.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				int maximum = maxValueComboBoxModel.getSelectedItem().intValue();
 				int minimum = minValueComboBoxModel.getSelectedItem().intValue();
@@ -242,6 +246,7 @@ public class PWMController extends JPanel implements Linkable {
 		pinComboBox.setSelectedItem(Integer.valueOf(pin));
 	}
 
+	@Override
 	public void setLink(Link link) {
 		this.link = link;
 	}

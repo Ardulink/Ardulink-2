@@ -74,6 +74,7 @@ public abstract class AbstractMqttAdapter {
 			this.pattern = checkNotNull(pattern, "Pattern must not be null");
 		}
 
+		@Override
 		public boolean handle(String topic, String message) throws IOException {
 			Matcher matcher = this.pattern.matcher(topic);
 			if (matcher.matches() && matcher.groupCount() > 0) {

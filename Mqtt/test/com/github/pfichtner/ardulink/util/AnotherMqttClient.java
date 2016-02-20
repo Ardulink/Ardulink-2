@@ -174,6 +174,7 @@ public class AnotherMqttClient implements Closeable {
 				.getBytes(), AT_LEAST_ONCE, false));
 	}
 
+	@Override
 	public void close() throws IOException {
 		if (this.connection.isConnected()) {
 			exec(connection.unsubscribe(new String[] { new String("#") }));

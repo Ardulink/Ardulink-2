@@ -104,6 +104,7 @@ public class ModifiableJoystick extends JPanel implements Linkable, PositionList
 		
 		JSpinner maxValueSpinner = new JSpinner();
 		maxValueSpinner.addChangeListener(new ChangeListener() {
+			@Override
 			public void stateChanged(ChangeEvent e) {
 				JSpinner spinner = (JSpinner)e.getSource();
 				joy.setJoyOutputRange((Integer)spinner.getValue());
@@ -116,6 +117,7 @@ public class ModifiableJoystick extends JPanel implements Linkable, PositionList
 		joy.addPositionListener(this);
 	}
 
+	@Override
 	public void setLink(Link link) {
 		joy.setLink(link);
 	}

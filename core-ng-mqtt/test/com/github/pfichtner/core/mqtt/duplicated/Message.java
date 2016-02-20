@@ -51,23 +51,30 @@ public class Message {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		Message other = (Message) obj;
 		if (message == null) {
-			if (other.message != null)
+			if (other.message != null) {
 				return false;
-		} else if (!message.equals(other.message))
+			}
+		} else if (!message.equals(other.message)) {
 			return false;
+		}
 		if (topic == null) {
-			if (other.topic != null)
+			if (other.topic != null) {
 				return false;
-		} else if (!topic.equals(other.topic))
+			}
+		} else if (!topic.equals(other.topic)) {
 			return false;
+		}
 		return true;
 	}
 

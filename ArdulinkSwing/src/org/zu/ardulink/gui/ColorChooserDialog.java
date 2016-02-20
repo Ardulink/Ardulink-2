@@ -20,14 +20,15 @@ package org.zu.ardulink.gui;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -50,7 +51,7 @@ public class ColorChooserDialog extends JDialog {
 	 */
 	public static void main(String[] args) {
 		ColorChooserDialog dialog = new ColorChooserDialog(new RGBController());
-		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		dialog.setVisible(true);
 	}
 
@@ -73,6 +74,7 @@ public class ColorChooserDialog extends JDialog {
 			{
 				JButton okButton = new JButton("OK");
 				okButton.addActionListener(new ActionListener() {
+					@Override
 					public void actionPerformed(ActionEvent e) {
 						rgbController.setColor(colorChooser.getColor());
 						setVisible(false);
@@ -85,6 +87,7 @@ public class ColorChooserDialog extends JDialog {
 			{
 				JButton cancelButton = new JButton("Cancel");
 				cancelButton.addActionListener(new ActionListener() {
+					@Override
 					public void actionPerformed(ActionEvent e) {
 						setVisible(false);
 						dispose();
