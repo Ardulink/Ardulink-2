@@ -12,11 +12,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.zu.ardulink.util;
 
 import static org.zu.ardulink.util.Preconditions.checkArgument;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -27,49 +31,49 @@ import static org.zu.ardulink.util.Preconditions.checkArgument;
  */
 public enum Primitive {
 
-	INT(Integer.TYPE) {
+	INT(Integer.TYPE, Integer.class) {
 		@Override
 		public Object parse(String value) {
 			return Integer.valueOf(value);
 		}
 	},
-	BYTE(Byte.TYPE) {
+	BYTE(Byte.TYPE, Byte.class) {
 		@Override
 		public Object parse(String value) {
 			return Byte.valueOf(value);
 		}
 	},
-	SHORT(Short.TYPE) {
+	SHORT(Short.TYPE, Short.class) {
 		@Override
 		public Object parse(String value) {
 			return Short.valueOf(value);
 		}
 	},
-	LONG(Long.TYPE) {
+	LONG(Long.TYPE, Long.class) {
 		@Override
 		public Object parse(String value) {
 			return Long.valueOf(value);
 		}
 	},
-	FLOAT(Float.TYPE) {
+	FLOAT(Float.TYPE, Float.class) {
 		@Override
 		public Object parse(String value) {
 			return Float.valueOf(value);
 		}
 	},
-	DOUBLE(Double.TYPE) {
+	DOUBLE(Double.TYPE, Double.class) {
 		@Override
 		public Object parse(String value) {
 			return Double.valueOf(value);
 		}
 	},
-	BOOLEAN(Boolean.TYPE) {
+	BOOLEAN(Boolean.TYPE, Boolean.class) {
 		@Override
 		public Object parse(String value) {
 			return Boolean.valueOf(value);
 		}
 	},
-	CHAR(Character.TYPE) {
+	CHAR(Character.TYPE, Character.class) {
 		@Override
 		public Object parse(String value) {
 			checkArgument(value.length() == 0,
@@ -79,12 +83,18 @@ public enum Primitive {
 	};
 
 	private final Class<?> type;
+	private final Class<?> wrapperType;
 
-	private Primitive(Class<?> type) {
+	private Primitive(Class<?> type, Class<?> wrapperType) {
 		this.type = type;
+		this.wrapperType = wrapperType;
 	}
 
 	public abstract Object parse(String value);
+
+	public Class<?> getWrapperType() {
+		return wrapperType;
+	}
 
 	public static Object parseAs(Class<?> type, String value) {
 		Optional<Primitive> primitive = findPrimitiveFor(type);
@@ -111,6 +121,41 @@ public enum Primitive {
 
 	public Class<?> getType() {
 		return type;
+	}
+
+	public static boolean isWrapperType(Class<?> clazz) {
+		for (Primitive primitive : values()) {
+			if (clazz.equals(primitive.getWrapperType())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static Collection<Class<?>> allPrimitiveTypes() {
+		Set<Class<?>> primitives = new HashSet<Class<?>>();
+		for (Primitive primitive : values()) {
+			primitives.add(primitive.getType());
+		}
+		return primitives;
+	}
+
+	public static Class<?> unwrap(Class<?> clazz) {
+		for (Primitive primitive : values()) {
+			if (clazz.equals(primitive.getWrapperType())) {
+				return primitive.getType();
+			}
+		}
+		return clazz;
+	}
+
+	public static Class<?> wrap(Class<?> clazz) {
+		for (Primitive primitive : values()) {
+			if (clazz.equals(primitive.getType())) {
+				return primitive.getWrapperType();
+			}
+		}
+		return clazz;
 	}
 
 }
