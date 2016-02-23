@@ -36,9 +36,11 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
 
 import org.zu.ardulink.legacy.Link;
+import org.zu.ardulink.util.Primitive;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
@@ -97,8 +99,18 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 				} else if (isChoice(attribute)) {
 					return selectFirstValue(new JComboBox(attribute
 							.getChoiceValues()));
+				} else if (isNumber(attribute)) {
+					JSpinner spinner = new JSpinner();
+					JSpinner.NumberEditor editor = new JSpinner.NumberEditor(
+							spinner);
+					editor.getFormat().setGroupingUsed(false);
+					spinner.setEditor(editor);
+					spinner.setValue(attribute.getValue());
+					return spinner;
 				} else {
-					return new JTextField(String.valueOf(attribute.getValue()));
+					Object value = attribute.getValue();
+					return new JTextField(value == null ? "" : String
+							.valueOf(value));
 				}
 			}
 
@@ -123,6 +135,12 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 				return attribute.getType().equals(Boolean.class)
 						|| attribute.getType().equals(boolean.class);
 			}
+
+			private boolean isNumber(ConfigAttribute attribute) {
+				return Number.class.isAssignableFrom(Primitive.wrap(attribute
+						.getType()));
+			}
+
 		});
 		return uris;
 	}

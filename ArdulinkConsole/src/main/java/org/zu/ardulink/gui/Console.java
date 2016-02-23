@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.zu.ardulink.gui;
 
+import static javax.swing.JOptionPane.ERROR_MESSAGE;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -36,6 +38,7 @@ import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
@@ -52,6 +55,7 @@ import org.zu.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
 import org.zu.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.zu.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.zu.ardulink.legacy.Link;
+import org.zu.ardulink.legacy.Link.LegacyLinkAdapter;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 
@@ -136,16 +140,28 @@ public class Console extends JFrame implements Linkable {
 		btnConnect.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
-				String uri = genericConnectionPanel.getURI();
 				try {
-					setLink(new Link.LegacyLinkAdapter(LinkManager
-							.getInstance().getConfigurer(new URI(uri))
-							.newLink()));
+					setLink(legacyAdapt(newLink(genericConnectionPanel.getURI())));
 				} catch (URISyntaxException e) {
-					throw new RuntimeException(e);
+					e.printStackTrace();
+					JOptionPane.showMessageDialog(Console.this, e.getMessage(),
+							"Error", ERROR_MESSAGE);
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					e.printStackTrace();
+					JOptionPane.showMessageDialog(Console.this, e.getMessage(),
+							"Error", ERROR_MESSAGE);
 				}
+			}
+
+			private LegacyLinkAdapter legacyAdapt(
+					com.github.pfichtner.ardulink.core.Link link) {
+				return new Link.LegacyLinkAdapter(link);
+			}
+
+			private com.github.pfichtner.ardulink.core.Link newLink(String uri)
+					throws URISyntaxException, Exception {
+				return LinkManager.getInstance().getConfigurer(new URI(uri))
+						.newLink();
 			}
 		});
 		connectPanel.add(btnConnect);

@@ -12,18 +12,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.zu.ardulink.gui;
 
-import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.zu.ardulink.gui.RowMatcher.componentsOf;
-import static org.zu.ardulink.gui.RowMatcher.row;
+import static org.zu.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
+import static org.zu.ardulink.gui.hamcrest.RowMatcherBuilder.items;
+import static org.zu.ardulink.gui.hamcrest.RowMatcherBuilder.row;
 
 import java.awt.Component;
 import java.util.List;
@@ -43,7 +43,7 @@ public class GenericConnectionPanelTest {
 		JComboBox comboBox = findFirst(JComboBox.class,
 				componentsOfConnectionsPanel).get();
 		assertThat(comboBox, not(nullValue()));
-		Object[] items = RowMatcher.items(comboBox);
+		Object[] items = items(comboBox);
 		assertThat(items, is(new Object[] { "ardulink://dummy",
 				"ardulink://serial", "ardulink://proxy", "ardulink://mqtt" }));
 	}
@@ -59,8 +59,9 @@ public class GenericConnectionPanelTest {
 		assertThat(panel, has(row(0).withLabel("a").withValue(42)));
 		assertThat(panel, has(row(1).withLabel("b").withChoice("foo", "bar")
 				.withValue("foo")));
-		assertThat(panel, has(row(2).withLabel("c").withChoice(TRUE, FALSE)
-				.withValue(TRUE)));
+		assertThat(panel,
+				has(row(2).withLabel("c").withYesNo().withValue(TRUE)));
+		assertThat(panel, has(row(3).withLabel("d").withValue("")));
 	}
 
 	private <T> Optional<T> findFirst(Class<T> clazz,

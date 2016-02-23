@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.zu.ardulink.gui;
 
@@ -31,6 +31,9 @@ public class DummyLinkConfig implements LinkConfig {
 
 	@Named("c")
 	private Boolean c = Boolean.TRUE;
+
+	@Named("d")
+	private String d;
 
 	public int getA() {
 		return a;
@@ -51,6 +54,10 @@ public class DummyLinkConfig implements LinkConfig {
 
 	public void setC(Boolean c) {
 		this.c = c;
+	}
+
+	public String getD() {
+		return d;
 	}
 
 }
