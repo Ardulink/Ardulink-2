@@ -97,7 +97,7 @@ public class PWMController extends JPanel implements Linkable {
 		lblPowerPin.setBounds(10, 40, 59, 14);
 		add(lblPowerPin);
 		
-		// TODO definire un metodo per poter cambiare l'insieme dei pin controllabili. In questo modo si può lavorare anche con schede diverse da Arduino UNO
+		// TODO define a method to be able to change the set of controllable pins. This way you can work with different boards than an Arduino UNO
 		// pinComboBox.setModel(new DefaultComboBoxModel(new String[] {"3", "5", "6", "9", "10", "11"}));
 		IntMinMaxModel pinComboBoxModel = new IntMinMaxModel(0, 40);
 		pinComboBox = new JComboBox(pinComboBoxModel);
