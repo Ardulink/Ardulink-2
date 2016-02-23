@@ -18,4 +18,3 @@ This is the repository for Ardulink 2. Ardulink 2 is a complete, open source, ja
 
 see Ardulink site: www.ardulink.org
 
-
