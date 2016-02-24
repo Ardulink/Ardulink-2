@@ -12,15 +12,17 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.github.pfichtner.beans;
 
 import static com.github.pfichtner.beans.finder.impl.FindByIntrospection.beanAttributes;
 import static org.zu.ardulink.util.Preconditions.checkState;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -56,6 +58,7 @@ public class BeanProperties {
 
 	public static class DefaultAttribute implements Attribute {
 
+		private static final Annotation[] NO_ANNOS = new Annotation[0];
 		private final String name;
 		private final Class<?> type;
 		private final AttributeReader reader;
@@ -99,6 +102,23 @@ public class BeanProperties {
 		public void writeValue(Object value) throws Exception {
 			checkState(canWrite(), "cannot write");
 			writer.setValue(value);
+		}
+
+		@Override
+		public Annotation[] getAnnotations() {
+			final Annotation[] readerAnnos = reader == null ? NO_ANNOS : reader
+					.getAnnotations();
+			final Annotation[] writerAnnos = writer == null ? NO_ANNOS : writer
+					.getAnnotations();
+			return merge(readerAnnos, writerAnnos);
+		}
+
+		private Annotation[] merge(Annotation[] a1, Annotation[] a2) {
+			Set<Annotation> annos = new LinkedHashSet<Annotation>(a1.length
+					+ a2.length);
+			Collections.addAll(annos, a1);
+			Collections.addAll(annos, a2);
+			return annos.toArray(new Annotation[annos.size()]);
 		}
 
 	}

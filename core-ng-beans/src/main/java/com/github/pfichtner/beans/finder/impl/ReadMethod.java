@@ -18,6 +18,7 @@ package com.github.pfichtner.beans.finder.impl;
 
 import static java.lang.reflect.Modifier.isPublic;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -49,6 +50,11 @@ public class ReadMethod implements AttributeReader {
 	@Override
 	public String getName() {
 		return this.name;
+	}
+	
+	@Override
+	public Annotation[] getAnnotations() {
+		return this.readMethod.getAnnotations();
 	}
 
 	public static boolean isReadMethod(Method method) {

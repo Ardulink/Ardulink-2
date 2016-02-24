@@ -12,9 +12,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.github.pfichtner.beans;
+
+import java.lang.annotation.Annotation;
 
 public interface Attribute {
 
@@ -26,10 +28,14 @@ public interface Attribute {
 
 	public interface AttributeReader extends TypedAttributeProvider {
 		Object getValue() throws Exception;
+
+		Annotation[] getAnnotations();
 	}
 
 	public interface AttributeWriter extends TypedAttributeProvider {
 		void setValue(Object value) throws Exception;
+
+		Annotation[] getAnnotations();
 	}
 
 	String getName();
@@ -43,5 +49,7 @@ public interface Attribute {
 	boolean canWrite();
 
 	void writeValue(Object value) throws Exception;
+
+	Annotation[] getAnnotations();
 
 }

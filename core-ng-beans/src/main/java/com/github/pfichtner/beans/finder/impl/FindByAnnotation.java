@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.github.pfichtner.beans.finder.impl;
 
@@ -40,10 +40,13 @@ public class FindByAnnotation implements AttributeFinder {
 
 		private final AttributeReader delegate;
 		private final String name;
+		private final Field annoFoundOn;
 
-		public AttributeReaderDelegate(AttributeReader delegate, String name) {
+		public AttributeReaderDelegate(AttributeReader delegate, String name,
+				Field annoFoundOn) {
 			this.delegate = delegate;
 			this.name = name;
+			this.annoFoundOn = annoFoundOn;
 		}
 
 		@Override
@@ -61,16 +64,24 @@ public class FindByAnnotation implements AttributeFinder {
 			return delegate.getValue();
 		}
 
+		@Override
+		public Annotation[] getAnnotations() {
+			return annoFoundOn.getAnnotations();
+		}
+
 	}
 
 	public static class AttributeWriterDelegate implements AttributeWriter {
 
 		private final AttributeWriter delegate;
 		private final String name;
+		private final Field annoFoundOn;
 
-		public AttributeWriterDelegate(AttributeWriter delegate, String name) {
+		public AttributeWriterDelegate(AttributeWriter delegate, String name,
+				Field annoFoundOn) {
 			this.delegate = delegate;
 			this.name = name;
+			this.annoFoundOn = annoFoundOn;
 		}
 
 		@Override
@@ -86,6 +97,11 @@ public class FindByAnnotation implements AttributeFinder {
 		@Override
 		public void setValue(Object value) throws Exception {
 			delegate.setValue(value);
+		}
+
+		@Override
+		public Annotation[] getAnnotations() {
+			return annoFoundOn.getAnnotations();
 		}
 
 	}
@@ -148,7 +164,7 @@ public class FindByAnnotation implements AttributeFinder {
 				if (readMethodForAttribute.isPresent()) {
 					readers.add(new AttributeReaderDelegate(
 							readMethodForAttribute.get(), annoValue(field
-									.getAnnotation(annotationClass))));
+									.getAnnotation(annotationClass)), field));
 				} else if (isPublic(field.getModifiers())) {
 					readers.add(new FieldAccess(bean, annoValue(field
 							.getAnnotation(annotationClass)), field));
@@ -176,7 +192,7 @@ public class FindByAnnotation implements AttributeFinder {
 				if (writeMethodForAttribute.isPresent()) {
 					writers.add(new AttributeWriterDelegate(
 							writeMethodForAttribute.get(), annoValue(field
-									.getAnnotation(annotationClass))));
+									.getAnnotation(annotationClass)), field));
 				} else if (isPublic(field.getModifiers())) {
 					writers.add(new FieldAccess(bean, annoValue(field
 							.getAnnotation(annotationClass)), field));

@@ -18,6 +18,7 @@ package com.github.pfichtner.beans.finder.impl;
 
 import static java.lang.reflect.Modifier.isPublic;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -49,6 +50,11 @@ public class WriteMethod implements AttributeWriter {
 	@Override
 	public String getName() {
 		return this.name;
+	}
+	
+	@Override
+	public Annotation[] getAnnotations() {
+		return this.writeMethod.getAnnotations();
 	}
 
 	public static boolean isWriteMethod(Method method) {
