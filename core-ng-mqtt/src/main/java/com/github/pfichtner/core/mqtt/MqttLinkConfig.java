@@ -12,24 +12,37 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.github.pfichtner.core.mqtt;
+
+import static org.zu.ardulink.util.Preconditions.checkNotNull;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 
 public class MqttLinkConfig implements LinkConfig {
 
+	private static final String LOCALHOST = "localhost";
+
 	@Named("host")
-	private String host = "localhost";
+	@NotNull
+	private String host = LOCALHOST;
 
 	@Named("port")
+	@Min(1)
+	@Max(2 << 16 - 1)
 	private int port = 1883;
 
 	@Named("topic")
+	@NotNull
 	private String topic = normalize("home/devices/ardulink/");
 
 	@Named("clientid")
+	@NotNull
 	private String clientId = "ardulink-mqtt-link";
 
 	public String getHost() {
@@ -37,7 +50,7 @@ public class MqttLinkConfig implements LinkConfig {
 	}
 
 	public void setHost(String host) {
-		this.host = host;
+		this.host = host == null ? LOCALHOST : host;
 	}
 
 	public int getPort() {
@@ -53,7 +66,7 @@ public class MqttLinkConfig implements LinkConfig {
 	}
 
 	public void setTopic(String topic) {
-		this.topic = normalize(topic);
+		this.topic = checkNotNull(normalize(topic), "topic must not be null");
 	}
 
 	public String getClientId() {
@@ -61,7 +74,7 @@ public class MqttLinkConfig implements LinkConfig {
 	}
 
 	public void setClientId(String clientId) {
-		this.clientId = clientId;
+		this.clientId = checkNotNull(clientId, "clientId must not be null");
 	}
 
 	private static String normalize(String topic) {

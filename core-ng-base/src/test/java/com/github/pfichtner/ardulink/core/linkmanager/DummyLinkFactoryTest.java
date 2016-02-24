@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.github.pfichtner.ardulink.core.linkmanager;
 
@@ -39,6 +39,7 @@ import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import com.github.pfichtner.ardulink.core.proto.impl.DummyProtocol;
 
 public class DummyLinkFactoryTest {
@@ -204,6 +205,17 @@ public class DummyLinkFactoryTest {
 			throws URISyntaxException {
 		Locale.setDefault(ENGLISH);
 		assertThat(getName("b"), is("b"));
+	}
+
+	@Test
+	public void hasMinValue() throws URISyntaxException {
+		LinkManager connectionManager = LinkManager.getInstance();
+		Configurer configurer = connectionManager.getConfigurer(new URI(
+				"ardulink://dummyLink"));
+		ConfigAttribute a = configurer.getAttribute("b");
+		NumberValidationInfo vi = (NumberValidationInfo) a.getValidationInfo();
+		assertThat(((int) vi.min()), is(3));
+		assertThat(((int) vi.max()), is(12));
 	}
 
 	private static String getName(String name) throws URISyntaxException {

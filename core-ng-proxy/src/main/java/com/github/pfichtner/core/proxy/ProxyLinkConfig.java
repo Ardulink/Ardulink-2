@@ -21,6 +21,9 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocols;
@@ -36,12 +39,15 @@ public class ProxyLinkConfig implements LinkConfig {
 	private String tcphost;
 
 	@Named("tcpport")
+	@Min(1)
+	@Max(2 << 16 - 1)
 	private int tcpport = DEFAULT_LISTENING_PORT;
 
 	@Named("port")
 	private String port;
 
 	@Named("speed")
+	@Min(1)
 	private int speed = DEFAULT_SPEED;
 
 	@Named("proto")

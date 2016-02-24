@@ -12,11 +12,14 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.github.pfichtner.ardulink.core.linkmanager;
 
 import java.util.List;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.I18n;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
@@ -26,12 +29,17 @@ import com.github.pfichtner.ardulink.core.proto.api.Protocols;
 public class DummyLinkConfig implements LinkConfig {
 
 	public String a;
+
 	public int b = 42;
+
 	@Named("c")
 	public String c;
+
 	public Protocol protocol;
+
 	@Named("d")
 	public String d;
+
 	public static final ThreadLocal<String[]> choiceValuesOfD = new ThreadLocal<String[]>();
 
 	@Named("a")
@@ -40,6 +48,8 @@ public class DummyLinkConfig implements LinkConfig {
 	}
 
 	@Named("b")
+	@Min(3)
+	@Max(12)
 	public void theNameOfTheSetterDoesNotMatter(int b) {
 		this.b = b;
 	}

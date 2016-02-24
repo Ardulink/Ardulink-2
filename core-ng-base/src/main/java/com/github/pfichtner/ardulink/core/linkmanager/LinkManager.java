@@ -12,16 +12,19 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.github.pfichtner.ardulink.core.linkmanager;
 
 import static com.github.pfichtner.beans.finder.impl.FindByAnnotation.propertyAnnotated;
+import static java.lang.Integer.MAX_VALUE;
+import static java.lang.Integer.MIN_VALUE;
 import static java.lang.String.format;
 import static org.zu.ardulink.util.Preconditions.checkArgument;
 import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import static org.zu.ardulink.util.Preconditions.checkState;
 
+import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -32,6 +35,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.ServiceLoader;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 import org.zu.ardulink.util.Lists;
 import org.zu.ardulink.util.Optional;
@@ -45,6 +51,19 @@ import com.github.pfichtner.beans.Attribute;
 import com.github.pfichtner.beans.BeanProperties;
 
 public abstract class LinkManager {
+
+	public interface NumberValidationInfo extends ValidationInfo {
+		double min();
+
+		double max();
+	}
+
+	public interface ValidationInfo {
+
+		ValidationInfo NULL = new ValidationInfo() {
+		};
+
+	}
 
 	public interface ConfigAttribute {
 
@@ -93,6 +112,8 @@ public abstract class LinkManager {
 		 * @see #hasChoiceValues()
 		 */
 		Object[] getChoiceValues();
+
+		ValidationInfo getValidationInfo();
 
 	}
 
@@ -195,6 +216,46 @@ public abstract class LinkManager {
 						"returntype is not an Object[] but %s",
 						value == null ? null : value.getClass());
 				return (Object[]) value;
+			}
+
+			@Override
+			public ValidationInfo getValidationInfo() {
+				if (Integer.class.isAssignableFrom(Primitive.wrap(getType()))) {
+					Optional<Min> min = find(attribute.getAnnotations(),
+							Min.class);
+					Optional<Max> max = find(attribute.getAnnotations(),
+							Max.class);
+					return newNumberValidationInfo(min.isPresent() ? min.get()
+							.value() : MIN_VALUE, max.isPresent() ? max.get()
+							.value() : MAX_VALUE);
+				}
+				return ValidationInfo.NULL;
+			}
+
+			private <S extends Annotation> Optional<S> find(
+					Annotation[] annotations, Class<S> annoClass) {
+				for (Annotation annotation : annotations) {
+					if (annotation.annotationType().equals(annoClass)) {
+						return Optional.of(annoClass.cast(annotation));
+					}
+				}
+				return Optional.absent();
+			}
+
+			private NumberValidationInfo newNumberValidationInfo(
+					final long min, final long max) {
+				return new NumberValidationInfo() {
+
+					@Override
+					public double min() {
+						return min;
+					}
+
+					@Override
+					public double max() {
+						return max;
+					}
+				};
 			}
 
 		}

@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.github.pfichtner.core.serial;
 
@@ -24,6 +24,9 @@ import gnu.io.CommPortIdentifier;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 import org.zu.ardulink.util.Optional;
 
@@ -38,6 +41,7 @@ public class SerialLinkConfig implements LinkConfig {
 	private String port;
 
 	@Named("baudrate")
+	@Min(1)
 	private int baudrate = 115200;
 
 	@Named("proto")
@@ -46,6 +50,8 @@ public class SerialLinkConfig implements LinkConfig {
 	@Named("qos")
 	private boolean qos;
 
+	@Min(0)
+	@Max(59)
 	@Named("waitsecs")
 	private int waitsecs = 10;
 

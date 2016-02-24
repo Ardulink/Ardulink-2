@@ -38,6 +38,8 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
 
 import org.zu.ardulink.legacy.Link;
 import org.zu.ardulink.util.Primitive;
@@ -45,6 +47,8 @@ import org.zu.ardulink.util.Primitive;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
+import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ValidationInfo;
 
 public class GenericConnectionPanel extends JPanel implements Linkable {
 
@@ -100,7 +104,7 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 					return selectFirstValue(new JComboBox(attribute
 							.getChoiceValues()));
 				} else if (isNumber(attribute)) {
-					JSpinner spinner = new JSpinner();
+					JSpinner spinner = new JSpinner(createModel(attribute));
 					JSpinner.NumberEditor editor = new JSpinner.NumberEditor(
 							spinner);
 					editor.getFormat().setGroupingUsed(false);
@@ -112,6 +116,16 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 					return new JTextField(value == null ? "" : String
 							.valueOf(value));
 				}
+			}
+
+			private SpinnerModel createModel(ConfigAttribute attribute) {
+				ValidationInfo info = attribute.getValidationInfo();
+				if (info instanceof NumberValidationInfo) {
+					NumberValidationInfo nInfo = (NumberValidationInfo) info;
+					return new SpinnerNumberModel(nInfo.min(), nInfo.min(),
+							nInfo.max(), 1);
+				}
+				return new SpinnerNumberModel();
 			}
 
 			private JComponent setState(JCheckBox checkBox,
