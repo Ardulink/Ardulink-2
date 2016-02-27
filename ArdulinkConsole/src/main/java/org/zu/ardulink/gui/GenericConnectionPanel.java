@@ -19,6 +19,9 @@ limitations under the License.
 package org.zu.ardulink.gui;
 
 import static com.github.pfichtner.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
+import static java.awt.GridBagConstraints.HORIZONTAL;
+import static java.awt.GridBagConstraints.LINE_START;
+import static java.awt.GridBagConstraints.REMAINDER;
 import static java.awt.event.ItemEvent.SELECTED;
 
 import java.awt.BorderLayout;
@@ -26,11 +29,15 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -90,47 +97,46 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 								.getConfigurer(new URI(selectedItem));
 						int row = 0;
 						for (String name : configurer.getAttributes()) {
-							ConfigAttribute attribute = configurer
+							final ConfigAttribute attribute = configurer
 									.getAttribute(name);
-							GridBagConstraints c = new GridBagConstraints();
-							c.anchor = GridBagConstraints.LINE_START;
-							c.gridy = row;
-							c.gridx = 0;
-							c.insets = new Insets(4, 4, 0, 0);
-							JLabel label = new JLabel(attribute.getName());
-							subPanel.add(label, c);
+							subPanel.add(new JLabel(attribute.getName()),
+									constraints(row, 0));
 
 							boolean isDiscoverable = attribute
 									.choiceDependsOn().length > 0;
 
-							c = new GridBagConstraints();
-							c.anchor = GridBagConstraints.LINE_START;
-							c.gridy = row;
-							c.gridx = 1;
-							c.insets = new Insets(4, 4, 0, 0);
+							GridBagConstraints c = constraints(row, 1);
 							c.weightx = 1;
-							c.fill = GridBagConstraints.HORIZONTAL;
-							c.gridwidth = isDiscoverable ? 1
-									: GridBagConstraints.REMAINDER;
-							JComponent component = createComponent(attribute);
+							c.fill = HORIZONTAL;
+							c.gridwidth = isDiscoverable ? 1 : REMAINDER;
+							final JComponent component = createComponent(attribute);
 							subPanel.add(component, c);
 
-							c = new GridBagConstraints();
-							c.gridy = row;
-							c.gridx = 2;
-							c.insets = new Insets(4, 4, 0, 0);
-							c.weightx = 0;
-							c.gridwidth = 1;
 							if (isDiscoverable) {
 								JButton discoverButton = new JButton(
 										new ImageIcon(
 												BluetoothConnectionPanel.class
 														.getResource("icons/search_icon.png")));
 								discoverButton.setToolTipText("Discover");
+								discoverButton
+										.addActionListener(new ActionListener() {
+											@Override
+											public void actionPerformed(
+													ActionEvent e) {
+												if (component instanceof JComboBox) {
+													JComboBox jComboBox = (JComboBox) component;
+													ComboBoxModel model = new DefaultComboBoxModel(
+															attribute
+																	.getChoiceValues());
+													jComboBox.setModel(model);
+												}
+											}
+										});
 
-								subPanel.add(discoverButton, c);
+								subPanel.add(discoverButton,
+										constraints(row, 2));
 							} else
-								subPanel.add(new JLabel(), c);
+								subPanel.add(new JPanel(), constraints(row, 2));
 
 							row++;
 						}
@@ -139,6 +145,15 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 					}
 					subPanel.repaint();
 				}
+			}
+
+			private GridBagConstraints constraints(int row, int x) {
+				GridBagConstraints c = new GridBagConstraints();
+				c.anchor = LINE_START;
+				c.gridx = x;
+				c.gridy = row;
+				c.insets = new Insets(4, 4, 0, 0);
+				return c;
 			}
 
 			private JComponent createComponent(ConfigAttribute attribute) {
