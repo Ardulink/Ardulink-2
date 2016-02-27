@@ -17,6 +17,7 @@ limitations under the License.
 package com.github.pfichtner.beans;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 
 public interface Attribute {
 
@@ -29,13 +30,13 @@ public interface Attribute {
 	public interface AttributeReader extends TypedAttributeProvider {
 		Object getValue() throws Exception;
 
-		Annotation[] getAnnotations();
+		void addAnnotations(Collection<Annotation> annotations);
 	}
 
 	public interface AttributeWriter extends TypedAttributeProvider {
 		void setValue(Object value) throws Exception;
 
-		Annotation[] getAnnotations();
+		void addAnnotations(Collection<Annotation> annotations);
 	}
 
 	String getName();
@@ -51,5 +52,7 @@ public interface Attribute {
 	void writeValue(Object value) throws Exception;
 
 	Annotation[] getAnnotations();
+
+	<T extends Annotation> T getAnnotation(Class<T> annotationClass);
 
 }

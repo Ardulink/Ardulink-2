@@ -22,7 +22,6 @@ import static org.zu.ardulink.util.Preconditions.checkState;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,7 +57,6 @@ public class BeanProperties {
 
 	public static class DefaultAttribute implements Attribute {
 
-		private static final Annotation[] NO_ANNOS = new Annotation[0];
 		private final String name;
 		private final Class<?> type;
 		private final AttributeReader reader;
@@ -106,19 +104,24 @@ public class BeanProperties {
 
 		@Override
 		public Annotation[] getAnnotations() {
-			final Annotation[] readerAnnos = reader == null ? NO_ANNOS : reader
-					.getAnnotations();
-			final Annotation[] writerAnnos = writer == null ? NO_ANNOS : writer
-					.getAnnotations();
-			return merge(readerAnnos, writerAnnos);
+			Set<Annotation> annos = new LinkedHashSet<Annotation>();
+			if (reader != null) {
+				reader.addAnnotations(annos);
+			}
+			if (writer != null) {
+				writer.addAnnotations(annos);
+			}
+			return annos.toArray(new Annotation[annos.size()]);
 		}
 
-		private Annotation[] merge(Annotation[] a1, Annotation[] a2) {
-			Set<Annotation> annos = new LinkedHashSet<Annotation>(a1.length
-					+ a2.length);
-			Collections.addAll(annos, a1);
-			Collections.addAll(annos, a2);
-			return annos.toArray(new Annotation[annos.size()]);
+		@Override
+		public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+			for (Annotation annotation : getAnnotations()) {
+				if (annotation.annotationType().equals(annotationClass)) {
+					return annotationClass.cast(annotation);
+				}
+			}
+			return null;
 		}
 
 	}

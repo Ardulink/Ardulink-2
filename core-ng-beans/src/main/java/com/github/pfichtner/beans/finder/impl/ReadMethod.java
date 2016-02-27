@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.github.pfichtner.beans.finder.impl;
 
@@ -21,6 +21,8 @@ import static java.lang.reflect.Modifier.isPublic;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
 
 import com.github.pfichtner.beans.Attribute.AttributeReader;
 
@@ -39,22 +41,22 @@ public class ReadMethod implements AttributeReader {
 	@Override
 	public Object getValue() throws IllegalArgumentException,
 			IllegalAccessException, InvocationTargetException {
-		return readMethod.invoke(bean);
+		return this.readMethod.invoke(this.bean);
 	}
 
 	@Override
 	public Class<?> getType() {
-		return readMethod.getReturnType();
+		return this.readMethod.getReturnType();
 	}
 
 	@Override
 	public String getName() {
 		return this.name;
 	}
-	
+
 	@Override
-	public Annotation[] getAnnotations() {
-		return this.readMethod.getAnnotations();
+	public void addAnnotations(Collection<Annotation> annotations) {
+		Collections.addAll(annotations, this.readMethod.getAnnotations());
 	}
 
 	public static boolean isReadMethod(Method method) {

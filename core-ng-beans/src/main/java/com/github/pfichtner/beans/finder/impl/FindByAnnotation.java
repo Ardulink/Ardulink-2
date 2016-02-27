@@ -26,6 +26,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.zu.ardulink.util.Optional;
@@ -65,8 +67,8 @@ public class FindByAnnotation implements AttributeFinder {
 		}
 
 		@Override
-		public Annotation[] getAnnotations() {
-			return annoFoundOn.getAnnotations();
+		public void addAnnotations(Collection<Annotation> annotations) {
+			Collections.addAll(annotations, this.annoFoundOn.getAnnotations());
 		}
 
 	}
@@ -100,8 +102,8 @@ public class FindByAnnotation implements AttributeFinder {
 		}
 
 		@Override
-		public Annotation[] getAnnotations() {
-			return annoFoundOn.getAnnotations();
+		public void addAnnotations(Collection<Annotation> annotations) {
+			Collections.addAll(annotations, this.annoFoundOn.getAnnotations());
 		}
 
 	}

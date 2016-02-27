@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.github.pfichtner.beans.finder.impl;
 
@@ -21,6 +21,8 @@ import static java.lang.reflect.Modifier.isPublic;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
 
 import com.github.pfichtner.beans.Attribute.AttributeWriter;
 
@@ -39,22 +41,22 @@ public class WriteMethod implements AttributeWriter {
 	@Override
 	public void setValue(Object value) throws IllegalArgumentException,
 			IllegalAccessException, InvocationTargetException {
-		writeMethod.invoke(bean, value);
+		this.writeMethod.invoke(this.bean, value);
 	}
 
 	@Override
 	public Class<?> getType() {
-		return writeMethod.getParameterTypes()[0];
+		return this.writeMethod.getParameterTypes()[0];
 	}
 
 	@Override
 	public String getName() {
 		return this.name;
 	}
-	
+
 	@Override
-	public Annotation[] getAnnotations() {
-		return this.writeMethod.getAnnotations();
+	public void addAnnotations(Collection<Annotation> annotations) {
+		Collections.addAll(annotations, this.writeMethod.getAnnotations());
 	}
 
 	public static boolean isWriteMethod(Method method) {
