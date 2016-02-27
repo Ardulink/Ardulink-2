@@ -9,12 +9,10 @@ import java.util.List;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
-import org.zu.ardulink.gui.hamcrest.RowMatcherBuilder;
 
 public class ChoiceRowMatcher extends TypeSafeMatcher<JPanel> {
 
@@ -39,29 +37,36 @@ public class ChoiceRowMatcher extends TypeSafeMatcher<JPanel> {
 	@Override
 	protected void describeMismatchSafely(JPanel item,
 			Description mismatchDescription) {
-		mismatchDescription.appendText(Arrays.toString(item.getComponents()));
+		mismatchDescription.appendText(comp(item));
+	}
+
+	private String comp(JPanel item) {
+		StringBuilder sb = new StringBuilder();
+		final Component[] components = item.getComponents();
+		for (Component component : components) {
+			sb.append(component.getClass().getName()).append("\n");
+		}
+		return sb.toString();
 	}
 
 	@Override
 	protected boolean matchesSafely(JPanel jPanel) {
 		List<? extends Component> componentsOfSubPanel = RowMatcherBuilder
 				.componentsOf(jPanel);
-		return baseBuilder.labelMatch(jPanel) && valueEq(componentsOfSubPanel)
-				&& choiceEq(componentsOfSubPanel);
+		return baseBuilder.labelMatch(jPanel) && valueEq(jPanel)
+				&& choiceEq(jPanel);
 	}
 
-	private boolean valueEq(List<? extends Component> componentsOfSubPanel) {
-		Component component = componentsOfSubPanel
-				.get(baseBuilder.getRow() * 2 + 1);
+	private boolean valueEq(JPanel jPanel) {
+		Component component = baseBuilder.getComponent(jPanel);
 		return (component instanceof JCheckBox && choice
 				.equals(((JCheckBox) component).isSelected()))
 				|| (component instanceof JComboBox && String.valueOf(choice)
 						.equals(((JComboBox) component).getSelectedItem()));
 	}
 
-	private boolean choiceEq(List<? extends Component> componentsOfSubPanel) {
-		Component component = componentsOfSubPanel
-				.get(baseBuilder.getRow() * 2 + 1);
+	private boolean choiceEq(JPanel jPanel) {
+		Component component = baseBuilder.getComponent(jPanel);
 		return (component instanceof JComboBox)
 				|| (component instanceof JCheckBox && Arrays.equals(
 						new Object[] { TRUE, FALSE }, choices));

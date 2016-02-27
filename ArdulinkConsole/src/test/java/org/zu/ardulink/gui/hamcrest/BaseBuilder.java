@@ -2,6 +2,8 @@ package org.zu.ardulink.gui.hamcrest;
 
 import static org.zu.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
 
+import java.awt.Component;
+
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -38,13 +40,20 @@ public class BaseBuilder {
 		return new YesNoRowBuilder(this);
 	}
 
-	public int getRow() {
-		return row;
+	public JLabel getLabel(JPanel jPanel) {
+		return (JLabel) componentsOf(jPanel).get(base());
+	}
+
+	public Component getComponent(JPanel jPanel) {
+		return componentsOf(jPanel).get(base() + 1);
+	}
+
+	private int base() {
+		return row * 3;
 	}
 
 	public boolean labelMatch(JPanel jPanel) {
-		return label.get().equals(
-				((JLabel) componentsOf(jPanel).get(getRow() * 2)).getText());
+		return label.get().equals(getLabel(jPanel).getText());
 	}
 
 	public String getLabel() {

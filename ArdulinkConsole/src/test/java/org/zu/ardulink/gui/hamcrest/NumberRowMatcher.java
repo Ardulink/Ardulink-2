@@ -1,10 +1,7 @@
 package org.zu.ardulink.gui.hamcrest;
 
-import static org.zu.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
-
 import java.awt.Component;
 import java.util.Arrays;
-import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
@@ -36,21 +33,18 @@ public class NumberRowMatcher extends TypeSafeMatcher<JPanel> {
 
 	@Override
 	protected boolean matchesSafely(JPanel jPanel) {
-		List<? extends Component> componentsOfSubPanel = componentsOf(jPanel);
-		return baseBuilder.labelMatch(jPanel) && valueEq(componentsOfSubPanel)
-				&& isNumOnly(componentsOfSubPanel);
+		return baseBuilder.labelMatch(jPanel) && valueEq(jPanel)
+				&& isNumOnly(jPanel);
 	}
 
-	private boolean valueEq(List<? extends Component> componentsOfSubPanel) {
-		Component component = componentsOfSubPanel
-				.get(baseBuilder.getRow() * 2 + 1);
+	private boolean valueEq(JPanel jPanel) {
+		Component component = baseBuilder.getComponent(jPanel);
 		return component instanceof JSpinner
 				&& value.equals((Number) ((JSpinner) component).getValue());
 	}
 
-	private boolean isNumOnly(List<? extends Component> componentsOfSubPanel) {
-		Component component = componentsOfSubPanel
-				.get(baseBuilder.getRow() * 2 + 1);
+	private boolean isNumOnly(JPanel jPanel) {
+		Component component = baseBuilder.getComponent(jPanel);
 		return component instanceof JSpinner;
 	}
 }

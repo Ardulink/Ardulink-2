@@ -23,13 +23,17 @@ import static java.awt.event.ItemEvent.SELECTED;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -84,11 +88,51 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 					try {
 						Configurer configurer = LinkManager.getInstance()
 								.getConfigurer(new URI(selectedItem));
+						int row = 0;
 						for (String name : configurer.getAttributes()) {
 							ConfigAttribute attribute = configurer
 									.getAttribute(name);
-							subPanel.add(new JLabel(attribute.getName()));
-							subPanel.add(createComponent(attribute));
+							GridBagConstraints c = new GridBagConstraints();
+							c.anchor = GridBagConstraints.LINE_START;
+							c.gridy = row;
+							c.gridx = 0;
+							c.insets = new Insets(4, 4, 0, 0);
+							JLabel label = new JLabel(attribute.getName());
+							subPanel.add(label, c);
+
+							boolean isDiscoverable = attribute
+									.choiceDependsOn().length > 0;
+
+							c = new GridBagConstraints();
+							c.anchor = GridBagConstraints.LINE_START;
+							c.gridy = row;
+							c.gridx = 1;
+							c.insets = new Insets(4, 4, 0, 0);
+							c.weightx = 1;
+							c.fill = GridBagConstraints.HORIZONTAL;
+							c.gridwidth = isDiscoverable ? 1
+									: GridBagConstraints.REMAINDER;
+							JComponent component = createComponent(attribute);
+							subPanel.add(component, c);
+
+							c = new GridBagConstraints();
+							c.gridy = row;
+							c.gridx = 2;
+							c.insets = new Insets(4, 4, 0, 0);
+							c.weightx = 0;
+							c.gridwidth = 1;
+							if (isDiscoverable) {
+								JButton discoverButton = new JButton(
+										new ImageIcon(
+												BluetoothConnectionPanel.class
+														.getResource("icons/search_icon.png")));
+								discoverButton.setToolTipText("Discover");
+
+								subPanel.add(discoverButton, c);
+							} else
+								subPanel.add(new JLabel(), c);
+
+							row++;
 						}
 					} catch (URISyntaxException e) {
 						throw new RuntimeException(e);
@@ -103,13 +147,7 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 				} else if (isChoice(attribute)) {
 					final JComboBox jComboBox = new JComboBox(attribute
 							.getChoiceValues());
-					if (attribute.choiceDependsOn().length == 0) {
-						return selectFirstValue(jComboBox);
-					} else {
-						throw new RuntimeException(
-								"not yet implemented: Add icon button");
-//						return jComboBox;
-					}
+					return selectFirstValue(jComboBox);
 				} else if (isNumber(attribute)) {
 					JSpinner spinner = new JSpinner(createModel(attribute));
 					JSpinner.NumberEditor editor = new JSpinner.NumberEditor(
@@ -177,7 +215,7 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 		setLayout(new BorderLayout());
 		add(new JLabel("URI"), BorderLayout.WEST);
 		add(uris, BorderLayout.EAST);
-		subPanel = subPanel();
+		this.subPanel = subPanel();
 		LinkManager linkManager = LinkManager.getInstance();
 		for (URI uri : linkManager.listURIs()) {
 			uris.addItem(uri.toASCIIString());
@@ -187,7 +225,8 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 
 	private JPanel subPanel() {
 		JPanel subPanel = new JPanel();
-		subPanel.setLayout(new GridLayout(10, 2));
+		GridBagLayout mgr = new GridBagLayout();
+		subPanel.setLayout(mgr);
 		return subPanel;
 	}
 
