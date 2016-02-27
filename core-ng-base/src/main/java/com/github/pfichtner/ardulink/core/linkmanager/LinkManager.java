@@ -30,6 +30,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,8 @@ public abstract class LinkManager {
 	}
 
 	public interface ConfigAttribute {
+
+		ConfigAttribute[] EMPTY_ARRAY = new ConfigAttribute[0];
 
 		/**
 		 * Returns the name of this attribute. If there is a localized name
@@ -106,6 +109,15 @@ public abstract class LinkManager {
 		boolean hasChoiceValues();
 
 		/**
+		 * If the attribute's choice depends on other attribute (the choice can
+		 * not be determined before those attributes are filled) those
+		 * attributes are returned otherwise an empty array.
+		 * 
+		 * @return dependencies or empty array
+		 */
+		ConfigAttribute[] choiceDependsOn();
+
+		/**
 		 * Returns the choice values (if any) of this attribute.
 		 * 
 		 * @return the available choice values
@@ -135,6 +147,7 @@ public abstract class LinkManager {
 
 			private final Attribute attribute;
 			private final Attribute getChoicesFor;
+			private final List<ConfigAttribute> dependsOn;
 			private List<Object> cachedChoiceValues;
 			private final ResourceBundle nls;
 
@@ -146,9 +159,22 @@ public abstract class LinkManager {
 				this.getChoicesFor = BeanProperties.builder(linkConfig)
 						.using(propertyAnnotated(ChoiceFor.class)).build()
 						.getAttribute(attribute.getName());
+				this.dependsOn = this.getChoicesFor == null ? Collections
+						.<ConfigAttribute> emptyList()
+						: resolveDeps(this.getChoicesFor);
 				I18n nls = linkConfig.getClass().getAnnotation(I18n.class);
 				this.nls = nls == null ? null : ResourceBundle.getBundle(nls
 						.value());
+			}
+
+			private List<ConfigAttribute> resolveDeps(Attribute choiceFor) {
+				ChoiceFor cfa = choiceFor.getAnnotation(ChoiceFor.class);
+				List<ConfigAttribute> deps = new ArrayList<ConfigAttribute>(
+						cfa.dependsOn().length);
+				for (String name : cfa.dependsOn()) {
+					deps.add(getAttribute(name));
+				}
+				return deps;
 			}
 
 			@Override
@@ -185,6 +211,11 @@ public abstract class LinkManager {
 			@Override
 			public boolean hasChoiceValues() {
 				return this.getChoicesFor != null;
+			}
+
+			@Override
+			public ConfigAttribute[] choiceDependsOn() {
+				return this.dependsOn.toArray(new ConfigAttribute[0]);
 			}
 
 			@Override

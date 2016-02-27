@@ -101,8 +101,15 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 				if (isBoolean(attribute)) {
 					return setState(new JCheckBox(), attribute);
 				} else if (isChoice(attribute)) {
-					return selectFirstValue(new JComboBox(attribute
-							.getChoiceValues()));
+					final JComboBox jComboBox = new JComboBox(attribute
+							.getChoiceValues());
+					if (attribute.choiceDependsOn().length == 0) {
+						return selectFirstValue(jComboBox);
+					} else {
+						throw new RuntimeException(
+								"not yet implemented: Add icon button");
+//						return jComboBox;
+					}
 				} else if (isNumber(attribute)) {
 					JSpinner spinner = new JSpinner(createModel(attribute));
 					JSpinner.NumberEditor editor = new JSpinner.NumberEditor(
