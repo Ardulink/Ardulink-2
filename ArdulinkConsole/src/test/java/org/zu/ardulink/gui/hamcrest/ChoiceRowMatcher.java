@@ -5,7 +5,6 @@ import static java.lang.Boolean.TRUE;
 
 import java.awt.Component;
 import java.util.Arrays;
-import java.util.List;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -37,13 +36,12 @@ public class ChoiceRowMatcher extends TypeSafeMatcher<JPanel> {
 	@Override
 	protected void describeMismatchSafely(JPanel item,
 			Description mismatchDescription) {
-		mismatchDescription.appendText(comp(item));
+		mismatchDescription.appendText(components(item));
 	}
 
-	private String comp(JPanel item) {
+	private String components(JPanel item) {
 		StringBuilder sb = new StringBuilder();
-		final Component[] components = item.getComponents();
-		for (Component component : components) {
+		for (Component component : item.getComponents()) {
 			sb.append(component.getClass().getName()).append("\n");
 		}
 		return sb.toString();
@@ -51,8 +49,6 @@ public class ChoiceRowMatcher extends TypeSafeMatcher<JPanel> {
 
 	@Override
 	protected boolean matchesSafely(JPanel jPanel) {
-		List<? extends Component> componentsOfSubPanel = RowMatcherBuilder
-				.componentsOf(jPanel);
 		return baseBuilder.labelMatch(jPanel) && valueEq(jPanel)
 				&& choiceEq(jPanel);
 	}
