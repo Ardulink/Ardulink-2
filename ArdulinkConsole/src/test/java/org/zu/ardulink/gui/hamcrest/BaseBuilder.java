@@ -49,7 +49,7 @@ public class BaseBuilder {
 	}
 
 	private int base() {
-		return row * 3;
+		return (row + 1) * 3;
 	}
 
 	public boolean labelMatch(JPanel jPanel) {

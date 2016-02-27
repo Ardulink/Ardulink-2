@@ -24,7 +24,6 @@ import static java.awt.GridBagConstraints.LINE_START;
 import static java.awt.GridBagConstraints.REMAINDER;
 import static java.awt.event.ItemEvent.SELECTED;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -44,6 +43,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -90,27 +90,25 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 			@Override
 			public void itemStateChanged(ItemEvent event) {
 				if (event.getStateChange() == SELECTED) {
-					subPanel.removeAll();
+					clean();
 					String selectedItem = (String) event.getItem();
 					try {
 						Configurer configurer = LinkManager.getInstance()
 								.getConfigurer(new URI(selectedItem));
-						int row = 0;
+						int row = 1;
 						for (String name : configurer.getAttributes()) {
 							final ConfigAttribute attribute = configurer
 									.getAttribute(name);
-							subPanel.add(new JLabel(attribute.getName()),
+							add(new JLabel(attribute.getName()),
 									constraints(row, 0));
 
 							boolean isDiscoverable = attribute
 									.choiceDependsOn().length > 0;
 
-							GridBagConstraints c = constraints(row, 1);
-							c.weightx = 1;
-							c.fill = HORIZONTAL;
+							GridBagConstraints c = makeFill(constraints(row, 1));
 							c.gridwidth = isDiscoverable ? 1 : REMAINDER;
 							final JComponent component = createComponent(attribute);
-							subPanel.add(component, c);
+							add(component, c);
 
 							if (isDiscoverable) {
 								JButton discoverButton = new JButton(
@@ -133,27 +131,30 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 											}
 										});
 
-								subPanel.add(discoverButton,
-										constraints(row, 2));
-							} else
-								subPanel.add(new JPanel(), constraints(row, 2));
+								add(discoverButton, constraints(row, 2));
+							} else {
+								add(new JPanel(), constraints(row, 2));
+							}
 
 							row++;
 						}
+						GridBagConstraints c = constraints(row, 0);
+						c.gridwidth = 3;
+						c.weighty = 1;
+						add(new JPanel(), c);
+
 					} catch (URISyntaxException e) {
 						throw new RuntimeException(e);
 					}
-					subPanel.repaint();
+					repaint();
 				}
 			}
 
-			private GridBagConstraints constraints(int row, int x) {
-				GridBagConstraints c = new GridBagConstraints();
-				c.anchor = LINE_START;
-				c.gridx = x;
-				c.gridy = row;
-				c.insets = new Insets(4, 4, 0, 0);
-				return c;
+			private void clean() {
+				Component[] components = getComponents();
+				for (int i = 3; i < components.length; i++) {
+					remove(components[i]);
+				}
 			}
 
 			private JComponent createComponent(ConfigAttribute attribute) {
@@ -167,6 +168,8 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 					JSpinner spinner = new JSpinner(createModel(attribute));
 					JSpinner.NumberEditor editor = new JSpinner.NumberEditor(
 							spinner);
+					editor.getTextField().setHorizontalAlignment(
+							JFormattedTextField.LEFT);
 					editor.getFormat().setGroupingUsed(false);
 					spinner.setEditor(editor);
 					spinner.setValue(attribute.getValue());
@@ -219,30 +222,37 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 		return uris;
 	}
 
-	private Link link;
+	private GridBagConstraints constraints(int row, int column) {
+		GridBagConstraints c = new GridBagConstraints();
+		c.anchor = LINE_START;
+		c.gridx = column;
+		c.gridy = row;
+		c.insets = new Insets(4, 4, 0, 0);
+		return c;
+	}
 
-	private JPanel subPanel;
+	private GridBagConstraints makeFill(GridBagConstraints c) {
+		c.weightx = 1;
+		c.fill = HORIZONTAL;
+		return c;
+	}
+
+	private Link link;
 
 	/**
 	 * Create the panel.
 	 */
 	public GenericConnectionPanel() {
-		setLayout(new BorderLayout());
-		add(new JLabel("URI"), BorderLayout.WEST);
-		add(uris, BorderLayout.EAST);
-		this.subPanel = subPanel();
+		setLayout(new GridBagLayout());
+		add(new JLabel("Type"), constraints(0, 0));
+		GridBagConstraints c = constraints(0, 1);
+		c.gridwidth = 2;
+		add(uris, makeFill(c));
+		add(new JPanel(), constraints(0, 2));
 		LinkManager linkManager = LinkManager.getInstance();
 		for (URI uri : linkManager.listURIs()) {
 			uris.addItem(uri.toASCIIString());
 		}
-		add(subPanel, BorderLayout.SOUTH);
-	}
-
-	private JPanel subPanel() {
-		JPanel subPanel = new JPanel();
-		GridBagLayout mgr = new GridBagLayout();
-		subPanel.setLayout(mgr);
-		return subPanel;
 	}
 
 	public String getURI() {

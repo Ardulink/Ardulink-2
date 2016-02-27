@@ -29,7 +29,6 @@ import java.awt.Component;
 import java.util.List;
 
 import javax.swing.JComboBox;
-import javax.swing.JPanel;
 
 import org.hamcrest.Matcher;
 import org.junit.Test;
@@ -50,12 +49,10 @@ public class GenericConnectionPanelTest {
 
 	@Test
 	public void hasSubPanelWithConnectionIndividualComponents() {
-		List<? extends Component> componentsOfConnectionsPanel = componentsOf(new GenericConnectionPanel());
-		JComboBox comboBox = findFirst(JComboBox.class,
-				componentsOfConnectionsPanel).get();
-		comboBox.setSelectedItem("ardulink://dummy");
-		JPanel panel = findFirst(JPanel.class, componentsOfConnectionsPanel)
+		GenericConnectionPanel panel = new GenericConnectionPanel();
+		JComboBox comboBox = findFirst(JComboBox.class, componentsOf(panel))
 				.get();
+		comboBox.setSelectedItem("ardulink://dummy");
 		assertThat(panel, has(row(0).withLabel("a").withValue(42)));
 		assertThat(panel, has(row(1).withLabel("b").withChoice("foo", "bar")
 				.withValue("foo")));
