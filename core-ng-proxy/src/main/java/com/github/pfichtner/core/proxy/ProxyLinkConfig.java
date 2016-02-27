@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package com.github.pfichtner.core.proxy;
 
@@ -82,11 +82,11 @@ public class ProxyLinkConfig implements LinkConfig {
 	public void setProto(String proto) {
 		this.proto = Protocols.getByName(proto);
 	}
-	
+
 	public String getProto() {
 		return proto == null ? null : proto.getName();
 	}
-	
+
 	@ChoiceFor("proto")
 	public List<String> getProtos() {
 		return Protocols.list();
@@ -100,7 +100,7 @@ public class ProxyLinkConfig implements LinkConfig {
 		this.tcpport = tcpport;
 	}
 
-	@ChoiceFor("port")
+	@ChoiceFor(value = "port", dependsOn = { "tcphost", "tcpport" })
 	public List<String> getAvailablePorts() throws IOException {
 		return tcphost == null ? Collections.<String> emptyList() : getRemote()
 				.getPortList();
