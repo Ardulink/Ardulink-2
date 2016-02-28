@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package ardulink.ardumailng;
+package org.ardulink.ardumailng;
 
 import com.github.pfichtner.ardulink.core.Link;
 

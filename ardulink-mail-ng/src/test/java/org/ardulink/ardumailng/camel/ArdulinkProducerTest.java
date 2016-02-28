@@ -12,16 +12,16 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
-package ardulink.ardumailng.camel;
+package org.ardulink.ardumailng.camel;
 
-import static ardulink.ardumailng.Commands.switchAnalogPin;
-import static ardulink.ardumailng.Commands.switchDigitalPin;
 import static com.github.pfichtner.ardulink.core.Pin.analogPin;
 import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
 import static java.util.Collections.singletonList;
 import static org.apache.camel.ExchangePattern.InOut;
+import static org.ardulink.ardumailng.Commands.switchAnalogPin;
+import static org.ardulink.ardumailng.Commands.switchDigitalPin;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;

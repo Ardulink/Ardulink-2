@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package ardulink.ardumailng.camel;
+package org.ardulink.ardumailng.camel;
 
 import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import static org.zu.ardulink.util.Preconditions.checkState;
@@ -30,12 +30,11 @@ import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultProducer;
+import org.ardulink.ardumailng.Command;
 import org.zu.ardulink.util.Joiner;
 import org.zu.ardulink.util.ListMultiMap;
 import org.zu.ardulink.util.Lists;
 import org.zu.ardulink.util.Optional;
-
-import ardulink.ardumailng.Command;
 
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.convenience.Links;

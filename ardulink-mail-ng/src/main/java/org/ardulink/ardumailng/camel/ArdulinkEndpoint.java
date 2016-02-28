@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package ardulink.ardumailng.camel;
+package org.ardulink.ardumailng.camel;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,9 +25,8 @@ import org.apache.camel.MultipleConsumersSupport;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.impl.DefaultEndpoint;
+import org.ardulink.ardumailng.Command;
 import org.zu.ardulink.util.ListMultiMap;
-
-import ardulink.ardumailng.Command;
 
 public class ArdulinkEndpoint extends DefaultEndpoint implements
 		MultipleConsumersSupport {

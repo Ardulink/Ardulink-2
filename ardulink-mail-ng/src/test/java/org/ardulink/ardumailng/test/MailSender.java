@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package ardulink.ardumailng.test;
+package org.ardulink.ardumailng.test;
 
 import static com.icegreen.greenmail.util.GreenMailUtil.sendTextEmailTest;
 
