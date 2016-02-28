@@ -1,5 +1,6 @@
 package com.github.pfichtner.beans;
 
+import static com.github.pfichtner.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static com.github.pfichtner.beans.finder.impl.FindByFieldAccess.directFieldAccess;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.hamcrest.core.Is.is;
@@ -10,7 +11,6 @@ import static org.zu.ardulink.util.Preconditions.checkNotNull;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class AnnotationsTest {
@@ -20,7 +20,8 @@ public class AnnotationsTest {
 	}
 
 	@Retention(RUNTIME)
-	@interface SomeAnno {
+	public @interface SomeAnno {
+		String value() default "";
 	}
 
 	class AnotherAnnoOnTheField {
@@ -30,7 +31,7 @@ public class AnnotationsTest {
 	}
 
 	class AnotherAnnoOnTheFieldWithGetterAndSetter {
-		@SomeAnno
+		@SomeAnno("string")
 		@AnotherAnno
 		private String string;
 
@@ -41,6 +42,7 @@ public class AnnotationsTest {
 		public void setString(String string) {
 			this.string = string;
 		}
+
 	}
 
 	class AnotherAnnoOnTheGetter {
@@ -95,12 +97,13 @@ public class AnnotationsTest {
 	}
 
 	@Test
-	@Ignore
-	// not yet working
 	public void anotherAnnoOnTheFieldWithGetterAndSetter() throws Exception {
+		// this will only work if the property was found using propertyAnnotated
+		// since when looking up via findByIntrospection their is no relation
+		// between the reader/setter and the private field!
 		assertHasBothAnnotations(BeanProperties
 				.builder(new AnotherAnnoOnTheFieldWithGetterAndSetter())
-				.using(directFieldAccess()).build());
+				.using(propertyAnnotated(SomeAnno.class)).build());
 	}
 
 	@Test
@@ -132,8 +135,8 @@ public class AnnotationsTest {
 	private void hasAnnotations(Attribute attribute,
 			final Class<? extends Annotation>... annoClasses) {
 		for (int i = 0; i < annoClasses.length; i++) {
-			assertThat(attribute.getAnnotation(annoClasses[i]),
-					is(notNullValue()));
+			assertThat(annoClasses[i].getSimpleName() + " not found",
+					attribute.getAnnotation(annoClasses[i]), is(notNullValue()));
 		}
 	}
 
