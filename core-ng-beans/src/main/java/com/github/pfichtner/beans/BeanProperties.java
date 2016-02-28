@@ -220,4 +220,9 @@ public class BeanProperties {
 		return names;
 	}
 
+	@Override
+	public String toString() {
+		return "BeanProperties [bean=" + bean + "]";
+	}
+
 }
