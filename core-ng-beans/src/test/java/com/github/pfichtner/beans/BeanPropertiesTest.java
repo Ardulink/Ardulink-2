@@ -234,7 +234,7 @@ public class BeanPropertiesTest {
 	}
 
 	@Test
-	public void canMergeDiffeentTypes() throws Exception {
+	public void canMergeDifferentTypes() throws Exception {
 		BeanProperties bp = BeanProperties
 				.builder(new BeanWithDifferentTypes())
 				.using(propertyAnnotated(OurOwnTestAnno.class)).build();
