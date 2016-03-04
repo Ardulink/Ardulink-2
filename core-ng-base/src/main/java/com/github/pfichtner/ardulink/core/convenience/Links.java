@@ -34,7 +34,7 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
  * This is a convenience layer for retrieving links. Links retrieved via this
  * class are cached and shared.
  * 
- * @author Peter Fichtner
+ *  
  */
 public final class Links {
 

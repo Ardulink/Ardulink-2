@@ -18,7 +18,7 @@ package com.github.pfichtner.core.mqtt.duplicated;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- * @author Peter Fichtner
+ *  
  * 
  * [adsense]
  */

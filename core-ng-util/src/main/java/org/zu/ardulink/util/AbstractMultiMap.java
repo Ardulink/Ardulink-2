@@ -25,7 +25,7 @@ import java.util.Map.Entry;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * @author Peter Fichtner
+ *  
  * 
  *         [adsense]
  */

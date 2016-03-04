@@ -52,7 +52,7 @@ import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
  * there is no need for a queue because if the next message read is not the
  * ok/ko response it never will arrive.
  * 
- * @author Peter Fichtner
+ *  
  */
 public class ConnectionBasedQosLink extends AbstractConnectionBasedLink {
 

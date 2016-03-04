@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- * @author Peter Fichtner
+ *  
  * 
  * [adsense]
  */

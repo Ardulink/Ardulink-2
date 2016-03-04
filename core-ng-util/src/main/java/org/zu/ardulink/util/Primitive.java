@@ -25,7 +25,7 @@ import java.util.Set;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * @author Peter Fichtner
+ *  
  * 
  *         [adsense]
  */

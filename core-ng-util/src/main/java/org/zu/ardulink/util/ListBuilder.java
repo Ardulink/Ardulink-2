@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- * @author Peter Fichtner
+ *  
  * 
  * [adsense]
  */

@@ -19,7 +19,7 @@ package org.zu.ardulink.util;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * @author Peter Fichtner
+ *  
  * 
  * [adsense]
  */

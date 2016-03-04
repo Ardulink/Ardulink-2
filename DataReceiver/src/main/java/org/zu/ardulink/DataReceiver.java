@@ -1,5 +1,5 @@
 /**
-Copyright 2013 Luciano Zu project Ardulink http://www.ardulink.org/
+Copyright 2013 project Ardulink http://www.ardulink.org/
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -43,8 +43,8 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * @author Luciano Zu project Ardulink http://www.ardulink.org/
- * @author Peter Fichtner
+ *  project Ardulink http://www.ardulink.org/
+ *  
  * 
  *         [adsense]
  */

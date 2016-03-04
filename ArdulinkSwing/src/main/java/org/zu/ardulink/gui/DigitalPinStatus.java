@@ -1,5 +1,5 @@
 /**
-Copyright 2013 Luciano Zu project Ardulink http://www.ardulink.org/
+Copyright 2013 project Ardulink http://www.ardulink.org/
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-@author Luciano Zu
+
  */
 
 package org.zu.ardulink.gui;
@@ -44,7 +44,7 @@ import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
  * DigitalReadChangeListener interface and is able to listen events coming from
  * arduino board about digital pin state change.
  * 
- * @author Luciano Zu project Ardulink http://www.ardulink.org/
+ *  project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  */

@@ -21,7 +21,7 @@ import javax.swing.ComboBoxModel;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- * @author Peter Fichtner
+ *  
  * 
  * [adsense]
  */

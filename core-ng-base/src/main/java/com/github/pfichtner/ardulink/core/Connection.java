@@ -24,14 +24,14 @@ import java.io.IOException;
  * not be physically for example it can also be represented by a network
  * connection.
  * 
- * @author Peter Fichtner
+ *  
  */
 public interface Connection extends Closeable {
 
 	/**
 	 * The Listener is called on data received from the Arduino.
 	 * 
-	 * @author Peter Fichtner
+	 *  
 	 */
 	interface Listener {
 		Listener NULL = new Listener() {

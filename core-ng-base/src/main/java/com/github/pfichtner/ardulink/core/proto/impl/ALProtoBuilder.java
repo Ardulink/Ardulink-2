@@ -28,7 +28,7 @@ import org.zu.ardulink.util.Optional;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * @author Peter Fichtner
+ *  
  * 
  *         [adsense]
  */
