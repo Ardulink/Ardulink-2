@@ -18,6 +18,14 @@ package org.ardulink.ardumailng.test;
 
 import static com.icegreen.greenmail.util.GreenMailUtil.sendTextEmailTest;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class MailSender {
 
 	private String to;

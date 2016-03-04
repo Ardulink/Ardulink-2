@@ -28,6 +28,14 @@ import org.apache.camel.impl.DefaultEndpoint;
 import org.ardulink.ardumailng.Command;
 import org.zu.ardulink.util.ListMultiMap;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ArdulinkEndpoint extends DefaultEndpoint implements
 		MultipleConsumersSupport {
 

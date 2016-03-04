@@ -23,6 +23,14 @@ import java.net.URISyntaxException;
 
 import com.github.pfichtner.ardulink.core.Link;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class Commands {
 
 	private static class SwitchDigitalPinCommand implements Command {

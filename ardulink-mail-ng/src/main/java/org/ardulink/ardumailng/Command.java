@@ -18,6 +18,14 @@ package org.ardulink.ardumailng;
 
 import com.github.pfichtner.ardulink.core.Link;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface Command {
 
 	void execute(Link link) throws Exception;

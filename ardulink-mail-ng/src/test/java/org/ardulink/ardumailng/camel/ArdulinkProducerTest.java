@@ -49,6 +49,14 @@ import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.convenience.LinkDelegate;
 import com.github.pfichtner.ardulink.core.convenience.Links;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ArdulinkProducerTest {
 
 	@Rule

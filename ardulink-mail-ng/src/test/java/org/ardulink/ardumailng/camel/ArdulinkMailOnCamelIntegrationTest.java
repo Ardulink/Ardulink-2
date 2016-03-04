@@ -65,6 +65,14 @@ import com.icegreen.greenmail.imap.ImapServer;
 import com.icegreen.greenmail.junit.GreenMailRule;
 import com.icegreen.greenmail.smtp.SmtpServer;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ArdulinkMailOnCamelIntegrationTest {
 
 	private static final String mockURI = "ardulink://mock";

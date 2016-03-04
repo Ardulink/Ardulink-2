@@ -24,6 +24,14 @@ import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class MockLinkFactory implements LinkFactory<MockLinkConfig> {
 
 	public static class MockLinkConfig implements LinkConfig {

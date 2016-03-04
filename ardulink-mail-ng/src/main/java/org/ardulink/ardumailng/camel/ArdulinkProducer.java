@@ -39,6 +39,14 @@ import org.zu.ardulink.util.Optional;
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.convenience.Links;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ArdulinkProducer extends DefaultProducer {
 
 	private final Link link;

@@ -32,7 +32,14 @@ import org.apache.camel.spi.UriEndpoint;
 import org.ardulink.ardumailng.Command;
 import org.zu.ardulink.util.Optional;
 
-
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 /*, consumerClass = ArdulinkConsumer.class*/
 @UriEndpoint(scheme = "ardulink", syntax = "ardulink:type", title = "Ardulink Link")
 public class ArdulinkComponent extends UriEndpointComponent {
