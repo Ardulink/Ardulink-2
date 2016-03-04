@@ -31,10 +31,14 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
 /**
- * An adapter for the old legacy link. Users should migrate to new new API.
+ * [ardulinktitle] [ardulinkversion]
  * 
- * @author Peter Fichtner
- * @deprecated
+ * An adapter for the old legacy link (Ardulink 1 compatibility issue).
+ * Users should migrate to new new API.
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
  */
 @Deprecated
 public abstract class Link {
