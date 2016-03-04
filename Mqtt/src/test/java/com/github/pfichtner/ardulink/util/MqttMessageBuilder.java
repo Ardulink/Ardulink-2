@@ -22,9 +22,10 @@ import static org.zu.ardulink.util.Preconditions.checkArgument;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * @author Peter Fichtner
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
+ *
  */
 public class MqttMessageBuilder {
 

@@ -22,9 +22,10 @@ import com.github.pfichtner.ardulink.core.events.EventListener;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * @author Peter Fichtner
+ * project Ardulink http://www.ardulink.org/
  * 
- *         [adsense]
+ * [adsense]
+ *
  */
 public class TimeSliceCompactorLast extends
 		SlicedAnalogReadChangeListenerAdapter {

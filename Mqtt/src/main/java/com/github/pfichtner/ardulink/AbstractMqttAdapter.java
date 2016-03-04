@@ -53,9 +53,10 @@ import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * @author Peter Fichtner
+ * project Ardulink http://www.ardulink.org/
  * 
- *         [adsense]
+ * [adsense]
+ *
  */
 public abstract class AbstractMqttAdapter {
 

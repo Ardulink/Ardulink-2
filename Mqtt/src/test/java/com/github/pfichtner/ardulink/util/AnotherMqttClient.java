@@ -42,9 +42,10 @@ import com.github.pfichtner.ardulink.core.Pin.Type;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * @author Peter Fichtner
+ * project Ardulink http://www.ardulink.org/
  * 
- *         [adsense]
+ * [adsense]
+ *
  */
 public class AnotherMqttClient implements Closeable {
 

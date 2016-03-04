@@ -18,9 +18,11 @@ package com.github.pfichtner.ardulink.compactors;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- * @author Peter Fichtner
+ * 
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
+ *
  */
 public interface TimeSlicer {
 

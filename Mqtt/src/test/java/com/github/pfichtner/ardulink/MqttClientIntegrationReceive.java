@@ -39,9 +39,10 @@ import com.github.pfichtner.ardulink.util.AnotherMqttClient;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * @author Peter Fichtner
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
+ *
  */
 public class MqttClientIntegrationReceive {
 

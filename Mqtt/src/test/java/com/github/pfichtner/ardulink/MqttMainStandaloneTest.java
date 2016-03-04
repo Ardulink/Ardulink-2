@@ -28,6 +28,14 @@ import org.junit.rules.Timeout;
 import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.util.AnotherMqttClient;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class MqttMainStandaloneTest {
 
 	private static final String topic = "myTestTopic";

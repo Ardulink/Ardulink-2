@@ -21,6 +21,14 @@ import java.util.Properties;
 
 import org.dna.mqtt.moquette.server.Server;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class MqttBroker {
 
 	public static class Builder {

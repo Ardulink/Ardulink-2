@@ -18,9 +18,11 @@ package com.github.pfichtner.ardulink.util;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- * @author Peter Fichtner
+ * 
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
+ *
  */
 public class Message {
 

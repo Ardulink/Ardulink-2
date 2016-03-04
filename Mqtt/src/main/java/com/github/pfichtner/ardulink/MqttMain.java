@@ -51,9 +51,10 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * @author Peter Fichtner
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
+ *
  */
 public class MqttMain {
 

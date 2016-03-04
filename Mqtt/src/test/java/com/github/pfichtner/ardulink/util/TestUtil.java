@@ -35,9 +35,10 @@ import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * @author Peter Fichtner
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
+ *
  */
 public final class TestUtil {
 

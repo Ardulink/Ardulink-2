@@ -23,9 +23,10 @@ import java.util.regex.Pattern;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * @author Peter Fichtner
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
+ *
  */
 public abstract class Config {
 

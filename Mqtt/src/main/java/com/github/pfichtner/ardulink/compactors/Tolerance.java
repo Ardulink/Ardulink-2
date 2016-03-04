@@ -20,9 +20,11 @@ import static java.lang.Math.abs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- * @author Peter Fichtner
+ * 
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
+ *
  */
 public class Tolerance {
 
