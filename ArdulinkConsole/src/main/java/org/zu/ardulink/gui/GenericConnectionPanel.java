@@ -58,6 +58,14 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ValidationInfo;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class GenericConnectionPanel extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = 1290277902714226253L;

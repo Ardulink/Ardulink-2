@@ -34,6 +34,14 @@ import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.zu.ardulink.util.Optional;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class GenericConnectionPanelTest {
 
 	@Test

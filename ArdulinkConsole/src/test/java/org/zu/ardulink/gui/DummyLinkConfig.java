@@ -21,6 +21,14 @@ import java.util.List;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DummyLinkConfig implements LinkConfig {
 
 	@Named("a")
