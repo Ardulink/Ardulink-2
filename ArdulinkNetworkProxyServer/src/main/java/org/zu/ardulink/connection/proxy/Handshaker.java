@@ -35,6 +35,14 @@ import com.github.pfichtner.ardulink.core.convenience.Links;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public abstract class Handshaker {
 
 	private final Scanner scanner;
