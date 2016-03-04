@@ -42,9 +42,9 @@ import org.zu.ardulink.legacy.Link;
  * [ardulinktitle] [ardulinkversion] This component is Able to search for
  * bluetooth devices able to use Ardulink and select one.
  *
- *  project Ardulink http://www.ardulink.org/
+ * project Ardulink http://www.ardulink.org/
  * 
- *         [adsense]
+ * [adsense]
  *
  */
 public class BluetoothConnectionPanel extends JPanel implements Linkable {

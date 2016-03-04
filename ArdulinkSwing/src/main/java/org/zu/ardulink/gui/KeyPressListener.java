@@ -28,7 +28,7 @@ import org.zu.ardulink.legacy.Link;
 /**
  * [ardulinktitle] [ardulinkversion]
  * Class used by KeyPressController class to capture key press events.
- *  project Ardulink http://www.ardulink.org/
+* project Ardulink http://www.ardulink.org/
  * @see KeyPressController
  * [adsense]
  *

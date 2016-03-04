@@ -44,7 +44,7 @@ import org.zu.ardulink.legacy.Link;
  * [ardulinktitle] [ardulinkversion]
  * This class can manage three power with modulation arduino pins sending specific messages to
  * the arduino board. It is usually used to manage RGB LEDs
- *  project Ardulink http://www.ardulink.org/
+* project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *

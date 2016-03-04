@@ -38,7 +38,7 @@ import org.zu.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- *  project Ardulink http://www.ardulink.org/
+* project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  */

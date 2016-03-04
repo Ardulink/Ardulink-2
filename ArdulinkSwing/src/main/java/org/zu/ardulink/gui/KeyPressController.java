@@ -30,7 +30,7 @@ import org.zu.ardulink.legacy.Link;
  * [ardulinktitle] [ardulinkversion]
  * This class captures key press events and sends messages to arduino board with key press
  * information.
- *  project Ardulink http://www.ardulink.org/
+* project Ardulink http://www.ardulink.org/
  * @see KeyPressListener
  * [adsense]
  *

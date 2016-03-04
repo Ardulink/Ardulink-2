@@ -20,7 +20,7 @@ package org.zu.ardulink.io;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- *  project Ardulink http://www.ardulink.org/
+* project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *

@@ -43,7 +43,7 @@ import org.zu.ardulink.util.Lists;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- *  project Ardulink http://www.ardulink.org/
+* project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  */

@@ -22,7 +22,7 @@ import java.awt.Point;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- *  project Ardulink http://www.ardulink.org/
+* project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  */

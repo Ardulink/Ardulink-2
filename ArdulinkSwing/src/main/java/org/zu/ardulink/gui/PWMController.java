@@ -50,7 +50,7 @@ import org.zu.ardulink.legacy.Link;
  * This class can manage power with modulation arduino pins sending specific messages to
  * the arduino board. It has many components to ensure maximum flexibility in the
  * management of these pins.
- *  project Ardulink http://www.ardulink.org/
+* project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *

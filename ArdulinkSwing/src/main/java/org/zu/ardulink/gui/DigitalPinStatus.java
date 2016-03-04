@@ -44,7 +44,7 @@ import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
  * DigitalReadChangeListener interface and is able to listen events coming from
  * arduino board about digital pin state change.
  * 
- *  project Ardulink http://www.ardulink.org/
+* project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  */

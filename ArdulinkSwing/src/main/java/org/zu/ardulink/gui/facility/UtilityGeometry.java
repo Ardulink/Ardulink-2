@@ -27,7 +27,7 @@ import javax.swing.SwingUtilities;
 /**
  * [ardulinktitle] [ardulinkversion]
  * This class has utility methods for GUI components
- *  project Ardulink http://www.ardulink.org/
+* project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *

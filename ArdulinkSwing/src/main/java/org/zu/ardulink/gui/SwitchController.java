@@ -35,7 +35,7 @@ import org.zu.ardulink.legacy.Link;
  * [ardulinktitle] [ardulinkversion]
  * This class can manage digital arduino pins sending specific messages to
  * the arduino board.
- *  project Ardulink http://www.ardulink.org/
+* project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *

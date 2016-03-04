@@ -30,7 +30,7 @@ import com.github.pfichtner.ardulink.core.ConnectionListener;
  * [ardulinktitle] [ardulinkversion] This component listens for connection or
  * disconnection events showing the state of a Link in the GUI.
  * 
- *  project Ardulink http://www.ardulink.org/
+* project Ardulink http://www.ardulink.org/
  * @see ConnectionListener [adsense]
  *
  */

@@ -33,7 +33,7 @@ import javax.swing.border.EmptyBorder;
 /**
  * [ardulinktitle] [ardulinkversion]
  * Used from a RGBController class to choose the right color.
- *  project Ardulink http://www.ardulink.org/
+ * project Ardulink http://www.ardulink.org/
  * @see RGBController
  * [adsense]
  *

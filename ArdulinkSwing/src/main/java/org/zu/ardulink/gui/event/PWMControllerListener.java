@@ -23,7 +23,7 @@ import org.zu.ardulink.gui.PWMController;
 /**
  * [ardulinktitle] [ardulinkversion]
  * Defines an interface that receives events from a PWMController
- *  project Ardulink http://www.ardulink.org/
+* project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  * @see PWMController
