@@ -24,6 +24,14 @@ import java.util.List;
 
 import com.github.pfichtner.beans.finder.api.AttributeFinder;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class FindByFieldAccess implements AttributeFinder {
 
 	private FindByFieldAccess() {

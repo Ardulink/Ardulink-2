@@ -19,6 +19,14 @@ package com.github.pfichtner.beans;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface Attribute {
 
 	public interface TypedAttributeProvider {

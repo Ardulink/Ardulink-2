@@ -26,6 +26,14 @@ import java.util.Collections;
 
 import com.github.pfichtner.beans.Attribute.AttributeReader;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ReadMethod implements AttributeReader {
 
 	private final Object bean;

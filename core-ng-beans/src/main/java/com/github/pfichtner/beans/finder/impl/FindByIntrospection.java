@@ -28,6 +28,14 @@ import com.github.pfichtner.beans.Attribute.AttributeReader;
 import com.github.pfichtner.beans.Attribute.AttributeWriter;
 import com.github.pfichtner.beans.finder.api.AttributeFinder;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class FindByIntrospection implements AttributeFinder {
 
 	private static final FindByIntrospection instance = new FindByIntrospection();

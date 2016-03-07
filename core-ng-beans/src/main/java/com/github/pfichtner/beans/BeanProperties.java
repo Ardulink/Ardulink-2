@@ -33,6 +33,14 @@ import com.github.pfichtner.beans.Attribute.AttributeWriter;
 import com.github.pfichtner.beans.Attribute.TypedAttributeProvider;
 import com.github.pfichtner.beans.finder.api.AttributeFinder;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class BeanProperties {
 
 	public static class Builder {

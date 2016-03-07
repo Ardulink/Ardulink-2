@@ -24,6 +24,14 @@ import java.util.Collections;
 import com.github.pfichtner.beans.Attribute.AttributeReader;
 import com.github.pfichtner.beans.Attribute.AttributeWriter;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class FieldAccess implements AttributeReader, AttributeWriter {
 
 	private final Object bean;

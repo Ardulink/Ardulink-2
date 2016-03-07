@@ -13,6 +13,14 @@ import java.lang.annotation.Retention;
 
 import org.junit.Test;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class AnnotationsTest {
 
 	@Retention(RUNTIME)

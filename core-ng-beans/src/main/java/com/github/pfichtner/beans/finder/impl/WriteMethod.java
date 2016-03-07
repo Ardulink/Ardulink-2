@@ -26,6 +26,14 @@ import java.util.Collections;
 
 import com.github.pfichtner.beans.Attribute.AttributeWriter;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class WriteMethod implements AttributeWriter {
 
 	private final Object bean;

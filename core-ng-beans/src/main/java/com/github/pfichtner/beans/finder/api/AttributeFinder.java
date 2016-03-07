@@ -19,6 +19,14 @@ package com.github.pfichtner.beans.finder.api;
 import com.github.pfichtner.beans.Attribute.AttributeReader;
 import com.github.pfichtner.beans.Attribute.AttributeWriter;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface AttributeFinder {
 
 	Iterable<? extends AttributeReader> listReaders(Object bean)
