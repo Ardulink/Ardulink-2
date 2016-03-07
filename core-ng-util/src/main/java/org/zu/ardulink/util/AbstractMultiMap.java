@@ -25,9 +25,10 @@ import java.util.Map.Entry;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- *  
+ * project Ardulink http://www.ardulink.org/
  * 
- *         [adsense]
+ * [adsense]
+ *
  */
 public abstract class AbstractMultiMap<K, V> implements
 		Iterable<Map.Entry<K, V>> {

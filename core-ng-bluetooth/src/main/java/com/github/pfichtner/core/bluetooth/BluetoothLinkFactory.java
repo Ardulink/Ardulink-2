@@ -44,6 +44,14 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class BluetoothLinkFactory implements LinkFactory<BluetoothLinkConfig> {
 
 	private final Protocol proto = ArdulinkProtocol2.instance();

@@ -44,9 +44,9 @@ import com.github.pfichtner.ardulink.core.convenience.Links;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
-* project Ardulink http://www.ardulink.org/
+ * project Ardulink http://www.ardulink.org/
  * 
- *         [adsense]
+ * [adsense]
  *
  */
 public class JoystickSmartCarDriver extends JFrame implements

@@ -28,6 +28,14 @@ import java.util.Set;
 
 import org.junit.Test;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class SetMultiMapTest {
 
 	@Test

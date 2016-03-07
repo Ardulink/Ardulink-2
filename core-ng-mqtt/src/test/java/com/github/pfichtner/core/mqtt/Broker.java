@@ -21,6 +21,14 @@ import java.io.IOException;
 import org.dna.mqtt.moquette.server.Server;
 import org.junit.rules.ExternalResource;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class Broker extends ExternalResource {
 
 	private Server mqttServer;

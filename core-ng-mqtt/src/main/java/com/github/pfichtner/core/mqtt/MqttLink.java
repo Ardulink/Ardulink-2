@@ -53,6 +53,14 @@ import com.github.pfichtner.ardulink.core.Tone;
 import com.github.pfichtner.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class MqttLink extends AbstractListenerLink {
 
 	private static final Logger log = LoggerFactory.getLogger(MqttLink.class);

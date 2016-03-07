@@ -47,6 +47,14 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.core.mqtt.duplicated.AnotherMqttClient;
 import com.github.pfichtner.core.mqtt.duplicated.Message;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class MqttIntegrationTest {
 
 	private static final String TOPIC = "myTopic" + System.currentTimeMillis();

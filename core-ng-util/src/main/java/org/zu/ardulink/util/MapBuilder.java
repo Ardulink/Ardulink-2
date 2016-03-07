@@ -19,6 +19,14 @@ package org.zu.ardulink.util;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class MapBuilder<K, V> {
 
 	private final Map<K, V> data = new HashMap<K, V>();

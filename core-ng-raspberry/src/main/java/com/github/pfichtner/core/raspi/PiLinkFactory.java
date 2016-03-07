@@ -22,6 +22,14 @@ import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class PiLinkFactory implements LinkFactory<LinkConfig> {
 
 	@Override

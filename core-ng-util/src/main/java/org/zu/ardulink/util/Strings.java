@@ -18,9 +18,11 @@ package org.zu.ardulink.util;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- *  
+ * 
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
+ *
  */
 public final class Strings {
 

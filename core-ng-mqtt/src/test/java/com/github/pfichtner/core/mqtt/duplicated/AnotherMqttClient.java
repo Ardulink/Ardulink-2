@@ -41,6 +41,14 @@ import com.github.pfichtner.ardulink.core.Pin.Type;
 
 // TODO create a Mqtt test package and move AnotherMQttClient, ... to it
 // TODO create a @MqttBroker Rule
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class AnotherMqttClient extends ExternalResource {
 
 	private final MQTT mqttClient;

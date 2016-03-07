@@ -33,6 +33,14 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ProxyLinkFactoryTest {
 
 	@Rule

@@ -34,6 +34,14 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 // because JNI dependent
 @Ignore
 public class SerialLinkFactoryIntegrationTest {

@@ -43,10 +43,10 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
-* project Ardulink http://www.ardulink.org/
- *  
+ * project Ardulink http://www.ardulink.org/
  * 
- *         [adsense]
+ * [adsense]
+ *
  */
 public class DataReceiver {
 

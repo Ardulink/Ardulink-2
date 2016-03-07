@@ -23,9 +23,11 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- *  
+ * 
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
+ *
  */
 public class StopWatch {
 

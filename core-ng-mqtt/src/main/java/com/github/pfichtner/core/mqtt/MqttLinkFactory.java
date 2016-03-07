@@ -21,6 +21,14 @@ import java.net.UnknownHostException;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class MqttLinkFactory implements LinkFactory<MqttLinkConfig> {
 
 	@Override

@@ -21,6 +21,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public final class Lists {
 
 	private Lists() {

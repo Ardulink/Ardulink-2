@@ -18,9 +18,11 @@ package com.github.pfichtner.core.mqtt.duplicated;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- *  
+ * 
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
+ *
  */
 public class Message {
 

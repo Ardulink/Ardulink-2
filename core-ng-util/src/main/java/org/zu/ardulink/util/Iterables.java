@@ -19,6 +19,14 @@ package org.zu.ardulink.util;
 import java.util.Enumeration;
 import java.util.Iterator;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public final class Iterables {
 
 	private Iterables() {

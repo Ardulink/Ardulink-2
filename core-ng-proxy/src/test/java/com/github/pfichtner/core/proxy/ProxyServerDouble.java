@@ -38,6 +38,14 @@ import org.slf4j.LoggerFactory;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ProxyServerDouble extends ExternalResource {
 	
 	private final Protocol tcpProto = ArdulinkProtocol2.instance();

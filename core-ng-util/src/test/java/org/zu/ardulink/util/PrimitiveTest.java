@@ -25,6 +25,14 @@ import static org.junit.Assert.*;
 import org.hamcrest.core.Is;
 import org.junit.Test;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class PrimitiveTest {
 
 	@Test

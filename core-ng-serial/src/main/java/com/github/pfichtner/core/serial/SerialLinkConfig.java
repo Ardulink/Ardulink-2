@@ -35,6 +35,14 @@ import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.api.Protocols;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class SerialLinkConfig implements LinkConfig {
 
 	@Named("port")

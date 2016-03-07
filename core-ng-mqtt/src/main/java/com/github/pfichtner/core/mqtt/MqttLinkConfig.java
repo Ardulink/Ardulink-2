@@ -24,6 +24,14 @@ import javax.validation.constraints.NotNull;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class MqttLinkConfig implements LinkConfig {
 
 	private static final String LOCALHOST = "localhost";

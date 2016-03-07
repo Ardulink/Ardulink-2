@@ -18,6 +18,14 @@ package com.github.pfichtner.core.bluetooth;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class BluetoothLinkConfig implements LinkConfig {
 
 	@Named("deviceName")

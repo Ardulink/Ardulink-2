@@ -45,6 +45,14 @@ import com.github.pfichtner.core.mqtt.duplicated.AnotherMqttClient;
 import com.github.pfichtner.core.mqtt.duplicated.EventMatchers.PinValueChangedEventMatcher;
 import com.github.pfichtner.core.mqtt.duplicated.Message;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class MqttLinkTest {
 
 	public static class TrackStateConnectionListener implements

@@ -39,6 +39,14 @@ import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 import com.github.pfichtner.ardulink.core.qos.ConnectionBasedQosLink;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
 	private static final Protocol proto = ArdulinkProtocol2.instance();

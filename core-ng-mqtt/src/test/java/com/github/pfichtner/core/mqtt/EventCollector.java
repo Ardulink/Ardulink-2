@@ -31,6 +31,14 @@ import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
 import com.github.pfichtner.ardulink.core.events.EventListener;
 import com.github.pfichtner.ardulink.core.events.PinValueChangedEvent;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class EventCollector implements EventListener {
 
 	private final ListMultiMap<Type, PinValueChangedEvent> events = new ListMultiMap<Type, PinValueChangedEvent>();

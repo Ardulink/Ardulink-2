@@ -22,6 +22,14 @@ import static org.zu.ardulink.util.Preconditions.checkState;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public abstract class Optional<T> {
 
 	public static class PresentOptional<T> extends Optional<T> {

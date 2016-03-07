@@ -20,9 +20,11 @@ import java.util.Collection;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- *  
+ * 
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
+ *
  */
 public final class Integers {
 	

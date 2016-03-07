@@ -22,6 +22,14 @@ import org.hamcrest.TypeSafeMatcher;
 import com.github.pfichtner.ardulink.core.Pin;
 import com.github.pfichtner.ardulink.core.events.PinValueChangedEvent;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class EventMatchers {
 
 	public static PinValueChangedEventMatcher eventFor(Pin pin) {
