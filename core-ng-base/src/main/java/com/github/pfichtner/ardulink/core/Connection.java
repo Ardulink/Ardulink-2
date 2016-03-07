@@ -20,11 +20,12 @@ import java.io.Closeable;
 import java.io.IOException;
 
 /**
+ * [ardulinktitle] [ardulinkversion]
  * Represents a Connection to an Arduino (ArduLink) board. This connection must
  * not be physically for example it can also be represented by a network
  * connection.
  * 
- *  
+ * [adsense] 
  */
 public interface Connection extends Closeable {
 

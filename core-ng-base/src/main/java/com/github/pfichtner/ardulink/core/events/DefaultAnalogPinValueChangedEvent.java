@@ -18,6 +18,14 @@ package com.github.pfichtner.ardulink.core.events;
 
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DefaultAnalogPinValueChangedEvent implements
 		AnalogPinValueChangedEvent {
 

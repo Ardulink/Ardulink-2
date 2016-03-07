@@ -51,6 +51,14 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.Named;
 import com.github.pfichtner.beans.Attribute;
 import com.github.pfichtner.beans.BeanProperties;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public abstract class LinkManager {
 
 	public interface NumberValidationInfo extends ValidationInfo {

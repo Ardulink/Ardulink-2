@@ -18,6 +18,14 @@ package com.github.pfichtner.ardulink.core.linkmanager;
 
 import static org.zu.ardulink.util.Preconditions.checkNotNull;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class LinkConfigWithDependentAttributes implements LinkConfig {
 
 	@Named("host")

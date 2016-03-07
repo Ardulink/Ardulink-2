@@ -18,6 +18,14 @@ package com.github.pfichtner.ardulink.core.convenience;
 
 import com.github.pfichtner.ardulink.core.Link;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 class CacheValue {
 
 	private final Link link;

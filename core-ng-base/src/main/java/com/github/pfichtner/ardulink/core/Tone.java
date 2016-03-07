@@ -20,6 +20,14 @@ import java.util.concurrent.TimeUnit;
 
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class Tone {
 
 	public static class Builder {

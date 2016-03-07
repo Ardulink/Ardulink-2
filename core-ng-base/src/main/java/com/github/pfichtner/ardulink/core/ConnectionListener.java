@@ -16,6 +16,14 @@ limitations under the License.
 
 package com.github.pfichtner.ardulink.core;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface ConnectionListener {
 
 	void connectionLost();

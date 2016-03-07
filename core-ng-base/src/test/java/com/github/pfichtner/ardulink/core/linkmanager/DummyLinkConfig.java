@@ -16,6 +16,14 @@ limitations under the License.
 
 package com.github.pfichtner.ardulink.core.linkmanager;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 import java.util.List;
 
 import javax.validation.constraints.Max;

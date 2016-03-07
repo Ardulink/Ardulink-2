@@ -34,6 +34,14 @@ import com.github.pfichtner.ardulink.core.Link;
 import com.github.pfichtner.ardulink.core.linkmanager.DummyConnection;
 import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkConfig;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class LinksTest {
 
 	@Test

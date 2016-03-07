@@ -29,6 +29,14 @@ import org.slf4j.LoggerFactory;
 
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class StreamConnection implements Connection {
 
 	private static final Logger logger = LoggerFactory

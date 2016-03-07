@@ -23,6 +23,14 @@ import java.util.ServiceLoader;
 
 import org.zu.ardulink.util.Optional;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public final class Protocols {
 
 	private Protocols() {

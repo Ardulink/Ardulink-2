@@ -45,6 +45,14 @@ import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoPinStateChanged;
 import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoReady;
 import com.github.pfichtner.ardulink.core.proto.impl.FromArduinoReply;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public abstract class AbstractConnectionBasedLink extends AbstractListenerLink {
 
 	private final Connection connection;

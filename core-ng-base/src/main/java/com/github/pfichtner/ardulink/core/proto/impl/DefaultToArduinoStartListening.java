@@ -19,6 +19,14 @@ package com.github.pfichtner.ardulink.core.proto.impl;
 import com.github.pfichtner.ardulink.core.Pin;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStartListening;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DefaultToArduinoStartListening implements ToArduinoStartListening {
 
 	private final Pin pin;

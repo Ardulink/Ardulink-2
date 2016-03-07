@@ -19,6 +19,14 @@ package com.github.pfichtner.ardulink.core.proto.impl;
 import com.github.pfichtner.ardulink.core.Tone;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoTone;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DefaultToArduinoTone implements ToArduinoTone {
 
 	private final Tone tone;

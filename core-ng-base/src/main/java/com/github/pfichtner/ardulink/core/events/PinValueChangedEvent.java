@@ -18,6 +18,14 @@ package com.github.pfichtner.ardulink.core.events;
 
 import com.github.pfichtner.ardulink.core.Pin;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface PinValueChangedEvent {
 
 	Pin getPin();

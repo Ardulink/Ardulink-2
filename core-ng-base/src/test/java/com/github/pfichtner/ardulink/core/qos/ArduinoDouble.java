@@ -33,6 +33,14 @@ import org.zu.ardulink.util.Lists;
 import com.github.pfichtner.ardulink.core.StreamReader;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ArduinoDouble implements Closeable {
 
 	private final static Logger logger = LoggerFactory

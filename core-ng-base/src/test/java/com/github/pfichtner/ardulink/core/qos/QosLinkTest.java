@@ -38,6 +38,14 @@ import com.github.pfichtner.ardulink.core.StreamConnection;
 import com.github.pfichtner.ardulink.core.Tone;
 import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class QosLinkTest {
 
 	@Rule

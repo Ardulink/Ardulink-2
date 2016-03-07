@@ -30,6 +30,14 @@ import com.github.pfichtner.ardulink.core.qos.ArduinoDouble.Adder;
 import com.github.pfichtner.ardulink.core.qos.ArduinoDouble.RegexAdder;
 import com.github.pfichtner.ardulink.core.qos.ArduinoDouble.WaitThenDoBuilder;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class Arduino extends ExternalResource {
 
 	private final ArduinoDouble arduinoDouble;

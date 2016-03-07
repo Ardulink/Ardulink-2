@@ -59,6 +59,14 @@ import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoTone;
 import com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ArdulinkProtocol2 implements Protocol {
 
 	private static final Pattern pattern = Pattern

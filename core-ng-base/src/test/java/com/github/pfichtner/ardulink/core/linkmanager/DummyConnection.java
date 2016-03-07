@@ -23,6 +23,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.github.pfichtner.ardulink.core.Connection;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DummyConnection implements Connection {
 
 	private final DummyLinkConfig config;

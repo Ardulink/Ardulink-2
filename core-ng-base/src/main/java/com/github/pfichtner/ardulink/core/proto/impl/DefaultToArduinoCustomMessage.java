@@ -18,6 +18,14 @@ package com.github.pfichtner.ardulink.core.proto.impl;
 
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoCustomMessage;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DefaultToArduinoCustomMessage implements ToArduinoCustomMessage {
 
 	private final String[] messages;

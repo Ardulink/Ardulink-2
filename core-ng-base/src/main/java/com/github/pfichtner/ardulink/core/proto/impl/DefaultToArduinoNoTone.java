@@ -19,6 +19,14 @@ package com.github.pfichtner.ardulink.core.proto.impl;
 import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoNoTone;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DefaultToArduinoNoTone implements ToArduinoNoTone {
 
 	private final AnalogPin analogPin;

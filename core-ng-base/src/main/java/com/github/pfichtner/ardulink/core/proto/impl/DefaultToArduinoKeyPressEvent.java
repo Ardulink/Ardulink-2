@@ -18,6 +18,14 @@ package com.github.pfichtner.ardulink.core.proto.impl;
 
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoKeyPressEvent;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DefaultToArduinoKeyPressEvent implements ToArduinoKeyPressEvent {
 
 	private final char keychar;

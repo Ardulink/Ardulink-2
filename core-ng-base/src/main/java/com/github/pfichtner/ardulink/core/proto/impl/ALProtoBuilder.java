@@ -28,9 +28,10 @@ import org.zu.ardulink.util.Optional;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- *  
+ * project Ardulink http://www.ardulink.org/
  * 
- *         [adsense]
+ * [adsense]
+ *
  */
 public class ALProtoBuilder {
 

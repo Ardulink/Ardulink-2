@@ -34,6 +34,14 @@ import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoStartListen
 import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoStopListening;
 import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ConnectionBasedLink extends AbstractConnectionBasedLink {
 
 	private static final Logger logger = LoggerFactory

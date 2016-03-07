@@ -42,6 +42,14 @@ import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import com.github.pfichtner.ardulink.core.proto.impl.DummyProtocol;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DummyLinkFactoryTest {
 
 	@Rule

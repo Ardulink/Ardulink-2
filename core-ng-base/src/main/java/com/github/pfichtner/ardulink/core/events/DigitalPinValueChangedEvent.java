@@ -18,6 +18,14 @@ package com.github.pfichtner.ardulink.core.events;
 
 import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface DigitalPinValueChangedEvent extends PinValueChangedEvent {
 
 	@Override

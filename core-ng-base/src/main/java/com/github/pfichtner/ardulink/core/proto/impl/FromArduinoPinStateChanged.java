@@ -19,6 +19,14 @@ package com.github.pfichtner.ardulink.core.proto.impl;
 import com.github.pfichtner.ardulink.core.Pin;
 import com.github.pfichtner.ardulink.core.proto.api.Protocol.FromArduino;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class FromArduinoPinStateChanged implements FromArduino {
 
 	private final Pin pin;

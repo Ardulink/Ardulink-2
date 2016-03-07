@@ -27,6 +27,14 @@ import org.junit.Test;
 
 import com.github.pfichtner.ardulink.core.Link;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class LinkConfigWithDependentAttributesLinkFactoryTest {
 
 	@Test

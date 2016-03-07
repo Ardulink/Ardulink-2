@@ -25,6 +25,14 @@ import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStartListening;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
 import com.github.pfichtner.ardulink.core.proto.api.ToArduinoTone;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DummyProtocol implements Protocol {
 
 	private static final DummyProtocol instance = new DummyProtocol();

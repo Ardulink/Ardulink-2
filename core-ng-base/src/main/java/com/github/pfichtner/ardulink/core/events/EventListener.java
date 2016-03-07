@@ -16,6 +16,14 @@ limitations under the License.
 
 package com.github.pfichtner.ardulink.core.events;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface EventListener {
 
 	void stateChanged(AnalogPinValueChangedEvent event);

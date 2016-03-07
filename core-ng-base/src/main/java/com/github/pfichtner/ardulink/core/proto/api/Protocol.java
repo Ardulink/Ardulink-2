@@ -17,6 +17,14 @@ limitations under the License.
 package com.github.pfichtner.ardulink.core.proto.api;
 
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface Protocol {
 
 	String getName();

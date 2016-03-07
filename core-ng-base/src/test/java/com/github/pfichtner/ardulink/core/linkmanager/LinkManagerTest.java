@@ -25,6 +25,14 @@ import org.junit.Test;
 
 import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class LinkManagerTest {
 
 	@Test

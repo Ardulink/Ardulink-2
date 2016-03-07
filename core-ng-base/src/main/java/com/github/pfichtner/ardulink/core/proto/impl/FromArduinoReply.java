@@ -18,6 +18,14 @@ package com.github.pfichtner.ardulink.core.proto.impl;
 
 import com.github.pfichtner.ardulink.core.proto.api.Protocol.FromArduino;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class FromArduinoReply implements FromArduino {
 
 	private final boolean ok;

@@ -48,11 +48,14 @@ import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoStopListeni
 import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
 
 /**
+ * [ardulinktitle] [ardulinkversion]
  * Arduino sends ok/ko messages directly after receiving the work message. So
  * there is no need for a queue because if the next message read is not the
  * ok/ko response it never will arrive.
  * 
- *  
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
  */
 public class ConnectionBasedQosLink extends AbstractConnectionBasedLink {
 

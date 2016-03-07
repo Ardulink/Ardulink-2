@@ -18,6 +18,14 @@ package com.github.pfichtner.ardulink.core.linkmanager;
 
 import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class DummyLinkFactory implements LinkFactory<DummyLinkConfig> {
 
 	@Override
