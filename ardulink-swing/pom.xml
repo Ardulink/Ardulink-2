@@ -30,7 +30,7 @@
 	        <version>2.10.3</version>
 	        <configuration>
 	          <show>public</show>
-	          <reportOutputDirectory>${project.basedir}/../JavadocUtils/generated</reportOutputDirectory>
+	          <reportOutputDirectory>${project.basedir}/../deploy-javadocutils/generated</reportOutputDirectory>
           	  <destDir>ardulink-swing</destDir>
 	        </configuration>
 	      </plugin>
@@ -40,12 +40,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>core-ng-base</artifactId>
+			<artifactId>ardulink-core-base</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core</artifactId>
+			<artifactId>ardulink-legacy</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

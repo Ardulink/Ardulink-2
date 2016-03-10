@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.ardulink.examples</groupId>
-	<artifactId>simplesmartcardriver</artifactId>
+	<artifactId>example-simplesmartcardriver</artifactId>
 
 	<parent>
 		<groupId>org.ardulink</groupId>
@@ -31,7 +31,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core</artifactId>
+			<artifactId>ardulink-legacy</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

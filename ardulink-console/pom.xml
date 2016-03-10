@@ -30,7 +30,7 @@
 				<version>2.10.3</version>
 				<configuration>
 					<show>public</show>
-					<reportOutputDirectory>${project.basedir}/../JavadocUtils/generated</reportOutputDirectory>
+					<reportOutputDirectory>${project.basedir}/../deploy-javadocutils/generated</reportOutputDirectory>
 					<destDir>ardulink-console</destDir>
 				</configuration>
 			</plugin>
@@ -40,13 +40,31 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core</artifactId>
+			<artifactId>ardulink-legacy</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-swing</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ardulink</groupId>
+			<artifactId>ardulink-core-serial-rxtx</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ardulink</groupId>
+			<artifactId>ardulink-core-proxy</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ardulink</groupId>
+			<artifactId>ardulink-core-mqtt</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -56,24 +74,6 @@
 		<dependency>
 			<groupId>args4j</groupId>
 			<artifactId>args4j</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ardulink</groupId>
-			<artifactId>core-ng-serial</artifactId>
-			<version>${project.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.ardulink</groupId>
-			<artifactId>core-ng-proxy</artifactId>
-			<version>${project.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.ardulink</groupId>
-			<artifactId>core-ng-mqtt</artifactId>
-			<version>${project.version}</version>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

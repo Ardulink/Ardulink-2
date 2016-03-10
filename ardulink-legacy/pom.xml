@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ardulink-core</artifactId>
+	<artifactId>ardulink-legacy</artifactId>
 
 	<parent>
 		<groupId>org.ardulink</groupId>
@@ -29,8 +29,8 @@
 				<version>2.10.3</version>
 				<configuration>
 					<show>public</show>
-					<reportOutputDirectory>${project.basedir}/../JavadocUtils/generated</reportOutputDirectory>
-					<destDir>ardulink-core</destDir>
+					<reportOutputDirectory>${project.basedir}/../deploy-javadocutils/generated</reportOutputDirectory>
+					<destDir>ardulink-legacy</destDir>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -39,12 +39,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>core-ng-base</artifactId>
+			<artifactId>ardulink-core-base</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>core-ng-util</artifactId>
+			<artifactId>ardulink-core-util</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

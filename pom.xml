@@ -61,24 +61,24 @@
 	</properties>
 
 	<modules>
-		<module>core-ng-base</module>
-		<module>core-ng-serial</module>
-		<module>core-ng-bluetooth</module>
-		<module>core-ng-raspberry</module>
-		<module>core-ng-beans</module>
-		<module>core-ng-proxy</module>
-		<module>core-ng-mqtt</module>
-		<module>core-ng-util</module>
-		<module>ArdulinkCore</module>
-		<module>DataReceiver</module>
-		<module>ArdulinkNetworkProxyServer</module>
-		<module>Mqtt</module>
-		<module>ArdulinkSwing</module>
-		<module>ArdulinkConsole</module>
-		<module>ardulink-mail-ng</module>
-		<module>JoystickSmartCarDriver</module>
-		<module>SimpleSmartCarDriver</module>
-		<module>Deploy</module>
+		<module>ardulink-core-util</module>
+		<module>ardulink-core-base</module>
+		<module>ardulink-core-serial-rxtx</module>
+		<module>ardulink-core-bluetooth</module>
+		<module>ardulink-core-raspberry</module>
+		<module>ardulink-core-beans</module>
+		<module>ardulink-core-proxy</module>
+		<module>ardulink-core-mqtt</module>
+		<module>ardulink-legacy</module>
+		<module>ardulink-networkproxyserver</module>
+		<module>ardulink-mqtt</module>
+		<module>ardulink-swing</module>
+		<module>ardulink-console</module>
+		<module>ardulink-mail</module>
+		<module>example-datareceiver</module>
+		<module>example-joysticksmartcardriver</module>
+		<module>example-simplesmartcardriver</module>
+		<module>deploy</module>
 	</modules>
 
 	<build>
