@@ -78,7 +78,7 @@
 		<module>example-datareceiver</module>
 		<module>example-joysticksmartcardriver</module>
 		<module>example-simplesmartcardriver</module>
-		<module>deploy</module>
+		<module>deploy-dist</module>
 	</modules>
 
 	<build>
