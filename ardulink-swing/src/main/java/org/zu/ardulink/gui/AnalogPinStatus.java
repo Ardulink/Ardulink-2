@@ -47,7 +47,6 @@ import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
  * This class implements the AnalogReadChangeListener interface and is able to listen
  * events coming from arduino board about analog pin state change.
  * project Ardulink http://www.ardulink.org/
- * @see AnalogReadChangeListener
  * 
  * [adsense]
  *
@@ -229,7 +228,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	
 	/**
 	 * Set the pin to control
-	 * @param pin
+	 * @param pin the pin number to control
 	 */
 	public void setPin(int pin) {
 		pinComboBoxModel.setSelectedItem(pin);

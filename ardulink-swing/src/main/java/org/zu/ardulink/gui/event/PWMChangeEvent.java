@@ -26,7 +26,8 @@ import org.zu.ardulink.gui.PWMController;
 * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
- * @see PWMController, PWMControllerListener
+ * @see PWMController
+ * @see PWMControllerListener
  */
 public class PWMChangeEvent {
 	

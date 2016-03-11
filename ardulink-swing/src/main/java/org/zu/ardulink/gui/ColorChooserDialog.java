@@ -48,6 +48,7 @@ public class ColorChooserDialog extends JDialog {
 
 	/**
 	 * Launch the application.
+	 * @param args nothing
 	 */
 	public static void main(String[] args) {
 		ColorChooserDialog dialog = new ColorChooserDialog(new RGBController());

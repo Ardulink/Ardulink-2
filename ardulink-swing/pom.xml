@@ -32,6 +32,7 @@
 	          <show>public</show>
 	          <reportOutputDirectory>${project.basedir}/../deploy-javadocutils/generated</reportOutputDirectory>
           	  <destDir>ardulink-swing</destDir>
+          	  <additionalparam>-Xdoclint:none</additionalparam>
 	        </configuration>
 	      </plugin>
 		</plugins>
