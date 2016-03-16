@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <project name="Add HTML fragments to Javadoc" default="modifyAdsense">
 
-	<target name="modifyAdsense">
+	<target name="modifyAdsense" depends="modifyTitle">
 		<replace dir="generated" token="[adsense]">
 			  <replacevalue><![CDATA[<br/><br/><script type="text/javascript">
 			  	document.write('<s'+'cript type="text/javascript" src="http://ad.altervista.org/js2.ad/size=336X280/r='+new Date().getTime()+'"><\/s'+'cript>');
@@ -20,23 +20,45 @@
 			  	]]>
 			  </replacevalue>
 		</replace>
-	</target>
-
-	<target name="modifyTitle">
-		<replace dir="generated" token="[ardulinktitle]">
-			  <replacevalue><![CDATA[<h3>Ardulink - <a href="http://www.ardulink.org/" target="_parent">return to homepage</a></h3>]]></replacevalue>
+		<replace dir="generated4dist" token="[adsense]">
+			  <replacevalue></replacevalue>
 		</replace>
 	</target>
 
-	<target name="modifyVersion">
-	<replace dir="generated" token="[ardulinkversion]">
+	<target name="modifyTitle" depends="modifyVersion">
+		<replace dir="generated" token="[ardulinktitle]">
+			  <replacevalue><![CDATA[<h3>Ardulink - <a href="http://www.ardulink.org/" target="_parent">return to homepage</a></h3>]]></replacevalue>
+		</replace>
+		<replace dir="generated4dist" token="[ardulinktitle]">
+			  <replacevalue><![CDATA[<h3><a href="http://www.ardulink.org/" target="_parent">Ardulink</a></h3>]]></replacevalue>
+		</replace>
+	</target>
+
+	<target name="modifyVersion" depends="prepare4dist">
+		<replace dir="generated" token="[ardulinkversion]">
+			  <replacevalue><![CDATA[<p>v2.0.0-SNAPSHOT VERSION NAME</p>]]></replacevalue>
+		</replace>
+		<replace dir="generated4dist" token="[ardulinkversion]">
 			  <replacevalue><![CDATA[<p>v2.0.0-SNAPSHOT VERSION NAME</p>]]></replacevalue>
 		</replace>
 	</target>
 	
+	<target name="prepare4dist">
+		<delete dir="generated4dist" />
+		<copydir src="generated" dest="generated4dist"></copydir>
+	</target>
+
+	<target name="copy2dist">
+		<copydir src="generated4dist" dest="../deploy-dist/rootfolder/javadoc"></copydir>
+	</target>
+
+	<target name="clean2dist">
+		<delete dir="../deploy-dist/rootfolder/javadoc" />
+	</target>
 
 	<target name="clean">
 		<delete dir="generated" />
+		<delete dir="generated4dist" />
 	</target>
 
 </project>
