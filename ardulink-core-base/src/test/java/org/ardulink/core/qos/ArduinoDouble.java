@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core.qos;
+package org.ardulink.core.qos;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -28,10 +28,10 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zu.ardulink.util.Lists;
+import org.ardulink.util.Lists;
 
-import com.github.pfichtner.ardulink.core.StreamReader;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.StreamReader;
+import org.ardulink.core.proto.api.Protocol;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -14,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package com.github.pfichtner.beans.finder.impl;
+package org.ardulink.core.beans.finder.impl;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 
-import com.github.pfichtner.beans.Attribute.AttributeReader;
-import com.github.pfichtner.beans.Attribute.AttributeWriter;
+import org.ardulink.core.beans.Attribute.AttributeReader;
+import org.ardulink.core.beans.Attribute.AttributeWriter;
 
 /**
  * [ardulinktitle] [ardulinkversion]

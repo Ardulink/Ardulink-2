@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core;
+package org.ardulink.core;
 
-import static com.github.pfichtner.ardulink.core.AbstractConnectionBasedLink.Mode.READY_MESSAGE_ONLY;
+import static org.ardulink.core.AbstractConnectionBasedLink.Mode.READY_MESSAGE_ONLY;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,9 +30,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
-import com.github.pfichtner.ardulink.core.qos.Arduino;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.qos.Arduino;
 
 /**
  * [ardulinktitle] [ardulinkversion]

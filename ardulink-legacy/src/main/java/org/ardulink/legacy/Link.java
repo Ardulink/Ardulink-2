@@ -14,21 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.zu.ardulink.legacy;
+package org.ardulink.legacy;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import com.github.pfichtner.ardulink.core.Tone;
-import com.github.pfichtner.ardulink.core.convenience.Links;
-import com.github.pfichtner.ardulink.core.events.EventListener;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.core.Tone;
+import org.ardulink.core.convenience.Links;
+import org.ardulink.core.events.EventListener;
+import org.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.core.linkmanager.LinkManager.Configurer;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -45,11 +45,11 @@ public abstract class Link {
 
 	public static class LegacyLinkAdapter extends Link {
 
-		private final com.github.pfichtner.ardulink.core.Link delegate;
+		private final org.ardulink.core.Link delegate;
 		private Configurer configurer;
 
 		public LegacyLinkAdapter(
-				com.github.pfichtner.ardulink.core.Link delegate) {
+				org.ardulink.core.Link delegate) {
 			this.delegate = delegate;
 		}
 
@@ -59,7 +59,7 @@ public abstract class Link {
 		}
 
 		@Override
-		public com.github.pfichtner.ardulink.core.Link getDelegate() {
+		public org.ardulink.core.Link getDelegate() {
 			return delegate;
 		}
 
@@ -189,7 +189,7 @@ public abstract class Link {
 	public static final Link NO_LINK = new Link() {
 
 		@Override
-		public com.github.pfichtner.ardulink.core.Link getDelegate() {
+		public org.ardulink.core.Link getDelegate() {
 			return null;
 		}
 
@@ -284,7 +284,7 @@ public abstract class Link {
 		}
 	}
 
-	public abstract com.github.pfichtner.ardulink.core.Link getDelegate();
+	public abstract org.ardulink.core.Link getDelegate();
 
 	public abstract Object[] getChoiceValues(String attribute);
 

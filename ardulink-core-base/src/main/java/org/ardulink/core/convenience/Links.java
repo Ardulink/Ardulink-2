@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core.convenience;
+package org.ardulink.core.convenience;
 
-import static com.github.pfichtner.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
+import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 
 import java.io.IOException;
 import java.net.URI;
@@ -25,10 +25,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.core.Link;
+import org.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
+import org.ardulink.core.linkmanager.LinkManager.Configurer;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
  */
-package com.github.pfichtner.ardulink;
+package org.ardulink.mqtt;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
-import static com.github.pfichtner.ardulink.util.TestUtil.startAsync;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.mqtt.util.TestUtil.startAsync;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -32,9 +32,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.Pin;
-import com.github.pfichtner.ardulink.util.AnotherMqttClient;
+import org.ardulink.core.Link;
+import org.ardulink.core.Pin;
+import org.ardulink.mqtt.util.AnotherMqttClient;
 
 /**
  * [ardulinktitle] [ardulinkversion]

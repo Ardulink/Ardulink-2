@@ -16,7 +16,7 @@ limitations under the License.
 
  */
 
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -33,13 +33,13 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
-import org.zu.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
-import org.zu.ardulink.legacy.Link;
-import org.zu.ardulink.util.Lists;
+import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
+import org.ardulink.legacy.Link;
+import org.ardulink.util.Lists;
 
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.ConnectionListener;
-import com.github.pfichtner.ardulink.core.convenience.Links;
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.ConnectionListener;
+import org.ardulink.core.convenience.Links;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -163,7 +163,7 @@ public class JoystickSmartCarDriver extends JFrame implements
 
 	@Override
 	public void setLink(Link link) {
-		com.github.pfichtner.ardulink.core.Link delegate = link.getDelegate();
+		org.ardulink.core.Link delegate = link.getDelegate();
 		if (delegate instanceof ConnectionBasedLink) {
 			((ConnectionBasedLink) delegate).removeConnectionListener(this);
 		}

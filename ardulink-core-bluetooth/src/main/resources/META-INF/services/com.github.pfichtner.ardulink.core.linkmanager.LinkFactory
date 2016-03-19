@@ -1,1 +1,1 @@
-com.github.pfichtner.core.bluetooth.BluetoothLinkFactory
+org.ardulink.core.bluetooth.BluetoothLinkFactory

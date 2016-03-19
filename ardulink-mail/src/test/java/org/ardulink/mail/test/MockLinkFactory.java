@@ -14,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.ardumailng.test;
+package org.ardulink.mail.test;
 
 import static org.mockito.Mockito.mock;
 
-import org.ardulink.ardumailng.test.MockLinkFactory.MockLinkConfig;
+import org.ardulink.mail.test.MockLinkFactory.MockLinkConfig;
 
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
+import org.ardulink.core.Link;
+import org.ardulink.core.linkmanager.LinkConfig;
+import org.ardulink.core.linkmanager.LinkFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core.proto.impl;
+package org.ardulink.core.proto.impl;
 
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoKeyPressEvent;
+import org.ardulink.core.proto.api.ToArduinoKeyPressEvent;
 
 /**
  * [ardulinktitle] [ardulinkversion]

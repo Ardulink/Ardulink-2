@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 */
-package com.github.pfichtner.core.mqtt.duplicated;
+package org.ardulink.core.mqtt.duplicated;
 
 /**
  * [ardulinktitle] [ardulinkversion]

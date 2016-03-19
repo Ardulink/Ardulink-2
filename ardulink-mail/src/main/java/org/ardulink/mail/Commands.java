@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.ardumailng;
+package org.ardulink.mail;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
 
 import java.net.URISyntaxException;
 
-import com.github.pfichtner.ardulink.core.Link;
+import org.ardulink.core.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -14,16 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
  */
-package com.github.pfichtner.ardulink.core.proto.impl;
+package org.ardulink.core.proto.impl;
 
 import static java.util.Collections.addAll;
-import static org.zu.ardulink.util.Preconditions.checkArgument;
+import static org.ardulink.util.Preconditions.checkArgument;
 
 import java.util.List;
 
-import org.zu.ardulink.util.Joiner;
-import org.zu.ardulink.util.Lists;
-import org.zu.ardulink.util.Optional;
+import org.ardulink.util.Joiner;
+import org.ardulink.util.Lists;
+import org.ardulink.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]

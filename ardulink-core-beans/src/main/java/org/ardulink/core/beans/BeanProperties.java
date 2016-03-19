@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package com.github.pfichtner.beans;
+package org.ardulink.core.beans;
 
-import static com.github.pfichtner.beans.finder.impl.FindByIntrospection.beanAttributes;
-import static org.zu.ardulink.util.Preconditions.checkState;
+import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
+import static org.ardulink.util.Preconditions.checkState;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -26,12 +26,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.zu.ardulink.util.Optional;
+import org.ardulink.util.Optional;
 
-import com.github.pfichtner.beans.Attribute.AttributeReader;
-import com.github.pfichtner.beans.Attribute.AttributeWriter;
-import com.github.pfichtner.beans.Attribute.TypedAttributeProvider;
-import com.github.pfichtner.beans.finder.api.AttributeFinder;
+import org.ardulink.core.beans.Attribute.AttributeReader;
+import org.ardulink.core.beans.Attribute.AttributeWriter;
+import org.ardulink.core.beans.Attribute.TypedAttributeProvider;
+import org.ardulink.core.beans.finder.api.AttributeFinder;
 
 /**
  * [ardulinktitle] [ardulinkversion]

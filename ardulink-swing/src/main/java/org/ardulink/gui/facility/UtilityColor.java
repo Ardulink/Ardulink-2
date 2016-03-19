@@ -16,11 +16,11 @@ limitations under the License.
 
  */
 
-package org.zu.ardulink.gui.facility;
+package org.ardulink.gui.facility;
 
 import static java.awt.Color.BLACK;
 import static java.lang.Integer.toHexString;
-import static org.zu.ardulink.util.Strings.nullOrEmpty;
+import static org.ardulink.util.Strings.nullOrEmpty;
 
 import java.awt.Color;
 

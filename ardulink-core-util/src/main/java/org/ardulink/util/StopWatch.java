@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
  */
-package org.zu.ardulink.util;
+package org.ardulink.util;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.zu.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Preconditions.checkState;
 
 import java.util.concurrent.TimeUnit;
 

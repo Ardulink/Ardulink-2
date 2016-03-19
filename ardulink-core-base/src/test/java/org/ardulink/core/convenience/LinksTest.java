@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core.convenience;
+package org.ardulink.core.convenience;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -28,11 +28,11 @@ import java.net.URISyntaxException;
 
 import org.junit.Test;
 
-import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.linkmanager.DummyConnection;
-import com.github.pfichtner.ardulink.core.linkmanager.DummyLinkConfig;
+import org.ardulink.core.Connection;
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.Link;
+import org.ardulink.core.linkmanager.DummyConnection;
+import org.ardulink.core.linkmanager.DummyLinkConfig;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package com.github.pfichtner.core.serial;
+package org.ardulink.core.serial.rxtx;
 
 import static gnu.io.CommPortIdentifier.PORT_SERIAL;
-import static org.zu.ardulink.util.Iterables.forEnumeration;
-import static org.zu.ardulink.util.Iterables.getFirst;
+import static org.ardulink.util.Iterables.forEnumeration;
+import static org.ardulink.util.Iterables.getFirst;
 import gnu.io.CommPortIdentifier;
 
 import java.util.ArrayList;
@@ -28,12 +28,12 @@ import java.util.List;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
-import org.zu.ardulink.util.Optional;
+import org.ardulink.util.Optional;
 
-import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.api.Protocols;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.linkmanager.LinkConfig;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.Protocols;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]

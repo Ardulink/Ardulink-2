@@ -14,50 +14,50 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core.proto.impl;
+package org.ardulink.core.proto.impl;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
-import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
-import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.CHAR_PRESSED;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.CUSTOM_MESSAGE;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.NOTONE;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.READY;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.RPLY;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.TONE;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.Type.ANALOG;
+import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.CHAR_PRESSED;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.CUSTOM_MESSAGE;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.NOTONE;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.READY;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.RPLY;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.TONE;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.System.arraycopy;
-import static org.zu.ardulink.util.Integers.tryParse;
-import static org.zu.ardulink.util.Preconditions.checkNotNull;
-import static org.zu.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Integers.tryParse;
+import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Preconditions.checkState;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.zu.ardulink.util.Longs;
+import org.ardulink.util.Longs;
 
-import com.github.pfichtner.ardulink.core.Pin;
-import com.github.pfichtner.ardulink.core.proto.api.MessageIdHolder;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoCustomMessage;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoKeyPressEvent;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoNoTone;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoPinEvent;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStartListening;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoTone;
-import com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
+import org.ardulink.core.Pin;
+import org.ardulink.core.proto.api.MessageIdHolder;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.ToArduinoCustomMessage;
+import org.ardulink.core.proto.api.ToArduinoKeyPressEvent;
+import org.ardulink.core.proto.api.ToArduinoNoTone;
+import org.ardulink.core.proto.api.ToArduinoPinEvent;
+import org.ardulink.core.proto.api.ToArduinoStartListening;
+import org.ardulink.core.proto.api.ToArduinoStopListening;
+import org.ardulink.core.proto.api.ToArduinoTone;
+import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 
 /**
  * [ardulinktitle] [ardulinkversion]

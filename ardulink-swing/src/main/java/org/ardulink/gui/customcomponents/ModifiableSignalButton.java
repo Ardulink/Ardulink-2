@@ -16,7 +16,7 @@ limitations under the License.
 
 */
 
-package org.zu.ardulink.gui.customcomponents;
+package org.ardulink.gui.customcomponents;
 
 import java.awt.BorderLayout;
 
@@ -31,8 +31,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.zu.ardulink.gui.Linkable;
-import org.zu.ardulink.legacy.Link;
+import org.ardulink.gui.Linkable;
+import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

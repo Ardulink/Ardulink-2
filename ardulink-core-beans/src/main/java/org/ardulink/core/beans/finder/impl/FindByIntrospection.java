@@ -14,19 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.beans.finder.impl;
+package org.ardulink.core.beans.finder.impl;
 
-import static com.github.pfichtner.beans.finder.impl.ReadMethod.isReadMethod;
-import static com.github.pfichtner.beans.finder.impl.WriteMethod.isWriteMethod;
+import static org.ardulink.core.beans.finder.impl.ReadMethod.isReadMethod;
+import static org.ardulink.core.beans.finder.impl.WriteMethod.isWriteMethod;
 import static java.beans.Introspector.getBeanInfo;
 
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.pfichtner.beans.Attribute.AttributeReader;
-import com.github.pfichtner.beans.Attribute.AttributeWriter;
-import com.github.pfichtner.beans.finder.api.AttributeFinder;
+import org.ardulink.core.beans.Attribute.AttributeReader;
+import org.ardulink.core.beans.Attribute.AttributeWriter;
+import org.ardulink.core.beans.finder.api.AttributeFinder;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package com.github.pfichtner.beans.finder.impl;
+package org.ardulink.core.beans.finder.impl;
 
 import static java.lang.reflect.Modifier.isPublic;
 
@@ -24,7 +24,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 
-import com.github.pfichtner.beans.Attribute.AttributeReader;
+import org.ardulink.core.beans.Attribute.AttributeReader;
 
 /**
  * [ardulinktitle] [ardulinkversion]

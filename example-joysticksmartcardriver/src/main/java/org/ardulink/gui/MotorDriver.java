@@ -16,13 +16,13 @@ limitations under the License.
 
 */
 
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
 import java.awt.Point;
 
-import org.zu.ardulink.gui.event.PositionEvent;
-import org.zu.ardulink.gui.event.PositionListener;
-import org.zu.ardulink.legacy.Link;
+import org.ardulink.gui.event.PositionEvent;
+import org.ardulink.gui.event.PositionListener;
+import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

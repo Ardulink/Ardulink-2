@@ -16,7 +16,7 @@ limitations under the License.
 
 */
 
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -35,10 +35,10 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.zu.ardulink.gui.event.PWMChangeEvent;
-import org.zu.ardulink.gui.event.PWMControllerListener;
-import org.zu.ardulink.gui.facility.UtilityColor;
-import org.zu.ardulink.legacy.Link;
+import org.ardulink.gui.event.PWMChangeEvent;
+import org.ardulink.gui.event.PWMControllerListener;
+import org.ardulink.gui.facility.UtilityColor;
+import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

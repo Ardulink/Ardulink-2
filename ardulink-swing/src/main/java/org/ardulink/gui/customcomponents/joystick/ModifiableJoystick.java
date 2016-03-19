@@ -16,7 +16,7 @@ limitations under the License.
 
 */
 
-package org.zu.ardulink.gui.customcomponents.joystick;
+package org.ardulink.gui.customcomponents.joystick;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -31,10 +31,10 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.zu.ardulink.gui.Linkable;
-import org.zu.ardulink.gui.event.PositionEvent;
-import org.zu.ardulink.gui.event.PositionListener;
-import org.zu.ardulink.legacy.Link;
+import org.ardulink.gui.Linkable;
+import org.ardulink.gui.event.PositionEvent;
+import org.ardulink.gui.event.PositionListener;
+import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

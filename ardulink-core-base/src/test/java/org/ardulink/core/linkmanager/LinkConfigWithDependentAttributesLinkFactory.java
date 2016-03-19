@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core.linkmanager;
+package org.ardulink.core.linkmanager;
 
 import java.io.IOException;
 
-import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.Connection;
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]

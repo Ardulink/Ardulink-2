@@ -1,1 +1,1 @@
-class=org.ardulink.ardumailng.camel.ArdulinkComponent
+class=org.ardulink.mail.camel.ArdulinkComponent

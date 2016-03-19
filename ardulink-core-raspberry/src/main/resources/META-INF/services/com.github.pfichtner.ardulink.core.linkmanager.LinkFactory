@@ -1,1 +1,1 @@
-com.github.pfichtner.core.raspi.PiLinkFactory
+org.ardulink.core.raspi.PiLinkFactory

@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core;
+package org.ardulink.core;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
-import static com.github.pfichtner.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
-import static com.github.pfichtner.hamcrest.EventMatchers.eventFor;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.core.hamcrest.EventMatchers.eventFor;
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -45,15 +45,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
-import com.github.pfichtner.ardulink.core.Connection.ListenerAdapter;
-import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.EventListener;
-import com.github.pfichtner.ardulink.core.events.EventListenerAdapter;
-import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
-import com.github.pfichtner.ardulink.core.events.PinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.Connection.ListenerAdapter;
+import org.ardulink.core.events.AnalogPinValueChangedEvent;
+import org.ardulink.core.events.DigitalPinValueChangedEvent;
+import org.ardulink.core.events.EventListener;
+import org.ardulink.core.events.EventListenerAdapter;
+import org.ardulink.core.events.FilteredEventListenerAdapter;
+import org.ardulink.core.events.PinValueChangedEvent;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]

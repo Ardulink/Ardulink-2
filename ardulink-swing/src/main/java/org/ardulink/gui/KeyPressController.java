@@ -16,7 +16,7 @@ limitations under the License.
 
 */
 
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
 import java.awt.BorderLayout;
 
@@ -24,7 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import org.zu.ardulink.legacy.Link;
+import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

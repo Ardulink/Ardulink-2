@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
  */
-package com.github.pfichtner.ardulink.util;
+package org.ardulink.mqtt.util;
 
 import static java.lang.String.format;
-import static org.zu.ardulink.util.Preconditions.checkArgument;
+import static org.ardulink.util.Preconditions.checkArgument;
 
 /**
  * [ardulinktitle] [ardulinkversion]

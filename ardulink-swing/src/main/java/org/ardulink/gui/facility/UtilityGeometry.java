@@ -16,7 +16,7 @@ limitations under the License.
 
 */
 
-package org.zu.ardulink.gui.facility;
+package org.ardulink.gui.facility;
 
 import java.awt.Component;
 import java.awt.Dimension;

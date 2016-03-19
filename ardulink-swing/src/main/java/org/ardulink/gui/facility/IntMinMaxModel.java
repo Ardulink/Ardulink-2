@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
  */
-package org.zu.ardulink.gui.facility;
+package org.ardulink.gui.facility;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;

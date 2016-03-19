@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core.qos;
+package org.ardulink.core.qos;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,11 +24,11 @@ import java.util.regex.Pattern;
 
 import org.junit.rules.ExternalResource;
 
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
-import com.github.pfichtner.ardulink.core.qos.ArduinoDouble.Adder;
-import com.github.pfichtner.ardulink.core.qos.ArduinoDouble.RegexAdder;
-import com.github.pfichtner.ardulink.core.qos.ArduinoDouble.WaitThenDoBuilder;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.qos.ArduinoDouble.Adder;
+import org.ardulink.core.qos.ArduinoDouble.RegexAdder;
+import org.ardulink.core.qos.ArduinoDouble.WaitThenDoBuilder;
 
 /**
  * [ardulinktitle] [ardulinkversion]

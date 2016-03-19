@@ -16,14 +16,14 @@ limitations under the License.
 
 */
 
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 import javax.swing.JLabel;
 
-import org.zu.ardulink.legacy.Link;
+import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

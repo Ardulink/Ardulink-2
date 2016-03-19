@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
  */
-package com.github.pfichtner.ardulink.compactors;
+package org.ardulink.mqtt.compactors;
 
-import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.EventListener;
+import org.ardulink.core.events.DigitalPinValueChangedEvent;
+import org.ardulink.core.events.EventListener;
 
 /**
  * [ardulinktitle] [ardulinkversion]

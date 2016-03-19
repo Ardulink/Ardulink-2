@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 */
-package com.github.pfichtner.ardulink.compactors;
+package org.ardulink.mqtt.compactors;
 
 import java.util.ArrayList;
 import java.util.List;

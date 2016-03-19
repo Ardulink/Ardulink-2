@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
+import org.ardulink.core.Link;
+import org.ardulink.core.linkmanager.LinkFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]

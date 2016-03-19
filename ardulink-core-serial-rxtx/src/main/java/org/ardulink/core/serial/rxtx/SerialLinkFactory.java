@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.core.serial;
+package org.ardulink.core.serial.rxtx;
 
 import static gnu.io.SerialPort.DATABITS_8;
 import static gnu.io.SerialPort.PARITY_NONE;
 import static gnu.io.SerialPort.STOPBITS_1;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.zu.ardulink.util.Preconditions.checkNotNull;
-import static org.zu.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Preconditions.checkState;
 import gnu.io.CommPortIdentifier;
 import gnu.io.NoSuchPortException;
 import gnu.io.PortInUseException;
@@ -30,14 +30,14 @@ import gnu.io.UnsupportedCommOperationException;
 
 import java.io.IOException;
 
-import com.github.pfichtner.ardulink.core.AbstractConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.StreamConnection;
-import com.github.pfichtner.ardulink.core.convenience.LinkDelegate;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
-import com.github.pfichtner.ardulink.core.qos.ConnectionBasedQosLink;
+import org.ardulink.core.AbstractConnectionBasedLink;
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.StreamConnection;
+import org.ardulink.core.convenience.LinkDelegate;
+import org.ardulink.core.linkmanager.LinkFactory;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.qos.ConnectionBasedQosLink;
 
 /**
  * [ardulinktitle] [ardulinkversion]

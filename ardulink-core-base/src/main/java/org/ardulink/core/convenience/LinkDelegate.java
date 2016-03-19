@@ -14,18 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core.convenience;
+package org.ardulink.core.convenience;
 
 import java.io.IOException;
 
-import com.github.pfichtner.ardulink.core.ConnectionListener;
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.Pin;
-import com.github.pfichtner.ardulink.core.Tone;
-import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
-import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
-import com.github.pfichtner.ardulink.core.events.EventListener;
-import com.github.pfichtner.ardulink.core.events.RplyListener;
+import org.ardulink.core.ConnectionListener;
+import org.ardulink.core.Link;
+import org.ardulink.core.Pin;
+import org.ardulink.core.Tone;
+import org.ardulink.core.Pin.AnalogPin;
+import org.ardulink.core.Pin.DigitalPin;
+import org.ardulink.core.events.EventListener;
+import org.ardulink.core.events.RplyListener;
 
 /**
  * [ardulinktitle] [ardulinkversion]

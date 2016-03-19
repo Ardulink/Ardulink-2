@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.core.proxy;
+package org.ardulink.core.proxy;
 
-import static com.github.pfichtner.core.proxy.ProxyLinkFactory.OK;
+import static org.ardulink.core.proxy.ProxyLinkFactory.OK;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,8 +35,8 @@ import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]

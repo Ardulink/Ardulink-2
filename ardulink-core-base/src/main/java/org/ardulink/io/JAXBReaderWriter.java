@@ -15,7 +15,7 @@ limitations under the License.
 
 
  */
-package org.zu.ardulink.io;
+package org.ardulink.io;
 
 import static java.lang.Boolean.TRUE;
 import static javax.xml.bind.Marshaller.JAXB_FORMATTED_OUTPUT;

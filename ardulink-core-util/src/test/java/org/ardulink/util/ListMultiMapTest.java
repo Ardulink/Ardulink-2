@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.zu.ardulink.util;
+package org.ardulink.util;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;

@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.core.mqtt;
+package org.ardulink.core.mqtt;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
-import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
-import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
-import static com.github.pfichtner.core.mqtt.duplicated.EventMatchers.eventFor;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.Type.ANALOG;
+import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -39,13 +39,13 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.Timeout;
 
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.Pin;
-import com.github.pfichtner.ardulink.core.events.EventListenerAdapter;
-import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
-import com.github.pfichtner.core.mqtt.duplicated.AnotherMqttClient;
-import com.github.pfichtner.core.mqtt.duplicated.Message;
+import org.ardulink.core.Link;
+import org.ardulink.core.Pin;
+import org.ardulink.core.events.EventListenerAdapter;
+import org.ardulink.core.events.FilteredEventListenerAdapter;
+import org.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
+import org.ardulink.core.mqtt.duplicated.Message;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core;
+package org.ardulink.core;
 
-import static org.zu.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +27,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.Protocol;
 
 /**
  * [ardulinktitle] [ardulinkversion]

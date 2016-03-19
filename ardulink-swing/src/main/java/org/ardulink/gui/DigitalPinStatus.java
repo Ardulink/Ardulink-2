@@ -16,9 +16,9 @@ limitations under the License.
 
  */
 
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.digitalPin;
 
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
@@ -31,13 +31,13 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
-import org.zu.ardulink.gui.facility.IntMinMaxModel;
-import org.zu.ardulink.legacy.Link;
+import org.ardulink.gui.facility.IntMinMaxModel;
+import org.ardulink.legacy.Link;
 
-import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.EventListener;
-import com.github.pfichtner.ardulink.core.events.EventListenerAdapter;
-import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
+import org.ardulink.core.events.DigitalPinValueChangedEvent;
+import org.ardulink.core.events.EventListener;
+import org.ardulink.core.events.EventListenerAdapter;
+import org.ardulink.core.events.FilteredEventListenerAdapter;
 
 /**
  * [ardulinktitle] [ardulinkversion] This class implements the

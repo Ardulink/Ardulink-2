@@ -11,7 +11,7 @@
     	 -->
         <acommands>
             <aLinkNames>LINK 1</aLinkNames>
-            <className>org.zu.ardulink.mail.server.contentmanagement.SimpleContentManager</className>
+            <className>org.ardulink.mail.server.contentmanagement.SimpleContentManager</className>
             <mailContentHooks>accendi</mailContentHooks>
             <mailContentHooks>turn on</mailContentHooks>
             <name>ACCENDI LED 26 e 27</name>
@@ -20,7 +20,7 @@
         </acommands>
         <acommands>
             <aLinkNames>LINK 1</aLinkNames>
-            <className>org.zu.ardulink.mail.server.contentmanagement.SimpleContentManager</className>
+            <className>org.ardulink.mail.server.contentmanagement.SimpleContentManager</className>
             <mailContentHooks>spegni</mailContentHooks>
             <mailContentHooks>turn off</mailContentHooks>
             <name>SPEGNI LED 26 e 27</name>
@@ -36,7 +36,7 @@
     	 -->
         <acommands>
             <aLinkNames>LINK 1</aLinkNames>
-            <className>org.zu.ardulink.mail.server.contentmanagement.ProtocolContentManager</className>
+            <className>org.ardulink.mail.server.contentmanagement.ProtocolContentManager</className>
             <mailContentHooks>su</mailContentHooks>
             <mailContentHooks>up</mailContentHooks>
             <name>ACCENDI LED 32 e 33</name>
@@ -45,7 +45,7 @@
         </acommands>
         <acommands>
             <aLinkNames>LINK 1</aLinkNames>
-            <className>org.zu.ardulink.mail.server.contentmanagement.ProtocolContentManager</className>
+            <className>org.ardulink.mail.server.contentmanagement.ProtocolContentManager</className>
             <mailContentHooks>giù</mailContentHooks>
             <mailContentHooks>down</mailContentHooks>
             <name>SPEGNI LED 32 e 33</name>
@@ -58,7 +58,7 @@
         This is a connection. In this example SerialConnection(String id, int divider) constructor is called.
          -->
         <aconnections>
-            <className>org.zu.ardulink.connection.serial.SerialConnection</className>
+            <className>org.ardulink.connection.serial.SerialConnection</className>
             <constructorParameters>
                 <type>java.lang.String</type>
                 <value>SERIAL CONNECTION ID</value>
@@ -70,7 +70,7 @@
             <name>SERIAL CONNECTION</name>
         </aconnections>
         <aconnections>
-            <className>org.zu.ardulink.connection.bluetooth.BluetoothConnection</className>
+            <className>org.ardulink.connection.bluetooth.BluetoothConnection</className>
             <name>BLUETOOTH CONNECTION</name>
         </aconnections>
     </aConnectionList>

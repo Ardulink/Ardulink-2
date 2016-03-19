@@ -16,7 +16,7 @@ limitations under the License.
 
 */
 
-package org.zu.ardulink.gui.event;
+package org.ardulink.gui.event;
 
 import java.awt.Point;
 

@@ -14,16 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.core.mqtt;
+package org.ardulink.core.mqtt;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.unmodifiableMap;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
-import static org.zu.ardulink.util.Integers.tryParse;
-import static org.zu.ardulink.util.Preconditions.checkArgument;
+import static org.ardulink.util.Integers.tryParse;
+import static org.ardulink.util.Preconditions.checkArgument;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -44,14 +44,14 @@ import org.fusesource.mqtt.client.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.pfichtner.ardulink.core.AbstractListenerLink;
-import com.github.pfichtner.ardulink.core.Pin;
-import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
-import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
-import com.github.pfichtner.ardulink.core.Pin.Type;
-import com.github.pfichtner.ardulink.core.Tone;
-import com.github.pfichtner.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
+import org.ardulink.core.AbstractListenerLink;
+import org.ardulink.core.Pin;
+import org.ardulink.core.Pin.AnalogPin;
+import org.ardulink.core.Pin.DigitalPin;
+import org.ardulink.core.Pin.Type;
+import org.ardulink.core.Tone;
+import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
+import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 
 /**
  * [ardulinktitle] [ardulinkversion]

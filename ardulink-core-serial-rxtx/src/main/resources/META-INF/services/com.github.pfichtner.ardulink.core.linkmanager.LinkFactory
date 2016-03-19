@@ -1,1 +1,1 @@
-com.github.pfichtner.core.serial.SerialLinkFactory
+org.ardulink.core.serial.SerialLinkFactory

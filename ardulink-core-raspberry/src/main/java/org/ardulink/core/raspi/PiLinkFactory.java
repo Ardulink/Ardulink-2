@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.core.raspi;
+package org.ardulink.core.raspi;
 
-import static com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
+import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
+import org.ardulink.core.Link;
+import org.ardulink.core.linkmanager.LinkConfig;
+import org.ardulink.core.linkmanager.LinkFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]

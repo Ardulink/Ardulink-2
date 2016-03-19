@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package org.zu.ardulink.util;
+package org.ardulink.util;
 
-import static org.zu.ardulink.util.Preconditions.checkArgument;
+import static org.ardulink.util.Preconditions.checkArgument;
 
 import java.util.Collection;
 import java.util.HashSet;

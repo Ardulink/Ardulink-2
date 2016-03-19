@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.analogPin;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -34,13 +34,13 @@ import javax.swing.JProgressBar;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
-import org.zu.ardulink.gui.facility.IntMinMaxModel;
-import org.zu.ardulink.legacy.Link;
+import org.ardulink.gui.facility.IntMinMaxModel;
+import org.ardulink.legacy.Link;
 
-import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.EventListener;
-import com.github.pfichtner.ardulink.core.events.EventListenerAdapter;
-import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
+import org.ardulink.core.events.AnalogPinValueChangedEvent;
+import org.ardulink.core.events.EventListener;
+import org.ardulink.core.events.EventListenerAdapter;
+import org.ardulink.core.events.FilteredEventListenerAdapter;
 
 /**
  * [ardulinktitle] [ardulinkversion]

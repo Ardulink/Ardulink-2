@@ -16,7 +16,7 @@ limitations under the License.
 
 */
 
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;

@@ -15,7 +15,7 @@ limitations under the License.
 
 
 */
-package org.zu.ardulink.io;
+package org.ardulink.io;
 
 /**
  * [ardulinktitle] [ardulinkversion]

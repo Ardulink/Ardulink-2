@@ -1,2 +1,2 @@
-com.github.pfichtner.ardulink.core.linkmanager.DummyLinkFactory
-com.github.pfichtner.ardulink.core.linkmanager.LinkConfigWithDependentAttributesLinkFactory
+org.ardulink.core.linkmanager.DummyLinkFactory
+org.ardulink.core.linkmanager.LinkConfigWithDependentAttributesLinkFactory

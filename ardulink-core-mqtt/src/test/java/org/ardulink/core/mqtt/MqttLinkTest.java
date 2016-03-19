@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.core.mqtt;
+package org.ardulink.core.mqtt;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
-import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
-import static com.github.pfichtner.core.mqtt.duplicated.EventMatchers.eventFor;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.Is.is;
@@ -39,11 +39,11 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.Timeout;
 
-import com.github.pfichtner.ardulink.core.ConnectionListener;
-import com.github.pfichtner.ardulink.core.events.PinValueChangedEvent;
-import com.github.pfichtner.core.mqtt.duplicated.AnotherMqttClient;
-import com.github.pfichtner.core.mqtt.duplicated.EventMatchers.PinValueChangedEventMatcher;
-import com.github.pfichtner.core.mqtt.duplicated.Message;
+import org.ardulink.core.ConnectionListener;
+import org.ardulink.core.events.PinValueChangedEvent;
+import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
+import org.ardulink.core.mqtt.duplicated.EventMatchers.PinValueChangedEventMatcher;
+import org.ardulink.core.mqtt.duplicated.Message;
 
 /**
  * [ardulinktitle] [ardulinkversion]

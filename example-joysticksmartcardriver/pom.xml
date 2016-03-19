@@ -20,7 +20,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>org.zu.ardulink.gui.JoystickSmartCarDriver</mainClass>
+							<mainClass>org.ardulink.gui.JoystickSmartCarDriver</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

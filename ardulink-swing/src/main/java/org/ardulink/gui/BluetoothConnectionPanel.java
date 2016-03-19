@@ -16,7 +16,7 @@ limitations under the License.
 
  */
 
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
@@ -35,8 +35,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.zu.ardulink.gui.facility.UtilityGeometry;
-import org.zu.ardulink.legacy.Link;
+import org.ardulink.gui.facility.UtilityGeometry;
+import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion] This component is Able to search for

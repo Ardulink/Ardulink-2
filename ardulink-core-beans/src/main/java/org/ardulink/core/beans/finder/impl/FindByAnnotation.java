@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package com.github.pfichtner.beans.finder.impl;
+package org.ardulink.core.beans.finder.impl;
 
-import static com.github.pfichtner.beans.finder.impl.ReadMethod.isReadMethod;
-import static com.github.pfichtner.beans.finder.impl.WriteMethod.isWriteMethod;
+import static org.ardulink.core.beans.finder.impl.ReadMethod.isReadMethod;
+import static org.ardulink.core.beans.finder.impl.WriteMethod.isWriteMethod;
 import static java.lang.reflect.Modifier.isPublic;
-import static org.zu.ardulink.util.Preconditions.checkArgument;
+import static org.ardulink.util.Preconditions.checkArgument;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -30,11 +30,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.zu.ardulink.util.Optional;
+import org.ardulink.util.Optional;
 
-import com.github.pfichtner.beans.Attribute.AttributeReader;
-import com.github.pfichtner.beans.Attribute.AttributeWriter;
-import com.github.pfichtner.beans.finder.api.AttributeFinder;
+import org.ardulink.core.beans.Attribute.AttributeReader;
+import org.ardulink.core.beans.Attribute.AttributeWriter;
+import org.ardulink.core.beans.finder.api.AttributeFinder;
 
 /**
  * [ardulinktitle] [ardulinkversion]

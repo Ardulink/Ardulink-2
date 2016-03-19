@@ -14,25 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core;
+package org.ardulink.core;
 
 import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
-import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStartListening;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
-import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoCustomMessage;
-import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoKeyPressEvent;
-import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoNoTone;
-import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoPinEvent;
-import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoStartListening;
-import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoStopListening;
-import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
+import org.ardulink.core.Pin.AnalogPin;
+import org.ardulink.core.Pin.DigitalPin;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.ToArduinoStartListening;
+import org.ardulink.core.proto.api.ToArduinoStopListening;
+import org.ardulink.core.proto.impl.DefaultToArduinoCustomMessage;
+import org.ardulink.core.proto.impl.DefaultToArduinoKeyPressEvent;
+import org.ardulink.core.proto.impl.DefaultToArduinoNoTone;
+import org.ardulink.core.proto.impl.DefaultToArduinoPinEvent;
+import org.ardulink.core.proto.impl.DefaultToArduinoStartListening;
+import org.ardulink.core.proto.impl.DefaultToArduinoStopListening;
+import org.ardulink.core.proto.impl.DefaultToArduinoTone;
 
 /**
  * [ardulinktitle] [ardulinkversion]

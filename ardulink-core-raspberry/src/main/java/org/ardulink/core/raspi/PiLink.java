@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.core.raspi;
+package org.ardulink.core.raspi;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
-import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
-import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.Type.ANALOG;
+import static org.ardulink.core.Pin.Type.DIGITAL;
 import static com.pi4j.io.gpio.PinMode.ANALOG_INPUT;
 import static com.pi4j.io.gpio.PinMode.DIGITAL_INPUT;
 import static com.pi4j.io.gpio.PinMode.DIGITAL_OUTPUT;
@@ -28,21 +28,21 @@ import static com.pi4j.io.gpio.PinPullResistance.PULL_DOWN;
 import static com.pi4j.io.gpio.RaspiPin.getPinByName;
 import static com.pi4j.io.gpio.event.PinEventType.ANALOG_VALUE_CHANGE;
 import static com.pi4j.io.gpio.event.PinEventType.DIGITAL_STATE_CHANGE;
-import static org.zu.ardulink.util.Preconditions.checkNotNull;
-import static org.zu.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
 import java.util.List;
 
-import org.zu.ardulink.util.ListMultiMap;
+import org.ardulink.util.ListMultiMap;
 
-import com.github.pfichtner.ardulink.core.AbstractListenerLink;
-import com.github.pfichtner.ardulink.core.Pin;
-import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
-import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
-import com.github.pfichtner.ardulink.core.Tone;
-import com.github.pfichtner.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
+import org.ardulink.core.AbstractListenerLink;
+import org.ardulink.core.Pin;
+import org.ardulink.core.Pin.AnalogPin;
+import org.ardulink.core.Pin.DigitalPin;
+import org.ardulink.core.Tone;
+import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
+import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioPin;

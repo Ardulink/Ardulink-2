@@ -19,7 +19,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>org.zu.ardulink.gui.Console</mainClass>
+							<mainClass>org.ardulink.gui.Console</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

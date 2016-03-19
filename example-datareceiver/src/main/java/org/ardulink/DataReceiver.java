@@ -15,11 +15,11 @@ limitations under the License.
 
  */
 
-package org.zu.ardulink;
+package org.ardulink;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
-import static com.github.pfichtner.ardulink.core.convenience.Links.setChoiceValues;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.convenience.Links.setChoiceValues;
 import static java.lang.String.format;
 
 import java.net.URI;
@@ -32,13 +32,13 @@ import org.kohsuke.args4j.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.EventListener;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.core.Connection;
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.Link;
+import org.ardulink.core.events.AnalogPinValueChangedEvent;
+import org.ardulink.core.events.DigitalPinValueChangedEvent;
+import org.ardulink.core.events.EventListener;
+import org.ardulink.core.linkmanager.LinkManager;
 
 /**
  * [ardulinktitle] [ardulinkversion]

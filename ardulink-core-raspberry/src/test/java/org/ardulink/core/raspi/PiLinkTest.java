@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.core;
+package org.ardulink.core.raspi;
 
 import java.net.URI;
 
@@ -22,8 +22,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.core.linkmanager.LinkManager.Configurer;
 
 /**
  * [ardulinktitle] [ardulinkversion]

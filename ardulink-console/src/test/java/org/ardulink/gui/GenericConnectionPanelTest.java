@@ -14,16 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
 import static java.lang.Boolean.TRUE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.zu.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
-import static org.zu.ardulink.gui.hamcrest.RowMatcherBuilder.items;
-import static org.zu.ardulink.gui.hamcrest.RowMatcherBuilder.row;
+import static org.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
+import static org.ardulink.gui.hamcrest.RowMatcherBuilder.items;
+import static org.ardulink.gui.hamcrest.RowMatcherBuilder.row;
 
 import java.awt.Component;
 import java.util.List;
@@ -32,7 +32,7 @@ import javax.swing.JComboBox;
 
 import org.hamcrest.Matcher;
 import org.junit.Test;
-import org.zu.ardulink.util.Optional;
+import org.ardulink.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]

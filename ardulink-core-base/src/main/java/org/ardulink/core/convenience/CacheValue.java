@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core.convenience;
+package org.ardulink.core.convenience;
 
-import com.github.pfichtner.ardulink.core.Link;
+import org.ardulink.core.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

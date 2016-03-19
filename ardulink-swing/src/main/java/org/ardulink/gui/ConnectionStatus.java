@@ -16,15 +16,15 @@ limitations under the License.
 
  */
 
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.zu.ardulink.legacy.Link;
+import org.ardulink.legacy.Link;
 
-import com.github.pfichtner.ardulink.core.ConnectionListener;
+import org.ardulink.core.ConnectionListener;
 
 /**
  * [ardulinktitle] [ardulinkversion] This component listens for connection or

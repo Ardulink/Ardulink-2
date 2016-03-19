@@ -13,10 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package org.zu.ardulink.connection.proxy;
+package org.ardulink.connection.proxy;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
+import static org.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
 
 import java.io.PrintWriter;
 import java.net.InetAddress;

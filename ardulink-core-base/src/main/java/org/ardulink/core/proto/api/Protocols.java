@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core.proto.api;
+package org.ardulink.core.proto.api;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import org.zu.ardulink.util.Optional;
+import org.ardulink.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]

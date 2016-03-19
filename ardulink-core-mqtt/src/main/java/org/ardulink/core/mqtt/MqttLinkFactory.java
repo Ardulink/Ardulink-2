@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.core.mqtt;
+package org.ardulink.core.mqtt;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
+import org.ardulink.core.linkmanager.LinkFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]

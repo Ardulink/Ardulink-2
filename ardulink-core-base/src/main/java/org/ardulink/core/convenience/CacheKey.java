@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core.convenience;
+package org.ardulink.core.convenience;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.core.linkmanager.LinkManager.Configurer;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core.proto.api;
+package org.ardulink.core.proto.api;
 
-import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
+import org.ardulink.core.Pin.AnalogPin;
 
 /**
  * [ardulinktitle] [ardulinkversion]

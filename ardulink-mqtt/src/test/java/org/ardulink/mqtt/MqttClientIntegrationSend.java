@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
  */
-package com.github.pfichtner.ardulink;
+package org.ardulink.mqtt;
 
-import static com.github.pfichtner.ardulink.util.TestUtil.analogPinChanged;
-import static com.github.pfichtner.ardulink.util.TestUtil.digitalPinChanged;
-import static com.github.pfichtner.ardulink.util.TestUtil.listWithSameOrder;
-import static com.github.pfichtner.ardulink.util.TestUtil.startAsync;
+import static org.ardulink.mqtt.util.TestUtil.analogPinChanged;
+import static org.ardulink.mqtt.util.TestUtil.digitalPinChanged;
+import static org.ardulink.mqtt.util.TestUtil.listWithSameOrder;
+import static org.ardulink.mqtt.util.TestUtil.startAsync;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -33,13 +33,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
-import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.StreamConnection;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
-import com.github.pfichtner.ardulink.util.AnotherMqttClient;
-import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
+import org.ardulink.core.Connection;
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.Link;
+import org.ardulink.core.StreamConnection;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.mqtt.util.AnotherMqttClient;
+import org.ardulink.mqtt.util.MqttMessageBuilder;
 
 /**
  * [ardulinktitle] [ardulinkversion]

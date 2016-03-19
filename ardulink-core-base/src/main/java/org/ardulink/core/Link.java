@@ -14,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core;
+package org.ardulink.core;
 
 import java.io.Closeable;
 import java.io.IOException;
 
-import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
-import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
-import com.github.pfichtner.ardulink.core.events.EventListener;
-import com.github.pfichtner.ardulink.core.events.RplyListener;
+import org.ardulink.core.Pin.AnalogPin;
+import org.ardulink.core.Pin.DigitalPin;
+import org.ardulink.core.events.EventListener;
+import org.ardulink.core.events.RplyListener;
 
 /**
  * [ardulinktitle] [ardulinkversion]

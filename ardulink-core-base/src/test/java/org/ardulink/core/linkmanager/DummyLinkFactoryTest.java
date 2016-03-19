@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package com.github.pfichtner.ardulink.core.linkmanager;
+package org.ardulink.core.linkmanager;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -35,12 +35,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
-import com.github.pfichtner.ardulink.core.proto.impl.DummyProtocol;
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.Link;
+import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
+import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
+import org.ardulink.core.proto.impl.DummyProtocol;
 
 /**
  * [ardulinktitle] [ardulinkversion]

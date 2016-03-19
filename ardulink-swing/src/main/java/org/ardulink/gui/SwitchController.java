@@ -16,7 +16,7 @@ limitations under the License.
 
 */
 
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -28,8 +28,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
-import org.zu.ardulink.gui.facility.IntMinMaxModel;
-import org.zu.ardulink.legacy.Link;
+import org.ardulink.gui.facility.IntMinMaxModel;
+import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.core.bluetooth;
+package org.ardulink.core.bluetooth;
 
-import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
+import org.ardulink.core.linkmanager.LinkConfig;
 
 /**
  * [ardulinktitle] [ardulinkversion]

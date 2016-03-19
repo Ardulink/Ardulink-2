@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.beans;
+package org.ardulink.core.beans;
 
-import static com.github.pfichtner.beans.finder.impl.FindByAnnotation.propertyAnnotated;
-import static com.github.pfichtner.beans.finder.impl.FindByFieldAccess.directFieldAccess;
-import static com.github.pfichtner.beans.finder.impl.FindByIntrospection.beanAttributes;
+import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
+import static org.ardulink.core.beans.finder.impl.FindByFieldAccess.directFieldAccess;
+import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;

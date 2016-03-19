@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
  */
-package com.github.pfichtner.ardulink;
+package org.ardulink.mqtt;
 
-import static com.github.pfichtner.ardulink.AbstractMqttAdapter.CompactStrategy.AVERAGE;
-import static com.github.pfichtner.ardulink.AbstractMqttAdapter.CompactStrategy.LAST_WINS;
-import static com.github.pfichtner.ardulink.compactors.Tolerance.maxTolerance;
-import static com.github.pfichtner.ardulink.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
-import static com.github.pfichtner.ardulink.util.TestUtil.analogPinChanged;
+import static org.ardulink.mqtt.AbstractMqttAdapter.CompactStrategy.AVERAGE;
+import static org.ardulink.mqtt.AbstractMqttAdapter.CompactStrategy.LAST_WINS;
+import static org.ardulink.mqtt.compactors.Tolerance.maxTolerance;
+import static org.ardulink.mqtt.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
+import static org.ardulink.mqtt.util.TestUtil.analogPinChanged;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -33,14 +33,14 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Test;
 
-import com.github.pfichtner.ardulink.compactors.SlicedAnalogReadChangeListenerAdapter;
-import com.github.pfichtner.ardulink.compactors.TimeSlicer;
-import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.StreamConnection;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
-import com.github.pfichtner.ardulink.util.Message;
-import com.github.pfichtner.ardulink.util.MqttMessageBuilder;
+import org.ardulink.mqtt.compactors.SlicedAnalogReadChangeListenerAdapter;
+import org.ardulink.mqtt.compactors.TimeSlicer;
+import org.ardulink.core.Connection;
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.StreamConnection;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.mqtt.util.Message;
+import org.ardulink.mqtt.util.MqttMessageBuilder;
 
 /**
  * [ardulinktitle] [ardulinkversion]

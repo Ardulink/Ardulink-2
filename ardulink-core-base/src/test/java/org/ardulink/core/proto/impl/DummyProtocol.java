@@ -14,16 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core.proto.impl;
+package org.ardulink.core.proto.impl;
 
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoCustomMessage;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoKeyPressEvent;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoNoTone;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoPinEvent;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStartListening;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoStopListening;
-import com.github.pfichtner.ardulink.core.proto.api.ToArduinoTone;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.ToArduinoCustomMessage;
+import org.ardulink.core.proto.api.ToArduinoKeyPressEvent;
+import org.ardulink.core.proto.api.ToArduinoNoTone;
+import org.ardulink.core.proto.api.ToArduinoPinEvent;
+import org.ardulink.core.proto.api.ToArduinoStartListening;
+import org.ardulink.core.proto.api.ToArduinoStopListening;
+import org.ardulink.core.proto.api.ToArduinoTone;
 
 /**
  * [ardulinktitle] [ardulinkversion]

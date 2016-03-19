@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.core.proxy;
+package org.ardulink.core.proxy;
 
-import static com.github.pfichtner.core.proxy.ProxyConnectionToRemote.Command.GET_PORT_LIST_CMD;
-import static org.zu.ardulink.util.Preconditions.checkNotNull;
-import static org.zu.ardulink.util.Preconditions.checkState;
+import static org.ardulink.core.proxy.ProxyConnectionToRemote.Command.GET_PORT_LIST_CMD;
+import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -30,8 +30,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]

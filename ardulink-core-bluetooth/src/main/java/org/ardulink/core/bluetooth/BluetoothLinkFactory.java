@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.core.bluetooth;
+package org.ardulink.core.bluetooth;
 
 import static javax.bluetooth.ServiceRecord.NOAUTHENTICATE_NOENCRYPT;
-import static org.zu.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,11 +38,11 @@ import javax.bluetooth.UUID;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnectionNotifier;
 
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.StreamConnection;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.StreamConnection;
+import org.ardulink.core.linkmanager.LinkFactory;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]

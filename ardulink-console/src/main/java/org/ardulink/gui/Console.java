@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 
@@ -47,14 +47,14 @@ import javax.swing.event.ChangeListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zu.ardulink.gui.customcomponents.ModifiableSignalButton;
-import org.zu.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
-import org.zu.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
-import org.zu.ardulink.gui.customcomponents.joystick.SimplePositionListener;
-import org.zu.ardulink.legacy.Link;
-import org.zu.ardulink.legacy.Link.LegacyLinkAdapter;
+import org.ardulink.gui.customcomponents.ModifiableSignalButton;
+import org.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
+import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
+import org.ardulink.gui.customcomponents.joystick.SimplePositionListener;
+import org.ardulink.legacy.Link;
+import org.ardulink.legacy.Link.LegacyLinkAdapter;
 
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.core.linkmanager.LinkManager;
 
 /**
  * [ardulinktitle] [ardulinkversion] This is the ready ardulink console a
@@ -151,11 +151,11 @@ public class Console extends JFrame implements Linkable {
 			}
 
 			private LegacyLinkAdapter legacyAdapt(
-					com.github.pfichtner.ardulink.core.Link link) {
+					org.ardulink.core.Link link) {
 				return new Link.LegacyLinkAdapter(link);
 			}
 
-			private com.github.pfichtner.ardulink.core.Link newLink(String uri)
+			private org.ardulink.core.Link newLink(String uri)
 					throws URISyntaxException, Exception {
 				return LinkManager.getInstance().getConfigurer(new URI(uri))
 						.newLink();

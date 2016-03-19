@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core;
+package org.ardulink.core;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,12 +23,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.EventListener;
-import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
-import com.github.pfichtner.ardulink.core.events.RplyEvent;
-import com.github.pfichtner.ardulink.core.events.RplyListener;
+import org.ardulink.core.events.AnalogPinValueChangedEvent;
+import org.ardulink.core.events.DigitalPinValueChangedEvent;
+import org.ardulink.core.events.EventListener;
+import org.ardulink.core.events.FilteredEventListenerAdapter;
+import org.ardulink.core.events.RplyEvent;
+import org.ardulink.core.events.RplyListener;
 
 /**
  * [ardulinktitle] [ardulinkversion]

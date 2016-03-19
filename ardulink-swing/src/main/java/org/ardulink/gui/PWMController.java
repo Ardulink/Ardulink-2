@@ -16,7 +16,7 @@ limitations under the License.
 
 */
 
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -40,10 +40,10 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.zu.ardulink.gui.event.PWMChangeEvent;
-import org.zu.ardulink.gui.event.PWMControllerListener;
-import org.zu.ardulink.gui.facility.IntMinMaxModel;
-import org.zu.ardulink.legacy.Link;
+import org.ardulink.gui.event.PWMChangeEvent;
+import org.ardulink.gui.event.PWMControllerListener;
+import org.ardulink.gui.facility.IntMinMaxModel;
+import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

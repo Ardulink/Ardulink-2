@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.ardumailng.camel;
+package org.ardulink.mail.camel;
 
 import static java.lang.Boolean.parseBoolean;
-import static org.ardulink.ardumailng.Commands.switchAnalogPin;
-import static org.ardulink.ardumailng.Commands.switchDigitalPin;
-import static org.zu.ardulink.util.Integers.tryParse;
-import static org.zu.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.mail.Commands.switchAnalogPin;
+import static org.ardulink.mail.Commands.switchDigitalPin;
+import static org.ardulink.util.Integers.tryParse;
+import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -29,8 +29,8 @@ import java.util.Map.Entry;
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.UriEndpointComponent;
 import org.apache.camel.spi.UriEndpoint;
-import org.ardulink.ardumailng.Command;
-import org.zu.ardulink.util.Optional;
+import org.ardulink.mail.Command;
+import org.ardulink.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]

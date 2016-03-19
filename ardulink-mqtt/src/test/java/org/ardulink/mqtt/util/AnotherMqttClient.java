@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
  */
-package com.github.pfichtner.ardulink.util;
+package org.ardulink.mqtt.util;
 
-import static com.github.pfichtner.ardulink.core.Pin.Type.ANALOG;
-import static com.github.pfichtner.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.Pin.Type.ANALOG;
+import static org.ardulink.core.Pin.Type.DIGITAL;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
@@ -36,8 +36,8 @@ import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.Topic;
 
-import com.github.pfichtner.ardulink.core.Pin;
-import com.github.pfichtner.ardulink.core.Pin.Type;
+import org.ardulink.core.Pin;
+import org.ardulink.core.Pin.Type;
 
 /**
  * [ardulinktitle] [ardulinkversion]

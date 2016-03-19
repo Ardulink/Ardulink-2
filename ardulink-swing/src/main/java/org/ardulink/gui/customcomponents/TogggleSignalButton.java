@@ -16,7 +16,7 @@ limitations under the License.
 
 */
 
-package org.zu.ardulink.gui.customcomponents;
+package org.ardulink.gui.customcomponents;
 
 import static java.awt.event.ItemEvent.SELECTED;
 
@@ -33,8 +33,8 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
-import org.zu.ardulink.gui.Linkable;
-import org.zu.ardulink.legacy.Link;
+import org.ardulink.gui.Linkable;
+import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

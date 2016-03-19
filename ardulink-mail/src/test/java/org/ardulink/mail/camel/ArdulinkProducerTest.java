@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package org.ardulink.ardumailng.camel;
+package org.ardulink.mail.camel;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
 import static java.util.Collections.singletonList;
 import static org.apache.camel.ExchangePattern.InOut;
-import static org.ardulink.ardumailng.Commands.switchAnalogPin;
-import static org.ardulink.ardumailng.Commands.switchDigitalPin;
+import static org.ardulink.mail.Commands.switchAnalogPin;
+import static org.ardulink.mail.Commands.switchDigitalPin;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -45,9 +45,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.convenience.LinkDelegate;
-import com.github.pfichtner.ardulink.core.convenience.Links;
+import org.ardulink.core.Link;
+import org.ardulink.core.convenience.LinkDelegate;
+import org.ardulink.core.convenience.Links;
 
 /**
  * [ardulinktitle] [ardulinkversion]

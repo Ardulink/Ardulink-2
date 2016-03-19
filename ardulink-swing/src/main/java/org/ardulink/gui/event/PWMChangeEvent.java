@@ -16,9 +16,9 @@ limitations under the License.
 
 */
 
-package org.zu.ardulink.gui.event;
+package org.ardulink.gui.event;
 
-import org.zu.ardulink.gui.PWMController;
+import org.ardulink.gui.PWMController;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
+import org.ardulink.core.linkmanager.LinkConfig;
 
 /**
  * [ardulinktitle] [ardulinkversion]

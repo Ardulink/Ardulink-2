@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package com.github.pfichtner.core.proxy;
+package org.ardulink.core.proxy;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.Is.is;
@@ -27,11 +27,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.Pin;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.core.Link;
+import org.ardulink.core.Pin;
+import org.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
+import org.ardulink.core.linkmanager.LinkManager.Configurer;
 
 /**
  * [ardulinktitle] [ardulinkversion]

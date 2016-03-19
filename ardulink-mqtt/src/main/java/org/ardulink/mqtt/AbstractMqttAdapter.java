@@ -14,16 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
  */
-package com.github.pfichtner.ardulink;
+package org.ardulink.mqtt;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.String.format;
 import static java.util.Collections.unmodifiableList;
-import static org.zu.ardulink.util.Integers.tryParse;
-import static org.zu.ardulink.util.Preconditions.checkArgument;
-import static org.zu.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Integers.tryParse;
+import static org.ardulink.util.Preconditions.checkArgument;
+import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,21 +34,21 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zu.ardulink.util.ListBuilder;
+import org.ardulink.util.ListBuilder;
 
-import com.github.pfichtner.ardulink.Config.DefaultConfig;
-import com.github.pfichtner.ardulink.compactors.AnalogReadChangeListenerToleranceAdapter;
-import com.github.pfichtner.ardulink.compactors.SlicedAnalogReadChangeListenerAdapter;
-import com.github.pfichtner.ardulink.compactors.TimeSliceCompactorAvg;
-import com.github.pfichtner.ardulink.compactors.TimeSliceCompactorLast;
-import com.github.pfichtner.ardulink.compactors.TimeSlicer;
-import com.github.pfichtner.ardulink.compactors.Tolerance;
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.EventListener;
-import com.github.pfichtner.ardulink.core.events.EventListenerAdapter;
-import com.github.pfichtner.ardulink.core.events.FilteredEventListenerAdapter;
+import org.ardulink.mqtt.Config.DefaultConfig;
+import org.ardulink.mqtt.compactors.AnalogReadChangeListenerToleranceAdapter;
+import org.ardulink.mqtt.compactors.SlicedAnalogReadChangeListenerAdapter;
+import org.ardulink.mqtt.compactors.TimeSliceCompactorAvg;
+import org.ardulink.mqtt.compactors.TimeSliceCompactorLast;
+import org.ardulink.mqtt.compactors.TimeSlicer;
+import org.ardulink.mqtt.compactors.Tolerance;
+import org.ardulink.core.Link;
+import org.ardulink.core.events.AnalogPinValueChangedEvent;
+import org.ardulink.core.events.DigitalPinValueChangedEvent;
+import org.ardulink.core.events.EventListener;
+import org.ardulink.core.events.EventListenerAdapter;
+import org.ardulink.core.events.FilteredEventListenerAdapter;
 
 /**
  * [ardulinktitle] [ardulinkversion]

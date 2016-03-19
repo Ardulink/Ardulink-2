@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.zu.ardulink.gui;
+package org.ardulink.gui;
 
-import static com.github.pfichtner.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
+import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static java.awt.GridBagConstraints.HORIZONTAL;
 import static java.awt.GridBagConstraints.LINE_START;
 import static java.awt.GridBagConstraints.REMAINDER;
@@ -49,14 +49,14 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 
-import org.zu.ardulink.legacy.Link;
-import org.zu.ardulink.util.Primitive;
+import org.ardulink.legacy.Link;
+import org.ardulink.util.Primitive;
 
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ValidationInfo;
+import org.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
+import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
+import org.ardulink.core.linkmanager.LinkManager.ValidationInfo;
 
 /**
  * [ardulinktitle] [ardulinkversion]

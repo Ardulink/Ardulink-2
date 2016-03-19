@@ -1,12 +1,12 @@
-package com.github.pfichtner.beans;
+package org.ardulink.core.beans;
 
-import static com.github.pfichtner.beans.finder.impl.FindByAnnotation.propertyAnnotated;
-import static com.github.pfichtner.beans.finder.impl.FindByFieldAccess.directFieldAccess;
+import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
+import static org.ardulink.core.beans.finder.impl.FindByFieldAccess.directFieldAccess;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.zu.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;

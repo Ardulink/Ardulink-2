@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.core.digispark;
+package org.ardulink.core.digispark;
 
 import static ch.ntb.usb.LibusbJava.usb_claim_interface;
 import static ch.ntb.usb.LibusbJava.usb_close;
@@ -24,7 +24,7 @@ import static ch.ntb.usb.LibusbJava.usb_release_interface;
 import static ch.ntb.usb.LibusbJava.usb_set_configuration;
 import static ch.ntb.usb.LibusbJava.usb_strerror;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.zu.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,11 +38,11 @@ import ch.ntb.usb.Usb_Bus;
 import ch.ntb.usb.Usb_Device;
 import ch.ntb.usb.Usb_Device_Descriptor;
 
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.StreamConnection;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkFactory;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol255;
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.StreamConnection;
+import org.ardulink.core.linkmanager.LinkFactory;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.impl.ArdulinkProtocol255;
 
 public class DigisparkLinkFactory implements LinkFactory<DigisparkLinkConfig> {
 

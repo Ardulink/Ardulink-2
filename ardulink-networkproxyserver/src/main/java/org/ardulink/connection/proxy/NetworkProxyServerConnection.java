@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package org.zu.ardulink.connection.proxy;
+package org.ardulink.connection.proxy;
 
-import static org.zu.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,14 +25,14 @@ import java.net.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.ConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.StreamReader;
-import com.github.pfichtner.ardulink.core.convenience.Links;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.Connection;
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.Link;
+import org.ardulink.core.StreamReader;
+import org.ardulink.core.convenience.Links;
+import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]

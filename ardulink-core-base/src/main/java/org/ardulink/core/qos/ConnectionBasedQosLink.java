@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink.core.qos;
+package org.ardulink.core.qos;
 
-import static com.github.pfichtner.ardulink.core.proto.api.MessageIdHolders.addMessageId;
+import static org.ardulink.core.proto.api.MessageIdHolders.addMessageId;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.zu.ardulink.util.Preconditions.checkNotNull;
-import static org.zu.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -30,22 +30,22 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.pfichtner.ardulink.core.AbstractConnectionBasedLink;
-import com.github.pfichtner.ardulink.core.Connection;
-import com.github.pfichtner.ardulink.core.Pin;
-import com.github.pfichtner.ardulink.core.Pin.AnalogPin;
-import com.github.pfichtner.ardulink.core.Pin.DigitalPin;
-import com.github.pfichtner.ardulink.core.Tone;
-import com.github.pfichtner.ardulink.core.events.RplyEvent;
-import com.github.pfichtner.ardulink.core.events.RplyListener;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoCustomMessage;
-import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoKeyPressEvent;
-import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoNoTone;
-import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoPinEvent;
-import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoStartListening;
-import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoStopListening;
-import com.github.pfichtner.ardulink.core.proto.impl.DefaultToArduinoTone;
+import org.ardulink.core.AbstractConnectionBasedLink;
+import org.ardulink.core.Connection;
+import org.ardulink.core.Pin;
+import org.ardulink.core.Pin.AnalogPin;
+import org.ardulink.core.Pin.DigitalPin;
+import org.ardulink.core.Tone;
+import org.ardulink.core.events.RplyEvent;
+import org.ardulink.core.events.RplyListener;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.impl.DefaultToArduinoCustomMessage;
+import org.ardulink.core.proto.impl.DefaultToArduinoKeyPressEvent;
+import org.ardulink.core.proto.impl.DefaultToArduinoNoTone;
+import org.ardulink.core.proto.impl.DefaultToArduinoPinEvent;
+import org.ardulink.core.proto.impl.DefaultToArduinoStartListening;
+import org.ardulink.core.proto.impl.DefaultToArduinoStopListening;
+import org.ardulink.core.proto.impl.DefaultToArduinoTone;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -16,7 +16,7 @@ limitations under the License.
 
 */
 
-package org.zu.ardulink.gui.customcomponents.joystick;
+package org.ardulink.gui.customcomponents.joystick;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -35,11 +35,11 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import org.zu.ardulink.gui.Linkable;
-import org.zu.ardulink.gui.event.PositionEvent;
-import org.zu.ardulink.gui.event.PositionListener;
-import org.zu.ardulink.legacy.Link;
-import org.zu.ardulink.util.Lists;
+import org.ardulink.gui.Linkable;
+import org.ardulink.gui.event.PositionEvent;
+import org.ardulink.gui.event.PositionListener;
+import org.ardulink.legacy.Link;
+import org.ardulink.util.Lists;
 
 /**
  * [ardulinktitle] [ardulinkversion]

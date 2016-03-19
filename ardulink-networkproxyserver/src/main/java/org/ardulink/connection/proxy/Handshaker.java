@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.zu.ardulink.connection.proxy;
+package org.ardulink.connection.proxy;
 
-import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.CONNECT_CMD;
-import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.GET_PORT_LIST_CMD;
-import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.KO;
-import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.NUMBER_OF_PORTS;
-import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.OK;
-import static org.zu.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
+import static org.ardulink.connection.proxy.NetworkProxyMessages.CONNECT_CMD;
+import static org.ardulink.connection.proxy.NetworkProxyMessages.GET_PORT_LIST_CMD;
+import static org.ardulink.connection.proxy.NetworkProxyMessages.KO;
+import static org.ardulink.connection.proxy.NetworkProxyMessages.NUMBER_OF_PORTS;
+import static org.ardulink.connection.proxy.NetworkProxyMessages.OK;
+import static org.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,10 +30,10 @@ import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.util.Scanner;
 
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.convenience.Links;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.Link;
+import org.ardulink.core.convenience.Links;
+import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.core.proto.api.Protocol;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -1,1 +1,1 @@
-com.github.pfichtner.core.mqtt.MqttLinkFactory
+org.ardulink.core.mqtt.MqttLinkFactory

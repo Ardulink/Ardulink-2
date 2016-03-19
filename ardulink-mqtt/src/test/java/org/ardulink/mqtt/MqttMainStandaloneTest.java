@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.ardulink;
+package org.ardulink.mqtt;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.mockito.Mockito.mock;
@@ -25,8 +25,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.util.AnotherMqttClient;
+import org.ardulink.core.Link;
+import org.ardulink.mqtt.util.AnotherMqttClient;
 
 /**
  * [ardulinktitle] [ardulinkversion]

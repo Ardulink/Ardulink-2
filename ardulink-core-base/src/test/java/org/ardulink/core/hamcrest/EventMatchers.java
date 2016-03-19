@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package com.github.pfichtner.hamcrest;
+package org.ardulink.core.hamcrest;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
-import com.github.pfichtner.ardulink.core.Pin;
-import com.github.pfichtner.ardulink.core.events.PinValueChangedEvent;
+import org.ardulink.core.Pin;
+import org.ardulink.core.events.PinValueChangedEvent;
 
 /**
  * [ardulinktitle] [ardulinkversion]

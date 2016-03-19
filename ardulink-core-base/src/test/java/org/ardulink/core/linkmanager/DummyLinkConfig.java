@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package com.github.pfichtner.ardulink.core.linkmanager;
+package org.ardulink.core.linkmanager;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -29,9 +29,9 @@ import java.util.List;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
-import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig.I18n;
-import com.github.pfichtner.ardulink.core.proto.api.Protocol;
-import com.github.pfichtner.ardulink.core.proto.api.Protocols;
+import org.ardulink.core.linkmanager.LinkConfig.I18n;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.Protocols;
 
 @I18n("message")
 public class DummyLinkConfig implements LinkConfig {

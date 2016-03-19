@@ -14,20 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.ardumailng.camel;
+package org.ardulink.mail.camel;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
 import static com.icegreen.greenmail.util.ServerSetupTest.SMTP_IMAP;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.ardulink.ardumailng.test.MailSender.sendMailTo;
+import static org.ardulink.mail.test.MailSender.sendMailTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.zu.ardulink.util.MapBuilder.newMapBuilder;
+import static org.ardulink.util.MapBuilder.newMapBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -55,12 +55,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
-import org.zu.ardulink.util.Joiner;
-import org.zu.ardulink.util.MapBuilder;
+import org.ardulink.util.Joiner;
+import org.ardulink.util.MapBuilder;
 
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.convenience.LinkDelegate;
-import com.github.pfichtner.ardulink.core.convenience.Links;
+import org.ardulink.core.Link;
+import org.ardulink.core.convenience.LinkDelegate;
+import org.ardulink.core.convenience.Links;
 import com.icegreen.greenmail.imap.ImapServer;
 import com.icegreen.greenmail.junit.GreenMailRule;
 import com.icegreen.greenmail.smtp.SmtpServer;

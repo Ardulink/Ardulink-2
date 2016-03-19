@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.ardumailng.camel;
+package org.ardulink.mail.camel;
 
-import static org.zu.ardulink.util.Preconditions.checkNotNull;
-import static org.zu.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Preconditions.checkState;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,14 +30,14 @@ import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultProducer;
-import org.ardulink.ardumailng.Command;
-import org.zu.ardulink.util.Joiner;
-import org.zu.ardulink.util.ListMultiMap;
-import org.zu.ardulink.util.Lists;
-import org.zu.ardulink.util.Optional;
+import org.ardulink.mail.Command;
+import org.ardulink.util.Joiner;
+import org.ardulink.util.ListMultiMap;
+import org.ardulink.util.Lists;
+import org.ardulink.util.Optional;
 
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.convenience.Links;
+import org.ardulink.core.Link;
+import org.ardulink.core.convenience.Links;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -14,23 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
  */
-package com.github.pfichtner.ardulink.util;
+package org.ardulink.mqtt.util;
 
-import static com.github.pfichtner.ardulink.core.Pin.analogPin;
-import static com.github.pfichtner.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.zu.ardulink.util.StopWatch;
+import org.ardulink.util.StopWatch;
 
-import com.github.pfichtner.ardulink.MqttMain;
-import com.github.pfichtner.ardulink.core.events.AnalogPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
-import com.github.pfichtner.ardulink.core.events.DigitalPinValueChangedEvent;
+import org.ardulink.mqtt.MqttMain;
+import org.ardulink.core.events.AnalogPinValueChangedEvent;
+import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
+import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
+import org.ardulink.core.events.DigitalPinValueChangedEvent;
 
 /**
  * [ardulinktitle] [ardulinkversion]

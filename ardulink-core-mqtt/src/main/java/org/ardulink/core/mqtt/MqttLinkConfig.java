@@ -14,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package com.github.pfichtner.core.mqtt;
+package org.ardulink.core.mqtt;
 
-import static org.zu.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Preconditions.checkNotNull;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import com.github.pfichtner.ardulink.core.linkmanager.LinkConfig;
+import org.ardulink.core.linkmanager.LinkConfig;
 
 /**
  * [ardulinktitle] [ardulinkversion]

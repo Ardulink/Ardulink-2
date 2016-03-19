@@ -14,17 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
  */
-package com.github.pfichtner.ardulink;
+package org.ardulink.mqtt;
 
-import static com.github.pfichtner.ardulink.AbstractMqttAdapter.CompactStrategy.AVERAGE;
-import static com.github.pfichtner.ardulink.compactors.Tolerance.maxTolerance;
+import static org.ardulink.mqtt.AbstractMqttAdapter.CompactStrategy.AVERAGE;
+import static org.ardulink.mqtt.compactors.Tolerance.maxTolerance;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 import static org.fusesource.mqtt.client.QoS.AT_MOST_ONCE;
-import static org.zu.ardulink.util.Strings.nullOrEmpty;
+import static org.ardulink.util.Strings.nullOrEmpty;
 
 import java.io.IOException;
 import java.net.URI;
@@ -40,13 +40,13 @@ import org.kohsuke.args4j.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.pfichtner.ardulink.AbstractMqttAdapter.CompactStrategy;
-import com.github.pfichtner.ardulink.compactors.ThreadTimeSlicer;
-import com.github.pfichtner.ardulink.compactors.TimeSlicer;
-import com.github.pfichtner.ardulink.core.Link;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
-import com.github.pfichtner.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.mqtt.AbstractMqttAdapter.CompactStrategy;
+import org.ardulink.mqtt.compactors.ThreadTimeSlicer;
+import org.ardulink.mqtt.compactors.TimeSlicer;
+import org.ardulink.core.Link;
+import org.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
+import org.ardulink.core.linkmanager.LinkManager.Configurer;
 
 /**
  * [ardulinktitle] [ardulinkversion]

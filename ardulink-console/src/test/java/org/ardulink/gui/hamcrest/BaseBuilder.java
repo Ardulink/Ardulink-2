@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package org.zu.ardulink.gui.hamcrest;
+package org.ardulink.gui.hamcrest;
 
-import static org.zu.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
+import static org.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
 
 import java.awt.Component;
 
@@ -23,7 +23,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.hamcrest.Matcher;
-import org.zu.ardulink.util.Optional;
+import org.ardulink.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]
