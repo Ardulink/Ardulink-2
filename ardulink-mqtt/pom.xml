@@ -27,7 +27,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>com.github.pfichtner.ardulink.MqttMain</mainClass>
+							<mainClass>org.ardulink.mqtt.MqttMain</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
