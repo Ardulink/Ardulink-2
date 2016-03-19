@@ -38,6 +38,7 @@ void setup() {
   Serial.begin(115200);
   
   Serial.print("alp://rply/");
+  Serial.print("ok?id=0");
   Serial.print('\n'); // End of Message
   Serial.flush();
   
