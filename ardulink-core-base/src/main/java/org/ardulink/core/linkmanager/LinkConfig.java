@@ -41,8 +41,19 @@ public interface LinkConfig {
 
 	@Retention(RUNTIME)
 	public @interface ChoiceFor {
+		/**
+		 * The name of the attribute the values are choices for.
+		 * 
+		 * @return name of the attribute the values are choices for
+		 */
 		String value();
 
+		/**
+		 * Attributes this attribute depends on. If this attribute depends on no
+		 * other attributes an empty array is returned.
+		 * 
+		 * @return attributes this attribute depends on
+		 */
 		String[] dependsOn() default {};
 	}
 
