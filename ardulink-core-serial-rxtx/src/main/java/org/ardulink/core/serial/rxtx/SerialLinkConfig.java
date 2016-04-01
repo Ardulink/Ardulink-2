@@ -90,7 +90,11 @@ public class SerialLinkConfig implements LinkConfig {
 		return port;
 	}
 
-	@ChoiceFor("port")
+	// the attribute does not really depend on "proto": This is a quick fix that
+	// GenericPanel creates a discover button for this attribute so there is no
+	// need to restart Console when pluging the USB cable in after Console has
+	// been started.
+	@ChoiceFor(value = "port", dependsOn = "proto")
 	public String[] listPorts() {
 		List<String> ports = new ArrayList<String>();
 		for (CommPortIdentifier portIdentifier : portIdentifiers()) {
