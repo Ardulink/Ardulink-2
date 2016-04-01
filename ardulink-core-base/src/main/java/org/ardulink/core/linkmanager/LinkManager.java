@@ -223,7 +223,8 @@ public abstract class LinkManager {
 
 			@Override
 			public ConfigAttribute[] choiceDependsOn() {
-				return this.dependsOn.toArray(new ConfigAttribute[0]);
+				return this.dependsOn
+						.toArray(new ConfigAttribute[this.dependsOn.size()]);
 			}
 
 			@Override
