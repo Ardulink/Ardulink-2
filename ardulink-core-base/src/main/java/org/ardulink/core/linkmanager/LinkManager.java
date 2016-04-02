@@ -25,6 +25,9 @@ import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -43,7 +46,6 @@ import javax.validation.constraints.Min;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
 import org.ardulink.util.Primitive;
-
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkConfig.ChoiceFor;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
@@ -159,6 +161,11 @@ public abstract class LinkManager {
 			private List<Object> cachedChoiceValues;
 			private final ResourceBundle nls;
 
+			private final Min minValueProvider = annotationProxy(Min.class,
+					"value", MIN_VALUE);
+			private final Max maxValueProvider = annotationProxy(Max.class,
+					"value", MAX_VALUE);
+
 			public ConfigAttributeAdapter(T linkConfig,
 					BeanProperties beanProperties, String key) {
 				this.attribute = beanProperties.getAttribute(key);
@@ -250,7 +257,8 @@ public abstract class LinkManager {
 						"returntype for choice of %s was null (should be an empty Object[] or empty Collection)",
 						getName());
 				if (value instanceof Collection<?>) {
-					value = ((Collection<?>) value).toArray(new Object[0]);
+					Collection<?> collection = (Collection<?>) value;
+					value = collection.toArray(new Object[collection.size()]);
 				}
 				checkState(value instanceof Object[],
 						"returntype is not an Object[] but %s",
@@ -261,15 +269,30 @@ public abstract class LinkManager {
 			@Override
 			public ValidationInfo getValidationInfo() {
 				if (Integer.class.isAssignableFrom(Primitive.wrap(getType()))) {
-					Optional<Min> min = find(attribute.getAnnotations(),
-							Min.class);
-					Optional<Max> max = find(attribute.getAnnotations(),
-							Max.class);
-					return newNumberValidationInfo(min.isPresent() ? min.get()
-							.value() : MIN_VALUE, max.isPresent() ? max.get()
-							.value() : MAX_VALUE);
+					Annotation[] annotations = attribute.getAnnotations();
+					return newNumberValidationInfo(find(annotations, Min.class)
+							.or(minValueProvider).value(),
+							find(annotations, Max.class).or(maxValueProvider)
+									.value());
 				}
 				return ValidationInfo.NULL;
+			}
+
+			private <S> S annotationProxy(Class<S> clazz,
+					final String methodName, final long value) {
+				return clazz.cast(Proxy.newProxyInstance(getClass()
+						.getClassLoader(), new Class<?>[] { clazz },
+						new InvocationHandler() {
+							@Override
+							public Object invoke(Object proxy, Method method,
+									Object[] args) throws Throwable {
+								if (methodName.equals(method.getName())) {
+									return value;
+								}
+								throw new UnsupportedOperationException(
+										"Method " + method + " not supported");
+							}
+						}));
 			}
 
 			private <S extends Annotation> Optional<S> find(
