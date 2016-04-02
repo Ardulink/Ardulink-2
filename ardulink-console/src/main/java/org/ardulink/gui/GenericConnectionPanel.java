@@ -117,9 +117,8 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 
 							if (isDiscoverable) {
 								JButton discoverButton = new JButton(
-										new ImageIcon(
-												BluetoothConnectionPanel.class
-														.getResource("icons/search_icon.png")));
+										new ImageIcon(getClass().getResource(
+												"icons/search_icon.png")));
 								discoverButton.setToolTipText("Discover");
 								discoverButton
 										.addActionListener(new ActionListener() {
