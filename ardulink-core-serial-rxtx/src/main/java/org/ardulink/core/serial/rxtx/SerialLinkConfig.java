@@ -29,8 +29,8 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 import org.ardulink.util.Optional;
-
 import org.ardulink.core.linkmanager.LinkConfig;
+import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
@@ -43,6 +43,7 @@ import org.ardulink.core.proto.impl.ArdulinkProtocol2;
  * [adsense]
  *
  */
+@I18n("message")
 public class SerialLinkConfig implements LinkConfig {
 
 	@Named("port")
