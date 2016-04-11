@@ -15,11 +15,14 @@ limitations under the License.
  */
 package org.ardulink.gui;
 
-import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static java.awt.GridBagConstraints.HORIZONTAL;
 import static java.awt.GridBagConstraints.LINE_START;
 import static java.awt.GridBagConstraints.REMAINDER;
 import static java.awt.event.ItemEvent.SELECTED;
+import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
+import static org.ardulink.util.Primitive.parseAs;
+import static org.ardulink.util.Primitive.unwrap;
+import static org.ardulink.util.Primitive.wrap;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -48,14 +51,16 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-import org.ardulink.legacy.Link;
-import org.ardulink.util.Primitive;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import org.ardulink.core.linkmanager.LinkManager.ValidationInfo;
+import org.ardulink.legacy.Link;
+import org.ardulink.util.Primitive;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -98,8 +103,6 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 				}
 			}
 
-
-
 		});
 		return uris;
 	}
@@ -123,6 +126,8 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 
 	private final int fixedComponents;
 
+	private Configurer configurer;
+
 	/**
 	 * Create the panel.
 	 */
@@ -132,7 +137,7 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 		GridBagConstraints c = constraints(0, 1);
 		add(uris, makeFill(c));
 		add(reloadButton(), constraints(0, 2));
-		
+
 		// add(new JPanel(), constraints(0, 2));
 		this.fixedComponents = getComponentCount();
 		LinkManager linkManager = LinkManager.getInstance();
@@ -146,7 +151,7 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 		refreshButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				refresh((String)uris.getSelectedItem());
+				refresh((String) uris.getSelectedItem());
 			}
 		});
 		return refreshButton;
@@ -155,17 +160,14 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 	private void refresh(String selectedItem) {
 		clean();
 		try {
-			Configurer configurer = LinkManager.getInstance()
-					.getConfigurer(new URI(selectedItem));
+			configurer = LinkManager.getInstance().getConfigurer(
+					new URI(selectedItem));
 			int row = 1;
 			for (String name : configurer.getAttributes()) {
-				final ConfigAttribute attribute = configurer
-						.getAttribute(name);
-				add(new JLabel(attribute.getName()),
-						constraints(row, 0));
+				final ConfigAttribute attribute = configurer.getAttribute(name);
+				add(new JLabel(attribute.getName()), constraints(row, 0));
 
-				boolean isDiscoverable = attribute
-						.choiceDependsOn().length > 0;
+				boolean isDiscoverable = attribute.choiceDependsOn().length > 0;
 
 				GridBagConstraints c = makeFill(constraints(row, 1));
 				c.gridwidth = isDiscoverable ? 1 : REMAINDER;
@@ -173,24 +175,20 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 				add(component, c);
 
 				if (isDiscoverable) {
-					JButton discoverButton = new JButton(
-							new ImageIcon(getClass().getResource(
-									"icons/search_icon.png")));
+					JButton discoverButton = new JButton(new ImageIcon(
+							getClass().getResource("icons/search_icon.png")));
 					discoverButton.setToolTipText("Discover");
-					discoverButton
-							.addActionListener(new ActionListener() {
-								@Override
-								public void actionPerformed(
-										ActionEvent e) {
-									if (component instanceof JComboBox) {
-										JComboBox jComboBox = (JComboBox) component;
-										ComboBoxModel model = new DefaultComboBoxModel(
-												attribute
-														.getChoiceValues());
-										jComboBox.setModel(model);
-									}
-								}
-							});
+					discoverButton.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							if (component instanceof JComboBox) {
+								JComboBox jComboBox = (JComboBox) component;
+								ComboBoxModel model = new DefaultComboBoxModel(
+										attribute.getChoiceValues());
+								jComboBox.setModel(model);
+							}
+						}
+					});
 
 					add(discoverButton, constraints(row, 2));
 				} else {
@@ -218,54 +216,78 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 		repaint();
 	}
 
-	private JComponent createComponent(ConfigAttribute attribute) {
-		JComponent retvalue = null;
+	private JComponent createComponent(final ConfigAttribute attribute) {
 		if (isBoolean(attribute)) {
-			retvalue = setState(new JCheckBox(), attribute);
+			final JCheckBox checkBox = new JCheckBox();
+			checkBox.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					attribute.setValue(Boolean.valueOf(checkBox.isSelected()));
+				}
+			});
+			return setState(checkBox, attribute);
 		} else if (isChoice(attribute)) {
-			final JComboBox jComboBox = new JComboBox(attribute
-					.getChoiceValues());
-			retvalue = selectFirstValue(jComboBox);
+			final JComboBox jComboBox = new JComboBox(
+					attribute.getChoiceValues());
+			jComboBox.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					attribute.setValue(jComboBox.getSelectedItem());
+				}
+			});
+			return selectFirstValue(jComboBox);
 		} else if (isNumber(attribute)) {
-			JSpinner spinner = new JSpinner(createModel(attribute));
-			JSpinner.NumberEditor editor = new JSpinner.NumberEditor(
-					spinner);
+			final JSpinner spinner = new JSpinner(createModel(attribute));
+			JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner);
 			editor.getTextField().setHorizontalAlignment(
 					JFormattedTextField.LEFT);
 			editor.getFormat().setGroupingUsed(false);
 			spinner.setEditor(editor);
 			spinner.setValue(attribute.getValue());
-			retvalue = spinner;
+
+			spinner.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					attribute.setValue(parseAs(unwrap(attribute.getType()),
+							String.valueOf(spinner.getValue())));
+				}
+			});
+			return spinner;
 		} else {
 			Object value = attribute.getValue();
-			retvalue = new JTextField(value == null ? "" : String
-					.valueOf(value));
+			final JTextField jTextField = new JTextField(value == null ? ""
+					: String.valueOf(value));
+			jTextField.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					attribute.setValue(jTextField.getText());
+				}
+			});
+			return jTextField;
 		}
-		
-		retvalue.setName("ATTR_" + attribute.getName());
-		return retvalue;
 	}
-	
+
 	private SpinnerModel createModel(ConfigAttribute attribute) {
 		ValidationInfo info = attribute.getValidationInfo();
 		if (info instanceof NumberValidationInfo) {
 			NumberValidationInfo nInfo = (NumberValidationInfo) info;
+			if (wrap(attribute.getType()).equals(Integer.class)) {
+				return new SpinnerNumberModel((int) nInfo.min(),
+						(int) nInfo.min(), (int) nInfo.max(), 1);
+			}
 			return new SpinnerNumberModel(nInfo.min(), nInfo.min(),
 					nInfo.max(), 1);
 		}
 		return new SpinnerNumberModel();
 	}
 
-	private JComponent setState(JCheckBox checkBox,
-			ConfigAttribute attribute) {
-		checkBox.setSelected(Boolean.valueOf((Boolean) attribute
-				.getValue()));
+	private JComponent setState(JCheckBox checkBox, ConfigAttribute attribute) {
+		checkBox.setSelected(Boolean.valueOf((Boolean) attribute.getValue()));
 		return checkBox;
 	}
 
 	private JComponent selectFirstValue(JComboBox comboBox) {
-		comboBox.setSelectedIndex(comboBox.getModel().getSize() > 0 ? 0
-				: -1);
+		comboBox.setSelectedIndex(comboBox.getModel().getSize() > 0 ? 0 : -1);
 		return comboBox;
 	}
 
@@ -279,52 +301,12 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 	}
 
 	private boolean isNumber(ConfigAttribute attribute) {
-		return Number.class.isAssignableFrom(Primitive.wrap(attribute
-				.getType()));
-	}	
-	
-	public String getURI() {
-		return uris.getSelectedItem().toString();
+		return Number.class
+				.isAssignableFrom(Primitive.wrap(attribute.getType()));
 	}
 
-	public String getURIWithAttributes() {
-		
-		String uri = getURI();
-		String query = "";
-		Component[] components = getComponents();
-		for (int i = fixedComponents; i < components.length; i++) {
-			Component component = components[i];
-			String componentName = component.getName();
-			if(componentName != null && componentName.startsWith("ATTR_")) {
-				componentName = componentName.substring("ATTR_".length());
-				query += "&" + componentName + "=" + getValue(component);
-			}
-		}
-		
-		if(query.length() > 0) {
-			query = query.replaceFirst("&", "?");
-		}
-		
-		uri += query;
-		
-		return uri;
-	}
-
-	private String getValue(Component component) {
-		String retvalue = null;
-		if(component instanceof JCheckBox) {
-			retvalue = Boolean.toString(((JCheckBox)component).isSelected());
-		} else if(component instanceof JComboBox) {
-			retvalue = ((JComboBox)component).getSelectedItem().toString();
-		} else if(component instanceof JSpinner) {
-			retvalue = ((JSpinner)component).getValue().toString();
-		} else if(component instanceof JTextField) {
-			retvalue = ((JTextField)component).getText();
-		} else {
-			throw new IllegalStateException("Component not known: " + component.getClass().getName());
-		}
-		
-		return retvalue;
+	public org.ardulink.core.Link createLink() throws Exception {
+		return this.configurer == null ? null : this.configurer.newLink();
 	}
 
 	@Override
@@ -332,7 +314,7 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 		super.setEnabled(enabled);
 		Component[] components = getComponents();
 		for (int i = 0; i < components.length; i++) {
-			components[i].setEnabled(enabled);;
+			components[i].setEnabled(enabled);
 		}
 	}
 

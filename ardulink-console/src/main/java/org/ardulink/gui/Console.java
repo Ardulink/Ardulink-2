@@ -28,7 +28,6 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,16 +44,14 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.ardulink.gui.customcomponents.ModifiableSignalButton;
 import org.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
 import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.ardulink.legacy.Link;
 import org.ardulink.legacy.Link.LegacyLinkAdapter;
-
-import org.ardulink.core.linkmanager.LinkManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion] This is the ready ardulink console a
@@ -138,7 +135,7 @@ public class Console extends JFrame implements Linkable {
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				try {
-					setLink(legacyAdapt(newLink(genericConnectionPanel.getURIWithAttributes())));
+					setLink(legacyAdapt(genericConnectionPanel.createLink()));
 				} catch (URISyntaxException e) {
 					e.printStackTrace();
 					JOptionPane.showMessageDialog(Console.this, e.getMessage(),
@@ -155,11 +152,7 @@ public class Console extends JFrame implements Linkable {
 				return new Link.LegacyLinkAdapter(link);
 			}
 
-			private org.ardulink.core.Link newLink(String uri)
-					throws URISyntaxException, Exception {
-				return LinkManager.getInstance().getConfigurer(new URI(uri))
-						.newLink();
-			}
+			
 		});
 		connectPanel.add(btnConnect);
 
