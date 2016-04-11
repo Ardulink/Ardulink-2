@@ -51,7 +51,6 @@ import javax.swing.SpinnerNumberModel;
 
 import org.ardulink.legacy.Link;
 import org.ardulink.util.Primitive;
-
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
@@ -162,12 +161,13 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 			}
 
 			private JComponent createComponent(ConfigAttribute attribute) {
+				JComponent retvalue = null;
 				if (isBoolean(attribute)) {
-					return setState(new JCheckBox(), attribute);
+					retvalue = setState(new JCheckBox(), attribute);
 				} else if (isChoice(attribute)) {
 					final JComboBox jComboBox = new JComboBox(attribute
 							.getChoiceValues());
-					return selectFirstValue(jComboBox);
+					retvalue = selectFirstValue(jComboBox);
 				} else if (isNumber(attribute)) {
 					JSpinner spinner = new JSpinner(createModel(attribute));
 					JSpinner.NumberEditor editor = new JSpinner.NumberEditor(
@@ -177,14 +177,17 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 					editor.getFormat().setGroupingUsed(false);
 					spinner.setEditor(editor);
 					spinner.setValue(attribute.getValue());
-					return spinner;
+					retvalue = spinner;
 				} else {
 					Object value = attribute.getValue();
-					return new JTextField(value == null ? "" : String
+					retvalue = new JTextField(value == null ? "" : String
 							.valueOf(value));
 				}
+				
+				retvalue.setName("ATTR_" + attribute.getName());
+				return retvalue;
 			}
-
+			
 			private SpinnerModel createModel(ConfigAttribute attribute) {
 				ValidationInfo info = attribute.getValidationInfo();
 				if (info instanceof NumberValidationInfo) {
@@ -266,10 +269,53 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 		return uris.getSelectedItem().toString();
 	}
 
+	public String getURIWithAttributes() {
+		
+		String uri = getURI();
+		String query = "";
+		Component[] components = getComponents();
+		for (int i = fixedComponents; i < components.length; i++) {
+			Component component = components[i];
+			String componentName = component.getName();
+			if(componentName != null && componentName.startsWith("ATTR_")) {
+				componentName = componentName.substring("ATTR_".length());
+				query += "&" + componentName + "=" + getValue(component);
+			}
+		}
+		
+		if(query.length() > 0) {
+			query = query.replaceFirst("&", "?");
+		}
+		
+		uri += query;
+		
+		return uri;
+	}
+
+	private String getValue(Component component) {
+		String retvalue = null;
+		if(component instanceof JCheckBox) {
+			retvalue = Boolean.toString(((JCheckBox)component).isSelected());
+		} else if(component instanceof JComboBox) {
+			retvalue = ((JComboBox)component).getSelectedItem().toString();
+		} else if(component instanceof JSpinner) {
+			retvalue = ((JSpinner)component).getValue().toString();
+		} else if(component instanceof JTextField) {
+			retvalue = ((JTextField)component).getText();
+		} else {
+			throw new IllegalStateException("Component not known: " + component.getClass().getName());
+		}
+		
+		return retvalue;
+	}
+
 	@Override
 	public void setEnabled(boolean enabled) {
 		super.setEnabled(enabled);
-		uris.setEnabled(enabled);
+		Component[] components = getComponents();
+		for (int i = 0; i < components.length; i++) {
+			components[i].setEnabled(enabled);;
+		}
 	}
 
 	private Link getLink() {
@@ -279,9 +325,5 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 	@Override
 	public void setLink(Link link) {
 		this.link = link;
-	}
-
-	public void setBaudRateVisible(boolean visibility) {
-		uris.setVisible(visibility);
 	}
 }

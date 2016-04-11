@@ -138,7 +138,7 @@ public class Console extends JFrame implements Linkable {
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				try {
-					setLink(legacyAdapt(newLink(genericConnectionPanel.getURI())));
+					setLink(legacyAdapt(newLink(genericConnectionPanel.getURIWithAttributes())));
 				} catch (URISyntaxException e) {
 					e.printStackTrace();
 					JOptionPane.showMessageDialog(Console.this, e.getMessage(),
