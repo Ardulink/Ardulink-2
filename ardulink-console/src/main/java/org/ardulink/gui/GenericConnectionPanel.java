@@ -94,136 +94,11 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 			@Override
 			public void itemStateChanged(ItemEvent event) {
 				if (event.getStateChange() == SELECTED) {
-					clean();
-					String selectedItem = (String) event.getItem();
-					try {
-						Configurer configurer = LinkManager.getInstance()
-								.getConfigurer(new URI(selectedItem));
-						int row = 1;
-						for (String name : configurer.getAttributes()) {
-							final ConfigAttribute attribute = configurer
-									.getAttribute(name);
-							add(new JLabel(attribute.getName()),
-									constraints(row, 0));
-
-							boolean isDiscoverable = attribute
-									.choiceDependsOn().length > 0;
-
-							GridBagConstraints c = makeFill(constraints(row, 1));
-							c.gridwidth = isDiscoverable ? 1 : REMAINDER;
-							final JComponent component = createComponent(attribute);
-							add(component, c);
-
-							if (isDiscoverable) {
-								JButton discoverButton = new JButton(
-										new ImageIcon(getClass().getResource(
-												"icons/search_icon.png")));
-								discoverButton.setToolTipText("Discover");
-								discoverButton
-										.addActionListener(new ActionListener() {
-											@Override
-											public void actionPerformed(
-													ActionEvent e) {
-												if (component instanceof JComboBox) {
-													JComboBox jComboBox = (JComboBox) component;
-													ComboBoxModel model = new DefaultComboBoxModel(
-															attribute
-																	.getChoiceValues());
-													jComboBox.setModel(model);
-												}
-											}
-										});
-
-								add(discoverButton, constraints(row, 2));
-							} else {
-								add(new JPanel(), constraints(row, 2));
-							}
-
-							row++;
-						}
-						GridBagConstraints c = constraints(row, 0);
-						c.gridwidth = 3;
-						c.weighty = 1;
-						add(new JPanel(), c);
-
-					} catch (URISyntaxException e) {
-						throw new RuntimeException(e);
-					}
-					revalidate();
+					refresh((String) event.getItem());
 				}
 			}
 
-			private void clean() {
-				Component[] components = getComponents();
-				for (int i = fixedComponents; i < components.length; i++) {
-					remove(components[i]);
-				}
-			}
 
-			private JComponent createComponent(ConfigAttribute attribute) {
-				JComponent retvalue = null;
-				if (isBoolean(attribute)) {
-					retvalue = setState(new JCheckBox(), attribute);
-				} else if (isChoice(attribute)) {
-					final JComboBox jComboBox = new JComboBox(attribute
-							.getChoiceValues());
-					retvalue = selectFirstValue(jComboBox);
-				} else if (isNumber(attribute)) {
-					JSpinner spinner = new JSpinner(createModel(attribute));
-					JSpinner.NumberEditor editor = new JSpinner.NumberEditor(
-							spinner);
-					editor.getTextField().setHorizontalAlignment(
-							JFormattedTextField.LEFT);
-					editor.getFormat().setGroupingUsed(false);
-					spinner.setEditor(editor);
-					spinner.setValue(attribute.getValue());
-					retvalue = spinner;
-				} else {
-					Object value = attribute.getValue();
-					retvalue = new JTextField(value == null ? "" : String
-							.valueOf(value));
-				}
-				
-				retvalue.setName("ATTR_" + attribute.getName());
-				return retvalue;
-			}
-			
-			private SpinnerModel createModel(ConfigAttribute attribute) {
-				ValidationInfo info = attribute.getValidationInfo();
-				if (info instanceof NumberValidationInfo) {
-					NumberValidationInfo nInfo = (NumberValidationInfo) info;
-					return new SpinnerNumberModel(nInfo.min(), nInfo.min(),
-							nInfo.max(), 1);
-				}
-				return new SpinnerNumberModel();
-			}
-
-			private JComponent setState(JCheckBox checkBox,
-					ConfigAttribute attribute) {
-				checkBox.setSelected(Boolean.valueOf((Boolean) attribute
-						.getValue()));
-				return checkBox;
-			}
-
-			private JComponent selectFirstValue(JComboBox comboBox) {
-				comboBox.setSelectedIndex(comboBox.getModel().getSize() > 0 ? 0
-						: -1);
-				return comboBox;
-			}
-
-			private boolean isChoice(ConfigAttribute attribute) {
-				return attribute.hasChoiceValues();
-			}
-
-			private boolean isBoolean(ConfigAttribute attribute) {
-				return attribute.getType().equals(Boolean.class)
-						|| attribute.getType().equals(boolean.class);
-			}
-
-			private boolean isNumber(ConfigAttribute attribute) {
-				return Number.class.isAssignableFrom(Primitive.wrap(attribute
-						.getType()));
-			}
 
 		});
 		return uris;
@@ -255,9 +130,10 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 		setLayout(new GridBagLayout());
 		add(new JLabel("Type"), constraints(0, 0));
 		GridBagConstraints c = constraints(0, 1);
-		c.gridwidth = 2;
 		add(uris, makeFill(c));
-		add(new JPanel(), constraints(0, 2));
+		add(reloadButton(), constraints(0, 2));
+		
+		// add(new JPanel(), constraints(0, 2));
 		this.fixedComponents = getComponentCount();
 		LinkManager linkManager = LinkManager.getInstance();
 		for (URI uri : linkManager.listURIs()) {
@@ -265,6 +141,148 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 		}
 	}
 
+	private Component reloadButton() {
+		JButton refreshButton = new JButton("refresh");
+		refreshButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				refresh((String)uris.getSelectedItem());
+			}
+		});
+		return refreshButton;
+	}
+
+	private void refresh(String selectedItem) {
+		clean();
+		try {
+			Configurer configurer = LinkManager.getInstance()
+					.getConfigurer(new URI(selectedItem));
+			int row = 1;
+			for (String name : configurer.getAttributes()) {
+				final ConfigAttribute attribute = configurer
+						.getAttribute(name);
+				add(new JLabel(attribute.getName()),
+						constraints(row, 0));
+
+				boolean isDiscoverable = attribute
+						.choiceDependsOn().length > 0;
+
+				GridBagConstraints c = makeFill(constraints(row, 1));
+				c.gridwidth = isDiscoverable ? 1 : REMAINDER;
+				final JComponent component = createComponent(attribute);
+				add(component, c);
+
+				if (isDiscoverable) {
+					JButton discoverButton = new JButton(
+							new ImageIcon(getClass().getResource(
+									"icons/search_icon.png")));
+					discoverButton.setToolTipText("Discover");
+					discoverButton
+							.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(
+										ActionEvent e) {
+									if (component instanceof JComboBox) {
+										JComboBox jComboBox = (JComboBox) component;
+										ComboBoxModel model = new DefaultComboBoxModel(
+												attribute
+														.getChoiceValues());
+										jComboBox.setModel(model);
+									}
+								}
+							});
+
+					add(discoverButton, constraints(row, 2));
+				} else {
+					add(new JPanel(), constraints(row, 2));
+				}
+
+				row++;
+			}
+			GridBagConstraints c = constraints(row, 0);
+			c.gridwidth = 3;
+			c.weighty = 1;
+			add(new JPanel(), c);
+
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+		revalidate();
+	}
+
+	private void clean() {
+		Component[] components = getComponents();
+		for (int i = fixedComponents; i < components.length; i++) {
+			remove(components[i]);
+		}
+		repaint();
+	}
+
+	private JComponent createComponent(ConfigAttribute attribute) {
+		JComponent retvalue = null;
+		if (isBoolean(attribute)) {
+			retvalue = setState(new JCheckBox(), attribute);
+		} else if (isChoice(attribute)) {
+			final JComboBox jComboBox = new JComboBox(attribute
+					.getChoiceValues());
+			retvalue = selectFirstValue(jComboBox);
+		} else if (isNumber(attribute)) {
+			JSpinner spinner = new JSpinner(createModel(attribute));
+			JSpinner.NumberEditor editor = new JSpinner.NumberEditor(
+					spinner);
+			editor.getTextField().setHorizontalAlignment(
+					JFormattedTextField.LEFT);
+			editor.getFormat().setGroupingUsed(false);
+			spinner.setEditor(editor);
+			spinner.setValue(attribute.getValue());
+			retvalue = spinner;
+		} else {
+			Object value = attribute.getValue();
+			retvalue = new JTextField(value == null ? "" : String
+					.valueOf(value));
+		}
+		
+		retvalue.setName("ATTR_" + attribute.getName());
+		return retvalue;
+	}
+	
+	private SpinnerModel createModel(ConfigAttribute attribute) {
+		ValidationInfo info = attribute.getValidationInfo();
+		if (info instanceof NumberValidationInfo) {
+			NumberValidationInfo nInfo = (NumberValidationInfo) info;
+			return new SpinnerNumberModel(nInfo.min(), nInfo.min(),
+					nInfo.max(), 1);
+		}
+		return new SpinnerNumberModel();
+	}
+
+	private JComponent setState(JCheckBox checkBox,
+			ConfigAttribute attribute) {
+		checkBox.setSelected(Boolean.valueOf((Boolean) attribute
+				.getValue()));
+		return checkBox;
+	}
+
+	private JComponent selectFirstValue(JComboBox comboBox) {
+		comboBox.setSelectedIndex(comboBox.getModel().getSize() > 0 ? 0
+				: -1);
+		return comboBox;
+	}
+
+	private boolean isChoice(ConfigAttribute attribute) {
+		return attribute.hasChoiceValues();
+	}
+
+	private boolean isBoolean(ConfigAttribute attribute) {
+		return attribute.getType().equals(Boolean.class)
+				|| attribute.getType().equals(boolean.class);
+	}
+
+	private boolean isNumber(ConfigAttribute attribute) {
+		return Number.class.isAssignableFrom(Primitive.wrap(attribute
+				.getType()));
+	}	
+	
 	public String getURI() {
 		return uris.getSelectedItem().toString();
 	}
