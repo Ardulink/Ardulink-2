@@ -192,12 +192,14 @@ public class DummyLinkFactoryTest {
 		Locale.setDefault(ENGLISH);
 		assertThat(getName("a"),
 				is("A is meant just to be an example attribute"));
+		assertThat(getDescription("a"), is("The description of attribute A"));
 	}
 
 	@Test
 	public void i18n_german() throws URISyntaxException {
 		Locale.setDefault(GERMAN);
 		assertThat(getName("a"), is("A ist einfach ein Beispielattribut"));
+		assertThat(getDescription("a"), is("Die Beschreibung für Attribut A"));
 	}
 
 	@Test
@@ -206,6 +208,7 @@ public class DummyLinkFactoryTest {
 		Locale.setDefault(CHINESE);
 		assertThat(getName("a"),
 				is("A is meant just to be an example attribute"));
+		assertThat(getDescription("a"), is("The description of attribute A"));
 	}
 
 	@Test
@@ -227,10 +230,20 @@ public class DummyLinkFactoryTest {
 	}
 
 	private static String getName(String name) throws URISyntaxException {
+		return getAttribute(name).getName();
+	}
+
+	private static String getDescription(String name) throws URISyntaxException {
+		return getAttribute(name).getDescription();
+	}
+
+	private static ConfigAttribute getAttribute(String name)
+			throws URISyntaxException {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://dummyLink"));
-		return configurer.getAttribute(name).getName();
+		ConfigAttribute attribute = configurer.getAttribute(name);
+		return attribute;
 	}
 
 }
