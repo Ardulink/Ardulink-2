@@ -52,7 +52,8 @@ public class GenericConnectionPanelTest {
 		assertThat(comboBox, not(nullValue()));
 		Object[] items = items(comboBox);
 		assertThat(items, is(new Object[] { "ardulink://dummy",
-				"ardulink://serial", "ardulink://proxy", "ardulink://mqtt" }));
+				"ardulink://serial", "ardulink://proxy", "ardulink://mqtt",
+				"ardulink://bluetooth", "ardulink://raspberry" }));
 	}
 
 	@Test
