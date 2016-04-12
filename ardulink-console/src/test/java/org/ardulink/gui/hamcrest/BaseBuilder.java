@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.ardulink.gui.hamcrest;
 
 import static org.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
@@ -35,6 +35,7 @@ import org.ardulink.util.Optional;
  */
 public class BaseBuilder {
 
+	private static final int ELEMENTS_PER_ROW = 3;
 	private final int row;
 	private Optional<String> label = Optional.<String> absent();
 
@@ -72,7 +73,7 @@ public class BaseBuilder {
 	}
 
 	private int base() {
-		return (row + 1) * 3;
+		return row * ELEMENTS_PER_ROW;
 	}
 
 	public boolean labelMatch(JPanel jPanel) {

@@ -21,17 +21,25 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.*;
 import static org.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
 import static org.ardulink.gui.hamcrest.RowMatcherBuilder.items;
 import static org.ardulink.gui.hamcrest.RowMatcherBuilder.row;
 
 import java.awt.Component;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.swing.JComboBox;
+import javax.swing.JPanel;
 
 import org.hamcrest.Matcher;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.util.Optional;
 
 /**
@@ -44,21 +52,24 @@ import org.ardulink.util.Optional;
  */
 public class GenericConnectionPanelTest {
 
-	@Test
-	public void panelHasComboBoxWithValues() {
-		List<? extends Component> componentsOfConnectionsPanel = componentsOf(new GenericConnectionPanel());
-		JComboBox comboBox = findFirst(JComboBox.class,
-				componentsOfConnectionsPanel).get();
-		assertThat(comboBox, not(nullValue()));
-		Object[] items = items(comboBox);
-		assertThat(items, is(new Object[] { "ardulink://dummy",
-				"ardulink://serial", "ardulink://proxy", "ardulink://mqtt",
-				"ardulink://bluetooth", "ardulink://raspberry" }));
+	private URI uri;
+	private GenericPanelBuilder sut = new GenericPanelBuilder();
+
+	@Before
+	public void setup() throws URISyntaxException {
+		uri = new URI("ardulink://dummy");
 	}
 
 	@Test
-	public void hasSubPanelWithConnectionIndividualComponents() {
-		GenericConnectionPanel panel = new GenericConnectionPanel();
+	public void canHandle() {
+		assertThat(sut.canHandle(uri), is(true));
+	}
+
+	@Test
+	public void hasSubPanelWithConnectionIndividualComponents()
+			throws URISyntaxException {
+		JPanel panel = sut.createPanel(LinkManager.getInstance().getConfigurer(
+				uri));
 		JComboBox comboBox = findFirst(JComboBox.class, componentsOf(panel))
 				.get();
 		comboBox.setSelectedItem("ardulink://dummy");
