@@ -90,7 +90,7 @@ public abstract class LinkManager {
 
 		/**
 		 * Returns the description of this attribute. If there is a localized
-		 * description available the localized description is returned.
+		 * description available <code>null</code> is returned.
 		 * 
 		 * @return description of this attribute
 		 */

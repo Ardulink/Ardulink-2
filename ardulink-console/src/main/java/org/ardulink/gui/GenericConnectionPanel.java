@@ -172,10 +172,7 @@ public class GenericConnectionPanel extends JPanel implements Linkable {
 				GridBagConstraints c = makeFill(constraints(row, 1));
 				c.gridwidth = isDiscoverable ? 1 : REMAINDER;
 				final JComponent component = createComponent(attribute);
-				String description = attribute.getDescription();
-				if (description != null) {
-					component.setToolTipText(description);
-				}
+				component.setToolTipText(attribute.getDescription());
 				add(component, c);
 
 				if (isDiscoverable) {
