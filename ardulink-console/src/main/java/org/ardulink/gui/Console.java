@@ -28,7 +28,6 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,16 +44,14 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.ardulink.gui.customcomponents.ModifiableSignalButton;
 import org.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
 import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.ardulink.legacy.Link;
 import org.ardulink.legacy.Link.LegacyLinkAdapter;
-
-import org.ardulink.core.linkmanager.LinkManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion] This is the ready ardulink console a
@@ -84,7 +81,7 @@ public class Console extends JFrame implements Linkable {
 
 	private static final Logger logger = LoggerFactory.getLogger(Console.class);
 
-	private GenericConnectionPanel genericConnectionPanel;
+	private ConnectionPanel connectionPanel;
 
 	/**
 	 * Launch the application.
@@ -138,7 +135,7 @@ public class Console extends JFrame implements Linkable {
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				try {
-					setLink(legacyAdapt(newLink(genericConnectionPanel.getURIWithAttributes())));
+					setLink(legacyAdapt(connectionPanel.createLink()));
 				} catch (URISyntaxException e) {
 					e.printStackTrace();
 					JOptionPane.showMessageDialog(Console.this, e.getMessage(),
@@ -155,11 +152,7 @@ public class Console extends JFrame implements Linkable {
 				return new Link.LegacyLinkAdapter(link);
 			}
 
-			private org.ardulink.core.Link newLink(String uri)
-					throws URISyntaxException, Exception {
-				return LinkManager.getInstance().getConfigurer(new URI(uri))
-						.newLink();
-			}
+			
 		});
 		connectPanel.add(btnConnect);
 
@@ -178,8 +171,8 @@ public class Console extends JFrame implements Linkable {
 		GridBagLayout gbl_allConnectionsPanel = new GridBagLayout();
 		allConnectionsPanel.setLayout(gbl_allConnectionsPanel);
 
-		genericConnectionPanel = new GenericConnectionPanel();
-		genericConnectionPanel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
+		connectionPanel = new ConnectionPanel();
+		connectionPanel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
 		GridBagConstraints gbc_genericConnectionPanel = new GridBagConstraints();
 		gbc_genericConnectionPanel.insets = new Insets(0, 0, 0, 10);
 		gbc_genericConnectionPanel.anchor = GridBagConstraints.NORTH;
@@ -188,7 +181,7 @@ public class Console extends JFrame implements Linkable {
 		gbc_genericConnectionPanel.gridy = 1;
 		gbc_genericConnectionPanel.weightx = 1;
 		gbc_genericConnectionPanel.weighty = 1;
-		allConnectionsPanel.add(genericConnectionPanel,
+		allConnectionsPanel.add(connectionPanel,
 				gbc_genericConnectionPanel);
 
 		keyControlPanel = new KeyPressController();
@@ -369,13 +362,13 @@ public class Console extends JFrame implements Linkable {
 	private void connected() {
 		btnConnect.setEnabled(false);
 		btnDisconnect.setEnabled(true);
-		genericConnectionPanel.setEnabled(false);
+		connectionPanel.setEnabled(false);
 	}
 
 	private void disconnected() {
 		btnConnect.setEnabled(true);
 		btnDisconnect.setEnabled(false);
-		genericConnectionPanel.setEnabled(true);
+		connectionPanel.setEnabled(true);
 	}
 
 }

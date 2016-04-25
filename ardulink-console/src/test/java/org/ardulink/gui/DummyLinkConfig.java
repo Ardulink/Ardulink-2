@@ -68,4 +68,16 @@ public class DummyLinkConfig implements LinkConfig {
 		return d;
 	}
 
+	public void setA(int a) {
+		this.a = a;
+	}
+
+	public void setB(String b) {
+		this.b = b;
+	}
+
+	public void setD(String d) {
+		this.d = d;
+	}
+
 }

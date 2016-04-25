@@ -16,10 +16,10 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
-import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
 import static java.lang.String.format;
+import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
@@ -43,15 +43,15 @@ import java.util.ServiceLoader;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
-import org.ardulink.util.Lists;
-import org.ardulink.util.Optional;
-import org.ardulink.util.Primitive;
 import org.ardulink.core.Link;
+import org.ardulink.core.beans.Attribute;
+import org.ardulink.core.beans.BeanProperties;
 import org.ardulink.core.linkmanager.LinkConfig.ChoiceFor;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.linkmanager.LinkConfig.Named;
-import org.ardulink.core.beans.Attribute;
-import org.ardulink.core.beans.BeanProperties;
+import org.ardulink.util.Lists;
+import org.ardulink.util.Optional;
+import org.ardulink.util.Primitive;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -87,6 +87,14 @@ public abstract class LinkManager {
 		 * @return name of this attribute
 		 */
 		String getName();
+
+		/**
+		 * Returns the description of this attribute. If there is a localized
+		 * description available <code>null</code> is returned.
+		 * 
+		 * @return description of this attribute
+		 */
+		String getDescription();
 
 		/**
 		 * Returns the type of this attribute.
@@ -194,9 +202,19 @@ public abstract class LinkManager {
 
 			@Override
 			public String getName() {
-				return nls == null
-						|| !nls.containsKey(this.attribute.getName()) ? this.attribute
-						.getName() : nls.getString(this.attribute.getName());
+				String name = this.attribute.getName();
+				return getFromBundle(name, name);
+			}
+
+			@Override
+			public String getDescription() {
+				return getFromBundle(this.attribute.getName() + ".description",
+						null);
+			}
+
+			private String getFromBundle(String bundleKey, String defaultValue) {
+				return nls == null || !nls.containsKey(bundleKey) ? defaultValue
+						: nls.getString(bundleKey);
 			}
 
 			@Override
