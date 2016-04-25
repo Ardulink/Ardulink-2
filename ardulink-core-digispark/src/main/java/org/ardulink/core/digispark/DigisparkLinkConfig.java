@@ -16,30 +16,41 @@ limitations under the License.
 
 package org.ardulink.core.digispark;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.ardulink.core.linkmanager.LinkConfig;
+
+import ch.ntb.usb.USBException;
+import ch.ntb.usb.Usb_Device;
 
 public class DigisparkLinkConfig implements LinkConfig {
 
-	// @Named("id")
-	// private int id;
-	//
-	// public int getId() {
-	// return id;
-	// }
-	//
-	// public void setId(int id) {
-	// this.id = id;
-	// }
+	@Named("deviceName")
+	private String deviceName;
 
-	@Named("portName")
-	private String portName;
-
-	public String getPortName() {
-		return portName;
+	public String getDeviceName() {
+		return deviceName;
 	}
 
-	public void setPortName(String portName) {
-		this.portName = portName;
+	public void setDeviceName(String deviceName) {
+		this.deviceName = deviceName;
 	}
+	
+	@ChoiceFor("deviceName")
+	public String[] listdeviceNames() {
+		Map<String, Usb_Device> deviceMap;
+		try {
+			deviceMap = DigisparkDiscoveryUtil.getDevices();
+		} catch (USBException e) {
+			throw new RuntimeException(e);
+		}
+		
+		List<String> deviceNames = new ArrayList<String>(deviceMap.keySet());
+		
+		return deviceNames.toArray(new String[deviceNames.size()]);
+	}
+	
 
 }

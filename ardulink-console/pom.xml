@@ -74,6 +74,12 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
+			<artifactId>ardulink-core-digispark</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-core-raspberry</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>

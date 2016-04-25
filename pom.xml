@@ -65,6 +65,7 @@
 		<module>ardulink-core-base</module>
 		<module>ardulink-core-serial-rxtx</module>
 		<module>ardulink-core-bluetooth</module>
+		<module>ardulink-core-digispark</module>
 		<module>ardulink-core-raspberry</module>
 		<module>ardulink-core-beans</module>
 		<module>ardulink-core-proxy</module>
