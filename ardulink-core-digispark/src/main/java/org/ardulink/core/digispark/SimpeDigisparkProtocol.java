@@ -16,7 +16,7 @@ import org.ardulink.core.proto.api.ToArduinoTone;
 public class SimpeDigisparkProtocol implements Protocol {
 
 	private final String name = "simple4digispark";
-	private final byte[] separator = "\n".getBytes();
+	private final byte[] separator = {(byte)255};
 
 	private static final byte POWER_PIN_INTENSITY_MESSAGE = 11;
 	private static final byte POWER_PIN_SWITCH_MESSAGE = 12;

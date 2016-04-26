@@ -61,9 +61,9 @@ public class DigisparkConnection extends AbstractConnection {
 
 	private void connect() {
 		disconnect();
-		long usbDevHandle = usb_open(usbDevice);
+		usbDevHandle = usb_open(usbDevice);
 		checkState(usbDevHandle != 0, "usb_open: %s", usb_strerror());
-		checkState(!isConnected(), "USB Digispark device not found on USB");
+		checkState(isConnected(), "USB Digispark device not found on USB");
 		claim_interface(usbDevHandle, 1, 0);
 	}
 
