@@ -16,6 +16,12 @@ limitations under the License.
 
 package org.ardulink.core.bluetooth;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.bluetooth.ServiceRecord;
+
 import org.ardulink.core.linkmanager.LinkConfig;
 
 /**
@@ -39,4 +45,13 @@ public class BluetoothLinkConfig implements LinkConfig {
 		this.deviceName = deviceName;
 	}
 
+	@ChoiceFor("deviceName")
+	public String[] listDevices() {
+		
+		Map<String, ServiceRecord> devices = BluetoothDiscoveryUtil.getDevices();
+		List<String> deviceNames = new ArrayList<String>(devices.keySet());
+		
+		return deviceNames.toArray(new String[deviceNames.size()]);
+	}
+	
 }

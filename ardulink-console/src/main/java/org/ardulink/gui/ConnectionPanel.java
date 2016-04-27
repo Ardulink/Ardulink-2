@@ -123,6 +123,9 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		if (this.panel != null) {
 			remove(this.panel);
 		}
+		
+		// TODO meccanismo di attesa della costruzione che potrebbe richiedere parecchio tempo
+		
 		add(this.panel = createPanel(), constraints(1, 0).gridwidth(3)
 				.fillBoth().build());
 		revalidate();
