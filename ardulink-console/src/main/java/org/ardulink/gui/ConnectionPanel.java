@@ -27,19 +27,24 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ServiceLoader;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.gui.facility.UtilityGeometry;
 import org.ardulink.legacy.Link;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -56,6 +61,12 @@ public class ConnectionPanel extends JPanel implements Linkable {
 	private final JComboBox uris = createURICombo();
 
 	private final PanelBuilder fallback = new GenericPanelBuilder();
+
+	private Link link;
+
+	private Configurer configurer;
+
+	private JPanel panel;
 
 	private JComboBox createURICombo() {
 		JComboBox uris = new JComboBox();
@@ -87,12 +98,6 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		return uris;
 	}
 
-	private Link link;
-
-	private Configurer configurer;
-
-	private JPanel panel;
-
 	/**
 	 * Create the panel.
 	 */
@@ -122,13 +127,16 @@ public class ConnectionPanel extends JPanel implements Linkable {
 	private void replaceSubpanel() {
 		if (this.panel != null) {
 			remove(this.panel);
+			this.panel = new JPanel();
+			add(this.panel, constraints(1, 0).gridwidth(3).fillBoth().build());
+			revalidate();
 		}
 		
-		// TODO meccanismo di attesa della costruzione che potrebbe richiedere parecchio tempo
-		
-		add(this.panel = createPanel(), constraints(1, 0).gridwidth(3)
-				.fillBoth().build());
-		revalidate();
+		WaitDialog dialog = new WaitDialog();
+		UtilityGeometry.setAlignmentCentered(dialog,
+				SwingUtilities.getRoot(this));
+		createPanel(dialog, this);
+		dialog.setVisible(true);
 	}
 
 	private JPanel createPanel() {
@@ -145,6 +153,36 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		}
 	}
 
+	/**
+	 * This method is used to retrieve asynchronously the port list. It is used
+	 * when the operation take long time.
+	 * 
+	 * @return ports available in a async way.
+	 */
+	private void createPanel(final WaitDialog dialog, final ConnectionPanel parentPanel) {
+		newSingleThreadExecutor().submit(new Callable<Void>() {
+			@Override
+			public Void call() {
+				final JPanel panel = createPanel();
+				dialog.dispose();
+
+				// We are not on the EDT so use SwingUtilities#invokeLater
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						if (parentPanel.panel != null) {
+							remove(parentPanel.panel);
+						}
+						parentPanel.panel = panel;
+						parentPanel.add(panel, constraints(1, 0).gridwidth(3).fillBoth().build());
+						revalidate();
+					}
+				});
+				return null;
+			}
+		});
+	}
+		
 	private PanelBuilder findPanelBuilder(URI uri) {
 		// Here we could place a discover mechanism
 		// ServiceLoader<PanelBuilder> loader =
