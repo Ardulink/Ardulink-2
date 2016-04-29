@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.convenience;
 
@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 
 /**
@@ -32,11 +33,13 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
  */
 class CacheKey {
 
-	private final Class<? extends Configurer> configurerType;
+	@SuppressWarnings("rawtypes")
+	private final Class<? extends LinkFactory> factoryType;
+
 	private final Map<String, Object> values;
 
 	public CacheKey(Configurer configurer) throws Exception {
-		this.configurerType = configurer.getClass();
+		this.factoryType = configurer.getLinkFactory().getClass();
 		this.values = Collections.unmodifiableMap(extractData(configurer));
 	}
 
@@ -53,7 +56,7 @@ class CacheKey {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ ((configurerType == null) ? 0 : configurerType.hashCode());
+				+ ((factoryType == null) ? 0 : factoryType.hashCode());
 		result = prime * result + ((values == null) ? 0 : values.hashCode());
 		return result;
 	}
@@ -67,10 +70,10 @@ class CacheKey {
 		if (getClass() != obj.getClass())
 			return false;
 		CacheKey other = (CacheKey) obj;
-		if (configurerType == null) {
-			if (other.configurerType != null)
+		if (factoryType == null) {
+			if (other.factoryType != null)
 				return false;
-		} else if (!configurerType.equals(other.configurerType))
+		} else if (!factoryType.equals(other.factoryType))
 			return false;
 		if (values == null) {
 			if (other.values != null)
@@ -82,8 +85,8 @@ class CacheKey {
 
 	@Override
 	public String toString() {
-		return "CacheKey [configurerType=" + configurerType + ", values="
-				+ values + "]";
+		return "CacheKey [configurerType=" + factoryType + ", values=" + values
+				+ "]";
 	}
 
 }

@@ -148,6 +148,8 @@ public abstract class LinkManager {
 	}
 
 	public interface Configurer {
+		
+		LinkFactory<?> getLinkFactory();
 
 		Collection<String> getAttributes();
 
@@ -189,7 +191,7 @@ public abstract class LinkManager {
 				this.nls = nls == null ? null : ResourceBundle.getBundle(nls
 						.value());
 			}
-
+			
 			private List<ConfigAttribute> resolveDeps(Attribute choiceFor) {
 				ChoiceFor cfa = choiceFor.getAnnotation(ChoiceFor.class);
 				List<ConfigAttribute> deps = new ArrayList<ConfigAttribute>(
@@ -347,11 +349,16 @@ public abstract class LinkManager {
 		private final Map<String, ConfigAttributeAdapter<T>> cache = new HashMap<String, ConfigAttributeAdapter<T>>();
 		private boolean changed = true;
 
-		public DefaultConfigurer(LinkFactory<T> connectionFactory) {
-			this.linkFactory = connectionFactory;
-			this.linkConfig = connectionFactory.newLinkConfig();
+		public DefaultConfigurer(LinkFactory<T> linkFactory) {
+			this.linkFactory = linkFactory;
+			this.linkConfig = linkFactory.newLinkConfig();
 			this.beanProperties = BeanProperties.builder(linkConfig)
 					.using(propertyAnnotated(Named.class)).build();
+		}
+		
+		@Override
+		public LinkFactory<?> getLinkFactory() {
+			return linkFactory;
 		}
 
 		@Override
@@ -437,7 +444,8 @@ public abstract class LinkManager {
 
 			@Override
 			public Configurer getConfigurer(URI uri) {
-				String name = extractNameFromURI(uri);
+				String name = checkNotNull(extractNameFromURI(uri), uri
+						+ " not a valid URI: Unable not extract name");
 				LinkFactory connectionFactory = getConnectionFactory(name)
 						.getOrThrow(
 								IllegalArgumentException.class,
