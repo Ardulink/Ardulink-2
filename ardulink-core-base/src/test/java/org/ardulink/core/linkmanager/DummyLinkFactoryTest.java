@@ -242,8 +242,7 @@ public class DummyLinkFactoryTest {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://dummyLink"));
-		ConfigAttribute attribute = configurer.getAttribute(name);
-		return attribute;
+		return configurer.getAttribute(name);
 	}
 
 }
