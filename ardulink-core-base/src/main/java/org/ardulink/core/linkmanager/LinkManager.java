@@ -148,14 +148,20 @@ public abstract class LinkManager {
 	}
 
 	public interface Configurer {
-		
-		LinkFactory<?> getLinkFactory();
 
 		Collection<String> getAttributes();
 
 		ConfigAttribute getAttribute(String key);
 
 		Link newLink() throws Exception;
+
+		/**
+		 * Creates an object that identifies the Configurer in its current state
+		 * and thus the Link it would create at that moment.
+		 * 
+		 * @return identifier for the Configurer and its state.
+		 */
+		Object uniqueIdentifier();
 
 	}
 
@@ -191,7 +197,7 @@ public abstract class LinkManager {
 				this.nls = nls == null ? null : ResourceBundle.getBundle(nls
 						.value());
 			}
-			
+
 			private List<ConfigAttribute> resolveDeps(Attribute choiceFor) {
 				ChoiceFor cfa = choiceFor.getAnnotation(ChoiceFor.class);
 				List<ConfigAttribute> deps = new ArrayList<ConfigAttribute>(
@@ -355,10 +361,78 @@ public abstract class LinkManager {
 			this.beanProperties = BeanProperties.builder(linkConfig)
 					.using(propertyAnnotated(Named.class)).build();
 		}
-		
+
+		class CacheKey {
+
+			@SuppressWarnings("rawtypes")
+			private final Class<? extends LinkFactory> factoryType;
+
+			private final Map<String, Object> values;
+
+			public CacheKey() throws Exception {
+				this.factoryType = DefaultConfigurer.this.linkFactory
+						.getClass();
+				this.values = Collections.unmodifiableMap(extractData());
+			}
+
+			private Map<String, Object> extractData() {
+				Map<String, Object> values = new HashMap<String, Object>();
+				for (String attribute : DefaultConfigurer.this.getAttributes()) {
+					values.put(attribute,
+							DefaultConfigurer.this.getAttribute(attribute)
+									.getValue());
+				}
+				return values;
+			}
+
+			@Override
+			public int hashCode() {
+				final int prime = 31;
+				int result = 1;
+				result = prime * result
+						+ ((factoryType == null) ? 0 : factoryType.hashCode());
+				result = prime * result
+						+ ((values == null) ? 0 : values.hashCode());
+				return result;
+			}
+
+			@Override
+			public boolean equals(Object obj) {
+				if (this == obj)
+					return true;
+				if (obj == null)
+					return false;
+				if (getClass() != obj.getClass())
+					return false;
+				CacheKey other = (CacheKey) obj;
+				if (factoryType == null) {
+					if (other.factoryType != null)
+						return false;
+				} else if (!factoryType.equals(other.factoryType))
+					return false;
+				if (values == null) {
+					if (other.values != null)
+						return false;
+				} else if (!values.equals(other.values))
+					return false;
+				return true;
+			}
+
+			@Override
+			public String toString() {
+				return "CacheKey [factoryType=" + factoryType + ", values="
+						+ values + "]";
+			}
+
+		}
+
 		@Override
-		public LinkFactory<?> getLinkFactory() {
-			return linkFactory;
+		public Object uniqueIdentifier() {
+			try {
+				return new CacheKey();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		@Override
