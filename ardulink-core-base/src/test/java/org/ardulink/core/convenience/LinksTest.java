@@ -20,19 +20,18 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsSame.sameInstance;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Test;
 import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.DummyConnection;
 import org.ardulink.core.linkmanager.DummyLinkConfig;
+import org.junit.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -134,6 +133,7 @@ public class LinksTest {
 		Link link1 = Links.getLink(uri1);
 		Link link2 = Links.getLink(uri2);
 		assertThat(link1, not(sameInstance(link2)));
+		close(link1, link2);
 	}
 
 	private static <T> T[] assertAllSameInstances(T... objects) {
