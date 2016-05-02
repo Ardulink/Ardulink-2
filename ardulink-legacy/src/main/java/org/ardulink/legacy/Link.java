@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.Tone;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.EventListener;
@@ -51,6 +52,16 @@ public abstract class Link {
 		public LegacyLinkAdapter(
 				org.ardulink.core.Link delegate) {
 			this.delegate = delegate;
+		}
+
+		@Override
+		public void addConnectionListener(ConnectionListener connectionListener) {
+			delegate.addConnectionListener(connectionListener);
+		}
+
+		@Override
+		public void removeConnectionListener(ConnectionListener connectionListener) {
+			delegate.removeConnectionListener(connectionListener);
 		}
 
 		public LegacyLinkAdapter(Configurer configurer) throws Exception {
@@ -258,6 +269,16 @@ public abstract class Link {
 		public boolean disconnect() {
 			return false;
 		}
+
+		@Override
+		public void addConnectionListener(ConnectionListener connectionListener) {
+			// do nothing
+		}
+
+		@Override
+		public void removeConnectionListener(ConnectionListener connectionListener) {
+			// do nothing
+		}
 	};
 
 	private static Link defaultInstance;
@@ -313,5 +334,12 @@ public abstract class Link {
 	public abstract void sendNoToneMessage(int pin);
 
 	public abstract boolean disconnect();
+
+	public abstract void addConnectionListener(
+			ConnectionListener connectionListener);
+
+	public abstract void removeConnectionListener(
+			ConnectionListener connectionListener);
+
 
 }

@@ -44,6 +44,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.ardulink.core.ConnectionListener;
 import org.ardulink.gui.customcomponents.ModifiableSignalButton;
 import org.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
 import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
@@ -64,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * [adsense]
  *
  */
-public class Console extends JFrame implements Linkable {
+public class Console extends JFrame implements Linkable, ConnectionListener {
 
 	private static final long serialVersionUID = -5288916405936436557L;
 
@@ -280,7 +281,7 @@ public class Console extends JFrame implements Linkable {
 				}
 			}
 		});
-		disconnected();
+		connectionLost();
 		pack();
 	}
 
@@ -340,16 +341,18 @@ public class Console extends JFrame implements Linkable {
 
 	private void disconnect() {
 		logger.info("Connection status: {}", !this.link.disconnect());
-		this.link = Link.NO_LINK;
-		disconnected();
-		callLinkables(link);
+		setLink(Link.NO_LINK);
 	}
 
 	@Override
 	public void setLink(Link link) {
+		if(this.link != null) {
+			this.link.removeConnectionListener(this);
+		}
 		this.link = link;
-		connected();
-		connectionStatus.reconnected();
+		if(link != null) {
+			link.addConnectionListener(this);
+		}
 		callLinkables(link);
 	}
 
@@ -359,16 +362,18 @@ public class Console extends JFrame implements Linkable {
 		}
 	}
 
-	private void connected() {
-		btnConnect.setEnabled(false);
-		btnDisconnect.setEnabled(true);
-		connectionPanel.setEnabled(false);
-	}
-
-	private void disconnected() {
+	@Override
+	public void connectionLost() {
 		btnConnect.setEnabled(true);
 		btnDisconnect.setEnabled(false);
 		connectionPanel.setEnabled(true);
+	}
+
+	@Override
+	public void reconnected() {
+		btnConnect.setEnabled(false);
+		btnDisconnect.setEnabled(true);
+		connectionPanel.setEnabled(false);
 	}
 
 }

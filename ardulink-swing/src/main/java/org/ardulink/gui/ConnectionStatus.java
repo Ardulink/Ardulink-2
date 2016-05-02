@@ -76,7 +76,13 @@ public class ConnectionStatus extends JPanel implements ConnectionListener, Link
 
 	@Override
 	public void setLink(Link link) {
+		if(this.link != null) {
+			link.removeConnectionListener(this);
+		}
 		this.link = link;
+		if(link != null) {
+			link.addConnectionListener(this);
+		}
 	}
 
 }
