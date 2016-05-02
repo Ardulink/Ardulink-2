@@ -17,14 +17,10 @@ limitations under the License.
 package org.ardulink.gui;
 
 import static java.lang.Boolean.TRUE;
+import static org.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
+import static org.ardulink.gui.hamcrest.RowMatcherBuilder.row;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.*;
-import static org.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
-import static org.ardulink.gui.hamcrest.RowMatcherBuilder.items;
-import static org.ardulink.gui.hamcrest.RowMatcherBuilder.row;
 
 import java.awt.Component;
 import java.net.URI;
@@ -34,13 +30,11 @@ import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
+import org.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.util.Optional;
 import org.hamcrest.Matcher;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.ardulink.core.linkmanager.LinkManager;
-import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]

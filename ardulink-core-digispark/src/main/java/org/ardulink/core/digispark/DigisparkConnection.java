@@ -36,27 +36,29 @@ import ch.ntb.usb.Usb_Device;
 
 public class DigisparkConnection extends AbstractConnection {
 
-	private Usb_Device usbDevice;
+	private final Usb_Device usbDevice;
+	private final String deviceName;
+	
 	private long usbDevHandle;
-	private String deviceName;
 	private int divider;
 	
 	public DigisparkConnection(DigisparkLinkConfig config, Protocol proto) {
-		
 		checkState(proto.getSeparator().length == 1,
 				"divider must be of length 1 (was %s)",
 				proto.getSeparator().length);
 		this.divider = proto.getSeparator()[0];
-		Map<String, Usb_Device> deviceMap;
+		this.deviceName = config.getDeviceName();
+		this.usbDevice = getDevices().get(deviceName);
+		checkState(usbDevice != null, "No device with portName %s found", deviceName);
+		connect();
+	}
+
+	private Map<String, Usb_Device> getDevices() {
 		try {
-			deviceMap = DigisparkDiscoveryUtil.getDevices();
+			return DigisparkDiscoveryUtil.getDevices();
 		} catch (USBException e) {
 			throw new RuntimeException(e);
 		}
-		deviceName = config.getDeviceName();
-		usbDevice = deviceMap.get(deviceName);
-		checkState(usbDevice != null, "No device with portName %s found", deviceName);
-		connect();
 	}
 
 	private void connect() {
@@ -134,12 +136,7 @@ public class DigisparkConnection extends AbstractConnection {
 	private void tryARecover() throws USBException {
 		try {
 			MILLISECONDS.sleep(10);
-			Map<String, Usb_Device> deviceMap;
-			try {
-				deviceMap = DigisparkDiscoveryUtil.getDevices();
-			} catch (USBException e) {
-				throw new RuntimeException(e);
-			}
+			Map<String, Usb_Device> deviceMap = getDevices();
 			usbDevice = deviceMap.get(deviceName);
 			checkState(usbDevice != null, "No device with portName %s found", deviceName);
 			MILLISECONDS.sleep(10);
