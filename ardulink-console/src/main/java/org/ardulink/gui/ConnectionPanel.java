@@ -15,23 +15,26 @@ limitations under the License.
  */
 package org.ardulink.gui;
 
+import static java.awt.Color.RED;
 import static java.awt.event.ItemEvent.SELECTED;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.gui.GridBagConstraintsBuilder.constraints;
 
 import java.awt.Component;
 import java.awt.GridBagLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -39,12 +42,12 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.gui.facility.UtilityGeometry;
 import org.ardulink.legacy.Link;
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -127,24 +130,75 @@ public class ConnectionPanel extends JPanel implements Linkable {
 	private void replaceSubpanel() {
 		if (this.panel != null) {
 			remove(this.panel);
-			this.panel = new JPanel();
-			add(this.panel, constraints(1, 0).gridwidth(3).fillBoth().build());
-			revalidate();
 		}
-		
-		WaitDialog dialog = new WaitDialog();
-		UtilityGeometry.setAlignmentCentered(dialog,
-				SwingUtilities.getRoot(this));
-		createPanel(dialog, this);
-		dialog.setVisible(true);
+
+		Component windowAncestor = SwingUtilities.getRoot(this);
+		final WaitDialog waitDialog = new WaitDialog(
+				windowAncestor instanceof Window ? (Window) windowAncestor
+						: null);
+		UtilityGeometry.setAlignmentCentered(waitDialog);
+
+		new SwingWorker<JPanel, Void>() {
+
+			@Override
+			protected void done() {
+				try {
+					ConnectionPanel.this.panel = get();
+				} catch (InterruptedException e) {
+					errorPanel(e);
+				} catch (ExecutionException e) {
+					errorPanel(e);
+				} finally {
+					add(ConnectionPanel.this.panel, constraints(1, 0)
+							.gridwidth(3).fillBoth().build());
+					synchronized (this) {
+						waitDialog.dispose();
+					}
+					revalidate();
+				}
+			}
+
+			private void errorPanel(Exception e) {
+				ConnectionPanel.this.panel = new JPanel();
+				ConnectionPanel.this.panel.setBackground(RED);
+				ConnectionPanel.this.panel.add(new JLabel(e.getMessage()));
+				throw new RuntimeException(e);
+			}
+
+			@Override
+			protected JPanel doInBackground() {
+				displayIn(waitDialog, 1, SECONDS);
+				return createSubpanel();
+			}
+
+			private void displayIn(final WaitDialog waitDialog,
+					final int timeout, final TimeUnit tu) {
+				Executors.newCachedThreadPool().execute(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							tu.sleep(timeout);
+							synchronized (this) {
+								if (!isDone()) {
+									waitDialog.setVisible(true);
+								}
+							}
+						} catch (InterruptedException e) {
+							throw new RuntimeException(e);
+						}
+
+					}
+				});
+			}
+
+		}.execute();
 	}
 
-	private JPanel createPanel() {
+	private JPanel createSubpanel() {
 		try {
 			URI uri = new URI(String.valueOf(uris.getSelectedItem()));
 			JPanel subpanel = findPanelBuilder(uri).createPanel(
-					this.configurer = LinkManager.getInstance().getConfigurer(
-							uri));
+					configurer = LinkManager.getInstance().getConfigurer(uri));
 			subpanel.setBorder(BorderFactory.createLoweredBevelBorder());
 			add(subpanel, constraints(1, 0).fillBoth().build());
 			return subpanel;
@@ -153,36 +207,6 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		}
 	}
 
-	/**
-	 * This method is used to retrieve asynchronously the port list. It is used
-	 * when the operation take long time.
-	 * 
-	 * @return ports available in a async way.
-	 */
-	private void createPanel(final WaitDialog dialog, final ConnectionPanel parentPanel) {
-		newSingleThreadExecutor().submit(new Callable<Void>() {
-			@Override
-			public Void call() {
-				final JPanel panel = createPanel();
-				dialog.dispose();
-
-				// We are not on the EDT so use SwingUtilities#invokeLater
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						if (parentPanel.panel != null) {
-							remove(parentPanel.panel);
-						}
-						parentPanel.panel = panel;
-						parentPanel.add(panel, constraints(1, 0).gridwidth(3).fillBoth().build());
-						revalidate();
-					}
-				});
-				return null;
-			}
-		});
-	}
-		
 	private PanelBuilder findPanelBuilder(URI uri) {
 		// Here we could place a discover mechanism
 		// ServiceLoader<PanelBuilder> loader =
