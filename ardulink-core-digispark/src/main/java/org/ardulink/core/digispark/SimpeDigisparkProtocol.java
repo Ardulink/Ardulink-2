@@ -32,7 +32,7 @@ public class SimpeDigisparkProtocol implements Protocol {
 		POWER_PIN_SWITCH((byte) 12) {
 			@Override
 			public byte parse(ToArduinoPinEvent pinEvent) {
-				return (byte) ((Boolean) pinEvent.getValue() ? 1 : 0);
+				return (byte) (Boolean.TRUE.equals(pinEvent.getValue()) ? 1 : 0);
 			}
 		};
 
