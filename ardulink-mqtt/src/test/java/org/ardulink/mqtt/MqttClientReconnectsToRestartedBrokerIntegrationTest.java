@@ -16,23 +16,18 @@ limitations under the License.
  */
 package org.ardulink.mqtt;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.mqtt.util.TestUtil.listWithSameOrder;
 import static org.ardulink.mqtt.util.TestUtil.startAsync;
 import static org.ardulink.mqtt.util.TestUtil.waitUntilIsConnected;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import io.moquette.server.Server;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
-import org.dna.mqtt.moquette.server.Server;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
 
 import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
@@ -42,6 +37,10 @@ import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.mqtt.util.AnotherMqttClient;
 import org.ardulink.mqtt.util.MqttMessageBuilder;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.Timeout;
 
 /**
  * [ardulinktitle] [ardulinkversion]

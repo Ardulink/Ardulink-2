@@ -10,6 +10,7 @@
 	</parent>
 
 	<repositories>
+		<!-- io.moquette:moquette-broker -->
 		<!-- org.dna.mqtt:moquette-broker -->
 		<repository>
 			<id>bintray</id>
@@ -66,9 +67,9 @@
 			<version>1.11</version>
 		</dependency>
 		<dependency>
-			<groupId>org.dna.mqtt</groupId>
+			<groupId>io.moquette</groupId>
 			<artifactId>moquette-broker</artifactId>
-			<version>0.6</version>
+			<version>0.8.1</version>
 		</dependency>
 		<dependency>
 			<groupId>args4j</groupId>
