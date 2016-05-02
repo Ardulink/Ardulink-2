@@ -36,8 +36,8 @@ import ch.ntb.usb.Usb_Device;
 
 public class DigisparkConnection extends AbstractConnection {
 
-	private final Usb_Device usbDevice;
 	private final String deviceName;
+	private Usb_Device usbDevice;
 	
 	private long usbDevHandle;
 	private int divider;

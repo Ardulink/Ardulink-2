@@ -1,9 +1,14 @@
 package org.ardulink.core.digispark;
 
-import static java.lang.System.arraycopy;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.util.Preconditions.checkState;
 
+import java.util.Collections;
+import java.util.Map;
+
+import org.ardulink.core.Pin;
+import org.ardulink.core.Pin.Type;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.ToArduinoCustomMessage;
 import org.ardulink.core.proto.api.ToArduinoKeyPressEvent;
@@ -12,21 +17,48 @@ import org.ardulink.core.proto.api.ToArduinoPinEvent;
 import org.ardulink.core.proto.api.ToArduinoStartListening;
 import org.ardulink.core.proto.api.ToArduinoStopListening;
 import org.ardulink.core.proto.api.ToArduinoTone;
+import org.ardulink.util.MapBuilder;
 
 public class SimpeDigisparkProtocol implements Protocol {
 
-	private final String name = "simple4digispark";
-	private final byte[] separator = {(byte)255};
+	private enum Message {
+		POWER_PIN_INTENSITY((byte) 11) {
+			@Override
+			public byte parse(ToArduinoPinEvent pinEvent) {
+				return ((Integer) pinEvent.getValue()).byteValue();
+			}
+		},
+		POWER_PIN_SWITCH((byte) 12) {
+			@Override
+			public byte parse(ToArduinoPinEvent pinEvent) {
+				return (byte) ((Boolean) pinEvent.getValue() ? 1 : 0);
+			}
+		};
 
-	private static final byte POWER_PIN_INTENSITY_MESSAGE = 11;
-	private static final byte POWER_PIN_SWITCH_MESSAGE = 12;
-	
+		private final byte protoInt;
+
+		private Message(byte protoInt) {
+			this.protoInt = protoInt;
+		}
+
+		public abstract byte parse(ToArduinoPinEvent pinEvent);
+	}
+
+	private final String name = "simple4digispark";
+
+	private final byte separator = (byte) 255;
+
 	private static final SimpeDigisparkProtocol instance = new SimpeDigisparkProtocol();
+
+	private static final Map<Type, Message> messages = Collections
+			.unmodifiableMap(MapBuilder.<Type, Message> newMapBuilder()
+					.put(ANALOG, Message.POWER_PIN_INTENSITY)
+					.put(DIGITAL, Message.POWER_PIN_SWITCH).build());
 
 	public static Protocol instance() {
 		return instance;
 	}
-	
+
 	@Override
 	public String getName() {
 		return name;
@@ -34,7 +66,7 @@ public class SimpeDigisparkProtocol implements Protocol {
 
 	@Override
 	public byte[] getSeparator() {
-		return separator;
+		return new byte[] { separator };
 	}
 
 	@Override
@@ -49,31 +81,17 @@ public class SimpeDigisparkProtocol implements Protocol {
 
 	@Override
 	public byte[] toArduino(ToArduinoPinEvent pinEvent) {
+		Pin pin = pinEvent.getPin();
+		Message message = getMappedMessage(pin);
+		return new byte[] { message.protoInt, (byte) pin.pinNum(),
+				message.parse(pinEvent), separator };
+	}
 
-		byte[] message = new byte[3 + separator.length];
-		
-		if (pinEvent.getPin().is(ANALOG)) {
-			
-			message[0] = POWER_PIN_INTENSITY_MESSAGE;
-			message[1] = (byte)pinEvent.getPin().pinNum();
-			message[2] = ((Integer)pinEvent.getValue()).byteValue();
-			
-		} else if (pinEvent.getPin().is(DIGITAL)) {
-			message[0] = POWER_PIN_SWITCH_MESSAGE;
-			message[1] = (byte)pinEvent.getPin().pinNum();
-			
-			boolean value = (Boolean)pinEvent.getValue();
-			if(value == true) {
-				message[2] = 1;
-			} else {
-				message[2] = 0;
-			}
-		} else {
-			throw new IllegalStateException("Illegal type of pin " + pinEvent.getPin());
-		}
-
-		arraycopy(separator, 0, message, 3, separator.length);
-		
+	private Message getMappedMessage(Pin pin) {
+		Message message = messages.get(pin.getType());
+		checkState(message != null,
+				"Unsupported type %s of pin %s. Supported types are %s",
+				pin.getType(), pin, messages.keySet());
 		return message;
 	}
 
