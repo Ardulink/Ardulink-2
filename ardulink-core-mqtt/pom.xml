@@ -26,6 +26,7 @@
 	</build>
 
 	<repositories>
+		<!-- io.moquette:moquette-broker -->
 		<!-- org.dna.mqtt:moquette-broker -->
 		<repository>
 			<id>bintray</id>
@@ -70,9 +71,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.dna.mqtt</groupId>
+			<groupId>io.moquette</groupId>
 			<artifactId>moquette-broker</artifactId>
-			<version>0.6</version>
+			<version>0.8.1</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>

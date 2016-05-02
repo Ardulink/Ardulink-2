@@ -16,25 +16,24 @@ limitations under the License.
  */
 package org.ardulink.mqtt;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.mqtt.util.TestUtil.startAsync;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import io.moquette.server.Server;
 
 import java.io.IOException;
-
-import org.dna.mqtt.moquette.server.Server;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
 import org.ardulink.mqtt.util.AnotherMqttClient;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.Timeout;
 
 /**
  * [ardulinktitle] [ardulinkversion]

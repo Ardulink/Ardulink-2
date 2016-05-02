@@ -16,9 +16,10 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
+import io.moquette.server.Server;
+
 import java.io.IOException;
 
-import org.dna.mqtt.moquette.server.Server;
 import org.junit.rules.ExternalResource;
 
 /**
