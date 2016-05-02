@@ -28,13 +28,14 @@ import static org.junit.Assert.assertThat;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
@@ -182,9 +183,18 @@ public class DummyLinkFactoryTest {
 	@Test
 	public void canIterateRegisteredFactories() throws URISyntaxException {
 		LinkManager connectionManager = LinkManager.getInstance();
-		assertThat(connectionManager.listURIs(), is(Arrays.asList(new URI(
-				"ardulink://dummyLink"), new URI(
-				"ardulink://dependendAttributes"))));
+		assertThat(
+				connectionManager.listURIs(),
+				is(links("ardulink://dummyLink", "ardulink://dummyLink2",
+						"ardulink://dependendAttributes")));
+	}
+
+	private List<URI> links(String... links) throws URISyntaxException {
+		List<URI> uris = new ArrayList<URI>(links.length);
+		for (String link : links) {
+			uris.add(new URI(link));
+		}
+		return uris;
 	}
 
 	@Test
@@ -242,8 +252,7 @@ public class DummyLinkFactoryTest {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(new URI(
 				"ardulink://dummyLink"));
-		ConfigAttribute attribute = configurer.getAttribute(name);
-		return attribute;
+		return configurer.getAttribute(name);
 	}
 
 }

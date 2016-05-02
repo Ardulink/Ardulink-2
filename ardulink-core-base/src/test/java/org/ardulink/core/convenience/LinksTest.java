@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.convenience;
 
@@ -26,13 +26,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.junit.Test;
-
 import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.DummyConnection;
 import org.ardulink.core.linkmanager.DummyLinkConfig;
+import org.junit.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -124,6 +123,17 @@ public class LinksTest {
 		assertThat(link3, not(sameInstance(link1)));
 		assertThat(link3, not(sameInstance(link2)));
 		close(link3);
+	}
+
+	@Test
+	public void twoDifferentURIsWithSameParamsMustNotBeenMixed()
+			throws Exception {
+		URI uri1 = new URI("ardulink://dummyLink?a=aVal1&b=4");
+		URI uri2 = new URI("ardulink://dummyLink2?a=aVal1&b=4");
+		Link link1 = Links.getLink(uri1);
+		Link link2 = Links.getLink(uri2);
+		assertThat(link1, not(sameInstance(link2)));
+		close(link1, link2);
 	}
 
 	private static <T> T[] assertAllSameInstances(T... objects) {

@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.convenience;
 
@@ -41,7 +41,7 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 public final class Links {
 
 	// TODO use a WeakHashMap and use PhantomReferences to close GCed Links
-	private static final Map<CacheKey, CacheValue> cache = new HashMap<CacheKey, CacheValue>();
+	private static final Map<Object, CacheValue> cache = new HashMap<Object, CacheValue>();
 
 	private Links() {
 		super();
@@ -112,7 +112,7 @@ public final class Links {
 	}
 
 	public static Link getLink(Configurer configurer) throws Exception {
-		final CacheKey cacheKey = new CacheKey(configurer);
+		final Object cacheKey = configurer.uniqueIdentifier();
 		synchronized (cache) {
 			CacheValue cacheValue = cache.get(cacheKey);
 			if (cacheValue == null) {
@@ -126,7 +126,7 @@ public final class Links {
 		}
 	}
 
-	private static LinkDelegate newDelegate(final CacheKey cacheKey, Link link) {
+	private static LinkDelegate newDelegate(final Object cacheKey, Link link) {
 		return new LinkDelegate(link) {
 			@Override
 			public void close() throws IOException {
