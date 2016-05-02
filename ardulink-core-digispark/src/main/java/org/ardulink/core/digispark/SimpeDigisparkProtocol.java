@@ -5,6 +5,7 @@ import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Map;
 
 import org.ardulink.core.Pin;
@@ -51,9 +52,10 @@ public class SimpeDigisparkProtocol implements Protocol {
 	private static final SimpeDigisparkProtocol instance = new SimpeDigisparkProtocol();
 
 	private static final Map<Type, Message> messages = Collections
-			.unmodifiableMap(MapBuilder.<Type, Message> newMapBuilder()
+			.unmodifiableMap(new EnumMap<Type, Message>(MapBuilder
+					.<Type, Message> newMapBuilder()
 					.put(ANALOG, Message.POWER_PIN_INTENSITY)
-					.put(DIGITAL, Message.POWER_PIN_SWITCH).build());
+					.put(DIGITAL, Message.POWER_PIN_SWITCH).build()));
 
 	public static Protocol instance() {
 		return instance;
