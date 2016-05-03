@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.digispark;
 
@@ -20,11 +20,8 @@ import java.io.IOException;
 
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.core.proto.api.Protocol;
 
 public class DigisparkLinkFactory implements LinkFactory<DigisparkLinkConfig> {
-
-	private Protocol proto = SimpeDigisparkProtocol.instance();
 
 	@Override
 	public String getName() {
@@ -34,14 +31,13 @@ public class DigisparkLinkFactory implements LinkFactory<DigisparkLinkConfig> {
 	@Override
 	public ConnectionBasedLink newLink(DigisparkLinkConfig config)
 			throws IOException {
-
-		return new ConnectionBasedLink(new DigisparkConnection(config, proto), proto);
+		return new ConnectionBasedLink(new DigisparkConnection(config),
+				config.getProto());
 	}
 
 	@Override
 	public DigisparkLinkConfig newLinkConfig() {
 		return new DigisparkLinkConfig();
 	}
-
 
 }

@@ -12,23 +12,24 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.digispark;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.ardulink.core.linkmanager.LinkConfig;
+import org.ardulink.core.proto.api.Protocol;
 
 import ch.ntb.usb.USBException;
-import ch.ntb.usb.Usb_Device;
 
 public class DigisparkLinkConfig implements LinkConfig {
 
 	@Named("deviceName")
 	private String deviceName;
+
+	@Named("proto")
+	private Protocol proto = SimpleDigisparkProtocol.instance();
 
 	public String getDeviceName() {
 		return deviceName;
@@ -37,20 +38,28 @@ public class DigisparkLinkConfig implements LinkConfig {
 	public void setDeviceName(String deviceName) {
 		this.deviceName = deviceName;
 	}
-	
+
 	@ChoiceFor("deviceName")
-	public String[] listdeviceNames() {
-		Map<String, Usb_Device> deviceMap;
+	public Set<String> listdeviceNames() {
 		try {
-			deviceMap = DigisparkDiscoveryUtil.getDevices();
+			return DigisparkDiscoveryUtil.getDevices().keySet();
 		} catch (USBException e) {
 			throw new RuntimeException(e);
 		}
-		
-		List<String> deviceNames = new ArrayList<String>(deviceMap.keySet());
-		
-		return deviceNames.toArray(new String[deviceNames.size()]);
 	}
-	
+
+	public Protocol getProto() {
+		return proto;
+	}
+
+	public void setProto(Protocol proto) {
+		this.proto = proto;
+	}
+
+	@ChoiceFor("proto")
+	public Protocol[] protos() {
+		// at the moment the only supported protocol is SimpleDigisparkProtocol
+		return new Protocol[] { proto };
+	}
 
 }

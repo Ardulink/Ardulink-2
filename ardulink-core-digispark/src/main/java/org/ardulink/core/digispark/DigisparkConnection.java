@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.ardulink.core.digispark;
 
 import static ch.ntb.usb.LibusbJava.usb_claim_interface;
@@ -38,18 +38,20 @@ public class DigisparkConnection extends AbstractConnection {
 
 	private final String deviceName;
 	private Usb_Device usbDevice;
-	
+
 	private long usbDevHandle;
 	private int divider;
-	
-	public DigisparkConnection(DigisparkLinkConfig config, Protocol proto) {
+
+	public DigisparkConnection(DigisparkLinkConfig config) {
+		Protocol proto = config.getProto();
 		checkState(proto.getSeparator().length == 1,
 				"divider must be of length 1 (was %s)",
 				proto.getSeparator().length);
 		this.divider = proto.getSeparator()[0];
 		this.deviceName = config.getDeviceName();
 		this.usbDevice = getDevices().get(deviceName);
-		checkState(usbDevice != null, "No device with portName %s found", deviceName);
+		checkState(usbDevice != null, "No device with portName %s found",
+				deviceName);
 		connect();
 	}
 
@@ -107,8 +109,7 @@ public class DigisparkConnection extends AbstractConnection {
 	public void close() throws IOException {
 		try {
 			disconnect();
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			throw new IOException(e);
 		}
 	}
@@ -138,7 +139,8 @@ public class DigisparkConnection extends AbstractConnection {
 			MILLISECONDS.sleep(10);
 			Map<String, Usb_Device> deviceMap = getDevices();
 			usbDevice = deviceMap.get(deviceName);
-			checkState(usbDevice != null, "No device with portName %s found", deviceName);
+			checkState(usbDevice != null, "No device with portName %s found",
+					deviceName);
 			MILLISECONDS.sleep(10);
 			connect();
 			MILLISECONDS.sleep(10);

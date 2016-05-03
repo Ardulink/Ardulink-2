@@ -20,18 +20,18 @@ import org.ardulink.core.proto.api.ToArduinoStopListening;
 import org.ardulink.core.proto.api.ToArduinoTone;
 import org.ardulink.util.MapBuilder;
 
-public class SimpeDigisparkProtocol implements Protocol {
+public class SimpleDigisparkProtocol implements Protocol {
 
 	private enum Message {
 		POWER_PIN_INTENSITY((byte) 11) {
 			@Override
-			public byte parse(ToArduinoPinEvent pinEvent) {
+			public byte getValue(ToArduinoPinEvent pinEvent) {
 				return ((Integer) pinEvent.getValue()).byteValue();
 			}
 		},
 		POWER_PIN_SWITCH((byte) 12) {
 			@Override
-			public byte parse(ToArduinoPinEvent pinEvent) {
+			public byte getValue(ToArduinoPinEvent pinEvent) {
 				return (byte) (Boolean.TRUE.equals(pinEvent.getValue()) ? 1 : 0);
 			}
 		};
@@ -42,14 +42,16 @@ public class SimpeDigisparkProtocol implements Protocol {
 			this.protoInt = protoInt;
 		}
 
-		public abstract byte parse(ToArduinoPinEvent pinEvent);
+		public abstract byte getValue(ToArduinoPinEvent pinEvent);
 	}
 
 	private final String name = "simple4digispark";
 
 	private final byte separator = (byte) 255;
 
-	private static final SimpeDigisparkProtocol instance = new SimpeDigisparkProtocol();
+	private final byte[] separatorArray = new byte[] { separator };
+
+	private static final SimpleDigisparkProtocol instance = new SimpleDigisparkProtocol();
 
 	private static final Map<Type, Message> messages = Collections
 			.unmodifiableMap(new EnumMap<Type, Message>(MapBuilder
@@ -68,7 +70,7 @@ public class SimpeDigisparkProtocol implements Protocol {
 
 	@Override
 	public byte[] getSeparator() {
-		return new byte[] { separator };
+		return separatorArray;
 	}
 
 	@Override
@@ -86,7 +88,7 @@ public class SimpeDigisparkProtocol implements Protocol {
 		Pin pin = pinEvent.getPin();
 		Message message = getMappedMessage(pin);
 		return new byte[] { message.protoInt, (byte) pin.pinNum(),
-				message.parse(pinEvent), separator };
+				message.getValue(pinEvent), separator };
 	}
 
 	private Message getMappedMessage(Pin pin) {

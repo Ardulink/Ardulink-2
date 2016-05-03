@@ -10,7 +10,7 @@ import ch.ntb.usb.Usb_Device;
 import ch.ntb.usb.Usb_Device_Descriptor;
 
 public class DigisparkDiscoveryUtil {
-	
+
 	public static Map<String, Usb_Device> getDevices() throws USBException {
 		Map<String, Usb_Device> deviceMap = new LinkedHashMap<String, Usb_Device>();
 		USB.init();
@@ -30,7 +30,7 @@ public class DigisparkDiscoveryUtil {
 		}
 		return deviceMap;
 	}
-	
+
 	private static String usbDeviceName(int idx) {
 		return "Digispark_" + idx;
 	}
