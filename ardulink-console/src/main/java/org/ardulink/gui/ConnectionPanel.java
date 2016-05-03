@@ -166,6 +166,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 					remove(ConnectionPanel.this.panel);
 				}
 				ConnectionPanel.this.panel = newPanel;
+				add(ConnectionPanel.this.panel, constraints(1, 0).fillBoth().build());
 				revalidate();
 			}
 
@@ -204,7 +205,6 @@ public class ConnectionPanel extends JPanel implements Linkable {
 			JPanel subpanel = findPanelBuilder(uri).createPanel(
 					configurer = LinkManager.getInstance().getConfigurer(uri));
 			subpanel.setBorder(BorderFactory.createLoweredBevelBorder());
-			add(subpanel, constraints(1, 0).fillBoth().build());
 			return subpanel;
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
