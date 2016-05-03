@@ -213,7 +213,8 @@ public class ArdulinkProtocol2 implements Protocol {
 	}
 
 	private IllegalStateException illegalPinType(Pin pin) {
-		return new IllegalStateException("Illegal type of pin " + pin);
+		return new IllegalStateException("Illegal type " + pin.getType()
+				+ " of pin " + pin);
 	}
 
 	private static Boolean toBoolean(Integer value) {
