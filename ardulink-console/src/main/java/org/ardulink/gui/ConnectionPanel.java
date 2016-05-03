@@ -128,10 +128,6 @@ public class ConnectionPanel extends JPanel implements Linkable {
 	}
 
 	private void replaceSubpanel() {
-		if (this.panel != null) {
-			remove(this.panel);
-		}
-
 		Component windowAncestor = SwingUtilities.getRoot(this);
 		final WaitDialog waitDialog = new WaitDialog(
 				windowAncestor instanceof Window ? (Window) windowAncestor
@@ -143,7 +139,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 			@Override
 			protected void done() {
 				try {
-					ConnectionPanel.this.panel = get();
+					exchangePanel(get());
 				} catch (InterruptedException e) {
 					errorPanel(e);
 				} catch (ExecutionException e) {
@@ -154,15 +150,23 @@ public class ConnectionPanel extends JPanel implements Linkable {
 					synchronized (this) {
 						waitDialog.dispose();
 					}
-					revalidate();
 				}
 			}
 
 			private void errorPanel(Exception e) {
-				ConnectionPanel.this.panel = new JPanel();
-				ConnectionPanel.this.panel.setBackground(RED);
-				ConnectionPanel.this.panel.add(new JLabel(e.getMessage()));
+				JPanel newPanel = new JPanel();
+				newPanel.setBackground(RED);
+				newPanel.add(new JLabel(e.getMessage()));
+				exchangePanel(newPanel);
 				throw new RuntimeException(e);
+			}
+
+			private void exchangePanel(JPanel newPanel) {
+				if (ConnectionPanel.this.panel != null) {
+					remove(ConnectionPanel.this.panel);
+				}
+				ConnectionPanel.this.panel = newPanel;
+				revalidate();
 			}
 
 			@Override
