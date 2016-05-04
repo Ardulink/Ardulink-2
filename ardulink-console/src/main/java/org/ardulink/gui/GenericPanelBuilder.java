@@ -16,6 +16,7 @@ limitations under the License.
 package org.ardulink.gui;
 
 import static java.awt.GridBagConstraints.REMAINDER;
+import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import static org.ardulink.gui.GridBagConstraintsBuilder.constraints;
 import static org.ardulink.util.Primitive.parseAs;
 import static org.ardulink.util.Primitive.unwrap;
@@ -101,11 +102,24 @@ public class GenericPanelBuilder implements PanelBuilder {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (component instanceof JComboBox) {
-					JComboBox jComboBox = (JComboBox) component;
+					try {
+						JComboBox jComboBox = (JComboBox) component;
 
-					ComboBoxModel model = new DefaultComboBoxModel(attribute
-							.getChoiceValues());
-					jComboBox.setModel(model);
+						ComboBoxModel model = new DefaultComboBoxModel(attribute
+								.getChoiceValues());
+						jComboBox.setModel(model);
+						
+					} catch(Exception ex) {
+						ex.printStackTrace();
+						Throwable root = ex;
+						Throwable tmpRoot = ex.getCause();
+						while(tmpRoot != null) {
+							root = tmpRoot;
+							tmpRoot = tmpRoot.getCause();
+						}
+						JOptionPane.showMessageDialog(component, root.getMessage(),
+								"Error", ERROR_MESSAGE);
+					}
 				}
 			}
 		});
