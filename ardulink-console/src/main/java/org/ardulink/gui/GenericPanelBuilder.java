@@ -36,6 +36,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -43,6 +44,8 @@ import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
@@ -51,7 +54,7 @@ import org.ardulink.core.linkmanager.LinkManager.ValidationInfo;
 import org.ardulink.util.Primitive;
 
 public class GenericPanelBuilder implements PanelBuilder {
-
+	
 	@Override
 	public boolean canHandle(URI uri) {
 		// we can handle all URIs
@@ -99,6 +102,7 @@ public class GenericPanelBuilder implements PanelBuilder {
 			public void actionPerformed(ActionEvent e) {
 				if (component instanceof JComboBox) {
 					JComboBox jComboBox = (JComboBox) component;
+
 					ComboBoxModel model = new DefaultComboBoxModel(attribute
 							.getChoiceValues());
 					jComboBox.setModel(model);
@@ -154,12 +158,23 @@ public class GenericPanelBuilder implements PanelBuilder {
 			Object value = attribute.getValue();
 			final JTextField jTextField = new JTextField(value == null ? ""
 					: String.valueOf(value));
-			jTextField.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					attribute.setValue(jTextField.getText());
-				}
-			});
+
+			jTextField.getDocument().addDocumentListener(new DocumentListener() {
+			  public void changedUpdate(DocumentEvent e) {
+			    updateAttribute();
+			  }
+			  public void removeUpdate(DocumentEvent e) {
+			    updateAttribute();
+			  }
+			  public void insertUpdate(DocumentEvent e) {
+			    updateAttribute();
+			  }
+
+			  public void updateAttribute() {
+				  attribute.setValue(jTextField.getText());
+			  }
+			});			
+			
 			return jTextField;
 		}
 	}
