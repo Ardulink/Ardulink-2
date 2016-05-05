@@ -36,7 +36,7 @@ import org.ardulink.mqtt.util.AnotherMqttClient;
  * [adsense]
  *
  */
-public class MqttMainStandaloneTest {
+public class MqttMainStandaloneIntegrationTest {
 
 	private static final String topic = "myTestTopic";
 
