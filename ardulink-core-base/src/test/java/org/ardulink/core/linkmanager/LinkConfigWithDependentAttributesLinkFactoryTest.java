@@ -35,7 +35,7 @@ import org.junit.Test;
 public class LinkConfigWithDependentAttributesLinkFactoryTest {
 
 	@Test
-	public void canInstantiateLinkWithDependentAttributes() throws Exception {
+	public void canInstantiateLinkWithDependentAttributes() {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Link link = connectionManager
 				.getConfigurer(

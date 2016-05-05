@@ -74,7 +74,7 @@ public class DummyLinkFactoryTest {
 	}
 
 	@Test
-	public void canCreateDummyDonnection() throws Exception {
+	public void canCreateDummyDonnection() {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Link link = connectionManager.getConfigurer(
 				URIs.newURI("ardulink://dummyLink")).newLink();
@@ -82,7 +82,7 @@ public class DummyLinkFactoryTest {
 	}
 
 	@Test
-	public void canConfigureDummyConnection() throws Exception {
+	public void canConfigureDummyConnection() {
 		LinkManager connectionManager = LinkManager.getInstance();
 		String aValue = "aVal1";
 		int bValue = 1;
@@ -133,8 +133,7 @@ public class DummyLinkFactoryTest {
 	}
 
 	@Test
-	public void cannotSetChoiceValuesThatDoNotExist_WithPreviousQuery()
-			throws Exception {
+	public void cannotSetChoiceValuesThatDoNotExist_WithPreviousQuery() {
 		Locale.setDefault(ENGLISH);
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(URIs
@@ -151,8 +150,7 @@ public class DummyLinkFactoryTest {
 	}
 
 	@Test
-	public void cannotSetChoiceValuesThatDoNotExist_WithoutPreviousQuery()
-			throws Exception {
+	public void cannotSetChoiceValuesThatDoNotExist_WithoutPreviousQuery() {
 		Locale.setDefault(ENGLISH);
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(URIs

@@ -106,18 +106,10 @@ public final class Links {
 				cache.put(
 						cacheKey,
 						(cacheValue = new CacheValue(newDelegate(cacheKey,
-								newLink(configurer)))));
+								configurer.newLink()))));
 			}
 			cacheValue.increaseUsageCounter();
 			return cacheValue.getLink();
-		}
-	}
-
-	private static Link newLink(Configurer configurer) {
-		try {
-			return configurer.newLink();
-		} catch (Exception e) {
-			throw propagate(e);
 		}
 	}
 

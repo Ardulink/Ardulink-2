@@ -30,7 +30,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,6 +52,7 @@ import org.ardulink.core.linkmanager.LinkConfig.Named;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
 import org.ardulink.util.Primitive;
+import org.ardulink.util.Throwables;
 import org.ardulink.util.URIs;
 
 /**
@@ -155,7 +155,7 @@ public abstract class LinkManager {
 
 		ConfigAttribute getAttribute(String key);
 
-		Link newLink() throws Exception;
+		Link newLink();
 
 		/**
 		 * Creates an object that identifies the Configurer in its current state
@@ -457,9 +457,13 @@ public abstract class LinkManager {
 		}
 
 		@Override
-		public Link newLink() throws Exception {
+		public Link newLink() {
 			validate();
-			return this.linkFactory.newLink(this.linkConfig);
+			try {
+				return this.linkFactory.newLink(this.linkConfig);
+			} catch (Exception e) {
+				throw Throwables.propagate(e);
+			}
 		}
 
 		private void validate() {

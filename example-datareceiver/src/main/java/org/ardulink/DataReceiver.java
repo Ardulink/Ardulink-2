@@ -31,7 +31,6 @@ import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.linkmanager.LinkManager;
-import org.ardulink.util.Throwables;
 import org.ardulink.util.URIs;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -143,13 +142,9 @@ public class DataReceiver {
 	}
 
 	private Link createLink() {
-		try {
-			return setChoiceValues(
-					LinkManager.getInstance().getConfigurer(
-							URIs.newURI(connString))).newLink();
-		} catch (Exception e) {
-			throw Throwables.propagate(e);
-		}
+		return setChoiceValues(
+				LinkManager.getInstance()
+						.getConfigurer(URIs.newURI(connString))).newLink();
 	}
 
 }
