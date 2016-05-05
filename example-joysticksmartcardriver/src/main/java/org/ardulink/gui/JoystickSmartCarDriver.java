@@ -39,6 +39,7 @@ import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.legacy.Link;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Throwables;
+import org.ardulink.util.URIs;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.convenience.Links;
@@ -115,16 +116,12 @@ public class JoystickSmartCarDriver extends JFrame implements
 				if (link != null) {
 					String deviceName = bluetoothConnectionPanel
 							.getSelectedDevice();
-					try {
-						link = new Link.LegacyLinkAdapter(Links
-								.getLink(new URI(
-										"ardulink://bluetooth?deviceName="
-												+ deviceName)));
-					} catch (Exception e) {
-						throw propagate(e);
-					}
+					link = new Link.LegacyLinkAdapter(Links.getLink(URIs
+							.newURI("ardulink://bluetooth?deviceName="
+									+ deviceName)));
 				}
 			}
+
 		});
 		connectionPanel.add(btnConnect);
 

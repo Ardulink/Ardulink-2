@@ -12,32 +12,32 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.mqtt.duplicated;
 
+import static java.util.Collections.unmodifiableMap;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.util.Throwables.propagate;
-import static java.util.Collections.unmodifiableMap;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.ardulink.core.Pin;
+import org.ardulink.core.Pin.Type;
+import org.ardulink.util.URIs;
 import org.fusesource.mqtt.client.Future;
 import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.Topic;
 import org.junit.rules.ExternalResource;
-import org.ardulink.core.Pin;
-import org.ardulink.core.Pin.Type;
 
 // TODO create a Mqtt test package and move AnotherMQttClient, ... to it
 // TODO create a @MqttBroker Rule
@@ -75,16 +75,12 @@ public class AnotherMqttClient extends ExternalResource {
 	}
 
 	protected static MQTT mqttClient(String host, int port) {
-		try {
-			MQTT client = new MQTT();
-			client.setCleanSession(true);
-			client.setClientId("amc-" + Thread.currentThread().getId() + "-"
-					+ System.currentTimeMillis());
-			client.setHost("tcp://" + host + ":" + port);
-			return client;
-		} catch (URISyntaxException e) {
-			throw propagate(e);
-		}
+		MQTT client = new MQTT();
+		client.setCleanSession(true);
+		client.setClientId("amc-" + Thread.currentThread().getId() + "-"
+				+ System.currentTimeMillis());
+		client.setHost(URIs.newURI("tcp://" + host + ":" + port));
+		return client;
 	}
 
 	@Override

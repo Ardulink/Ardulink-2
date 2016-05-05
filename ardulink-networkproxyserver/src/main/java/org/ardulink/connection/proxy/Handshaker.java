@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.connection.proxy;
 
@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.URISyntaxException;
 import java.util.Scanner;
 
 import org.ardulink.core.Link;
@@ -51,7 +50,7 @@ public abstract class Handshaker {
 	private final Configurer configurer;
 
 	public Handshaker(InputStream inputStream, OutputStream outputStream,
-			Protocol proto) throws URISyntaxException {
+			Protocol proto) {
 		this.configurer = Links.getDefaultConfigurer();
 		this.printWriter = new PrintWriter(outputStream);
 		this.separator = new String(proto.getSeparator());
@@ -93,8 +92,7 @@ public abstract class Handshaker {
 				+ " received");
 	}
 
-	private void handleGetPortList() throws URISyntaxException, Exception,
-			IOException {
+	private void handleGetPortList() throws IOException {
 		Object[] portList = getPortList();
 		if (portList == null) {
 			portList = new Object[0];
@@ -118,7 +116,7 @@ public abstract class Handshaker {
 
 	protected abstract Link newLink(Configurer configurer) throws Exception;
 
-	private Object[] getPortList() throws URISyntaxException, Exception {
+	private Object[] getPortList() {
 		return configurer.getAttribute("port").getChoiceValues();
 	}
 

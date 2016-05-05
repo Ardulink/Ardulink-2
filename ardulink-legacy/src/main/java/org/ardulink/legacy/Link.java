@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.legacy;
 
@@ -31,13 +31,13 @@ import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.util.URIs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * An adapter for the old legacy link (Ardulink 1 compatibility issue).
- * Users should migrate to new new API.
- * project Ardulink http://www.ardulink.org/
+ * An adapter for the old legacy link (Ardulink 1 compatibility issue). Users
+ * should migrate to new new API. project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *
@@ -50,8 +50,7 @@ public abstract class Link {
 		private final org.ardulink.core.Link delegate;
 		private Configurer configurer;
 
-		public LegacyLinkAdapter(
-				org.ardulink.core.Link delegate) {
+		public LegacyLinkAdapter(org.ardulink.core.Link delegate) {
 			this.delegate = delegate;
 		}
 
@@ -61,7 +60,8 @@ public abstract class Link {
 		}
 
 		@Override
-		public void removeConnectionListener(ConnectionListener connectionListener) {
+		public void removeConnectionListener(
+				ConnectionListener connectionListener) {
 			delegate.removeConnectionListener(connectionListener);
 		}
 
@@ -277,7 +277,8 @@ public abstract class Link {
 		}
 
 		@Override
-		public void removeConnectionListener(ConnectionListener connectionListener) {
+		public void removeConnectionListener(
+				ConnectionListener connectionListener) {
 			// do nothing
 		}
 	};
@@ -295,12 +296,10 @@ public abstract class Link {
 
 	public static Link createInstance(String type) {
 		try {
-			URI uri = new URI("ardulink://" + type);
+			URI uri = URIs.newURI("ardulink://" + type);
 			Configurer configurer = LinkManager.getInstance()
 					.getConfigurer(uri);
 			return new LegacyLinkAdapter(configurer);
-		} catch (URISyntaxException e) {
-			throw propagate(e);
 		} catch (Exception e) {
 			throw propagate(e);
 		}
@@ -341,6 +340,5 @@ public abstract class Link {
 
 	public abstract void removeConnectionListener(
 			ConnectionListener connectionListener);
-
 
 }

@@ -17,20 +17,12 @@ limitations under the License.
 
 package org.ardulink;
 
+import static java.lang.String.format;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.convenience.Links.setChoiceValues;
-import static java.lang.String.format;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
-
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
@@ -39,6 +31,13 @@ import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.util.Throwables;
+import org.ardulink.util.URIs;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -76,11 +75,11 @@ public class DataReceiver {
 	private static final Logger logger = LoggerFactory
 			.getLogger(DataReceiver.class);
 
-	public static void main(String[] args) throws URISyntaxException, Exception {
+	public static void main(String[] args) throws Exception {
 		new DataReceiver().doMain(args);
 	}
 
-	private void doMain(String[] args) throws URISyntaxException, Exception {
+	private void doMain(String[] args) throws Exception {
 		CmdLineParser cmdLineParser = new CmdLineParser(this);
 		try {
 			cmdLineParser.parseArgument(args);
@@ -92,7 +91,7 @@ public class DataReceiver {
 		work();
 	}
 
-	private void work() throws URISyntaxException, Exception {
+	private void work() throws Exception {
 		this.link = createLink();
 
 		try {
@@ -143,10 +142,14 @@ public class DataReceiver {
 		};
 	}
 
-	private Link createLink() throws Exception, URISyntaxException {
-		return setChoiceValues(
-				LinkManager.getInstance().getConfigurer(new URI(connString)))
-				.newLink();
+	private Link createLink() {
+		try {
+			return setChoiceValues(
+					LinkManager.getInstance().getConfigurer(
+							URIs.newURI(connString))).newLink();
+		} catch (Exception e) {
+			throw Throwables.propagate(e);
+		}
 	}
 
 }

@@ -29,8 +29,6 @@ import static org.fusesource.mqtt.client.QoS.AT_MOST_ONCE;
 import io.moquette.server.Server;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager;
@@ -39,6 +37,7 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.mqtt.AbstractMqttAdapter.CompactStrategy;
 import org.ardulink.mqtt.compactors.ThreadTimeSlicer;
 import org.ardulink.mqtt.compactors.TimeSlicer;
+import org.ardulink.util.URIs;
 import org.fusesource.mqtt.client.BlockingConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.Topic;
@@ -117,11 +116,7 @@ public class MqttMain {
 
 		private MqttClient(Link link, Config config) {
 			super(link, config);
-			try {
-				this.client = newClient(brokerHost, brokerPort, clientId);
-			} catch (URISyntaxException e) {
-				throw propagate(e);
-			}
+			this.client = newClient(brokerHost, brokerPort, clientId);
 		}
 
 		public MqttClient listenToMqttAndArduino() throws IOException {
@@ -153,12 +148,11 @@ public class MqttMain {
 			return this;
 		}
 
-		private MQTT newClient(String host, int port, String clientId)
-				throws URISyntaxException {
+		private MQTT newClient(String host, int port, String clientId) {
 			MQTT client = new MQTT();
 			client.setCleanSession(true);
 			client.setClientId(clientId);
-			client.setHost("tcp://" + host + ":" + port);
+			client.setHost(URIs.newURI("tcp://" + host + ":" + port));
 			return client;
 		}
 
@@ -307,9 +301,9 @@ public class MqttMain {
 		setBrokerTopic(this.brokerTopic);
 	}
 
-	protected Link createLink() throws Exception, URISyntaxException {
+	protected Link createLink() throws Exception {
 		Configurer configurer = LinkManager.getInstance().getConfigurer(
-				new URI(connString));
+				URIs.newURI(connString));
 
 		// are there choice values?
 		for (String key : configurer.getAttributes()) {
@@ -367,7 +361,7 @@ public class MqttMain {
 	private static void wait4ever() throws InterruptedException {
 		Object blocker = new Object();
 		synchronized (blocker) {
-			while(true) {
+			while (true) {
 				blocker.wait();
 			}
 		}

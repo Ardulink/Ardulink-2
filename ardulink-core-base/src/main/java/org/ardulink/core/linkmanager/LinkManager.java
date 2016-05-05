@@ -53,6 +53,7 @@ import org.ardulink.core.linkmanager.LinkConfig.Named;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
 import org.ardulink.util.Primitive;
+import org.ardulink.util.URIs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -493,12 +494,8 @@ public abstract class LinkManager {
 				List<LinkFactory> factories = getConnectionFactories();
 				List<URI> result = new ArrayList<URI>(factories.size());
 				for (LinkFactory<?> factory : factories) {
-					String name = factory.getName();
-					try {
-						result.add(new URI(format("%s://%s", SCHEMA, name)));
-					} catch (URISyntaxException e) {
-						throw propagate(e);
-					}
+					result.add(URIs.newURI(format("%s://%s", SCHEMA,
+							factory.getName())));
 				}
 				return result;
 			}

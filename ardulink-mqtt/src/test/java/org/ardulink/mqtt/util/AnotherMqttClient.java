@@ -39,6 +39,7 @@ import org.fusesource.mqtt.client.Topic;
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
 import org.ardulink.util.Lists;
+import org.ardulink.util.URIs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -114,16 +115,12 @@ public class AnotherMqttClient implements Closeable {
 	}
 
 	protected static MQTT mqttClient(String host, int port) {
-		try {
-			MQTT client = new MQTT();
-			client.setCleanSession(true);
-			client.setClientId("amc-" + Thread.currentThread().getId() + "-"
-					+ System.currentTimeMillis());
-			client.setHost("tcp://" + host + ":" + port);
-			return client;
-		} catch (URISyntaxException e) {
-			throw propagate(e);
-		}
+		MQTT client = new MQTT();
+		client.setCleanSession(true);
+		client.setClientId("amc-" + Thread.currentThread().getId() + "-"
+				+ System.currentTimeMillis());
+		client.setHost(URIs.newURI("tcp://" + host + ":" + port));
+		return client;
 	}
 
 	public AnotherMqttClient connect() throws IOException {

@@ -29,7 +29,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -163,10 +162,6 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 			public void actionPerformed(ActionEvent event) {
 				try {
 					setLink(legacyAdapt(connectionPanel.createLink()));
-				} catch (URISyntaxException e) {
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(Console.this, e.getMessage(),
-							"Error", ERROR_MESSAGE);
 				} catch (Exception e) {
 					e.printStackTrace();
 					JOptionPane.showMessageDialog(Console.this, e.getMessage(),

@@ -27,21 +27,21 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import org.ardulink.core.proto.impl.DummyProtocol;
+import org.ardulink.util.URIs;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -57,27 +57,27 @@ public class DummyLinkFactoryTest {
 	public ExpectedException exception = ExpectedException.none();
 
 	@Test
-	public void throwsExceptionOnInvalidNames() throws URISyntaxException {
+	public void throwsExceptionOnInvalidNames() {
 		String name = "non.existing.name";
 		LinkManager connectionManager = LinkManager.getInstance();
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("No factory registered for \"" + name + "\"");
-		connectionManager.getConfigurer(new URI("ardulink://" + name + ""));
+		connectionManager.getConfigurer(URIs.newURI("ardulink://" + name + ""));
 	}
 
 	@Test
-	public void schemaHasToBeArdulink() throws URISyntaxException {
+	public void schemaHasToBeArdulink() {
 		LinkManager connectionManager = LinkManager.getInstance();
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("schema not ardulink");
-		connectionManager.getConfigurer(new URI("wrongSchema://dummy"));
+		connectionManager.getConfigurer(URIs.newURI("wrongSchema://dummy"));
 	}
 
 	@Test
 	public void canCreateDummyDonnection() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Link link = connectionManager.getConfigurer(
-				new URI("ardulink://dummyLink")).newLink();
+				URIs.newURI("ardulink://dummyLink")).newLink();
 		assertThat(link, is(notNullValue()));
 	}
 
@@ -88,7 +88,7 @@ public class DummyLinkFactoryTest {
 		int bValue = 1;
 		String cValue = "cValue";
 		Link link = (Link) connectionManager.getConfigurer(
-				new URI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue
+				URIs.newURI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue
 						+ "&c=" + cValue + "&proto=dummyProto")).newLink();
 
 		assertThat(link.getClass().getName(),
@@ -104,21 +104,21 @@ public class DummyLinkFactoryTest {
 	}
 
 	@Test
-	public void throwsExceptionOnInvalidKey() throws URISyntaxException {
+	public void throwsExceptionOnInvalidKey() {
 		String nonExistingKey = "nonExistingKey";
 		LinkManager connectionManager = LinkManager.getInstance();
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("Could not determine attribute "
 				+ nonExistingKey);
-		connectionManager.getConfigurer(new URI("ardulink://dummyLink?"
+		connectionManager.getConfigurer(URIs.newURI("ardulink://dummyLink?"
 				+ nonExistingKey + "=someValue"));
 	}
 
 	@Test
 	public void canDefineChoiceValues() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(new URI(
-				"ardulink://dummyLink"));
+		Configurer configurer = connectionManager.getConfigurer(URIs
+				.newURI("ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
 		assertThat(a.hasChoiceValues(), is(TRUE));
 		assertThat(a.getChoiceValues(), is(new Object[] { "aVal1", "aVal2" }));
@@ -137,8 +137,8 @@ public class DummyLinkFactoryTest {
 			throws Exception {
 		Locale.setDefault(ENGLISH);
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(new URI(
-				"ardulink://dummyLink"));
+		Configurer configurer = connectionManager.getConfigurer(URIs
+				.newURI("ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
 		assertThat(a.getChoiceValues(), is(new Object[] { "aVal1", "aVal2" }));
 		String invalidValue = "aVal3IsNotAvalidValue";
@@ -155,8 +155,8 @@ public class DummyLinkFactoryTest {
 			throws Exception {
 		Locale.setDefault(ENGLISH);
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(new URI(
-				"ardulink://dummyLink"));
+		Configurer configurer = connectionManager.getConfigurer(URIs
+				.newURI("ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
 		String invalidValue = "aVal3IsNotAvalidValue";
 		a.setValue(invalidValue);
@@ -168,11 +168,10 @@ public class DummyLinkFactoryTest {
 	}
 
 	@Test
-	public void attributeQithoutChoiceValueThrowsRTE()
-			throws URISyntaxException {
+	public void attributeQithoutChoiceValueThrowsRTE() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(new URI(
-				"ardulink://dummyLink"));
+		Configurer configurer = connectionManager.getConfigurer(URIs
+				.newURI("ardulink://dummyLink"));
 		ConfigAttribute c = configurer.getAttribute("c");
 		assertThat(c.hasChoiceValues(), is(false));
 		exception.expect(IllegalStateException.class);
@@ -181,7 +180,7 @@ public class DummyLinkFactoryTest {
 	}
 
 	@Test
-	public void canIterateRegisteredFactories() throws URISyntaxException {
+	public void canIterateRegisteredFactories() {
 		LinkManager connectionManager = LinkManager.getInstance();
 		assertThat(
 				connectionManager.listURIs(),
@@ -189,16 +188,16 @@ public class DummyLinkFactoryTest {
 						"ardulink://dependendAttributes")));
 	}
 
-	private List<URI> links(String... links) throws URISyntaxException {
+	private List<URI> links(String... links) {
 		List<URI> uris = new ArrayList<URI>(links.length);
 		for (String link : links) {
-			uris.add(new URI(link));
+			uris.add(URIs.newURI(link));
 		}
 		return uris;
 	}
 
 	@Test
-	public void i18n_english() throws URISyntaxException {
+	public void i18n_english() {
 		Locale.setDefault(ENGLISH);
 		assertThat(getName("a"),
 				is("A is meant just to be an example attribute"));
@@ -206,15 +205,14 @@ public class DummyLinkFactoryTest {
 	}
 
 	@Test
-	public void i18n_german() throws URISyntaxException {
+	public void i18n_german() {
 		Locale.setDefault(GERMAN);
 		assertThat(getName("a"), is("A ist einfach ein Beispielattribut"));
 		assertThat(getDescription("a"), is("Die Beschreibung für Attribut A"));
 	}
 
 	@Test
-	public void i18n_localeWithoutMessageFileWillFallbackToEnglish()
-			throws URISyntaxException {
+	public void i18n_localeWithoutMessageFileWillFallbackToEnglish() {
 		Locale.setDefault(CHINESE);
 		assertThat(getName("a"),
 				is("A is meant just to be an example attribute"));
@@ -222,36 +220,34 @@ public class DummyLinkFactoryTest {
 	}
 
 	@Test
-	public void i18n_english_untagged_attribute_returns_the_attributes_name()
-			throws URISyntaxException {
+	public void i18n_english_untagged_attribute_returns_the_attributes_name() {
 		Locale.setDefault(ENGLISH);
 		assertThat(getName("b"), is("b"));
 	}
 
 	@Test
-	public void hasMinValue() throws URISyntaxException {
+	public void hasMinValue() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(new URI(
-				"ardulink://dummyLink"));
+		Configurer configurer = connectionManager.getConfigurer(URIs
+				.newURI("ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("b");
 		NumberValidationInfo vi = (NumberValidationInfo) a.getValidationInfo();
 		assertThat(((int) vi.min()), is(3));
 		assertThat(((int) vi.max()), is(12));
 	}
 
-	private static String getName(String name) throws URISyntaxException {
+	private static String getName(String name) {
 		return getAttribute(name).getName();
 	}
 
-	private static String getDescription(String name) throws URISyntaxException {
+	private static String getDescription(String name) {
 		return getAttribute(name).getDescription();
 	}
 
-	private static ConfigAttribute getAttribute(String name)
-			throws URISyntaxException {
+	private static ConfigAttribute getAttribute(String name) {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(new URI(
-				"ardulink://dummyLink"));
+		Configurer configurer = connectionManager.getConfigurer(URIs
+				.newURI("ardulink://dummyLink"));
 		return configurer.getAttribute(name);
 	}
 

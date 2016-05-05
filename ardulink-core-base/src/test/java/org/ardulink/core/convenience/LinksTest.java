@@ -24,13 +24,13 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.DummyConnection;
 import org.ardulink.core.linkmanager.DummyLinkConfig;
+import org.ardulink.util.URIs;
 import org.junit.Test;
 
 /**
@@ -62,16 +62,16 @@ public class LinksTest {
 	}
 
 	@Test
-	public void registeredSpecialNameDefault() throws Exception {
-		Link link = Links.getLink(new URI("ardulink://default"));
+	public void registeredSpecialNameDefault() throws IOException {
+		Link link = Links.getLink(URIs.newURI("ardulink://default"));
 		assertThat(link, sameInstance(Links.getDefault()));
 		close(link);
 	}
 
 	@Test
-	public void doesCacheLinks() throws Exception {
-		Link link1 = Links.getLink(new URI("ardulink://dummyLink"));
-		Link link2 = Links.getLink(new URI("ardulink://dummyLink"));
+	public void doesCacheLinks() throws IOException {
+		Link link1 = Links.getLink(URIs.newURI("ardulink://dummyLink"));
+		Link link2 = Links.getLink(URIs.newURI("ardulink://dummyLink"));
 		assertThat(link1, notNullValue());
 		assertThat(link2, notNullValue());
 		assertAllSameInstances(link1, link2);
@@ -79,9 +79,10 @@ public class LinksTest {
 	}
 
 	@Test
-	public void doesCacheLinksWhenUsingDefaultValues() throws Exception {
-		Link link1 = Links.getLink(new URI("ardulink://dummyLink"));
-		Link link2 = Links.getLink(new URI("ardulink://dummyLink?a=&b=42&c="));
+	public void doesCacheLinksWhenUsingDefaultValues() throws IOException {
+		Link link1 = Links.getLink(URIs.newURI("ardulink://dummyLink"));
+		Link link2 = Links.getLink(URIs
+				.newURI("ardulink://dummyLink?a=&b=42&c="));
 		assertThat(link1, notNullValue());
 		assertThat(link2, notNullValue());
 		assertAllSameInstances(link1, link2);
@@ -89,7 +90,7 @@ public class LinksTest {
 	}
 
 	@Test
-	public void canCloseConnection() throws Exception {
+	public void canCloseConnection() throws IOException {
 		Link link = getRandomLink();
 		DummyConnection connection = getConnection(link);
 		assertThat(connection.getCloseCalls(), is(0));
@@ -98,7 +99,7 @@ public class LinksTest {
 	}
 
 	@Test
-	public void doesNotCloseConnectionIfStillInUse() throws Exception {
+	public void doesNotCloseConnectionIfStillInUse() throws IOException {
 		URI randomURI = getRandomURI();
 		Link[] links = { createConnectionBasedLink(randomURI),
 				createConnectionBasedLink(randomURI),
@@ -113,7 +114,7 @@ public class LinksTest {
 	}
 
 	@Test
-	public void afterClosingWeGetAfreshLink() throws Exception {
+	public void afterClosingWeGetAfreshLink() throws IOException {
 		URI randomURI = getRandomURI();
 		Link link1 = createConnectionBasedLink(randomURI);
 		Link link2 = createConnectionBasedLink(randomURI);
@@ -126,10 +127,9 @@ public class LinksTest {
 	}
 
 	@Test
-	public void twoDifferentURIsWithSameParamsMustNotBeenMixed()
-			throws Exception {
-		URI uri1 = new URI("ardulink://dummyLink?a=aVal1&b=4");
-		URI uri2 = new URI("ardulink://dummyLink2?a=aVal1&b=4");
+	public void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws IOException {
+		URI uri1 = URIs.newURI("ardulink://dummyLink?a=aVal1&b=4");
+		URI uri2 = URIs.newURI("ardulink://dummyLink2?a=aVal1&b=4");
 		Link link1 = Links.getLink(uri1);
 		Link link2 = Links.getLink(uri2);
 		assertThat(link1, not(sameInstance(link2)));
@@ -149,11 +149,11 @@ public class LinksTest {
 		}
 	}
 
-	private Link getRandomLink() throws Exception, URISyntaxException {
+	private Link getRandomLink() {
 		return Links.getLink(getRandomURI());
 	}
 
-	private Link createConnectionBasedLink(URI randomURI) throws Exception {
+	private Link createConnectionBasedLink(URI randomURI) {
 		return Links.getLink(randomURI);
 	}
 
@@ -162,8 +162,8 @@ public class LinksTest {
 				.getDelegate()).getConnection();
 	}
 
-	private URI getRandomURI() throws URISyntaxException {
-		return new URI("ardulink://dummyLink?a=" + "&b="
+	private URI getRandomURI() {
+		return URIs.newURI("ardulink://dummyLink?a=" + "&b="
 				+ String.valueOf(Thread.currentThread().getId()) + "&c="
 				+ System.currentTimeMillis());
 	}

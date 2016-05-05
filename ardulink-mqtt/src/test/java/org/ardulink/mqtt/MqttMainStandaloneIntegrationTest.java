@@ -12,21 +12,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.mqtt;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.mockito.Mockito.mock;
 
-import java.net.URISyntaxException;
-
+import org.ardulink.core.Link;
+import org.ardulink.mqtt.util.AnotherMqttClient;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
-
-import org.ardulink.core.Link;
-import org.ardulink.mqtt.util.AnotherMqttClient;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -49,7 +46,7 @@ public class MqttMainStandaloneIntegrationTest {
 	public void clientCanConnectToNewlyStartedBroker() throws Exception {
 		MqttMain mqttMain = new MqttMain() {
 			@Override
-			protected Link createLink() throws Exception, URISyntaxException {
+			protected Link createLink() {
 				return link;
 			}
 		};

@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.mqtt;
 
@@ -38,7 +38,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.Timeout;
-
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
 import org.ardulink.core.events.EventListenerAdapter;
@@ -46,6 +45,7 @@ import org.ardulink.core.events.FilteredEventListenerAdapter;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
 import org.ardulink.core.mqtt.duplicated.Message;
+import org.ardulink.util.URIs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -74,9 +74,8 @@ public class MqttIntegrationTest {
 		this.link = LinkManager
 				.getInstance()
 				.getConfigurer(
-						new URI(
-								"ardulink://mqtt?host=localhost&port=1883&topic="
-										+ TOPIC)).newLink();
+						URIs.newURI("ardulink://mqtt?host=localhost&port=1883&topic="
+								+ TOPIC)).newLink();
 	}
 
 	@After

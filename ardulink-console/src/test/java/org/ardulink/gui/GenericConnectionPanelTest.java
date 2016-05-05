@@ -24,7 +24,6 @@ import static org.hamcrest.core.Is.is;
 
 import java.awt.Component;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.swing.JComboBox;
@@ -32,8 +31,8 @@ import javax.swing.JPanel;
 
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.util.Optional;
+import org.ardulink.util.URIs;
 import org.hamcrest.Matcher;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -46,13 +45,8 @@ import org.junit.Test;
  */
 public class GenericConnectionPanelTest {
 
-	private URI uri;
-	private GenericPanelBuilder sut = new GenericPanelBuilder();
-
-	@Before
-	public void setup() throws URISyntaxException {
-		uri = new URI("ardulink://dummy");
-	}
+	private final URI uri = URIs.newURI("ardulink://dummy");
+	private final GenericPanelBuilder sut = new GenericPanelBuilder();
 
 	@Test
 	public void canHandle() {
@@ -60,8 +54,7 @@ public class GenericConnectionPanelTest {
 	}
 
 	@Test
-	public void hasSubPanelWithConnectionIndividualComponents()
-			throws URISyntaxException {
+	public void hasSubPanelWithConnectionIndividualComponents() {
 		JPanel panel = sut.createPanel(LinkManager.getInstance().getConfigurer(
 				uri));
 		JComboBox comboBox = findFirst(JComboBox.class, componentsOf(panel))

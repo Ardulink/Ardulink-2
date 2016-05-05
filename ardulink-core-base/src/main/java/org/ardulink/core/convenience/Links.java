@@ -21,7 +21,6 @@ import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +29,7 @@ import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.util.URIs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -54,13 +54,7 @@ public final class Links {
 	 * @return default Link
 	 */
 	public static Link getDefault() {
-		try {
-			return getLink(getDefaultConfigurer());
-		} catch (URISyntaxException e) {
-			throw propagate(e);
-		} catch (Exception e) {
-			throw propagate(e);
-		}
+		return getLink(getDefaultConfigurer());
 	}
 
 	public static Configurer getDefaultConfigurer() {
@@ -68,9 +62,9 @@ public final class Links {
 	}
 
 	private static Configurer getConfigurer() {
-		URI serial = serialURI();
 		LinkManager linkManager = linkManager();
 		List<URI> availableURIs = linkManager.listURIs();
+		URI serial = URIs.newURI("ardulink://serial");
 		if (availableURIs.contains(serial)) {
 			return linkManager.getConfigurer(serial);
 		} else if (!availableURIs.isEmpty()) {
@@ -81,14 +75,6 @@ public final class Links {
 
 	private static LinkManager linkManager() {
 		return LinkManager.getInstance();
-	}
-
-	private static URI serialURI() {
-		try {
-			return new URI("ardulink://serial");
-		} catch (URISyntaxException e) {
-			throw propagate(e);
-		}
 	}
 
 	/**
@@ -103,7 +89,7 @@ public final class Links {
 	 *         for that URI exists
 	 * @throws Exception
 	 */
-	public static Link getLink(URI uri) throws Exception {
+	public static Link getLink(URI uri) {
 		return isDefault(uri) ? getDefault() : getLink(linkManager()
 				.getConfigurer(uri));
 	}
@@ -112,7 +98,7 @@ public final class Links {
 		return "default".equalsIgnoreCase(extractNameFromURI(uri));
 	}
 
-	public static Link getLink(Configurer configurer) throws Exception {
+	public static Link getLink(Configurer configurer) {
 		final Object cacheKey = configurer.uniqueIdentifier();
 		synchronized (cache) {
 			CacheValue cacheValue = cache.get(cacheKey);
@@ -120,10 +106,18 @@ public final class Links {
 				cache.put(
 						cacheKey,
 						(cacheValue = new CacheValue(newDelegate(cacheKey,
-								configurer.newLink()))));
+								newLink(configurer)))));
 			}
 			cacheValue.increaseUsageCounter();
 			return cacheValue.getLink();
+		}
+	}
+
+	private static Link newLink(Configurer configurer) {
+		try {
+			return configurer.newLink();
+		} catch (Exception e) {
+			throw propagate(e);
 		}
 	}
 

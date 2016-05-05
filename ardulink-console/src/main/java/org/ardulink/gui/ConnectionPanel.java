@@ -31,7 +31,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -50,6 +49,7 @@ import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.gui.facility.UtilityGeometry;
 import org.ardulink.legacy.Link;
+import org.ardulink.util.URIs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -83,13 +83,9 @@ public class ConnectionPanel extends JPanel implements Linkable {
 			public Component getListCellRendererComponent(JList list,
 					Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
-				try {
-					return super.getListCellRendererComponent(list,
-							extractNameFromURI(new URI((String) value)), index,
-							isSelected, cellHasFocus);
-				} catch (URISyntaxException e) {
-					throw propagate(e);
-				}
+				return super.getListCellRendererComponent(list,
+						extractNameFromURI(URIs.newURI((String) value)), index,
+						isSelected, cellHasFocus);
 			}
 		});
 		uris.addItemListener(new ItemListener() {
@@ -168,7 +164,8 @@ public class ConnectionPanel extends JPanel implements Linkable {
 					remove(ConnectionPanel.this.panel);
 				}
 				ConnectionPanel.this.panel = newPanel;
-				add(ConnectionPanel.this.panel, constraints(1, 0).fillBoth().build());
+				add(ConnectionPanel.this.panel, constraints(1, 0).fillBoth()
+						.build());
 				revalidate();
 			}
 
@@ -202,15 +199,11 @@ public class ConnectionPanel extends JPanel implements Linkable {
 	}
 
 	private JPanel createSubpanel() {
-		try {
-			URI uri = new URI(String.valueOf(uris.getSelectedItem()));
-			JPanel subpanel = findPanelBuilder(uri).createPanel(
-					configurer = LinkManager.getInstance().getConfigurer(uri));
-			subpanel.setBorder(BorderFactory.createLoweredBevelBorder());
-			return subpanel;
-		} catch (URISyntaxException e) {
-			throw propagate(e);
-		}
+		URI uri = URIs.newURI(String.valueOf(uris.getSelectedItem()));
+		JPanel subpanel = findPanelBuilder(uri).createPanel(
+				configurer = LinkManager.getInstance().getConfigurer(uri));
+		subpanel.setBorder(BorderFactory.createLoweredBevelBorder());
+		return subpanel;
 	}
 
 	private PanelBuilder findPanelBuilder(URI uri) {
