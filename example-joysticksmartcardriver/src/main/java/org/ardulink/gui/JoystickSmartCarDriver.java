@@ -157,11 +157,12 @@ public class JoystickSmartCarDriver extends JFrame implements
 
 	@Override
 	public void setLink(Link link) {
-		org.ardulink.core.Link delegate = link.getDelegate();
+		org.ardulink.core.Link delegate = this.link.getDelegate();
 		if (delegate instanceof ConnectionBasedLink) {
 			((ConnectionBasedLink) delegate).removeConnectionListener(this);
 		}
 		this.link = link;
+		delegate = this.link.getDelegate();
 		if (delegate instanceof ConnectionBasedLink) {
 			((ConnectionBasedLink) delegate).addConnectionListener(this);
 		} else {

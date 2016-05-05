@@ -71,19 +71,16 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 	private SignalButton btnRight;
 	private SignalButton btnBack;
 
-	private static final String AHEAD_ICON_NAME = "icons/arrow-up.png";
-	private static final String LEFT_ICON_NAME = "icons/arrow-left.png";
-	private static final String RIGHT_ICON_NAME = "icons/arrow-right.png";
-	private static final String BACK_ICON_NAME = "icons/arrow-down.png";
+	private static final String ICON_FOLDER = "icons/";
+	private static final ImageIcon AHEAD_ICON = loadIcon("arrow-up.png");
+	private static final ImageIcon LEFT_ICON = loadIcon("arrow-left.png");
+	private static final ImageIcon RIGHT_ICON = loadIcon("arrow-right.png");
+	private static final ImageIcon BACK_ICON = loadIcon("arrow-down.png");
 
-	private static final ImageIcon AHEAD_ICON = new ImageIcon(
-			SimpleSmartCarDriver.class.getResource(AHEAD_ICON_NAME));
-	private static final ImageIcon LEFT_ICON = new ImageIcon(
-			SimpleSmartCarDriver.class.getResource(LEFT_ICON_NAME));
-	private static final ImageIcon RIGHT_ICON = new ImageIcon(
-			SimpleSmartCarDriver.class.getResource(RIGHT_ICON_NAME));
-	private static final ImageIcon BACK_ICON = new ImageIcon(
-			SimpleSmartCarDriver.class.getResource(BACK_ICON_NAME));
+	private static ImageIcon loadIcon(String iconName) {
+		return new ImageIcon(SimpleSmartCarDriver.class.getResource(ICON_FOLDER
+				+ iconName));
+	}
 
 	/**
 	 * Launch the application.
@@ -221,11 +218,12 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 
 	@Override
 	public void setLink(Link link) {
-		org.ardulink.core.Link delegate = link.getDelegate();
+		org.ardulink.core.Link delegate = this.link.getDelegate();
 		if (delegate instanceof ConnectionBasedLink) {
 			((ConnectionBasedLink) delegate).removeConnectionListener(this);
 		}
 		this.link = link;
+		delegate = this.link.getDelegate();
 		if (delegate instanceof ConnectionBasedLink) {
 			((ConnectionBasedLink) delegate).addConnectionListener(this);
 		} else {
