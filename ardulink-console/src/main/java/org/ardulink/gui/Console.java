@@ -16,6 +16,7 @@ limitations under the License.
 package org.ardulink.gui;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -38,8 +39,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -111,12 +110,7 @@ public class Console extends JFrame implements Linkable {
 			@Override
 			public void run() {
 				try {
-					for (LookAndFeelInfo laf : UIManager
-							.getInstalledLookAndFeels()) {
-						if ("Nimbus".equals(laf.getName())) {
-							UIManager.setLookAndFeel(laf.getClassName());
-						}
-					}
+					setLookAndFeel("Nimbus");
 					Console frame = new Console();
 					setupExceptionHandler(frame);
 					frame.setVisible(true);
@@ -124,6 +118,7 @@ public class Console extends JFrame implements Linkable {
 					e.printStackTrace();
 				}
 			}
+
 		});
 	}
 

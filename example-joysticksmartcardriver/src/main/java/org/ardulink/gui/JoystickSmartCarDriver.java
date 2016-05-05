@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.ardulink.gui;
 
+import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
+
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -27,8 +29,6 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
 import org.ardulink.core.ConnectionListener;
@@ -89,12 +89,7 @@ public class JoystickSmartCarDriver extends JFrame implements Linkable {
 			@Override
 			public void run() {
 				try {
-					for (LookAndFeelInfo laf : UIManager
-							.getInstalledLookAndFeels()) {
-						if ("Nimbus".equals(laf.getName())) {
-							UIManager.setLookAndFeel(laf.getClassName());
-						}
-					}
+					setLookAndFeel("Nimbus");
 					JoystickSmartCarDriver frame = new JoystickSmartCarDriver();
 					frame.setVisible(true);
 				} catch (Exception e) {

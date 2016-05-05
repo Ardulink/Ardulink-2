@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.ardulink.gui;
 
+import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
+
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -31,8 +33,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
 import org.ardulink.core.ConnectionListener;
@@ -105,12 +105,7 @@ public class SimpleSmartCarDriver extends JFrame implements Linkable {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					for (LookAndFeelInfo laf : UIManager
-							.getInstalledLookAndFeels()) {
-						if ("Nimbus".equals(laf.getName())) {
-							UIManager.setLookAndFeel(laf.getClassName());
-						}
-					}
+					setLookAndFeel("Nimbus");
 					SimpleSmartCarDriver frame = new SimpleSmartCarDriver();
 					frame.setVisible(true);
 				} catch (Exception e) {
