@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.ardulink.gui;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
@@ -28,6 +28,7 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,6 +52,7 @@ import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.ardulink.legacy.Link;
 import org.ardulink.legacy.Link.LegacyLinkAdapter;
+import org.ardulink.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,12 +101,36 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 						}
 					}
 					Console frame = new Console();
+					setupExceptionHandler(frame);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
+	}
+
+	private static void setupExceptionHandler(final Console console) {
+		final UncaughtExceptionHandler exceptionHandler = new UncaughtExceptionHandler() {
+			public void uncaughtException(final Thread thread, final Throwable t) {
+				try {
+					t.printStackTrace();
+					JOptionPane.showMessageDialog(console, Throwables
+							.getRootCause(t).getMessage(), "Error",
+							ERROR_MESSAGE);
+				} catch (final Throwable t2) {
+					/*
+					 * don't let the Throwable get thrown out, will cause
+					 * infinite looping!
+					 */
+					t2.printStackTrace();
+				}
+			}
+
+		};
+		Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
+		System.setProperty(
+				"sun.awt.exception.handler", exceptionHandler.getClass().getName()); //$NON-NLS-1$
 	}
 
 	/**
@@ -148,12 +174,10 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 				}
 			}
 
-			private LegacyLinkAdapter legacyAdapt(
-					org.ardulink.core.Link link) {
+			private LegacyLinkAdapter legacyAdapt(org.ardulink.core.Link link) {
 				return new Link.LegacyLinkAdapter(link);
 			}
 
-			
 		});
 		connectPanel.add(btnConnect);
 
@@ -182,8 +206,7 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 		gbc_genericConnectionPanel.gridy = 1;
 		gbc_genericConnectionPanel.weightx = 1;
 		gbc_genericConnectionPanel.weighty = 1;
-		allConnectionsPanel.add(connectionPanel,
-				gbc_genericConnectionPanel);
+		allConnectionsPanel.add(connectionPanel, gbc_genericConnectionPanel);
 
 		keyControlPanel = new KeyPressController();
 		linkables.add(keyControlPanel);
@@ -346,11 +369,11 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 
 	@Override
 	public void setLink(Link link) {
-		if(this.link != null) {
+		if (this.link != null) {
 			this.link.removeConnectionListener(this);
 		}
 		this.link = link;
-		if(link != null) {
+		if (link != null) {
 			link.addConnectionListener(this);
 		}
 		callLinkables(link);
