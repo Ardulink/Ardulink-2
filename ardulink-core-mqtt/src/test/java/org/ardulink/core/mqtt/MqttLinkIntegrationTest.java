@@ -53,7 +53,7 @@ import org.ardulink.core.mqtt.duplicated.Message;
  * [adsense]
  *
  */
-public class MqttLinkTest {
+public class MqttLinkIntegrationTest {
 
 	public static class TrackStateConnectionListener implements
 			ConnectionListener {
