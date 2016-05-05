@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.qos;
 
@@ -92,15 +92,20 @@ public class QosLinkTest {
 				.thenRespond("alp://rply/ko?id=%s");
 		Connection connection = connectionTo(arduino);
 		qosLink = new ConnectionBasedQosLink(connection,
-				ArdulinkProtocol2.instance(), 750, MILLISECONDS);
+				ArdulinkProtocol2.instance(), 500 + someMillisMore(),
+				MILLISECONDS);
 		exceptions.expect(IllegalStateException.class);
 		exceptions.expectMessage(allOf(containsString("status"),
 				containsString("not ok")));
 		qosLink.sendNoTone(analogPin(3));
 	}
 
+	private int someMillisMore() {
+		return 250;
+	}
+
 	@Test
-	public void secondCallPassesIfFirstOnKeepsUnresponded() throws Exception {
+	public void secondCallPassesIfFirstOneKeepsUnresponded() throws Exception {
 		arduino.whenReceive(regex("alp:\\/\\/tone\\/1/2/3\\?id\\=(\\d)"))
 				.thenDoNotRespond();
 		arduino.whenReceive(regex("alp:\\/\\/tone\\/4/5/6\\?id\\=(\\d)"))
