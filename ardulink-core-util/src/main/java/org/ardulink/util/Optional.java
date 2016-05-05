@@ -114,11 +114,34 @@ public abstract class Optional<T> {
 		return or(null);
 	}
 
+	/**
+	 * Returns the optional's value if present. Throws a RuntimeException if the
+	 * optional if absent.
+	 * 
+	 * @param message
+	 *            message of RuntimeException including placeholders
+	 * @param args
+	 *            placeholder values
+	 * @return optional's value
+	 */
 	public T getOrThrow(String message, Object... args) {
 		checkState(isPresent(), message, args);
 		return get();
 	}
 
+	/**
+	 * Returns the optional's value if present. Throws a RuntimeException of the
+	 * passed type if the optional if absent.
+	 * 
+	 * @param exceptionClass
+	 *            type to create new exception. The class has to define a public
+	 *            String constructor.
+	 * @param message
+	 *            message of RuntimeException including placeholders
+	 * @param args
+	 *            placeholder values
+	 * @return optional's value
+	 */
 	public T getOrThrow(Class<? extends RuntimeException> exceptionClass,
 			String message, Object... args) {
 		if (isPresent()) {
@@ -149,4 +172,5 @@ public abstract class Optional<T> {
 		}
 		return Optional.absent();
 	}
+
 }
