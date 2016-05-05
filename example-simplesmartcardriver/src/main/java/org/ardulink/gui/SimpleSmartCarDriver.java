@@ -75,7 +75,7 @@ public class SimpleSmartCarDriver extends JFrame implements Linkable {
 	private static final ImageIcon RIGHT_ICON = loadIcon("arrow-right.png");
 	private static final ImageIcon BACK_ICON = loadIcon("arrow-down.png");
 
-	private final ConnectionListener connectionListner = new ConnectionListener() {
+	private final ConnectionListener connectionListener = new ConnectionListener() {
 
 		@Override
 		public void reconnected() {
@@ -234,11 +234,11 @@ public class SimpleSmartCarDriver extends JFrame implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		this.link.getDelegate().removeConnectionListener(connectionListner);
+		this.link.removeConnectionListener(this.connectionListener);
 		this.link = link;
-		this.link.getDelegate().addConnectionListener(connectionListner);
+		this.link.addConnectionListener(this.connectionListener);
 		for (Linkable linkable : linkables) {
-			linkable.setLink(link);
+			linkable.setLink(this.link);
 		}
 	}
 

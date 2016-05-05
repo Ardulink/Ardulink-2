@@ -16,15 +16,15 @@ limitations under the License.
 
 package org.ardulink.legacy;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.util.Throwables.propagate;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
+import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.Tone;
 import org.ardulink.core.convenience.Links;
@@ -52,17 +52,6 @@ public abstract class Link {
 
 		public LegacyLinkAdapter(org.ardulink.core.Link delegate) {
 			this.delegate = delegate;
-		}
-
-		@Override
-		public void addConnectionListener(ConnectionListener connectionListener) {
-			delegate.addConnectionListener(connectionListener);
-		}
-
-		@Override
-		public void removeConnectionListener(
-				ConnectionListener connectionListener) {
-			delegate.removeConnectionListener(connectionListener);
 		}
 
 		public LegacyLinkAdapter(Configurer configurer) throws Exception {
@@ -196,6 +185,24 @@ public abstract class Link {
 			}
 		}
 
+		@Override
+		public void addConnectionListener(ConnectionListener connectionListener) {
+			if (delegate instanceof AbstractListenerLink) {
+				((AbstractListenerLink) delegate)
+						.removeConnectionListener(connectionListener);
+			}
+		}
+
+		@Override
+		public void removeConnectionListener(
+				ConnectionListener connectionListener) {
+			if (delegate instanceof AbstractListenerLink) {
+				((AbstractListenerLink) delegate)
+						.addConnectionListener(connectionListener);
+			}
+
+		}
+
 	}
 
 	public static final Link NO_LINK = new Link() {
@@ -281,6 +288,7 @@ public abstract class Link {
 				ConnectionListener connectionListener) {
 			// do nothing
 		}
+
 	};
 
 	private static Link defaultInstance;

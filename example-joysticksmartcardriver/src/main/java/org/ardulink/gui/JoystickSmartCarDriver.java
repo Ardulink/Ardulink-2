@@ -63,7 +63,7 @@ public class JoystickSmartCarDriver extends JFrame implements Linkable {
 	private ModifiableJoystick joystick;
 	private MotorDriver motorDriver = new MotorDriver();
 
-	private final ConnectionListener connectionListner = new ConnectionListener() {
+	private final ConnectionListener connectionListener = new ConnectionListener() {
 
 		@Override
 		public void reconnected() {
@@ -173,12 +173,11 @@ public class JoystickSmartCarDriver extends JFrame implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		this.link.getDelegate().removeConnectionListener(connectionListner);
+		this.link.removeConnectionListener(this.connectionListener);
 		this.link = link;
-		this.link.getDelegate().addConnectionListener(connectionListner);
+		this.link.addConnectionListener(this.connectionListener);
 		for (Linkable linkable : linkables) {
-			linkable.setLink(link);
+			linkable.setLink(this.link);
 		}
 	}
-
 }

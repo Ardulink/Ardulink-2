@@ -66,7 +66,7 @@ import org.slf4j.LoggerFactory;
  * [adsense]
  *
  */
-public class Console extends JFrame implements Linkable, ConnectionListener {
+public class Console extends JFrame implements Linkable {
 
 	private static final long serialVersionUID = -5288916405936436557L;
 
@@ -77,13 +77,31 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 	private JButton btnDisconnect;
 	private ConnectionStatus connectionStatus;
 
-	private Link link;
+	private Link link = Link.NO_LINK;
 
 	private final List<Linkable> linkables = new LinkedList<Linkable>();
 
 	private static final Logger logger = LoggerFactory.getLogger(Console.class);
 
 	private ConnectionPanel connectionPanel;
+
+	private final ConnectionListener connectionListener = new ConnectionListener() {
+
+		@Override
+		public void connectionLost() {
+			btnConnect.setEnabled(true);
+			btnDisconnect.setEnabled(false);
+			connectionPanel.setEnabled(true);
+		}
+
+		@Override
+		public void reconnected() {
+			btnConnect.setEnabled(false);
+			btnDisconnect.setEnabled(true);
+			connectionPanel.setEnabled(false);
+		}
+
+	};
 
 	/**
 	 * Launch the application.
@@ -299,7 +317,9 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 				}
 			}
 		});
-		connectionLost();
+		this.connectionListener.connectionLost();
+		// publish NO_LINK to all listeners
+		setLink(this.link);
 		pack();
 	}
 
@@ -364,14 +384,10 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 
 	@Override
 	public void setLink(Link link) {
-		if (this.link != null) {
-			this.link.removeConnectionListener(this);
-		}
+		this.link.removeConnectionListener(this.connectionListener);
 		this.link = link;
-		if (link != null) {
-			link.addConnectionListener(this);
-		}
-		callLinkables(link);
+		this.link.addConnectionListener(this.connectionListener);
+		callLinkables(this.link);
 	}
 
 	private void callLinkables(Link link) {
@@ -379,19 +395,4 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 			linkable.setLink(link);
 		}
 	}
-
-	@Override
-	public void connectionLost() {
-		btnConnect.setEnabled(true);
-		btnDisconnect.setEnabled(false);
-		connectionPanel.setEnabled(true);
-	}
-
-	@Override
-	public void reconnected() {
-		btnConnect.setEnabled(false);
-		btnDisconnect.setEnabled(true);
-		connectionPanel.setEnabled(false);
-	}
-
 }

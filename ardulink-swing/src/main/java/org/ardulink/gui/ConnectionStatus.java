@@ -22,67 +22,69 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.ardulink.legacy.Link;
-
 import org.ardulink.core.ConnectionListener;
+import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion] This component listens for connection or
  * disconnection events showing the state of a Link in the GUI.
  * 
-* project Ardulink http://www.ardulink.org/
+ * project Ardulink http://www.ardulink.org/
+ * 
  * @see ConnectionListener [adsense]
  *
  */
-public class ConnectionStatus extends JPanel implements ConnectionListener, Linkable {
+public class ConnectionStatus extends JPanel implements Linkable {
+
+	private static final String ICON_FOLDER = "icons/";
 
 	private static final long serialVersionUID = 6630818070505677116L;
 
 	private JLabel lblStatelabel;
 
-	private static final String CONNECTED = "connected";
-	private static final String DISCONNECTED = "disconnected";
+	private static final String CONNECTED_TEXT = "connected";
+	private static final String DISCONNECTED_TEXT = "disconnected";
 
-	private static final String CONNECTED_ICON_NAME = "icons/connect_established.png";
-	private static final String DISCONNECTED_ICON_NAME = "icons/connect_no.png";
+	private static final ImageIcon CONNECTED_ICON = loadIcon("connect_established.png");
+	private static final ImageIcon DISCONNECTED_ICON = loadIcon("connect_no.png");
 
-	private static final ImageIcon CONNECTED_ICON = new ImageIcon(
-			ConnectionStatus.class.getResource(CONNECTED_ICON_NAME));
-	private static final ImageIcon DISCONNECTED_ICON = new ImageIcon(
-			ConnectionStatus.class.getResource(DISCONNECTED_ICON_NAME));
+	private static ImageIcon loadIcon(String iconName) {
+		return new ImageIcon(ConnectionStatus.class.getResource(ICON_FOLDER
+				+ iconName));
+	}
 
-	private Link link;
+	private Link link = Link.NO_LINK;
+
+	private final ConnectionListener connectionListener = new ConnectionListener() {
+
+		@Override
+		public void connectionLost() {
+			lblStatelabel.setText(DISCONNECTED_TEXT);
+			lblStatelabel.setIcon(DISCONNECTED_ICON);
+		}
+
+		@Override
+		public void reconnected() {
+			lblStatelabel.setText(CONNECTED_TEXT);
+			lblStatelabel.setIcon(CONNECTED_ICON);
+		}
+
+	};
 
 	/**
 	 * Create the panel.
 	 */
 	public ConnectionStatus() {
 		lblStatelabel = new JLabel();
-		connectionLost();
+		this.connectionListener.connectionLost();
 		add(lblStatelabel);
 	}
 
 	@Override
-	public void connectionLost() {
-		lblStatelabel.setText(DISCONNECTED);
-		lblStatelabel.setIcon(DISCONNECTED_ICON);
-	}
-
-	@Override
-	public void reconnected() {
-		lblStatelabel.setText(CONNECTED);
-		lblStatelabel.setIcon(CONNECTED_ICON);
-	}
-
-	@Override
 	public void setLink(Link link) {
-		if(this.link != null) {
-			link.removeConnectionListener(this);
-		}
+		this.link.removeConnectionListener(this.connectionListener);
 		this.link = link;
-		if(link != null) {
-			link.addConnectionListener(this);
-		}
+		this.link.addConnectionListener(this.connectionListener);
 	}
 
 }

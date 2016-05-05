@@ -60,8 +60,4 @@ public interface Link extends Closeable {
 
 	void sendCustomMessage(String... messages) throws IOException;
 
-	Link addConnectionListener(ConnectionListener connectionListener);
-
-	Link removeConnectionListener(ConnectionListener connectionListener);
-
 }
