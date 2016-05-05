@@ -18,17 +18,15 @@ package org.ardulink.core.serial.rxtx.connectionmanager;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static org.ardulink.util.Lists.newArrayList;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-import java.util.Arrays;
-
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.util.Lists;
 import org.ardulink.util.URIs;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -59,8 +57,8 @@ public class SerialLinkFactoryIntegrationTest {
 		Configurer configurer = connectionManager.getConfigurer(URIs
 				.newURI("ardulink://serial"));
 
-		assertThat(Lists.newArrayList(configurer.getAttributes()),
-				is(Arrays.asList("port", "proto", "speed")));
+		assertThat(newArrayList(configurer.getAttributes()),
+				is(newArrayList("port", "proto", "speed")));
 
 		ConfigAttribute port = configurer.getAttribute("port");
 		ConfigAttribute proto = configurer.getAttribute("proto");
