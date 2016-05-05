@@ -33,7 +33,7 @@ import java.util.Arrays;
  */
 public abstract class Optional<T> {
 
-	public static class PresentOptional<T> extends Optional<T> {
+	private static class PresentOptional<T> extends Optional<T> {
 
 		private final T value;
 
@@ -63,7 +63,8 @@ public abstract class Optional<T> {
 
 	}
 
-	private static Optional<Object> absent = new Optional<Object>() {
+	private static final class AbsentOptional extends Optional<Object> {
+
 		@Override
 		public boolean isPresent() {
 			return false;
@@ -81,9 +82,10 @@ public abstract class Optional<T> {
 
 		public String toString() {
 			return "Optional.absent";
-		};
+		}
+	}
 
-	};
+	private static final Optional<Object> absent = new AbsentOptional();
 
 	private Optional() {
 		super();
