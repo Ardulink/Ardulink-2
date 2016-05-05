@@ -25,6 +25,8 @@ import java.awt.Component;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.net.URI;
 
 import javax.swing.ComboBoxModel;
@@ -36,7 +38,6 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -44,8 +45,6 @@ import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
@@ -54,7 +53,7 @@ import org.ardulink.core.linkmanager.LinkManager.ValidationInfo;
 import org.ardulink.util.Primitive;
 
 public class GenericPanelBuilder implements PanelBuilder {
-	
+
 	@Override
 	public boolean canHandle(URI uri) {
 		// we can handle all URIs
@@ -159,22 +158,12 @@ public class GenericPanelBuilder implements PanelBuilder {
 			final JTextField jTextField = new JTextField(value == null ? ""
 					: String.valueOf(value));
 
-			jTextField.getDocument().addDocumentListener(new DocumentListener() {
-			  public void changedUpdate(DocumentEvent e) {
-			    updateAttribute();
-			  }
-			  public void removeUpdate(DocumentEvent e) {
-			    updateAttribute();
-			  }
-			  public void insertUpdate(DocumentEvent e) {
-			    updateAttribute();
-			  }
-
-			  public void updateAttribute() {
-				  attribute.setValue(jTextField.getText());
-			  }
-			});			
-			
+			jTextField.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(FocusEvent e) {
+					attribute.setValue(jTextField.getText());
+				}
+			});
 			return jTextField;
 		}
 	}
