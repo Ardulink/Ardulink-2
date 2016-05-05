@@ -21,7 +21,6 @@ import static org.ardulink.util.Iterables.forEnumeration;
 import static org.ardulink.util.Iterables.getFirst;
 import gnu.io.CommPortIdentifier;
 
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -33,6 +32,7 @@ import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.util.Lists;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -85,14 +85,14 @@ public class SerialLinkConfig implements LinkConfig {
 	}
 
 	@ChoiceFor("port")
-	public String[] listPorts() {
-		List<String> ports = new ArrayList<String>();
+	public List<String> listPorts() {
+		List<String> ports = Lists.newArrayList();
 		for (CommPortIdentifier portIdentifier : portIdentifiers()) {
 			if (portIdentifier.getPortType() == PORT_SERIAL) {
 				ports.add(portIdentifier.getName());
 			}
 		}
-		return ports.toArray(new String[ports.size()]);
+		return ports;
 	}
 
 	@ChoiceFor("proto")
