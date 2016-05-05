@@ -92,7 +92,7 @@ public class QosLinkTest {
 				.thenRespond("alp://rply/ko?id=%s");
 		Connection connection = connectionTo(arduino);
 		qosLink = new ConnectionBasedQosLink(connection,
-				ArdulinkProtocol2.instance(), 500, MILLISECONDS);
+				ArdulinkProtocol2.instance(), 750, MILLISECONDS);
 		exceptions.expect(IllegalStateException.class);
 		exceptions.expectMessage(allOf(containsString("status"),
 				containsString("not ok")));
