@@ -35,7 +35,6 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
-import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.linkmanager.LinkManager;
@@ -53,8 +52,7 @@ import org.ardulink.util.URIs;
  * [adsense]
  *
  */
-public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
-		Linkable {
+public class SimpleSmartCarDriver extends JFrame implements Linkable {
 
 	private static final long serialVersionUID = 6065022178316507177L;
 
@@ -76,6 +74,24 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 	private static final ImageIcon LEFT_ICON = loadIcon("arrow-left.png");
 	private static final ImageIcon RIGHT_ICON = loadIcon("arrow-right.png");
 	private static final ImageIcon BACK_ICON = loadIcon("arrow-down.png");
+
+	private final ConnectionListener connectionListner = new ConnectionListener() {
+
+		@Override
+		public void reconnected() {
+			bluetoothConnectionPanel.setEnabled(false);
+			btnConnect.setEnabled(false);
+			btnDisconnect.setEnabled(true);
+		}
+
+		@Override
+		public void connectionLost() {
+			bluetoothConnectionPanel.setEnabled(true);
+			btnConnect.setEnabled(true);
+			btnDisconnect.setEnabled(false);
+		}
+
+	};
 
 	private static ImageIcon loadIcon(String iconName) {
 		return new ImageIcon(SimpleSmartCarDriver.class.getResource(ICON_FOLDER
@@ -218,33 +234,12 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 
 	@Override
 	public void setLink(Link link) {
-		org.ardulink.core.Link delegate = this.link.getDelegate();
-		if (delegate instanceof ConnectionBasedLink) {
-			((ConnectionBasedLink) delegate).removeConnectionListener(this);
-		}
+		this.link.getDelegate().removeConnectionListener(connectionListner);
 		this.link = link;
-		delegate = this.link.getDelegate();
-		if (delegate instanceof ConnectionBasedLink) {
-			((ConnectionBasedLink) delegate).addConnectionListener(this);
-		} else {
-			connectionLost();
-		}
+		this.link.getDelegate().addConnectionListener(connectionListner);
 		for (Linkable linkable : linkables) {
 			linkable.setLink(link);
 		}
 	}
 
-	@Override
-	public void reconnected() {
-		bluetoothConnectionPanel.setEnabled(false);
-		btnConnect.setEnabled(false);
-		btnDisconnect.setEnabled(true);
-	}
-
-	@Override
-	public void connectionLost() {
-		bluetoothConnectionPanel.setEnabled(true);
-		btnConnect.setEnabled(true);
-		btnDisconnect.setEnabled(false);
-	}
 }

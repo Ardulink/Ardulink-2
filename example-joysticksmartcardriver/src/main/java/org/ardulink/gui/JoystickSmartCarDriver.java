@@ -31,7 +31,6 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
-import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.linkmanager.LinkManager;
@@ -49,8 +48,7 @@ import org.ardulink.util.URIs;
  * [adsense]
  *
  */
-public class JoystickSmartCarDriver extends JFrame implements
-		ConnectionListener, Linkable {
+public class JoystickSmartCarDriver extends JFrame implements Linkable {
 
 	private static final long serialVersionUID = 1402473246181814940L;
 
@@ -64,6 +62,24 @@ public class JoystickSmartCarDriver extends JFrame implements
 	private JPanel controlPanel;
 	private ModifiableJoystick joystick;
 	private MotorDriver motorDriver = new MotorDriver();
+
+	private final ConnectionListener connectionListner = new ConnectionListener() {
+
+		@Override
+		public void reconnected() {
+			bluetoothConnectionPanel.setEnabled(false);
+			btnConnect.setEnabled(false);
+			btnDisconnect.setEnabled(true);
+		}
+
+		@Override
+		public void connectionLost() {
+			bluetoothConnectionPanel.setEnabled(true);
+			btnConnect.setEnabled(true);
+			btnDisconnect.setEnabled(false);
+		}
+
+	};
 
 	/**
 	 * Launch the application.
@@ -157,33 +173,12 @@ public class JoystickSmartCarDriver extends JFrame implements
 
 	@Override
 	public void setLink(Link link) {
-		org.ardulink.core.Link delegate = this.link.getDelegate();
-		if (delegate instanceof ConnectionBasedLink) {
-			((ConnectionBasedLink) delegate).removeConnectionListener(this);
-		}
+		this.link.getDelegate().removeConnectionListener(connectionListner);
 		this.link = link;
-		delegate = this.link.getDelegate();
-		if (delegate instanceof ConnectionBasedLink) {
-			((ConnectionBasedLink) delegate).addConnectionListener(this);
-		} else {
-			connectionLost();
-		}
+		this.link.getDelegate().addConnectionListener(connectionListner);
 		for (Linkable linkable : linkables) {
 			linkable.setLink(link);
 		}
 	}
 
-	@Override
-	public void reconnected() {
-		bluetoothConnectionPanel.setEnabled(false);
-		btnConnect.setEnabled(false);
-		btnDisconnect.setEnabled(true);
-	}
-
-	@Override
-	public void connectionLost() {
-		bluetoothConnectionPanel.setEnabled(true);
-		btnConnect.setEnabled(true);
-		btnDisconnect.setEnabled(false);
-	}
 }
