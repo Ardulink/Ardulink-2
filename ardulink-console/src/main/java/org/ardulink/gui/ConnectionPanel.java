@@ -20,6 +20,7 @@ import static java.awt.event.ItemEvent.SELECTED;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.gui.GridBagConstraintsBuilder.constraints;
+import static org.ardulink.util.Throwables.getRootCause;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.awt.Component;
@@ -49,7 +50,6 @@ import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.gui.facility.UtilityGeometry;
 import org.ardulink.legacy.Link;
-import org.ardulink.util.Throwables;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -158,7 +158,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 			private void errorPanel(Exception e) {
 				JPanel newPanel = new JPanel();
 				newPanel.setBackground(RED);
-				newPanel.add(new JLabel(e.getMessage()));
+				newPanel.add(new JLabel(getRootCause(e).getMessage()));
 				exchangePanel(newPanel);
 				throw propagate(e);
 			}
