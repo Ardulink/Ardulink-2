@@ -18,8 +18,6 @@ limitations under the License.
 
 package org.ardulink.gui;
 
-import static org.ardulink.util.Throwables.propagate;
-
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -27,13 +25,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
-import javax.sql.ConnectionEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -42,13 +35,15 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.ConnectionListener;
+import org.ardulink.core.convenience.Links;
+import org.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.gui.customcomponents.SignalButton;
 import org.ardulink.legacy.Link;
 import org.ardulink.util.Lists;
 import org.ardulink.util.URIs;
-import org.ardulink.core.ConnectionBasedLink;
-import org.ardulink.core.ConnectionListener;
-import org.ardulink.core.convenience.Links;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -134,11 +129,11 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 		btnConnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				if (link != null) {
-					String deviceName = bluetoothConnectionPanel
-							.getSelectedDevice();
-					link = new Link.LegacyLinkAdapter(Links.getLink(URIs
-							.newURI("ardulink://bluetooth?deviceName="
-									+ deviceName)));
+					Configurer configurer = LinkManager.getInstance()
+							.getConfigurer(URIs.newURI("ardulink://bluetooth"));
+					configurer.getAttribute("deviceName").setValue(
+							bluetoothConnectionPanel.getSelectedDevice());
+					link = new Link.LegacyLinkAdapter(Links.getLink(configurer));
 				}
 			}
 		});

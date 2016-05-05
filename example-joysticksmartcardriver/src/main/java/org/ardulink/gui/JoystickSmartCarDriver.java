@@ -18,14 +18,10 @@ limitations under the License.
 
 package org.ardulink.gui;
 
-import static org.ardulink.util.Throwables.propagate;
-
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -35,14 +31,15 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
-import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
-import org.ardulink.legacy.Link;
-import org.ardulink.util.Lists;
-import org.ardulink.util.Throwables;
-import org.ardulink.util.URIs;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.convenience.Links;
+import org.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
+import org.ardulink.legacy.Link;
+import org.ardulink.util.Lists;
+import org.ardulink.util.URIs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -114,11 +111,11 @@ public class JoystickSmartCarDriver extends JFrame implements
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				if (link != null) {
-					String deviceName = bluetoothConnectionPanel
-							.getSelectedDevice();
-					link = new Link.LegacyLinkAdapter(Links.getLink(URIs
-							.newURI("ardulink://bluetooth?deviceName="
-									+ deviceName)));
+					Configurer configurer = LinkManager.getInstance()
+							.getConfigurer(URIs.newURI("ardulink://bluetooth"));
+					configurer.getAttribute("deviceName").setValue(
+							bluetoothConnectionPanel.getSelectedDevice());
+					link = new Link.LegacyLinkAdapter(Links.getLink(configurer));
 				}
 			}
 
