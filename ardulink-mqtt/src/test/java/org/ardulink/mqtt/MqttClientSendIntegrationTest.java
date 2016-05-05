@@ -48,7 +48,7 @@ import org.junit.rules.Timeout;
  * [adsense]
  *
  */
-public class MqttClientIntegrationSend {
+public class MqttClientSendIntegrationTest {
 
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
