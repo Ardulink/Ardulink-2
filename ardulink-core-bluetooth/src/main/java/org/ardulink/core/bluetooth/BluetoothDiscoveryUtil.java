@@ -1,5 +1,7 @@
 package org.ardulink.core.bluetooth;
 
+import static org.ardulink.util.Throwables.propagate;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +33,7 @@ public class BluetoothDiscoveryUtil {
 				lock.wait();
 			}
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 
 		for (RemoteDevice device : devices) {
@@ -42,7 +44,7 @@ public class BluetoothDiscoveryUtil {
 					lock.wait();
 				}
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -132,7 +134,7 @@ public class BluetoothDiscoveryUtil {
 		try {
 			return LocalDevice.getLocalDevice();
 		} catch (BluetoothStateException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 

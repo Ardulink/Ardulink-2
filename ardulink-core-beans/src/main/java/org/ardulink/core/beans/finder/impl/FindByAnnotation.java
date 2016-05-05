@@ -20,6 +20,7 @@ import static org.ardulink.core.beans.finder.impl.ReadMethod.isReadMethod;
 import static org.ardulink.core.beans.finder.impl.WriteMethod.isWriteMethod;
 import static java.lang.reflect.Modifier.isPublic;
 import static org.ardulink.util.Preconditions.checkArgument;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -31,7 +32,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.ardulink.util.Optional;
-
 import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.Attribute.AttributeWriter;
 import org.ardulink.core.beans.finder.api.AttributeFinder;
@@ -137,7 +137,7 @@ public class FindByAnnotation implements AttributeFinder {
 		try {
 			return annotationClass.getMethod(annotationAttribute);
 		} catch (SecurityException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		} catch (NoSuchMethodException e) {
 			throw new IllegalArgumentException(annotationClass.getName()
 					+ " has no attribute named " + annotationAttribute);

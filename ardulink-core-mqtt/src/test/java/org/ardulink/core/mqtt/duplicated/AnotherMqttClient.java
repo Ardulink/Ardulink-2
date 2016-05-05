@@ -18,6 +18,7 @@ package org.ardulink.core.mqtt.duplicated;
 
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.util.Throwables.propagate;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
@@ -35,7 +36,6 @@ import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.Topic;
 import org.junit.rules.ExternalResource;
-
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
 
@@ -83,7 +83,7 @@ public class AnotherMqttClient extends ExternalResource {
 			client.setHost("tcp://" + host + ":" + port);
 			return client;
 		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 
@@ -121,7 +121,7 @@ public class AnotherMqttClient extends ExternalResource {
 		try {
 			MILLISECONDS.sleep(25);
 		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
+			Thread.currentThread().interrupt();
 		}
 		return new ArrayList<Message>(this.messages);
 	}
@@ -147,7 +147,7 @@ public class AnotherMqttClient extends ExternalResource {
 		try {
 			close();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 

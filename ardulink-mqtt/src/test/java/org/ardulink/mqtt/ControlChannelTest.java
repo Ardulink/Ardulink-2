@@ -22,6 +22,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.mqtt.util.MqttMessageBuilder.mqttMessageWithBasicTopic;
+import static org.ardulink.util.Throwables.propagate;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -30,7 +31,6 @@ import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Test;
-
 import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.StreamConnection;
@@ -162,7 +162,7 @@ public class ControlChannelTest {
 		try {
 			outputStream.close();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 		return new String(outputStream.toByteArray());
 	}

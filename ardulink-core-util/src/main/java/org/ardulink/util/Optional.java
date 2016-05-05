@@ -18,6 +18,7 @@ package org.ardulink.util;
 
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -132,7 +133,7 @@ public abstract class Optional<T> {
 					"Class %s does not define a String constructor",
 					exceptionClass).newInstance(message);
 		} catch (Exception e1) {
-			throw new RuntimeException(e1);
+			throw propagate(e1);
 		}
 	}
 

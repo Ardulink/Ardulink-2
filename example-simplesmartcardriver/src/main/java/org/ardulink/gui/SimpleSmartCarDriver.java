@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.ardulink.gui;
 
+import static org.ardulink.util.Throwables.propagate;
+
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -43,7 +45,6 @@ import javax.swing.border.EmptyBorder;
 import org.ardulink.gui.customcomponents.SignalButton;
 import org.ardulink.legacy.Link;
 import org.ardulink.util.Lists;
-
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.convenience.Links;
@@ -139,10 +140,8 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 								.getLink(new URI(
 										"ardulink://bluetooth?deviceName="
 												+ deviceName)));
-					} catch (URISyntaxException e) {
-						throw new RuntimeException(e);
 					} catch (Exception e) {
-						throw new RuntimeException(e);
+						throw propagate(e);
 					}
 				}
 			}

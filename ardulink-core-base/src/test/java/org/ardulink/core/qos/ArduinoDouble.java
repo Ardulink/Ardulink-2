@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.qos;
 
+import static org.ardulink.util.Throwables.propagate;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -29,7 +31,6 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.ardulink.util.Lists;
-
 import org.ardulink.core.StreamReader;
 import org.ardulink.core.proto.api.Protocol;
 
@@ -144,7 +145,7 @@ public class ArduinoDouble implements Closeable {
 						timeUnit.sleep(i);
 						ArduinoDouble.this.send(message);
 					} catch (Exception e) {
-						throw new RuntimeException(e);
+						throw propagate(e);
 					}
 				}
 			});

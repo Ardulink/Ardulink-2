@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.proxy;
 
 import static org.ardulink.core.proxy.ProxyLinkFactory.OK;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
@@ -57,7 +57,7 @@ public class ProxyServerDouble extends ExternalResource {
 		try {
 			return new ServerSocket(port);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 
@@ -111,7 +111,7 @@ public class ProxyServerDouble extends ExternalResource {
 		try {
 			this.serverSocket.close();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 
@@ -150,7 +150,7 @@ public class ProxyServerDouble extends ExternalResource {
 		try {
 			TimeUnit.MILLISECONDS.sleep(50);
 		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
+			Thread.currentThread().interrupt();
 		}
 		return received;
 	}

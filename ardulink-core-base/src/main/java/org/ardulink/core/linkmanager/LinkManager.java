@@ -23,6 +23,7 @@ import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnot
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
@@ -235,7 +236,7 @@ public abstract class LinkManager {
 				try {
 					return this.attribute.readValue();
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw propagate(e);
 				}
 			}
 
@@ -245,7 +246,7 @@ public abstract class LinkManager {
 					this.attribute.writeValue(value);
 					changed = true;
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw propagate(e);
 				}
 			}
 
@@ -273,7 +274,7 @@ public abstract class LinkManager {
 					return this.cachedChoiceValues
 							.toArray(new Object[this.cachedChoiceValues.size()]);
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw propagate(e);
 				}
 			}
 
@@ -431,7 +432,7 @@ public abstract class LinkManager {
 			try {
 				return new CacheKey();
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -440,7 +441,7 @@ public abstract class LinkManager {
 			try {
 				return beanProperties.attributeNames();
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -496,7 +497,7 @@ public abstract class LinkManager {
 					try {
 						result.add(new URI(format("%s://%s", SCHEMA, name)));
 					} catch (URISyntaxException e) {
-						throw new RuntimeException(e);
+						throw propagate(e);
 					}
 				}
 				return result;

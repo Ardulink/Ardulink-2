@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.digispark;
 
+import static org.ardulink.util.Throwables.propagate;
+
 import java.util.Set;
 
 import org.ardulink.core.linkmanager.LinkConfig;
@@ -44,7 +46,7 @@ public class DigisparkLinkConfig implements LinkConfig {
 		try {
 			return DigisparkDiscoveryUtil.getDevices().keySet();
 		} catch (USBException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 

@@ -114,8 +114,8 @@ public class DataReceiver {
 						rawDataListener());
 			}
 
-		} catch (InterruptedException e1) {
-			throw new RuntimeException(e1);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 		}
 
 	}

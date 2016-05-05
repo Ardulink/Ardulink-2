@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.ardulink.gui;
 
+import static org.ardulink.util.Throwables.propagate;
+
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -36,7 +38,7 @@ import javax.swing.border.EmptyBorder;
 import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.legacy.Link;
 import org.ardulink.util.Lists;
-
+import org.ardulink.util.Throwables;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.convenience.Links;
@@ -118,10 +120,8 @@ public class JoystickSmartCarDriver extends JFrame implements
 								.getLink(new URI(
 										"ardulink://bluetooth?deviceName="
 												+ deviceName)));
-					} catch (URISyntaxException e) {
-						throw new RuntimeException(e);
 					} catch (Exception e) {
-						throw new RuntimeException(e);
+						throw propagate(e);
 					}
 				}
 			}

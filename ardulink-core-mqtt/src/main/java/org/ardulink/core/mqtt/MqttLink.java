@@ -24,6 +24,7 @@ import static java.util.Collections.unmodifiableMap;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Preconditions.checkArgument;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -43,7 +44,6 @@ import org.fusesource.mqtt.client.Message;
 import org.fusesource.mqtt.client.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
@@ -222,7 +222,7 @@ public class MqttLink extends AbstractListenerLink {
 		try {
 			client.setHost("tcp://" + config.getHost() + ":" + config.getPort());
 		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 		return client;
 
@@ -308,7 +308,7 @@ public class MqttLink extends AbstractListenerLink {
 			}
 			super.close();
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 

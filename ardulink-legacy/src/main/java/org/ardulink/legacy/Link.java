@@ -18,6 +18,7 @@ package org.ardulink.legacy;
 
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.util.Throwables.propagate;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.IOException;
@@ -94,7 +95,7 @@ public abstract class Link {
 			try {
 				delegate.addListener(listener);
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -112,7 +113,7 @@ public abstract class Link {
 			try {
 				this.delegate.removeListener(listener);
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -123,7 +124,7 @@ public abstract class Link {
 				this.delegate.sendKeyPressEvent(keyChar, keyCode, keyLocation,
 						modifiers, modifiersEx);
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -132,7 +133,7 @@ public abstract class Link {
 			try {
 				this.delegate.switchAnalogPin(analogPin(pin), powerValue);
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -141,7 +142,7 @@ public abstract class Link {
 			try {
 				this.delegate.switchDigitalPin(digitalPin(pin), state);
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -151,7 +152,7 @@ public abstract class Link {
 				this.delegate.sendTone(Tone.forPin(analogPin(pin))
 						.withHertz(frequency).endless());
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -162,7 +163,7 @@ public abstract class Link {
 						.withHertz(frequency)
 						.withDuration(duration, MILLISECONDS));
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -171,7 +172,7 @@ public abstract class Link {
 			try {
 				this.delegate.sendNoTone(analogPin(pin));
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -180,7 +181,7 @@ public abstract class Link {
 			try {
 				this.delegate.sendCustomMessage(messages);
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -299,9 +300,9 @@ public abstract class Link {
 					.getConfigurer(uri);
 			return new LegacyLinkAdapter(configurer);
 		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 

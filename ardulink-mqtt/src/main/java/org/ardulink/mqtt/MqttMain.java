@@ -23,6 +23,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.mqtt.AbstractMqttAdapter.CompactStrategy.AVERAGE;
 import static org.ardulink.mqtt.compactors.Tolerance.maxTolerance;
 import static org.ardulink.util.Strings.nullOrEmpty;
+import static org.ardulink.util.Throwables.propagate;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 import static org.fusesource.mqtt.client.QoS.AT_MOST_ONCE;
 import io.moquette.server.Server;
@@ -119,7 +120,7 @@ public class MqttMain {
 			try {
 				this.client = newClient(brokerHost, brokerPort, clientId);
 			} catch (URISyntaxException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -167,7 +168,7 @@ public class MqttMain {
 			try {
 				publish(topic, message);
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 

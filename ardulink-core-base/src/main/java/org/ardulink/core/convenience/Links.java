@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.convenience;
 
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
 import java.net.URI;
@@ -56,9 +57,9 @@ public final class Links {
 		try {
 			return getLink(getDefaultConfigurer());
 		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 
@@ -86,7 +87,7 @@ public final class Links {
 		try {
 			return new URI("ardulink://serial");
 		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 

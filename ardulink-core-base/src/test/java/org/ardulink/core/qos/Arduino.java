@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.qos;
 
+import static org.ardulink.util.Throwables.propagate;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.junit.rules.ExternalResource;
-
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.qos.ArduinoDouble.Adder;
@@ -58,7 +59,7 @@ public class Arduino extends ExternalResource {
 		try {
 			return new ArduinoDouble(protocol);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 
@@ -67,7 +68,7 @@ public class Arduino extends ExternalResource {
 		try {
 			this.arduinoDouble.close();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 

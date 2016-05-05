@@ -24,6 +24,7 @@ import static ch.ntb.usb.LibusbJava.usb_set_configuration;
 import static ch.ntb.usb.LibusbJava.usb_strerror;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
 import java.util.Map;
@@ -59,7 +60,7 @@ public class DigisparkConnection extends AbstractConnection {
 		try {
 			return DigisparkDiscoveryUtil.getDevices();
 		} catch (USBException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 

@@ -18,6 +18,7 @@ package org.ardulink.mqtt.util;
 
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.util.Throwables.propagate;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
@@ -35,9 +36,9 @@ import org.fusesource.mqtt.client.Future;
 import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.Topic;
-
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
+import org.ardulink.util.Lists;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -82,7 +83,7 @@ public class AnotherMqttClient implements Closeable {
 				client.connect();
 				return client;
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -121,7 +122,7 @@ public class AnotherMqttClient implements Closeable {
 			client.setHost("tcp://" + host + ":" + port);
 			return client;
 		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 
@@ -154,9 +155,9 @@ public class AnotherMqttClient implements Closeable {
 		try {
 			MILLISECONDS.sleep(25);
 		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
+			Thread.currentThread().interrupt();
 		}
-		return new ArrayList<Message>(this.messages);
+		return Lists.newArrayList(this.messages);
 	}
 
 	public List<Message> pollMessages() {
