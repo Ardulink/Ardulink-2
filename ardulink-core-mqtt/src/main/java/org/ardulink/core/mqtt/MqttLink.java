@@ -211,7 +211,7 @@ public class MqttLink extends AbstractListenerLink {
 
 			@Override
 			public void onConnected() {
-				fireRecconnected();
+				fireReconnected();
 			}
 		};
 	}

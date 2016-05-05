@@ -127,7 +127,7 @@ public abstract class AbstractListenerLink implements Link {
 		}
 	}
 
-	public void fireRecconnected() {
+	public void fireReconnected() {
 		for (ConnectionListener connectionListener : this.connectionListeners) {
 			try {
 				connectionListener.reconnected();
