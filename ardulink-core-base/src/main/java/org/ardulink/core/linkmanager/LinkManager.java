@@ -54,7 +54,6 @@ import org.ardulink.core.linkmanager.LinkConfig.Named;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
 import org.ardulink.util.Primitive;
-import org.ardulink.util.Strings;
 import org.ardulink.util.Throwables;
 import org.ardulink.util.URIs;
 
@@ -530,9 +529,7 @@ public abstract class LinkManager {
 			}
 
 			private Optional<String> systemProperty(String propertyName) {
-				String value = System.getProperty(propertyName);
-				return Strings.nullOrEmpty(value) ? Optional.<String> absent()
-						: Optional.of(value);
+				return Optional.ofNullable(System.getProperty(propertyName));
 			}
 
 			@Override
