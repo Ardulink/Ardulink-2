@@ -44,6 +44,7 @@ import org.ardulink.gui.event.PWMChangeEvent;
 import org.ardulink.gui.event.PWMControllerListener;
 import org.ardulink.gui.facility.IntMinMaxModel;
 import org.ardulink.legacy.Link;
+import org.ardulink.util.Lists;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -70,7 +71,7 @@ public class PWMController extends JPanel implements Linkable {
 	private JComboBox pinComboBox;
 	private JLabel lblPowerPinController;
 	
-	private List<PWMControllerListener> pwmControllerListeners = new LinkedList<PWMControllerListener>();
+	private List<PWMControllerListener> pwmControllerListeners = Lists.newArrayList();
 	
 	private Link link;
 

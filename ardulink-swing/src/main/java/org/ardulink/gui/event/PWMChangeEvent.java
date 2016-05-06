@@ -14,37 +14,37 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-*/
+ */
 
 package org.ardulink.gui.event;
 
 import org.ardulink.gui.PWMController;
 
 /**
- * [ardulinktitle] [ardulinkversion]
- * It implements an event from PWMController
-* project Ardulink http://www.ardulink.org/
+ * [ardulinktitle] [ardulinkversion] It implements an event from PWMController
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
+ * 
  * @see PWMController
  * @see PWMControllerListener
  */
 public class PWMChangeEvent {
-	
-	private int pwmValue = 0;
-	private PWMController source;
-	
-	public PWMChangeEvent(PWMController source, int pwmValue) {
-		super();
-		this.pwmValue = pwmValue;
+
+	private final Object source;
+	private final int pwmValue;
+
+	public PWMChangeEvent(Object source, int pwmValue) {
 		this.source = source;
+		this.pwmValue = pwmValue;
 	}
 
 	public int getPwmValue() {
 		return pwmValue;
 	}
 
-	public PWMController getSource() {
+	@Deprecated
+	public Object getSource() {
 		return source;
 	}
 }
