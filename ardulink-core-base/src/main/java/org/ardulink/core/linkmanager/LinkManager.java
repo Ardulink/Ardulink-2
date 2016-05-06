@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.ServiceLoader;
@@ -46,12 +47,14 @@ import javax.validation.constraints.Min;
 import org.ardulink.core.Link;
 import org.ardulink.core.beans.Attribute;
 import org.ardulink.core.beans.BeanProperties;
+import org.ardulink.core.classloader.ModuleClassLoader;
 import org.ardulink.core.linkmanager.LinkConfig.ChoiceFor;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.linkmanager.LinkConfig.Named;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
 import org.ardulink.util.Primitive;
+import org.ardulink.util.Strings;
 import org.ardulink.util.Throwables;
 import org.ardulink.util.URIs;
 
@@ -197,7 +200,8 @@ public abstract class LinkManager {
 						: resolveDeps(this.getChoicesFor);
 				I18n nls = linkConfig.getClass().getAnnotation(I18n.class);
 				this.nls = nls == null ? null : ResourceBundle.getBundle(nls
-						.value());
+						.value(), Locale.getDefault(), linkConfig.getClass()
+						.getClassLoader());
 			}
 
 			private List<ConfigAttribute> resolveDeps(Attribute choiceFor) {
@@ -514,8 +518,18 @@ public abstract class LinkManager {
 			}
 
 			private List<LinkFactory> getConnectionFactories() {
-				return Lists.newArrayList(ServiceLoader.load(LinkFactory.class)
-						.iterator());
+				return Lists.newArrayList(ServiceLoader.load(LinkFactory.class,
+						classloader()).iterator());
+			}
+
+			private ClassLoader classloader() {
+				ClassLoader classLoader = Thread.currentThread()
+						.getContextClassLoader();
+				String moduleDir = System.getProperty("ardulink.module.dir");
+				if (Strings.nullOrEmpty(moduleDir)) {
+					return classLoader;
+				}
+				return new ModuleClassLoader(classLoader, moduleDir);
 			}
 
 			@Override
