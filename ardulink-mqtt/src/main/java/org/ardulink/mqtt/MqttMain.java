@@ -304,19 +304,6 @@ public class MqttMain {
 	protected Link createLink() throws Exception {
 		Configurer configurer = LinkManager.getInstance().getConfigurer(
 				URIs.newURI(connString));
-
-		// are there choice values?
-		for (String key : configurer.getAttributes()) {
-			ConfigAttribute attribute = configurer.getAttribute(key);
-			if (attribute.hasChoiceValues()) {
-				Object[] choiceValues = attribute.getChoiceValues();
-				// we use the first one for each
-				if (choiceValues.length > 0) {
-					attribute.setValue(choiceValues[0]);
-				}
-			}
-		}
-
 		return configurer.newLink();
 	}
 
