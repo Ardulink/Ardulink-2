@@ -57,7 +57,7 @@ public class EventCollector implements EventListener {
 		try {
 			TimeUnit.MILLISECONDS.sleep(25);
 		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
+			Thread.currentThread().interrupt();
 		}
 		List<PinValueChangedEvent> list = events.asMap().get(type);
 		return list == null ? Collections.<PinValueChangedEvent> emptyList()

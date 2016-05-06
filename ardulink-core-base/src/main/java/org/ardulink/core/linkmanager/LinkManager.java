@@ -23,13 +23,13 @@ import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnot
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,6 +52,8 @@ import org.ardulink.core.linkmanager.LinkConfig.Named;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
 import org.ardulink.util.Primitive;
+import org.ardulink.util.Throwables;
+import org.ardulink.util.URIs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -153,7 +155,7 @@ public abstract class LinkManager {
 
 		ConfigAttribute getAttribute(String key);
 
-		Link newLink() throws Exception;
+		Link newLink();
 
 		/**
 		 * Creates an object that identifies the Configurer in its current state
@@ -235,7 +237,7 @@ public abstract class LinkManager {
 				try {
 					return this.attribute.readValue();
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw propagate(e);
 				}
 			}
 
@@ -245,7 +247,7 @@ public abstract class LinkManager {
 					this.attribute.writeValue(value);
 					changed = true;
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw propagate(e);
 				}
 			}
 
@@ -273,7 +275,7 @@ public abstract class LinkManager {
 					return this.cachedChoiceValues
 							.toArray(new Object[this.cachedChoiceValues.size()]);
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw propagate(e);
 				}
 			}
 
@@ -431,7 +433,7 @@ public abstract class LinkManager {
 			try {
 				return new CacheKey();
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -440,7 +442,7 @@ public abstract class LinkManager {
 			try {
 				return beanProperties.attributeNames();
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -455,9 +457,13 @@ public abstract class LinkManager {
 		}
 
 		@Override
-		public Link newLink() throws Exception {
+		public Link newLink() {
 			validate();
-			return this.linkFactory.newLink(this.linkConfig);
+			try {
+				return this.linkFactory.newLink(this.linkConfig);
+			} catch (Exception e) {
+				throw Throwables.propagate(e);
+			}
 		}
 
 		private void validate() {
@@ -492,12 +498,8 @@ public abstract class LinkManager {
 				List<LinkFactory> factories = getConnectionFactories();
 				List<URI> result = new ArrayList<URI>(factories.size());
 				for (LinkFactory<?> factory : factories) {
-					String name = factory.getName();
-					try {
-						result.add(new URI(format("%s://%s", SCHEMA, name)));
-					} catch (URISyntaxException e) {
-						throw new RuntimeException(e);
-					}
+					result.add(URIs.newURI(format("%s://%s", SCHEMA,
+							factory.getName())));
 				}
 				return result;
 			}

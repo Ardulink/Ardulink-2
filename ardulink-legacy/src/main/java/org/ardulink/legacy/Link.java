@@ -12,31 +12,32 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.legacy;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
+import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.Tone;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.util.URIs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
- * An adapter for the old legacy link (Ardulink 1 compatibility issue).
- * Users should migrate to new new API.
- * project Ardulink http://www.ardulink.org/
+ * An adapter for the old legacy link (Ardulink 1 compatibility issue). Users
+ * should migrate to new new API. project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *
@@ -49,19 +50,8 @@ public abstract class Link {
 		private final org.ardulink.core.Link delegate;
 		private Configurer configurer;
 
-		public LegacyLinkAdapter(
-				org.ardulink.core.Link delegate) {
+		public LegacyLinkAdapter(org.ardulink.core.Link delegate) {
 			this.delegate = delegate;
-		}
-
-		@Override
-		public void addConnectionListener(ConnectionListener connectionListener) {
-			delegate.addConnectionListener(connectionListener);
-		}
-
-		@Override
-		public void removeConnectionListener(ConnectionListener connectionListener) {
-			delegate.removeConnectionListener(connectionListener);
 		}
 
 		public LegacyLinkAdapter(Configurer configurer) throws Exception {
@@ -94,7 +84,7 @@ public abstract class Link {
 			try {
 				delegate.addListener(listener);
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -112,7 +102,7 @@ public abstract class Link {
 			try {
 				this.delegate.removeListener(listener);
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -123,7 +113,7 @@ public abstract class Link {
 				this.delegate.sendKeyPressEvent(keyChar, keyCode, keyLocation,
 						modifiers, modifiersEx);
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -132,7 +122,7 @@ public abstract class Link {
 			try {
 				this.delegate.switchAnalogPin(analogPin(pin), powerValue);
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -141,7 +131,7 @@ public abstract class Link {
 			try {
 				this.delegate.switchDigitalPin(digitalPin(pin), state);
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -151,7 +141,7 @@ public abstract class Link {
 				this.delegate.sendTone(Tone.forPin(analogPin(pin))
 						.withHertz(frequency).endless());
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -162,7 +152,7 @@ public abstract class Link {
 						.withHertz(frequency)
 						.withDuration(duration, MILLISECONDS));
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -171,7 +161,7 @@ public abstract class Link {
 			try {
 				this.delegate.sendNoTone(analogPin(pin));
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -180,7 +170,7 @@ public abstract class Link {
 			try {
 				this.delegate.sendCustomMessage(messages);
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 
@@ -193,6 +183,24 @@ public abstract class Link {
 				e.printStackTrace();
 				return false;
 			}
+		}
+
+		@Override
+		public void addConnectionListener(ConnectionListener connectionListener) {
+			if (delegate instanceof AbstractListenerLink) {
+				((AbstractListenerLink) delegate)
+						.removeConnectionListener(connectionListener);
+			}
+		}
+
+		@Override
+		public void removeConnectionListener(
+				ConnectionListener connectionListener) {
+			if (delegate instanceof AbstractListenerLink) {
+				((AbstractListenerLink) delegate)
+						.addConnectionListener(connectionListener);
+			}
+
 		}
 
 	}
@@ -276,9 +284,11 @@ public abstract class Link {
 		}
 
 		@Override
-		public void removeConnectionListener(ConnectionListener connectionListener) {
+		public void removeConnectionListener(
+				ConnectionListener connectionListener) {
 			// do nothing
 		}
+
 	};
 
 	private static Link defaultInstance;
@@ -294,14 +304,12 @@ public abstract class Link {
 
 	public static Link createInstance(String type) {
 		try {
-			URI uri = new URI("ardulink://" + type);
+			URI uri = URIs.newURI("ardulink://" + type);
 			Configurer configurer = LinkManager.getInstance()
 					.getConfigurer(uri);
 			return new LegacyLinkAdapter(configurer);
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 
@@ -340,6 +348,5 @@ public abstract class Link {
 
 	public abstract void removeConnectionListener(
 			ConnectionListener connectionListener);
-
 
 }

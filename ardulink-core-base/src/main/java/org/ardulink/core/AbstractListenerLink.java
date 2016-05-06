@@ -127,7 +127,7 @@ public abstract class AbstractListenerLink implements Link {
 		}
 	}
 
-	public void fireRecconnected() {
+	public void fireReconnected() {
 		for (ConnectionListener connectionListener : this.connectionListeners) {
 			try {
 				connectionListener.reconnected();
@@ -149,11 +149,13 @@ public abstract class AbstractListenerLink implements Link {
 		return false;
 	}
 
+	// TODO make this part of an interface, e.g. ConnectionStateObservable
 	public Link addConnectionListener(ConnectionListener connectionListener) {
 		connectionListeners.add(connectionListener);
 		return this;
 	}
 
+	// TODO make this part of an interface, e.g. ConnectionStateObservable
 	public Link removeConnectionListener(ConnectionListener connectionListener) {
 		connectionListeners.remove(connectionListener);
 		return this;

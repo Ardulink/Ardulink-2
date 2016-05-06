@@ -18,6 +18,7 @@ package org.ardulink.util;
 
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -32,7 +33,7 @@ import java.util.Arrays;
  */
 public abstract class Optional<T> {
 
-	public static class PresentOptional<T> extends Optional<T> {
+	private static class PresentOptional<T> extends Optional<T> {
 
 		private final T value;
 
@@ -62,7 +63,8 @@ public abstract class Optional<T> {
 
 	}
 
-	private static Optional<Object> absent = new Optional<Object>() {
+	private static final class AbsentOptional extends Optional<Object> {
+
 		@Override
 		public boolean isPresent() {
 			return false;
@@ -80,9 +82,10 @@ public abstract class Optional<T> {
 
 		public String toString() {
 			return "Optional.absent";
-		};
+		}
+	}
 
-	};
+	private static final Optional<Object> absent = new AbsentOptional();
 
 	private Optional() {
 		super();
@@ -113,11 +116,34 @@ public abstract class Optional<T> {
 		return or(null);
 	}
 
+	/**
+	 * Returns the optional's value if present. Throws a RuntimeException if the
+	 * optional if absent.
+	 * 
+	 * @param message
+	 *            message of RuntimeException including placeholders
+	 * @param args
+	 *            placeholder values
+	 * @return optional's value
+	 */
 	public T getOrThrow(String message, Object... args) {
 		checkState(isPresent(), message, args);
 		return get();
 	}
 
+	/**
+	 * Returns the optional's value if present. Throws a RuntimeException of the
+	 * passed type if the optional if absent.
+	 * 
+	 * @param exceptionClass
+	 *            type to create new exception. The class has to define a public
+	 *            String constructor.
+	 * @param message
+	 *            message of RuntimeException including placeholders
+	 * @param args
+	 *            placeholder values
+	 * @return optional's value
+	 */
 	public T getOrThrow(Class<? extends RuntimeException> exceptionClass,
 			String message, Object... args) {
 		if (isPresent()) {
@@ -132,7 +158,7 @@ public abstract class Optional<T> {
 					"Class %s does not define a String constructor",
 					exceptionClass).newInstance(message);
 		} catch (Exception e1) {
-			throw new RuntimeException(e1);
+			throw propagate(e1);
 		}
 	}
 
@@ -148,4 +174,5 @@ public abstract class Optional<T> {
 		}
 		return Optional.absent();
 	}
+
 }

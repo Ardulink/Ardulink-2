@@ -97,7 +97,7 @@ public class ProxyLinkConfig implements LinkConfig {
 
 	@ChoiceFor("proto")
 	public List<String> getProtos() {
-		return Protocols.list();
+		return Protocols.names();
 	}
 
 	public void setTcphost(String tcphost) {

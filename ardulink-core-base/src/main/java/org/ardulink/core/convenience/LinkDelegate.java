@@ -18,12 +18,11 @@ package org.ardulink.core.convenience;
 
 import java.io.IOException;
 
-import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
-import org.ardulink.core.Tone;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
+import org.ardulink.core.Tone;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.RplyListener;
 
@@ -106,14 +105,6 @@ public class LinkDelegate implements Link {
 			int keymodifiers, int keymodifiersex) throws IOException {
 		getDelegate().sendKeyPressEvent(keychar, keycode, keylocation,
 				keymodifiers, keymodifiersex);
-	}
-
-	public Link addConnectionListener(ConnectionListener connectionListener) {
-		return getDelegate().addConnectionListener(connectionListener);
-	}
-
-	public Link removeConnectionListener(ConnectionListener connectionListener) {
-		return getDelegate().removeConnectionListener(connectionListener);
 	}
 
 }

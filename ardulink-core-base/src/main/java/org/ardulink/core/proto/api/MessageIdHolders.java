@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.proto.api;
 
+import static org.ardulink.util.Throwables.propagate;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -71,9 +73,9 @@ public final class MessageIdHolders {
 		try {
 			return MessageIdHolder.class.getMethod("getId");
 		} catch (SecurityException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 

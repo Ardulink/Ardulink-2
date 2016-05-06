@@ -23,6 +23,7 @@ import static org.ardulink.mqtt.util.MqttMessageBuilder.mqttMessageWithBasicTopi
 import static org.ardulink.mqtt.util.TestUtil.analogPinChanged;
 import static org.ardulink.mqtt.util.TestUtil.digitalPinChanged;
 import static org.ardulink.mqtt.util.TestUtil.listWithSameOrder;
+import static org.ardulink.util.Throwables.propagate;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
@@ -40,7 +41,6 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
 import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.StreamConnection;
@@ -222,7 +222,7 @@ public class MqttAdapterTest {
 		try {
 			outputStream.close();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 		return new String(outputStream.toByteArray());
 	}

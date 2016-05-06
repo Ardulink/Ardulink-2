@@ -12,10 +12,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.ardulink.gui;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -28,7 +29,7 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URISyntaxException;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -38,8 +39,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -51,6 +50,7 @@ import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.ardulink.legacy.Link;
 import org.ardulink.legacy.Link.LegacyLinkAdapter;
+import org.ardulink.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * [adsense]
  *
  */
-public class Console extends JFrame implements Linkable, ConnectionListener {
+public class Console extends JFrame implements Linkable {
 
 	private static final long serialVersionUID = -5288916405936436557L;
 
@@ -76,13 +76,31 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 	private JButton btnDisconnect;
 	private ConnectionStatus connectionStatus;
 
-	private Link link;
+	private Link link = Link.NO_LINK;
 
 	private final List<Linkable> linkables = new LinkedList<Linkable>();
 
 	private static final Logger logger = LoggerFactory.getLogger(Console.class);
 
 	private ConnectionPanel connectionPanel;
+
+	private final ConnectionListener connectionListener = new ConnectionListener() {
+
+		@Override
+		public void connectionLost() {
+			btnConnect.setEnabled(true);
+			btnDisconnect.setEnabled(false);
+			connectionPanel.setEnabled(true);
+		}
+
+		@Override
+		public void reconnected() {
+			btnConnect.setEnabled(false);
+			btnDisconnect.setEnabled(true);
+			connectionPanel.setEnabled(false);
+		}
+
+	};
 
 	/**
 	 * Launch the application.
@@ -92,19 +110,39 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 			@Override
 			public void run() {
 				try {
-					for (LookAndFeelInfo laf : UIManager
-							.getInstalledLookAndFeels()) {
-						if ("Nimbus".equals(laf.getName())) {
-							UIManager.setLookAndFeel(laf.getClassName());
-						}
-					}
+					setLookAndFeel("Nimbus");
 					Console frame = new Console();
+					setupExceptionHandler(frame);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
+
 		});
+	}
+
+	private static void setupExceptionHandler(final Console console) {
+		final UncaughtExceptionHandler exceptionHandler = new UncaughtExceptionHandler() {
+			public void uncaughtException(final Thread thread, final Throwable t) {
+				try {
+					t.printStackTrace();
+					JOptionPane.showMessageDialog(console, Throwables
+							.getRootCause(t).getMessage(), "Error",
+							ERROR_MESSAGE);
+				} catch (final Throwable t2) {
+					/*
+					 * don't let the Throwable get thrown out, will cause
+					 * infinite looping!
+					 */
+					t2.printStackTrace();
+				}
+			}
+
+		};
+		Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
+		System.setProperty(
+				"sun.awt.exception.handler", exceptionHandler.getClass().getName()); //$NON-NLS-1$
 	}
 
 	/**
@@ -137,10 +175,6 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 			public void actionPerformed(ActionEvent event) {
 				try {
 					setLink(legacyAdapt(connectionPanel.createLink()));
-				} catch (URISyntaxException e) {
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(Console.this, e.getMessage(),
-							"Error", ERROR_MESSAGE);
 				} catch (Exception e) {
 					e.printStackTrace();
 					JOptionPane.showMessageDialog(Console.this, e.getMessage(),
@@ -148,12 +182,10 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 				}
 			}
 
-			private LegacyLinkAdapter legacyAdapt(
-					org.ardulink.core.Link link) {
+			private LegacyLinkAdapter legacyAdapt(org.ardulink.core.Link link) {
 				return new Link.LegacyLinkAdapter(link);
 			}
 
-			
 		});
 		connectPanel.add(btnConnect);
 
@@ -182,8 +214,7 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 		gbc_genericConnectionPanel.gridy = 1;
 		gbc_genericConnectionPanel.weightx = 1;
 		gbc_genericConnectionPanel.weighty = 1;
-		allConnectionsPanel.add(connectionPanel,
-				gbc_genericConnectionPanel);
+		allConnectionsPanel.add(connectionPanel, gbc_genericConnectionPanel);
 
 		keyControlPanel = new KeyPressController();
 		linkables.add(keyControlPanel);
@@ -281,7 +312,9 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 				}
 			}
 		});
-		connectionLost();
+		this.connectionListener.connectionLost();
+		// publish NO_LINK to all listeners
+		setLink(this.link);
 		pack();
 	}
 
@@ -346,14 +379,10 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 
 	@Override
 	public void setLink(Link link) {
-		if(this.link != null) {
-			this.link.removeConnectionListener(this);
-		}
+		this.link.removeConnectionListener(this.connectionListener);
 		this.link = link;
-		if(link != null) {
-			link.addConnectionListener(this);
-		}
-		callLinkables(link);
+		this.link.addConnectionListener(this.connectionListener);
+		callLinkables(this.link);
 	}
 
 	private void callLinkables(Link link) {
@@ -361,19 +390,4 @@ public class Console extends JFrame implements Linkable, ConnectionListener {
 			linkable.setLink(link);
 		}
 	}
-
-	@Override
-	public void connectionLost() {
-		btnConnect.setEnabled(true);
-		btnDisconnect.setEnabled(false);
-		connectionPanel.setEnabled(true);
-	}
-
-	@Override
-	public void reconnected() {
-		btnConnect.setEnabled(false);
-		btnDisconnect.setEnabled(true);
-		connectionPanel.setEnabled(false);
-	}
-
 }

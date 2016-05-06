@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.mqtt;
 
+import static org.ardulink.util.Throwables.propagate;
 import io.moquette.server.Server;
 
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class MqttBroker {
 				broker.startServer(properties());
 				return broker;
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw propagate(e);
 			}
 		}
 

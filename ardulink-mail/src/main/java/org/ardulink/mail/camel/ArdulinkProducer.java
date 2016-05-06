@@ -18,6 +18,7 @@ package org.ardulink.mail.camel;
 
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,7 +36,6 @@ import org.ardulink.util.Joiner;
 import org.ardulink.util.ListMultiMap;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
-
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 
@@ -61,9 +61,9 @@ public class ArdulinkProducer extends DefaultProducer {
 			}
 			this.link = Links.getLink(new URI(str));
 		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 

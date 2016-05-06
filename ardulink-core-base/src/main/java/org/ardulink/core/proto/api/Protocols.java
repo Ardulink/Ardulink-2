@@ -12,15 +12,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.proto.api;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 
+import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
 
 /**
@@ -39,7 +39,7 @@ public final class Protocols {
 
 	public static Protocol getByName(String name) {
 		return tryByName(name).getOrThrow(
-				"No protocol with name " + name + " registered");
+				"No protocol with name %s registered", name);
 	}
 
 	public static Optional<Protocol> tryByName(String name) {
@@ -52,8 +52,12 @@ public final class Protocols {
 		return Optional.absent();
 	}
 
-	public static List<String> list() {
-		List<String> names = new ArrayList<String>();
+	public static List<Protocol> list() {
+		return Lists.newArrayList(iterator());
+	}
+
+	public static List<String> names() {
+		List<String> names = Lists.newArrayList();
 		for (Iterator<Protocol> it = iterator(); it.hasNext();) {
 			names.add(it.next().getName());
 		}

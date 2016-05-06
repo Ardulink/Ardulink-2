@@ -12,18 +12,16 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.linkmanager;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-import java.net.URI;
-
-import org.junit.Test;
-
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.util.URIs;
+import org.junit.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -38,8 +36,8 @@ public class LinkManagerTest {
 	@Test
 	public void onceQueriedChoiceValuesStayValid() throws Exception {
 		LinkManager linkManager = LinkManager.getInstance();
-		Configurer configurer = linkManager.getConfigurer(new URI(
-				"ardulink://dummyLink"));
+		Configurer configurer = linkManager.getConfigurer(URIs
+				.newURI("ardulink://dummyLink"));
 
 		choiceValuesOfDNowAre("x", "y");
 

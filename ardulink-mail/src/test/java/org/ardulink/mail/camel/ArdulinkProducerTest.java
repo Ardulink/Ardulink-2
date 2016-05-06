@@ -22,6 +22,7 @@ import static java.util.Collections.singletonList;
 import static org.apache.camel.ExchangePattern.InOut;
 import static org.ardulink.mail.Commands.switchAnalogPin;
 import static org.ardulink.mail.Commands.switchDigitalPin;
+import static org.ardulink.util.Throwables.propagate;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -44,7 +45,6 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.convenience.Links;
@@ -171,7 +171,7 @@ public class ArdulinkProducerTest {
 		try {
 			return Links.getLink(new URI(uri));
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 

@@ -12,26 +12,35 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.mqtt;
 
-import static org.ardulink.core.Pin.analogPin;
-import static org.ardulink.core.Pin.digitalPin;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.unmodifiableMap;
-import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Preconditions.checkArgument;
+import static org.ardulink.util.Throwables.propagate;
+import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.ardulink.core.AbstractListenerLink;
+import org.ardulink.core.Pin;
+import org.ardulink.core.Pin.AnalogPin;
+import org.ardulink.core.Pin.DigitalPin;
+import org.ardulink.core.Pin.Type;
+import org.ardulink.core.Tone;
+import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
+import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
+import org.ardulink.util.URIs;
 import org.fusesource.hawtbuf.Buffer;
 import org.fusesource.hawtbuf.UTF8Buffer;
 import org.fusesource.mqtt.client.BlockingConnection;
@@ -43,15 +52,6 @@ import org.fusesource.mqtt.client.Message;
 import org.fusesource.mqtt.client.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.ardulink.core.AbstractListenerLink;
-import org.ardulink.core.Pin;
-import org.ardulink.core.Pin.AnalogPin;
-import org.ardulink.core.Pin.DigitalPin;
-import org.ardulink.core.Pin.Type;
-import org.ardulink.core.Tone;
-import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
-import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -211,7 +211,7 @@ public class MqttLink extends AbstractListenerLink {
 
 			@Override
 			public void onConnected() {
-				fireRecconnected();
+				fireReconnected();
 			}
 		};
 	}
@@ -219,11 +219,8 @@ public class MqttLink extends AbstractListenerLink {
 	private MQTT newClient(MqttLinkConfig config) {
 		MQTT client = new MQTT();
 		client.setClientId(config.getClientId());
-		try {
-			client.setHost("tcp://" + config.getHost() + ":" + config.getPort());
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
-		}
+		client.setHost(URIs.newURI("tcp://" + config.getHost() + ":"
+				+ config.getPort()));
 		return client;
 
 	}
@@ -308,7 +305,7 @@ public class MqttLink extends AbstractListenerLink {
 			}
 			super.close();
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 

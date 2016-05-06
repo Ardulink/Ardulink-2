@@ -12,32 +12,24 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.mqtt;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.rules.RuleChain.outerRule;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.Timeout;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
@@ -46,6 +38,12 @@ import org.ardulink.core.events.FilteredEventListenerAdapter;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
 import org.ardulink.core.mqtt.duplicated.Message;
+import org.ardulink.util.URIs;
+import org.junit.After;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.Timeout;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -67,17 +65,11 @@ public class MqttIntegrationTest {
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
 
-	private Link link;
-
-	@Before
-	public void setup() throws Exception {
-		this.link = LinkManager
-				.getInstance()
-				.getConfigurer(
-						new URI(
-								"ardulink://mqtt?host=localhost&port=1883&topic="
-										+ TOPIC)).newLink();
-	}
+	private Link link = LinkManager
+			.getInstance()
+			.getConfigurer(
+					URIs.newURI("ardulink://mqtt?host=localhost&port=1883&topic="
+							+ TOPIC)).newLink();
 
 	@After
 	public void tearDown() throws InterruptedException, IOException {

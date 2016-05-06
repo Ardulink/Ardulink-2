@@ -73,8 +73,8 @@ public class DummyLinkConfig implements LinkConfig {
 	}
 
 	@ChoiceFor("proto")
-	public static String[] getProtocolsMayAlsoBeStatic() {
-		List<String> names = Protocols.list();
+	public static String[] names() {
+		List<String> names = Protocols.names();
 		return names.toArray(new String[names.size()]);
 	}
 

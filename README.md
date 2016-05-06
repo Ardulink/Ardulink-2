@@ -1,5 +1,4 @@
-Ardulink-2
-==========
+# Ardulink-2 [![Build Status](https://travis-ci.org/Ardulink/Ardulink-2.svg?branch=master)](https://travis-ci.org/Ardulink/Ardulink-2)
 
 This is the repository for Ardulink 2. Ardulink 2 is a complete, open source, java solution for the control and coordination of Arduino boards. This repository contains Ardulink Version 0.6.2 and all upcoming releases.
 

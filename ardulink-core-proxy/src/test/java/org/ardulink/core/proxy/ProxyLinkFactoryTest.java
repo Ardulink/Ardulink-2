@@ -20,18 +20,17 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-import java.net.URI;
 import java.util.Arrays;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.util.URIs;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.Timeout;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -52,21 +51,21 @@ public class ProxyLinkFactoryTest {
 	private static final Object[] emptyArray = new Object[0];
 
 	@Test
-	public void canConnectWhileConfiguring() throws Exception {
+	public void canConnectWhileConfiguring() {
 		proxyServerDouble.setNumberOfPorts(0);
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(new URI(
-				"ardulink://proxy?tcphost=localhost&tcpport="
+		Configurer configurer = connectionManager.getConfigurer(URIs
+				.newURI("ardulink://proxy?tcphost=localhost&tcpport="
 						+ proxyServerDouble.getLocalPort()));
 		ConfigAttribute port = configurer.getAttribute("port");
 		assertThat(port.getChoiceValues(), is(emptyArray));
 	}
 
 	@Test
-	public void canReadAvailablePorts() throws Exception {
+	public void canReadAvailablePorts() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(new URI(
-				"ardulink://proxy?tcphost=localhost&tcpport="
+		Configurer configurer = connectionManager.getConfigurer(URIs
+				.newURI("ardulink://proxy?tcphost=localhost&tcpport="
 						+ proxyServerDouble.getLocalPort()));
 		ConfigAttribute port = configurer.getAttribute("port");
 		assertThat(port.getChoiceValues(),
@@ -78,8 +77,8 @@ public class ProxyLinkFactoryTest {
 	@Test
 	public void canConnect() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(new URI(
-				"ardulink://proxy?tcphost=localhost&tcpport="
+		Configurer configurer = connectionManager.getConfigurer(URIs
+				.newURI("ardulink://proxy?tcphost=localhost&tcpport="
 						+ proxyServerDouble.getLocalPort()));
 		ConfigAttribute port = configurer.getAttribute("port");
 		Object[] values = new String[] { "myPortNr0" };
@@ -96,8 +95,8 @@ public class ProxyLinkFactoryTest {
 	@Test
 	public void canSwitchAnalogPort() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(new URI(
-				"ardulink://proxy?tcphost=localhost&tcpport="
+		Configurer configurer = connectionManager.getConfigurer(URIs
+				.newURI("ardulink://proxy?tcphost=localhost&tcpport="
 						+ proxyServerDouble.getLocalPort()));
 		Object[] values = new String[] { "myPortNr0" };
 		configurer.getAttribute("port").setValue(values[0]);

@@ -12,27 +12,24 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.serial.rxtx.connectionmanager;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static org.ardulink.util.Lists.newArrayList;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.util.URIs;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -49,19 +46,19 @@ public class SerialLinkFactoryIntegrationTest {
 	@Test
 	public void canConfigureSerialConnectionViaURI() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(new URI(
-				"ardulink://serial?port=anyString&speed=9600"));
+		Configurer configurer = connectionManager.getConfigurer(URIs
+				.newURI("ardulink://serial?port=anyString&speed=9600"));
 		assertNotNull(configurer.newLink());
 	}
 
 	@Test
-	public void canConfigureSerialConnectionViaConfigurer() throws Exception {
+	public void canConfigureSerialConnectionViaConfigurer() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(new URI(
-				"ardulink://serial"));
+		Configurer configurer = connectionManager.getConfigurer(URIs
+				.newURI("ardulink://serial"));
 
-		assertThat(new ArrayList<String>(configurer.getAttributes()),
-				is(Arrays.asList("port", "proto", "speed")));
+		assertThat(newArrayList(configurer.getAttributes()),
+				is(newArrayList("port", "proto", "speed")));
 
 		ConfigAttribute port = configurer.getAttribute("port");
 		ConfigAttribute proto = configurer.getAttribute("proto");

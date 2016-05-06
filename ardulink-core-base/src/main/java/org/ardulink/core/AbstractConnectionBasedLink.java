@@ -21,6 +21,7 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.proto.api.MessageIdHolders.addMessageId;
+import static org.ardulink.util.Throwables.propagate;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.IOException;
@@ -29,7 +30,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.ardulink.util.StopWatch;
-
+import org.ardulink.util.Throwables;
 import org.ardulink.core.Connection.ListenerAdapter;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
@@ -188,7 +189,7 @@ public abstract class AbstractConnectionBasedLink extends AbstractListenerLink {
 				}
 			}
 		} catch (InterruptedException e) {
-			return false;
+			throw propagate(e);
 		} finally {
 			this.connection.removeListener(listener);
 		}

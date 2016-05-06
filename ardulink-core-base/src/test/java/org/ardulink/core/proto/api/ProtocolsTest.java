@@ -37,7 +37,7 @@ public class ProtocolsTest {
 	@Test
 	public void defaultAndDummyProtocolsAreRegistered() {
 		assertThat(
-				new HashSet<String>(Protocols.list()),
+				new HashSet<String>(Protocols.names()),
 				is(new HashSet<String>(Arrays.asList("ardulink2", "dummyProto"))));
 	}
 
