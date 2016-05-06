@@ -525,11 +525,14 @@ public abstract class LinkManager {
 			private ClassLoader classloader() {
 				ClassLoader classLoader = Thread.currentThread()
 						.getContextClassLoader();
-				String moduleDir = System.getProperty("ardulink.module.dir");
-				if (Strings.nullOrEmpty(moduleDir)) {
-					return classLoader;
-				}
-				return new ModuleClassLoader(classLoader, moduleDir);
+				return new ModuleClassLoader(classLoader, systemProperty(
+						"ardulink.module.dir").or("."));
+			}
+
+			private Optional<String> systemProperty(String propertyName) {
+				String value = System.getProperty(propertyName);
+				return Strings.nullOrEmpty(value) ? Optional.<String> absent()
+						: Optional.of(value);
 			}
 
 			@Override
