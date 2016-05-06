@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.ardulink.gui;
 
+import static javax.swing.JOptionPane.ERROR_MESSAGE;
+
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -35,6 +37,7 @@ import javax.sql.ConnectionEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
@@ -42,11 +45,14 @@ import javax.swing.border.EmptyBorder;
 
 import org.ardulink.gui.customcomponents.SignalButton;
 import org.ardulink.legacy.Link;
+import org.ardulink.legacy.Link.LegacyLinkAdapter;
 import org.ardulink.util.Lists;
-
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.convenience.Links;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import javax.swing.JTabbedPane;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -59,13 +65,15 @@ import org.ardulink.core.convenience.Links;
 public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 		Linkable {
 
+	private static final Logger logger = LoggerFactory.getLogger(SimpleSmartCarDriver.class);
+
 	private static final long serialVersionUID = 6065022178316507177L;
 
 	private JPanel contentPane;
 	private Link link;
 	private List<Linkable> linkables = Lists.newArrayList();
 
-	private BluetoothConnectionPanel bluetoothConnectionPanel;
+	private ConnectionPanel genericConnectionPanel;
 	private JButton btnConnect;
 	private JButton btnDisconnect;
 	private JPanel controlPanel;
@@ -87,6 +95,8 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 			SimpleSmartCarDriver.class.getResource(RIGHT_ICON_NAME));
 	private static final ImageIcon BACK_ICON = new ImageIcon(
 			SimpleSmartCarDriver.class.getResource(BACK_ICON_NAME));
+	private JTabbedPane tabbedPane;
+	private JPanel buttonPanel;
 
 	/**
 	 * Launch the application.
@@ -121,112 +131,119 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
+		
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		contentPane.add(tabbedPane, BorderLayout.NORTH);
+		
+				JPanel connectionPanel = new JPanel();
+				tabbedPane.addTab("Connection", null, connectionPanel, null);
+						connectionPanel.setLayout(new BorderLayout(0, 0));
+				
+						genericConnectionPanel = new ConnectionPanel();
+						connectionPanel.add(genericConnectionPanel, BorderLayout.CENTER);
+												
+												buttonPanel = new JPanel();
+												connectionPanel.add(buttonPanel, BorderLayout.SOUTH);
+												
+														btnConnect = new JButton("Connect");
+														buttonPanel.add(btnConnect);
+														
+																btnDisconnect = new JButton("Disconnect");
+																buttonPanel.add(btnDisconnect);
+																btnDisconnect.addActionListener(new ActionListener() {
+																	public void actionPerformed(ActionEvent e) {
+																		disconnect();
+																	}
+																});
+																btnDisconnect.setEnabled(false);
+																
+																		ConnectionStatus connectionStatus = new ConnectionStatus();
+																		buttonPanel.add(connectionStatus);
+																		linkables.add(connectionStatus);
+														btnConnect.addActionListener(new ActionListener() {
+															public void actionPerformed(ActionEvent event) {
+																try {
+																	setLink(legacyAdapt(genericConnectionPanel.createLink()));
+																} catch (URISyntaxException e) {
+																	e.printStackTrace();
+																	JOptionPane.showMessageDialog(SimpleSmartCarDriver.this, e.getMessage(),
+																			"Error", ERROR_MESSAGE);
+																} catch (Exception e) {
+																	e.printStackTrace();
+																	JOptionPane.showMessageDialog(SimpleSmartCarDriver.this, e.getMessage(),
+																			"Error", ERROR_MESSAGE);
+																}
+															}
 
-		JPanel connectionPanel = new JPanel();
-		contentPane.add(connectionPanel, BorderLayout.SOUTH);
+															private LegacyLinkAdapter legacyAdapt(
+																	org.ardulink.core.Link link) {
+																return new Link.LegacyLinkAdapter(link);
+															}
+														});
+												
+														controlPanel = new JPanel();
+														tabbedPane.addTab("Control", null, controlPanel, null);
+														GridBagLayout gbl_controlPanel = new GridBagLayout();
+														gbl_controlPanel.columnWeights = new double[] { 0.0, 0.0, 0.0 };
+														gbl_controlPanel.rowWeights = new double[] { 0.0, 0.0, 0.0 };
+														controlPanel.setLayout(gbl_controlPanel);
+														
+																btnAhead = new SignalButton();
+																btnAhead.setButtonText("Ahead");
+																btnAhead.setId("ahead");
+																btnAhead.setValue("100");
+																btnAhead.setValueLabel("Strength");
+																btnAhead.setIcon(AHEAD_ICON);
+																linkables.add(btnAhead);
+																GridBagConstraints gbc_btnUp = new GridBagConstraints();
+																gbc_btnUp.anchor = GridBagConstraints.NORTHWEST;
+																gbc_btnUp.insets = new Insets(0, 0, 0, 5);
+																gbc_btnUp.gridx = 1;
+																gbc_btnUp.gridy = 0;
+																controlPanel.add(btnAhead, gbc_btnUp);
+																
+																		btnLeft = new SignalButton();
+																		btnLeft.setButtonText("Left");
+																		btnLeft.setId("left");
+																		btnLeft.setValue("100");
+																		btnLeft.setValueLabel("Strength");
+																		btnLeft.setIcon(LEFT_ICON);
+																		linkables.add(btnLeft);
+																		GridBagConstraints gbc_btnLeft = new GridBagConstraints();
+																		gbc_btnLeft.anchor = GridBagConstraints.NORTHWEST;
+																		gbc_btnLeft.insets = new Insets(0, 0, 0, 5);
+																		gbc_btnLeft.gridx = 0;
+																		gbc_btnLeft.gridy = 1;
+																		controlPanel.add(btnLeft, gbc_btnLeft);
+																		
+																				btnRight = new SignalButton();
+																				btnRight.setButtonText("Right");
+																				btnRight.setId("right");
+																				btnRight.setValue("100");
+																				btnRight.setValueLabel("Strength");
+																				btnRight.setIcon(RIGHT_ICON);
+																				linkables.add(btnRight);
+																				GridBagConstraints gbc_btnRight = new GridBagConstraints();
+																				gbc_btnRight.anchor = GridBagConstraints.NORTHWEST;
+																				gbc_btnRight.insets = new Insets(0, 0, 0, 5);
+																				gbc_btnRight.gridx = 2;
+																				gbc_btnRight.gridy = 1;
+																				controlPanel.add(btnRight, gbc_btnRight);
+																				
+																						btnBack = new SignalButton();
+																						btnBack.setButtonText("Back");
+																						btnBack.setId("back");
+																						btnBack.setValue("100");
+																						btnBack.setValueLabel("Strength");
+																						btnBack.setIcon(BACK_ICON);
+																						linkables.add(btnBack);
+																						GridBagConstraints gbc_btnDown = new GridBagConstraints();
+																						gbc_btnDown.anchor = GridBagConstraints.NORTHWEST;
+																						gbc_btnDown.gridx = 1;
+																						gbc_btnDown.gridy = 2;
+																						controlPanel.add(btnBack, gbc_btnDown);
 
-		bluetoothConnectionPanel = new BluetoothConnectionPanel();
-		connectionPanel.add(bluetoothConnectionPanel);
-
-		btnConnect = new JButton("Connect");
-		btnConnect.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent event) {
-				if (link != null) {
-					String deviceName = bluetoothConnectionPanel
-							.getSelectedDevice();
-					try {
-						link = new Link.LegacyLinkAdapter(Links
-								.getLink(new URI(
-										"ardulink://bluetooth?deviceName="
-												+ deviceName)));
-					} catch (URISyntaxException e) {
-						throw new RuntimeException(e);
-					} catch (Exception e) {
-						throw new RuntimeException(e);
-					}
-				}
-			}
-		});
-		connectionPanel.add(btnConnect);
-
-		btnDisconnect = new JButton("Disconnect");
-		btnDisconnect.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (link != null) {
-					link.disconnect();
-				}
-			}
-		});
-		btnDisconnect.setEnabled(false);
-		connectionPanel.add(btnDisconnect);
-
-		ConnectionStatus connectionStatus = new ConnectionStatus();
-		connectionPanel.add(connectionStatus);
-		linkables.add(connectionStatus);
-
-		controlPanel = new JPanel();
-		contentPane.add(controlPanel, BorderLayout.CENTER);
-		GridBagLayout gbl_controlPanel = new GridBagLayout();
-		gbl_controlPanel.columnWeights = new double[] { 0.0, 0.0, 0.0 };
-		gbl_controlPanel.rowWeights = new double[] { 0.0, 0.0, 0.0 };
-		controlPanel.setLayout(gbl_controlPanel);
-
-		btnAhead = new SignalButton();
-		btnAhead.setButtonText("Ahead");
-		btnAhead.setId("ahead");
-		btnAhead.setValue("100");
-		btnAhead.setValueLabel("Strength");
-		btnAhead.setIcon(AHEAD_ICON);
-		linkables.add(btnAhead);
-		GridBagConstraints gbc_btnUp = new GridBagConstraints();
-		gbc_btnUp.anchor = GridBagConstraints.NORTHWEST;
-		gbc_btnUp.insets = new Insets(0, 0, 0, 5);
-		gbc_btnUp.gridx = 1;
-		gbc_btnUp.gridy = 0;
-		controlPanel.add(btnAhead, gbc_btnUp);
-
-		btnLeft = new SignalButton();
-		btnLeft.setButtonText("Left");
-		btnLeft.setId("left");
-		btnLeft.setValue("100");
-		btnLeft.setValueLabel("Strength");
-		btnLeft.setIcon(LEFT_ICON);
-		linkables.add(btnLeft);
-		GridBagConstraints gbc_btnLeft = new GridBagConstraints();
-		gbc_btnLeft.anchor = GridBagConstraints.NORTHWEST;
-		gbc_btnLeft.insets = new Insets(0, 0, 0, 5);
-		gbc_btnLeft.gridx = 0;
-		gbc_btnLeft.gridy = 1;
-		controlPanel.add(btnLeft, gbc_btnLeft);
-
-		btnRight = new SignalButton();
-		btnRight.setButtonText("Right");
-		btnRight.setId("right");
-		btnRight.setValue("100");
-		btnRight.setValueLabel("Strength");
-		btnRight.setIcon(RIGHT_ICON);
-		linkables.add(btnRight);
-		GridBagConstraints gbc_btnRight = new GridBagConstraints();
-		gbc_btnRight.anchor = GridBagConstraints.NORTHWEST;
-		gbc_btnRight.insets = new Insets(0, 0, 0, 5);
-		gbc_btnRight.gridx = 2;
-		gbc_btnRight.gridy = 1;
-		controlPanel.add(btnRight, gbc_btnRight);
-
-		btnBack = new SignalButton();
-		btnBack.setButtonText("Back");
-		btnBack.setId("back");
-		btnBack.setValue("100");
-		btnBack.setValueLabel("Strength");
-		btnBack.setIcon(BACK_ICON);
-		linkables.add(btnBack);
-		GridBagConstraints gbc_btnDown = new GridBagConstraints();
-		gbc_btnDown.anchor = GridBagConstraints.NORTHWEST;
-		gbc_btnDown.gridx = 1;
-		gbc_btnDown.gridy = 2;
-		controlPanel.add(btnBack, gbc_btnDown);
-
-		setLink(bluetoothConnectionPanel.getLink());
+		setLink(Link.NO_LINK);
 	}
 
 	@Override
@@ -246,16 +263,21 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 		}
 	}
 
+	private void disconnect() {
+		logger.info("Connection status: {}", !this.link.disconnect());
+		setLink(Link.NO_LINK);
+	}
+
 	@Override
 	public void reconnected() {
-		bluetoothConnectionPanel.setEnabled(false);
+		genericConnectionPanel.setEnabled(false);
 		btnConnect.setEnabled(false);
 		btnDisconnect.setEnabled(true);
 	}
 
 	@Override
 	public void connectionLost() {
-		bluetoothConnectionPanel.setEnabled(true);
+		genericConnectionPanel.setEnabled(true);
 		btnConnect.setEnabled(true);
 		btnDisconnect.setEnabled(false);
 	}

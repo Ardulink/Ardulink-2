@@ -34,6 +34,15 @@
 			<artifactId>ardulink-legacy</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<!-- 
+		     dependency on console is just a workaround to include ConnectionPanel in this example. It has to be removed
+		     when connection panel will be moved to swing module
+		 -->
+		<dependency>
+			<groupId>org.ardulink</groupId>
+			<artifactId>ardulink-console</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-swing</artifactId>
