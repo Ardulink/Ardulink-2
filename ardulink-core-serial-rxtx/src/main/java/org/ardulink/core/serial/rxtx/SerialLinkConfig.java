@@ -53,7 +53,8 @@ public class SerialLinkConfig implements LinkConfig {
 	private int baudrate = 115200;
 
 	@Named("proto")
-	private Protocol protoName = defaultProto();
+	private Protocol protoName = useProtoOrFallback(ArdulinkProtocol2
+			.instance());
 
 	@Named("qos")
 	private boolean qos;
@@ -70,8 +71,7 @@ public class SerialLinkConfig implements LinkConfig {
 		return baudrate;
 	}
 
-	private Protocol defaultProto() {
-		Protocol prefered = ArdulinkProtocol2.instance();
+	private Protocol useProtoOrFallback(Protocol prefered) {
 		return isAvailable(prefered) ? prefered : getFirst(Protocols.list())
 				.orNull();
 	}
