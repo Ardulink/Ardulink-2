@@ -137,9 +137,7 @@ public class GenericPanelBuilder implements PanelBuilder {
 					new PropertyChangeListener() {
 						@Override
 						public void propertyChange(PropertyChangeEvent pce) {
-							int elements = ((ComboBoxModel) pce.getNewValue())
-									.getSize();
-							jComboBox.setSelectedIndex(elements == 0 ? -1 : 0);
+							selectFirstValue(jComboBox);
 						}
 					});
 			return selectFirstValue(jComboBox);
