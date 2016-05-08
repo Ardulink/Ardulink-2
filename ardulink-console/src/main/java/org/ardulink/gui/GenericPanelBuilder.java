@@ -27,6 +27,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URI;
 
 import javax.swing.ComboBoxModel;
@@ -83,7 +85,7 @@ public class GenericPanelBuilder implements PanelBuilder {
 							.fillHorizontal().build());
 
 			Component comp = isDiscoverable ? createDiscoverButton(attribute,
-					component) : new JPanel();
+					(JComboBox) component) : new JPanel();
 			panel.add(comp, constraints(row, col++).build());
 			row++;
 		}
@@ -93,18 +95,14 @@ public class GenericPanelBuilder implements PanelBuilder {
 	}
 
 	private static JButton createDiscoverButton(
-			final ConfigAttribute attribute, final JComponent component) {
+			final ConfigAttribute attribute, final JComboBox comboBox) {
 		JButton discoverButton = new JButton(loadIcon());
 		discoverButton.setToolTipText("Discover");
 		discoverButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (component instanceof JComboBox) {
-					JComboBox jComboBox = (JComboBox) component;
-					ComboBoxModel model = new DefaultComboBoxModel(attribute
-							.getChoiceValues());
-					jComboBox.setModel(model);
-				}
+				comboBox.setModel(new DefaultComboBoxModel(attribute
+						.getChoiceValues()));
 			}
 		});
 		return discoverButton;
@@ -134,6 +132,16 @@ public class GenericPanelBuilder implements PanelBuilder {
 					attribute.setValue(jComboBox.getSelectedItem());
 				}
 			});
+			// raise a selection event on model changes
+			jComboBox.addPropertyChangeListener("model",
+					new PropertyChangeListener() {
+						@Override
+						public void propertyChange(PropertyChangeEvent pce) {
+							int elements = ((ComboBoxModel) pce.getNewValue())
+									.getSize();
+							jComboBox.setSelectedIndex(elements == 0 ? -1 : 0);
+						}
+					});
 			return selectFirstValue(jComboBox);
 		} else if (isNumber(attribute)) {
 			final JSpinner spinner = new JSpinner(createModel(attribute));
