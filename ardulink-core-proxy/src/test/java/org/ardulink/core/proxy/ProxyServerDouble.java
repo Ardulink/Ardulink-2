@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.proxy;
 
@@ -47,7 +47,7 @@ import org.ardulink.core.proto.impl.ArdulinkProtocol2;
  *
  */
 public class ProxyServerDouble extends ExternalResource {
-	
+
 	private final Protocol tcpProto = ArdulinkProtocol2.instance();
 
 	private static final Logger logger = LoggerFactory
@@ -106,6 +106,11 @@ public class ProxyServerDouble extends ExternalResource {
 	}
 
 	@Override
+	protected void before() {
+		this.thread.start();
+	}
+
+	@Override
 	protected void after() {
 		this.thread.interrupt();
 		try {
@@ -114,10 +119,11 @@ public class ProxyServerDouble extends ExternalResource {
 			throw propagate(e);
 		}
 	}
-
-	@Override
-	protected void before() throws Throwable {
-		this.thread.start();
+	
+	public static void main(String[] args) throws InterruptedException {
+		ProxyServerDouble serverDouble = new ProxyServerDouble(newSocket(4478));
+		serverDouble.before();
+		serverDouble.thread.join();
 	}
 
 	public int getLocalPort() {
