@@ -81,10 +81,20 @@ public class ConnectionStatus extends JPanel implements Linkable {
 	}
 
 	@Override
-	public void setLink(Link link) {
-		this.link.removeConnectionListener(this.connectionListener);
-		this.link = link;
-		this.link.addConnectionListener(this.connectionListener);
+	public void setLink(Link newLink) {
+		if (this.link != null) {
+			this.link.removeConnectionListener(this.connectionListener);
+		}
+		Link oldValue = this.link;
+		this.link = newLink;
+		if (this.link != null) {
+			this.link.addConnectionListener(this.connectionListener);
+		}
+		if (this.link == null) {
+			connectionListener.connectionLost();
+		} else {
+			connectionListener.reconnected();
+		}
 	}
 
 }

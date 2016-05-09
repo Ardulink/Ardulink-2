@@ -49,7 +49,10 @@ import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.gui.facility.UtilityGeometry;
 import org.ardulink.legacy.Link;
+import org.ardulink.util.Throwables;
 import org.ardulink.util.URIs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -112,6 +115,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		for (URI uri : linkManager.listURIs()) {
 			uris.addItem(uri.toASCIIString());
 		}
+
 	}
 
 	private Component refreshButton() {
@@ -222,25 +226,22 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		throw new IllegalStateException("No PanelBuilder found for " + uri);
 	}
 
-	public org.ardulink.core.Link createLink() throws Exception {
-		return this.configurer == null ? null : this.configurer.newLink();
+	public Link createLink() {
+		return this.configurer == null ? null : legacyAdapt(this.configurer
+				.newLink());
 	}
 
-	@Override
-	public void setEnabled(boolean enabled) {
-		super.setEnabled(enabled);
-		Component[] components = getComponents();
-		for (int i = 0; i < components.length; i++) {
-			components[i].setEnabled(enabled);
-		}
+	private Link legacyAdapt(org.ardulink.core.Link link) {
+		return new Link.LegacyLinkAdapter(link);
 	}
 
-	private Link getLink() {
+	public Link getLink() {
 		return link;
 	}
 
 	@Override
-	public void setLink(Link link) {
-		this.link = link;
+	public void setLink(Link newLink) {
+		this.link = newLink;
 	}
+
 }

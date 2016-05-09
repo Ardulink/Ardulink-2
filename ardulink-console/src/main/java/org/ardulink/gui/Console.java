@@ -20,6 +20,7 @@ import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -49,7 +50,6 @@ import org.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
 import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.ardulink.legacy.Link;
-import org.ardulink.legacy.Link.LegacyLinkAdapter;
 import org.ardulink.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,35 +69,37 @@ public class Console extends JFrame implements Linkable {
 
 	private static final long serialVersionUID = -5288916405936436557L;
 
+	private static final Logger logger = LoggerFactory.getLogger(Console.class);
+
 	private JPanel contentPane;
 	private JTabbedPane tabbedPane;
 	private KeyPressController keyControlPanel;
-	private JButton btnConnect;
-	private JButton btnDisconnect;
 	private ConnectionStatus connectionStatus;
 
-	private Link link = Link.NO_LINK;
+	private Link link;
 
 	private final List<Linkable> linkables = new LinkedList<Linkable>();
 
-	private static final Logger logger = LoggerFactory.getLogger(Console.class);
-
 	private ConnectionPanel connectionPanel;
+
+	protected JButton btnConnect, btnDisconnect;
 
 	private final ConnectionListener connectionListener = new ConnectionListener() {
 
 		@Override
 		public void connectionLost() {
-			btnConnect.setEnabled(true);
-			btnDisconnect.setEnabled(false);
-			connectionPanel.setEnabled(true);
+			setStates(false);
 		}
 
 		@Override
 		public void reconnected() {
-			btnConnect.setEnabled(false);
-			btnDisconnect.setEnabled(true);
-			connectionPanel.setEnabled(false);
+			setStates(true);
+		}
+
+		private void setStates(boolean connected) {
+			setEnabled(connected);
+			btnConnect.setEnabled(!connected);
+			btnDisconnect.setEnabled(connected);
 		}
 
 	};
@@ -167,37 +169,9 @@ public class Console extends JFrame implements Linkable {
 		configurationPanel.setLayout(new BorderLayout(0, 0));
 
 		JPanel connectPanel = new JPanel();
+		connectPanel.add(btnConnect = connectButton());
+		connectPanel.add(btnDisconnect = disconnectButton());
 		configurationPanel.add(connectPanel, BorderLayout.SOUTH);
-
-		btnConnect = new JButton("Connect");
-		btnConnect.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				try {
-					setLink(legacyAdapt(connectionPanel.createLink()));
-				} catch (Exception e) {
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(Console.this, e.getMessage(),
-							"Error", ERROR_MESSAGE);
-				}
-			}
-
-			private LegacyLinkAdapter legacyAdapt(org.ardulink.core.Link link) {
-				return new Link.LegacyLinkAdapter(link);
-			}
-
-		});
-		connectPanel.add(btnConnect);
-
-		btnDisconnect = new JButton("Disconnect");
-		btnDisconnect.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				disconnect();
-			}
-
-		});
-		connectPanel.add(btnDisconnect);
 
 		JPanel allConnectionsPanel = new JPanel();
 		configurationPanel.add(allConnectionsPanel, BorderLayout.CENTER);
@@ -312,10 +286,42 @@ public class Console extends JFrame implements Linkable {
 				}
 			}
 		});
+
 		this.connectionListener.connectionLost();
-		// publish NO_LINK to all listeners
-		setLink(this.link);
+
 		pack();
+	}
+
+	private JButton connectButton() {
+		JButton button = new JButton("Connect");
+		button.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				try {
+					setLink(createLink());
+				} catch (Exception e) {
+					throw Throwables.propagate(e);
+				}
+			}
+		});
+		return button;
+	}
+
+	protected Link createLink() {
+		return connectionPanel.createLink();
+	}
+
+	private JButton disconnectButton() {
+		JButton button = new JButton("Disconnect");
+		button.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				logger.info("Connection status: {}", !link.disconnect());
+				setLink(null);
+			}
+
+		});
+		return button;
 	}
 
 	private PWMController pwmController(int pin) {
@@ -372,17 +378,59 @@ public class Console extends JFrame implements Linkable {
 		return digitalPinStatus2;
 	}
 
-	private void disconnect() {
-		logger.info("Connection status: {}", !this.link.disconnect());
-		setLink(Link.NO_LINK);
+	@Override
+	public void setEnabled(boolean enabled) {
+		for (Component component : tabbedPane.getComponents()) {
+			setEnabled(enabled, component);
+		}
+	}
+
+	private void setEnabled(boolean enabled, Component component) {
+		if (component == connectionPanel) {
+			return;
+		}
+		if (component instanceof Container) {
+			for (Component subComp : ((Container) component).getComponents()) {
+				setEnabled(enabled, subComp);
+			}
+		}
+		component.setEnabled(enabled);
+	}
+
+	private void setEnabled(boolean enabled, Component[] components) {
+		for (int i = 0; i < components.length; i++) {
+			if (components[i] instanceof JPanel
+					&& components[i] != connectionPanel) {
+				components[i].setEnabled(enabled);
+				for (Component component : ((JPanel) components[i])
+						.getComponents()) {
+					System.out.println(component);
+					component.setEnabled(enabled);
+				}
+			}
+		}
 	}
 
 	@Override
-	public void setLink(Link link) {
-		this.link.removeConnectionListener(this.connectionListener);
-		this.link = link;
-		this.link.addConnectionListener(this.connectionListener);
+	public void setLink(Link newLink) {
+		if (this.link != null) {
+			this.link.removeConnectionListener(this.connectionListener);
+		}
+		Link oldValue = this.link;
+		this.link = newLink;
+		if (this.link != null) {
+			this.link.addConnectionListener(this.connectionListener);
+		}
+		if (this.link != null) {
+			connectionListener.reconnected();
+		} else {
+			connectionListener.connectionLost();
+		}
 		callLinkables(this.link);
+	}
+
+	public Link getLink() {
+		return link;
 	}
 
 	private void callLinkables(Link link) {
@@ -390,4 +438,5 @@ public class Console extends JFrame implements Linkable {
 			linkable.setLink(link);
 		}
 	}
+
 }
