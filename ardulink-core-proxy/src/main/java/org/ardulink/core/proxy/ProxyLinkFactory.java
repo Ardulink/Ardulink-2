@@ -57,7 +57,7 @@ public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
 		remote.send(String.valueOf(config.getSpeed()));
 		String response = remote.read();
 		checkState(OK.equals(response),
-				"Did not receive ok from remote, got {}", response);
+				"Did not receive ok from remote, got %s", response);
 		Socket socket = remote.getSocket();
 		Protocol proto = ArdulinkProtocol2.instance();
 		return new ConnectionBasedLink(new StreamConnection(
