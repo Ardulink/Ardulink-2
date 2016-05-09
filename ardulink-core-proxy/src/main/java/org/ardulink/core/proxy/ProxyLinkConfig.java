@@ -110,11 +110,18 @@ public class ProxyLinkConfig implements LinkConfig {
 
 	@ChoiceFor(value = "port", dependsOn = { "tcphost", "tcpport" })
 	public List<String> getAvailablePorts() throws IOException {
-		return tcphost == null ? Collections.<String> emptyList() : getRemote()
-				.getPortList();
+		return tcphost == null ? Collections.<String> emptyList()
+				: getRemoteInternal().getPortList();
 	}
 
 	public synchronized ProxyConnectionToRemote getRemote()
+			throws UnknownHostException, IOException {
+		ProxyConnectionToRemote result = getRemoteInternal();
+		this.remote = null;
+		return result;
+	}
+
+	private ProxyConnectionToRemote getRemoteInternal()
 			throws UnknownHostException, IOException {
 		if (this.remote == null) {
 			this.remote = new ProxyConnectionToRemote(tcphost, tcpport);
