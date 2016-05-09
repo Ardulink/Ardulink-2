@@ -27,32 +27,26 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
-import javax.sql.ConnectionEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.ConnectionListener;
 import org.ardulink.gui.customcomponents.SignalButton;
 import org.ardulink.legacy.Link;
 import org.ardulink.legacy.Link.LegacyLinkAdapter;
 import org.ardulink.util.Lists;
-import org.ardulink.core.ConnectionBasedLink;
-import org.ardulink.core.ConnectionListener;
-import org.ardulink.core.convenience.Links;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.swing.JTabbedPane;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -163,11 +157,7 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 														btnConnect.addActionListener(new ActionListener() {
 															public void actionPerformed(ActionEvent event) {
 																try {
-																	setLink(legacyAdapt(genericConnectionPanel.createLink()));
-																} catch (URISyntaxException e) {
-																	e.printStackTrace();
-																	JOptionPane.showMessageDialog(SimpleSmartCarDriver.this, e.getMessage(),
-																			"Error", ERROR_MESSAGE);
+																	setLink(genericConnectionPanel.createLink());
 																} catch (Exception e) {
 																	e.printStackTrace();
 																	JOptionPane.showMessageDialog(SimpleSmartCarDriver.this, e.getMessage(),

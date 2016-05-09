@@ -24,7 +24,6 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -142,11 +141,7 @@ public class JoystickSmartCarDriver extends JFrame implements
 															@Override
 															public void actionPerformed(ActionEvent event) {
 																try {
-																	setLink(legacyAdapt(genericConnectionPanel.createLink()));
-																} catch (URISyntaxException e) {
-																	e.printStackTrace();
-																	JOptionPane.showMessageDialog(JoystickSmartCarDriver.this, e.getMessage(),
-																			"Error", ERROR_MESSAGE);
+																	setLink((genericConnectionPanel.createLink()));
 																} catch (Exception e) {
 																	e.printStackTrace();
 																	JOptionPane.showMessageDialog(JoystickSmartCarDriver.this, e.getMessage(),
