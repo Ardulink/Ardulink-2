@@ -77,8 +77,8 @@ public abstract class Handshaker {
 			} else if (CONNECT_CMD.equals(input)) {
 				try {
 					configurer.getAttribute("port").setValue(read());
-					configurer.getAttribute("speed").setValue(
-							new Integer(read()));
+					configurer.getAttribute("baudrate").setValue(
+							Integer.valueOf(read()));
 					Link link = newLink(configurer);
 					write(OK);
 					return link;
