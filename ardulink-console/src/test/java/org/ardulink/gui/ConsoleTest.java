@@ -5,35 +5,31 @@ import static java.lang.Boolean.TRUE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeThat;
 import static org.mockito.Mockito.mock;
 
+import java.awt.GraphicsEnvironment;
+
 import org.ardulink.legacy.Link;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ConsoleTest {
 
 	private final Link connectLink = mock(Link.class);
 
-	private final Console console = new Console() {
-		protected Link createLink() {
-			return connectLink;
-		};
-	};
-
 	@Test
-	@Ignore
-	// TODO PF make assumption
 	public void whenStartedConnectIsEnabledAndDisconnnectIsDisabled() {
+		assumeThat(GraphicsEnvironment.isHeadless(), is(FALSE));
+		Console console = newConsole();
 		assertThat(console.getLink(), is(nullValue()));
 		assertThat(console.btnConnect.isEnabled(), is(TRUE));
 		assertThat(console.btnDisconnect.isEnabled(), is(FALSE));
 	}
 
 	@Test
-	@Ignore
-	// TODO PF make assumption
 	public void whenConnectButtonIsClickedLinkIsExchangedAndPopertyChangeEventsIsFired() {
+		assumeThat(GraphicsEnvironment.isHeadless(), is(FALSE));
+		Console console = newConsole();
 		console.btnConnect.doClick();
 
 		assertThat(console.getLink(), is(connectLink));
@@ -42,15 +38,23 @@ public class ConsoleTest {
 	}
 
 	@Test
-	@Ignore
-	// TODO PF make assumption
 	public void whenDisconnectButtonIsClickedLinkIsExchangedAndPopertyChangeEventsIsFired() {
+		assumeThat(GraphicsEnvironment.isHeadless(), is(FALSE));
+		Console console = newConsole();
 		console.btnConnect.doClick();
 		console.btnDisconnect.doClick();
 
 		assertThat(console.getLink(), is(nullValue()));
 		assertThat(console.btnConnect.isEnabled(), is(TRUE));
 		assertThat(console.btnDisconnect.isEnabled(), is(FALSE));
+	}
+
+	private Console newConsole() {
+		return new Console() {
+			protected Link createLink() {
+				return connectLink;
+			};
+		};
 	}
 
 }
