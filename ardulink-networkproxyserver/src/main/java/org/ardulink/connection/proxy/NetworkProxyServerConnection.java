@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.ardulink.connection.proxy;
 
 import static org.ardulink.util.Preconditions.checkState;
@@ -22,17 +22,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.StreamReader;
+import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -70,7 +70,7 @@ public class NetworkProxyServerConnection implements Runnable {
 				}
 			};
 
-			Link link = handshaker.doHandshake();
+			Link link = getRoot(handshaker.doHandshake());
 			checkState(link instanceof ConnectionBasedLink,
 					"Only %s links supported for now (got %s)",
 					ConnectionBasedLink.class.getName(), link.getClass());
@@ -98,6 +98,13 @@ public class NetworkProxyServerConnection implements Runnable {
 			close(link);
 			close(socket);
 		}
+	}
+
+	private Link getRoot(Link link) {
+		while (link instanceof LinkDelegate) {
+			link = ((LinkDelegate) link).getDelegate();
+		}
+		return link;
 	}
 
 	private void close(Socket socket) {
