@@ -288,7 +288,7 @@ public class Console extends JFrame implements Linkable {
 		});
 
 		this.connectionListener.connectionLost();
-
+		setEnabled(false);
 		pack();
 	}
 
@@ -387,14 +387,16 @@ public class Console extends JFrame implements Linkable {
 
 	private void setEnabled(boolean enabled, Component component) {
 		if (component == connectionPanel) {
-			return;
+			enabled = ! enabled;
 		}
-		if (component instanceof Container) {
-			for (Component subComp : ((Container) component).getComponents()) {
-				setEnabled(enabled, subComp);
+		if(component != btnConnect && component != btnDisconnect) {
+			if (component instanceof Container) {
+				for (Component subComp : ((Container) component).getComponents()) {
+					setEnabled(enabled, subComp);
+				}
 			}
+			component.setEnabled(enabled);
 		}
-		component.setEnabled(enabled);
 	}
 
 	private void setEnabled(boolean enabled, Component[] components) {
