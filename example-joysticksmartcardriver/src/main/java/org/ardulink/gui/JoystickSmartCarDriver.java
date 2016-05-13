@@ -37,6 +37,7 @@ import javax.swing.border.EmptyBorder;
 
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.ConnectionListener;
+import org.ardulink.gui.connectionpanel.ConnectionPanel;
 import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.legacy.Link;
 import org.ardulink.legacy.Link.LegacyLinkAdapter;

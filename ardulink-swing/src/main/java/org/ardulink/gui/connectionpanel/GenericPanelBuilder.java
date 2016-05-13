@@ -13,13 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.ardulink.gui;
+package org.ardulink.gui.connectionpanel;
 
 import static java.awt.GridBagConstraints.REMAINDER;
-import static org.ardulink.gui.GridBagConstraintsBuilder.constraints;
 import static org.ardulink.util.Primitive.parseAs;
 import static org.ardulink.util.Primitive.unwrap;
 import static org.ardulink.util.Primitive.wrap;
+import static org.ardulink.gui.connectionpanel.GridBagConstraintsBuilder.constraints;
 
 import java.awt.Component;
 import java.awt.GridBagLayout;

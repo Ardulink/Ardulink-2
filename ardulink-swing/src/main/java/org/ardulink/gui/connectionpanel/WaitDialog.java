@@ -1,4 +1,4 @@
-package org.ardulink.gui;
+package org.ardulink.gui.connectionpanel;
 
 import java.awt.BorderLayout;
 import java.awt.Window;

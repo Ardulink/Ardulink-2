@@ -13,13 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.ardulink.gui;
+package org.ardulink.gui.connectionpanel;
 
 import static java.awt.Color.RED;
 import static java.awt.event.ItemEvent.SELECTED;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
-import static org.ardulink.gui.GridBagConstraintsBuilder.constraints;
+import static org.ardulink.gui.connectionpanel.GridBagConstraintsBuilder.constraints;
 import static org.ardulink.util.Throwables.getRootCause;
 import static org.ardulink.util.Throwables.propagate;
 
@@ -47,12 +47,10 @@ import javax.swing.SwingWorker;
 
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.gui.Linkable;
 import org.ardulink.gui.facility.UtilityGeometry;
 import org.ardulink.legacy.Link;
-import org.ardulink.util.Throwables;
 import org.ardulink.util.URIs;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]
