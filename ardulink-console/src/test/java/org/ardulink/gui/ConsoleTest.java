@@ -1,5 +1,6 @@
 package org.ardulink.gui;
 
+import static java.awt.GraphicsEnvironment.isHeadless;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.hamcrest.CoreMatchers.is;
@@ -7,8 +8,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
 import static org.mockito.Mockito.mock;
-
-import java.awt.GraphicsEnvironment;
 
 import org.ardulink.legacy.Link;
 import org.junit.Test;
@@ -19,7 +18,7 @@ public class ConsoleTest {
 
 	@Test
 	public void whenStartedConnectIsEnabledAndDisconnnectIsDisabled() {
-		assumeThat(GraphicsEnvironment.isHeadless(), is(FALSE));
+		assumeThat(isHeadless(), is(FALSE));
 		Console console = newConsole();
 		assertThat(console.getLink(), is(nullValue()));
 		assertThat(console.btnConnect.isEnabled(), is(TRUE));
@@ -28,7 +27,7 @@ public class ConsoleTest {
 
 	@Test
 	public void whenConnectButtonIsClickedLinkIsExchangedAndPopertyChangeEventsIsFired() {
-		assumeThat(GraphicsEnvironment.isHeadless(), is(FALSE));
+		assumeThat(isHeadless(), is(FALSE));
 		Console console = newConsole();
 		console.btnConnect.doClick();
 
@@ -39,7 +38,7 @@ public class ConsoleTest {
 
 	@Test
 	public void whenDisconnectButtonIsClickedLinkIsExchangedAndPopertyChangeEventsIsFired() {
-		assumeThat(GraphicsEnvironment.isHeadless(), is(FALSE));
+		assumeThat(isHeadless(), is(FALSE));
 		Console console = newConsole();
 		console.btnConnect.doClick();
 		console.btnDisconnect.doClick();
