@@ -71,5 +71,17 @@
 			<outputDirectory>ardulink/bin</outputDirectory>
 			<filtered>true</filtered>
 		</fileSet>
+		<fileSet>
+			<directory>../example-datareceiver/src</directory>
+			<outputDirectory>ardulink/examples/DataReceiver/src</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>../example-joysticksmartcardriver/src</directory>
+			<outputDirectory>ardulink/examples/JoystickSmartCarDriver/src</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>../example-simplesmartcardriver/src</directory>
+			<outputDirectory>ardulink/examples/SimpleSmartCarDriver/src</outputDirectory>
+		</fileSet>
 	</fileSets>
 </assembly>
