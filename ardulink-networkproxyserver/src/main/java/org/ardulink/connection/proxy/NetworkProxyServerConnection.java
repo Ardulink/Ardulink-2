@@ -84,12 +84,14 @@ public class NetworkProxyServerConnection implements Runnable {
 				}
 			});
 
-			new StreamReader(isRemote) {
+			StreamReader streamReader = new StreamReader(isRemote) {
 				@Override
 				protected void received(byte[] bytes) throws Exception {
 					connection.write(bytes);
 				}
-			}.runReaderThread(new String(proto.getSeparator()));
+			};
+			streamReader.runReaderThread(new String(proto.getSeparator()));
+			streamReader.join();
 		} catch (Exception e) {
 			logger.error("Error while doing proxy", e);
 		} finally {
