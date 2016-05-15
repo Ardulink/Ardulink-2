@@ -51,8 +51,6 @@ public abstract class StreamReader implements Closeable {
 	public void runReaderThread(final String delimiter) {
 		this.thread = new Thread() {
 
-			private final Scanner scanner = new Scanner(inputStream).useDelimiter(delimiter);
-
 			{
 				setDaemon(true);
 				start();
@@ -60,23 +58,29 @@ public abstract class StreamReader implements Closeable {
 
 			@Override
 			public void run() {
-				while (this.scanner.hasNext()) {
-					try {
-						logger.debug("Waiting for data");
-						byte[] bytes = this.scanner.next().getBytes();
-						logger.debug("Stream read {}", bytes);
-						received(bytes);
-					} catch (Exception e) {
-						logger.error("Error while retrieving data", e);
-					}
-				}
+				readUntilClosed(delimiter);
 			}
 
 		};
 	}
 
-	public void join() throws InterruptedException {
-		this.thread.join();
+	public void readUntilClosed(String delimiter) {
+		Scanner scanner = new Scanner(inputStream);
+		try {
+			scanner.useDelimiter(delimiter);
+			while (scanner.hasNext()) {
+				try {
+					logger.debug("Waiting for data");
+					byte[] bytes = scanner.next().getBytes();
+					logger.debug("Stream read {}", bytes);
+					received(bytes);
+				} catch (Exception e) {
+					logger.error("Error while retrieving data", e);
+				}
+			}
+		} finally {
+			scanner.close();
+		}
 	}
 
 	protected abstract void received(byte[] bytes) throws Exception;

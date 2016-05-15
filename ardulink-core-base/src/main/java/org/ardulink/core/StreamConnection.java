@@ -69,6 +69,7 @@ public class StreamConnection extends AbstractConnection {
 
 	@Override
 	public void close() throws IOException {
+		this.outputStream.close();
 		this.streamReader.close();
 	}
 
