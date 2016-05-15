@@ -34,6 +34,12 @@ boolean stringComplete = false;  // whether the string is complete (this is gene
 void setup() {
   // initialize serial: (this is general code you can reuse)
   Serial.begin(115200);
+
+  // pingprobe
+  Serial.print("alp://rply/");
+  Serial.print("ok?id=0");
+  Serial.print('\n'); // End of Message
+  Serial.flush();
   
   IOShieldOled.begin();
 }
