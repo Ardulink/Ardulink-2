@@ -92,8 +92,11 @@ public class NetworkProxyServerConnection implements Runnable {
 					connection.write(proto.getSeparator());
 				}
 			};
-			streamReader.runReaderThread(new String(proto.getSeparator()));
-			streamReader.join();
+			try {
+				streamReader.readUntilClosed(new String(proto.getSeparator()));
+			} finally {
+				streamReader.close();
+			}
 		} catch (Exception e) {
 			logger.error("Error while doing proxy", e);
 		} finally {
