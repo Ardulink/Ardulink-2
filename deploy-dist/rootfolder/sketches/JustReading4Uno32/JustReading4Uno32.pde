@@ -4,7 +4,13 @@ int lastValue = -1;
 
 void setup() {
   Serial.begin(115200);
-  while(Serial.available() <= 0); // Wait until Serial not connected
+
+  // pingprobe
+  Serial.print("alp://rply/");
+  Serial.print("ok?id=0");
+  Serial.print('\n'); // End of Message
+  Serial.flush();
+
 }
 
 void loop() {

@@ -37,6 +37,12 @@ void setup() {
   // initialize serial: (this is general code you can reuse)
   Serial.begin(115200);
   while(!Serial); // Wait until Serial not connected (because difference between Leonardo and Micro with UNO and others)
+
+  // pingprobe
+  Serial.print("alp://rply/");
+  Serial.print("ok?id=0");
+  Serial.print('\n'); // End of Message
+  Serial.flush();
   
   //set to false all listen variable
   int index = 0;

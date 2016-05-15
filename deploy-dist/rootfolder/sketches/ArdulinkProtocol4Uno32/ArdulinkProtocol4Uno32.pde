@@ -36,13 +36,13 @@ int analogPinListenedValue[analogPinListeningNum]; // Array used to know which v
 void setup() {
   // initialize serial: (this is general code you can reuse)
   Serial.begin(115200);
-  while(Serial.available() <= 0); // Wait until Serial not connected
 
+  // pingprobe (it seems not work for uno32)
   Serial.print("alp://rply/");
   Serial.print("ok?id=0");
   Serial.print('\n'); // End of Message
   Serial.flush();
-  
+
   //set to false all listen variable
   int index = 0;
   for (index = 0; index < digitalPinListeningNum; index++) {
