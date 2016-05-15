@@ -53,42 +53,49 @@
 			<artifactId>ardulink-core-serial-rxtx</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-core-proxy</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-core-mqtt</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-core-bluetooth</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-core-digispark</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-core-raspberry</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-core-virtual</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

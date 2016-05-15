@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
@@ -44,17 +45,16 @@ import org.ardulink.core.proto.api.Protocol;
  */
 public abstract class Handshaker {
 
+	private static final String PROXY_CONNECTION_SEPARATOR = "\n";
+
 	private final Scanner scanner;
 	private final PrintWriter printWriter;
-	private final String separator;
 	private final Configurer configurer;
 
-	public Handshaker(InputStream inputStream, OutputStream outputStream,
-			Protocol proto) {
+	public Handshaker(InputStream inputStream, OutputStream outputStream, Protocol proto) {
 		this.configurer = Links.getDefaultConfigurer();
 		this.printWriter = new PrintWriter(outputStream);
-		this.separator = new String(proto.getSeparator());
-		this.scanner = new Scanner(inputStream).useDelimiter(separator);
+		this.scanner = new Scanner(inputStream).useDelimiter(Pattern.quote(PROXY_CONNECTION_SEPARATOR));
 	}
 
 	/**
@@ -77,8 +77,7 @@ public abstract class Handshaker {
 			} else if (CONNECT_CMD.equals(input)) {
 				try {
 					configurer.getAttribute("port").setValue(read());
-					configurer.getAttribute("baudrate").setValue(
-							Integer.valueOf(read()));
+					configurer.getAttribute("baudrate").setValue(Integer.valueOf(read()));
 					Link link = newLink(configurer);
 					write(OK);
 					return link;
@@ -88,8 +87,7 @@ public abstract class Handshaker {
 			}
 			printWriter.flush();
 		}
-		throw new IllegalStateException("No more data but no " + CONNECT_CMD
-				+ " received");
+		throw new IllegalStateException("No more data but no " + CONNECT_CMD + " received");
 	}
 
 	private void handleGetPortList() throws IOException {
@@ -108,10 +106,10 @@ public abstract class Handshaker {
 	}
 
 	private void write(Object object) throws IOException {
-		String message = object instanceof String ? ((String) object) : String
-				.valueOf(object);
+		String message = object instanceof String ? ((String) object) : String.valueOf(object);
 		printWriter.write(message);
-		printWriter.write(separator);
+		printWriter.write(PROXY_CONNECTION_SEPARATOR);
+		printWriter.flush();
 	}
 
 	protected abstract Link newLink(Configurer configurer) throws Exception;

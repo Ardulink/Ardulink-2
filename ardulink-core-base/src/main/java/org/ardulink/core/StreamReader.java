@@ -34,8 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class StreamReader implements Closeable {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(StreamReader.class);
+	private static final Logger logger = LoggerFactory.getLogger(StreamReader.class);
 
 	private final InputStream inputStream;
 
@@ -52,8 +51,7 @@ public abstract class StreamReader implements Closeable {
 	public void runReaderThread(final String delimiter) {
 		this.thread = new Thread() {
 
-			private final Scanner scanner = new Scanner(inputStream)
-					.useDelimiter(delimiter);
+			private final Scanner scanner = new Scanner(inputStream).useDelimiter(delimiter);
 
 			{
 				setDaemon(true);
@@ -75,6 +73,10 @@ public abstract class StreamReader implements Closeable {
 			}
 
 		};
+	}
+
+	public void join() throws InterruptedException {
+		this.thread.join();
 	}
 
 	protected abstract void received(byte[] bytes) throws Exception;

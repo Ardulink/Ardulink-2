@@ -20,18 +20,15 @@ import static org.ardulink.core.proxy.ProxyConnectionToRemote.Command.GET_PORT_L
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
-import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -42,6 +39,8 @@ import org.ardulink.core.proto.impl.ArdulinkProtocol2;
  *
  */
 public class ProxyConnectionToRemote implements Closeable {
+
+	private static final String PROXY_CONNECTION_SEPARATOR = "\n";
 
 	public static enum Command {
 
@@ -69,27 +68,23 @@ public class ProxyConnectionToRemote implements Closeable {
 
 	private final String host;
 	private final Socket socket;
-	private final Protocol proto = ArdulinkProtocol2.instance();
-	private final BufferedReader bufferedReader;
+	private final Scanner scanner;
 	private final PrintWriter printWriter;
 
-	public ProxyConnectionToRemote(String host, int port)
-			throws UnknownHostException, IOException {
+
+	public ProxyConnectionToRemote(String host, int port) throws UnknownHostException, IOException {
 		this.host = host;
 		socket = new Socket(host, port);
-		this.bufferedReader = new BufferedReader(new InputStreamReader(
-				socket.getInputStream()));
+		this.scanner = new Scanner(socket.getInputStream()).useDelimiter(Pattern.quote(PROXY_CONNECTION_SEPARATOR));
 		this.printWriter = new PrintWriter(socket.getOutputStream(), false);
 	}
 
 	public List<String> getPortList() throws IOException {
 		send(GET_PORT_LIST_CMD.getCommand());
-		String numberOfPorts = checkNotNull(read(),
-				"invalid response from %s, got null", host);
-		checkState(numberOfPorts.startsWith(NUMBER_OF_PORTS),
-				"invalid response: did not start with %s", NUMBER_OF_PORTS);
-		int numOfPorts = Integer.parseInt(numberOfPorts
-				.substring(NUMBER_OF_PORTS.length()));
+		String numberOfPorts = checkNotNull(read(), "invalid response from %s, got null", host);
+		checkState(numberOfPorts.startsWith(NUMBER_OF_PORTS), "invalid response: did not start with %s",
+				NUMBER_OF_PORTS);
+		int numOfPorts = Integer.parseInt(numberOfPorts.substring(NUMBER_OF_PORTS.length()));
 		List<String> retvalue = new ArrayList<String>(numOfPorts);
 		for (int i = 0; i < numOfPorts; i++) {
 			retvalue.add(read());
@@ -102,18 +97,18 @@ public class ProxyConnectionToRemote implements Closeable {
 	}
 
 	public String read() throws IOException {
-		return bufferedReader.readLine();
+		return scanner.next();
 	}
 
 	public void send(String message) {
 		printWriter.print(message);
-		printWriter.print(new String(proto.getSeparator()));
+		printWriter.print(PROXY_CONNECTION_SEPARATOR);
 		printWriter.flush();
 	}
 
 	@Override
 	public void close() throws IOException {
-		bufferedReader.close();
+		scanner.close();
 		printWriter.close();
 		socket.close();
 	}
