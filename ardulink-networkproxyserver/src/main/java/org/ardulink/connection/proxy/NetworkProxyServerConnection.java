@@ -63,7 +63,7 @@ public class NetworkProxyServerConnection implements Runnable {
 			final OutputStream osRemote = socket.getOutputStream();
 			InputStream isRemote = socket.getInputStream();
 
-			Handshaker handshaker = new Handshaker(isRemote, osRemote, proto) {
+			Handshaker handshaker = new Handshaker(isRemote, osRemote) {
 				@Override
 				protected Link newLink(Configurer configurer) throws Exception {
 					return Links.getLink(configurer);
@@ -81,6 +81,7 @@ public class NetworkProxyServerConnection implements Runnable {
 				@Override
 				public void received(byte[] bytes) throws IOException {
 					osRemote.write(bytes);
+					osRemote.write(proto.getSeparator());
 				}
 			});
 
@@ -88,6 +89,7 @@ public class NetworkProxyServerConnection implements Runnable {
 				@Override
 				protected void received(byte[] bytes) throws Exception {
 					connection.write(bytes);
+					connection.write(proto.getSeparator());
 				}
 			};
 			streamReader.runReaderThread(new String(proto.getSeparator()));

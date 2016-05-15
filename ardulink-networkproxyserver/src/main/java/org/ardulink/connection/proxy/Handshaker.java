@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.core.proto.api.Protocol;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -45,13 +44,13 @@ import org.ardulink.core.proto.api.Protocol;
  */
 public abstract class Handshaker {
 
-	private static final String PROXY_CONNECTION_SEPARATOR = "\n";
+	public static final String PROXY_CONNECTION_SEPARATOR = "\n";
 
 	private final Scanner scanner;
 	private final PrintWriter printWriter;
 	private final Configurer configurer;
 
-	public Handshaker(InputStream inputStream, OutputStream outputStream, Protocol proto) {
+	public Handshaker(InputStream inputStream, OutputStream outputStream) {
 		this.configurer = Links.getDefaultConfigurer();
 		this.printWriter = new PrintWriter(outputStream);
 		this.scanner = new Scanner(inputStream).useDelimiter(Pattern.quote(PROXY_CONNECTION_SEPARATOR));
