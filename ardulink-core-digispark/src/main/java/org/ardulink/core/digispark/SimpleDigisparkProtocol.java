@@ -45,8 +45,6 @@ public class SimpleDigisparkProtocol implements Protocol {
 		public abstract byte getValue(ToArduinoPinEvent pinEvent);
 	}
 
-	private final String name = "simple4digispark";
-
 	private final byte separator = (byte) 255;
 
 	private final byte[] separatorArray = new byte[] { separator };
@@ -65,7 +63,7 @@ public class SimpleDigisparkProtocol implements Protocol {
 
 	@Override
 	public String getName() {
-		return name;
+		return SimpleDigisparkProtocol.class.getSimpleName();
 	}
 
 	@Override
@@ -122,6 +120,11 @@ public class SimpleDigisparkProtocol implements Protocol {
 	@Override
 	public FromArduino fromArduino(byte[] bytes) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public String toString() {
+		return getName();
 	}
 
 }
