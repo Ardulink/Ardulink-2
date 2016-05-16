@@ -46,32 +46,31 @@ public class SerialLinkFactoryIntegrationTest {
 	@Test
 	public void canConfigureSerialConnectionViaURI() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(URIs
-				.newURI("ardulink://serial?port=anyString&speed=9600"));
+		Configurer configurer = connectionManager
+				.getConfigurer(URIs.newURI("ardulink://serial?port=anyString&baudrate=9600"));
 		assertNotNull(configurer.newLink());
 	}
 
 	@Test
 	public void canConfigureSerialConnectionViaConfigurer() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(URIs
-				.newURI("ardulink://serial"));
+		Configurer configurer = connectionManager.getConfigurer(URIs.newURI("ardulink://serial"));
 
 		assertThat(newArrayList(configurer.getAttributes()),
-				is(newArrayList("port", "proto", "speed")));
+				is(newArrayList("port", "baudrate", "proto", "qos", "waitsecs", "pingprobe")));
 
 		ConfigAttribute port = configurer.getAttribute("port");
 		ConfigAttribute proto = configurer.getAttribute("proto");
-		ConfigAttribute speed = configurer.getAttribute("speed");
+		ConfigAttribute baudrate = configurer.getAttribute("baudrate");
 
 		assertThat(port.hasChoiceValues(), is(TRUE));
-		assertThat(proto.hasChoiceValues(), is(FALSE));
-		assertThat(speed.hasChoiceValues(), is(FALSE));
+		assertThat(proto.hasChoiceValues(), is(TRUE));
+		assertThat(baudrate.hasChoiceValues(), is(FALSE));
 
 		assertThat(port.getChoiceValues(), is(notNullValue()));
 
 		port.setValue("anyString");
-		speed.setValue(115200);
+		baudrate.setValue(115200);
 	}
 
 }
