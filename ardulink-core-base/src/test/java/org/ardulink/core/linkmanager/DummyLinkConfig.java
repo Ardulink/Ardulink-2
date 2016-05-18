@@ -48,7 +48,12 @@ public class DummyLinkConfig implements LinkConfig {
 	@Named("d")
 	public String d;
 
-	public static final ThreadLocal<String[]> choiceValuesOfD = new ThreadLocal<String[]>();
+	public static final ThreadLocal<String[]> choiceValuesOfD = new ThreadLocal<String[]>() {
+		@Override
+		protected String[] initialValue() {
+			return new String[] { "---unconfigured---" };
+		}
+	};
 
 	@Named("a")
 	public void setPort(String a) {
