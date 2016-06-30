@@ -1,12 +1,15 @@
 package org.ardulink.core.virtual;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.ardulink.core.Pin.Type.ANALOG;
+import static org.ardulink.core.Pin.Type.DIGITAL;
+
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Pin;
@@ -36,21 +39,7 @@ public class VirtualLink extends AbstractListenerLink {
 		@Override
 		public void run() {
 			while (true) {
-				for (Entry<Pin, Object> entry : listeningPins.entrySet()) {
-					Pin pin = entry.getKey();
-					if (pin.is(Type.ANALOG)) {
-						fireStateChanged(new DefaultAnalogPinValueChangedEvent(
-								(AnalogPin) pin, getRandomAnalog()));
-					} else if (pin.is(Type.DIGITAL)) {
-						fireStateChanged(new DefaultDigitalPinValueChangedEvent(
-								(DigitalPin) pin, getRandomDigital()));
-					}
-				}
-				try {
-					TimeUnit.MILLISECONDS.sleep(250);
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
+				sendRandomMessagesAndSleep();
 			}
 		}
 
@@ -60,6 +49,29 @@ public class VirtualLink extends AbstractListenerLink {
 
 	public VirtualLink(LinkConfig config) {
 		super();
+	}
+
+	protected void sendRandomMessagesAndSleep() {
+		try {
+			sendRandomPinStates();
+			MILLISECONDS.sleep(250);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+
+	}
+
+	protected void sendRandomPinStates() {
+		for (Entry<Pin, Object> entry : listeningPins.entrySet()) {
+			Pin pin = entry.getKey();
+			if (pin.is(ANALOG)) {
+				fireStateChanged(new DefaultAnalogPinValueChangedEvent(
+						(AnalogPin) pin, getRandomAnalog()));
+			} else if (pin.is(DIGITAL)) {
+				fireStateChanged(new DefaultDigitalPinValueChangedEvent(
+						(DigitalPin) pin, getRandomDigital()));
+			}
+		}
 	}
 
 	@Override
@@ -129,7 +141,7 @@ public class VirtualLink extends AbstractListenerLink {
 	@Override
 	public long sendCustomMessage(String... messages) throws IOException {
 		logger.info("custom message {}", Arrays.asList(messages));
-		return 0;
+		return -1;
 	}
 
 }

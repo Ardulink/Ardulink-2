@@ -1,7 +1,10 @@
 package org.ardulink.core.qos;
 
+import static org.ardulink.util.Preconditions.checkState;
+
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -20,9 +23,13 @@ public class ResponseAwaiter {
 	private final Lock lock = new ReentrantLock(false);
 	private final Condition condition = lock.newCondition();
 
+	private long timeout = -1;
+	private TimeUnit timeUnit;
+	private RplyListener listener;
+
 	/**
-	 * Since the instance will reference <b>all</b> replies it should not be
-	 * used as class attribute but as a very short living instance.
+	 * Do not reuse instances! After calling {@link #waitForResponse(long)} the
+	 * reply listener is deregistered! So you need to create a new instance.
 	 * 
 	 * @param link
 	 *            the Link to wait for a reply on
@@ -30,6 +37,12 @@ public class ResponseAwaiter {
 	 */
 	public static ResponseAwaiter onLink(Link link) throws IOException {
 		return new ResponseAwaiter(link);
+	}
+
+	public ResponseAwaiter withTimeout(long timeout, TimeUnit timeUnit) {
+		this.timeout = timeout;
+		this.timeUnit = timeUnit;
+		return this;
 	}
 
 	/**
@@ -42,7 +55,7 @@ public class ResponseAwaiter {
 	 */
 	public ResponseAwaiter(final Link link) throws IOException {
 		this.link = link;
-		this.link.addRplyListener(new RplyListener() {
+		this.listener = new RplyListener() {
 			@Override
 			public void rplyReceived(RplyEvent event) {
 				lock.lock();
@@ -56,7 +69,8 @@ public class ResponseAwaiter {
 				}
 
 			}
-		});
+		};
+		this.link.addRplyListener(listener);
 
 	}
 
@@ -66,21 +80,35 @@ public class ResponseAwaiter {
 	 * 
 	 * @param messageId
 	 * @return
+	 * @throws IOException
 	 */
-	public RplyEvent waitForResponse(long messageId) {
-		while (true) {
-			try {
-				condition.await();
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-			synchronized (replies) {
-				Optional<RplyEvent> rply = messageIdReceived(messageId);
-				replies.clear();
-				if (rply.isPresent()) {
-					return rply.get();
+	public RplyEvent waitForResponse(long messageId) throws IOException {
+		try {
+			while (true) {
+				lock.lock();
+				try {
+					if (timeout < 0 || timeUnit == null) {
+						condition.await();
+					} else {
+						checkState(condition.await(timeout, timeUnit),
+								"No response received within %s %s ",
+								this.timeout, timeUnit);
+					}
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				} finally {
+					lock.unlock();
+				}
+				synchronized (replies) {
+					Optional<RplyEvent> rply = messageIdReceived(messageId);
+					replies.clear();
+					if (rply.isPresent()) {
+						return rply.get();
+					}
 				}
 			}
+		} finally {
+			link.removeRplyListener(listener);
 		}
 	}
 
