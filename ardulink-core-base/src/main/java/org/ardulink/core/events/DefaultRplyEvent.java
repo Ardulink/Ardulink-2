@@ -12,9 +12,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.events;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -26,12 +29,14 @@ package org.ardulink.core.events;
  */
 public class DefaultRplyEvent implements RplyEvent {
 
-	private boolean ok;
-	private long id;
+	private final boolean ok;
+	private final long id;
+	private final Map<String, Object> parameters;
 
-	public DefaultRplyEvent(boolean ok, long id) {
+	public DefaultRplyEvent(boolean ok, long id, Map<String, Object> parameters) {
 		this.ok = ok;
 		this.id = id;
+		this.parameters = parameters;
 	}
 
 	@Override
@@ -42,6 +47,16 @@ public class DefaultRplyEvent implements RplyEvent {
 	@Override
 	public long getId() {
 		return id;
+	}
+
+	@Override
+	public Set<String> getParameterNames() {
+		return parameters.keySet();
+	}
+
+	@Override
+	public Object getParameterValue(String name) {
+		return parameters.get(name);
 	}
 
 }

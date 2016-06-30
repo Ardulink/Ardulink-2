@@ -127,8 +127,9 @@ public class VirtualLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public void sendCustomMessage(String... messages) throws IOException {
+	public long sendCustomMessage(String... messages) throws IOException {
 		logger.info("custom message {}", Arrays.asList(messages));
+		return 0;
 	}
 
 }

@@ -143,7 +143,7 @@ public class PiLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public void sendCustomMessage(String... messages) throws IOException {
+	public long sendCustomMessage(String... messages) throws IOException {
 		throw notSupported();
 	}
 

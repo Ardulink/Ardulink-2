@@ -58,6 +58,7 @@ public interface Link extends Closeable {
 
 	void sendNoTone(AnalogPin analogPin) throws IOException;
 
-	void sendCustomMessage(String... messages) throws IOException;
+	// returns the MessageId, could/should be changed to the message sent or a MessageSentInfo object 
+	long sendCustomMessage(String... messages) throws IOException;
 
 }

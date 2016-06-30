@@ -292,7 +292,7 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public void sendCustomMessage(String... messages) throws IOException {
+	public long sendCustomMessage(String... messages) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 

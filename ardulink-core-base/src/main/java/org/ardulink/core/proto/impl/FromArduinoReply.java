@@ -12,9 +12,13 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.proto.impl;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.ardulink.core.proto.api.Protocol.FromArduino;
 
@@ -30,10 +34,13 @@ public class FromArduinoReply implements FromArduino {
 
 	private final boolean ok;
 	private final long id;
+	private Map<String, Object> parameters;
 
-	public FromArduinoReply(final boolean ok, long id) {
+	public FromArduinoReply(boolean ok, long id, Map<String, Object> parameters) {
 		this.ok = ok;
 		this.id = id;
+		this.parameters = Collections
+				.unmodifiableMap(new HashMap<String, Object>(parameters));
 	}
 
 	public boolean isOk() {
@@ -42,6 +49,10 @@ public class FromArduinoReply implements FromArduino {
 
 	public long getId() {
 		return id;
+	}
+
+	public Map<String, Object> getParameters() {
+		return parameters;
 	}
 
 }

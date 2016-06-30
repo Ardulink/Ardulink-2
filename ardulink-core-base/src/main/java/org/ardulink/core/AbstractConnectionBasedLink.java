@@ -12,25 +12,23 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.AbstractConnectionBasedLink.Mode.ANY_MESSAGE_RECEIVED;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.proto.api.MessageIdHolders.addMessageId;
 import static org.ardulink.util.Throwables.propagate;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.ardulink.util.StopWatch;
-import org.ardulink.util.Throwables;
 import org.ardulink.core.Connection.ListenerAdapter;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
@@ -45,6 +43,7 @@ import org.ardulink.core.proto.impl.DefaultToArduinoNoTone;
 import org.ardulink.core.proto.impl.FromArduinoPinStateChanged;
 import org.ardulink.core.proto.impl.FromArduinoReady;
 import org.ardulink.core.proto.impl.FromArduinoReply;
+import org.ardulink.util.StopWatch;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -88,7 +87,8 @@ public abstract class AbstractConnectionBasedLink extends AbstractListenerLink {
 			handlePinChanged((FromArduinoPinStateChanged) fromArduino);
 		} else if (fromArduino instanceof FromArduinoReply) {
 			FromArduinoReply reply = (FromArduinoReply) fromArduino;
-			fireReplyReceived(new DefaultRplyEvent(reply.isOk(), reply.getId()));
+			fireReplyReceived(new DefaultRplyEvent(reply.isOk(), reply.getId(),
+					reply.getParameters()));
 		} else if (fromArduino instanceof FromArduinoReady) {
 			this.readyMsgReceived = true;
 		} else {
@@ -162,7 +162,7 @@ public abstract class AbstractConnectionBasedLink extends AbstractListenerLink {
 			public void received(byte[] bytes) throws IOException {
 				lock.lock();
 				try {
-					if (mode == ANY_MESSAGE_RECEIVED || readyMsgReceived == true)
+					if (mode == ANY_MESSAGE_RECEIVED || readyMsgReceived)
 						condition.signalAll();
 				} finally {
 					lock.unlock();

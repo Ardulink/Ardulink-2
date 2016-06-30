@@ -98,9 +98,10 @@ public class ConnectionBasedLink extends AbstractConnectionBasedLink {
 	}
 
 	@Override
-	public void sendCustomMessage(String... messages) throws IOException {
+	public long sendCustomMessage(String... messages) throws IOException {
 		send(getProtocol().toArduino(
 				new DefaultToArduinoCustomMessage(messages)));
+		return 0;
 	}
 
 	private void send(AnalogPin pin, int value) throws IOException {

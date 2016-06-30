@@ -56,7 +56,10 @@ import org.ardulink.core.proto.impl.DefaultToArduinoTone;
  * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
+ * 
+ * @deprecated use {@link QosLink}
  */
+@Deprecated
 public class ConnectionBasedQosLink extends AbstractConnectionBasedLink {
 
 	private static final Logger logger = LoggerFactory
@@ -182,13 +185,14 @@ public class ConnectionBasedQosLink extends AbstractConnectionBasedLink {
 	}
 
 	@Override
-	public void sendCustomMessage(String... messages) throws IOException {
+	public long sendCustomMessage(String... messages) throws IOException {
 		synchronized (getConnection()) {
 			long messageId = nextId();
 			sendAndWait(
 					getProtocol().toArduino(
 							addMessageId(new DefaultToArduinoCustomMessage(
 									messages), messageId)), messageId);
+			return messageId;
 		}
 	}
 
