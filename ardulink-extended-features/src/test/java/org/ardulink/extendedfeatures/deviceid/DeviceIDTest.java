@@ -19,6 +19,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -34,7 +35,6 @@ import org.ardulink.core.events.RplyEvent;
 import org.ardulink.core.qos.ResponseAwaiter;
 import org.ardulink.core.virtual.VirtualLink;
 import org.ardulink.util.MapBuilder;
-import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -115,51 +115,37 @@ public class DeviceIDTest {
 	@Test
 	public void canSendAndReceiveUniqueId() throws IOException {
 		RplyEvent rplyEvent = ResponseAwaiter.onLink(link).waitForResponse(
-				link.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
-						"an-uuid-suggestion"));
-		assertThat(rplyEvent.getParameterValue(KEY_UNIQUE_ID),
-				CoreMatchers.<Object> is(SOME_UNIQUE_ID));
+				sendAgetUniqueIdCustomMsg(link));
+		assertThat(uniqueIdResponse(rplyEvent), is(SOME_UNIQUE_ID));
 
 	}
 
 	@Test
 	public void canSendAndReceiveUniqueIdWithShortTimeout() throws IOException {
-		RplyEvent rplyEvent = ResponseAwaiter
-				.onLink(link)
+		RplyEvent rplyEvent = ResponseAwaiter.onLink(link)
 				.withTimeout(500, MILLISECONDS)
-				.waitForResponse(
-						link.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
-								"an-uuid-suggestion"));
-		assertThat(rplyEvent.getParameterValue(KEY_UNIQUE_ID),
-				CoreMatchers.<Object> is(SOME_UNIQUE_ID));
+				.waitForResponse(sendAgetUniqueIdCustomMsg(link));
+		assertThat(uniqueIdResponse(rplyEvent), is(SOME_UNIQUE_ID));
 
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void whenReplyTooksTooLongAtimeoutOccurs() throws IOException {
 		VirtualLinkWithUniqueIdSupport link = linkThatDelaysResponse(3, SECONDS);
-		RplyEvent rplyEvent = ResponseAwaiter
-				.onLink(link)
+		RplyEvent rplyEvent = ResponseAwaiter.onLink(link)
 				.withTimeout(500, MILLISECONDS)
-				.waitForResponse(
-						link.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
-								"an-uuid-suggestion"));
-		assertThat(rplyEvent.getParameterValue(KEY_UNIQUE_ID),
-				CoreMatchers.<Object> is(SOME_UNIQUE_ID));
+				.waitForResponse(sendAgetUniqueIdCustomMsg(link));
+		assertThat(uniqueIdResponse(rplyEvent), is(SOME_UNIQUE_ID));
 
 	}
 
 	@Test
 	public void whenReplyTooksLongerNoTimeout() throws IOException {
 		VirtualLinkWithUniqueIdSupport link = linkThatDelaysResponse(3, SECONDS);
-		RplyEvent rplyEvent = ResponseAwaiter
-				.onLink(link)
+		RplyEvent rplyEvent = ResponseAwaiter.onLink(link)
 				.withTimeout(5, SECONDS)
-				.waitForResponse(
-						link.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
-								"an-uuid-suggestion"));
-		assertThat(rplyEvent.getParameterValue(KEY_UNIQUE_ID),
-				CoreMatchers.<Object> is(SOME_UNIQUE_ID));
+				.waitForResponse(sendAgetUniqueIdCustomMsg(link));
+		assertThat(uniqueIdResponse(rplyEvent), is(SOME_UNIQUE_ID));
 
 	}
 
@@ -173,10 +159,8 @@ public class DeviceIDTest {
 			}
 		};
 		RplyEvent rplyEvent = ResponseAwaiter.onLink(link).waitForResponse(
-				link.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
-						"an-uuid-suggestion"));
-		assertThat(rplyEvent.getParameterValue(KEY_UNIQUE_ID),
-				CoreMatchers.<Object> is(SOME_UNIQUE_ID));
+				sendAgetUniqueIdCustomMsg(link));
+		assertThat(uniqueIdResponse(rplyEvent), is(SOME_UNIQUE_ID));
 
 	}
 
@@ -190,11 +174,23 @@ public class DeviceIDTest {
 			}
 		};
 		RplyEvent rplyEvent = ResponseAwaiter.onLink(myLink).waitForResponse(
-				myLink.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
-						"an-uuid-suggestion"));
-		assertThat(rplyEvent.getParameterValue(KEY_UNIQUE_ID),
-				CoreMatchers.<Object> is(SOME_UNIQUE_ID));
+				sendAgetUniqueIdCustomMsg(myLink));
+		assertThat(uniqueIdResponse(rplyEvent), is(SOME_UNIQUE_ID));
 
+	}
+
+	private long sendAgetUniqueIdCustomMsg(VirtualLinkWithUniqueIdSupport myLink)
+			throws IOException {
+		return myLink.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
+				anySuggestedUuid());
+	}
+
+	private String anySuggestedUuid() {
+		return "an-uuid-suggestion";
+	}
+
+	private String uniqueIdResponse(RplyEvent rplyEvent) {
+		return (String) rplyEvent.getParameterValue(KEY_UNIQUE_ID);
 	}
 
 	private VirtualLinkWithUniqueIdSupport linkThatDelaysResponse(
