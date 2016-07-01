@@ -53,9 +53,9 @@ public class ResponseAwaiter {
 				lock.lock();
 				replies.add(event);
 				try {
-					ResponseAwaiter.this.condition.signal();
+					condition.signal();
 				} finally {
-					ResponseAwaiter.this.lock.unlock();
+					lock.unlock();
 				}
 
 			}
