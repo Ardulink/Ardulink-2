@@ -23,9 +23,9 @@ public class ResponseAwaiter {
 	private final Lock lock = new ReentrantLock(false);
 	private final Condition condition = lock.newCondition();
 
+	private final RplyListener listener;
 	private long timeout = -1;
 	private TimeUnit timeUnit;
-	private RplyListener listener;
 
 	/**
 	 * Do not reuse instances! After calling {@link #waitForResponse(long)} the
@@ -45,23 +45,13 @@ public class ResponseAwaiter {
 		return this;
 	}
 
-	/**
-	 * Since the instance will reference <b>all</b> replies it should not be
-	 * used as class attribute but as a very short living instance.
-	 * 
-	 * @param link
-	 *            the Link to wait for a reply on
-	 * @throws IOException
-	 */
-	public ResponseAwaiter(final Link link) throws IOException {
+	private ResponseAwaiter(final Link link) throws IOException {
 		this.link = link;
 		this.listener = new RplyListener() {
 			@Override
 			public void rplyReceived(RplyEvent event) {
 				lock.lock();
-				synchronized (replies) {
-					replies.add(event);
-				}
+				replies.add(event);
 				try {
 					ResponseAwaiter.this.condition.signal();
 				} finally {
@@ -94,17 +84,15 @@ public class ResponseAwaiter {
 								"No response received within %s %s ",
 								this.timeout, timeUnit);
 					}
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				} finally {
-					lock.unlock();
-				}
-				synchronized (replies) {
 					Optional<RplyEvent> rply = messageIdReceived(messageId);
 					replies.clear();
 					if (rply.isPresent()) {
 						return rply.get();
 					}
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				} finally {
+					lock.unlock();
 				}
 			}
 		} finally {
@@ -113,12 +101,17 @@ public class ResponseAwaiter {
 	}
 
 	private Optional<RplyEvent> messageIdReceived(long messageId) {
-		for (RplyEvent reply : replies) {
-			if (reply.getId() == messageId) {
-				return Optional.of(reply);
+		lock.lock();
+		try {
+			for (RplyEvent reply : replies) {
+				if (reply.getId() == messageId) {
+					return Optional.of(reply);
+				}
 			}
+			return Optional.absent();
+		} finally {
+			lock.unlock();
 		}
-		return Optional.absent();
 	}
 
 }
