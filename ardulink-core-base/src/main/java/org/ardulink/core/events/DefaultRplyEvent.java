@@ -18,7 +18,6 @@ package org.ardulink.core.events;
 
 import static java.util.Collections.unmodifiableSet;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
