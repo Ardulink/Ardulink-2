@@ -86,9 +86,11 @@ public class DeviceIDTest {
 
 		@Override
 		protected void sendRandomMessagesAndSleep() {
-			synchronized (queue == null ? this : queue) {
-				for (DefaultRplyEvent event : queue) {
-					fireReplyReceived(event);
+			if (queue != null) {
+				synchronized (queue) {
+					for (DefaultRplyEvent event : queue) {
+						fireReplyReceived(event);
+					}
 				}
 			}
 		}
