@@ -36,7 +36,6 @@ import org.ardulink.core.events.RplyEvent;
 import org.ardulink.core.qos.ResponseAwaiter;
 import org.ardulink.core.virtual.VirtualLink;
 import org.ardulink.util.MapBuilder;
-import org.ardulink.util.Preconditions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
