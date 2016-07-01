@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -96,7 +95,7 @@ public class DeviceIDTest {
 		}
 	}
 
-	private static final String SOME_UNIQUE_ID = "someUniqueId";
+	private static final String SOME_UNIQUE_ID = "an-uuid-created-by-arduino";
 
 	private static final String GET_UNIQUE_ID_CUSTOM_MESSAGE = "getUniqueID";
 
@@ -116,8 +115,8 @@ public class DeviceIDTest {
 	@Test
 	public void canSendAndReceiveUniqueId() throws IOException {
 		RplyEvent rplyEvent = ResponseAwaiter.onLink(link).waitForResponse(
-				link.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE, UUID
-						.randomUUID().toString()));
+				link.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
+						"an-uuid-suggestion"));
 		assertThat(rplyEvent.getParameterValue(KEY_UNIQUE_ID),
 				CoreMatchers.<Object> is(SOME_UNIQUE_ID));
 
@@ -130,7 +129,7 @@ public class DeviceIDTest {
 				.withTimeout(500, MILLISECONDS)
 				.waitForResponse(
 						link.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
-								UUID.randomUUID().toString()));
+								"an-uuid-suggestion"));
 		assertThat(rplyEvent.getParameterValue(KEY_UNIQUE_ID),
 				CoreMatchers.<Object> is(SOME_UNIQUE_ID));
 
@@ -144,7 +143,7 @@ public class DeviceIDTest {
 				.withTimeout(500, MILLISECONDS)
 				.waitForResponse(
 						link.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
-								UUID.randomUUID().toString()));
+								"an-uuid-suggestion"));
 		assertThat(rplyEvent.getParameterValue(KEY_UNIQUE_ID),
 				CoreMatchers.<Object> is(SOME_UNIQUE_ID));
 
@@ -158,7 +157,7 @@ public class DeviceIDTest {
 				.withTimeout(5, SECONDS)
 				.waitForResponse(
 						link.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
-								UUID.randomUUID().toString()));
+								"an-uuid-suggestion"));
 		assertThat(rplyEvent.getParameterValue(KEY_UNIQUE_ID),
 				CoreMatchers.<Object> is(SOME_UNIQUE_ID));
 
@@ -174,8 +173,8 @@ public class DeviceIDTest {
 			}
 		};
 		RplyEvent rplyEvent = ResponseAwaiter.onLink(link).waitForResponse(
-				link.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE, UUID
-						.randomUUID().toString()));
+				link.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
+						"an-uuid-suggestion"));
 		assertThat(rplyEvent.getParameterValue(KEY_UNIQUE_ID),
 				CoreMatchers.<Object> is(SOME_UNIQUE_ID));
 
@@ -191,8 +190,8 @@ public class DeviceIDTest {
 			}
 		};
 		RplyEvent rplyEvent = ResponseAwaiter.onLink(myLink).waitForResponse(
-				myLink.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE, UUID
-						.randomUUID().toString()));
+				myLink.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
+						"an-uuid-suggestion"));
 		assertThat(rplyEvent.getParameterValue(KEY_UNIQUE_ID),
 				CoreMatchers.<Object> is(SOME_UNIQUE_ID));
 
