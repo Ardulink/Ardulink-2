@@ -16,6 +16,9 @@ limitations under the License.
 
 package org.ardulink.core.events;
 
+import static java.util.Collections.unmodifiableSet;
+
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,11 +35,13 @@ public class DefaultRplyEvent implements RplyEvent {
 	private final boolean ok;
 	private final long id;
 	private final Map<String, Object> parameters;
+	private final Set<String> names;
 
 	public DefaultRplyEvent(boolean ok, long id, Map<String, Object> parameters) {
 		this.ok = ok;
 		this.id = id;
 		this.parameters = parameters;
+		this.names = unmodifiableSet(parameters.keySet());
 	}
 
 	@Override
@@ -51,7 +56,7 @@ public class DefaultRplyEvent implements RplyEvent {
 
 	@Override
 	public Set<String> getParameterNames() {
-		return parameters.keySet();
+		return names;
 	}
 
 	@Override
