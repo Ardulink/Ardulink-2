@@ -30,11 +30,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.ardulink.core.Link;
 import org.ardulink.core.events.DefaultRplyEvent;
 import org.ardulink.core.events.RplyEvent;
 import org.ardulink.core.qos.ResponseAwaiter;
 import org.ardulink.core.virtual.VirtualLink;
 import org.ardulink.util.MapBuilder;
+import org.ardulink.util.Preconditions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -179,14 +181,9 @@ public class DeviceIDTest {
 
 	}
 
-	private long sendAgetUniqueIdCustomMsg(VirtualLinkWithUniqueIdSupport myLink)
-			throws IOException {
-		return myLink.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
-				anySuggestedUuid());
-	}
-
-	private String anySuggestedUuid() {
-		return "an-uuid-suggestion";
+	private long sendAgetUniqueIdCustomMsg(Link link) throws IOException {
+		return link.sendCustomMessage(GET_UNIQUE_ID_CUSTOM_MESSAGE,
+				"an-uuid-suggestion");
 	}
 
 	private String uniqueIdResponse(RplyEvent rplyEvent) {
