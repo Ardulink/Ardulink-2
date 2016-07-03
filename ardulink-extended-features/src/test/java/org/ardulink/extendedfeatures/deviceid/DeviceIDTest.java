@@ -65,11 +65,11 @@ public class DeviceIDTest {
 
 		@Override
 		public long sendCustomMessage(String... messages) throws IOException {
-			checkState(GET_UNIQUE_ID_CUSTOM_MESSAGE.equals(messages[0]),
-					"Only getUniqueID supported, got %s", messages[0]);
 			checkState(messages.length == 2,
 					"Expected 2 parameters, got %s (%s)", messages.length,
 					Arrays.asList(messages));
+			checkState(GET_UNIQUE_ID_CUSTOM_MESSAGE.equals(messages[0]),
+					"Only getUniqueID supported, got %s", messages[0]);
 			queueUniquedIdRply(messageId);
 			return messageId;
 		}
@@ -141,7 +141,7 @@ public class DeviceIDTest {
 	}
 
 	@Test
-	public void whenReplyTooksLongerNoTimeout() throws IOException {
+	public void whenReplyTooksLongerThanNormalNoTimeoutOccurs() throws IOException {
 		VirtualLinkWithUniqueIdSupport link = linkThatDelaysResponse(3, SECONDS);
 		RplyEvent rplyEvent = ResponseAwaiter.onLink(link)
 				.withTimeout(5, SECONDS)
