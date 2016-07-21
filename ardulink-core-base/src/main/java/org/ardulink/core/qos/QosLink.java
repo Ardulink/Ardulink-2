@@ -42,12 +42,18 @@ import org.ardulink.core.events.RplyListener;
  */
 public class QosLink implements Link {
 
+	// TODO Introduce an ResponseAwaiter which does not deregister the
+	// ReplyListener all the time
+
+	private static final long NO_TIMEOUT = 0;
+	private static final TimeUnit NO_TIMEOUT_UNIT = null;
+
 	private final Link delegate;
 	private final long timeout;
 	private final TimeUnit timeUnit;
 
 	public QosLink(Link link) throws IOException {
-		this(link, -1, null);
+		this(link, NO_TIMEOUT, NO_TIMEOUT_UNIT);
 	}
 
 	public QosLink(Link link, long timeout, TimeUnit timeUnit)
@@ -122,8 +128,8 @@ public class QosLink implements Link {
 
 	private ResponseAwaiter newAwaiter() throws IOException {
 		ResponseAwaiter awaiter = onLink(delegate);
-		return timeout > 0 && timeUnit != null ? awaiter.withTimeout(timeout,
-				timeUnit) : awaiter;
+		return timeout != NO_TIMEOUT && timeUnit != NO_TIMEOUT_UNIT ? awaiter
+				.withTimeout(timeout, timeUnit) : awaiter;
 	}
 
 	private long extractId(RplyEvent rplyEvent) {
