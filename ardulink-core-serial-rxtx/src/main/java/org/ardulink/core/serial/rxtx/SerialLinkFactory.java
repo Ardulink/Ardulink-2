@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.serial.rxtx;
 
@@ -30,14 +30,15 @@ import gnu.io.UnsupportedCommOperationException;
 
 import java.io.IOException;
 
-import org.ardulink.core.AbstractConnectionBasedLink;
 import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.Link;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.core.qos.ConnectionBasedQosLink;
+import org.ardulink.core.qos.QosLink;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -70,8 +71,14 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 				serialPort.getInputStream(), serialPort.getOutputStream(),
 				proto);
 
-		return new LinkDelegate(waitForArdulink(config,
-				createDelegateTo(config, connection))) {
+		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(
+				connection, config.getProto());
+		@SuppressWarnings("resource")
+		Link link = config.isQos() ? new QosLink(connectionBasedLink)
+				: connectionBasedLink;
+
+		waitForArdulink(config, connectionBasedLink);
+		return new LinkDelegate(link) {
 			@Override
 			public void close() throws IOException {
 				super.close();
@@ -80,8 +87,8 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		};
 	}
 
-	private AbstractConnectionBasedLink waitForArdulink(
-			SerialLinkConfig config, AbstractConnectionBasedLink link) {
+	private void waitForArdulink(SerialLinkConfig config,
+			ConnectionBasedLink link) {
 		if (config.isPingprobe()) {
 			checkState(
 					link.waitForArduinoToBoot(config.getWaitsecs(), SECONDS),
@@ -93,16 +100,6 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 				Thread.currentThread().interrupt();
 			}
 		}
-		return link;
-	}
-
-	@SuppressWarnings("resource")
-	private AbstractConnectionBasedLink createDelegateTo(
-			SerialLinkConfig config, StreamConnection connection)
-			throws IOException {
-		Protocol proto = config.getProto();
-		return config.isQos() ? new ConnectionBasedQosLink(connection, proto)
-				: new ConnectionBasedLink(connection, proto);
 	}
 
 	private SerialPort serialPort(SerialLinkConfig config,

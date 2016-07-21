@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.convenience;
 
@@ -64,36 +64,36 @@ public class LinkDelegate implements Link {
 		return getDelegate().removeRplyListener(listener);
 	}
 
-	public void startListening(Pin pin) throws IOException {
-		getDelegate().startListening(pin);
+	public long startListening(Pin pin) throws IOException {
+		return getDelegate().startListening(pin);
 	}
 
 	public void close() throws IOException {
 		getDelegate().close();
 	}
 
-	public void stopListening(Pin pin) throws IOException {
-		getDelegate().stopListening(pin);
+	public long stopListening(Pin pin) throws IOException {
+		return getDelegate().stopListening(pin);
 	}
 
-	public void switchAnalogPin(AnalogPin analogPin, int value)
+	public long switchAnalogPin(AnalogPin analogPin, int value)
 			throws IOException {
-		getDelegate().switchAnalogPin(analogPin, value);
+		return getDelegate().switchAnalogPin(analogPin, value);
 	}
 
-	public void switchDigitalPin(DigitalPin digitalPin, boolean value)
+	public long switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException {
-		getDelegate().switchDigitalPin(digitalPin, value);
+		return getDelegate().switchDigitalPin(digitalPin, value);
 	}
 
 	@Override
-	public void sendTone(Tone tone) throws IOException {
-		getDelegate().sendTone(tone);
+	public long sendTone(Tone tone) throws IOException {
+		return getDelegate().sendTone(tone);
 	}
 
 	@Override
-	public void sendNoTone(AnalogPin analogPin) throws IOException {
-		getDelegate().sendNoTone(analogPin);
+	public long sendNoTone(AnalogPin analogPin) throws IOException {
+		return getDelegate().sendNoTone(analogPin);
 	}
 
 	@Override
@@ -101,9 +101,9 @@ public class LinkDelegate implements Link {
 		return getDelegate().sendCustomMessage(messages);
 	}
 
-	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,
+	public long sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
-		getDelegate().sendKeyPressEvent(keychar, keycode, keylocation,
+		return getDelegate().sendKeyPressEvent(keychar, keycode, keylocation,
 				keymodifiers, keymodifiersex);
 	}
 

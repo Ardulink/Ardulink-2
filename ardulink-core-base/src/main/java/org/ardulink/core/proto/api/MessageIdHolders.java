@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.proto.api;
 
@@ -24,6 +24,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import org.ardulink.util.Optional;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -33,6 +35,13 @@ import java.lang.reflect.Proxy;
  *
  */
 public final class MessageIdHolders {
+
+	public static final MessageIdHolder NO_ID = new MessageIdHolder() {
+		@Override
+		public long getId() {
+			return -1;
+		}
+	};
 
 	private MessageIdHolders() {
 		super();
@@ -112,6 +121,12 @@ public final class MessageIdHolders {
 	@SuppressWarnings("unchecked")
 	private static <T> T[] newArray(Class<T> type, int length) {
 		return (T[]) Array.newInstance(type, length);
+	}
+
+	public static Optional<MessageIdHolder> toHolder(Object msg) {
+		return msg instanceof MessageIdHolder ? Optional
+				.of((MessageIdHolder) msg) : Optional
+				.<MessageIdHolder> absent();
 	}
 
 }

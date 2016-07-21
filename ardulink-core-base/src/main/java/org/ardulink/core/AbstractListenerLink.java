@@ -85,6 +85,10 @@ public abstract class AbstractListenerLink implements Link {
 		this.rplyListeners.remove(listener);
 		return this;
 	}
+	
+	public boolean hasRplyListeners() {
+		return !rplyListeners.isEmpty();
+	}
 
 	public void fireStateChanged(AnalogPinValueChangedEvent event) {
 		for (EventListener eventListener : this.eventListeners) {

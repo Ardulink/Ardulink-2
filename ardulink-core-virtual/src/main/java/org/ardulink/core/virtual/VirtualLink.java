@@ -20,6 +20,7 @@ import org.ardulink.core.Tone;
 import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import org.ardulink.core.linkmanager.LinkConfig;
+import org.ardulink.core.proto.api.MessageIdHolders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,8 +82,9 @@ public class VirtualLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public void startListening(Pin pin) throws IOException {
+	public long startListening(Pin pin) throws IOException {
 		this.listeningPins.put(pin, getRandomValue(pin));
+		return MessageIdHolders.NO_ID.getId();
 	}
 
 	private Object getRandomValue(Pin pin) {
@@ -105,37 +107,44 @@ public class VirtualLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public void stopListening(Pin pin) throws IOException {
+	public long stopListening(Pin pin) throws IOException {
 		this.listeningPins.remove(pin);
+		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public void switchAnalogPin(AnalogPin analogPin, int value)
+	public long switchAnalogPin(AnalogPin analogPin, int value)
 			throws IOException {
 		logger.info("{} set to {}", analogPin, value);
+		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public void switchDigitalPin(DigitalPin digitalPin, boolean value)
+	public long switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException {
 		logger.info("{} set to {}", digitalPin, value);
+		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,
+	public long sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
 		logger.info("key pressed ({} {} {} {} {})", keychar, keycode,
 				keylocation, keymodifiers, keymodifiersex);
+		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public void sendTone(Tone tone) throws IOException {
+	public long sendTone(Tone tone) throws IOException {
 		logger.info("tone {}", tone);
+		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public void sendNoTone(AnalogPin analogPin) throws IOException {
+	public long sendNoTone(AnalogPin analogPin) throws IOException {
 		logger.info("no tone on {}", analogPin);
+		return MessageIdHolders.NO_ID.getId();
+
 	}
 
 	@Override

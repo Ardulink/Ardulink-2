@@ -16,27 +16,28 @@ limitations under the License.
 
 package org.ardulink.core.qos;
 
-import static org.ardulink.core.Pin.analogPin;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.ardulink.core.Pin.analogPin;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.StringContains.containsString;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import org.ardulink.core.Connection;
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.StreamConnection;
+import org.ardulink.core.Tone;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
-
-import org.ardulink.core.Connection;
-import org.ardulink.core.StreamConnection;
-import org.ardulink.core.Tone;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -57,7 +58,7 @@ public class QosLinkTest {
 	@Rule
 	public Arduino arduino = Arduino.newArduino();
 
-	private ConnectionBasedQosLink qosLink;
+	private QosLink qosLink;
 
 	@After
 	public void tearDown() throws IOException {
@@ -68,8 +69,7 @@ public class QosLinkTest {
 	public void canDoGuranteedDelivery() throws Exception {
 		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ok?id=%s");
-		qosLink = new ConnectionBasedQosLink(connectionTo(arduino),
-				ArdulinkProtocol2.instance(), 15, MINUTES);
+		qosLink = newQosLink(connectionTo(arduino), 15, MINUTES);
 		qosLink.sendNoTone(analogPin(3));
 	}
 
@@ -78,8 +78,7 @@ public class QosLinkTest {
 			throws Exception {
 		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
 				.thenDoNotRespond();
-		qosLink = new ConnectionBasedQosLink(connectionTo(arduino),
-				ArdulinkProtocol2.instance(), 500, MILLISECONDS);
+		qosLink = newQosLink(connectionTo(arduino), 500, MILLISECONDS);
 		exceptions.expect(IllegalStateException.class);
 		exceptions.expectMessage(allOf(containsString("response"),
 				containsString("500 MILLISECONDS")));
@@ -91,9 +90,7 @@ public class QosLinkTest {
 		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ko?id=%s");
 		Connection connection = connectionTo(arduino);
-		qosLink = new ConnectionBasedQosLink(connection,
-				ArdulinkProtocol2.instance(), 500 + someMillisMore(),
-				MILLISECONDS);
+		qosLink = newQosLink(connection, 500 + someMillisMore(), MILLISECONDS);
 		exceptions.expect(IllegalStateException.class);
 		exceptions.expectMessage(allOf(containsString("status"),
 				containsString("not ok")));
@@ -110,8 +107,7 @@ public class QosLinkTest {
 				.thenDoNotRespond();
 		arduino.whenReceive(regex("alp:\\/\\/tone\\/4/5/6\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ok?id=%s");
-		qosLink = new ConnectionBasedQosLink(connectionTo(arduino),
-				ArdulinkProtocol2.instance(), 500, MILLISECONDS);
+		qosLink = newQosLink(connectionTo(arduino), 500, MILLISECONDS);
 		try {
 			qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2)
 					.withDuration(3, MILLISECONDS));
@@ -120,6 +116,12 @@ public class QosLinkTest {
 		}
 		qosLink.sendTone(Tone.forPin(analogPin(4)).withHertz(5)
 				.withDuration(6, MILLISECONDS));
+	}
+
+	private QosLink newQosLink(Connection connection, int timeout,
+			TimeUnit timeUnit) throws IOException {
+		return new QosLink(new ConnectionBasedLink(connection,
+				ArdulinkProtocol2.instance()), timeout, timeUnit);
 	}
 
 	private StreamConnection connectionTo(Arduino arduino) {

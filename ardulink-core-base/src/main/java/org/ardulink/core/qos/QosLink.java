@@ -17,8 +17,10 @@ limitations under the License.
 package org.ardulink.core.qos;
 
 import static org.ardulink.core.qos.ResponseAwaiter.onLink;
+import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
@@ -26,6 +28,7 @@ import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.Tone;
 import org.ardulink.core.events.EventListener;
+import org.ardulink.core.events.RplyEvent;
 import org.ardulink.core.events.RplyListener;
 
 /**
@@ -40,9 +43,18 @@ import org.ardulink.core.events.RplyListener;
 public class QosLink implements Link {
 
 	private final Link delegate;
+	private final long timeout;
+	private final TimeUnit timeUnit;
 
 	public QosLink(Link link) throws IOException {
+		this(link, -1, null);
+	}
+
+	public QosLink(Link link, long timeout, TimeUnit timeUnit)
+			throws IOException {
 		this.delegate = link;
+		this.timeout = timeout;
+		this.timeUnit = timeUnit;
 	}
 
 	public void close() throws IOException {
@@ -65,41 +77,58 @@ public class QosLink implements Link {
 		return delegate.removeRplyListener(listener);
 	}
 
-	public void startListening(Pin pin) throws IOException {
-		delegate.startListening(pin);
+	public long startListening(Pin pin) throws IOException {
+		return extractId(newAwaiter().waitForResponse(
+				delegate.startListening(pin)));
 	}
 
-	public void stopListening(Pin pin) throws IOException {
-		delegate.stopListening(pin);
+	public long stopListening(Pin pin) throws IOException {
+		return extractId(newAwaiter().waitForResponse(
+				delegate.stopListening(pin)));
 	}
 
-	public void switchAnalogPin(AnalogPin analogPin, int value)
+	public long switchAnalogPin(AnalogPin analogPin, int value)
 			throws IOException {
-		delegate.switchAnalogPin(analogPin, value);
+		return extractId(newAwaiter().waitForResponse(
+				delegate.switchAnalogPin(analogPin, value)));
 	}
 
-	public void switchDigitalPin(DigitalPin digitalPin, boolean value)
+	public long switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException {
-		delegate.switchDigitalPin(digitalPin, value);
+		return extractId(newAwaiter().waitForResponse(
+				delegate.switchDigitalPin(digitalPin, value)));
 	}
 
-	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,
+	public long sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
-		delegate.sendKeyPressEvent(keychar, keycode, keylocation, keymodifiers,
-				keymodifiersex);
+		return extractId(newAwaiter().waitForResponse(
+				delegate.sendKeyPressEvent(keychar, keycode, keylocation,
+						keymodifiers, keymodifiersex)));
 	}
 
-	public void sendTone(Tone tone) throws IOException {
-		delegate.sendTone(tone);
+	public long sendTone(Tone tone) throws IOException {
+		return extractId(newAwaiter().waitForResponse(delegate.sendTone(tone)));
 	}
 
-	public void sendNoTone(AnalogPin analogPin) throws IOException {
-		delegate.sendNoTone(analogPin);
+	public long sendNoTone(AnalogPin analogPin) throws IOException {
+		return extractId(newAwaiter().waitForResponse(
+				delegate.sendNoTone(analogPin)));
 	}
 
 	public long sendCustomMessage(String... messages) throws IOException {
-		return onLink(delegate).waitForResponse(
-				delegate.sendCustomMessage(messages)).getId();
+		return extractId(newAwaiter().waitForResponse(
+				delegate.sendCustomMessage(messages)));
+	}
+
+	private ResponseAwaiter newAwaiter() throws IOException {
+		ResponseAwaiter awaiter = onLink(delegate);
+		return timeout > 0 && timeUnit != null ? awaiter.withTimeout(timeout,
+				timeUnit) : awaiter;
+	}
+
+	private long extractId(RplyEvent rplyEvent) {
+		checkState(rplyEvent.isOk(), "Response status is not ok");
+		return rplyEvent.getId();
 	}
 
 }

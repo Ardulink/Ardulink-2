@@ -42,21 +42,21 @@ public interface Link extends Closeable {
 
 	Link removeRplyListener(RplyListener listener) throws IOException;
 
-	void startListening(Pin pin) throws IOException;
+	long startListening(Pin pin) throws IOException;
 
-	void stopListening(Pin pin) throws IOException;
+	long stopListening(Pin pin) throws IOException;
 
-	void switchAnalogPin(AnalogPin analogPin, int value) throws IOException;
+	long switchAnalogPin(AnalogPin analogPin, int value) throws IOException;
 
-	void switchDigitalPin(DigitalPin digitalPin, boolean value)
+	long switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException;
 
-	void sendKeyPressEvent(char keychar, int keycode, int keylocation,
+	long sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException;
 
-	void sendTone(Tone tone) throws IOException;
+	long sendTone(Tone tone) throws IOException;
 
-	void sendNoTone(AnalogPin analogPin) throws IOException;
+	long sendNoTone(AnalogPin analogPin) throws IOException;
 
 	// returns the MessageId, could/should be changed to the message sent or a MessageSentInfo object 
 	long sendCustomMessage(String... messages) throws IOException;
