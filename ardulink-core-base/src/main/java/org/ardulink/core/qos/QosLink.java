@@ -27,6 +27,7 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.Tone;
+import org.ardulink.core.events.CustomListener;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.RplyEvent;
 import org.ardulink.core.events.RplyListener;
@@ -83,6 +84,14 @@ public class QosLink implements Link {
 		return delegate.removeRplyListener(listener);
 	}
 
+	public Link addCustomListener(CustomListener listener) throws IOException {
+		return delegate.addCustomListener(listener);
+	}
+
+	public Link removeCustomListener(CustomListener listener) throws IOException {
+		return delegate.removeCustomListener(listener);
+	}
+
 	public long startListening(Pin pin) throws IOException {
 		return extractId(newAwaiter().waitForResponse(
 				delegate.startListening(pin)));
@@ -136,5 +145,6 @@ public class QosLink implements Link {
 		checkState(rplyEvent.isOk(), "Response status is not ok");
 		return rplyEvent.getId();
 	}
+
 
 }

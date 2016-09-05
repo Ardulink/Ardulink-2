@@ -16,15 +16,15 @@ limitations under the License.
 
 package org.ardulink.core;
 
-import static org.ardulink.core.Pin.analogPin;
-import static org.ardulink.core.Pin.digitalPin;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
-import static org.ardulink.core.hamcrest.EventMatchers.eventFor;
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.hamcrest.EventMatchers.eventFor;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
@@ -39,12 +39,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
-
 import org.ardulink.core.Connection.ListenerAdapter;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
@@ -54,6 +48,11 @@ import org.ardulink.core.events.FilteredEventListenerAdapter;
 import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.Timeout;
 
 /**
  * [ardulinktitle] [ardulinkversion]

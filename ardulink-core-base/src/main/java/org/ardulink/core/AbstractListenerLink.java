@@ -20,15 +20,16 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
+import org.ardulink.core.events.CustomEvent;
+import org.ardulink.core.events.CustomListener;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.FilteredEventListenerAdapter;
 import org.ardulink.core.events.RplyEvent;
 import org.ardulink.core.events.RplyListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -46,6 +47,7 @@ public abstract class AbstractListenerLink implements Link {
 	private final List<EventListener> eventListeners = new CopyOnWriteArrayList<EventListener>();
 	private final List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
 	private final List<RplyListener> rplyListeners = new CopyOnWriteArrayList<RplyListener>();
+	private final List<CustomListener> customListeners = new CopyOnWriteArrayList<CustomListener>();
 
 	private boolean closed;
 
@@ -90,6 +92,18 @@ public abstract class AbstractListenerLink implements Link {
 		return !rplyListeners.isEmpty();
 	}
 
+	@Override
+	public Link addCustomListener(CustomListener listener) throws IOException {
+		this.customListeners.add(listener);
+		return this;
+	}
+
+	@Override
+	public Link removeCustomListener(CustomListener listener) throws IOException {
+		this.customListeners.remove(listener);
+		return this;
+	}
+
 	public void fireStateChanged(AnalogPinValueChangedEvent event) {
 		for (EventListener eventListener : this.eventListeners) {
 			try {
@@ -116,6 +130,16 @@ public abstract class AbstractListenerLink implements Link {
 				rplyListener.rplyReceived(event);
 			} catch (Exception e) {
 				logger.error("EventListener {} failure", rplyListener, e);
+			}
+		}
+	}
+
+	public void fireCustomReceived(CustomEvent event) {
+		for (CustomListener customListener : this.customListeners) {
+			try {
+				customListener.customEventReceived(event);
+			} catch (Exception e) {
+				logger.error("EventListener {} failure", customListener, e);
 			}
 		}
 	}

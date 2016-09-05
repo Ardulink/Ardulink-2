@@ -24,6 +24,7 @@ import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.Tone;
 import org.ardulink.core.events.EventListener;
+import org.ardulink.core.events.CustomListener;
 import org.ardulink.core.events.RplyListener;
 
 /**
@@ -105,6 +106,13 @@ public class LinkDelegate implements Link {
 			int keymodifiers, int keymodifiersex) throws IOException {
 		return getDelegate().sendKeyPressEvent(keychar, keycode, keylocation,
 				keymodifiers, keymodifiersex);
+	}
+	public Link addCustomListener(CustomListener listener) throws IOException {
+		return getDelegate().addCustomListener(listener);
+	}
+
+	public Link removeCustomListener(CustomListener listener) throws IOException {
+		return getDelegate().removeCustomListener(listener);
 	}
 
 }

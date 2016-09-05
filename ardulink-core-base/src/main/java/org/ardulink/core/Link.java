@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.events.EventListener;
+import org.ardulink.core.events.CustomListener;
 import org.ardulink.core.events.RplyListener;
 
 /**
@@ -41,6 +42,10 @@ public interface Link extends Closeable {
 	Link addRplyListener(RplyListener listener) throws IOException;
 
 	Link removeRplyListener(RplyListener listener) throws IOException;
+
+	Link addCustomListener(CustomListener listener) throws IOException;
+
+	Link removeCustomListener(CustomListener listener) throws IOException;
 
 	long startListening(Pin pin) throws IOException;
 
