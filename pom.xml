@@ -73,6 +73,7 @@
 		<module>ardulink-core-proxy</module>
 		<module>ardulink-core-mqtt</module>
 		<module>ardulink-legacy</module>
+		<module>ardulink-camel</module>
 		<module>ardulink-networkproxyserver</module>
 		<module>ardulink-mqtt</module>
 		<module>ardulink-swing</module>
