@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 
 package org.ardulink.core.serial.jssc;
 
@@ -28,7 +28,6 @@ import java.io.IOException;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 
-import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.StreamConnection;

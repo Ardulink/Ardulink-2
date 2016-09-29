@@ -17,11 +17,17 @@ limitations under the License.
 package org.ardulink.core.proto.api;
 
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 import java.util.HashSet;
 
+import org.ardulink.core.messages.api.FromDeviceMessage;
+import org.ardulink.core.messages.api.FromDeviceMessageCustom;
+import org.ardulink.core.messages.api.FromDeviceMessageReply;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.junit.Test;
 
 /**
@@ -40,7 +46,7 @@ public class ProtocolsTest {
 				new HashSet<String>(Protocols.names()),
 				is(new HashSet<String>(Arrays.asList("ardulink2", "dummyProto"))));
 	}
-/*
+	
 	@Test
 	public void ardulinkProtocol2ReceiveCustomEvent() {
 		Protocol protocol = ArdulinkProtocol2.instance();
@@ -50,7 +56,7 @@ public class ProtocolsTest {
 		FromDeviceMessage fromDevice = protocol.fromDevice(message.getBytes());
 		
 		assertThat(fromDevice, instanceOf(FromDeviceMessageCustom.class));
-		assertEquals(((FromDeviceMessageCustom)fromDevice).getValue().toString(), "foo=w/some=42");
+		assertEquals(((FromDeviceMessageCustom)fromDevice).getMessage(), "foo=w/some=42");
 		
 	}
 
@@ -69,5 +75,4 @@ public class ProtocolsTest {
 		assertEquals(((FromDeviceMessageReply)fromDevice).getParameters().get("ciao"), "boo");
 	}
 
-*/
 }
