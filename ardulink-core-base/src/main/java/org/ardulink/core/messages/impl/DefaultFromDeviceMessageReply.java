@@ -16,11 +16,11 @@ limitations under the License.
 
 package org.ardulink.core.messages.impl;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.ardulink.core.messages.api.FromDeviceMessageReply;
+import static java.util.Collections.unmodifiableMap;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -39,8 +39,7 @@ public class DefaultFromDeviceMessageReply implements FromDeviceMessageReply {
 	public DefaultFromDeviceMessageReply(boolean ok, long id, Map<String, Object> parameters) {
 		this.ok = ok;
 		this.id = id;
-		this.parameters = Collections
-				.unmodifiableMap(new HashMap<String, Object>(parameters));
+		this.parameters = unmodifiableMap(new HashMap<String, Object>(parameters));
 	}
 
 	public boolean isOk() {

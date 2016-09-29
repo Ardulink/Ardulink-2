@@ -25,6 +25,6 @@ package org.ardulink.core.events;
  */
 public interface CustomEvent {
 	
-	Object getValue();
+	String getMessage();
 
 }

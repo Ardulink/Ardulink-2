@@ -25,15 +25,15 @@ package org.ardulink.core.events;
  */
 public class DefaultCustomEvent implements CustomEvent {
 
-	private final Object value;
+	private final String message;
 	
-	public DefaultCustomEvent(Object value) {
-		this.value = value;
+	public DefaultCustomEvent(String message) {
+		this.message = message;
 	}
 
 	@Override
-	public Object getValue() {
-		return value;
+	public String getMessage() {
+		return message;
 	}
 
 }

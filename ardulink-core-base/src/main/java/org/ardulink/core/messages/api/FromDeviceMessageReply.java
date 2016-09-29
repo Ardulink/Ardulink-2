@@ -32,6 +32,4 @@ public interface FromDeviceMessageReply extends FromDeviceMessage {
 	long getId();
 	
 	Map<String, Object> getParameters();
-	
-	boolean hasParameters();
 }

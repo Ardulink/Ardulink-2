@@ -36,28 +36,30 @@ import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
+import org.ardulink.core.events.DefaultCustomEvent;
 import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import org.ardulink.core.events.DefaultRplyEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
+import org.ardulink.core.messages.api.FromDeviceMessage;
+import org.ardulink.core.messages.api.FromDeviceMessageCustom;
+import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
+import org.ardulink.core.messages.api.FromDeviceMessageReady;
+import org.ardulink.core.messages.api.FromDeviceMessageReply;
+import org.ardulink.core.messages.api.ToDeviceMessageCustom;
+import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
+import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
+import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
+import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
+import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
+import org.ardulink.core.messages.api.ToDeviceMessageTone;
+import org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom;
+import org.ardulink.core.messages.impl.DefaultToDeviceMessageKeyPress;
+import org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone;
+import org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange;
+import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
+import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
+import org.ardulink.core.messages.impl.DefaultToDeviceMessageTone;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.api.Protocol.FromArduino;
-import org.ardulink.core.proto.api.ToArduinoCustomMessage;
-import org.ardulink.core.proto.api.ToArduinoKeyPressEvent;
-import org.ardulink.core.proto.api.ToArduinoNoTone;
-import org.ardulink.core.proto.api.ToArduinoPinEvent;
-import org.ardulink.core.proto.api.ToArduinoStartListening;
-import org.ardulink.core.proto.api.ToArduinoStopListening;
-import org.ardulink.core.proto.api.ToArduinoTone;
-import org.ardulink.core.proto.impl.DefaultToArduinoCustomMessage;
-import org.ardulink.core.proto.impl.DefaultToArduinoKeyPressEvent;
-import org.ardulink.core.proto.impl.DefaultToArduinoNoTone;
-import org.ardulink.core.proto.impl.DefaultToArduinoPinEvent;
-import org.ardulink.core.proto.impl.DefaultToArduinoStartListening;
-import org.ardulink.core.proto.impl.DefaultToArduinoStopListening;
-import org.ardulink.core.proto.impl.DefaultToArduinoTone;
-import org.ardulink.core.proto.impl.FromArduinoPinStateChanged;
-import org.ardulink.core.proto.impl.FromArduinoReady;
-import org.ardulink.core.proto.impl.FromArduinoReply;
 import org.ardulink.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,24 +102,26 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	}
 
 	protected void received(byte[] bytes) {
-		received(this.protocol.fromArduino(bytes));
+		received(this.protocol.fromDevice(bytes));
 	}
 
-	protected void received(FromArduino fromArduino) {
-		if (fromArduino instanceof FromArduinoPinStateChanged) {
-			handlePinChanged((FromArduinoPinStateChanged) fromArduino);
-		} else if (fromArduino instanceof FromArduinoReply) {
-			FromArduinoReply reply = (FromArduinoReply) fromArduino;
-			fireReplyReceived(new DefaultRplyEvent(reply.isOk(), reply.getId(),
-					reply.getParameters()));
-		} else if (fromArduino instanceof FromArduinoReady) {
+	protected void received(FromDeviceMessage fromDevice) {
+		if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
+			handlePinChanged((FromDeviceMessagePinStateChanged) fromDevice);
+		} else if (fromDevice instanceof FromDeviceMessageReply) {
+			FromDeviceMessageReply reply = (FromDeviceMessageReply) fromDevice;
+			fireReplyReceived(new DefaultRplyEvent(reply.isOk(), reply.getId(), reply.getParameters()));
+		} else if (fromDevice instanceof FromDeviceMessageCustom) {
+			FromDeviceMessageCustom custom_event = (FromDeviceMessageCustom) fromDevice;
+			fireCustomReceived(new DefaultCustomEvent(custom_event.getMessage()));
+		} else if (fromDevice instanceof FromDeviceMessageReady) {
 			this.readyMsgReceived = true;
 		} else {
-			throw new IllegalStateException("Cannot handle " + fromArduino);
+			throw new IllegalStateException("Cannot handle " + fromDevice);
 		}
 	}
 
-	protected void handlePinChanged(FromArduinoPinStateChanged pinChanged) {
+	protected void handlePinChanged(FromDeviceMessagePinStateChanged pinChanged) {
 		Pin pin = pinChanged.getPin();
 		Object value = pinChanged.getValue();
 		if (pin.is(ANALOG) && value instanceof Integer) {
@@ -221,8 +225,8 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		// (yet). So let's write something that the arduino tries to respond to.
 		try {
 			long messageId = 0;
-			connection.write(this.protocol.toArduino(addMessageId(
-					new DefaultToArduinoNoTone(analogPin(0)), messageId)));
+			connection.write(this.protocol.toDevice(addMessageId(
+					new DefaultToDeviceMessageNoTone(analogPin(0)), messageId)));
 		} catch (IOException e) {
 			// ignore
 		}
@@ -231,20 +235,20 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	@Override
 	public long startListening(Pin pin) throws IOException {
 		logger.info("Starting listening on pin {}", pin);
-		ToArduinoStartListening msg;
+		ToDeviceMessageStartListening msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToArduinoStartListening(pin));
-			send(this.protocol.toArduino(msg));
+			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageStartListening(pin));
+			send(this.protocol.toDevice(msg));
 		}
 		return messageIdOf(msg);
 	}
 
 	@Override
 	public long stopListening(Pin pin) throws IOException {
-		ToArduinoStopListening msg;
+		ToDeviceMessageStopListening msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToArduinoStopListening(pin));
-			send(this.protocol.toArduino(msg));
+			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageStopListening(pin));
+			send(this.protocol.toDevice(msg));
 		}
 		logger.info("Stopped listening on pin {}", pin);
 		return messageIdOf(msg);
@@ -265,60 +269,60 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	@Override
 	public long sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
-		ToArduinoKeyPressEvent msg;
+		ToDeviceMessageKeyPress msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToArduinoKeyPressEvent(
+			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageKeyPress(
 					keychar, keycode, keylocation, keymodifiers, keymodifiersex));
-			send(this.protocol.toArduino(msg));
+			send(this.protocol.toDevice(msg));
 		}
 		return messageIdOf(msg);
 	}
 
 	@Override
 	public long sendTone(Tone tone) throws IOException {
-		ToArduinoTone msg;
+		ToDeviceMessageTone msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToArduinoTone(tone));
-			send(this.protocol.toArduino(msg));
+			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageTone(tone));
+			send(this.protocol.toDevice(msg));
 		}
 		return messageIdOf(msg);
 	}
 
 	@Override
 	public long sendNoTone(AnalogPin analogPin) throws IOException {
-		ToArduinoNoTone msg;
+		ToDeviceMessageNoTone msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToArduinoNoTone(analogPin));
-			send(this.protocol.toArduino(msg));
+			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageNoTone(analogPin));
+			send(this.protocol.toDevice(msg));
 		}
 		return messageIdOf(msg);
 	}
 
 	@Override
 	public long sendCustomMessage(String... messages) throws IOException {
-		ToArduinoCustomMessage msg;
+		ToDeviceMessageCustom msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToArduinoCustomMessage(
+			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageCustom(
 					messages));
-			send(this.protocol.toArduino(msg));
+			send(this.protocol.toDevice(msg));
 		}
 		return messageIdOf(msg);
 	}
 
 	private long send(AnalogPin pin, int value) throws IOException {
-		ToArduinoPinEvent msg;
+		ToDeviceMessagePinStateChange msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToArduinoPinEvent(pin, value));
-			send(this.protocol.toArduino(msg));
+			msg = addMessageIdIfNeeded(new DefaultToDeviceMessagePinStateChange(pin, value));
+			send(this.protocol.toDevice(msg));
 		}
 		return messageIdOf(msg);
 	}
 
 	private long send(DigitalPin pin, boolean value) throws IOException {
-		ToArduinoPinEvent msg;
+		ToDeviceMessagePinStateChange msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToArduinoPinEvent(pin, value));
-			send(this.protocol.toArduino(msg));
+			msg = addMessageIdIfNeeded(new DefaultToDeviceMessagePinStateChange(pin, value));
+			send(this.protocol.toDevice(msg));
 		}
 		return messageIdOf(msg);
 	}

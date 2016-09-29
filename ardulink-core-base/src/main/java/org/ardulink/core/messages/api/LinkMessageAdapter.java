@@ -190,7 +190,7 @@ public class LinkMessageAdapter {
 		@Override
 		public void rplyReceived(RplyEvent event) {
 			FromDeviceMessage inMessage = new DefaultFromDeviceMessageReply(event.isOk(),
-					event.getId());
+					event.getId(), event.getParameters());
 			FromDeviceMessageEvent inMessageEvent = new DefaultFromDeviceMessageEvent(inMessage);
 
 			fireInMessageReceived(inMessageEvent);
@@ -198,7 +198,7 @@ public class LinkMessageAdapter {
 
 		@Override
 		public void customEventReceived(CustomEvent event) {
-			FromDeviceMessage inMessage = new DefaultFromDeviceMessageCustom(event.getValue());
+			FromDeviceMessage inMessage = new DefaultFromDeviceMessageCustom(event.getMessage());
 			FromDeviceMessageEvent inMessageEvent = new DefaultFromDeviceMessageEvent(inMessage);
 
 			fireInMessageReceived(inMessageEvent);
