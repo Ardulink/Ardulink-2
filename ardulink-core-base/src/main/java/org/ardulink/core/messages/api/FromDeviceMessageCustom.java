@@ -25,6 +25,6 @@ package org.ardulink.core.messages.api;
  */
 public interface FromDeviceMessageCustom extends FromDeviceMessage {
 	
-	Object getValue();
+	String getMessage();
 
 }

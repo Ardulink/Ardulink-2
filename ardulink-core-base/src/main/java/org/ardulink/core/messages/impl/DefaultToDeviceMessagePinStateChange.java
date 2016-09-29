@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.core.proto.impl;
+package org.ardulink.core.messages.impl;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
-import org.ardulink.core.proto.api.ToArduinoPinEvent;
+import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -29,17 +29,17 @@ import org.ardulink.core.proto.api.ToArduinoPinEvent;
  * [adsense]
  *
  */
-public class DefaultToArduinoPinEvent implements ToArduinoPinEvent {
+public class DefaultToDeviceMessagePinStateChange implements ToDeviceMessagePinStateChange {
 
 	private final Pin pin;
 	private final Object value;
 
-	public DefaultToArduinoPinEvent(DigitalPin pin, boolean value) {
+	public DefaultToDeviceMessagePinStateChange(DigitalPin pin, boolean value) {
 		this.pin = pin;
 		this.value = value;
 	}
 
-	public DefaultToArduinoPinEvent(AnalogPin pin, int value) {
+	public DefaultToDeviceMessagePinStateChange(AnalogPin pin, int value) {
 		this.pin = pin;
 		this.value = value;
 	}

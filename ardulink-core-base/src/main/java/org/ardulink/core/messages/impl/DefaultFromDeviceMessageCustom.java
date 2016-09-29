@@ -13,10 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
+package org.ardulink.core.messages.impl;
 
-package org.ardulink.core.proto.impl;
-
-import org.ardulink.core.proto.api.Protocol.FromArduino;
+import org.ardulink.core.messages.api.FromDeviceMessageCustom;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -26,14 +25,15 @@ import org.ardulink.core.proto.api.Protocol.FromArduino;
  * [adsense]
  *
  */
-public class FromArduinoCustom implements FromArduino {
+public class DefaultFromDeviceMessageCustom implements FromDeviceMessageCustom {
 
 	private final String message;
 
-	public FromArduinoCustom(String message) {
+	public DefaultFromDeviceMessageCustom(String message) {
 		this.message = message;
 	}
 
+	@Override
 	public String getMessage() {
 		return message;
 	}

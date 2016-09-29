@@ -13,10 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+package org.ardulink.core.messages.impl;
 
-package org.ardulink.core.proto.impl;
+import java.util.Arrays;
 
-import org.ardulink.core.proto.api.ToArduinoCustomMessage;
+import org.ardulink.core.messages.api.ToDeviceMessageCustom;
+import org.ardulink.util.Joiner;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -26,17 +28,22 @@ import org.ardulink.core.proto.api.ToArduinoCustomMessage;
  * [adsense]
  *
  */
-public class DefaultToArduinoCustomMessage implements ToArduinoCustomMessage {
+public class DefaultToDeviceMessageCustom implements ToDeviceMessageCustom {
 
 	private final String[] messages;
 
-	public DefaultToArduinoCustomMessage(String... messages) {
+	public DefaultToDeviceMessageCustom(String... messages) {
 		this.messages = messages.clone();
 	}
 
 	@Override
 	public String[] getMessages() {
 		return messages.clone();
+	}
+
+	@Override
+	public String toString() {
+		return Joiner.on(" ").join(Arrays.asList(messages));
 	}
 
 }

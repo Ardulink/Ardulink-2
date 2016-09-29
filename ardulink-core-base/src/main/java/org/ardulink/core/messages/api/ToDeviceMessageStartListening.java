@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.core.proto.api;
+package org.ardulink.core.messages.api;
 
 import org.ardulink.core.Pin;
 
@@ -26,7 +26,7 @@ import org.ardulink.core.Pin;
  * [adsense]
  *
  */
-public interface ToArduinoStartListening {
+public interface ToDeviceMessageStartListening extends ToDeviceMessage {
 
 	Pin getPin();
 

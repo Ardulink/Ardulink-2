@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.core.proto.impl;
+package org.ardulink.core.messages.impl;
 
 import org.ardulink.core.Pin;
-import org.ardulink.core.proto.api.ToArduinoStartListening;
+import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -27,11 +27,11 @@ import org.ardulink.core.proto.api.ToArduinoStartListening;
  * [adsense]
  *
  */
-public class DefaultToArduinoStartListening implements ToArduinoStartListening {
+public class DefaultToDeviceMessageStartListening implements ToDeviceMessageStartListening {
 
 	private final Pin pin;
 
-	public DefaultToArduinoStartListening(Pin pin) {
+	public DefaultToDeviceMessageStartListening(Pin pin) {
 		this.pin = pin;
 	}
 

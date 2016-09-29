@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.core.proto.impl;
+package org.ardulink.core.messages.impl;
 
 import org.ardulink.core.Tone;
-import org.ardulink.core.proto.api.ToArduinoTone;
+import org.ardulink.core.messages.api.ToDeviceMessageTone;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -27,11 +27,11 @@ import org.ardulink.core.proto.api.ToArduinoTone;
  * [adsense]
  *
  */
-public class DefaultToArduinoTone implements ToArduinoTone {
+public class DefaultToDeviceMessageTone implements ToDeviceMessageTone {
 
 	private final Tone tone;
 
-	public DefaultToArduinoTone(Tone tone) {
+	public DefaultToDeviceMessageTone(Tone tone) {
 		this.tone = tone;
 	}
 

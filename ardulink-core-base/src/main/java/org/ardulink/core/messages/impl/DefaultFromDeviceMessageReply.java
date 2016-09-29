@@ -12,15 +12,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 
-package org.ardulink.core.proto.impl;
+package org.ardulink.core.messages.impl;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.ardulink.core.proto.api.Protocol.FromArduino;
+import org.ardulink.core.messages.api.FromDeviceMessageReply;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -30,13 +30,13 @@ import org.ardulink.core.proto.api.Protocol.FromArduino;
  * [adsense]
  *
  */
-public class FromArduinoReply implements FromArduino {
+public class DefaultFromDeviceMessageReply implements FromDeviceMessageReply {
 
 	private final boolean ok;
 	private final long id;
 	private Map<String, Object> parameters;
 
-	public FromArduinoReply(boolean ok, long id, Map<String, Object> parameters) {
+	public DefaultFromDeviceMessageReply(boolean ok, long id, Map<String, Object> parameters) {
 		this.ok = ok;
 		this.id = id;
 		this.parameters = Collections
@@ -51,6 +51,7 @@ public class FromArduinoReply implements FromArduino {
 		return id;
 	}
 
+	@Override
 	public Map<String, Object> getParameters() {
 		return parameters;
 	}

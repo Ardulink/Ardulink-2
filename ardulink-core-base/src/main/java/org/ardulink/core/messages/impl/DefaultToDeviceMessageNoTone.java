@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.core.proto.impl;
+package org.ardulink.core.messages.impl;
 
 import org.ardulink.core.Pin.AnalogPin;
-import org.ardulink.core.proto.api.ToArduinoNoTone;
+import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -27,11 +27,11 @@ import org.ardulink.core.proto.api.ToArduinoNoTone;
  * [adsense]
  *
  */
-public class DefaultToArduinoNoTone implements ToArduinoNoTone {
+public class DefaultToDeviceMessageNoTone implements ToDeviceMessageNoTone {
 
 	private final AnalogPin analogPin;
 
-	public DefaultToArduinoNoTone(AnalogPin analogPin) {
+	public DefaultToDeviceMessageNoTone(AnalogPin analogPin) {
 		this.analogPin = analogPin;
 	}
 

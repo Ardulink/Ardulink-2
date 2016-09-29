@@ -16,6 +16,15 @@ limitations under the License.
 
 package org.ardulink.core.proto.api;
 
+import org.ardulink.core.messages.api.FromDeviceMessage;
+import org.ardulink.core.messages.api.ToDeviceMessageCustom;
+import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
+import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
+import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
+import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
+import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
+import org.ardulink.core.messages.api.ToDeviceMessageTone;
+
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -31,24 +40,20 @@ public interface Protocol {
 
 	byte[] getSeparator();
 
-	interface FromArduino {
-		// marker interface
-	}
+	byte[] toDevice(ToDeviceMessageStartListening startListening);
 
-	byte[] toArduino(ToArduinoStartListening startListeningEvent);
+	byte[] toDevice(ToDeviceMessageStopListening stopListening);
 
-	byte[] toArduino(ToArduinoStopListening stopListeningEvent);
+	byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange);
 
-	byte[] toArduino(ToArduinoPinEvent pinEvent);
+	byte[] toDevice(ToDeviceMessageKeyPress keyPress);
 
-	byte[] toArduino(ToArduinoKeyPressEvent charEvent);
+	byte[] toDevice(ToDeviceMessageTone tone);
 
-	byte[] toArduino(ToArduinoTone tone);
+	byte[] toDevice(ToDeviceMessageNoTone noTone);
 
-	byte[] toArduino(ToArduinoNoTone noTone);
+	byte[] toDevice(ToDeviceMessageCustom custom);
 
-	byte[] toArduino(ToArduinoCustomMessage customMessage);
-
-	FromArduino fromArduino(byte[] bytes);
+	FromDeviceMessage fromDevice(byte[] bytes);
 
 }

@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.core.proto.impl;
+package org.ardulink.core.messages.impl;
 
 import org.ardulink.core.Pin;
-import org.ardulink.core.proto.api.Protocol.FromArduino;
+import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -27,12 +27,12 @@ import org.ardulink.core.proto.api.Protocol.FromArduino;
  * [adsense]
  *
  */
-public class FromArduinoPinStateChanged implements FromArduino {
+public class DefaultFromDeviceMessagePinStateChanged implements FromDeviceMessagePinStateChanged {
 
 	private final Pin pin;
 	private final Object value;
 
-	public FromArduinoPinStateChanged(Pin pin, Object value) {
+	public DefaultFromDeviceMessagePinStateChanged(Pin pin, Object value) {
 		this.pin = pin;
 		this.value = value;
 	}

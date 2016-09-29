@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.core.proto.impl;
+package org.ardulink.core.messages.impl;
 
-import org.ardulink.core.proto.api.Protocol.FromArduino;
+import org.ardulink.core.messages.api.FromDeviceMessageReady;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -26,6 +26,6 @@ import org.ardulink.core.proto.api.Protocol.FromArduino;
  * [adsense]
  *
  */
-public class FromArduinoReady implements FromArduino {
+public class DefaultFromDeviceMessageReady implements FromDeviceMessageReady {
 
 }

@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- */
+*/
 
 package org.ardulink.core.proto.impl;
 
@@ -47,15 +47,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.ardulink.core.Pin;
+import org.ardulink.core.messages.api.FromDeviceMessage;
+import org.ardulink.core.messages.api.ToDeviceMessageCustom;
+import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
+import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
+import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
+import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
+import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
+import org.ardulink.core.messages.api.ToDeviceMessageTone;
+import org.ardulink.core.messages.impl.DefaultFromDeviceMessageCustom;
+import org.ardulink.core.messages.impl.DefaultFromDeviceMessagePinStateChanged;
+import org.ardulink.core.messages.impl.DefaultFromDeviceMessageReady;
+import org.ardulink.core.messages.impl.DefaultFromDeviceMessageReply;
 import org.ardulink.core.proto.api.MessageIdHolder;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.api.ToArduinoCustomMessage;
-import org.ardulink.core.proto.api.ToArduinoKeyPressEvent;
-import org.ardulink.core.proto.api.ToArduinoNoTone;
-import org.ardulink.core.proto.api.ToArduinoPinEvent;
-import org.ardulink.core.proto.api.ToArduinoStartListening;
-import org.ardulink.core.proto.api.ToArduinoStopListening;
-import org.ardulink.core.proto.api.ToArduinoTone;
 import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 import org.ardulink.util.Longs;
 import org.ardulink.util.URIs;
@@ -69,9 +74,6 @@ import org.ardulink.util.URIs;
  *
  */
 public class ArdulinkProtocol2 implements Protocol {
-
-	// private static final Pattern pattern = Pattern
-	// .compile("alp:\\/\\/([a-z]+)\\/([^\\?]*)(?:\\?id=(\\d+)((\\&[a-zA-Z]+\\=[^\\&]+))*)");
 
 	private final String name = "ardulink2";
 	private final byte[] separator = "\n".getBytes();
@@ -92,35 +94,35 @@ public class ArdulinkProtocol2 implements Protocol {
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoStartListening startListening) {
+	public byte[] toDevice(ToDeviceMessageStartListening startListening) {
 		Pin pin = startListening.getPin();
 		if (startListening.getPin().is(ANALOG)) {
-			return toBytes(alpProtocolMessage(START_LISTENING_ANALOG).forPin(
+			return toBytes(builder(startListening, START_LISTENING_ANALOG).forPin(
 					pin.pinNum()).withoutValue());
 		}
 		if (startListening.getPin().is(DIGITAL)) {
-			return toBytes(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(
+			return toBytes(builder(startListening, START_LISTENING_DIGITAL).forPin(
 					pin.pinNum()).withoutValue());
 		}
 		throw illegalPinType(startListening.getPin());
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoStopListening stopListening) {
+	public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
 		Pin pin = stopListening.getPin();
 		if (stopListening.getPin().is(ANALOG)) {
-			return toBytes(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(
+			return toBytes(builder(stopListening, STOP_LISTENING_ANALOG).forPin(
 					pin.pinNum()).withoutValue());
 		}
 		if (stopListening.getPin().is(DIGITAL)) {
-			return toBytes(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(
+			return toBytes(builder(stopListening, STOP_LISTENING_DIGITAL).forPin(
 					pin.pinNum()).withoutValue());
 		}
 		throw illegalPinType(stopListening.getPin());
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoPinEvent pinStateChange) {
+	public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
 		if (pinStateChange.getPin().is(ANALOG)) {
 			return toBytes(builder(pinStateChange, POWER_PIN_INTENSITY).forPin(
 					pinStateChange.getPin().pinNum()).withValue(
@@ -141,16 +143,17 @@ public class ArdulinkProtocol2 implements Protocol {
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoKeyPressEvent keyPress) {
+	public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
 		return toBytes(builder(keyPress, CHAR_PRESSED).withValue(
 				String.format("chr%scod%sloc%smod%smex%s",
 						keyPress.getKeychar(), keyPress.getKeycode(),
-						keyPress.getKeylocation(), keyPress.getKeymodifiers(),
+						keyPress.getKeylocation(),
+						keyPress.getKeymodifiers(),
 						keyPress.getKeymodifiersex())));
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoTone tone) {
+	public byte[] toDevice(ToDeviceMessageTone tone) {
 		Long duration = tone.getTone().getDurationInMillis();
 		return toBytes(builder(tone, TONE).withValue(
 				tone.getTone().getPin().pinNum() + "/"
@@ -159,19 +162,19 @@ public class ArdulinkProtocol2 implements Protocol {
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoNoTone noTone) {
+	public byte[] toDevice(ToDeviceMessageNoTone noTone) {
 		return toBytes(builder(noTone, NOTONE).withValue(
 				noTone.getAnalogPin().pinNum()));
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoCustomMessage custom) {
+	public byte[] toDevice(ToDeviceMessageCustom custom) {
 		String[] messages = custom.getMessages();
-		return toBytes(alpProtocolMessage(CUSTOM_MESSAGE).withValues(messages));
+		return toBytes(builder(custom, CUSTOM_MESSAGE).withValues(messages));
 	}
 
 	@Override
-	public FromArduino fromArduino(byte[] bytes) {
+	public FromDeviceMessage fromDevice(byte[] bytes) {
 		String in = new String(bytes);
 		// Matcher matcher = pattern.matcher(in);
 
@@ -191,21 +194,21 @@ public class ArdulinkProtocol2 implements Protocol {
 				"command %s not known", command);
 
 		if (key == READY) {
-			return new FromArduinoReady();
+			return new DefaultFromDeviceMessageReady();
 		} else if (key == RPLY) {
-
+			
 			Map<String, Object> params = getParamsFromQuery(query);
 
 			checkNotNull(params.get("id"),
 					"Reply message needs for mandatory param: id");
 			String id = (String) params.get("id");
 
-			return new FromArduinoReply("ok".equalsIgnoreCase(specs),
+			return new DefaultFromDeviceMessageReply("ok".equalsIgnoreCase(specs),
 					checkNotNull(Longs.tryParse(id), "%s not a long value", id)
 							.longValue(), params);
 
 		} else if (key == ALPProtocolKey.CUSTOM_EVENT) {
-			return new FromArduinoCustom(specs);
+			return new DefaultFromDeviceMessageCustom(specs);
 		}
 
 		String pinAndState = specs;
@@ -218,9 +221,9 @@ public class ArdulinkProtocol2 implements Protocol {
 		checkState(key != null && pin != null && value != null,
 				"key %s pin %s value %s", key, pin, value);
 		if (key == ANALOG_PIN_READ) {
-			return new FromArduinoPinStateChanged(analogPin(pin), value);
+			return new DefaultFromDeviceMessagePinStateChanged(analogPin(pin), value);
 		} else if (key == DIGITAL_PIN_READ) {
-			return new FromArduinoPinStateChanged(digitalPin(pin),
+			return new DefaultFromDeviceMessagePinStateChanged(digitalPin(pin),
 					toBoolean(value));
 		}
 		throw new IllegalStateException(key + " " + in);
