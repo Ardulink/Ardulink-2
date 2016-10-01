@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.core.convenience;
 
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
-import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
 import java.net.URI;
@@ -132,7 +131,7 @@ public final class Links {
 	public static Configurer setChoiceValues(Configurer configurer) {
 		for (String key : configurer.getAttributes()) {
 			ConfigAttribute attribute = configurer.getAttribute(key);
-			if (attribute.hasChoiceValues()) {
+			if (attribute.hasChoiceValues() && !isConfigured(attribute)) {
 				Object[] choiceValues = attribute.getChoiceValues();
 				// we use the first one for each
 				if (choiceValues.length > 0) {
@@ -141,6 +140,10 @@ public final class Links {
 			}
 		}
 		return configurer;
+	}
+
+	public static boolean isConfigured(ConfigAttribute attribute) {
+		return attribute.getValue() != null;
 	}
 
 }
