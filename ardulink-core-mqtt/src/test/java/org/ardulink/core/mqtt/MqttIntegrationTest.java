@@ -40,6 +40,7 @@ import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
 import org.ardulink.core.mqtt.duplicated.Message;
 import org.ardulink.util.URIs;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
@@ -65,11 +66,19 @@ public class MqttIntegrationTest {
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
 
-	private Link link = LinkManager
-			.getInstance()
-			.getConfigurer(
-					URIs.newURI("ardulink://mqtt?host=localhost&port=1883&topic="
-							+ TOPIC)).newLink();
+	private Link link;
+
+	@Before
+	public void setup() {
+		// must not be initialized at declaration point since then the broker is
+		// not started and so the client can't connect!
+		link = LinkManager
+				.getInstance()
+				.getConfigurer(
+						URIs.newURI("ardulink://mqtt?host=localhost&port=1883&topic="
+								+ TOPIC)).newLink();
+
+	}
 
 	@After
 	public void tearDown() throws InterruptedException, IOException {
