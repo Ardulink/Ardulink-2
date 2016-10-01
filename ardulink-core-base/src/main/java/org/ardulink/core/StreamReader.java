@@ -44,10 +44,6 @@ public abstract class StreamReader implements Closeable {
 		this.inputStream = inputStream;
 	}
 
-	protected InputStream getInputStream() {
-		return inputStream;
-	}
-
 	public void runReaderThread(final String delimiter) {
 		this.thread = new Thread() {
 
@@ -65,10 +61,9 @@ public abstract class StreamReader implements Closeable {
 	}
 
 	public void readUntilClosed(String delimiter) {
-		Scanner scanner = new Scanner(inputStream);
+		Scanner scanner = new Scanner(inputStream, "US-ASCII");
 		try {
-			scanner.useDelimiter(delimiter);
-			while (scanner.hasNext()) {
+			while (scanner.hasNext(pattern(delimiter)) && !this.thread.isInterrupted()) {
 				try {
 					logger.debug("Waiting for data");
 					byte[] bytes = scanner.next().getBytes();
@@ -81,6 +76,10 @@ public abstract class StreamReader implements Closeable {
 		} finally {
 			scanner.close();
 		}
+	}
+
+	private String pattern(String delimiter) {
+		return ".*(" + delimiter + ")|.*";
 	}
 
 	protected abstract void received(byte[] bytes) throws Exception;
