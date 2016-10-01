@@ -63,7 +63,8 @@ public abstract class StreamReader implements Closeable {
 	public void readUntilClosed(String delimiter) {
 		Scanner scanner = new Scanner(inputStream, "US-ASCII");
 		try {
-			while (scanner.hasNext(pattern(delimiter)) && !this.thread.isInterrupted()) {
+			String pattern = pattern(delimiter);
+			while (scanner.hasNext(pattern) && !this.thread.isInterrupted()) {
 				try {
 					logger.debug("Waiting for data");
 					byte[] bytes = scanner.next().getBytes();
