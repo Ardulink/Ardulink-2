@@ -20,6 +20,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +64,7 @@ public abstract class StreamReader implements Closeable {
 	public void readUntilClosed(String delimiter) {
 		Scanner scanner = new Scanner(inputStream, "US-ASCII");
 		try {
-			String pattern = pattern(delimiter);
+			Pattern pattern = pattern(delimiter);
 			while (scanner.hasNext(pattern) && !this.thread.isInterrupted()) {
 				try {
 					logger.debug("Waiting for data");
@@ -79,8 +80,8 @@ public abstract class StreamReader implements Closeable {
 		}
 	}
 
-	private String pattern(String delimiter) {
-		return ".*(" + delimiter + ")|.*";
+	private Pattern pattern(String delimiter) {
+		return Pattern.compile(".*(" + delimiter + ")|.*");
 	}
 
 	protected abstract void received(byte[] bytes) throws Exception;
