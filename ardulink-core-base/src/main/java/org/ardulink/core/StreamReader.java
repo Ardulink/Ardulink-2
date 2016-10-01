@@ -19,7 +19,6 @@ package org.ardulink.core;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Scanner;
 
 import org.slf4j.Logger;
@@ -45,10 +44,6 @@ public abstract class StreamReader implements Closeable {
 		this.inputStream = inputStream;
 	}
 
-	protected InputStream getInputStream() {
-		return inputStream;
-	}
-
 	public void runReaderThread(final String delimiter) {
 		this.thread = new Thread() {
 
@@ -65,66 +60,28 @@ public abstract class StreamReader implements Closeable {
 		};
 	}
 
-//	public void readUntilClosed(String delimiter) {
-//		Scanner scanner = new Scanner(inputStream);
-//		try {
-//			scanner.useDelimiter(delimiter);
-//			while (scanner.hasNext()) {
-//				try {
-//					logger.debug("Waiting for data");
-//					byte[] bytes = scanner.next().getBytes();
-//					logger.debug("Stream read {}", bytes);
-//					received(bytes);
-//				} catch (Exception e) {
-//					logger.error("Error while retrieving data", e);
-//				}
-//			}
-//		} finally {
-//			scanner.close();
-//		}
-//	}
-
 	public void readUntilClosed(String delimiter) {
-		byte[] buffer = new byte[1024];
-		int len = -1, i, temp;
-		boolean end = false;
-		int numTempBytes = 0;
-		byte[] tempBytes = new byte[1024];
-
+		Scanner scanner = new Scanner(inputStream, "US-ASCII");
 		try {
-			while (!end) {
-				// if ((in.available()) > 0) {
-					if ((len = this.inputStream.read(buffer)) > -1) {
-						for (i = 0; i < len; i++) {
-							temp = buffer[i];
-							 // adjust from C-Byte to Java-Byte
-							if (temp < 0)
-								temp += 256;
-							if (temp == '\n') {
-								if  (numTempBytes > 0) {
-									received(Arrays.copyOfRange(tempBytes, 0, numTempBytes));
-								}
-								numTempBytes = 0;
-							} else {
-								tempBytes[numTempBytes] = (byte)temp;
-								++numTempBytes;
-							}
-						}
-					}
-				// }
+			while (scanner.hasNext(pattern(delimiter)) && !this.thread.isInterrupted()) {
+				try {
+					logger.debug("Waiting for data");
+					byte[] bytes = scanner.next().getBytes();
+					logger.debug("Stream read {}", bytes);
+					received(bytes);
+				} catch (Exception e) {
+					logger.error("Error while retrieving data", e);
+				}
 			}
-		} catch (Exception e) {
-			end = true;
-			try {
-				inputStream.close();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
+		} finally {
+			scanner.close();
 		}
-		
 	}
-	
-	
+
+	private String pattern(String delimiter) {
+		return ".*(" + delimiter + ")|.*";
+	}
+
 	protected abstract void received(byte[] bytes) throws Exception;
 
 	@Override
