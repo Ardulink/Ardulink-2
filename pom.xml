@@ -80,6 +80,7 @@
 		<module>ardulink-console</module>
 		<module>ardulink-mail</module>
 		<module>example-datareceiver</module>
+		<module>example-uniqueid</module>
 		<module>example-joysticksmartcardriver</module>
 		<module>example-simplesmartcardriver</module>
 		<module>deploy-dist</module>
