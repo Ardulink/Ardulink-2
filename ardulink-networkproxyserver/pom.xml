@@ -43,8 +43,6 @@
 				<version>2.10.3</version>
 				<configuration>
 					<show>public</show>
-					<reportOutputDirectory>${project.basedir}/../deploy-javadocutils/generated</reportOutputDirectory>
-					<destDir>ardulink-networkproxyserver</destDir>
 					<includeDependencySources>false</includeDependencySources>
 					<linksource>false</linksource>
 					<detectLinks>false</detectLinks>

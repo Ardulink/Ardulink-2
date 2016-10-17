@@ -30,8 +30,6 @@
 				<version>2.10.3</version>
 				<configuration>
 					<show>public</show>
-					<reportOutputDirectory>${project.basedir}/../deploy-javadocutils/generated</reportOutputDirectory>
-					<destDir>ardulink-core-util</destDir>
 					<additionalparam>-Xdoclint:none</additionalparam>
 					<includeDependencySources>false</includeDependencySources>
 					<linksource>false</linksource>
