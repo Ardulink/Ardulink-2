@@ -16,6 +16,12 @@ limitations under the License.
 
 package org.ardulink.core.events;
 
+import static java.util.Collections.unmodifiableSet;
+import static java.util.Collections.unmodifiableMap;
+
+import java.util.Map;
+import java.util.Set;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -26,12 +32,16 @@ package org.ardulink.core.events;
  */
 public class DefaultRplyEvent implements RplyEvent {
 
-	private boolean ok;
-	private long id;
+	private final boolean ok;
+	private final long id;
+	private final Map<String, Object> parameters;
+	private final Set<String> names;
 
-	public DefaultRplyEvent(boolean ok, long id) {
+	public DefaultRplyEvent(boolean ok, long id, Map<String, Object> parameters) {
 		this.ok = ok;
 		this.id = id;
+		this.parameters = parameters;
+		this.names = unmodifiableSet(parameters.keySet());
 	}
 
 	@Override
@@ -42,6 +52,21 @@ public class DefaultRplyEvent implements RplyEvent {
 	@Override
 	public long getId() {
 		return id;
+	}
+
+	@Override
+	public Set<String> getParameterNames() {
+		return names;
+	}
+
+	@Override
+	public Object getParameterValue(String name) {
+		return parameters.get(name);
+	}
+
+	@Override
+	public Map<String, Object> getParameters() {
+		return unmodifiableMap(parameters);
 	}
 
 }

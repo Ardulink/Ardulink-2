@@ -30,9 +30,9 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:git@github.com:Ardulink/Ardulink.git</connection>
-		<developerConnection>scm:git:git@github.com:Ardulink/Ardulink.git</developerConnection>
-		<url>https://github.com/Ardulink/Ardulink</url>
+		<url>https://github.com/Ardulink/Ardulink-2</url>
+		<connection>scm:git:git//github.com:Ardulink/Ardulink-2.git</connection>
+		<developerConnection>scm:git:git@github.com:Ardulink/Ardulink-2.git</developerConnection>
 	</scm>
 
 	<repositories>
@@ -73,12 +73,14 @@
 		<module>ardulink-core-proxy</module>
 		<module>ardulink-core-mqtt</module>
 		<module>ardulink-legacy</module>
+		<module>ardulink-camel</module>
 		<module>ardulink-networkproxyserver</module>
 		<module>ardulink-mqtt</module>
 		<module>ardulink-swing</module>
 		<module>ardulink-console</module>
 		<module>ardulink-mail</module>
 		<module>example-datareceiver</module>
+		<module>example-uniqueid</module>
 		<module>example-joysticksmartcardriver</module>
 		<module>example-simplesmartcardriver</module>
 		<module>deploy-dist</module>
@@ -102,6 +104,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19.1</version>
 				<configuration>
 					<excludes>
 						<exclude>**/*IntegrationTest.java</exclude>
@@ -127,6 +130,51 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+		<id>makerelease</id>
+		<build>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>2.2.1</version>
+					<executions>
+						<execution>
+							<id>attach-sources</id>
+							<goals>
+								<goal>jar-no-fork</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.10.3</version>
+					<configuration>
+						<show>public</show>
+						<failOnError>false</failOnError>
+						<includeDependencySources>false</includeDependencySources>
+						<linksource>false</linksource>
+						<detectLinks>false</detectLinks>
+	            		<detectOfflineLinks>false</detectOfflineLinks>
+	            		<detectJavaApiLink>false</detectJavaApiLink>
+					</configuration>
+					<executions>
+						<execution>
+							<id>attach-javadocs</id>
+							<goals>
+								<goal>jar</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</build>
+		</profile>
+	</profiles>
 
 	<dependencyManagement>
 		<dependencies>

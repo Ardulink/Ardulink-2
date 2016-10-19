@@ -40,6 +40,7 @@ import org.ardulink.core.Pin.Type;
 import org.ardulink.core.Tone;
 import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
+import org.ardulink.core.proto.api.MessageIdHolders;
 import org.ardulink.util.URIs;
 import org.fusesource.hawtbuf.Buffer;
 import org.fusesource.hawtbuf.UTF8Buffer;
@@ -231,13 +232,15 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public void startListening(Pin pin) throws IOException {
+	public long startListening(Pin pin) throws IOException {
 		publish(controlTopic(pin), TRUE);
+		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public void stopListening(Pin pin) throws IOException {
+	public long stopListening(Pin pin) throws IOException {
 		publish(controlTopic(pin), FALSE);
+		return MessageIdHolders.NO_ID.getId();
 	}
 
 	private String controlTopic(Pin pin) {
@@ -250,15 +253,17 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public void switchAnalogPin(AnalogPin analogPin, int value)
+	public long switchAnalogPin(AnalogPin analogPin, int value)
 			throws IOException {
 		switchPin(ANALOG, analogPin, value);
+		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public void switchDigitalPin(DigitalPin digitalPin, boolean value)
+	public long switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException {
 		switchPin(DIGITAL, digitalPin, value);
+		return MessageIdHolders.NO_ID.getId();
 	}
 
 	private void switchPin(String type, Pin pin, Object value)
@@ -276,23 +281,23 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,
+	public long sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void sendTone(Tone tone) throws IOException {
+	public long sendTone(Tone tone) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void sendNoTone(AnalogPin analogPin) throws IOException {
+	public long sendNoTone(AnalogPin analogPin) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void sendCustomMessage(String... messages) throws IOException {
+	public long sendCustomMessage(String... messages) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 

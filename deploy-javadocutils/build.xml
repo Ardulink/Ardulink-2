@@ -42,16 +42,84 @@
 			  <replacevalue><![CDATA[<p>v2.0.0-SNAPSHOT VERSION NAME</p>]]></replacevalue>
 		</replace>
 	</target>
-	
-	<target name="prepare4dist">
+
+	<target name="prepare4dist" depends="prepareGenerated">
 		<delete dir="generated4dist" />
-		<copydir src="generated" dest="generated4dist"></copydir>
+		<mkdir dir="generated4dist" />
+		<copy todir="generated4dist" overwrite="true">
+			<fileset dir="generated" />
+		</copy>
 	</target>
 
+	<target name="prepareGenerated">
+		<delete dir="generated" />
+		<mkdir dir="generated" />
+		<copy todir="generated/ardulink-camel" overwrite="true">
+			<fileset dir="../ardulink-camel/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-console" overwrite="true">
+			<fileset dir="../ardulink-console/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-core-base" overwrite="true">
+			<fileset dir="../ardulink-core-base/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-core-beans" overwrite="true">
+			<fileset dir="../ardulink-core-beans/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-core-bluetooth" overwrite="true">
+			<fileset dir="../ardulink-core-bluetooth/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-core-digispark" overwrite="true">
+			<fileset dir="../ardulink-core-digispark/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-core-mqtt" overwrite="true">
+			<fileset dir="../ardulink-core-mqtt/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-core-proxy" overwrite="true">
+			<fileset dir="../ardulink-core-proxy/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-core-raspberry" overwrite="true">
+			<fileset dir="../ardulink-core-raspberry/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-core-serial-jssc" overwrite="true">
+			<fileset dir="../ardulink-core-serial-jssc/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-core-serial-rxtx" overwrite="true">
+			<fileset dir="../ardulink-core-serial-rxtx/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-core-util" overwrite="true">
+			<fileset dir="../ardulink-core-util/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-core-virtual" overwrite="true">
+			<fileset dir="../ardulink-core-virtual/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-legacy" overwrite="true">
+			<fileset dir="../ardulink-legacy/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-mail" overwrite="true">
+			<fileset dir="../ardulink-mail/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-mqtt" overwrite="true">
+			<fileset dir="../ardulink-mqtt/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-networkproxyserver" overwrite="true">
+			<fileset dir="../ardulink-networkproxyserver/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-swing" overwrite="true">
+			<fileset dir="../ardulink-swing/target/apidocs" />
+		</copy>
+	</target>
+
+	<!-- Copia i javadoc prodotti per la distribuzione dentro rootfolder e quindi
+	     il tutto è pronto per generare lo zip della distribuzione -->
 	<target name="copy2dist">
-		<copydir src="generated4dist" dest="../deploy-dist/rootfolder/javadoc"></copydir>
+		<copy todir="../deploy-dist/rootfolder/javadoc" overwrite="true">
+			<fileset dir="generated4dist">
+			</fileset>
+		</copy>
 	</target>
 
+	<!-- Cancella i javadoc dentro rootfolder -->
 	<target name="clean2dist">
 		<delete dir="../deploy-dist/rootfolder/javadoc" />
 	</target>

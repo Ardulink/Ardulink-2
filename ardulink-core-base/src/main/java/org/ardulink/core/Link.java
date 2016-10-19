@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.events.EventListener;
+import org.ardulink.core.events.CustomListener;
 import org.ardulink.core.events.RplyListener;
 
 /**
@@ -42,22 +43,27 @@ public interface Link extends Closeable {
 
 	Link removeRplyListener(RplyListener listener) throws IOException;
 
-	void startListening(Pin pin) throws IOException;
+	Link addCustomListener(CustomListener listener) throws IOException;
 
-	void stopListening(Pin pin) throws IOException;
+	Link removeCustomListener(CustomListener listener) throws IOException;
 
-	void switchAnalogPin(AnalogPin analogPin, int value) throws IOException;
+	long startListening(Pin pin) throws IOException;
 
-	void switchDigitalPin(DigitalPin digitalPin, boolean value)
+	long stopListening(Pin pin) throws IOException;
+
+	long switchAnalogPin(AnalogPin analogPin, int value) throws IOException;
+
+	long switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException;
 
-	void sendKeyPressEvent(char keychar, int keycode, int keylocation,
+	long sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException;
 
-	void sendTone(Tone tone) throws IOException;
+	long sendTone(Tone tone) throws IOException;
 
-	void sendNoTone(AnalogPin analogPin) throws IOException;
+	long sendNoTone(AnalogPin analogPin) throws IOException;
 
-	void sendCustomMessage(String... messages) throws IOException;
+	// returns the MessageId, could/should be changed to the message sent or a MessageSentInfo object 
+	long sendCustomMessage(String... messages) throws IOException;
 
 }

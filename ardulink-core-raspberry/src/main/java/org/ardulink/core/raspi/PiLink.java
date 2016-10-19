@@ -43,6 +43,8 @@ import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.Tone;
 import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
+import org.ardulink.core.proto.api.MessageIdHolders;
+
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioPin;
@@ -75,7 +77,7 @@ public class PiLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public void startListening(Pin pin) throws IOException {
+	public long startListening(Pin pin) throws IOException {
 		if (pin.is(ANALOG)) {
 			addListener(pin, analogAdapter());
 		} else if (pin.is(DIGITAL)) {
@@ -83,6 +85,7 @@ public class PiLink extends AbstractListenerLink {
 		} else {
 			throw new IllegalStateException("Unknown pin type of pin " + pin);
 		}
+		return MessageIdHolders.NO_ID.getId();
 	}
 
 	private void addListener(Pin pin, GpioPinListener listener) {
@@ -93,29 +96,30 @@ public class PiLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public void stopListening(Pin pin) throws IOException {
+	public long stopListening(Pin pin) throws IOException {
 		GpioPin gpioPin = getOrCreate(pin.pinNum(), pi4jInputMode(pin));
 		List<GpioPinListener> list = listeners.asMap().get(gpioPin);
-		if (list == null) {
-			return;
+		if (list != null) {
+			for (GpioPinListener gpioPinListener : list) {
+				gpioPin.removeListener(gpioPinListener);
+				listeners.remove(gpioPin, gpioPinListener);
+			}
 		}
-		for (GpioPinListener gpioPinListener : list) {
-			gpioPin.removeListener(gpioPinListener);
-			listeners.remove(gpioPin, gpioPinListener);
-		}
+		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public void switchAnalogPin(AnalogPin analogPin, int value)
+	public long switchAnalogPin(AnalogPin analogPin, int value)
 			throws IOException {
 		GpioPinPwmOutput pin = (GpioPinPwmOutput) getOrCreate(
 				analogPin.pinNum(), DIGITAL_OUTPUT);
 		pin.setMode(PWM_OUTPUT);
 		pin.setPwm(value);
+		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public void switchDigitalPin(DigitalPin digitalPin, boolean value)
+	public long switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException {
 		GpioPinDigitalOutput pin = (GpioPinDigitalOutput) getOrCreate(
 				digitalPin.pinNum(), DIGITAL_OUTPUT);
@@ -124,26 +128,27 @@ public class PiLink extends AbstractListenerLink {
 		} else {
 			pin.low();
 		}
+		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,
+	public long sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
 		throw notSupported();
 	}
 
 	@Override
-	public void sendTone(Tone tone) throws IOException {
+	public long sendTone(Tone tone) throws IOException {
 		throw notSupported();
 	}
 
 	@Override
-	public void sendNoTone(AnalogPin analogPin) throws IOException {
+	public long sendNoTone(AnalogPin analogPin) throws IOException {
 		throw notSupported();
 	}
 
 	@Override
-	public void sendCustomMessage(String... messages) throws IOException {
+	public long sendCustomMessage(String... messages) throws IOException {
 		throw notSupported();
 	}
 

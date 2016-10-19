@@ -48,7 +48,7 @@ public class ALProtoBuilder {
 				"srld"), START_LISTENING_ANALOG("srla"), STOP_LISTENING_DIGITAL(
 				"spld"), STOP_LISTENING_ANALOG("spla"), CHAR_PRESSED("kprs"), TONE(
 				"tone"), NOTONE("notn"), CUSTOM_MESSAGE("cust"), RPLY("rply"), READY(
-				"ready");
+				"ready"), CUSTOM_EVENT("cevnt");
 
 		private String proto;
 

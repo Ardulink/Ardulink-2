@@ -55,6 +55,17 @@
 				<unpack>false</unpack>
 			</binaries>
 		</moduleSet>
+		<moduleSet>
+			<useAllReactorProjects>true</useAllReactorProjects>
+			<includes>
+				<include>*:example-uniqueid:*</include>
+			</includes>
+			<binaries>
+				<!-- put example jars under ${baseDirectory}/examples -->
+				<outputDirectory>ardulink/examples/UniqueID</outputDirectory>
+				<unpack>false</unpack>
+			</binaries>
+		</moduleSet>
 	</moduleSets>
 	<fileSets>
 		<!-- include rootfolder's static files in ${baseDirectory} -->
@@ -82,6 +93,10 @@
 		<fileSet>
 			<directory>../example-simplesmartcardriver/src</directory>
 			<outputDirectory>ardulink/examples/SimpleSmartCarDriver/src</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>../example-uniqueid/src</directory>
+			<outputDirectory>ardulink/examples/UniqueID/src</outputDirectory>
 		</fileSet>
 	</fileSets>
 </assembly>

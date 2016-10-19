@@ -16,7 +16,7 @@ limitations under the License.
 
 package org.ardulink.core;
 
-import static org.ardulink.core.AbstractConnectionBasedLink.Mode.READY_MESSAGE_ONLY;
+import static org.ardulink.core.ConnectionBasedLink.Mode.READY_MESSAGE_ONLY;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.MatcherAssert.assertThat;

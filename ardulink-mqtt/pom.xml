@@ -18,34 +18,6 @@
 		</repository>
 	</repositories>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<mainClass>org.ardulink.mqtt.MqttMain</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.10.3</version>
-				<configuration>
-					<show>public</show>
-					<reportOutputDirectory>${project.basedir}/../deploy-javadocutils/generated</reportOutputDirectory>
-					<destDir>ardulink-mqtt</destDir>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>

@@ -19,7 +19,7 @@ package org.ardulink.core;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Scanner;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -62,9 +62,57 @@ public abstract class StreamReader implements Closeable {
 	}
 
 	public void readUntilClosed(String delimiter) {
+		byte[] buffer = new byte[1024];
+		int len = -1, i, temp;
+		boolean end = false;
+		int numTempBytes = 0;
+		byte[] tempBytes = new byte[1024];
+
+		try {
+			while (!end) {
+				// if ((in.available()) > 0) {
+					if ((len = this.inputStream.read(buffer)) > -1) {
+						for (i = 0; i < len; i++) {
+							temp = buffer[i];
+							 // adjust from C-Byte to Java-Byte
+							if (temp < 0)
+								temp += 256;
+							if (temp == '\n') {
+								if  (numTempBytes > 0) {
+									received(Arrays.copyOfRange(tempBytes, 0, numTempBytes));
+								}
+								numTempBytes = 0;
+							} else {
+								tempBytes[numTempBytes] = (byte)temp;
+								++numTempBytes;
+							}
+						}
+					}
+				// }
+			}
+		} catch (Exception e) {
+			end = true;
+			try {
+				inputStream.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
+		
+	}
+	
+	
+/*
+	public void readUntilClosed(String delimiter) {
 		Scanner scanner = new Scanner(inputStream, "US-ASCII");
 		try {
 			Pattern pattern = pattern(delimiter);
+//			try {
+//				TimeUnit.SECONDS.sleep(5);
+//				System.out.println("WITH THIS IT WORKS...");
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
 			while (scanner.hasNext(pattern) && !this.thread.isInterrupted()) {
 				try {
 					logger.debug("Waiting for data");
@@ -79,7 +127,7 @@ public abstract class StreamReader implements Closeable {
 			scanner.close();
 		}
 	}
-
+*/
 	private Pattern pattern(String delimiter) {
 		return Pattern.compile(".*(" + delimiter + ")|.*");
 	}

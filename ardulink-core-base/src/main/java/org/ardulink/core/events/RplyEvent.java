@@ -16,6 +16,9 @@ limitations under the License.
 
 package org.ardulink.core.events;
 
+import java.util.Collection;
+import java.util.Map;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -29,5 +32,11 @@ public interface RplyEvent {
 	long getId();
 
 	boolean isOk();
+
+	Collection<String> getParameterNames();
+
+	Object getParameterValue(String name);
 	
+	Map<String, Object> getParameters();
+
 }

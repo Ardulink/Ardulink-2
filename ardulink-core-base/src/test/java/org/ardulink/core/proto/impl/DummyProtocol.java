@@ -16,14 +16,15 @@ limitations under the License.
 
 package org.ardulink.core.proto.impl;
 
+import org.ardulink.core.messages.api.FromDeviceMessage;
+import org.ardulink.core.messages.api.ToDeviceMessageCustom;
+import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
+import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
+import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
+import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
+import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
+import org.ardulink.core.messages.api.ToDeviceMessageTone;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.api.ToArduinoCustomMessage;
-import org.ardulink.core.proto.api.ToArduinoKeyPressEvent;
-import org.ardulink.core.proto.api.ToArduinoNoTone;
-import org.ardulink.core.proto.api.ToArduinoPinEvent;
-import org.ardulink.core.proto.api.ToArduinoStartListening;
-import org.ardulink.core.proto.api.ToArduinoStopListening;
-import org.ardulink.core.proto.api.ToArduinoTone;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -52,42 +53,42 @@ public class DummyProtocol implements Protocol {
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoStartListening startListeningEvent) {
+	public byte[] toDevice(ToDeviceMessageStartListening startListening) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoStopListening stopListeningEvent) {
+	public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoPinEvent pinEvent) {
+	public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoKeyPressEvent charEvent) {
+	public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoTone tone) {
+	public byte[] toDevice(ToDeviceMessageTone tone) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoNoTone noTone) {
+	public byte[] toDevice(ToDeviceMessageNoTone noTone) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public byte[] toArduino(ToArduinoCustomMessage customMessage) {
+	public byte[] toDevice(ToDeviceMessageCustom custom) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public FromArduino fromArduino(byte[] bytes) {
+	public FromDeviceMessage fromDevice(byte[] bytes) {
 		throw new UnsupportedOperationException();
 	}
 

@@ -24,6 +24,7 @@ import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.Tone;
 import org.ardulink.core.events.EventListener;
+import org.ardulink.core.events.CustomListener;
 import org.ardulink.core.events.RplyListener;
 
 /**
@@ -64,47 +65,54 @@ public class LinkDelegate implements Link {
 		return getDelegate().removeRplyListener(listener);
 	}
 
-	public void startListening(Pin pin) throws IOException {
-		getDelegate().startListening(pin);
+	public long startListening(Pin pin) throws IOException {
+		return getDelegate().startListening(pin);
 	}
 
 	public void close() throws IOException {
 		getDelegate().close();
 	}
 
-	public void stopListening(Pin pin) throws IOException {
-		getDelegate().stopListening(pin);
+	public long stopListening(Pin pin) throws IOException {
+		return getDelegate().stopListening(pin);
 	}
 
-	public void switchAnalogPin(AnalogPin analogPin, int value)
+	public long switchAnalogPin(AnalogPin analogPin, int value)
 			throws IOException {
-		getDelegate().switchAnalogPin(analogPin, value);
+		return getDelegate().switchAnalogPin(analogPin, value);
 	}
 
-	public void switchDigitalPin(DigitalPin digitalPin, boolean value)
+	public long switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException {
-		getDelegate().switchDigitalPin(digitalPin, value);
+		return getDelegate().switchDigitalPin(digitalPin, value);
 	}
 
 	@Override
-	public void sendTone(Tone tone) throws IOException {
-		getDelegate().sendTone(tone);
+	public long sendTone(Tone tone) throws IOException {
+		return getDelegate().sendTone(tone);
 	}
 
 	@Override
-	public void sendNoTone(AnalogPin analogPin) throws IOException {
-		getDelegate().sendNoTone(analogPin);
+	public long sendNoTone(AnalogPin analogPin) throws IOException {
+		return getDelegate().sendNoTone(analogPin);
 	}
 
 	@Override
-	public void sendCustomMessage(String... messages) throws IOException {
-		getDelegate().sendCustomMessage(messages);
+	public long sendCustomMessage(String... messages) throws IOException {
+		return getDelegate().sendCustomMessage(messages);
 	}
 
-	public void sendKeyPressEvent(char keychar, int keycode, int keylocation,
+	public long sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
-		getDelegate().sendKeyPressEvent(keychar, keycode, keylocation,
+		return getDelegate().sendKeyPressEvent(keychar, keycode, keylocation,
 				keymodifiers, keymodifiersex);
+	}
+	public Link addCustomListener(CustomListener listener) throws IOException {
+		return getDelegate().addCustomListener(listener);
+	}
+
+	public Link removeCustomListener(CustomListener listener) throws IOException {
+		return getDelegate().removeCustomListener(listener);
 	}
 
 }

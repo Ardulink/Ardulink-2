@@ -25,17 +25,17 @@ import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
 
-import org.ardulink.core.AbstractConnectionBasedLink;
+import jssc.SerialPort;
+import jssc.SerialPortException;
+
 import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.Link;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.core.qos.ConnectionBasedQosLink;
-
-import jssc.SerialPort;
-import jssc.SerialPortException;
+import org.ardulink.core.qos.QosLink;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -55,14 +55,25 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 	}
 
 	@Override
-	public LinkDelegate newLink(SerialLinkConfig config) throws SerialPortException, IOException {
-		String portIdentifier = checkNotNull(config.getPort(), "port must not be null");
+	public LinkDelegate newLink(SerialLinkConfig config)
+			throws SerialPortException, IOException {
+		String portIdentifier = checkNotNull(config.getPort(),
+				"port must not be null");
 		final SerialPort serialPort = serialPort(config, portIdentifier);
-		
-		StreamConnection connection = new StreamConnection(new SerialInputStream(serialPort), new SerialOutputStream(serialPort),
-				proto);
 
-		return new LinkDelegate(waitForArdulink(config, createDelegateTo(config, connection))) {
+		StreamConnection connection = new StreamConnection(
+				new SerialInputStream(serialPort), new SerialOutputStream(
+						serialPort), proto);
+
+		Protocol proto = config.getProto();
+		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(
+				connection, proto);
+		@SuppressWarnings("resource")
+		Link link = config.isQos() ? new QosLink(connectionBasedLink)
+				: connectionBasedLink;
+
+		waitForArdulink(config, connectionBasedLink);
+		return new LinkDelegate(link) {
 			@Override
 			public void close() throws IOException {
 				super.close();
@@ -75,9 +86,11 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		};
 	}
 
-	private AbstractConnectionBasedLink waitForArdulink(SerialLinkConfig config, AbstractConnectionBasedLink link) {
+	private void waitForArdulink(SerialLinkConfig config,
+			ConnectionBasedLink link) {
 		if (config.isPingprobe()) {
-			checkState(link.waitForArduinoToBoot(config.getWaitsecs(), SECONDS),
+			checkState(
+					link.waitForArduinoToBoot(config.getWaitsecs(), SECONDS),
 					"Waited for arduino to boot but no response received");
 		} else {
 			try {
@@ -86,20 +99,14 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 				Thread.currentThread().interrupt();
 			}
 		}
-		return link;
 	}
 
-	private AbstractConnectionBasedLink createDelegateTo(SerialLinkConfig config, StreamConnection connection)
-			throws IOException {
-		Protocol proto = config.getProto();
-		return config.isQos() ? new ConnectionBasedQosLink(connection, proto)
-				: new ConnectionBasedLink(connection, proto);
-	}
-
-	private SerialPort serialPort(SerialLinkConfig config, String portIdentifier) throws SerialPortException {
+	private SerialPort serialPort(SerialLinkConfig config, String portIdentifier)
+			throws SerialPortException {
 		SerialPort serialPort = new SerialPort(portIdentifier);
 		serialPort.openPort();
-		serialPort.setParams(config.getBaudrate(), DATABITS_8, STOPBITS_1, PARITY_NONE);
+		serialPort.setParams(config.getBaudrate(), DATABITS_8, STOPBITS_1,
+				PARITY_NONE);
 		return serialPort;
 	}
 
