@@ -9,6 +9,24 @@
 		<version>2.0.0-SNAPSHOT</version>
 	</parent>
 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<mainClass>org.ardulink.mqtt.MqttMain</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
 	<repositories>
 		<!-- io.moquette:moquette-broker -->
 		<!-- org.dna.mqtt:moquette-broker -->
