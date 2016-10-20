@@ -8,7 +8,6 @@ From your linux/windows/apple shell you can run these commands (from Ardulink's 
 
 java -jar ardulink-console-${project.version}.jar
 java -jar ardulink-networkproxyserver-${project.version}.jar
-java -jar ardulink-mail-${project.version}.jar
 java -jar ardulink-mqtt-${project.version}.jar
 
 
