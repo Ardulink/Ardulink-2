@@ -46,7 +46,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = 7024281203061769142L;
 
-	private TogggleSignalButton signalButton = new TogggleSignalButton();
+	private ToggleSignalButton signalButton = new ToggleSignalButton();
 	private JCheckBox chckbxValueOnFieldIs;
 	private JTextField columnsTextField;
 	private JTextField buttonOnTextField;
@@ -232,7 +232,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 		signalButton.setLink(link);
 	}
 
-	public TogggleSignalButton getSignalButton() {
+	public ToggleSignalButton getSignalButton() {
 		return signalButton;
 	}
 	

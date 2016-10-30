@@ -42,7 +42,7 @@ import org.ardulink.legacy.Link;
  * 
  * [adsense]
  */
-public class TogggleSignalButton extends JPanel implements Linkable {
+public class ToggleSignalButton extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = -5162326079507604871L;
 
@@ -64,7 +64,7 @@ public class TogggleSignalButton extends JPanel implements Linkable {
     /**
 	 * Create the valuePanelOff.
 	 */
-	public TogggleSignalButton() {
+	public ToggleSignalButton() {
 		setLayout(new BorderLayout(0, 0));
 		
 		configPanel = new JPanel();
