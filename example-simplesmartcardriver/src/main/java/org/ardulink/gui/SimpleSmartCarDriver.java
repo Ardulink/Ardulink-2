@@ -247,7 +247,12 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 		if (delegate instanceof ConnectionBasedLink) {
 			((ConnectionBasedLink) delegate).addConnectionListener(this);
 		} else {
-			connectionLost();
+			if(link == null || link == Link.NO_LINK) {
+				connectionLost();
+			} else {
+				reconnected();
+			}
+			
 		}
 		for (Linkable linkable : linkables) {
 			linkable.setLink(link);
