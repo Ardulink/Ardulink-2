@@ -416,7 +416,6 @@ public class Console extends JFrame implements Linkable {
 		if (this.link != null) {
 			this.link.removeConnectionListener(this.connectionListener);
 		}
-		Link oldValue = this.link;
 		this.link = newLink;
 		if (this.link != null) {
 			this.link.addConnectionListener(this.connectionListener);

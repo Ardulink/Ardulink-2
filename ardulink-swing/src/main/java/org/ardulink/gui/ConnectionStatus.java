@@ -85,12 +85,11 @@ public class ConnectionStatus extends JPanel implements Linkable {
 		if (this.link != null) {
 			this.link.removeConnectionListener(this.connectionListener);
 		}
-		Link oldValue = this.link;
 		this.link = newLink;
 		if (this.link != null) {
 			this.link.addConnectionListener(this.connectionListener);
 		}
-		if (this.link == null) {
+		if (this.link == null || this.link == Link.NO_LINK) {
 			connectionListener.connectionLost();
 		} else {
 			connectionListener.reconnected();
