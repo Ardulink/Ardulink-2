@@ -66,6 +66,17 @@
 				<unpack>false</unpack>
 			</binaries>
 		</moduleSet>
+		<moduleSet>
+			<useAllReactorProjects>true</useAllReactorProjects>
+			<includes>
+				<include>*:example-buttonquest:*</include>
+			</includes>
+			<binaries>
+				<!-- put example jars under ${baseDirectory}/examples -->
+				<outputDirectory>ardulink/examples/ButtonQuest</outputDirectory>
+				<unpack>false</unpack>
+			</binaries>
+		</moduleSet>
 	</moduleSets>
 	<fileSets>
 		<!-- include rootfolder's static files in ${baseDirectory} -->
