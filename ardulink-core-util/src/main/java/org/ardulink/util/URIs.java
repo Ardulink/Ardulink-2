@@ -11,7 +11,7 @@ public final class URIs {
 
 	public static URI newURI(String asciiString) {
 		try {
-			return new URI(asciiString.replaceAll(" ", "%20"));
+			return new URI((asciiString==null)?null:asciiString.replaceAll(" ", "%20"));
 		} catch (URISyntaxException e) {
 			throw Throwables.propagate(e);
 		}
