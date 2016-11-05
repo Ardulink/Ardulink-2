@@ -36,10 +36,10 @@
 
 	<target name="modifyVersion" depends="prepare4dist">
 		<replace dir="generated" token="[ardulinkversion]">
-			  <replacevalue><![CDATA[<p>v2.0.1-SNAPSHOT RELEASE NAME</p>]]></replacevalue>
+			  <replacevalue><![CDATA[<p>v2.0.1 Phoenix</p>]]></replacevalue>
 		</replace>
 		<replace dir="generated4dist" token="[ardulinkversion]">
-			  <replacevalue><![CDATA[<p>v2.0.1-SNAPSHOT RELEASE NAME</p>]]></replacevalue>
+			  <replacevalue><![CDATA[<p>v2.0.1 Phoenix</p>]]></replacevalue>
 		</replace>
 	</target>
 
