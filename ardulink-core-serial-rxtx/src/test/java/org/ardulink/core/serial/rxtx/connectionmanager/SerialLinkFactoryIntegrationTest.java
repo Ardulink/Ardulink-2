@@ -25,13 +25,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-import java.util.List;
-
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.core.serial.rxtx.SerialLinkConfig;
 import org.ardulink.util.URIs;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -45,7 +43,7 @@ import org.junit.rules.ExpectedException;
  *
  */
 // because JNI dependent
-// @Ignore
+@Ignore
 public class SerialLinkFactoryIntegrationTest {
 
 	@Rule
@@ -101,7 +99,7 @@ public class SerialLinkFactoryIntegrationTest {
 	public void canConnectWithoutPortButSearchEnabled() {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager
-				.getConfigurer(URIs.newURI("ardulink://serial?searchport=true&baudrate=9600"));
+				.getConfigurer(URIs.newURI("ardulink://serial?searchport=true&baudrate=9600&pingprobe=false"));
 		
 		ConfigAttribute searchport = configurer.getAttribute("searchport");
 		assertEquals(searchport.getValue(), TRUE);

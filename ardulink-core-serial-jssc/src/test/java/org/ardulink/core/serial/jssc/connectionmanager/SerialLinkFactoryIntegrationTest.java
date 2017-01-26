@@ -161,7 +161,7 @@ public class SerialLinkFactoryIntegrationTest {
 	public void canConnectWithoutPortButSearchEnabled() {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager
-				.getConfigurer(URIs.newURI("ardulink://serial-jssc?searchport=true&baudrate=9600"));
+				.getConfigurer(URIs.newURI("ardulink://serial-jssc?searchport=true&baudrate=9600&pingprobe=false"));
 		
 		ConfigAttribute searchport = configurer.getAttribute("searchport");
 		assertEquals(searchport.getValue(), TRUE);
