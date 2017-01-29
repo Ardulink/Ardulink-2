@@ -25,6 +25,7 @@ import javax.validation.constraints.Min;
 
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
+import org.ardulink.core.linkmanager.LinkConfig.Named;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
@@ -63,6 +64,9 @@ public class SerialLinkConfig implements LinkConfig {
 	@Named("pingprobe")
 	private boolean pingprobe = true;
 
+	@Named("searchport")
+	private boolean searchport;
+	
 	public int getBaudrate() {
 		return baudrate;
 	}
@@ -133,4 +137,11 @@ public class SerialLinkConfig implements LinkConfig {
 		this.waitsecs = waitsecs;
 	}
 
+	public boolean isSearchport() {
+		return searchport;
+	}
+
+	public void setSearchport(boolean searchport) {
+		this.searchport = searchport;
+	}
 }
