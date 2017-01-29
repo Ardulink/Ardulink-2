@@ -16,7 +16,6 @@ limitations under the License.
 
 package org.ardulink.core;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.ConnectionBasedLink.Mode.ANY_MESSAGE_RECEIVED;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -27,9 +26,8 @@ import static org.ardulink.core.proto.api.MessageIdHolders.toHolder;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.ardulink.core.Connection.ListenerAdapter;
 import org.ardulink.core.Pin.AnalogPin;
@@ -60,7 +58,6 @@ import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageTone;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,46 +175,39 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	 * @return <code>true</code> if the arduino did response within the given
 	 *         time otherwise <code>false</code>
 	 */
-	public boolean waitForArduinoToBoot(int wait, TimeUnit timeUnit,
-			final Mode mode) {
-		final ReentrantLock lock = new ReentrantLock();
-		final Condition condition = lock.newCondition();
+	public boolean waitForArduinoToBoot(int wait, TimeUnit timeUnit, final Mode mode) {
+
+		/*
+		 * lockingQueue used instead of Lock and Condition it has a shorter and simpler
+		 * implementation.
+		 */
+		final ArrayBlockingQueue<Boolean> lockingQueue = new ArrayBlockingQueue<Boolean>(1);
+
 		ListenerAdapter listener = new ListenerAdapter() {
 			@Override
 			public void received(byte[] bytes) throws IOException {
-				lock.lock();
-				try {
-					if (mode == ANY_MESSAGE_RECEIVED || readyMsgReceived)
-						condition.signalAll();
-				} finally {
-					lock.unlock();
+				if (mode == ANY_MESSAGE_RECEIVED || readyMsgReceived) {
+					// messages are arriving so device is ready
+					lockingQueue.offer(true);
 				}
 			}
 		};
 		this.connection.addListener(listener);
 
-		StopWatch stopwatch = new StopWatch().start();
+		Boolean deviceIsReady = null;
 		try {
-			while (true) {
-				lock.lock();
-				try {
-					ping();
-					if (condition.await(500, MILLISECONDS)) {
-						return true;
-					}
-					long time = stopwatch.getTime(timeUnit);
-					if (time >= wait) {
-						return false;
-					}
-				} finally {
-					lock.unlock();
-				}
+			ping();
+			deviceIsReady = lockingQueue.poll(wait, timeUnit);
+			if (deviceIsReady == null) {
+				deviceIsReady = false;
 			}
+
 		} catch (InterruptedException e) {
 			throw propagate(e);
 		} finally {
 			this.connection.removeListener(listener);
 		}
+		return deviceIsReady;
 	}
 
 	private void ping() {
