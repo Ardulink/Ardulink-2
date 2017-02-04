@@ -16,9 +16,10 @@ limitations under the License.
 package org.ardulink.core.proto.impl;
 
 import static java.lang.System.arraycopy;
+import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
-import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.POWER_PIN_SWITCH;
 import static org.ardulink.core.proto.impl.LuaProtoBuilder.getBuilder;
+import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.*;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceMessage;
@@ -29,9 +30,8 @@ import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
-import org.ardulink.core.proto.api.MessageIdHolder;
+import org.ardulink.core.messages.impl.DefaultFromDeviceMessageCustom;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -64,8 +64,20 @@ public class LuaProtocol implements Protocol {
 
 	@Override
 	public byte[] toDevice(ToDeviceMessageStartListening startListening) {
-		// TODO Auto-generated method stub
-		return null;
+		Pin pin = startListening.getPin();
+		if (pin.is(ANALOG)) {
+			return toBytes(
+					 getBuilder(START_LISTENING_ANALOG)
+					    .forPin(pin.pinNum())
+					   .build());
+		}
+		if (pin.is(DIGITAL)) {
+			return toBytes(
+					 getBuilder(START_LISTENING_DIGITAL)
+					    .forPin(pin.pinNum())
+					   .build());
+		}
+		throw illegalPinType(pin);
 	}
 
 	@Override
@@ -76,11 +88,13 @@ public class LuaProtocol implements Protocol {
 
 	@Override
 	public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
-//		if (pinStateChange.getPin().is(ANALOG)) {
-//			return toBytes(builder(pinStateChange, POWER_PIN_INTENSITY).forPin(
-//					pinStateChange.getPin().pinNum()).withValue(
-//					(Integer) pinStateChange.getValue()));
-//		}
+		if (pinStateChange.getPin().is(ANALOG)) {
+			return toBytes(
+					 getBuilder(POWER_PIN_INTENSITY)
+					    .forPin(pinStateChange.getPin().pinNum())
+					    .withValue((Integer) pinStateChange.getValue())
+					   .build());
+		}
 		if (pinStateChange.getPin().is(DIGITAL)) {
 			return toBytes(
 					 getBuilder(POWER_PIN_SWITCH)
@@ -93,32 +107,36 @@ public class LuaProtocol implements Protocol {
 
 	@Override
 	public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException(String.format("This message has no sense for %s protocol", getName()));
 	}
 
 	@Override
 	public byte[] toDevice(ToDeviceMessageTone tone) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException(String.format("This message has no sense for %s protocol", getName()));
 	}
 
 	@Override
 	public byte[] toDevice(ToDeviceMessageNoTone noTone) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException(String.format("This message has no sense for %s protocol", getName()));
 	}
 
 	@Override
 	public byte[] toDevice(ToDeviceMessageCustom custom) {
-		// TODO Auto-generated method stub
-		return null;
+		return toBytes(
+				 getBuilder(CUSTOM_MESSAGE)
+				    .withValues((Object[])custom.getMessages())
+				   .build());	
 	}
 
 	@Override
 	public FromDeviceMessage fromDevice(byte[] bytes) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		String in = new String(bytes);
+		if(in.startsWith("alp://")) {
+			return ArdulinkProtocol2.instance().fromDevice(bytes);
+		} else {
+			return new DefaultFromDeviceMessageCustom(in);
+		}
 	}
 
 	private IllegalStateException illegalPinType(Pin pin) {

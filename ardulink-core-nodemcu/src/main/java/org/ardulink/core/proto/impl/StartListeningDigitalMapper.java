@@ -15,10 +15,22 @@ limitations under the License.
 */
 package org.ardulink.core.proto.impl;
 
+import static org.ardulink.util.Preconditions.checkNull;
+import static org.ardulink.util.Preconditions.checkNotNull;
+
+import java.util.HashMap;
 import java.util.Map;
 
-public interface Mapper {
+public class StartListeningDigitalMapper implements Mapper {
 
-	Map<String, String> buildMap(Integer pin, Object[] values);
+	@Override
+	public Map<String, String> buildMap(Integer pin, Object[] values) {
+		checkNotNull(pin, "PIN has to be specified");
+		checkNull(values, "value hasn't to be specified");
+		
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("PIN", pin.toString());
+		return map;
+	}
 
 }

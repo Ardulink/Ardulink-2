@@ -17,28 +17,33 @@ package org.ardulink.core.proto.impl;
 
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Preconditions.checkNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class PowerPinSwitchMapper implements Mapper {
+public class CustomMessageMapper implements Mapper {
 
+	private static final String separator = new String(LuaProtocol.instance().getSeparator());
+	
 	@Override
 	public Map<String, String> buildMap(Integer pin, Object[] values) {
-		
-		checkNotNull(pin, "PIN has to be specified");
+		checkNull(pin, "PIN has to be null");
 		checkNotNull(values, "value has to be specified");
-		checkArgument(values.length == 1, "Mapper %s accept just a value instead of: %s", values.length);
-		checkArgument(values[0] instanceof Boolean, "Mapper %s accept just a Boolean value instead of: %s", values[0].getClass().getName());
+		checkArgument(values.length > 0, "Mapper %s accepts a least a value instead of: %s", values.length);
 		
 		Map<String, String> map = new HashMap<String, String>();
-		map.put("PIN", pin.toString());
-		map.put("STATE", getState((Boolean)values[0]));
+		map.put("VALUES", getValues(values));
 		return map;
 	}
 
-	private String getState(Boolean state) {
-		return (state) ? "HIGH" : "LOW";
+	private String getValues(Object[] values) {
+		StringBuilder builder = new StringBuilder(values[0].toString());
+		for (int i = 1; i < values.length; i++) {
+			builder.append(separator);
+			builder.append(values[i].toString());
+		}
+		return builder.toString();
 	}
 
 }
