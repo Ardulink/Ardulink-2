@@ -59,7 +59,7 @@ public class ByteArray {
 		}
 		
 		byte[] retvalue = Arrays.copyOfRange(byteArray, 0, lastFoundIndex);
-		byteArray = Arrays.copyOfRange(byteArray, lastFoundIndex + delimiter.length, byteArray.length + 1);
+		byteArray = Arrays.copyOfRange(byteArray, lastFoundIndex + delimiter.length, byteArray.length);
 		
 		return retvalue;
 	}

@@ -64,7 +64,11 @@ public class ByteArrayTest {
 		assertThat(byteArray.size(), equalTo(4));
 
 		byte[] token5 = byteArray.next("4444".getBytes());
-		assertThat(token5, equalTo(null));
+		assertThat(token5, equalTo(new byte[]{}));
+		assertThat(byteArray.size(), equalTo(0));
+		
+		byte[] token6 = byteArray.next(" ".getBytes());
+		assertThat(token6, equalTo(null));
 		assertThat(byteArray.size(), equalTo(0));
 	}
 	

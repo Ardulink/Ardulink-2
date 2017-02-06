@@ -18,6 +18,7 @@ package org.ardulink.core.proto.impl;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
@@ -80,8 +81,8 @@ public class LuaProtoBuilderTest {
 		ToDeviceMessageStartListening message = new DefaultToDeviceMessageStartListening(digitalPin(1));
 		
 		byte[] protMessage = protocol.toDevice(message);
-		String controlString = "param1\r\nsomethingelse2\r\nfinal3\r\n";
+		String controlString = "alp://dred/1/%s";
 		
-		assertThat(new String(protMessage), equalTo(controlString));
+		assertThat(new String(protMessage), containsString(controlString));
 	}
 }

@@ -30,10 +30,10 @@ public class LuaProtoBuilder {
 		,POWER_PIN_INTENSITY("pwm.setup(${PIN}, 1000, 1023);pwm.start(${PIN});pwm.setduty(${PIN}, ${INTENSITY});", new PowerPinIntensityMapper())
 		,CUSTOM_MESSAGE("${VALUES}", new CustomMessageMapper())
 		,START_LISTENING_DIGITAL("StartListeningDigitalTemplate.snippet", new StartListeningDigitalMapper())
-		,START_LISTENING_ANALOG("TODO", null) // TODO
+		,STOP_LISTENING_DIGITAL("gpio.mode(${PIN}, gpio.OUTPUT);", new StopListeningMapper())
+		,START_LISTENING_ANALOG("gpio.mode(${PIN}, gpio.OUTPUT);", new StartListeningAnalogMapper())
 //		,DIGITAL_PIN_READ()
 //		,ANALOG_PIN_READ("ared")
-//		,STOP_LISTENING_DIGITAL("spld")
 //		,STOP_LISTENING_ANALOG("spla")
 //		,CHAR_PRESSED("kprs")
 //		,TONE("tone")
