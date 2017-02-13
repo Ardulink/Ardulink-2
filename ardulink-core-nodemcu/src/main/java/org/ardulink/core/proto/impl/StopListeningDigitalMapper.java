@@ -17,7 +17,5 @@ public class StopListeningDigitalMapper implements Mapper {
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("PIN", pin.toString());
 		return map;
-	
 	}
-
 }

@@ -40,5 +40,4 @@ public class PowerPinSwitchMapper implements Mapper {
 	private String getState(Boolean state) {
 		return (state) ? "HIGH" : "LOW";
 	}
-
 }

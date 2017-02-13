@@ -32,5 +32,4 @@ public class StartListeningDigitalMapper implements Mapper {
 		map.put("PIN", pin.toString());
 		return map;
 	}
-
 }

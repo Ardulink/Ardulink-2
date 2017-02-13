@@ -46,6 +46,9 @@ public class LuaProtoBuilder {
 			String retvalue = snippet;
 			if(is != null) {
 				retvalue = asString(is);
+				// Scripts on more than on line cause random error on NodeMCU because its echo
+				// We should investigate on ESPlorer code to understand how improve this code.
+				// Actually we remove CR and LF sending the script on a single line.
 				retvalue = retvalue.replaceAll("\\r", " ");
 				retvalue = retvalue.replaceAll("\\n", " ");
 				try {

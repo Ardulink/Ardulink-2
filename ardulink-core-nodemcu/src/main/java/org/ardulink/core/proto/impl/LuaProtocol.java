@@ -148,7 +148,6 @@ public class LuaProtocol implements Protocol {
 	public FromDeviceMessage fromDevice(byte[] bytes) {
 		
 		String in = new String(bytes);
-		System.out.println(in);
 		if(in.startsWith("alp://")) {
 			return ArdulinkProtocol2.instance().fromDevice(bytes);
 		} else {
