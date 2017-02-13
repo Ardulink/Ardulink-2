@@ -38,12 +38,22 @@ import org.ardulink.core.proto.api.Protocol;
  * 
  * project Ardulink http://www.ardulink.org/
  * 
+ * LUA protocol is intended to be used with NodeMCU LUA firmware. No upload sketches/scripts are needed.
+ * However there are some limitations.
+ * 
+ * Start and Stop Analog PINs messages are not supported
+ * Key press message is not supported
+ * Tone and NoTone messages are not supported
+ * 
+ * Incoming messages starting with alp:// are computed as Ardulink protocol
+ * other incoming messages are all custom messages.
+ * 
  * [adsense]
  *
  */
 public class LuaProtocol implements Protocol {
 
-	private final String name = "lua";
+	private final String name = "LUA";
 	private final byte[] separator = "\r\n".getBytes();
 
 	private static final LuaProtocol instance = new LuaProtocol();
@@ -65,25 +75,31 @@ public class LuaProtocol implements Protocol {
 	@Override
 	public byte[] toDevice(ToDeviceMessageStartListening startListening) {
 		Pin pin = startListening.getPin();
-		if (pin.is(ANALOG)) {
-			return toBytes(
-					 getBuilder(START_LISTENING_ANALOG)
-					    .forPin(pin.pinNum())
-					   .build());
-		}
 		if (pin.is(DIGITAL)) {
 			return toBytes(
 					 getBuilder(START_LISTENING_DIGITAL)
 					    .forPin(pin.pinNum())
 					   .build());
 		}
+		if(pin.is(ANALOG)) {
+			throw new UnsupportedOperationException(String.format("Start Listening message not supported for %s protocol", getName()));
+		}
 		throw illegalPinType(pin);
 	}
 
 	@Override
 	public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
-		// TODO Auto-generated method stub
-		return null;
+		Pin pin = stopListening.getPin();
+		if (pin.is(DIGITAL)) {
+			return toBytes(
+					 getBuilder(STOP_LISTENING_DIGITAL)
+					    .forPin(pin.pinNum())
+					   .build());
+		}
+		if(pin.is(ANALOG)) {
+			throw new UnsupportedOperationException(String.format("Stop Listening message not supported for %s protocol", getName()));
+		}
+		throw illegalPinType(pin);
 	}
 
 	@Override
@@ -132,6 +148,7 @@ public class LuaProtocol implements Protocol {
 	public FromDeviceMessage fromDevice(byte[] bytes) {
 		
 		String in = new String(bytes);
+		System.out.println(in);
 		if(in.startsWith("alp://")) {
 			return ArdulinkProtocol2.instance().fromDevice(bytes);
 		} else {

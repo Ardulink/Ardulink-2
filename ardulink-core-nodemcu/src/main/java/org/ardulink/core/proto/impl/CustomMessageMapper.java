@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class CustomMessageMapper implements Mapper {
 
-	private static final String separator = new String(LuaProtocol.instance().getSeparator());
+	private static final String separator = " ";
 	
 	@Override
 	public Map<String, String> buildMap(Integer pin, Object[] values) {

@@ -26,21 +26,11 @@ public class LuaProtoBuilder {
 
 	public enum LuaProtocolKey {
 
-		 POWER_PIN_SWITCH("gpio.mode(${PIN}, gpio.OUTPUT);gpio.write(${PIN}, gpio.${STATE});", new PowerPinSwitchMapper())
+		 POWER_PIN_SWITCH("gpio.mode(${PIN}, gpio.OUTPUT); gpio.write(${PIN}, gpio.${STATE});", new PowerPinSwitchMapper())
 		,POWER_PIN_INTENSITY("pwm.setup(${PIN}, 1000, 1023);pwm.start(${PIN});pwm.setduty(${PIN}, ${INTENSITY});", new PowerPinIntensityMapper())
 		,CUSTOM_MESSAGE("${VALUES}", new CustomMessageMapper())
 		,START_LISTENING_DIGITAL("StartListeningDigitalTemplate.snippet", new StartListeningDigitalMapper())
-		,STOP_LISTENING_DIGITAL("gpio.mode(${PIN}, gpio.OUTPUT);", new StopListeningMapper())
-		,START_LISTENING_ANALOG("gpio.mode(${PIN}, gpio.OUTPUT);", new StartListeningAnalogMapper())
-//		,DIGITAL_PIN_READ()
-//		,ANALOG_PIN_READ("ared")
-//		,STOP_LISTENING_ANALOG("spla")
-//		,CHAR_PRESSED("kprs")
-//		,TONE("tone")
-//		,NOTONE("notn")
-//		,RPLY("rply")
-//		,READY("ready")
-//		,CUSTOM_EVENT("cevnt")
+		,STOP_LISTENING_DIGITAL("gpio.mode(${PIN}, gpio.OUTPUT);", new StopListeningDigitalMapper())
 		 ;
 
 		private String messageTemplate;
@@ -56,6 +46,8 @@ public class LuaProtoBuilder {
 			String retvalue = snippet;
 			if(is != null) {
 				retvalue = asString(is);
+				retvalue = retvalue.replaceAll("\\r", " ");
+				retvalue = retvalue.replaceAll("\\n", " ");
 				try {
 					is.close();
 				} catch (IOException e) {}

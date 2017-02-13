@@ -6,7 +6,7 @@ import static org.ardulink.util.Preconditions.checkNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class StopListeningMapper implements Mapper {
+public class StopListeningDigitalMapper implements Mapper {
 
 	@Override
 	public Map<String, String> buildMap(Integer pin, Object[] values) {
