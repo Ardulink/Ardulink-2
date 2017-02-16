@@ -1,1 +1,2 @@
 org.ardulink.core.virtual.VirtualLinkFactory
+org.ardulink.core.virtual.connection.VirtualConnectionLinkFactory

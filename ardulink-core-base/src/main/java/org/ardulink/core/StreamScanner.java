@@ -29,28 +29,54 @@ public class StreamScanner {
 	
 	private InputStream inputStream;
 	private byte[] delimiter;
+	
+	/**
+	 * How many bytes read at once from the inputStream
+	 */
+	private byte[] readBuffer;
+	private int readBufferLen = 1;
 
+	/**
+	 * Where read bytes are stored
+	 */
 	private ByteArrayOutputStream bufferOS = new ByteArrayOutputStream(1024);
+	
+	private ByteArray underBuffer = new ByteArray(new byte[] {});
+	
+	private boolean interrupted = false;
 	
 	public StreamScanner(InputStream inputStream, byte[] delimiter) {
 		super();
 		this.inputStream = inputStream;
 		this.delimiter = delimiter;
+		readBuffer = new byte[readBufferLen];
+	}
+
+	public StreamScanner(InputStream inputStream, byte[] delimiter, int bufferReadLen) {
+		this(inputStream, delimiter);
+		this.readBufferLen = bufferReadLen;
+		readBuffer = new byte[bufferReadLen];
 	}
 
 	public boolean hasNext() throws IOException {
-		ByteArray underBuffer = new ByteArray(bufferOS);
+		underBuffer.resetWith(bufferOS);
 		int bytesRead = 0;
 		while(!underBuffer.contains(delimiter) && bytesRead != -1) {
+			// Not interested in anymore exit asap
+			if(interrupted) {
+				return false;
+			}
+
 			bytesRead = read();
 			if(bytesRead > 0) {
-				underBuffer = new ByteArray(bufferOS);
+				underBuffer.resetWith(bufferOS);
 			}
 		}
 		
 		if(bytesRead == -1) {
 			return false;
 		}
+
 		return true;
 	}
 
@@ -58,7 +84,7 @@ public class StreamScanner {
 		
 		byte[] retvalue = null;
 		if(hasNext()) {
-			ByteArray underBuffer = new ByteArray(bufferOS);
+			underBuffer.resetWith(bufferOS);
 			retvalue = underBuffer.next(delimiter);
 			bufferOS.reset();
 			bufferOS.write(underBuffer.getRemainingBytes());
@@ -74,12 +100,18 @@ public class StreamScanner {
 	}
 
 	private int read() throws IOException {
-		byte[] buffer = new byte[1024];
-		int bytesRead = inputStream.read(buffer);
+		int bytesRead = inputStream.read(readBuffer);
 		if(bytesRead > 0) {
-			bufferOS.write(buffer, 0, bytesRead);
+			bufferOS.write(readBuffer, 0, bytesRead);
 		}
 		return bytesRead;
 	}
-	
+
+	public boolean isInterrupted() {
+		return interrupted;
+	}
+
+	public void interrupt() {
+		this.interrupted = true;
+	}
 }

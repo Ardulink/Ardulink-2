@@ -34,6 +34,17 @@ public class ByteArray {
 	public ByteArray(ByteArrayOutputStream os) {
 		this(os.toByteArray());
 	}
+	
+	public void resetWith(byte[] byteArray) {
+		checkNotNull(byteArray, "Array can't be null");
+
+		this.byteArray = byteArray;
+		this.lastFoundIndex = 0;
+	}
+
+	public void resetWith(ByteArrayOutputStream os) {
+		resetWith(os.toByteArray());
+	}
 
 	public boolean contains(byte[] delimiter) {
 		

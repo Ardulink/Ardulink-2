@@ -19,7 +19,6 @@ package org.ardulink.core;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +36,7 @@ public abstract class StreamReader implements Closeable {
 	private static final Logger logger = LoggerFactory.getLogger(StreamReader.class);
 
 	private final InputStream inputStream;
+	private StreamScanner scanner;
 
 	private Thread thread;
 
@@ -62,7 +62,7 @@ public abstract class StreamReader implements Closeable {
 
 	public void readUntilClosed(byte[] delimiter) {
 		
-		StreamScanner scanner = new StreamScanner(inputStream, delimiter);
+		scanner = new StreamScanner(inputStream, delimiter);
 		try {
 						
 			while (scanner.hasNext() && !this.thread.isInterrupted()) {
@@ -70,7 +70,9 @@ public abstract class StreamReader implements Closeable {
 					logger.debug("Waiting for data");
 					byte[] bytes = scanner.next();
 					logger.debug("Stream read {}", bytes);
-					received(bytes);
+					if(bytes != null) {
+						received(bytes);
+					}
 				} catch (Exception e) {
 					logger.error("Error while retrieving data", e);
 				}
@@ -88,6 +90,7 @@ public abstract class StreamReader implements Closeable {
 	public void close() throws IOException {
 		Thread locThread = this.thread;
 		if (locThread != null) {
+			scanner.interrupt();
 			locThread.interrupt();
 		}
 	}

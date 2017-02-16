@@ -50,6 +50,7 @@ import org.ardulink.gui.customcomponents.ModifiableSignalButton;
 import org.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
 import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.gui.customcomponents.joystick.SimplePositionListener;
+import org.ardulink.gui.serial.SerialMonitor;
 import org.ardulink.legacy.Link;
 import org.ardulink.util.Throwables;
 import org.slf4j.Logger;
@@ -262,6 +263,14 @@ public class Console extends JFrame implements Linkable {
 		linkables.add(rgbController);
 		rgbPanel.add(rgbController);
 
+		JPanel monitorPanel = new JPanel();
+		tabbedPane.addTab("Monitor Panel", null, monitorPanel, null);
+		monitorPanel.setLayout(new BorderLayout());
+
+		SerialMonitor serialMonitor = new SerialMonitor();
+		linkables.add(serialMonitor);
+		monitorPanel.add(serialMonitor, BorderLayout.CENTER);
+		
 		JPanel stateBar = new JPanel();
 		FlowLayout flowLayout_1 = (FlowLayout) stateBar.getLayout();
 		flowLayout_1.setVgap(0);
