@@ -136,19 +136,21 @@ public class ToneController extends JPanel implements Linkable {
 		toneButton.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				int pin = pinComboBoxModel.getSelectedItem().intValue();
-				if(e.getStateChange() == ItemEvent.SELECTED) {
-					Integer value = (Integer) frequencySpinner.getValue();
-					if (durationCheckBox.isSelected()) {
-						link.sendToneMessage(pin, value,
-								(Integer) durationSpinner.getValue());
-					} else {
-						link.sendToneMessage(pin, value);
+				Integer pin = pinComboBoxModel.getSelectedItem();
+				if(pin != null) {
+					if(e.getStateChange() == ItemEvent.SELECTED) {
+						Integer value = (Integer) frequencySpinner.getValue();
+						if (durationCheckBox.isSelected()) {
+							link.sendToneMessage(pin, value,
+									(Integer) durationSpinner.getValue());
+						} else {
+							link.sendToneMessage(pin, value);
+						}
+						updateToneButtonText();
+					} else if(e.getStateChange() == ItemEvent.DESELECTED) {
+						link.sendNoToneMessage(pin);
+						updateToneButtonText();
 					}
-					updateToneButtonText();
-				} else if(e.getStateChange() == ItemEvent.DESELECTED) {
-					link.sendNoToneMessage(pin);
-					updateToneButtonText();
 				}
 			}
 		});
