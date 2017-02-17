@@ -26,11 +26,11 @@ public class LuaProtoBuilder {
 
 	public enum LuaProtocolKey {
 
-		 POWER_PIN_SWITCH("gpio.mode(${PIN}, gpio.OUTPUT); gpio.write(${PIN}, gpio.${STATE});", new PowerPinSwitchMapper())
-		,POWER_PIN_INTENSITY("pwm.setup(${PIN}, 1000, 1023);pwm.start(${PIN});pwm.setduty(${PIN}, ${INTENSITY});", new PowerPinIntensityMapper())
+		 POWER_PIN_SWITCH("gpio.mode(${PIN},gpio.OUTPUT) gpio.write(${PIN},gpio.${STATE})", new PowerPinSwitchMapper())
+		,POWER_PIN_INTENSITY("pwm.setup(${PIN},1000,1023) pwm.start(${PIN}) pwm.setduty(${PIN},${INTENSITY})", new PowerPinIntensityMapper())
 		,CUSTOM_MESSAGE("${VALUES}", new CustomMessageMapper())
 		,START_LISTENING_DIGITAL("StartListeningDigitalTemplate.snippet", new StartListeningDigitalMapper())
-		,STOP_LISTENING_DIGITAL("gpio.mode(${PIN}, gpio.OUTPUT);", new StopListeningDigitalMapper())
+		,STOP_LISTENING_DIGITAL("gpio.mode(${PIN},gpio.OUTPUT)", new StopListeningDigitalMapper())
 		 ;
 
 		private String messageTemplate;

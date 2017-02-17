@@ -38,14 +38,14 @@ public class LuaProtoBuilderTest {
 		ToDeviceMessagePinStateChange message = new DefaultToDeviceMessagePinStateChange(digitalPin(1), true);
 		
 		byte[] protMessage = protocol.toDevice(message);
-		String controlString = "gpio.mode(1, gpio.OUTPUT);gpio.write(1, gpio.HIGH);\r\n";
+		String controlString = "gpio.mode(1,gpio.OUTPUT) gpio.write(1,gpio.HIGH)\r\n";
 		
 		assertThat(new String(protMessage), equalTo(controlString));
 
 		message = new DefaultToDeviceMessagePinStateChange(digitalPin(2), false);
 		
 		protMessage = protocol.toDevice(message);
-		controlString = "gpio.mode(2, gpio.OUTPUT);gpio.write(2, gpio.LOW);\r\n";
+		controlString = "gpio.mode(2,gpio.OUTPUT) gpio.write(2,gpio.LOW)\r\n";
 		
 		assertThat(new String(protMessage), equalTo(controlString));
 	}
@@ -57,7 +57,7 @@ public class LuaProtoBuilderTest {
 		ToDeviceMessagePinStateChange message = new DefaultToDeviceMessagePinStateChange(analogPin(1), 123);
 		
 		byte[] protMessage = protocol.toDevice(message);
-		String controlString = "pwm.setup(1, 1000, 1023);pwm.start(1);pwm.setduty(1, 123);\r\n";
+		String controlString = "pwm.setup(1,1000,1023) pwm.start(1) pwm.setduty(1,123)\r\n";
 		
 		assertThat(new String(protMessage), equalTo(controlString));
 	}
@@ -69,7 +69,7 @@ public class LuaProtoBuilderTest {
 		ToDeviceMessageCustom message = new DefaultToDeviceMessageCustom("param1", "somethingelse2", "final3");
 		
 		byte[] protMessage = protocol.toDevice(message);
-		String controlString = "param1\r\nsomethingelse2\r\nfinal3\r\n";
+		String controlString = "param1 somethingelse2 final3\r\n";
 		
 		assertThat(new String(protMessage), equalTo(controlString));
 	}

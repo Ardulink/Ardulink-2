@@ -45,6 +45,7 @@ public abstract class StreamReader implements Closeable {
 	}
 
 	public void runReaderThread(final byte[] delimiter) {
+		scanner = new StreamScanner(inputStream, delimiter);
 		this.thread = new Thread() {
 
 			{
@@ -62,7 +63,6 @@ public abstract class StreamReader implements Closeable {
 
 	public void readUntilClosed(byte[] delimiter) {
 		
-		scanner = new StreamScanner(inputStream, delimiter);
 		try {
 						
 			while (scanner.hasNext() && !this.thread.isInterrupted()) {
