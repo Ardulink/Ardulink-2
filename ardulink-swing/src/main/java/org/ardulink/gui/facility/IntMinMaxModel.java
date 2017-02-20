@@ -55,6 +55,7 @@ public class IntMinMaxModel extends AbstractListModel implements
 	@Override
 	public void setSelectedItem(Object selectedItem) {
 		this.selectedItem = (Integer) selectedItem;
+		fireContentsChanged(this, -1, -1);
 	}
 
 	@Override
