@@ -20,7 +20,6 @@ import static gnu.io.SerialPort.DATABITS_8;
 import static gnu.io.SerialPort.PARITY_NONE;
 import static gnu.io.SerialPort.STOPBITS_1;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
@@ -31,8 +30,6 @@ import org.ardulink.core.Link;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.qos.QosLink;
 
 import gnu.io.CommPortIdentifier;
@@ -51,7 +48,6 @@ import gnu.io.UnsupportedCommOperationException;
  */
 public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
-	private static final Protocol proto = ArdulinkProtocol2.instance();
 
 	@Override
 	public String getName() {
@@ -67,9 +63,10 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		checkState(!portIdentifier.isCurrentlyOwned(),
 				"Port %s is currently in use", config.getPort());
 		final SerialPort serialPort = serialPort(config, portIdentifier);
+		
 		StreamConnection connection = new StreamConnection(
 				serialPort.getInputStream(), serialPort.getOutputStream(),
-				proto);
+				config.getProto());
 
 		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(
 				connection, config.getProto());

@@ -1,0 +1,7 @@
+do
+  local function pin${PIN}cb(level)
+    print(string.format("\r\nalp://dred/${PIN}/%s",level))
+  end
+  gpio.mode(${PIN},gpio.INT)
+  gpio.trig(${PIN},"both",pin${PIN}cb)
+end

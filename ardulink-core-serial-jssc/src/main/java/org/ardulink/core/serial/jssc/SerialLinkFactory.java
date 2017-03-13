@@ -47,8 +47,6 @@ import jssc.SerialPortException;
  */
 public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
-	private static final Protocol proto = ArdulinkProtocol2.instance();
-
 	@Override
 	public String getName() {
 		return "serial-jssc";
@@ -62,7 +60,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
 		StreamConnection connection = new StreamConnection(
 				new SerialInputStream(serialPort), new SerialOutputStream(
-						serialPort), proto);
+						serialPort), config.getProto());
 
 		Protocol proto = config.getProto();
 		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(

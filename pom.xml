@@ -67,6 +67,7 @@
 		<module>ardulink-core-util</module>
 		<module>ardulink-core-base</module>
 		<module>ardulink-core-virtual</module>
+		<module>ardulink-core-nodemcu</module>
 		<module>ardulink-core-serial-rxtx</module>
 		<module>ardulink-core-serial-jssc</module>
 		<module>ardulink-core-bluetooth</module>

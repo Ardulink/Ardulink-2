@@ -92,7 +92,9 @@ public class ConnectionBasedLinkTest {
 
 	@After
 	public void tearDown() throws IOException {
-		this.link.close();
+		if(this.link != null) {
+			this.link.close();
+		}
 	}
 
 	@Test

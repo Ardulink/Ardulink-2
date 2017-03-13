@@ -34,7 +34,7 @@ public interface Connection extends Closeable {
 	 * 
 	 *  
 	 */
-	interface Listener {
+	public interface Listener {
 		Listener NULL = new Listener() {
 
 			@Override

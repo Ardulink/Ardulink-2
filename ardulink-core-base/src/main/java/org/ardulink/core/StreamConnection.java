@@ -52,8 +52,7 @@ public class StreamConnection extends AbstractConnection {
 			}
 		};
 		if (inputStream != null) {
-			String delimiter = new String(protocol.getSeparator());
-			streamReader.runReaderThread(delimiter);
+			streamReader.runReaderThread(protocol.getSeparator());
 		}
 	}
 

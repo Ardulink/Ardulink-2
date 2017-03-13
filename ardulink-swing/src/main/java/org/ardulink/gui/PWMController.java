@@ -27,7 +27,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.JCheckBox;
@@ -106,12 +105,12 @@ public class PWMController extends JPanel implements Linkable {
 		pinComboBox.setBounds(65, 36, 55, 22);
 		add(pinComboBox);
 		
-		maxValueComboBoxModel = new IntMinMaxModel(0, 255).withLastItemSelected();
+		maxValueComboBoxModel = new IntMinMaxModel(0, 1023).withSelectedItem(255);
 		JComboBox maxValueComboBox = new JComboBox(maxValueComboBoxModel);
 		maxValueComboBox.setBounds(65, 65, 55, 22);
 		add(maxValueComboBox);
 
-		minValueComboBoxModel = new IntMinMaxModel(0, 255).withFirstItemSelected();
+		minValueComboBoxModel = new IntMinMaxModel(0, 1023).withFirstItemSelected();
 		JComboBox minValueComboBox = new JComboBox(minValueComboBoxModel);
 		minValueComboBox.setBounds(65, 217, 55, 22);
 		add(minValueComboBox);
@@ -217,7 +216,12 @@ public class PWMController extends JPanel implements Linkable {
 				
 				valueComboBoxModel = new IntMinMaxModel(minimum, maximum);
 				valueComboBox.setModel(valueComboBoxModel);
+				powerSlider.setPaintLabels(false);
+				powerSlider.setPaintTicks(false);
+				powerSlider.setMajorTickSpacing((maximum - minimum) / 18);
 				powerSlider.setMinimum(minimum);
+				powerSlider.setPaintLabels(true);
+				powerSlider.setPaintTicks(true);
 			}
 		});
 
@@ -233,7 +237,12 @@ public class PWMController extends JPanel implements Linkable {
 				
 				valueComboBoxModel = new IntMinMaxModel(minimum, maximum);
 				valueComboBox.setModel(valueComboBoxModel);
+				powerSlider.setPaintLabels(false);
+				powerSlider.setPaintTicks(false);
+				powerSlider.setMajorTickSpacing((maximum - minimum) / 18);
 				powerSlider.setMaximum(maximum);
+				powerSlider.setPaintLabels(true);
+				powerSlider.setPaintTicks(true);
 			}
 		});
 
