@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.ardulink.core;
 
 import java.io.ByteArrayOutputStream;
@@ -22,73 +22,66 @@ import java.io.InputStream;
 import org.ardulink.util.ByteArray;
 
 /**
- * Scanner for Stream. It returns byte arrays from a stream splitted
- * by a delimiter
+ * Scanner for Stream. It returns byte arrays from a stream splitted by a
+ * delimiter.
  */
 public class StreamScanner {
-	
+
 	private InputStream inputStream;
 	private byte[] delimiter;
-	
+
 	/**
 	 * How many bytes read at once from the inputStream
 	 */
 	private byte[] readBuffer;
-	private int readBufferLen = 1;
 
 	/**
 	 * Where read bytes are stored
 	 */
 	private ByteArrayOutputStream bufferOS = new ByteArrayOutputStream(1024);
-	
-	private ByteArray underBuffer = new ByteArray(new byte[] {});
-	
-	private boolean interrupted = false;
-	
+
+	private ByteArray underBuffer = new ByteArray(new byte[0]);
+
+	private boolean interrupted;
+
 	public StreamScanner(InputStream inputStream, byte[] delimiter) {
-		super();
 		this.inputStream = inputStream;
 		this.delimiter = delimiter;
-		readBuffer = new byte[readBufferLen];
+		this.readBuffer = new byte[1];
 	}
 
-	public StreamScanner(InputStream inputStream, byte[] delimiter, int bufferReadLen) {
+	public StreamScanner(InputStream inputStream, byte[] delimiter,
+			int bufferReadLen) {
 		this(inputStream, delimiter);
-		this.readBufferLen = bufferReadLen;
-		readBuffer = new byte[bufferReadLen];
+		this.readBuffer = new byte[bufferReadLen];
 	}
 
 	public boolean hasNext() throws IOException {
-		underBuffer.resetWith(bufferOS);
+		underBuffer.resetWith(bufferOS.toByteArray());
 		int bytesRead = 0;
-		while(!underBuffer.contains(delimiter) && bytesRead != -1) {
+		while (!underBuffer.contains(delimiter) && bytesRead != -1) {
 			// Not interested in anymore exit asap
-			if(interrupted) {
+			if (interrupted) {
 				return false;
 			}
 
 			bytesRead = read();
-			if(bytesRead > 0) {
-				underBuffer.resetWith(bufferOS);
+			if (bytesRead > 0) {
+				underBuffer.resetWith(bufferOS.toByteArray());
 			}
 		}
-		
-		if(bytesRead == -1) {
-			return false;
-		}
 
-		return true;
+		return bytesRead != -1;
 	}
 
 	public byte[] next() throws IOException {
-		
-		byte[] retvalue = null;
-		if(hasNext()) {
-			underBuffer.resetWith(bufferOS);
-			retvalue = underBuffer.next(delimiter);
-			bufferOS.reset();
-			bufferOS.write(underBuffer.getRemainingBytes());
+		if (!hasNext()) {
+			return null;
 		}
+		underBuffer.resetWith(bufferOS.toByteArray());
+		byte[] retvalue = underBuffer.next(delimiter);
+		bufferOS.reset();
+		bufferOS.write(underBuffer.getRemainingBytes());
 		return retvalue;
 	}
 
@@ -96,12 +89,14 @@ public class StreamScanner {
 		try {
 			inputStream.close();
 			bufferOS.close();
-		} catch(IOException e) {}
+		} catch (IOException e) {
+			// TODO LZ why is this Exception swallowed?
+		}
 	}
 
 	private int read() throws IOException {
 		int bytesRead = inputStream.read(readBuffer);
-		if(bytesRead > 0) {
+		if (bytesRead > 0) {
 			bufferOS.write(readBuffer, 0, bytesRead);
 		}
 		return bytesRead;
@@ -114,4 +109,5 @@ public class StreamScanner {
 	public void interrupt() {
 		this.interrupted = true;
 	}
+
 }

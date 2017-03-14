@@ -22,12 +22,10 @@ public class VirtualConnectionLinkFactory implements LinkFactory<VirtualConnecti
 		private int    millisWait = 100;
 		
 		public NullInputStream() {
-			super();
 			setMessage("MESSAGE", ArdulinkProtocol2.instance().getSeparator());
 		}
 
 		public NullInputStream(String message, int millisWait, byte[] separator) {
-			super();
 			this.millisWait = millisWait;
 			setMessage(message, separator);
 		}
@@ -37,18 +35,19 @@ public class VirtualConnectionLinkFactory implements LinkFactory<VirtualConnecti
 			try {
 				os.write(message.getBytes());
 				os.write(separator);
-			} catch (IOException e) {}
+			} catch (IOException e) {
+				// TODO LZ why is this Exception swallowed?
+			}
 			
 			this.message = os.toByteArray();
 		}
 		
 		@Override
 		public int read() throws IOException {
-
 			try {
 				TimeUnit.MILLISECONDS.sleep(millisWait);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				Thread.currentThread().interrupt();
 			}
 			int retvalue = message[byteReturned];
 			byteReturned = (byteReturned + 1) % message.length; 
@@ -57,7 +56,6 @@ public class VirtualConnectionLinkFactory implements LinkFactory<VirtualConnecti
 	}
 
 	public class NullOutputStream extends OutputStream {
-
 		@Override
 		public void write(int b) throws IOException {
 			// Nothing to do!

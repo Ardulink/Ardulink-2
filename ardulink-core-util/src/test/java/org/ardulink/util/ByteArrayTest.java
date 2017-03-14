@@ -26,15 +26,6 @@ import static org.hamcrest.core.IsEqual.equalTo;;
 public class ByteArrayTest {
 
 	@Test
-	public void arrayAreEqualTest() {
-		byte[] a1 = "abcde".getBytes();
-		byte[] a2 = "abcde".getBytes();
-		
-		boolean retvalue = ByteArray.arraysAreEqual(a1, a2);
-		assertTrue(retvalue);
-	}
-	
-	@Test
 	public void arrayContains() {
 		
 		ByteArray byteArray = new ByteArray("this is a byte array".getBytes());
