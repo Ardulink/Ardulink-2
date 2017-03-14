@@ -43,23 +43,27 @@ public class ByteArray {
 	}
 
 	public boolean contains(byte[] delimiter) {
-		checkNotNull(delimiter, "delimiter can't be null");
-		checkState(delimiter.length > 0, "delimiter length can't be %s",
-				delimiter.length);
+		checkNotNull(delimiter, "delimiter must not be null");
+		checkState(delimiter.length > 0, "delimiter must not be empty");
 
 		for (int i = 0; i < byteArray.length - delimiter.length + 1; i++) {
-			if (byteArray[i] == delimiter[0]) {
-				// TODO PF should be optimized without copying the array
-				if (Arrays.equals(
-						Arrays.copyOfRange(byteArray, i, i + delimiter.length),
-						delimiter)) {
-					lastFoundIndex = i;
-					return true;
-				}
+			if (inByteArray(delimiter, i)) {
+				return true;
 			}
 		}
 
 		return false;
+	}
+
+	private boolean inByteArray(byte[] delimiter, int pos) {
+		for (int i = 0; i < delimiter.length; i++) {
+			if (byteArray[pos + i] != delimiter[i]) {
+				return false;
+			}
+
+		}
+		lastFoundIndex = pos;
+		return true;
 	}
 
 	public byte[] next(byte[] delimiter) {
