@@ -39,6 +39,10 @@ public class ByteArray {
 		this.pointer = 0;
 	}
 
+	public boolean contains(byte[] delimiter) {
+		return posOf(delimiter) >= 0;
+	}
+
 	private int posOf(byte[] delimiter) {
 		checkNotNull(delimiter, "delimiter must not be null");
 		checkState(delimiter.length > 0, "delimiter must not be empty");
