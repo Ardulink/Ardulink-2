@@ -15,7 +15,6 @@ limitations under the License.
  */
 package org.ardulink.core;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -30,15 +29,7 @@ public class StreamScanner {
 	private final InputStream inputStream;
 	private final byte[] delimiter;
 
-	/**
-	 * How many bytes read at once from the inputStream
-	 */
 	private final byte[] readBuffer;
-
-	/**
-	 * Where read bytes are stored
-	 */
-	private final ByteArrayOutputStream bufferOS = new ByteArrayOutputStream(1024);
 
 	private ByteArray underBuffer = new ByteArray(new byte[0]);
 
@@ -56,53 +47,34 @@ public class StreamScanner {
 	}
 
 	public boolean hasNext() throws IOException {
-		newUnderBufferFromBuffer();
 		int bytesRead = 0;
-		while (!underBuffer.contains(delimiter) && bytesRead != -1) {
+		while (!underBuffer.contains(delimiter) && (bytesRead = read()) != -1) {
 			// Not interested in anymore exit asap
 			if (interrupted) {
 				return false;
 			}
-
-			bytesRead = read();
-			if (bytesRead > 0) {
-				newUnderBufferFromBuffer();
-			}
 		}
-
 		return bytesRead != -1;
-	}
-
-	public byte[] next() throws IOException {
-		if (!hasNext()) {
-			return null;
-		}
-		newUnderBufferFromBuffer();
-		byte[] retvalue = underBuffer.next(delimiter);
-		bufferOS.reset();
-		underBuffer.writeTo(bufferOS);
-		return retvalue;
-	}
-
-	private void newUnderBufferFromBuffer() {
-		underBuffer = new ByteArray(bufferOS.toByteArray());
-	}
-
-	public void close() {
-		try {
-			inputStream.close();
-			bufferOS.close();
-		} catch (IOException e) {
-			// TODO LZ why is this Exception swallowed?
-		}
 	}
 
 	private int read() throws IOException {
 		int bytesRead = inputStream.read(readBuffer);
 		if (bytesRead > 0) {
-			bufferOS.write(readBuffer, 0, bytesRead);
+			underBuffer.append(readBuffer, bytesRead);
 		}
 		return bytesRead;
+	}
+
+	public byte[] next() throws IOException {
+		return hasNext() ? underBuffer.next(delimiter) : null;
+	}
+
+	public void close() {
+		try {
+			inputStream.close();
+		} catch (IOException e) {
+			// TODO LZ why is this Exception swallowed?
+		}
 	}
 
 	public boolean isInterrupted() {

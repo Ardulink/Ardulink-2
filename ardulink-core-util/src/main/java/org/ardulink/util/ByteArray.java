@@ -18,22 +18,18 @@ package org.ardulink.util;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Arrays;
 
 public class ByteArray {
 
-	private final byte[] byteArray;
+	private static final int MAX_BUFFER_LEN = 2048;
+
+	private byte[] byteArray;
+
 	private int pointer;
 
 	public ByteArray(byte[] byteArray) {
 		this.byteArray = checkNotNull(byteArray, "Array must not be null");
-	}
-
-	public ByteArray(ByteArrayOutputStream os) {
-		this(os.toByteArray());
 	}
 
 	public boolean contains(byte[] delimiter) {
@@ -41,25 +37,22 @@ public class ByteArray {
 	}
 
 	private int posOf(byte[] delimiter) {
-		checkNotNull(delimiter, "delimiter must not be null");
-		checkState(delimiter.length > 0, "delimiter must not be empty");
-
-		for (int pos = pointer; pos < byteArray.length - delimiter.length + 1; pos++) {
-			if (isAtPos(delimiter, pos)) {
-				return pos;
-			}
-		}
-		return -1;
+		checkState(
+				checkNotNull(delimiter, "delimiter must not be null").length > 0,
+				"delimiter must not be empty");
+		return indexOf(byteArray, delimiter, pointer);
 	}
 
-	private boolean isAtPos(byte[] delimiter, int pos) {
-		for (int i = 0; i < delimiter.length; i++) {
-			if (byteArray[pos + i] != delimiter[i]) {
-				return false;
+	private static int indexOf(byte[] array, byte[] target, int startpos) {
+		outer: for (int i = startpos; i < array.length - target.length + 1; i++) {
+			for (int j = 0; j < target.length; j++) {
+				if (array[i + j] != target[j]) {
+					continue outer;
+				}
 			}
-
+			return i;
 		}
-		return true;
+		return -1;
 	}
 
 	public byte[] next(byte[] delimiter) {
@@ -68,17 +61,38 @@ public class ByteArray {
 			return null;
 		}
 
-		byte[] next = Arrays.copyOfRange(byteArray, pointer, nextPointer);
+		byte[] next = Arrays.copyOfRange(this.byteArray, this.pointer,
+				nextPointer);
 		this.pointer = nextPointer + delimiter.length;
 		return next;
 	}
 
-	public int size() {
-		return byteArray.length - pointer;
+	/**
+	 * Appends the passed buffer to the internal byte[]. Simultaneously the
+	 * internal byte[] is compacted by the data already returned by calls to
+	 * {@link #next(byte[])}.
+	 * 
+	 * @param buffer
+	 *            the data to append
+	 * @param bytesRead
+	 *            length of the data to append from <code>buffer</code>
+	 */
+	public void append(byte[] buffer, int bytesRead) {
+		int newLen = this.byteArray.length - pointer + bytesRead;
+		checkState(newLen <= MAX_BUFFER_LEN,
+				"Buffer size exceed MAX_BUFFER_LEN (%s > %s)", newLen,
+				MAX_BUFFER_LEN);
+		byte[] newBytes = new byte[newLen];
+		System.arraycopy(this.byteArray, 0 + pointer, newBytes, 0,
+				this.byteArray.length - pointer);
+		System.arraycopy(buffer, 0, newBytes, this.byteArray.length - pointer,
+				bytesRead);
+		this.pointer = 0;
+		this.byteArray = newBytes;
 	}
 
-	public void writeTo(OutputStream outputStream) throws IOException {
-		outputStream.write(byteArray, pointer, byteArray.length - pointer);
+	public int size() {
+		return byteArray.length - pointer;
 	}
 
 }
