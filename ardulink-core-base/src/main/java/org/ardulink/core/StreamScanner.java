@@ -57,7 +57,7 @@ public class StreamScanner {
 	}
 
 	public boolean hasNext() throws IOException {
-		underBuffer.resetWith(bufferOS.toByteArray());
+		newUnderBufferFromBuffer();
 		int bytesRead = 0;
 		while (!underBuffer.contains(delimiter) && bytesRead != -1) {
 			// Not interested in anymore exit asap
@@ -67,7 +67,7 @@ public class StreamScanner {
 
 			bytesRead = read();
 			if (bytesRead > 0) {
-				underBuffer.resetWith(bufferOS.toByteArray());
+				newUnderBufferFromBuffer();
 			}
 		}
 
@@ -78,11 +78,15 @@ public class StreamScanner {
 		if (!hasNext()) {
 			return null;
 		}
-		underBuffer.resetWith(bufferOS.toByteArray());
+		newUnderBufferFromBuffer();
 		byte[] retvalue = underBuffer.next(delimiter);
 		bufferOS.reset();
 		bufferOS.write(underBuffer.getRemainingBytes());
 		return retvalue;
+	}
+
+	private void newUnderBufferFromBuffer() {
+		underBuffer = new ByteArray(bufferOS.toByteArray());
 	}
 
 	public void close() {

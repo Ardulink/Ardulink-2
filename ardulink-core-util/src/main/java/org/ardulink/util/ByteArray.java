@@ -23,20 +23,15 @@ import java.util.Arrays;
 
 public class ByteArray {
 
-	private byte[] byteArray;
+	private final byte[] byteArray;
 	private int pointer;
 
 	public ByteArray(byte[] byteArray) {
-		resetWith(byteArray);
+		this.byteArray = checkNotNull(byteArray, "Array must not be null");
 	}
 
 	public ByteArray(ByteArrayOutputStream os) {
 		this(os.toByteArray());
-	}
-
-	public void resetWith(byte[] byteArray) {
-		this.byteArray = checkNotNull(byteArray, "Array must not be null");
-		this.pointer = 0;
 	}
 
 	public boolean contains(byte[] delimiter) {
