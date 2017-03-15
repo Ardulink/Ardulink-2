@@ -24,10 +24,10 @@ import java.util.Arrays;
 public class ByteArray {
 
 	private byte[] byteArray;
+	private int pointer;
 
 	public ByteArray(byte[] byteArray) {
-		checkNotNull(byteArray, "Array can't be null");
-		this.byteArray = byteArray;
+		resetWith(byteArray);
 	}
 
 	public ByteArray(ByteArrayOutputStream os) {
@@ -35,16 +35,15 @@ public class ByteArray {
 	}
 
 	public void resetWith(byte[] byteArray) {
-		checkNotNull(byteArray, "Array can't be null");
-
-		this.byteArray = byteArray;
+		this.byteArray = checkNotNull(byteArray, "Array must not be null");
+		this.pointer = 0;
 	}
 
 	private int posOf(byte[] delimiter) {
 		checkNotNull(delimiter, "delimiter must not be null");
 		checkState(delimiter.length > 0, "delimiter must not be empty");
 
-		for (int pos = 0; pos < byteArray.length - delimiter.length + 1; pos++) {
+		for (int pos = pointer; pos < byteArray.length - delimiter.length + 1; pos++) {
 			if (isAtPos(delimiter, pos)) {
 				return pos;
 			}
@@ -63,21 +62,18 @@ public class ByteArray {
 	}
 
 	public byte[] next(byte[] delimiter) {
-		int foundIndex = posOf(delimiter);
-		if (foundIndex < 0) {
+		int newPointer = posOf(delimiter);
+		if (newPointer < 0) {
 			return null;
 		}
 
-		byte[] retvalue = Arrays.copyOfRange(byteArray, 0, foundIndex);
-		// TODO PF Instead of creating new arrays move a pointer
-		byteArray = Arrays.copyOfRange(byteArray,
-				foundIndex + delimiter.length, byteArray.length);
-
+		byte[] retvalue = Arrays.copyOfRange(byteArray, pointer, newPointer);
+		this.pointer = newPointer + delimiter.length;
 		return retvalue;
 	}
 
 	public int size() {
-		return byteArray.length;
+		return byteArray.length - pointer;
 	}
 
 	/**
