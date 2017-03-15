@@ -62,14 +62,14 @@ public class ByteArray {
 	}
 
 	public byte[] next(byte[] delimiter) {
-		int newPointer = posOf(delimiter);
-		if (newPointer < 0) {
+		int nextPointer = posOf(delimiter);
+		if (nextPointer < 0) {
 			return null;
 		}
 
-		byte[] retvalue = Arrays.copyOfRange(byteArray, pointer, newPointer);
-		this.pointer = newPointer + delimiter.length;
-		return retvalue;
+		byte[] next = Arrays.copyOfRange(byteArray, pointer, nextPointer);
+		this.pointer = nextPointer + delimiter.length;
+		return next;
 	}
 
 	public int size() {
