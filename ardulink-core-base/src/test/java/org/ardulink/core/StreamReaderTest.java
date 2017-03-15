@@ -102,7 +102,7 @@ public class StreamReaderTest {
 				latch.countDown();
 			}
 		};
-		streamReader.runReaderThread(separator);
+		streamReader.runReaderThread(separator.getBytes());
 		return streamReader;
 	}
 

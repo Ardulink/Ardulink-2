@@ -81,7 +81,7 @@ public class StreamScanner {
 		newUnderBufferFromBuffer();
 		byte[] retvalue = underBuffer.next(delimiter);
 		bufferOS.reset();
-		bufferOS.write(underBuffer.getRemainingBytes());
+		underBuffer.writeTo(bufferOS);
 		return retvalue;
 	}
 

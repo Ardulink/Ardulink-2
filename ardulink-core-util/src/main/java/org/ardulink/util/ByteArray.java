@@ -19,6 +19,8 @@ import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 
 public class ByteArray {
@@ -75,13 +77,8 @@ public class ByteArray {
 		return byteArray.length - pointer;
 	}
 
-	/**
-	 * 
-	 * @return the array (WARNING modifies to the returned array are shared with
-	 *         the ByteArray object)
-	 */
-	public byte[] getRemainingBytes() {
-		return byteArray;
+	public void writeTo(OutputStream outputStream) throws IOException {
+		outputStream.write(byteArray, pointer, byteArray.length - pointer);
 	}
 
 }
