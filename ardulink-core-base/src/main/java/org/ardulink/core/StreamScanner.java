@@ -27,32 +27,31 @@ import org.ardulink.util.ByteArray;
  */
 public class StreamScanner {
 
-	private InputStream inputStream;
-	private byte[] delimiter;
+	private final InputStream inputStream;
+	private final byte[] delimiter;
 
 	/**
 	 * How many bytes read at once from the inputStream
 	 */
-	private byte[] readBuffer;
+	private final byte[] readBuffer;
 
 	/**
 	 * Where read bytes are stored
 	 */
-	private ByteArrayOutputStream bufferOS = new ByteArrayOutputStream(1024);
+	private final ByteArrayOutputStream bufferOS = new ByteArrayOutputStream(1024);
 
 	private ByteArray underBuffer = new ByteArray(new byte[0]);
 
 	private boolean interrupted;
 
 	public StreamScanner(InputStream inputStream, byte[] delimiter) {
-		this.inputStream = inputStream;
-		this.delimiter = delimiter;
-		this.readBuffer = new byte[1];
+		this(inputStream, delimiter, 1);
 	}
 
 	public StreamScanner(InputStream inputStream, byte[] delimiter,
 			int bufferReadLen) {
-		this(inputStream, delimiter);
+		this.inputStream = inputStream;
+		this.delimiter = delimiter;
 		this.readBuffer = new byte[bufferReadLen];
 	}
 
