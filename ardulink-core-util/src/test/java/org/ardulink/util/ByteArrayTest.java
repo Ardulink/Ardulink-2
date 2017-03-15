@@ -22,31 +22,40 @@ import org.junit.Test;
 
 public class ByteArrayTest {
 
+	private final ByteArray sut = new ByteArray(
+			"1111.:2222_3333:.4444".getBytes());
+
 	@Test
 	public void arrayNext() {
+		byte[] token;
 
-		ByteArray byteArray = new ByteArray("1111.:2222_3333:.4444".getBytes());
+		token = sut.next("//".getBytes());
+		assertThat(token, equalTo(null));
+		assertThat(sut.size(), equalTo(21));
 
-		byte[] token0 = byteArray.next("//".getBytes());
-		byte[] token1 = byteArray.next(".:".getBytes());
-		byte[] token2 = byteArray.next("_".getBytes());
-		byte[] token3 = byteArray.next(":.".getBytes());
-		byte[] token4 = byteArray.next(".:".getBytes());
+		token = sut.next(".:".getBytes());
+		assertThat(token, equalTo("1111".getBytes()));
+		assertThat(sut.size(), equalTo(15));
 
-		assertThat(token0, equalTo(null));
-		assertThat(token1, equalTo("1111".getBytes()));
-		assertThat(token2, equalTo("2222".getBytes()));
-		assertThat(token3, equalTo("3333".getBytes()));
-		assertThat(token4, equalTo(null));
-		assertThat(byteArray.size(), equalTo(4));
+		token = sut.next("_".getBytes());
+		assertThat(token, equalTo("2222".getBytes()));
+		assertThat(sut.size(), equalTo(10));
 
-		byte[] token5 = byteArray.next("4444".getBytes());
-		assertThat(token5, equalTo(new byte[] {}));
-		assertThat(byteArray.size(), equalTo(0));
+		token = sut.next(":.".getBytes());
+		assertThat(token, equalTo("3333".getBytes()));
+		assertThat(sut.size(), equalTo(4));
 
-		byte[] token6 = byteArray.next(" ".getBytes());
-		assertThat(token6, equalTo(null));
-		assertThat(byteArray.size(), equalTo(0));
+		token = sut.next(".:".getBytes());
+		assertThat(token, equalTo(null));
+		assertThat(sut.size(), equalTo(4));
+
+		token = sut.next("4444".getBytes());
+		assertThat(token, equalTo(new byte[0]));
+		assertThat(sut.size(), equalTo(0));
+
+		token = sut.next(" ".getBytes());
+		assertThat(token, equalTo(null));
+		assertThat(sut.size(), equalTo(0));
 	}
 
 }
