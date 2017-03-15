@@ -46,12 +46,12 @@ public class ByteArray {
 		checkNotNull(delimiter, "delimiter must not be null");
 		checkState(delimiter.length > 0, "delimiter must not be empty");
 
-		for (int i = 0; i < byteArray.length - delimiter.length + 1; i++) {
-			if (inByteArray(delimiter, i)) {
+		for (int pos = 0; pos < byteArray.length - delimiter.length + 1; pos++) {
+			if (inByteArray(delimiter, pos)) {
+				lastFoundIndex = pos;
 				return true;
 			}
 		}
-
 		return false;
 	}
 
@@ -62,17 +62,16 @@ public class ByteArray {
 			}
 
 		}
-		lastFoundIndex = pos;
 		return true;
 	}
 
 	public byte[] next(byte[] delimiter) {
-
 		if (!contains(delimiter)) {
 			return null;
 		}
 
 		byte[] retvalue = Arrays.copyOfRange(byteArray, 0, lastFoundIndex);
+		// TODO PF Instead of creating new arrays move a pointer
 		byteArray = Arrays.copyOfRange(byteArray, lastFoundIndex
 				+ delimiter.length, byteArray.length);
 
