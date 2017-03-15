@@ -42,7 +42,7 @@ public class ByteArray {
 		this.lastFoundIndex = 0;
 	}
 
-	public boolean contains(byte[] delimiter) {
+	private boolean contains(byte[] delimiter) {
 		checkNotNull(delimiter, "delimiter must not be null");
 		checkState(delimiter.length > 0, "delimiter must not be empty");
 
