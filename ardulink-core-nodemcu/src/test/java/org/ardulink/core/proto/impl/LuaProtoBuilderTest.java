@@ -15,11 +15,14 @@ limitations under the License.
  */
 package org.ardulink.core.proto.impl;
 
+import static java.util.Arrays.asList;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.StringContains.containsString;
+
+import java.util.Random;
 
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
@@ -27,6 +30,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
+import org.ardulink.util.Joiner;
 import org.junit.Test;
 
 public class LuaProtoBuilderTest {
@@ -35,47 +39,63 @@ public class LuaProtoBuilderTest {
 
 	@Test
 	public void generatePowerPinSwitchMessageHigh() {
+		int pin = anyPin();
 		ToDeviceMessagePinStateChange message = new DefaultToDeviceMessagePinStateChange(
-				digitalPin(1), true);
+				digitalPin(pin), true);
 		byte[] protMessage = protocol.toDevice(message);
-		assertThat(new String(protMessage),
-				equalTo("gpio.mode(1,gpio.OUTPUT) gpio.write(1,gpio.HIGH)\r\n"));
+		assertThat(new String(protMessage), equalTo("gpio.mode(" + pin
+				+ ",gpio.OUTPUT) gpio.write(" + pin + ",gpio.HIGH)\r\n"));
 	}
 
 	@Test
 	public void generatePowerPinSwitchMessageLow() {
+		int pin = anyPin();
 		DefaultToDeviceMessagePinStateChange message = new DefaultToDeviceMessagePinStateChange(
-				digitalPin(2), false);
+				digitalPin(pin), false);
 		byte[] protMessage = protocol.toDevice(message);
-		assertThat(new String(protMessage),
-				equalTo("gpio.mode(2,gpio.OUTPUT) gpio.write(2,gpio.LOW)\r\n"));
+		assertThat(new String(protMessage), equalTo("gpio.mode(" + pin
+				+ ",gpio.OUTPUT) gpio.write(" + pin + ",gpio.LOW)\r\n"));
 	}
 
 	@Test
 	public void generatePowerPinIntensityMessage() {
+		int pin = anyPin();
+		int value = anyValue();
 		ToDeviceMessagePinStateChange message = new DefaultToDeviceMessagePinStateChange(
-				analogPin(1), 123);
+				analogPin(pin), value);
 		byte[] protMessage = protocol.toDevice(message);
-		assertThat(
-				new String(protMessage),
-				equalTo("pwm.setup(1,1000,1023) pwm.start(1) pwm.setduty(1,123)\r\n"));
+		assertThat(new String(protMessage), equalTo("pwm.setup(" + pin
+				+ ",1000,1023) pwm.start(" + pin + ") pwm.setduty(" + pin + ","
+				+ value + ")\r\n"));
 	}
 
 	@Test
 	public void generateCustomMessage() {
-		ToDeviceMessageCustom message = new DefaultToDeviceMessageCustom(
-				"param1", "somethingelse2", "final3");
+		String p1 = "param1";
+		String p2 = "somethingelse2";
+		String p3 = "final3";
+		ToDeviceMessageCustom message = new DefaultToDeviceMessageCustom(p1,
+				p2, p3);
 		byte[] protMessage = protocol.toDevice(message);
-		assertThat(new String(protMessage),
-				equalTo("param1 somethingelse2 final3\r\n"));
+		String expected = Joiner.on(" ").join(asList(p1, p2, p3)) + "\r\n";
+		assertThat(new String(protMessage), equalTo(expected));
 	}
 
 	@Test
 	public void generateStartListeningDigitalMessage() {
+		int pin = anyPin();
 		ToDeviceMessageStartListening message = new DefaultToDeviceMessageStartListening(
-				digitalPin(1));
+				digitalPin(pin));
 		byte[] protMessage = protocol.toDevice(message);
-		assertThat(new String(protMessage), containsString("alp://dred/1/%s"));
+		assertThat(new String(protMessage), containsString("alp://dred/" + pin
+				+ "/%s"));
 	}
 
+	private int anyPin() {
+		return new Random().nextInt(99);
+	}
+
+	private int anyValue() {
+		return new Random().nextInt(1023);
+	}
 }
