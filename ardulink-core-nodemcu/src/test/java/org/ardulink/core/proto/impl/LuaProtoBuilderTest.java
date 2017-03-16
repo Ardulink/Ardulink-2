@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.ardulink.core.proto.impl;
 
 import static org.ardulink.core.Pin.analogPin;
@@ -30,59 +30,52 @@ import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.junit.Test;
 
 public class LuaProtoBuilderTest {
-	
-	@Test
-	public void generatePowerPinSwitchMessage() {
-		LuaProtocol protocol = new LuaProtocol();
-		
-		ToDeviceMessagePinStateChange message = new DefaultToDeviceMessagePinStateChange(digitalPin(1), true);
-		
-		byte[] protMessage = protocol.toDevice(message);
-		String controlString = "gpio.mode(1,gpio.OUTPUT) gpio.write(1,gpio.HIGH)\r\n";
-		
-		assertThat(new String(protMessage), equalTo(controlString));
 
-		message = new DefaultToDeviceMessagePinStateChange(digitalPin(2), false);
-		
-		protMessage = protocol.toDevice(message);
-		controlString = "gpio.mode(2,gpio.OUTPUT) gpio.write(2,gpio.LOW)\r\n";
-		
-		assertThat(new String(protMessage), equalTo(controlString));
+	private final LuaProtocol protocol = new LuaProtocol();
+
+	@Test
+	public void generatePowerPinSwitchMessageHigh() {
+		ToDeviceMessagePinStateChange message = new DefaultToDeviceMessagePinStateChange(
+				digitalPin(1), true);
+		byte[] protMessage = protocol.toDevice(message);
+		assertThat(new String(protMessage),
+				equalTo("gpio.mode(1,gpio.OUTPUT) gpio.write(1,gpio.HIGH)\r\n"));
+	}
+
+	@Test
+	public void generatePowerPinSwitchMessageLow() {
+		DefaultToDeviceMessagePinStateChange message = new DefaultToDeviceMessagePinStateChange(
+				digitalPin(2), false);
+		byte[] protMessage = protocol.toDevice(message);
+		assertThat(new String(protMessage),
+				equalTo("gpio.mode(2,gpio.OUTPUT) gpio.write(2,gpio.LOW)\r\n"));
 	}
 
 	@Test
 	public void generatePowerPinIntensityMessage() {
-		LuaProtocol protocol = new LuaProtocol();
-		
-		ToDeviceMessagePinStateChange message = new DefaultToDeviceMessagePinStateChange(analogPin(1), 123);
-		
+		ToDeviceMessagePinStateChange message = new DefaultToDeviceMessagePinStateChange(
+				analogPin(1), 123);
 		byte[] protMessage = protocol.toDevice(message);
-		String controlString = "pwm.setup(1,1000,1023) pwm.start(1) pwm.setduty(1,123)\r\n";
-		
-		assertThat(new String(protMessage), equalTo(controlString));
+		assertThat(
+				new String(protMessage),
+				equalTo("pwm.setup(1,1000,1023) pwm.start(1) pwm.setduty(1,123)\r\n"));
 	}
-	
+
 	@Test
 	public void generateCustomMessage() {
-		LuaProtocol protocol = new LuaProtocol();
-		
-		ToDeviceMessageCustom message = new DefaultToDeviceMessageCustom("param1", "somethingelse2", "final3");
-		
+		ToDeviceMessageCustom message = new DefaultToDeviceMessageCustom(
+				"param1", "somethingelse2", "final3");
 		byte[] protMessage = protocol.toDevice(message);
-		String controlString = "param1 somethingelse2 final3\r\n";
-		
-		assertThat(new String(protMessage), equalTo(controlString));
+		assertThat(new String(protMessage),
+				equalTo("param1 somethingelse2 final3\r\n"));
 	}
 
 	@Test
 	public void generateStartListeningDigitalMessage() {
-		LuaProtocol protocol = new LuaProtocol();
-		
-		ToDeviceMessageStartListening message = new DefaultToDeviceMessageStartListening(digitalPin(1));
-		
+		ToDeviceMessageStartListening message = new DefaultToDeviceMessageStartListening(
+				digitalPin(1));
 		byte[] protMessage = protocol.toDevice(message);
-		String controlString = "alp://dred/1/%s";
-		
-		assertThat(new String(protMessage), containsString(controlString));
+		assertThat(new String(protMessage), containsString("alp://dred/1/%s"));
 	}
+
 }
