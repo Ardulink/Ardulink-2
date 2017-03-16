@@ -39,22 +39,23 @@ public class LuaProtoBuilderTest {
 
 	@Test
 	public void generatePowerPinSwitchMessageHigh() {
-		int pin = anyPin();
-		ToDeviceMessagePinStateChange message = new DefaultToDeviceMessagePinStateChange(
-				digitalPin(pin), true);
-		byte[] protMessage = protocol.toDevice(message);
-		assertThat(new String(protMessage), equalTo("gpio.mode(" + pin
-				+ ",gpio.OUTPUT) gpio.write(" + pin + ",gpio.HIGH)\r\n"));
+		powerPinSwitchMessage(true);
 	}
 
 	@Test
 	public void generatePowerPinSwitchMessageLow() {
+		powerPinSwitchMessage(false);
+	}
+
+	private void powerPinSwitchMessage(boolean state) {
 		int pin = anyPin();
 		DefaultToDeviceMessagePinStateChange message = new DefaultToDeviceMessagePinStateChange(
-				digitalPin(pin), false);
+				digitalPin(pin), state);
 		byte[] protMessage = protocol.toDevice(message);
+		String stateString = state ? "HIGH" : "LOW";
 		assertThat(new String(protMessage), equalTo("gpio.mode(" + pin
-				+ ",gpio.OUTPUT) gpio.write(" + pin + ",gpio.LOW)\r\n"));
+				+ ",gpio.OUTPUT) gpio.write(" + pin + ",gpio." + stateString
+				+ ")\r\n"));
 	}
 
 	@Test
