@@ -33,10 +33,10 @@ public class ByteArray {
 	}
 
 	public boolean contains(byte[] delimiter) {
-		return posOf(delimiter) >= 0;
+		return indexOf(delimiter) >= 0;
 	}
 
-	private int posOf(byte[] delimiter) {
+	private int indexOf(byte[] delimiter) {
 		checkState(
 				checkNotNull(delimiter, "delimiter must not be null").length > 0,
 				"delimiter must not be empty");
@@ -56,7 +56,7 @@ public class ByteArray {
 	}
 
 	public byte[] next(byte[] delimiter) {
-		int nextPointer = posOf(delimiter);
+		int nextPointer = indexOf(delimiter);
 		if (nextPointer < 0) {
 			return null;
 		}
