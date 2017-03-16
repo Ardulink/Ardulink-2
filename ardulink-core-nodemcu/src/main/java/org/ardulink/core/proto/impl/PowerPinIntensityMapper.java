@@ -15,6 +15,8 @@ limitations under the License.
  */
 package org.ardulink.core.proto.impl;
 
+import static org.ardulink.core.proto.impl.LuaProtoBuilder.INTENSITY;
+import static org.ardulink.core.proto.impl.LuaProtoBuilder.PIN;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
@@ -26,7 +28,7 @@ public class PowerPinIntensityMapper implements Mapper {
 
 	@Override
 	public Map<String, String> buildMap(Integer pin, Object[] values) {
-		checkNotNull(pin, "PIN has to be specified");
+		checkNotNull(pin, PIN + " has to be specified");
 		checkNotNull(values, "value has to be specified");
 		checkArgument(values.length == 1,
 				"Mapper %s accept just a value instead of: %s", values.length);
@@ -35,8 +37,8 @@ public class PowerPinIntensityMapper implements Mapper {
 				values[0].getClass().getName());
 
 		return MapBuilder.<String, String> newMapBuilder()
-				.put("PIN", pin.toString())
-				.put("INTENSITY", String.valueOf(values[0])).build();
+				.put(PIN, pin.toString())
+				.put(INTENSITY, String.valueOf(values[0])).build();
 	}
 
 }

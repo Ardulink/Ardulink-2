@@ -12,50 +12,47 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.ardulink.core.proto.impl;
 
+import static java.util.regex.Pattern.quote;
 import static org.ardulink.util.LoadStream.asString;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.ardulink.util.Throwables;
+
 public class LuaProtoBuilder {
 
-	public enum LuaProtocolKey {
+	public static final String PIN = "PIN";
+	public static final String STATE = "STATE";
+	public static final String INTENSITY = "INTENSITY";
+	public static final String VALUES = "VALUES";
 
-		 POWER_PIN_SWITCH("gpio.mode(${PIN},gpio.OUTPUT) gpio.write(${PIN},gpio.${STATE})", new PowerPinSwitchMapper())
-		,POWER_PIN_INTENSITY("pwm.setup(${PIN},1000,1023) pwm.start(${PIN}) pwm.setduty(${PIN},${INTENSITY})", new PowerPinIntensityMapper())
-		,CUSTOM_MESSAGE("${VALUES}", new CustomMessageMapper())
-		,START_LISTENING_DIGITAL("StartListeningDigitalTemplate.snippet", new StartListeningDigitalMapper())
-		,STOP_LISTENING_DIGITAL("gpio.mode(${PIN},gpio.OUTPUT)", new StopListeningDigitalMapper())
-		 ;
+	public enum LuaProtocolKey {
+		POWER_PIN_SWITCH("gpio.mode(" + var(PIN) + ",gpio.OUTPUT) gpio.write("
+				+ var(PIN) + ",gpio." + var(STATE) + ")",
+				new PowerPinSwitchMapper()), //
+		POWER_PIN_INTENSITY("pwm.setup(" + var(PIN) + ",1000,1023) pwm.start("
+				+ var(PIN) + ") pwm.setduty(" + var(PIN) + "," + var(INTENSITY)
+				+ ")", new PowerPinIntensityMapper()), //
+		CUSTOM_MESSAGE(var(VALUES), new CustomMessageMapper()), //
+		START_LISTENING_DIGITAL(
+				loadSnippet("StartListeningDigitalTemplate.snippet"),
+				new StartListeningDigitalMapper()), //
+		STOP_LISTENING_DIGITAL("gpio.mode(" + var(PIN) + ",gpio.OUTPUT)",
+				new StopListeningDigitalMapper()); //
 
 		private String messageTemplate;
 		private Mapper mapper;
 
-		private LuaProtocolKey(String snippetName, Mapper mapper) {
-			this.messageTemplate = getMessageSnippetIfExists(snippetName);
+		private LuaProtocolKey(String messageTemplate, Mapper mapper) {
+			this.messageTemplate = messageTemplate;
 			this.mapper = mapper;
-		}
-
-		private String getMessageSnippetIfExists(String snippet) {
-			InputStream is = this.getClass().getResourceAsStream(snippet);
-			String retvalue = snippet;
-			if(is != null) {
-				retvalue = asString(is);
-				// Scripts on more than on line cause random error on NodeMCU because its echo
-				// We should investigate on ESPlorer code to understand how improve this code.
-				// Actually we remove CR and LF sending the script on a single line.
-				retvalue = retvalue.replaceAll("\\r", " ");
-				retvalue = retvalue.replaceAll("\\n", " ");
-				try {
-					is.close();
-				} catch (IOException e) {}
-			}
-			return retvalue;
 		}
 
 		public String getMessageTemplate() {
@@ -66,15 +63,34 @@ public class LuaProtoBuilder {
 			return mapper;
 		}
 	}
-	
+
+	private static String loadSnippet(String snippet) {
+		InputStream is = LuaProtoBuilder.class.getResourceAsStream(snippet);
+		String content = asString(is);
+		// Scripts on more than on line cause random error on NodeMCU
+		// because its echo
+		// We should investigate on ESPlorer code to understand how
+		// improve this code.
+		// Actually we remove CR and LF sending the script on a single
+		// line.
+		content = content.replaceAll("\\r", " ");
+		content = content.replaceAll("\\n", " ");
+		try {
+			is.close();
+		} catch (IOException e) {
+			propagate(e);
+		}
+		return content;
+	}
+
 	public static LuaProtoBuilder getBuilder(LuaProtocolKey key) {
 		return new LuaProtoBuilder(key);
 	}
 
-	private LuaProtocolKey key;
+	private final LuaProtocolKey key;
 	private Integer pin;
 	private Object[] values;
-	
+
 	public LuaProtoBuilder(LuaProtocolKey key) {
 		this.key = key;
 	}
@@ -92,16 +108,19 @@ public class LuaProtoBuilder {
 		this.values = values;
 		return this;
 	}
-	
+
+	private static String var(String name) {
+		return "${" + name + "}";
+	}
+
 	public String build() {
-		Map<String, String> mappedValues = key.getMapper()
-				.buildMap(pin, values);
-		String retvalue = key.getMessageTemplate();
-		for (Entry<String, String> entry : mappedValues.entrySet()) {
-			String variableName = "\\$\\{" + entry.getKey() + "\\}";
-			retvalue = retvalue.replaceAll(variableName, entry.getValue());
+		String message = key.getMessageTemplate();
+		for (Entry<String, String> entry : key.getMapper()
+				.buildMap(pin, values).entrySet()) {
+			message = message.replaceAll(quote(var(entry.getKey())),
+					entry.getValue());
 		}
-		return retvalue;
+		return message;
 	}
 
 }

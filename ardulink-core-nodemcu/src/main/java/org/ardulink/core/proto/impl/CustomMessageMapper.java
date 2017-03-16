@@ -15,9 +15,11 @@ limitations under the License.
  */
 package org.ardulink.core.proto.impl;
 
+import static org.ardulink.core.proto.impl.LuaProtoBuilder.PIN;
+import static org.ardulink.core.proto.impl.LuaProtoBuilder.VALUES;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
-import static org.ardulink.util.Preconditions.checkNull;
+import static org.ardulink.util.Preconditions.checkState;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -31,14 +33,14 @@ public class CustomMessageMapper implements Mapper {
 
 	@Override
 	public Map<String, String> buildMap(Integer pin, Object[] values) {
-		checkNull(pin, "PIN has to be null");
+		checkState(pin == null, PIN + " has to be null");
 		checkNotNull(values, "value has to be specified");
 		checkArgument(values.length > 0,
 				"Mapper %s accepts a least a value instead of: %s",
 				values.length);
 
 		return MapBuilder.<String, String> newMapBuilder()
-				.put("VALUES", joiner.join(Arrays.asList(values))).build();
+				.put(VALUES, joiner.join(Arrays.asList(values))).build();
 	}
 
 }
