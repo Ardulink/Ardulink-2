@@ -12,14 +12,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.ardulink.core.proto.impl;
 
-import static org.ardulink.util.Preconditions.checkNull;
 import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Preconditions.checkNull;
 
-import java.util.HashMap;
 import java.util.Map;
+
+import org.ardulink.util.MapBuilder;
 
 public class StartListeningDigitalMapper implements Mapper {
 
@@ -27,9 +28,9 @@ public class StartListeningDigitalMapper implements Mapper {
 	public Map<String, String> buildMap(Integer pin, Object[] values) {
 		checkNotNull(pin, "PIN has to be specified");
 		checkNull(values, "value hasn't to be specified");
-		
-		Map<String, String> map = new HashMap<String, String>();
-		map.put("PIN", pin.toString());
-		return map;
+
+		return MapBuilder.<String, String> newMapBuilder()
+				.put("PIN", String.valueOf(pin)).build();
 	}
+
 }

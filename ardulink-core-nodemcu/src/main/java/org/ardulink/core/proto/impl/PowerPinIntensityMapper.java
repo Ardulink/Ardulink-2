@@ -36,11 +36,7 @@ public class PowerPinIntensityMapper implements Mapper {
 
 		return MapBuilder.<String, String> newMapBuilder()
 				.put("PIN", pin.toString())
-				.put("INTENSITY", getIntensity((Integer) values[0])).build();
-	}
-
-	private String getIntensity(Integer integer) {
-		return integer.toString();
+				.put("INTENSITY", String.valueOf(values[0])).build();
 	}
 
 }
