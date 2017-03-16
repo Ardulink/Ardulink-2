@@ -30,13 +30,6 @@ public final class Preconditions {
 		super();
 	}
 
-	public static <T> T checkNull(T t, String message, Object... args) {
-		if (t != null) {
-			throw new IllegalStateException(String.format(message, args));
-		}
-		return t;
-	}
-
 	public static <T> T checkNotNull(T t, String message, Object... args) {
 		if (t == null) {
 			throw new IllegalStateException(String.format(message, args));
