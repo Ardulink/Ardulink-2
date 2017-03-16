@@ -20,7 +20,7 @@ import static org.ardulink.util.LoadStream.asString;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 
 public class LuaProtoBuilder {
 
@@ -94,14 +94,14 @@ public class LuaProtoBuilder {
 	}
 	
 	public String build() {
-		
-		Map<String, String> mappedValues = key.getMapper().buildMap(pin, values);
+		Map<String, String> mappedValues = key.getMapper()
+				.buildMap(pin, values);
 		String retvalue = key.getMessageTemplate();
-		Set<String> keys = mappedValues.keySet();
-		for (String key : keys) {
-			String variableName = "\\$\\{" + key + "\\}";
-			retvalue = retvalue.replaceAll(variableName, mappedValues.get(key));
+		for (Entry<String, String> entry : mappedValues.entrySet()) {
+			String variableName = "\\$\\{" + entry.getKey() + "\\}";
+			retvalue = retvalue.replaceAll(variableName, entry.getValue());
 		}
 		return retvalue;
 	}
+
 }
