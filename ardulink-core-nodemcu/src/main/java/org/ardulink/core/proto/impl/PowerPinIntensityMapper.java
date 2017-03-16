@@ -12,14 +12,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.ardulink.core.proto.impl;
 
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
-import java.util.HashMap;
 import java.util.Map;
+
+import org.ardulink.util.MapBuilder;
 
 public class PowerPinIntensityMapper implements Mapper {
 
@@ -27,16 +28,19 @@ public class PowerPinIntensityMapper implements Mapper {
 	public Map<String, String> buildMap(Integer pin, Object[] values) {
 		checkNotNull(pin, "PIN has to be specified");
 		checkNotNull(values, "value has to be specified");
-		checkArgument(values.length == 1, "Mapper %s accept just a value instead of: %s", values.length);
-		checkArgument(values[0] instanceof Integer, "Mapper %s accept just an Integer value instead of: %s", values[0].getClass().getName());
-		
-		Map<String, String> map = new HashMap<String, String>();
-		map.put("PIN", pin.toString());
-		map.put("INTENSITY", getIntensity((Integer)values[0]));
-		return map;
+		checkArgument(values.length == 1,
+				"Mapper %s accept just a value instead of: %s", values.length);
+		checkArgument(values[0] instanceof Integer,
+				"Mapper %s accept just an Integer value instead of: %s",
+				values[0].getClass().getName());
+
+		return MapBuilder.<String, String> newMapBuilder()
+				.put("PIN", pin.toString())
+				.put("INTENSITY", getIntensity((Integer) values[0])).build();
 	}
 
 	private String getIntensity(Integer integer) {
 		return integer.toString();
 	}
+
 }
