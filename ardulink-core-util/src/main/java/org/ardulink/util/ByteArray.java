@@ -40,19 +40,7 @@ public class ByteArray {
 		checkState(
 				checkNotNull(delimiter, "delimiter must not be null").length > 0,
 				"delimiter must not be empty");
-		return indexOf(byteArray, delimiter, pointer);
-	}
-
-	private static int indexOf(byte[] array, byte[] target, int startpos) {
-		outer: for (int i = startpos; i < array.length - target.length + 1; i++) {
-			for (int j = 0; j < target.length; j++) {
-				if (array[i + j] != target[j]) {
-					continue outer;
-				}
-			}
-			return i;
-		}
-		return -1;
+		return Bytes.indexOf(byteArray, delimiter, pointer);
 	}
 
 	public byte[] next(byte[] delimiter) {

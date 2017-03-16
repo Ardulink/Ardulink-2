@@ -12,13 +12,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.proto.impl;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static java.lang.System.arraycopy;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -62,6 +61,7 @@ import org.ardulink.core.messages.impl.DefaultFromDeviceMessageReply;
 import org.ardulink.core.proto.api.MessageIdHolder;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
+import org.ardulink.util.Bytes;
 import org.ardulink.util.Longs;
 import org.ardulink.util.URIs;
 
@@ -97,12 +97,12 @@ public class ArdulinkProtocol2 implements Protocol {
 	public byte[] toDevice(ToDeviceMessageStartListening startListening) {
 		Pin pin = startListening.getPin();
 		if (startListening.getPin().is(ANALOG)) {
-			return toBytes(builder(startListening, START_LISTENING_ANALOG).forPin(
-					pin.pinNum()).withoutValue());
+			return toBytes(builder(startListening, START_LISTENING_ANALOG)
+					.forPin(pin.pinNum()).withoutValue());
 		}
 		if (startListening.getPin().is(DIGITAL)) {
-			return toBytes(builder(startListening, START_LISTENING_DIGITAL).forPin(
-					pin.pinNum()).withoutValue());
+			return toBytes(builder(startListening, START_LISTENING_DIGITAL)
+					.forPin(pin.pinNum()).withoutValue());
 		}
 		throw illegalPinType(startListening.getPin());
 	}
@@ -111,12 +111,12 @@ public class ArdulinkProtocol2 implements Protocol {
 	public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
 		Pin pin = stopListening.getPin();
 		if (stopListening.getPin().is(ANALOG)) {
-			return toBytes(builder(stopListening, STOP_LISTENING_ANALOG).forPin(
-					pin.pinNum()).withoutValue());
+			return toBytes(builder(stopListening, STOP_LISTENING_ANALOG)
+					.forPin(pin.pinNum()).withoutValue());
 		}
 		if (stopListening.getPin().is(DIGITAL)) {
-			return toBytes(builder(stopListening, STOP_LISTENING_DIGITAL).forPin(
-					pin.pinNum()).withoutValue());
+			return toBytes(builder(stopListening, STOP_LISTENING_DIGITAL)
+					.forPin(pin.pinNum()).withoutValue());
 		}
 		throw illegalPinType(stopListening.getPin());
 	}
@@ -147,8 +147,7 @@ public class ArdulinkProtocol2 implements Protocol {
 		return toBytes(builder(keyPress, CHAR_PRESSED).withValue(
 				String.format("chr%scod%sloc%smod%smex%s",
 						keyPress.getKeychar(), keyPress.getKeycode(),
-						keyPress.getKeylocation(),
-						keyPress.getKeymodifiers(),
+						keyPress.getKeylocation(), keyPress.getKeymodifiers(),
 						keyPress.getKeymodifiersex())));
 	}
 
@@ -196,15 +195,16 @@ public class ArdulinkProtocol2 implements Protocol {
 		if (key == READY) {
 			return new DefaultFromDeviceMessageReady();
 		} else if (key == RPLY) {
-			
+
 			Map<String, Object> params = getParamsFromQuery(query);
 
 			checkNotNull(params.get("id"),
 					"Reply message needs for mandatory param: id");
 			String id = (String) params.get("id");
 
-			return new DefaultFromDeviceMessageReply("ok".equalsIgnoreCase(specs),
-					checkNotNull(Longs.tryParse(id), "%s not a long value", id)
+			return new DefaultFromDeviceMessageReply(
+					"ok".equalsIgnoreCase(specs), checkNotNull(
+							Longs.tryParse(id), "%s not a long value", id)
 							.longValue(), params);
 
 		} else if (key == ALPProtocolKey.CUSTOM_EVENT) {
@@ -221,7 +221,8 @@ public class ArdulinkProtocol2 implements Protocol {
 		checkState(key != null && pin != null && value != null,
 				"key %s pin %s value %s", key, pin, value);
 		if (key == ANALOG_PIN_READ) {
-			return new DefaultFromDeviceMessagePinStateChanged(analogPin(pin), value);
+			return new DefaultFromDeviceMessagePinStateChanged(analogPin(pin),
+					value);
 		} else if (key == DIGITAL_PIN_READ) {
 			return new DefaultFromDeviceMessagePinStateChanged(digitalPin(pin),
 					toBoolean(value));
@@ -262,11 +263,7 @@ public class ArdulinkProtocol2 implements Protocol {
 	 * @return byte[] holding the passed message and the protocol's divider
 	 */
 	private byte[] toBytes(String message) {
-		byte[] bytes = new byte[message.length() + separator.length];
-		byte[] msgBytes = message.getBytes();
-		arraycopy(msgBytes, 0, bytes, 0, msgBytes.length);
-		arraycopy(separator, 0, bytes, msgBytes.length, separator.length);
-		return bytes;
+		return Bytes.concat(message.getBytes(), separator);
 	}
 
 }
