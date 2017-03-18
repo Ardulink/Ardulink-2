@@ -26,6 +26,8 @@ public class VirtualConnectionLinkFactory implements
 
 		private int byteReturned;
 
+		// TODO LZ Is this constructor really needed? Why is ArdulinkProtocol2's
+		// separator refereed here?
 		public NullInputStream() {
 			this("MESSAGE", 100, MILLISECONDS, ArdulinkProtocol2.instance()
 					.getSeparator());

@@ -26,17 +26,23 @@ import static org.ardulink.util.Throwables.propagate;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Map.Entry;
 
 import org.ardulink.util.Joiner;
-import org.ardulink.util.MapBuilder;
 
 public class LuaProtoBuilder {
 
-	public static final String PIN = "PIN";
-	public static final String STATE = "STATE";
-	public static final String INTENSITY = "INTENSITY";
-	public static final String VALUES = "VALUES";
+	private static enum TemplateVariables {
+
+		PIN("${PIN}"), STATE("${STATE}"), INTENSITY("${INTENSITY}"), VALUES(
+				"${VALUES}");
+
+		private final String quoted;
+
+		private TemplateVariables(String nameInTemplate) {
+			this.quoted = quote(nameInTemplate);
+		}
+
+	}
 
 	public enum LuaProtocolKey {
 		POWER_PIN_SWITCH {
@@ -99,15 +105,9 @@ public class LuaProtoBuilder {
 			public String message(LuaProtoBuilder builder) {
 				checkState(builder.values == null, "value must not specified");
 				checkNotNull(builder.pin, "pin has to be specified");
-
 				String message = snippet;
-				for (Entry<String, String> entry : MapBuilder
-						.<String, String> newMapBuilder()
-						.put(PIN, String.valueOf(builder.pin)).build()
-						.entrySet()) {
-					message = message.replaceAll(quote(var(entry.getKey())),
-							entry.getValue());
-				}
+				message = message.replaceAll(TemplateVariables.PIN.quoted,
+						String.valueOf(builder.pin));
 				return message;
 			}
 		}, //
@@ -166,10 +166,6 @@ public class LuaProtoBuilder {
 	public LuaProtoBuilder withValues(Object... values) {
 		this.values = values;
 		return this;
-	}
-
-	private static String var(String name) {
-		return "${" + name + "}";
 	}
 
 	public String build() {
