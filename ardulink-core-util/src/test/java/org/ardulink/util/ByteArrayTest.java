@@ -15,7 +15,8 @@ limitations under the License.
  */
 package org.ardulink.util;
 
-import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -30,32 +31,32 @@ public class ByteArrayTest {
 		byte[] token;
 
 		token = sut.next("//".getBytes());
-		assertThat(token, equalTo(null));
-		assertThat(sut.size(), equalTo(21));
+		assertThat(token, is(nullValue()));
+		assertThat(sut.size(), is(21));
 
 		token = sut.next(".:".getBytes());
-		assertThat(token, equalTo("1111".getBytes()));
-		assertThat(sut.size(), equalTo(15));
+		assertThat(token, is("1111".getBytes()));
+		assertThat(sut.size(), is(15));
 
 		token = sut.next("_".getBytes());
-		assertThat(token, equalTo("2222".getBytes()));
-		assertThat(sut.size(), equalTo(10));
+		assertThat(token, is("2222".getBytes()));
+		assertThat(sut.size(), is(10));
 
 		token = sut.next(":.".getBytes());
-		assertThat(token, equalTo("3333".getBytes()));
-		assertThat(sut.size(), equalTo(4));
+		assertThat(token, is("3333".getBytes()));
+		assertThat(sut.size(), is(4));
 
 		token = sut.next(".:".getBytes());
-		assertThat(token, equalTo(null));
-		assertThat(sut.size(), equalTo(4));
+		assertThat(token, is(nullValue()));
+		assertThat(sut.size(), is(4));
 
 		token = sut.next("4444".getBytes());
-		assertThat(token, equalTo(new byte[0]));
-		assertThat(sut.size(), equalTo(0));
+		assertThat(token, is(new byte[0]));
+		assertThat(sut.size(), is(0));
 
 		token = sut.next(" ".getBytes());
-		assertThat(token, equalTo(null));
-		assertThat(sut.size(), equalTo(0));
+		assertThat(token, is(nullValue()));
+		assertThat(sut.size(), is(0));
 	}
 
 }

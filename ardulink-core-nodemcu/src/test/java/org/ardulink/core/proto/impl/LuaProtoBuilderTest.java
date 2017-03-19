@@ -18,9 +18,9 @@ package org.ardulink.core.proto.impl;
 import static java.util.Arrays.asList;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 import java.util.Random;
 
@@ -39,23 +39,27 @@ public class LuaProtoBuilderTest {
 
 	@Test
 	public void generatePowerPinSwitchMessageHigh() {
-		powerPinSwitchMessage(true);
+		int pin = anyPin();
+		assertThat(new String(powerPinSwitchMessage(pin, true)),
+				is(luaPowerPinMessage(pin, "HIGH")));
 	}
 
 	@Test
 	public void generatePowerPinSwitchMessageLow() {
-		powerPinSwitchMessage(false);
+		int pin = anyPin();
+		assertThat(new String(powerPinSwitchMessage(pin, false)),
+				is(luaPowerPinMessage(pin, "LOW")));
 	}
 
-	private void powerPinSwitchMessage(boolean state) {
-		int pin = anyPin();
+	private String luaPowerPinMessage(int pin, String state) {
+		return "gpio.mode(" + pin + ",gpio.OUTPUT) gpio.write(" + pin
+				+ ",gpio." + state + ")\r\n";
+	}
+
+	private byte[] powerPinSwitchMessage(int pin, boolean state) {
 		DefaultToDeviceMessagePinStateChange message = new DefaultToDeviceMessagePinStateChange(
 				digitalPin(pin), state);
-		byte[] protMessage = protocol.toDevice(message);
-		String stateString = state ? "HIGH" : "LOW";
-		assertThat(new String(protMessage), equalTo("gpio.mode(" + pin
-				+ ",gpio.OUTPUT) gpio.write(" + pin + ",gpio." + stateString
-				+ ")\r\n"));
+		return protocol.toDevice(message);
 	}
 
 	@Test
@@ -65,7 +69,7 @@ public class LuaProtoBuilderTest {
 		ToDeviceMessagePinStateChange message = new DefaultToDeviceMessagePinStateChange(
 				analogPin(pin), value);
 		byte[] protMessage = protocol.toDevice(message);
-		assertThat(new String(protMessage), equalTo("pwm.setup(" + pin
+		assertThat(new String(protMessage), is("pwm.setup(" + pin
 				+ ",1000,1023) pwm.start(" + pin + ") pwm.setduty(" + pin + ","
 				+ value + ")\r\n"));
 	}
@@ -79,7 +83,7 @@ public class LuaProtoBuilderTest {
 				p2, p3);
 		byte[] protMessage = protocol.toDevice(message);
 		String expected = Joiner.on(" ").join(asList(p1, p2, p3)) + "\r\n";
-		assertThat(new String(protMessage), equalTo(expected));
+		assertThat(new String(protMessage), is(expected));
 	}
 
 	@Test
