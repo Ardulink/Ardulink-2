@@ -42,7 +42,6 @@ import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.ardulink.core.Pin;
@@ -63,6 +62,7 @@ import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 import org.ardulink.util.Bytes;
 import org.ardulink.util.Longs;
+import org.ardulink.util.MapBuilder;
 import org.ardulink.util.URIs;
 
 /**
@@ -195,18 +195,13 @@ public class ArdulinkProtocol2 implements Protocol {
 		if (key == READY) {
 			return new DefaultFromDeviceMessageReady();
 		} else if (key == RPLY) {
-
-			Map<String, Object> params = getParamsFromQuery(query);
-
-			checkNotNull(params.get("id"),
+			Map<String, String> params = paramsToMap(query);
+			String id = checkNotNull(params.get("id"),
 					"Reply message needs for mandatory param: id");
-			String id = (String) params.get("id");
-
 			return new DefaultFromDeviceMessageReply(
 					"ok".equalsIgnoreCase(specs), checkNotNull(
 							Longs.tryParse(id), "%s not a long value", id)
 							.longValue(), params);
-
 		} else if (key == ALPProtocolKey.CUSTOM_EVENT) {
 			return new DefaultFromDeviceMessageCustom(specs);
 		}
@@ -230,22 +225,22 @@ public class ArdulinkProtocol2 implements Protocol {
 		throw new IllegalStateException(key + " " + in);
 	}
 
-	private Map<String, Object> getParamsFromQuery(String query) {
-		checkNotNull(query, "Params can't be null");
-		Map<String, Object> retvalue = new HashMap<String, Object>();
-		String[] p = query.split("&");
-		for (String param : p) {
-			int index = param.indexOf("=");
-			retvalue.put(param.substring(0, index), param.substring(index + 1));
+	private static Map<String, String> paramsToMap(String query) {
+		MapBuilder<String, String> builder = MapBuilder
+				.<String, String> newMapBuilder();
+		for (String param : checkNotNull(query, "Params can't be null").split(
+				"&")) {
+			String[] kv = param.split("=");
+			builder.put(kv[0], kv[1]);
 		}
-		return retvalue;
+		return builder.build();
 	}
 
-	private String removeFirstSlash(String path) {
-		return !path.startsWith("/") ? path : path.substring(1);
+	private static String removeFirstSlash(String path) {
+		return path.startsWith("/") ? path.substring(1) : path;
 	}
 
-	private IllegalStateException illegalPinType(Pin pin) {
+	private static IllegalStateException illegalPinType(Pin pin) {
 		return new IllegalStateException("Illegal type " + pin.getType()
 				+ " of pin " + pin);
 	}

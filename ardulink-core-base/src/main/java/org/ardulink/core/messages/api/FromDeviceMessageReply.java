@@ -30,6 +30,6 @@ public interface FromDeviceMessageReply extends FromDeviceMessage {
 	boolean isOk();
 
 	long getId();
-	
-	Map<String, Object> getParameters();
+
+	Map<String, ? extends Object> getParameters();
 }

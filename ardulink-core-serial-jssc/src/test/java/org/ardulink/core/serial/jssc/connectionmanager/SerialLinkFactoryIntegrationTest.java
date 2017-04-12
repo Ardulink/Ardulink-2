@@ -27,9 +27,10 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import jssc.SerialPortList;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.events.CustomEvent;
@@ -39,14 +40,11 @@ import org.ardulink.core.events.RplyListener;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.core.serial.jssc.SerialLinkConfig;
 import org.ardulink.util.URIs;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import jssc.SerialPortList;
 
 /**
  * [ardulinktitle] [ardulinkversion]

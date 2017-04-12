@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.messages.impl;
 
@@ -34,12 +34,14 @@ public class DefaultFromDeviceMessageReply implements FromDeviceMessageReply {
 
 	private final boolean ok;
 	private final long id;
-	private Map<String, Object> parameters;
+	private final Map<String, ? extends Object> parameters;
 
-	public DefaultFromDeviceMessageReply(boolean ok, long id, Map<String, Object> parameters) {
+	public DefaultFromDeviceMessageReply(boolean ok, long id,
+			Map<String, ? extends Object> parameters) {
 		this.ok = ok;
 		this.id = id;
-		this.parameters = unmodifiableMap(new HashMap<String, Object>(parameters));
+		this.parameters = unmodifiableMap(new HashMap<String, Object>(
+				parameters));
 	}
 
 	public boolean isOk() {
@@ -51,7 +53,7 @@ public class DefaultFromDeviceMessageReply implements FromDeviceMessageReply {
 	}
 
 	@Override
-	public Map<String, Object> getParameters() {
+	public Map<String, ? extends Object> getParameters() {
 		return parameters;
 	}
 

@@ -24,8 +24,8 @@ public class URIsTest {
 		}
 
 		public URLBuilder param(String name, String value) {
-			this.base.append(name).append('=').append(URIs.encode(value))
-					.append('&');
+			this.base.append(URIs.encode(name)).append('=')
+					.append(URIs.encode(value)).append('&');
 			return this;
 		}
 
@@ -46,10 +46,11 @@ public class URIsTest {
 
 	@Test
 	public void queryURIWithSpaceChar() throws URISyntaxException {
-		URI uri = new URLBuilder("http://serial-jssc").param("port", "COM3")
-				.param("other", "good enough").build();
-		assertThat(uri, is(new URI(
-				"http://serial-jssc?port=COM3&other=good+enough")));
+		String base = "http://serial-jssc";
+		URI uri = new URLBuilder(base).param("port", "COM3")
+				.param("name with spaces", "value with spaces").build();
+		assertThat(uri, is(new URI(base
+				+ "?port=COM3&name+with+spaces=value+with+spaces")));
 	}
 
 }
