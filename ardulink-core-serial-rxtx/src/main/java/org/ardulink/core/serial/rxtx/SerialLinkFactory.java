@@ -21,9 +21,13 @@ import static gnu.io.SerialPort.PARITY_NONE;
 import static gnu.io.SerialPort.STOPBITS_1;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.util.Preconditions.checkState;
+import gnu.io.CommPortIdentifier;
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.SerialPort;
+import gnu.io.UnsupportedCommOperationException;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
@@ -31,12 +35,6 @@ import org.ardulink.core.StreamConnection;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.qos.QosLink;
-
-import gnu.io.CommPortIdentifier;
-import gnu.io.NoSuchPortException;
-import gnu.io.PortInUseException;
-import gnu.io.SerialPort;
-import gnu.io.UnsupportedCommOperationException;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -48,7 +46,6 @@ import gnu.io.UnsupportedCommOperationException;
  */
 public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
-
 	@Override
 	public String getName() {
 		return "serial";
@@ -59,11 +56,11 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 			throws NoSuchPortException, PortInUseException,
 			UnsupportedCommOperationException, IOException {
 		CommPortIdentifier portIdentifier = CommPortIdentifier
-				.getPortIdentifier(getPort(config));
+				.getPortIdentifier(config.getPort());
 		checkState(!portIdentifier.isCurrentlyOwned(),
 				"Port %s is currently in use", config.getPort());
 		final SerialPort serialPort = serialPort(config, portIdentifier);
-		
+
 		StreamConnection connection = new StreamConnection(
 				serialPort.getInputStream(), serialPort.getOutputStream(),
 				config.getProto());
@@ -82,21 +79,6 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 				serialPort.close();
 			}
 		};
-	}
-
-	private String getPort(SerialLinkConfig config) {
-		String port = config.getPort();
-		boolean isSearchPort = config.isSearchport();
-		checkState((port == null && isSearchPort) || (!isSearchPort && port != null)
-				,  "port must be null when search port is enabled, search port must be disabled when port is not null. Please set port=<portname> or searchport=true in connection URI");
-
-		if(isSearchPort) {
-			List<String> ports = config.listPorts(); 
-			checkState(!ports.isEmpty(), "no port found");
-			port =  ports.get(0); // take first port
-		}
-		
-		return port;
 	}
 
 	private void waitForArdulink(SerialLinkConfig config,

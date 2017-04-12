@@ -69,7 +69,7 @@ public class SerialLinkConfig implements LinkConfig {
 
 	@Named("searchport")
 	private boolean searchport;
-	
+
 	public int getBaudrate() {
 		return baudrate;
 	}
@@ -153,11 +153,4 @@ public class SerialLinkConfig implements LinkConfig {
 		this.waitsecs = waitsecs;
 	}
 
-	public boolean isSearchport() {
-		return searchport;
-	}
-
-	public void setSearchport(boolean searchport) {
-		this.searchport = searchport;
-	}
 }
