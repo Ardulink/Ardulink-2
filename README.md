@@ -7,7 +7,7 @@ This is the repository for Ardulink 2. Ardulink 2 is a complete, open source, ja
 			DigitalPin pin = Pin.digitalPin(2);
 			boolean power = true;
 			while (true) {
-				System.out.println("Send power:" + power);
+				System.out.println("Send power: " + power);
 				link.switchDigitalPin(pin, power);
 				power = !power;
 				TimeUnit.SECONDS.sleep(2);
