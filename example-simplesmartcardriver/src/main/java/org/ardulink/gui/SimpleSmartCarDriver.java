@@ -19,6 +19,7 @@ limitations under the License.
 package org.ardulink.gui;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -43,6 +44,7 @@ import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.gui.connectionpanel.ConnectionPanel;
 import org.ardulink.gui.customcomponents.SignalButton;
+import org.ardulink.gui.facility.LAFUtil;
 import org.ardulink.legacy.Link;
 import org.ardulink.legacy.Link.LegacyLinkAdapter;
 import org.ardulink.util.Lists;
@@ -100,12 +102,7 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					for (LookAndFeelInfo laf : UIManager
-							.getInstalledLookAndFeels()) {
-						if ("Nimbus".equals(laf.getName())) {
-							UIManager.setLookAndFeel(laf.getClassName());
-						}
-					}
+					setLookAndFeel("Nimbus");
 					SimpleSmartCarDriver frame = new SimpleSmartCarDriver();
 					frame.setVisible(true);
 				} catch (Exception e) {
