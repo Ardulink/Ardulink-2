@@ -24,7 +24,7 @@ import io.moquette.interception.AbstractInterceptHandler;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.messages.InterceptPublishMessage;
 import io.moquette.server.Server;
-import io.moquette.server.config.IConfig;
+import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.security.IAuthenticator;
 
 import java.io.IOException;
@@ -94,26 +94,8 @@ public class Broker extends ExternalResource {
 	}
 
 	public void start() throws IOException {
-		final Properties properties = properties();
-		this.mqttServer.startServer(new IConfig() {
-
-			@Override
-			public void setProperty(String key, String value) {
-				properties.setProperty(key, value);
-			}
-
-			@Override
-			public String getProperty(String key) {
-				return properties.getProperty(key);
-			}
-
-			@Override
-			public String getProperty(String key, String defaultValue) {
-				String value = getProperty(key);
-				return value == null ? defaultValue : value;
-			}
-
-		}, listeners);
+		MemoryConfig memoryConfig = new MemoryConfig(properties());
+		this.mqttServer.startServer(memoryConfig, listeners);
 	}
 
 	private Properties properties() {
@@ -141,7 +123,11 @@ public class Broker extends ExternalResource {
 
 	public void stop() {
 		this.mqttServer.stopServer();
-		System.setProperty(propertyName(), this.env2restore);
+		if (this.env2restore == null) {
+			System.clearProperty(propertyName());
+		} else {
+			System.setProperty(propertyName(), this.env2restore);
+		}
 	}
 
 	public Broker recordMessages() {

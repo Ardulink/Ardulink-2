@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.mqtt;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.mock;
 
@@ -92,8 +93,9 @@ public class MqttMainStandaloneIntegrationTest {
 
 		try {
 			exceptions.expect(IOException.class);
-			exceptions
-					.expectMessage(containsString("BAD_USERNAME_OR_PASSWORD"));
+			exceptions.expectMessage(allOf(containsString("BAD"),
+					containsString("USERNAME"), containsString("OR"),
+					containsString("PASSWORD")));
 			mqttMain.connectToMqttBroker();
 		} finally {
 			mqttMain.close();

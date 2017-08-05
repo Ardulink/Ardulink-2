@@ -22,6 +22,7 @@ import static io.moquette.BrokerConstants.HOST_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
 import static org.ardulink.util.Throwables.propagate;
 import io.moquette.server.Server;
+import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.security.IAuthenticator;
 
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class MqttBroker {
 		public Server startBroker() {
 			Server broker = new Server();
 			try {
-				broker.startServer(properties());
+				broker.startServer(new MemoryConfig(properties()));
 				return broker;
 			} catch (IOException e) {
 				throw propagate(e);

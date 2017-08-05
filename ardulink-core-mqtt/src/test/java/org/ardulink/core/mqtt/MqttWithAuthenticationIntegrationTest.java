@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.mqtt;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 
 import org.ardulink.core.linkmanager.LinkManager;
@@ -55,7 +56,9 @@ public class MqttWithAuthenticationIntegrationTest {
 	@Test
 	public void canNotConnectWithoutUserAndPassword() {
 		exceptions.expect(RuntimeException.class);
-		exceptions.expectMessage(containsString("BAD_USERNAME_OR_PASSWORD"));
+		exceptions.expectMessage(allOf(containsString("BAD"),
+				containsString("USERNAME"), containsString("OR"),
+				containsString("PASSWORD")));
 		LinkManager
 				.getInstance()
 				.getConfigurer(
@@ -66,7 +69,9 @@ public class MqttWithAuthenticationIntegrationTest {
 	@Test
 	public void canNotConnectWithWrongPassword() {
 		exceptions.expect(RuntimeException.class);
-		exceptions.expectMessage(containsString("BAD_USERNAME_OR_PASSWORD"));
+		exceptions.expectMessage(allOf(containsString("BAD"),
+				containsString("USERNAME"), containsString("OR"),
+				containsString("PASSWORD")));
 		String wrongPassword = "wrong";
 		LinkManager
 				.getInstance()
