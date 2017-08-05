@@ -41,6 +41,7 @@ import org.ardulink.core.Tone;
 import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import org.ardulink.core.proto.api.MessageIdHolders;
+import org.ardulink.util.Strings;
 import org.ardulink.util.URIs;
 import org.fusesource.hawtbuf.Buffer;
 import org.fusesource.hawtbuf.UTF8Buffer;
@@ -222,6 +223,14 @@ public class MqttLink extends AbstractListenerLink {
 		client.setClientId(config.getClientId());
 		client.setHost(URIs.newURI("tcp://" + config.getHost() + ":"
 				+ config.getPort()));
+		String user = config.getUser();
+		if (!Strings.nullOrEmpty(user)) {
+			client.setUserName(user);
+		}
+		String password = config.getPassword();
+		if (!Strings.nullOrEmpty(password)) {
+			client.setPassword(password);
+		}
 		return client;
 
 	}

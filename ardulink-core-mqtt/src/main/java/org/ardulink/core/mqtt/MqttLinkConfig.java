@@ -53,6 +53,12 @@ public class MqttLinkConfig implements LinkConfig {
 	@NotNull
 	private String clientId = "ardulink-mqtt-link";
 
+	@Named("user")
+	private String user;
+
+	@Named("password")
+	private String password;
+
 	public String getHost() {
 		return host;
 	}
@@ -83,6 +89,22 @@ public class MqttLinkConfig implements LinkConfig {
 
 	public void setClientId(String clientId) {
 		this.clientId = checkNotNull(clientId, "clientId must not be null");
+	}
+
+	public String getUser() {
+		return this.user;
+	}
+
+	public void setUser(String user) {
+		this.user = user;
+	}
+
+	public String getPassword() {
+		return this.password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	private static String normalize(String topic) {

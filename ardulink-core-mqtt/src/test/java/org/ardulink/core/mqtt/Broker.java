@@ -16,19 +16,26 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
+import static io.moquette.BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.AUTHENTICATOR_CLASS_NAME;
+import static io.moquette.BrokerConstants.HOST_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
 import io.moquette.interception.AbstractInterceptHandler;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.messages.InterceptPublishMessage;
 import io.moquette.server.Server;
-import io.moquette.server.config.FilesystemConfig;
+import io.moquette.server.config.IConfig;
+import io.moquette.spi.security.IAuthenticator;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.ardulink.core.mqtt.duplicated.Message;
 import org.ardulink.util.Lists;
+import org.ardulink.util.Strings;
 import org.junit.rules.ExternalResource;
 
 /**
@@ -41,7 +48,21 @@ import org.junit.rules.ExternalResource;
  */
 public class Broker extends ExternalResource {
 
+	public static class EnvironmentAuthenticator implements IAuthenticator {
+
+		@Override
+		public boolean checkValid(String user, byte[] pass) {
+			String userPass = userPass();
+			String[] split = userPass.split("\\:");
+			return split.length == 2 && split[0].equals(user)
+					&& split[1].equals(new String(pass));
+		}
+
+	}
+
 	private Server mqttServer;
+	private String host = "localhost";
+	private int port = 1883;
 	private final List<InterceptHandler> listeners = Lists.newArrayList();
 	private final List<Message> messages = new CopyOnWriteArrayList<Message>();
 
@@ -72,11 +93,49 @@ public class Broker extends ExternalResource {
 	}
 
 	public void start() throws IOException {
-		if (listeners.isEmpty()) {
-			this.mqttServer.startServer();
-		} else {
-			this.mqttServer.startServer(new FilesystemConfig(), listeners);
+		final Properties properties = properties();
+		this.mqttServer.startServer(new IConfig() {
+
+			@Override
+			public void setProperty(String key, String value) {
+				properties.setProperty(key, value);
+			}
+
+			@Override
+			public String getProperty(String key) {
+				return properties.getProperty(key);
+			}
+
+			@Override
+			public String getProperty(String key, String defaultValue) {
+				String value = getProperty(key);
+				return value == null ? defaultValue : value;
+			}
+
+		}, listeners);
+	}
+
+	private Properties properties() {
+		Properties properties = new Properties();
+		properties.put(HOST_PROPERTY_NAME, host);
+		properties.put(PORT_PROPERTY_NAME, String.valueOf(port));
+		String property = userPass();
+		if (!Strings.nullOrEmpty(property)) {
+			properties.setProperty(AUTHENTICATOR_CLASS_NAME,
+					EnvironmentAuthenticator.class.getName());
+			properties.setProperty(ALLOW_ANONYMOUS_PROPERTY_NAME,
+					Boolean.FALSE.toString());
 		}
+
+		return properties;
+	}
+
+	private static String userPass() {
+		return System.getProperty(propertyName());
+	}
+
+	private static String propertyName() {
+		return Broker.class.getName();
 	}
 
 	public void stop() {
@@ -90,6 +149,21 @@ public class Broker extends ExternalResource {
 						message.getPayload().array())));
 			};
 		});
+		return this;
+	}
+
+	public Broker host(String host) {
+		this.host = host;
+		return this;
+	}
+
+	public Broker port(int port) {
+		this.port = port;
+		return this;
+	}
+
+	public Broker authentication(String authentication) {
+		System.setProperty(propertyName(), authentication);
 		return this;
 	}
 
