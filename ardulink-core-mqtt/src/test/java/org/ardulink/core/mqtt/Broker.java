@@ -65,6 +65,7 @@ public class Broker extends ExternalResource {
 	private int port = 1883;
 	private final List<InterceptHandler> listeners = Lists.newArrayList();
 	private final List<Message> messages = new CopyOnWriteArrayList<Message>();
+	private String env2restore;
 
 	private Broker() {
 		super();
@@ -135,11 +136,12 @@ public class Broker extends ExternalResource {
 	}
 
 	private static String propertyName() {
-		return Broker.class.getName();
+		return Broker.class.getName() + ".authentication";
 	}
 
 	public void stop() {
 		this.mqttServer.stopServer();
+		System.setProperty(propertyName(), this.env2restore);
 	}
 
 	public Broker recordMessages() {
@@ -163,7 +165,7 @@ public class Broker extends ExternalResource {
 	}
 
 	public Broker authentication(String authentication) {
-		System.setProperty(propertyName(), authentication);
+		this.env2restore = System.setProperty(propertyName(), authentication);
 		return this;
 	}
 
