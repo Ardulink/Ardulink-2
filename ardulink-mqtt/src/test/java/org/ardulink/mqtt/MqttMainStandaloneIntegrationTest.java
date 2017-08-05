@@ -17,12 +17,18 @@ limitations under the License.
 package org.ardulink.mqtt;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
+import java.io.IOException;
+
 import org.ardulink.core.Link;
+import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.util.AnotherMqttClient;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
 
 /**
@@ -42,6 +48,9 @@ public class MqttMainStandaloneIntegrationTest {
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
 
+	@Rule
+	public ExpectedException exceptions = ExpectedException.none();
+
 	@Test
 	public void clientCanConnectToNewlyStartedBroker() throws Exception {
 		MqttMain mqttMain = new MqttMain() {
@@ -60,6 +69,69 @@ public class MqttMainStandaloneIntegrationTest {
 			mqttMain.close();
 		}
 
+	}
+
+	@Test
+	public void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker()
+			throws Exception {
+		final String user = "someUser";
+		final String password = "secret";
+		MqttMain mqttMain = new MqttMain() {
+			@Override
+			protected Link createLink() {
+				return link;
+			}
+
+			@Override
+			protected Builder createBroker() {
+				return super.createBroker().addAuthenication(user,
+						password.getBytes());
+			}
+		};
+		mqttMain.setStandalone(true);
+		mqttMain.setBrokerTopic(topic);
+
+		mqttMain.setCredentials(user + ":" + "wrongPassword");
+
+		try {
+			exceptions.expect(IOException.class);
+			exceptions
+					.expectMessage(containsString("BAD_USERNAME_OR_PASSWORD"));
+			mqttMain.connectToMqttBroker();
+		} finally {
+			mqttMain.close();
+		}
+		fail();
+	}
+
+	@Test
+	public void clientCanConnectUsingCredentialsToNewlyStartedBroker()
+			throws Exception {
+		final String user = "someUser";
+		final String password = "secret";
+		MqttMain mqttMain = new MqttMain() {
+			@Override
+			protected Link createLink() {
+				return link;
+			}
+
+			@Override
+			protected Builder createBroker() {
+				return super.createBroker().addAuthenication(user,
+						password.getBytes());
+			}
+		};
+		mqttMain.setStandalone(true);
+		mqttMain.setBrokerTopic(topic);
+
+		mqttMain.setCredentials("someUser" + ":" + password);
+
+		try {
+			mqttMain.connectToMqttBroker();
+			AnotherMqttClient.builder().topic(topic).connect();
+		} finally {
+			mqttMain.close();
+		}
 	}
 
 }

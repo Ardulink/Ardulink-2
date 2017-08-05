@@ -22,19 +22,21 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.mqtt.AbstractMqttAdapter.CompactStrategy.AVERAGE;
 import static org.ardulink.mqtt.compactors.Tolerance.maxTolerance;
+import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 import static org.fusesource.mqtt.client.QoS.AT_MOST_ONCE;
 import io.moquette.server.Server;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager;
-import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.mqtt.AbstractMqttAdapter.CompactStrategy;
+import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.compactors.ThreadTimeSlicer;
 import org.ardulink.mqtt.compactors.TimeSlicer;
 import org.ardulink.util.URIs;
@@ -72,6 +74,9 @@ public class MqttMain {
 	@Option(name = "-clientId", usage = "This client's name")
 	private String clientId = "ardulink";
 
+	@Option(name = "-credentials", usage = "Credentials for mqtt authentication")
+	private String credentials;
+
 	@Option(name = "-publishClientInfo", usage = "When set, publish messages on connect/disconnect under this topic")
 	private String publishClientInfoTopic;
 
@@ -105,7 +110,7 @@ public class MqttMain {
 
 	private Server standaloneServer;
 
-	private class MqttClient extends AbstractMqttAdapter {
+	private class MqttClient extends AbstractMqttAdapter implements Closeable {
 
 		private static final boolean RETAINED = true;
 
@@ -116,7 +121,8 @@ public class MqttMain {
 
 		private MqttClient(Link link, Config config) {
 			super(link, config);
-			this.client = newClient(brokerHost, brokerPort, clientId);
+			this.client = newClient(brokerHost, brokerPort, clientId,
+					credentials);
 		}
 
 		public MqttClient listenToMqttAndArduino() throws IOException {
@@ -148,11 +154,19 @@ public class MqttMain {
 			return this;
 		}
 
-		private MQTT newClient(String host, int port, String clientId) {
+		private MQTT newClient(String host, int port, String clientId,
+				String credentials) {
 			MQTT client = new MQTT();
 			client.setCleanSession(true);
 			client.setClientId(clientId);
 			client.setHost(URIs.newURI("tcp://" + host + ":" + port));
+			if (credentials != null) {
+				String[] auth = credentials.split(":");
+				checkState(auth.length == 2,
+						"Credentials not in format user:password");
+				client.setUserName(auth[0]);
+				client.setPassword(auth[1]);
+			}
 			return client;
 		}
 
@@ -288,13 +302,16 @@ public class MqttMain {
 		this.link = createLink();
 		ensureBrokerTopicIsnormalized();
 		if (standalone) {
-			this.standaloneServer = MqttBroker.builder().host(this.brokerHost)
-					.port(this.brokerPort).startBroker();
+			this.standaloneServer = createBroker().startBroker();
 		}
 		Config config = Config.withTopic(this.brokerTopic);
 		this.mqttClient = new MqttClient(link,
 				this.control ? config.withControlChannelEnabled() : config)
 				.listenToMqttAndArduino();
+	}
+
+	protected Builder createBroker() {
+		return MqttBroker.builder().host(this.brokerHost).port(this.brokerPort);
 	}
 
 	public void ensureBrokerTopicIsnormalized() {
@@ -312,11 +329,16 @@ public class MqttMain {
 	}
 
 	public void close() throws IOException {
-		this.link.close();
-		this.mqttClient.close();
-		Server tmp = this.standaloneServer;
-		if (tmp != null) {
-			tmp.stopServer();
+		Closeable closeable;
+		if ((closeable = this.link) != null) {
+			closeable.close();
+		}
+		if ((closeable = mqttClient) != null) {
+			closeable.close();
+		}
+		Server tmpServer = this.standaloneServer;
+		if (tmpServer != null) {
+			tmpServer.stopServer();
 		}
 	}
 
@@ -327,6 +349,10 @@ public class MqttMain {
 
 	public void setClientId(String clientId) {
 		this.clientId = clientId;
+	}
+
+	public void setCredentials(String credentials) {
+		this.credentials = credentials;
 	}
 
 	public void setAnalogs(int... analogs) {
