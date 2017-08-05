@@ -18,14 +18,12 @@ package org.ardulink.mqtt;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 
 import org.ardulink.core.Link;
 import org.ardulink.mqtt.MqttBroker.Builder;
-import org.ardulink.mqtt.util.AnotherMqttClient;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -64,7 +62,6 @@ public class MqttMainStandaloneIntegrationTest {
 
 		try {
 			mqttMain.connectToMqttBroker();
-			AnotherMqttClient.builder().topic(topic).connect();
 		} finally {
 			mqttMain.close();
 		}
@@ -101,7 +98,6 @@ public class MqttMainStandaloneIntegrationTest {
 		} finally {
 			mqttMain.close();
 		}
-		fail();
 	}
 
 	@Test
@@ -128,9 +124,9 @@ public class MqttMainStandaloneIntegrationTest {
 
 		try {
 			mqttMain.connectToMqttBroker();
-			AnotherMqttClient.builder().topic(topic).connect();
 		} finally {
 			mqttMain.close();
+			System.clearProperty(MqttBroker.Builder.propertyName());
 		}
 	}
 
