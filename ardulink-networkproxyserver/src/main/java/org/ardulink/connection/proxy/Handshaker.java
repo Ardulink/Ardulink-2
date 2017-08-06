@@ -75,6 +75,12 @@ public abstract class Handshaker {
 				handleGetPortList();
 			} else if (CONNECT_CMD.equals(input)) {
 				try {
+					// Ardulink-1 only did support Proxy to connect to serial links. So the
+					// handshake contains serial specific attributes. We should deprecate
+					// the Proxy since MQTT supports the same (or even more) features.
+					// Otherwise: Proxy should not contain serial specific things but send
+					// the ardulink:// URI to connect to (e.g.
+					// ardulink://serial?baudrate=9600)
 					configurer.getAttribute("port").setValue(read());
 					configurer.getAttribute("baudrate").setValue(Integer.valueOf(read()));
 					Link link = newLink(configurer);
