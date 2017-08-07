@@ -5,12 +5,10 @@ import static org.ardulink.util.Iterables.getFirst;
 import java.util.List;
 
 import org.ardulink.core.linkmanager.LinkConfig;
-import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
-@I18n("message")
 public class VirtualConnectionConfig implements LinkConfig {
 
 	@Named("proto")

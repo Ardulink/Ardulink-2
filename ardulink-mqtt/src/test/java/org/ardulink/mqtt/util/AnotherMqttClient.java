@@ -16,30 +16,29 @@ limitations under the License.
  */
 package org.ardulink.mqtt.util;
 
+import static java.util.Collections.unmodifiableMap;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.util.Throwables.propagate;
-import static java.util.Collections.unmodifiableMap;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.fusesource.mqtt.client.Future;
-import org.fusesource.mqtt.client.FutureConnection;
-import org.fusesource.mqtt.client.MQTT;
-import org.fusesource.mqtt.client.Topic;
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
 import org.ardulink.util.Lists;
 import org.ardulink.util.URIs;
+import org.fusesource.mqtt.client.Future;
+import org.fusesource.mqtt.client.FutureConnection;
+import org.fusesource.mqtt.client.MQTT;
+import org.fusesource.mqtt.client.Topic;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -80,9 +79,7 @@ public class AnotherMqttClient implements Closeable {
 
 		public AnotherMqttClient connect() {
 			try {
-				AnotherMqttClient client = new AnotherMqttClient(this);
-				client.connect();
-				return client;
+				return new AnotherMqttClient(this).connect();
 			} catch (Exception e) {
 				throw propagate(e);
 			}
