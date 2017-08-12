@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.mail;
+package org.ardulink.camel.command;
 
 import org.ardulink.core.Link;
 

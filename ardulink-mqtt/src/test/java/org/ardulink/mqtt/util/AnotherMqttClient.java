@@ -55,6 +55,7 @@ public class AnotherMqttClient implements Closeable {
 		private String host = "localhost";
 		private int port = 1883;
 		private String topic;
+		private boolean controlTopic;
 		public String clientId = "anotherMqttClient";
 
 		public Builder host(String host) {
@@ -69,6 +70,11 @@ public class AnotherMqttClient implements Closeable {
 
 		public Builder topic(String topic) {
 			this.topic = topic;
+			return this;
+		}
+
+		public Builder controlTopic() {
+			this.controlTopic = true;
 			return this;
 		}
 
@@ -95,6 +101,7 @@ public class AnotherMqttClient implements Closeable {
 	private FutureConnection connection;
 	private final List<Message> messages = new CopyOnWriteArrayList<Message>();
 	private final String topic;
+	private final String controlTopic;
 
 	private static final Map<Type, String> typeMap = unmodifiableMap(typeMap());
 
@@ -108,6 +115,8 @@ public class AnotherMqttClient implements Closeable {
 	private AnotherMqttClient(Builder builder) {
 		this.topic = builder.topic.endsWith("/") ? builder.topic
 				: builder.topic + "/";
+		this.controlTopic = builder.controlTopic ? this.topic
+				+ "system/listening/" : null;
 		this.mqttClient = mqttClient(builder.host, builder.port);
 	}
 
@@ -165,7 +174,12 @@ public class AnotherMqttClient implements Closeable {
 				+ pin.pinNum() + "/value/set", String.valueOf(value)));
 	}
 
-	private void sendMessage(final Message message) throws IOException {
+	public void startListenig(Pin pin) throws IOException {
+		sendMessage(new Message(this.controlTopic + typeMap.get(pin.getType())
+				+ pin.pinNum() + "/value/set", String.valueOf(true)));
+	}
+
+	private void sendMessage(Message message) throws IOException {
 		exec(connection.publish(message.getTopic(), message.getMessage()
 				.getBytes(), AT_LEAST_ONCE, false));
 	}

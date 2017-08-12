@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.ardulink.camel;
 
 import java.util.Map;
@@ -20,6 +20,7 @@ import java.util.Map;
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.UriEndpointComponent;
 import org.apache.camel.spi.UriEndpoint;
+import org.ardulink.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -37,10 +38,22 @@ public class ArdulinkComponent extends UriEndpointComponent {
 	}
 
 	@Override
-	protected Endpoint createEndpoint(String uri, String remaining,	Map<String, Object> parameters) throws Exception {
-		ArdulinkEndpoint endpoint = new ArdulinkEndpoint(this, uri, remaining, parameters);
-		
+	protected Endpoint createEndpoint(String uri, String remaining,
+			Map<String, Object> parameters) throws Exception {
+
+		ArdulinkEndpoint.Config config = new ArdulinkEndpoint.Config();
+		config.setType(remaining);
+		config.setTypeParams(getOptional(parameters, "linkparams").orNull());
+
+		ArdulinkEndpoint endpoint = new ArdulinkEndpoint(uri, this, config);
+		setProperties(endpoint, parameters);
 		return endpoint;
+	}
+
+	private Optional<String> getOptional(Map<String, Object> parameters,
+			String key) {
+		return parameters.containsKey(key) ? Optional.of(String
+				.valueOf(parameters.remove(key))) : Optional.<String> absent();
 	}
 
 }

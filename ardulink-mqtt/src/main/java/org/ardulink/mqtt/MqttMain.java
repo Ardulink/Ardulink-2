@@ -25,7 +25,6 @@ import static org.ardulink.mqtt.compactors.Tolerance.maxTolerance;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
-import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 import static org.fusesource.mqtt.client.QoS.AT_MOST_ONCE;
 import io.moquette.server.Server;
 
@@ -217,7 +216,7 @@ public class MqttMain {
 		public void subscribe() throws IOException {
 			try {
 				connection.subscribe(new Topic[] { new Topic(brokerTopic + "#",
-						AT_LEAST_ONCE) });
+						AT_MOST_ONCE) });
 			} catch (Exception e) {
 				throw new IOException(e);
 			}
@@ -250,8 +249,8 @@ public class MqttMain {
 		private void publish(String topic, String message) throws IOException {
 			if (connection.isConnected()) {
 				try {
-					connection.publish(topic, message.getBytes(),
-							AT_LEAST_ONCE, false);
+					connection.publish(topic, message.getBytes(), AT_MOST_ONCE,
+							false);
 				} catch (Exception e) {
 					throw new IOException(e);
 				}

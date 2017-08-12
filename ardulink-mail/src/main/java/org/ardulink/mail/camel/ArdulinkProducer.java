@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.mail.camel;
 
@@ -31,11 +31,12 @@ import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultProducer;
-import org.ardulink.mail.Command;
 import org.ardulink.util.Joiner;
 import org.ardulink.util.ListMultiMap;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
+import org.ardulink.util.Strings;
+import org.ardulink.camel.command.Command;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 
@@ -54,17 +55,18 @@ public class ArdulinkProducer extends DefaultProducer {
 	public ArdulinkProducer(Endpoint endpoint, String type, String typeParams) {
 		super(endpoint);
 		try {
-			String str = "ardulink://"
+			String base = "ardulink://"
 					+ checkNotNull(type, "type must not be null");
-			if (typeParams != null && !typeParams.isEmpty()) {
-				str += "?" + typeParams;
-			}
-			this.link = Links.getLink(new URI(str));
+			this.link = Links.getLink(new URI(appendParams(base, typeParams)));
 		} catch (URISyntaxException e) {
 			throw propagate(e);
 		} catch (Exception e) {
 			throw propagate(e);
 		}
+	}
+
+	private static String appendParams(String base, String typeParams) {
+		return Strings.nullOrEmpty(typeParams) ? base : base + "?" + typeParams;
 	}
 
 	@Override

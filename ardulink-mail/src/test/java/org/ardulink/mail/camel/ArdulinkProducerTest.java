@@ -16,12 +16,12 @@ limitations under the License.
 
 package org.ardulink.mail.camel;
 
+import static org.ardulink.camel.command.Commands.switchAnalogPin;
+import static org.ardulink.camel.command.Commands.switchDigitalPin;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static java.util.Collections.singletonList;
 import static org.apache.camel.ExchangePattern.InOut;
-import static org.ardulink.mail.Commands.switchAnalogPin;
-import static org.ardulink.mail.Commands.switchDigitalPin;
 import static org.ardulink.util.Throwables.propagate;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
