@@ -1,7 +1,9 @@
 package org.ardulink.mqtt.camel;
 
+import static java.lang.Boolean.TRUE;
 import static java.lang.Boolean.parseBoolean;
 import static java.util.Collections.unmodifiableList;
+import static org.apache.camel.Exchange.ROUTE_STOP;
 import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Preconditions.checkNotNull;
@@ -164,7 +166,13 @@ final class ToSimpleProtocol implements Processor {
 				in.getHeader("topic", String.class), in.getBody(String.class));
 		if (result.isPresent()) {
 			exchange.getOut().setBody(result.get(), String.class);
+		} else {
+			cancelExchange(exchange);
 		}
+	}
+
+	private void cancelExchange(Exchange exchange) {
+		exchange.setProperty(ROUTE_STOP, TRUE);
 	}
 
 	private Optional<String> createMessage(String topic, String value) {
