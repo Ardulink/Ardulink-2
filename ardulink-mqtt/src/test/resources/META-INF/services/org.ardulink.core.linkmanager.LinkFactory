@@ -1,1 +1,2 @@
 org.ardulink.mqtt.MockLinkFactory
+org.ardulink.mqtt.DummyLinkFactory

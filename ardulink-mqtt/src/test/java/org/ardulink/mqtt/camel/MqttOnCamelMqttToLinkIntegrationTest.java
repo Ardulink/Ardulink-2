@@ -19,7 +19,6 @@ import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.mqtt.Config;
-import org.ardulink.mqtt.Config.DefaultConfig;
 import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.util.AnotherMqttClient;
 import org.ardulink.util.URIs;
@@ -28,13 +27,13 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class MqttOnCamelIntegrationTest {
+public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	private static final String mockURI = "ardulink://mock";
 
 	private Link link;
 
-	private static final String TOPIC = "some/test/topic-"
+	private static final String TOPIC = "any/topic-"
 			+ System.currentTimeMillis();
 
 	private AnotherMqttClient mqttClient;
@@ -47,8 +46,7 @@ public class MqttOnCamelIntegrationTest {
 	public void setup() throws Exception {
 		link = Links.getLink(URIs.newURI(mockURI));
 		broker = MqttBroker.builder().startBroker();
-		mqttClient = AnotherMqttClient.builder().topic(TOPIC).controlTopic()
-				.connect();
+		mqttClient = AnotherMqttClient.builder().topic(TOPIC).connect();
 	}
 
 	@After
@@ -166,8 +164,7 @@ public class MqttOnCamelIntegrationTest {
 	}
 
 	private Config config() {
-		return DefaultConfig.withTopic(TOPIC.endsWith("/") ? TOPIC
-				: TOPIC + '/');
+		return Config.withTopic(TOPIC);
 	}
 
 	private CamelContext haltCamel() throws InterruptedException, Exception {

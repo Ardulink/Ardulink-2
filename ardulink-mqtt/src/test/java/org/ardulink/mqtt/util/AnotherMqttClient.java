@@ -55,7 +55,6 @@ public class AnotherMqttClient implements Closeable {
 		private String host = "localhost";
 		private int port = 1883;
 		private String topic;
-		private boolean controlTopic;
 		public String clientId = "anotherMqttClient";
 
 		public Builder host(String host) {
@@ -70,11 +69,6 @@ public class AnotherMqttClient implements Closeable {
 
 		public Builder topic(String topic) {
 			this.topic = topic;
-			return this;
-		}
-
-		public Builder controlTopic() {
-			this.controlTopic = true;
 			return this;
 		}
 
@@ -115,8 +109,7 @@ public class AnotherMqttClient implements Closeable {
 	private AnotherMqttClient(Builder builder) {
 		this.topic = builder.topic.endsWith("/") ? builder.topic
 				: builder.topic + "/";
-		this.controlTopic = builder.controlTopic ? this.topic
-				+ "system/listening/" : null;
+		this.controlTopic = this.topic + "system/listening/";
 		this.mqttClient = mqttClient(builder.host, builder.port);
 	}
 

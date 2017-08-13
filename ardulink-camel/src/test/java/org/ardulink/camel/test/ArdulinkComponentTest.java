@@ -16,6 +16,7 @@ limitations under the License.
 package org.ardulink.camel.test;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import org.apache.camel.CamelContext;
@@ -25,8 +26,6 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.camel.ArdulinkEndpoint;
-import org.ardulink.core.Link;
-import org.ardulink.core.virtual.VirtualLink;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -47,8 +46,7 @@ public class ArdulinkComponentTest {
 	public void ardulinksVirtualLinkIsExposed() {
 		ArdulinkEndpoint endpoint = new DefaultCamelContext().getEndpoint(
 				"ardulink://virtual", ArdulinkEndpoint.class);
-		Link link = endpoint.getLink();
-		assertThat(link.getClass().getName(), is(VirtualLink.class.getName()));
+		assertThat(endpoint.getLink(), is(notNullValue()));
 	}
 
 	@Test
@@ -99,7 +97,7 @@ public class ArdulinkComponentTest {
 					@Override
 					public void process(Exchange exchange) throws Exception {
 						// TODO Auto-generated method stub
-						
+
 					}
 				}).to(OUT);
 			}

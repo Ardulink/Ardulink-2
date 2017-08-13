@@ -16,11 +16,16 @@ limitations under the License.
 
 package org.ardulink.mqtt;
 
-import static org.mockito.Mockito.mock;
+import java.io.ByteArrayOutputStream;
 
+import org.ardulink.core.Connection;
+import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
+import org.ardulink.core.StreamConnection;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -30,16 +35,20 @@ import org.ardulink.core.linkmanager.LinkFactory;
  * [adsense]
  *
  */
-public class MockLinkFactory implements LinkFactory<LinkConfig> {
+public class DummyLinkFactory implements LinkFactory<LinkConfig> {
 
 	@Override
 	public String getName() {
-		return "mock";
+		return "dummy";
 	}
 
 	@Override
 	public Link newLink(LinkConfig config) {
-		return mock(Link.class);
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		Protocol protocol = ArdulinkProtocol2.instance();
+		Connection connection = new StreamConnection(null, outputStream,
+				protocol);
+		return new ConnectionBasedLink(connection, protocol);
 	}
 
 	@Override

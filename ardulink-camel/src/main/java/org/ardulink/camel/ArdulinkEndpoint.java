@@ -1,7 +1,5 @@
 package org.ardulink.camel;
 
-import java.io.IOException;
-
 import org.apache.camel.Consumer;
 import org.apache.camel.MultipleConsumersSupport;
 import org.apache.camel.Processor;
@@ -9,10 +7,8 @@ import org.apache.camel.Producer;
 import org.apache.camel.impl.DefaultEndpoint;
 import org.ardulink.camel.command.Command;
 import org.ardulink.core.Link;
-import org.ardulink.core.linkmanager.LinkManager;
-import org.ardulink.core.messages.api.LinkMessageAdapter;
+import org.ardulink.core.convenience.Links;
 import org.ardulink.util.ListMultiMap;
-import org.ardulink.util.Throwables;
 import org.ardulink.util.URIs;
 
 public class ArdulinkEndpoint extends DefaultEndpoint implements
@@ -40,22 +36,13 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements
 
 	private Config config;
 	private final Link link;
-	private LinkMessageAdapter linkMessageAdapter;
-	
+
 	public ArdulinkEndpoint(String uri, ArdulinkComponent ardulinkComponent,
 			Config config) {
 		super(uri, ardulinkComponent);
 		this.config = config;
-		link = LinkManager.getInstance().getConfigurer(URIs.newURI(uri))
-				.newLink();
-		try {
-			linkMessageAdapter = new LinkMessageAdapter(link);
-		} catch (IOException e) {
-			throw Throwables.propagate(e);
-		}
+		this.link = Links.getLink(URIs.newURI(uri));
 	}
-
-	
 
 	@Override
 	public Producer createProducer() throws Exception {
@@ -79,10 +66,6 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements
 
 	public Link getLink() {
 		return link;
-	}
-
-	public LinkMessageAdapter getLinkMessageAdapter() {
-		return linkMessageAdapter;
 	}
 
 }
