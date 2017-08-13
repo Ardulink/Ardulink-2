@@ -85,8 +85,9 @@ public class MqttOnCamelLinkToMqttIntegrationTest {
 			public void configure() {
 				from(mockURI).transform(body().convertToString())
 						.process(new FromSimpleProtocol(config))
-						// .setHeader("publishTopicName").expression(simple("${in.header.topic}"))
-						.to(mqtt()).shutdownRunningTask(CompleteAllTasks);
+						.setHeader("CamelMQTTPublishTopic")
+						.expression(simple("${in.header.topic}")).to(mqtt())
+						.shutdownRunningTask(CompleteAllTasks);
 			}
 		});
 		context.start();

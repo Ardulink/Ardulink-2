@@ -26,7 +26,7 @@ public final class FromSimpleProtocol implements Processor {
 					body);
 			String pattern = config.getTopicPatternAnalogRead();
 			
-			in.setHeader("CamelMQTTPublishTopic", String.format(pattern, split[0].substring("A".length())));
+			in.setHeader("topic", String.format(pattern, split[0].substring("A".length())));
 			in.setBody(split[1]);
 
 			return;
