@@ -22,7 +22,6 @@ import org.ardulink.mqtt.Config;
 import org.ardulink.mqtt.Config.DefaultConfig;
 import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.util.AnotherMqttClient;
-import org.ardulink.util.Optional;
 import org.ardulink.util.URIs;
 import org.junit.After;
 import org.junit.Before;
@@ -42,8 +41,10 @@ public class MqttOnCamelIntegrationTest {
 
 	private Server broker;
 
+	private CamelContext context;
+
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
 		link = Links.getLink(URIs.newURI(mockURI));
 		broker = MqttBroker.builder().startBroker();
 		mqttClient = AnotherMqttClient.builder().topic(TOPIC).controlTopic()
@@ -60,8 +61,12 @@ public class MqttOnCamelIntegrationTest {
 	@Test
 	@Ignore
 	public void routeFailsIfBrokerIsNotRunning() throws Exception {
+		context = camelContext(config());
 		broker.stopServer();
-		createContext().stop();
+		context.stop();
+		Link mock = getMock(link);
+		verify(mock).close();
+		verifyNoMoreInteractions(mock);
 	}
 
 	@Test
@@ -86,12 +91,9 @@ public class MqttOnCamelIntegrationTest {
 
 	@Test
 	public void ignoresNegativeValues() throws Exception {
-		AnalogPin pin = analogPin(6);
-		CamelContext context = createContext();
-
-		mqttClient.switchPin(pin, -1);
-		gracefulShutdown(context);
-
+		context = camelContext(config());
+		mqttClient.switchPin(analogPin(6), -1);
+		haltCamel();
 		Link mock = getMock(link);
 		verify(mock).close();
 		verifyNoMoreInteractions(mock);
@@ -99,28 +101,44 @@ public class MqttOnCamelIntegrationTest {
 
 	@Test
 	public void canEnableAnalogListening() throws Exception {
-		AnalogPin pin = analogPin(6);
-		CamelContext context = createContext();
-
-		mqttClient.startListenig(pin);
-		gracefulShutdown(context);
-
+		context = camelContext(config().withControlChannelEnabled());
+		mqttClient.startListenig(analogPin(6));
+		haltCamel();
 		Link mock = getMock(link);
-		verify(mock).startListening(pin);
+		verify(mock).startListening(analogPin(6));
 		verify(mock).close();
 		verifyNoMoreInteractions(mock);
 	}
 
 	@Test
 	public void canEnableDigitalListening() throws Exception {
-		DigitalPin pin = digitalPin(7);
-		CamelContext context = createContext();
-
-		mqttClient.startListenig(pin);
-		gracefulShutdown(context);
-
+		context = camelContext(config().withControlChannelEnabled());
+		mqttClient.startListenig(digitalPin(7));
+		haltCamel();
 		Link mock = getMock(link);
-		verify(mock).startListening(pin);
+		verify(mock).startListening(digitalPin(7));
+		verify(mock).close();
+		verifyNoMoreInteractions(mock);
+	}
+
+	@Test
+	public void doesNotEnableAnalogListening_WhenControlChannelInsNOTenabled()
+			throws Exception {
+		context = camelContext(config());
+		mqttClient.startListenig(analogPin(6));
+		haltCamel();
+		Link mock = getMock(link);
+		verify(mock).close();
+		verifyNoMoreInteractions(mock);
+	}
+
+	@Test
+	public void doesNotEnableDigitalListening_WhenControlChannelInsNOTenabled()
+			throws Exception {
+		context = camelContext(config());
+		mqttClient.startListenig(digitalPin(7));
+		haltCamel();
+		Link mock = getMock(link);
 		verify(mock).close();
 		verifyNoMoreInteractions(mock);
 	}
@@ -128,11 +146,9 @@ public class MqttOnCamelIntegrationTest {
 	// TODO ApacheCamel Throttler, Aggregator
 
 	private void testDigital(DigitalPin pin, boolean state) throws Exception {
-		CamelContext context = createContext();
-
+		context = camelContext(config());
 		mqttClient.switchPin(pin, state);
-		gracefulShutdown(context);
-
+		haltCamel();
 		Link mock = getMock(link);
 		verify(mock).switchDigitalPin(pin, state);
 		verify(mock).close();
@@ -140,33 +156,28 @@ public class MqttOnCamelIntegrationTest {
 	}
 
 	private void testAnalog(AnalogPin pin, int value) throws Exception {
-		CamelContext context = createContext();
-
+		context = camelContext(config());
 		mqttClient.switchPin(pin, value);
-		gracefulShutdown(context);
-
+		haltCamel();
 		Link mock = getMock(link);
 		verify(mock).switchAnalogPin(pin, value);
 		verify(mock).close();
 		verifyNoMoreInteractions(mock);
 	}
 
-	public interface MessageCreator {
-		Optional<String> createMessage(String topic, String value);
+	private Config config() {
+		return DefaultConfig.withTopic(TOPIC.endsWith("/") ? TOPIC
+				: TOPIC + '/');
 	}
 
-	private CamelContext gracefulShutdown(CamelContext context)
-			throws InterruptedException, Exception {
+	private CamelContext haltCamel() throws InterruptedException, Exception {
 		TimeUnit.MILLISECONDS.sleep(500);
 		context.stop();
 		return context;
 	}
 
-	private CamelContext createContext() throws Exception {
+	private CamelContext camelContext(final Config config) throws Exception {
 		CamelContext context = new DefaultCamelContext();
-		final Config config = DefaultConfig.withTopic(
-				TOPIC.endsWith("/") ? TOPIC : TOPIC + '/')
-				.withControlChannelEnabled();
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {

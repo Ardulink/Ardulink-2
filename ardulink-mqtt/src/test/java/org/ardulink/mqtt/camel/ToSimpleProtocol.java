@@ -1,11 +1,11 @@
 package org.ardulink.mqtt.camel;
 
 import static java.lang.Boolean.parseBoolean;
+import static java.util.Collections.unmodifiableList;
 import static org.ardulink.util.Integers.tryParse;
+import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,17 +14,13 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.ardulink.mqtt.Config;
-import org.ardulink.mqtt.camel.MqttOnCamelIntegrationTest.MessageCreator;
 import org.ardulink.util.ListBuilder;
 import org.ardulink.util.Optional;
 
 final class ToSimpleProtocol implements Processor {
 
-	private List<MessageCreator> creators;
-
-	public ToSimpleProtocol(Config config) {
-		creators = Collections.unmodifiableList(new ArrayList<MessageCreator>(
-				creators(config)));
+	public interface MessageCreator {
+		Optional<String> createMessage(String topic, String value);
 	}
 
 	private static abstract class AbstractMessageCreator implements
@@ -153,6 +149,12 @@ final class ToSimpleProtocol implements Processor {
 			return (parseBoolean(message) ? "SL" : "EL") + "=D" + pin;
 		}
 
+	}
+
+	private final List<MessageCreator> creators;
+
+	public ToSimpleProtocol(Config config) {
+		this.creators = unmodifiableList(newArrayList(creators(config)));
 	}
 
 	@Override
