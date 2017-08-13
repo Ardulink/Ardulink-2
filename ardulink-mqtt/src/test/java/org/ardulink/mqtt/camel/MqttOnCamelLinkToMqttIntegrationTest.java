@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.AbstractListenerLink;
@@ -66,9 +64,8 @@ public class MqttOnCamelLinkToMqttIntegrationTest {
 
 		haltCamel();
 		List<Message> messages = mqttClient.getMessages();
-		assertThat(messages,
-				is(asList(new Message("camel/mqtt/test", "A2=42"))));
-		// TODO this is nor the right topic nor the right message
+		assertThat(messages, is(asList(new Message(TOPIC + "/A2/value/get",
+				"42"))));
 	}
 
 	private Config config() {
@@ -86,20 +83,9 @@ public class MqttOnCamelLinkToMqttIntegrationTest {
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
-				from(mockURI)
-						.transform(body().convertToString())
-						.process(new Processor() {
-
-							@Override
-							public void process(Exchange exchange)
-									throws Exception {
-								org.apache.camel.Message in = exchange.getIn();
-								System.out.println(in);
-							}
-						})
-						.setHeader("topic")
-						.expression(
-								simple("${in.header.CamelMQTTSubscribeTopic}"))
+				from(mockURI).transform(body().convertToString())
+						.process(new FromSimpleProtocol(config))
+						// .setHeader("publishTopicName").expression(simple("${in.header.topic}"))
 						.to(mqtt()).shutdownRunningTask(CompleteAllTasks);
 			}
 		});
@@ -113,9 +99,7 @@ public class MqttOnCamelLinkToMqttIntegrationTest {
 
 	private String mqtt() {
 		return "mqtt:localhost?connectAttemptsMax=1"
-				+ "&reconnectAttemptsMax=0" + "&subscribeTopicNames=" + TOPIC
-				+ "/#";
-		// publishTopicName
+				+ "&reconnectAttemptsMax=0" + "&mqttTopicPropertyName=topic";
 	}
 
 }

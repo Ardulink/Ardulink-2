@@ -2,10 +2,12 @@ package org.ardulink.camel;
 
 import java.io.IOException;
 
+import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.impl.DefaultConsumer;
+import org.apache.camel.impl.DefaultMessage;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
@@ -40,26 +42,29 @@ public class ArdulinkConsumer extends DefaultConsumer {
 
 			@Override
 			public void stateChanged(DigitalPinValueChangedEvent event) {
-				Exchange exchange = getEndpoint().createExchange();
-				Message message = exchange.getIn();
-				message.setBody("D" + event.getPin().pinNum() + "="
-						+ event.getValue());
-				process(exchange);
-
+				String body = "D" + event.getPin().pinNum() + "="
+						+ event.getValue();
+				process(exchangeWithBody(body));
 			}
 
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
+				String body = "A" + event.getPin().pinNum() + "="
+						+ event.getValue();
+				process(exchangeWithBody(body));
+			}
+
+			private Exchange exchangeWithBody(String body) {
 				Exchange exchange = getEndpoint().createExchange();
-				Message message = exchange.getIn();
-				message.setBody("A" + event.getPin().pinNum() + "="
-						+ event.getValue());
-				process(exchange);
+				Message message = new DefaultMessage();
+				message.setBody(body);
+				exchange.setIn(message);
+				return exchange;
 			}
 
 			private void process(Exchange exchange) {
 				try {
-					getProcessor().process(exchange);
+					getAsyncProcessor().process(exchange);
 				} catch (Exception ex) {
 					ex.printStackTrace();
 					getExceptionHandler().handleException(
