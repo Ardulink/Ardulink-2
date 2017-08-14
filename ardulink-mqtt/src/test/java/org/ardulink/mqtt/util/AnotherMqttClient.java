@@ -21,7 +21,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.util.Throwables.propagate;
-import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -31,14 +30,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
 import org.ardulink.util.Lists;
-import org.ardulink.util.URIs;
-import org.fusesource.mqtt.client.Future;
-import org.fusesource.mqtt.client.FutureConnection;
-import org.fusesource.mqtt.client.MQTT;
-import org.fusesource.mqtt.client.Topic;
+import org.ardulink.util.Throwables;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -91,15 +92,15 @@ public class AnotherMqttClient implements Closeable {
 		return new Builder();
 	}
 
-	@Deprecated
-	private final MQTT mqttClient;
+	private final ProducerTemplate producerTemplate;
 
-	private FutureConnection connection;
 	private final List<Message> messages = new CopyOnWriteArrayList<Message>();
 	private final String topic;
 	private final String controlTopic;
 
 	private static final Map<Type, String> typeMap = unmodifiableMap(typeMap());
+
+	private CamelContext context;
 
 	private static Map<Type, String> typeMap() {
 		Map<Type, String> typeMap = new HashMap<Type, String>();
@@ -112,41 +113,48 @@ public class AnotherMqttClient implements Closeable {
 		this.topic = builder.topic.endsWith("/") ? builder.topic
 				: builder.topic + "/";
 		this.controlTopic = this.topic + "system/listening/";
-		this.mqttClient = mqttClient(builder.host, builder.port);
+		this.context = camelRoute(builder.host, builder.port);
+		this.producerTemplate = context.createProducerTemplate();
 	}
 
-	protected static MQTT mqttClient(String host, int port) {
-		MQTT client = new MQTT();
-		client.setCleanSession(true);
-		client.setClientId("amc-" + Thread.currentThread().getId() + "-"
-				+ System.currentTimeMillis());
-		client.setHost(URIs.newURI("tcp://" + host + ":" + port));
-		return client;
+	private CamelContext camelRoute(final String host, final int port) {
+		try {
+			CamelContext context = new DefaultCamelContext();
+			context.addRoutes(new RouteBuilder() {
+				@Override
+				public void configure() {
+					String mqtt = "mqtt://" + host + ":" + port;
+					from("direct:start").to(mqtt);
+					from(mqtt + "?subscribeTopicNames=#").process(
+							addTo(messages));
+				}
+			});
+			return context;
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+
 	}
 
 	public AnotherMqttClient connect() throws IOException {
-		connection = mqttClient.futureConnection();
-		exec(connection.connect());
-		new Thread() {
-			@Override
-			public void run() {
-				while (true) {
-					try {
-						org.fusesource.mqtt.client.Message message = exec(connection
-								.receive());
-						messages.add(new Message(message.getTopic(),
-								new String(message.getPayload())));
-						message.ack();
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-		}.start();
-		exec(connection
-				.subscribe(new Topic[] { new Topic("#", AT_LEAST_ONCE) }));
+		try {
+			context.start();
+		} catch (Exception e) {
+			throw Throwables.propagate(e);
+		}
 		return this;
+	}
+
+	private Processor addTo(final List<Message> addTo) {
+		return new Processor() {
+			@Override
+			public void process(Exchange exchange) throws Exception {
+				org.apache.camel.Message in = exchange.getIn();
+				addTo.add(new Message(String.valueOf(in
+						.getHeader("CamelMQTTSubscribeTopic")), in
+						.getBody(String.class)));
+			}
+		};
 	}
 
 	public List<Message> getMessages() {
@@ -183,23 +191,17 @@ public class AnotherMqttClient implements Closeable {
 	}
 
 	private void sendMessage(Message message) throws IOException {
-		exec(connection.publish(message.getTopic(), message.getMessage()
-				.getBytes(), AT_LEAST_ONCE, false));
+		producerTemplate.sendBodyAndHeader("direct:start",
+				message.getMessage(), "CamelMQTTPublishTopic",
+				message.getTopic());
 	}
 
 	@Override
 	public void close() throws IOException {
-		if (this.connection.isConnected()) {
-			exec(connection.unsubscribe(new String[] { new String("#") }));
-			exec(this.connection.disconnect());
-		}
-	}
-
-	private static <T> T exec(Future<T> future) throws IOException {
 		try {
-			return future.await();
+			this.context.stop();
 		} catch (Exception e) {
-			throw new IOException();
+			throw propagate(e);
 		}
 	}
 
