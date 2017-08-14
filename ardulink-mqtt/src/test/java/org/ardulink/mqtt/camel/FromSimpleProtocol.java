@@ -32,14 +32,19 @@ public final class FromSimpleProtocol implements Processor {
 
 		for (Entry<String, String> entry : types.entrySet()) {
 			String type = entry.getKey();
-			if (body.substring(0, 1).equals(type)) {
-				setHeaderAndTopic(type, in, entry.getValue());
+			if (bodyHasType(body, type)) {
+				String pattern = entry.getValue();
+				setHeaderAndTopic(type, in, pattern);
 				return;
 			}
 		}
 
 		throw new IllegalStateException("Cannot handle " + body);
 
+	}
+
+	private boolean bodyHasType(String body, String type) {
+		return body.substring(0, 1).equals(type);
 	}
 
 	private void setHeaderAndTopic(String prefix, Message in, String pattern) {
