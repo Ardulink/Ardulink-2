@@ -16,6 +16,12 @@ limitations under the License.
 
 package org.ardulink.camel;
 
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.Type.ANALOG;
+import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.messages.api.FromDeviceChangeListeningState.Mode.START;
+import static org.ardulink.core.messages.api.FromDeviceChangeListeningState.Mode.STOP;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Throwables.propagate;
 
@@ -23,10 +29,14 @@ import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultProducer;
-import org.ardulink.camel.command.Command;
 import org.ardulink.core.Link;
+import org.ardulink.core.Pin;
 import org.ardulink.core.convenience.Links;
-import org.ardulink.util.Optional;
+import org.ardulink.core.messages.api.FromDeviceChangeListeningState;
+import org.ardulink.core.messages.api.FromDeviceMessage;
+import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.Strings;
 import org.ardulink.util.URIs;
 
@@ -41,6 +51,11 @@ import org.ardulink.util.URIs;
 public class ArdulinkProducer extends DefaultProducer {
 
 	private final Link link;
+	/**
+	 * This is NOT the protocol of the link but the expected payload of camel's
+	 * {@link Message}.
+	 */
+	private final Protocol protocol = ArdulinkProtocol2.instance();
 
 	public ArdulinkProducer(Endpoint endpoint, String type, String typeParams) {
 		super(endpoint);
@@ -60,38 +75,33 @@ public class ArdulinkProducer extends DefaultProducer {
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		Optional<String> out = process(exchange.getIn());
-		if (out.isPresent()) {
-			getMessageTarget(exchange).setBody(out.get(), String.class);
+		byte[] bytes = exchange.getIn().getBody(byte[].class);
+		FromDeviceMessage fromDevice = protocol.fromDevice(bytes);
+		if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
+			FromDeviceMessagePinStateChanged pse = (FromDeviceMessagePinStateChanged) fromDevice;
+			Pin pin = pse.getPin();
+			if (pin.is(ANALOG)) {
+				link.switchAnalogPin(analogPin(pin.pinNum()),
+						Integer.parseInt(String.valueOf(pse.getValue())));
+			} else if (pin.is(DIGITAL)) {
+				link.switchDigitalPin(digitalPin(pin.pinNum()),
+						Boolean.parseBoolean(String.valueOf(pse.getValue())));
+			}
+		} else if (fromDevice instanceof FromDeviceChangeListeningState) {
+			FromDeviceChangeListeningState changeListening = (FromDeviceChangeListeningState) fromDevice;
+			Pin pin = changeListening.getPin();
+			if (changeListening.getMode() == START) {
+				link.startListening(pin);
+			} else if (changeListening.getMode() == STOP) {
+				link.stopListening(pin);
+			}
 		}
-	}
-
-	private Message getMessageTarget(Exchange exchange) {
-		Message in = exchange.getIn();
-		if (exchange.getPattern().isOutCapable()) {
-			Message out = exchange.getOut();
-			out.setHeaders(in.getHeaders());
-			out.setAttachments(in.getAttachments());
-			return out;
-		}
-		return in;
 	}
 
 	@Override
 	public void stop() throws Exception {
 		this.link.close();
 		super.stop();
-	}
-
-	// --------------------------------------------------------------------------------------------------------
-
-	private Optional<String> process(Message message) throws Exception {
-		Command command = message.getBody(Command.class);
-		// TODO PF checkState or if-branch?
-		if (command != null) {
-			command.execute(link);
-		}
-		return Optional.absent();
 	}
 
 }

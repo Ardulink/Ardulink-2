@@ -91,7 +91,9 @@ public class AnotherMqttClient implements Closeable {
 		return new Builder();
 	}
 
+	@Deprecated
 	private final MQTT mqttClient;
+
 	private FutureConnection connection;
 	private final List<Message> messages = new CopyOnWriteArrayList<Message>();
 	private final String topic;
@@ -168,8 +170,16 @@ public class AnotherMqttClient implements Closeable {
 	}
 
 	public void startListenig(Pin pin) throws IOException {
+		startStopListening(pin, true);
+	}
+
+	public void stopListenig(Pin pin) throws IOException {
+		startStopListening(pin, false);
+	}
+
+	private void startStopListening(Pin pin, boolean state) throws IOException {
 		sendMessage(new Message(this.controlTopic + typeMap.get(pin.getType())
-				+ pin.pinNum() + "/value/set", String.valueOf(true)));
+				+ pin.pinNum() + "/value/set", String.valueOf(state)));
 	}
 
 	private void sendMessage(Message message) throws IOException {

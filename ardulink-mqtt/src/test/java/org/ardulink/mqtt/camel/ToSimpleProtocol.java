@@ -4,6 +4,12 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.Boolean.parseBoolean;
 import static java.util.Collections.unmodifiableList;
 import static org.apache.camel.Exchange.ROUTE_STOP;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Preconditions.checkNotNull;
@@ -15,11 +21,12 @@ import java.util.regex.Pattern;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.ardulink.core.proto.impl.ALProtoBuilder;
 import org.ardulink.mqtt.Config;
 import org.ardulink.util.ListBuilder;
 import org.ardulink.util.Optional;
 
-final class ToSimpleProtocol implements Processor {
+public final class ToSimpleProtocol implements Processor {
 
 	public interface MessageCreator {
 		Optional<String> createMessage(String topic, String value);
@@ -61,7 +68,8 @@ final class ToSimpleProtocol implements Processor {
 
 		@Override
 		protected String createMessage(int pin, String value) {
-			return "D" + pin + "=" + value;
+			return ALProtoBuilder.alpProtocolMessage(DIGITAL_PIN_READ)
+					.forPin(pin).withState(Boolean.parseBoolean(value));
 		}
 
 	}
@@ -79,7 +87,8 @@ final class ToSimpleProtocol implements Processor {
 		protected String createMessage(int pin, String value) {
 			int intensity = checkNotNull(tryParse(value),
 					"%s not a valid int value", value).intValue();
-			return "A" + pin + "=" + intensity;
+			return ALProtoBuilder.alpProtocolMessage(ANALOG_PIN_READ)
+					.forPin(pin).withValue(intensity);
 		}
 
 	}
@@ -114,7 +123,10 @@ final class ToSimpleProtocol implements Processor {
 
 		@Override
 		protected String createMessage(int pin, String message) {
-			return (parseBoolean(message) ? "SL" : "EL") + "=A" + pin;
+			ALProtoBuilder builder = parseBoolean(message) ? ALProtoBuilder
+					.alpProtocolMessage(START_LISTENING_ANALOG)
+					: ALProtoBuilder.alpProtocolMessage(STOP_LISTENING_ANALOG);
+			return builder.forPin(pin).withoutValue();
 		}
 	}
 
@@ -148,7 +160,10 @@ final class ToSimpleProtocol implements Processor {
 
 		@Override
 		protected String createMessage(int pin, String message) {
-			return (parseBoolean(message) ? "SL" : "EL") + "=D" + pin;
+			ALProtoBuilder builder = parseBoolean(message) ? ALProtoBuilder
+					.alpProtocolMessage(START_LISTENING_DIGITAL)
+					: ALProtoBuilder.alpProtocolMessage(STOP_LISTENING_DIGITAL);
+			return builder.forPin(pin).withoutValue();
 		}
 
 	}

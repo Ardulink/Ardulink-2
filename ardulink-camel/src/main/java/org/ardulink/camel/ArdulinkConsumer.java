@@ -1,8 +1,10 @@
 package org.ardulink.camel;
 
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+
 import java.io.IOException;
 
-import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -11,6 +13,7 @@ import org.apache.camel.impl.DefaultMessage;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
+import org.ardulink.core.proto.impl.ALProtoBuilder;
 
 public class ArdulinkConsumer extends DefaultConsumer {
 
@@ -42,15 +45,19 @@ public class ArdulinkConsumer extends DefaultConsumer {
 
 			@Override
 			public void stateChanged(DigitalPinValueChangedEvent event) {
-				String body = "D" + event.getPin().pinNum() + "="
-						+ event.getValue();
+				String body = ALProtoBuilder
+						.alpProtocolMessage(DIGITAL_PIN_READ)
+						.forPin(event.getPin().pinNum())
+						.withState(event.getValue().booleanValue());
 				process(exchangeWithBody(body));
 			}
 
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
-				String body = "A" + event.getPin().pinNum() + "="
-						+ event.getValue();
+				String body = ALProtoBuilder
+						.alpProtocolMessage(ANALOG_PIN_READ)
+						.forPin(event.getPin().pinNum())
+						.withValue(event.getValue().intValue());
 				process(exchangeWithBody(body));
 			}
 

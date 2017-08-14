@@ -5,10 +5,8 @@ import org.apache.camel.MultipleConsumersSupport;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.impl.DefaultEndpoint;
-import org.ardulink.camel.command.Command;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
-import org.ardulink.util.ListMultiMap;
 import org.ardulink.util.URIs;
 
 public class ArdulinkEndpoint extends DefaultEndpoint implements
@@ -18,14 +16,9 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements
 
 		private String type;
 		private String typeParams;
-		private ListMultiMap<String, Command> commands = new ListMultiMap<String, Command>();
 
 		public void setType(String type) {
 			this.type = type;
-		}
-
-		public void addCommand(String name, Command command) {
-			this.commands.put(name, command);
 		}
 
 		public void setTypeParams(String typeParams) {

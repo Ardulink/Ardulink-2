@@ -22,7 +22,6 @@ import static org.ardulink.core.Pin.digitalPin;
 import java.net.URISyntaxException;
 
 import org.ardulink.core.Link;
-import org.ardulink.core.Pin;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -32,19 +31,23 @@ import org.ardulink.core.Pin;
  * [adsense]
  *
  */
+@Deprecated
 public class Commands {
 
+	@Deprecated
 	private static class SwitchAnalogPinCommand implements Command {
 
 		private final int pin;
 		private final int value;
 
+		@Deprecated
 		public SwitchAnalogPinCommand(int pin, int value) {
 			this.pin = pin;
 			this.value = value;
 		}
 
 		@Override
+		@Deprecated
 		public void execute(Link link) throws URISyntaxException, Exception {
 			link.switchAnalogPin(analogPin(pin), value);
 		}
@@ -57,17 +60,20 @@ public class Commands {
 
 	}
 
+	@Deprecated
 	private static class SwitchDigitalPinCommand implements Command {
 
 		private final int pin;
 		private final boolean value;
 
+		@Deprecated
 		public SwitchDigitalPinCommand(int pin, boolean value) {
 			this.pin = pin;
 			this.value = value;
 		}
 
 		@Override
+		@Deprecated
 		public void execute(Link link) throws URISyntaxException, Exception {
 			link.switchDigitalPin(digitalPin(pin), value);
 		}
@@ -80,44 +86,12 @@ public class Commands {
 
 	}
 
-	private static class StartListeningPinCommand implements Command {
-
-		private final Pin pin;
-
-		public StartListeningPinCommand(Pin pin) {
-			this.pin = pin;
-		}
-
-		@Override
-		public void execute(Link link) throws URISyntaxException, Exception {
-			link.startListening(this.pin);
-		}
-
-		@Override
-		public String toString() {
-			return "StartListeningPinCommand [pin=" + pin + "]";
-		}
-
-	}
-
 	public static Command switchAnalogPin(int pin, int value) {
 		return new SwitchAnalogPinCommand(pin, value);
 	}
 
 	public static Command switchDigitalPin(int pin, boolean value) {
 		return new SwitchDigitalPinCommand(pin, value);
-	}
-
-	public static Command startListeningAnalogPin(int pin) {
-		return startListeningPin(analogPin(pin));
-	}
-
-	public static Command startListeningDigitalPin(int pin) {
-		return startListeningPin(digitalPin(pin));
-	}
-
-	public static Command startListeningPin(Pin pin) {
-		return new StartListeningPinCommand(pin);
 	}
 
 }
