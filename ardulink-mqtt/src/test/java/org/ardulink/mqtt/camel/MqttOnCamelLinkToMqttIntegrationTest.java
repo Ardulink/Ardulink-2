@@ -3,6 +3,7 @@ package org.ardulink.mqtt.camel;
 import static java.util.Arrays.asList;
 import static org.apache.camel.ShutdownRunningTask.CompleteAllTasks;
 import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import io.moquette.server.Server;
@@ -16,9 +17,11 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Link;
+import org.ardulink.core.Pin;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
+import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import org.ardulink.mqtt.Config;
 import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.util.AnotherMqttClient;
@@ -67,6 +70,20 @@ public class MqttOnCamelLinkToMqttIntegrationTest {
 		assertThat(messages, is(asList(new Message(TOPIC + "/A2/value/get",
 				"42"))));
 	}
+
+	@Test
+	public void mqttMessageIsSentOnDigitalPinChange() throws Exception {
+		context = camelContext(config());
+		getDelegate().fireStateChanged(
+				new DefaultDigitalPinValueChangedEvent(digitalPin(3), true));
+
+		haltCamel();
+		List<Message> messages = mqttClient.getMessages();
+		assertThat(messages, is(asList(new Message(TOPIC + "/D3/value/get",
+				"true"))));
+	}
+
+	// TODO ApacheCamel Throttler, Aggregator
 
 	private Config config() {
 		return Config.withTopic(TOPIC);

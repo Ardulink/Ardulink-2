@@ -141,8 +141,6 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		verifyNoMoreInteractions(mock);
 	}
 
-	// TODO ApacheCamel Throttler, Aggregator
-
 	private void testDigital(DigitalPin pin, boolean state) throws Exception {
 		context = camelContext(config());
 		mqttClient.switchPin(pin, state);
