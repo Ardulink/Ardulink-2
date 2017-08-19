@@ -194,7 +194,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 						.setHeader("topic")
 						.expression(
 								simple("${in.header.CamelMQTTSubscribeTopic}"))
-						.process(new ToSimpleProtocol(config)).to(mockURI)
+						.process(new ToArdulinkProtocol(config)).to(mockURI)
 						.shutdownRunningTask(CompleteAllTasks);
 			}
 		});

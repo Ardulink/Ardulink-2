@@ -100,7 +100,7 @@ public class MqttOnCamelLinkToMqttIntegrationTest {
 			@Override
 			public void configure() {
 				from(mockURI).transform(body().convertToString())
-						.process(new FromSimpleProtocol(config))
+						.process(new FromArdulinkProtocol(config))
 						.setHeader("CamelMQTTPublishTopic")
 						.expression(simple("${in.header.topic}")).to(mqtt())
 						.shutdownRunningTask(CompleteAllTasks);

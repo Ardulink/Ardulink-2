@@ -26,7 +26,7 @@ import org.ardulink.mqtt.Config;
 import org.ardulink.util.ListBuilder;
 import org.ardulink.util.Optional;
 
-public final class ToSimpleProtocol implements Processor {
+public final class ToArdulinkProtocol implements Processor {
 
 	public interface MessageCreator {
 		Optional<String> createMessage(String topic, String value);
@@ -170,7 +170,7 @@ public final class ToSimpleProtocol implements Processor {
 
 	private final List<MessageCreator> creators;
 
-	public ToSimpleProtocol(Config config) {
+	public ToArdulinkProtocol(Config config) {
 		this.creators = unmodifiableList(newArrayList(creators(config)));
 	}
 

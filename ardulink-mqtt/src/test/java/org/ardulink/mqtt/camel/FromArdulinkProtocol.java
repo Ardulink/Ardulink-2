@@ -17,12 +17,12 @@ import org.ardulink.mqtt.Config;
  * Translates from protocol into the topic using the patterns from
  * {@link Config}.
  */
-public final class FromSimpleProtocol implements Processor {
+public final class FromArdulinkProtocol implements Processor {
 
 	private final Protocol protocol = ArdulinkProtocol2.instance();
 	private final Config config;
 
-	public FromSimpleProtocol(Config config) {
+	public FromArdulinkProtocol(Config config) {
 		this.config = config;
 	}
 
