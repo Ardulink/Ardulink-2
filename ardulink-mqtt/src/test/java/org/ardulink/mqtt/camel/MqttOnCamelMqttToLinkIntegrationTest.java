@@ -210,7 +210,6 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		return "mqtt:localhost?connectAttemptsMax=1"
 				+ "&reconnectAttemptsMax=0" + "&subscribeTopicNames=" + TOPIC
 				+ "/#";
-		// publishTopicName
 	}
 
 }

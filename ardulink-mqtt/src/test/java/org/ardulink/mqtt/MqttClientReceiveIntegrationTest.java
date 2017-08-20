@@ -20,15 +20,17 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.mqtt.util.TestUtil.startAsync;
-import static org.mockito.Mockito.mock;
+import static org.ardulink.util.URIs.newURI;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import io.moquette.server.Server;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.Link;
-import org.ardulink.core.Pin;
+import org.ardulink.core.convenience.LinkDelegate;
+import org.ardulink.core.convenience.Links;
 import org.ardulink.mqtt.util.AnotherMqttClient;
 import org.junit.After;
 import org.junit.Rule;
@@ -46,23 +48,22 @@ import org.junit.rules.Timeout;
 public class MqttClientReceiveIntegrationTest {
 
 	@Rule
-	public Timeout timeout = new Timeout(5, SECONDS);
+	public Timeout timeout = new Timeout(10, SECONDS);
 
 	private static final String TOPIC = "foo/bar";
 
-	private final Link link = mock(Link.class);
+	private final Link link = Links.getLink(newURI("ardulink://mock"));
 
-	private MqttMain client = new MqttMain() {
+	private MqttMain mqttMain = new MqttMain() {
 		{
 			setBrokerTopic(TOPIC);
 			setClientId("lnk-" + Thread.currentThread().getId() + "-"
 					+ System.currentTimeMillis());
 		}
 
-		@Override
 		protected Link createLink() {
 			return link;
-		}
+		};
 	};
 
 	private final Server broker = MqttBroker.builder().startBroker();
@@ -72,7 +73,8 @@ public class MqttClientReceiveIntegrationTest {
 
 	@After
 	public void tearDown() throws InterruptedException, IOException {
-		client.close();
+		TimeUnit.MILLISECONDS.sleep(250);
+		mqttMain.close();
 		amc.close();
 		broker.stopServer();
 	}
@@ -83,15 +85,20 @@ public class MqttClientReceiveIntegrationTest {
 		int pin = 1;
 		boolean value = true;
 
-		doNotListenForAnything(client);
-		startAsync(client);
+		doNotListenForAnything(mqttMain);
+		startAsync(mqttMain);
 		amc.switchPin(digitalPin(pin), true);
 
 		tearDown();
 
-		verify(link).switchDigitalPin(digitalPin(pin), value);
-		verify(link).close();
-		verifyNoMoreInteractions(link);
+		Link mock = getMock(link);
+		verify(mock).switchDigitalPin(digitalPin(pin), value);
+		verify(mock).close();
+		verifyNoMoreInteractions(mock);
+	}
+
+	private Link getMock(Link link) {
+		return ((LinkDelegate) link).getDelegate();
 	}
 
 	@Test
@@ -100,15 +107,16 @@ public class MqttClientReceiveIntegrationTest {
 		int pin = 1;
 		int value = 123;
 
-		doNotListenForAnything(client);
-		startAsync(client);
+		doNotListenForAnything(mqttMain);
+		startAsync(mqttMain);
 		amc.switchPin(analogPin(pin), value);
 
 		tearDown();
 
-		verify(link).switchAnalogPin(Pin.analogPin(pin), value);
-		verify(link).close();
-		verifyNoMoreInteractions(link);
+		Link mock = getMock(link);
+		verify(mock).switchAnalogPin(analogPin(pin), value);
+		verify(mock).close();
+		verifyNoMoreInteractions(mock);
 	}
 
 	private static void doNotListenForAnything(MqttMain client) {

@@ -82,8 +82,6 @@ public class MqttOnCamelLinkToMqttIntegrationTest {
 				"true"))));
 	}
 
-	// TODO ApacheCamel Throttler, Aggregator
-
 	private Config config() {
 		return Config.withTopic(TOPIC);
 	}

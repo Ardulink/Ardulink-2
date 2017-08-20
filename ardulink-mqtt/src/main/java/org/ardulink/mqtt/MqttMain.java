@@ -16,32 +16,27 @@ limitations under the License.
  */
 package org.ardulink.mqtt;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.ardulink.mqtt.AbstractMqttAdapter.CompactStrategy.AVERAGE;
-import static org.ardulink.mqtt.compactors.Tolerance.maxTolerance;
+import static org.apache.camel.ShutdownRunningTask.CompleteAllTasks;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
-import static org.ardulink.util.Throwables.propagate;
-import static org.fusesource.mqtt.client.QoS.AT_MOST_ONCE;
 import io.moquette.server.Server;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.camel.CamelContext;
+import org.apache.camel.Route;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.mqtt.AbstractMqttAdapter.CompactStrategy;
 import org.ardulink.mqtt.MqttBroker.Builder;
-import org.ardulink.mqtt.compactors.ThreadTimeSlicer;
-import org.ardulink.mqtt.compactors.TimeSlicer;
+import org.ardulink.mqtt.camel.FromArdulinkProtocol;
+import org.ardulink.mqtt.camel.ToArdulinkProtocol;
 import org.ardulink.util.URIs;
-import org.fusesource.mqtt.client.BlockingConnection;
-import org.fusesource.mqtt.client.MQTT;
-import org.fusesource.mqtt.client.Topic;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -58,6 +53,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MqttMain {
 
+	// TODO PF re-add logging
 	private static final Logger logger = LoggerFactory
 			.getLogger(MqttMain.class);
 
@@ -76,8 +72,10 @@ public class MqttMain {
 	@Option(name = "-credentials", usage = "Credentials for mqtt authentication")
 	private String credentials;
 
-	@Option(name = "-publishClientInfo", usage = "When set, publish messages on connect/disconnect under this topic")
-	private String publishClientInfoTopic;
+	// TODO PF re-add
+	// @Option(name = "-publishClientInfo", usage =
+	// "When set, publish messages on connect/disconnect under this topic")
+	// private String publishClientInfoTopic;
 
 	@Option(name = "-d", aliases = "--digital", usage = "Digital pins to listen to")
 	private int[] digitals = new int[0];
@@ -91,8 +89,10 @@ public class MqttMain {
 	@Option(name = "-athms", aliases = "--throttle", usage = "Analog throttle, do not publish multiple events within <throttleMillis>")
 	private int throttleMillis = (int) SECONDS.toMillis(10);
 
-	@Option(name = "-athstr", aliases = "--strategy", usage = "Analog throttle strategy")
-	private CompactStrategy compactStrategy = AVERAGE;
+	// TODO PF reenable using camel's Throttler, Aggregator
+	// @Option(name = "-athstr", aliases = "--strategy", usage =
+	// "Analog throttle strategy")
+	// private CompactStrategy compactStrategy = AVERAGE;
 
 	@Option(name = "-connection", usage = "Connection URI to the arduino")
 	private String connString = "ardulink://serial";
@@ -103,175 +103,68 @@ public class MqttMain {
 	@Option(name = "-standalone", usage = "Start a mqtt server on this host")
 	private boolean standalone;
 
-	private MqttClient mqttClient;
+	// private MqttClient mqttClient;
 
 	private Link link;
 
 	private Server standaloneServer;
 
-	private class MqttClient extends AbstractMqttAdapter implements Closeable {
+	private CamelContext context;
 
-		private static final boolean RETAINED = true;
+	private CamelContext createCamelContext(final Config config)
+			throws Exception {
+		return addRoutes(config, new DefaultCamelContext());
+	}
 
-		private final MQTT client;
-		private BlockingConnection connection;
+	private CamelContext addRoutes(final Config config, CamelContext context)
+			throws Exception {
+		context.addRoutes(new RouteBuilder() {
+			@Override
+			public void configure() {
+				// TODO PF place here the right link!
+				String ardulink = "ardulink://mock";
 
-		private boolean subscribeDone;
-
-		private MqttClient(Link link, Config config) {
-			super(link, config);
-			this.client = newClient(brokerHost, brokerPort, clientId,
-					credentials);
-		}
-
-		public MqttClient listenToMqttAndArduino() throws IOException {
-			return listenToMqtt().listenToArduino();
-		}
-
-		private MqttClient listenToMqtt() throws IOException {
-			connect();
-			subscribe();
-			return this;
-		}
-
-		private MqttClient listenToArduino() throws IOException {
-			TimeSlicer timeSlicer = null;
-			if (throttleMillis > 0) {
-				timeSlicer = new ThreadTimeSlicer(throttleMillis, MILLISECONDS);
+				String propertyForTopic = "topic";
+				String mqtt = appendClientId(appendAuth("mqtt://" + brokerHost
+						+ ":" + brokerPort + "?"));
+				mqtt += "subscribeTopicNames=" + config.getTopic() + "#"
+						+ "&mqttTopicPropertyName=" + propertyForTopic;
+//				from(ardulink)
+//						.transform(body().convertToString())
+//						.process(new FromArdulinkProtocol(config))
+//						.setHeader("CamelMQTTPublishTopic")
+//						.expression(simple("${in.header.topic}"))
+//						.to(mqtt)
+						//
+						from(mqtt)
+						.transform(body().convertToString())
+						.setHeader(propertyForTopic)
+						.expression(
+								simple("${in.header.CamelMQTTSubscribeTopic}"))
+						.process(new ToArdulinkProtocol(config))
+						.to(ardulink)
+						.shutdownRunningTask(CompleteAllTasks);
 			}
-			for (int analogPin : analogs) {
-				AnalogReadChangeListenerConfigurer cfg = configureAnalogReadChangeListener(
-						analogPin).tolerance(maxTolerance(tolerance));
-				cfg = timeSlicer == null ? cfg : cfg.compact(compactStrategy,
-						timeSlicer);
-				cfg.add();
+
+			private String appendClientId(String brokerUri) {
+				if (nullOrEmpty(clientId)) {
+					return brokerUri;
+				}
+				return brokerUri + "clientId=" + clientId + "&";
 			}
 
-			for (int digitalPin : digitals) {
-				enableDigitalPinChangeEvents(digitalPin);
-			}
-			return this;
-		}
-
-		private MQTT newClient(String host, int port, String clientId,
-				String credentials) {
-			MQTT client = new MQTT();
-			client.setCleanSession(true);
-			client.setClientId(clientId);
-			client.setHost(URIs.newURI("tcp://" + host + ":" + port));
-			if (credentials != null) {
+			private String appendAuth(String brokerUri) {
+				if (nullOrEmpty(credentials)) {
+					return brokerUri;
+				}
 				String[] auth = credentials.split(":");
 				checkState(auth.length == 2,
 						"Credentials not in format user:password");
-				client.setUserName(auth[0]);
-				client.setPassword(auth[1]);
+				return "userName=" + auth[0] + "&password=" + auth[1] + "&";
 			}
-			return client;
-		}
 
-		@Override
-		public void fromArduino(String topic, String message) {
-			logger.info("Publishing arduino state change {} {}", topic, message);
-			try {
-				publish(topic, message);
-			} catch (IOException e) {
-				throw propagate(e);
-			}
-		}
-
-		private void connect() throws IOException {
-			mqttConnectOptions();
-			connection = client.blockingConnection();
-			try {
-				connection.connect();
-			} catch (Exception e) {
-				throw new IOException(e);
-			}
-			new Thread() {
-				@Override
-				public void run() {
-					while (true) {
-						try {
-							org.fusesource.mqtt.client.Message message = connection
-									.receive();
-							String payload = new String(message.getPayload());
-							String topic = message.getTopic();
-							logger.debug(
-									"Received mqtt message, sending to arduino {} {}",
-									topic, payload);
-							MqttClient.this.toArduino(topic, payload);
-							message.ack();
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}
-			}.start();
-
-			logger.info("Connected to mqtt broker");
-			publishClientStatus(TRUE);
-		}
-
-		public void subscribe() throws IOException {
-			try {
-				connection.subscribe(new Topic[] { new Topic(brokerTopic + "#",
-						AT_MOST_ONCE) });
-			} catch (Exception e) {
-				throw new IOException(e);
-			}
-			this.subscribeDone = true;
-		}
-
-		public void close() throws IOException {
-			if (this.connection.isConnected()) {
-				try {
-					connection.unsubscribe(new String[] { new String(
-							brokerTopic + "#") });
-					publishClientStatus(FALSE);
-					this.connection.disconnect();
-					this.subscribeDone = false;
-				} catch (Exception e) {
-					throw new IOException(e);
-				}
-			}
-		}
-
-		private void mqttConnectOptions() {
-			String clientInfoTopic = publishClientInfoTopic;
-			if (!nullOrEmpty(clientInfoTopic)) {
-				client.setWillTopic(clientInfoTopic);
-				client.setWillMessage(FALSE.toString());
-				client.setWillRetain(RETAINED);
-			}
-		}
-
-		private void publish(String topic, String message) throws IOException {
-			if (connection.isConnected()) {
-				try {
-					connection.publish(topic, message.getBytes(), AT_MOST_ONCE,
-							false);
-				} catch (Exception e) {
-					throw new IOException(e);
-				}
-			}
-		}
-
-		private void publishClientStatus(Boolean state) throws IOException {
-			if (!nullOrEmpty(publishClientInfoTopic)) {
-				try {
-					connection.publish(publishClientInfoTopic, state.toString()
-							.getBytes(), AT_MOST_ONCE, RETAINED);
-				} catch (Exception e) {
-					throw new IOException(e);
-				}
-			}
-		}
-
-		public boolean isConnected() {
-			return connection.isConnected() && this.subscribeDone;
-		}
-
+		});
+		return context;
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -304,9 +197,17 @@ public class MqttMain {
 			this.standaloneServer = createBroker().startBroker();
 		}
 		Config config = Config.withTopic(this.brokerTopic);
-		this.mqttClient = new MqttClient(link,
-				this.control ? config.withControlChannelEnabled() : config)
-				.listenToMqttAndArduino();
+		this.context = createCamelContext(this.control ? config
+				.withControlChannelEnabled() : config);
+		this.context.start();
+
+		// TODO must(?) be added to ardulink URL (?enabled=a1,a2,d3,d4)
+		for (int analog : analogs) {
+			// enable listener
+		}
+		for (int digital : digitals) {
+			// enable listener
+		}
 	}
 
 	protected Builder createBroker() {
@@ -324,7 +225,14 @@ public class MqttMain {
 	}
 
 	public boolean isConnected() {
-		return this.mqttClient != null && this.mqttClient.isConnected();
+		List<Route> routes = context.getRoutes();
+		for (Route route : routes) {
+			if (!context.getRouteStatus(route.getId()).isStarted()) {
+				return false;
+			}
+		}
+		return true;
+		// return context.getStatus().isStarted();
 	}
 
 	public void close() throws IOException {
@@ -332,9 +240,15 @@ public class MqttMain {
 		if ((closeable = this.link) != null) {
 			closeable.close();
 		}
-		if ((closeable = mqttClient) != null) {
-			closeable.close();
+		CamelContext tmpContext = this.context;
+		if ((tmpContext) != null) {
+			try {
+				tmpContext.stop();
+			} catch (Exception e) {
+				throw new IOException("Error stoping camel", e);
+			}
 		}
+
 		Server tmpServer = this.standaloneServer;
 		if (tmpServer != null) {
 			tmpServer.stopServer();
