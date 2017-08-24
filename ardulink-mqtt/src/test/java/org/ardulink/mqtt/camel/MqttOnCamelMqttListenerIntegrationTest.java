@@ -1,5 +1,6 @@
 package org.ardulink.mqtt.camel;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.mockito.Mockito.verify;
@@ -9,7 +10,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.ServiceStatus;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Link;
@@ -19,9 +19,14 @@ import org.ardulink.mqtt.Config;
 import org.ardulink.util.URIs;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 public class MqttOnCamelMqttListenerIntegrationTest {
+
+	@Rule
+	public Timeout timeout = new Timeout(5, SECONDS);
 
 	private static final String mockURI = "ardulink://mock";
 
@@ -42,10 +47,6 @@ public class MqttOnCamelMqttListenerIntegrationTest {
 	@Test
 	public void startListeningOnPassedPins() throws Exception {
 		context = camelContext(config());
-		ServiceStatus status = context.getStatus();
-		while (!status.isStarted()) {
-			TimeUnit.MILLISECONDS.sleep(50);
-		}
 		haltCamel();
 		Link mock = getMock(link);
 		verify(mock).startListening(digitalPin(1));
@@ -59,8 +60,7 @@ public class MqttOnCamelMqttListenerIntegrationTest {
 		return Config.withTopic("any/topic-" + System.currentTimeMillis());
 	}
 
-	private CamelContext haltCamel() throws InterruptedException, Exception {
-		TimeUnit.MILLISECONDS.sleep(500);
+	private CamelContext haltCamel() throws Exception {
 		context.stop();
 		return context;
 	}
@@ -70,14 +70,22 @@ public class MqttOnCamelMqttListenerIntegrationTest {
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
-				from(nothing()).to(mockURI + "?listenTo=d1,d2,a1");
+				from(noMatterWhat()).to(mockURI + "?listenTo=d1,d2,a1");
 			}
 
-			private String nothing() {
-				return "direct:bean";
-			}
 		});
+		return startAndBlock(context);
+	}
+
+	private String noMatterWhat() {
+		return "direct:bean";
+	}
+
+	private CamelContext startAndBlock(CamelContext context) throws Exception {
 		context.start();
+		while (!context.getStatus().isStarted()) {
+			TimeUnit.MILLISECONDS.sleep(50);
+		}
 		return context;
 	}
 
