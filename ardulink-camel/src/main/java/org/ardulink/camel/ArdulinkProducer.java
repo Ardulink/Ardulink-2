@@ -22,8 +22,8 @@ import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.messages.api.FromDeviceChangeListeningState.Mode.START;
 import static org.ardulink.core.messages.api.FromDeviceChangeListeningState.Mode.STOP;
-import static org.ardulink.util.Preconditions.checkNotNull;
-import static org.ardulink.util.Throwables.propagate;
+
+import java.io.IOException;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
@@ -31,14 +31,11 @@ import org.apache.camel.Message;
 import org.apache.camel.impl.DefaultProducer;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
-import org.ardulink.core.convenience.Links;
 import org.ardulink.core.messages.api.FromDeviceChangeListeningState;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.util.Strings;
-import org.ardulink.util.URIs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -51,26 +48,16 @@ import org.ardulink.util.URIs;
 public class ArdulinkProducer extends DefaultProducer {
 
 	private final Link link;
+
 	/**
 	 * This is NOT the protocol of the link but the expected payload of camel's
 	 * {@link Message}.
 	 */
 	private final Protocol protocol = ArdulinkProtocol2.instance();
 
-	public ArdulinkProducer(Endpoint endpoint, String type, String typeParams) {
+	public ArdulinkProducer(Endpoint endpoint, Link link) {
 		super(endpoint);
-		try {
-			String base = "ardulink://"
-					+ checkNotNull(type, "type must not be null");
-			this.link = Links.getLink(URIs
-					.newURI(appendParams(base, typeParams)));
-		} catch (Exception e) {
-			throw propagate(e);
-		}
-	}
-
-	private static String appendParams(String base, String typeParams) {
-		return Strings.nullOrEmpty(typeParams) ? base : base + "?" + typeParams;
+		this.link = link;
 	}
 
 	@Override
@@ -78,23 +65,31 @@ public class ArdulinkProducer extends DefaultProducer {
 		byte[] bytes = exchange.getIn().getBody(byte[].class);
 		FromDeviceMessage fromDevice = protocol.fromDevice(bytes);
 		if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
-			FromDeviceMessagePinStateChanged pse = (FromDeviceMessagePinStateChanged) fromDevice;
-			Pin pin = pse.getPin();
-			if (pin.is(ANALOG)) {
-				link.switchAnalogPin(analogPin(pin.pinNum()),
-						Integer.parseInt(String.valueOf(pse.getValue())));
-			} else if (pin.is(DIGITAL)) {
-				link.switchDigitalPin(digitalPin(pin.pinNum()),
-						Boolean.parseBoolean(String.valueOf(pse.getValue())));
-			}
+			handlePinStateChange((FromDeviceMessagePinStateChanged) fromDevice);
 		} else if (fromDevice instanceof FromDeviceChangeListeningState) {
-			FromDeviceChangeListeningState changeListening = (FromDeviceChangeListeningState) fromDevice;
-			Pin pin = changeListening.getPin();
-			if (changeListening.getMode() == START) {
-				link.startListening(pin);
-			} else if (changeListening.getMode() == STOP) {
-				link.stopListening(pin);
-			}
+			handleListeningStateChange((FromDeviceChangeListeningState) fromDevice);
+		}
+	}
+
+	private void handlePinStateChange(FromDeviceMessagePinStateChanged event)
+			throws IOException {
+		Pin pin = event.getPin();
+		if (pin.is(ANALOG)) {
+			link.switchAnalogPin(analogPin(pin.pinNum()),
+					Integer.parseInt(String.valueOf(event.getValue())));
+		} else if (pin.is(DIGITAL)) {
+			link.switchDigitalPin(digitalPin(pin.pinNum()),
+					Boolean.parseBoolean(String.valueOf(event.getValue())));
+		}
+	}
+
+	private void handleListeningStateChange(FromDeviceChangeListeningState event)
+			throws IOException {
+		Pin pin = event.getPin();
+		if (event.getMode() == START) {
+			link.startListening(pin);
+		} else if (event.getMode() == STOP) {
+			link.stopListening(pin);
 		}
 	}
 

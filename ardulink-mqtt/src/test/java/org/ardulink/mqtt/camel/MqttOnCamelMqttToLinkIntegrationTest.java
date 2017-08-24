@@ -63,6 +63,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		broker.stopServer();
 		context.stop();
 		Link mock = getMock(link);
+		verify(mock).close();
 		verifyNoMoreInteractions(mock);
 	}
 
@@ -93,6 +94,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		mqttClient.switchPin(analogPin(6), -1);
 		haltCamel();
 		Link mock = getMock(link);
+		verify(mock).close();
 		verifyNoMoreInteractions(mock);
 	}
 
@@ -103,6 +105,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		haltCamel();
 		Link mock = getMock(link);
 		verify(mock).startListening(analogPin(6));
+		verify(mock).close();
 		verifyNoMoreInteractions(mock);
 	}
 
@@ -113,6 +116,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		haltCamel();
 		Link mock = getMock(link);
 		verify(mock).startListening(digitalPin(7));
+		verify(mock).close();
 		verifyNoMoreInteractions(mock);
 	}
 
@@ -123,6 +127,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		haltCamel();
 		Link mock = getMock(link);
 		verify(mock).stopListening(analogPin(6));
+		verify(mock).close();
 		verifyNoMoreInteractions(mock);
 	}
 
@@ -133,6 +138,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		haltCamel();
 		Link mock = getMock(link);
 		verify(mock).stopListening(digitalPin(7));
+		verify(mock).close();
 		verifyNoMoreInteractions(mock);
 	}
 
@@ -143,6 +149,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		mqttClient.startListenig(analogPin(6));
 		haltCamel();
 		Link mock = getMock(link);
+		verify(mock).close();
 		verifyNoMoreInteractions(mock);
 	}
 
@@ -153,6 +160,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		mqttClient.startListenig(digitalPin(7));
 		haltCamel();
 		Link mock = getMock(link);
+		verify(mock).close();
 		verifyNoMoreInteractions(mock);
 	}
 
@@ -162,6 +170,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		haltCamel();
 		Link mock = getMock(link);
 		verify(mock).switchDigitalPin(pin, state);
+		verify(mock).close();
 		verifyNoMoreInteractions(mock);
 	}
 
@@ -171,6 +180,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		haltCamel();
 		Link mock = getMock(link);
 		verify(mock).switchAnalogPin(pin, value);
+		verify(mock).close();
 		verifyNoMoreInteractions(mock);
 	}
 

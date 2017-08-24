@@ -36,6 +36,8 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.camel.FromArdulinkProtocol;
 import org.ardulink.mqtt.camel.ToArdulinkProtocol;
+import org.ardulink.util.Joiner;
+import org.ardulink.util.Lists;
 import org.ardulink.util.URIs;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -122,28 +124,38 @@ public class MqttMain {
 			@Override
 			public void configure() {
 				// TODO PF place here the right link!
-				String ardulink = "ardulink://mock";
+				String ardulink = "ardulink://mock?listenTo=" + listenTo();
 
 				String propertyForTopic = "topic";
 				String mqtt = appendClientId(appendAuth("mqtt://" + brokerHost
 						+ ":" + brokerPort + "?"));
 				mqtt += "subscribeTopicNames=" + config.getTopic() + "#"
 						+ "&mqttTopicPropertyName=" + propertyForTopic;
-//				from(ardulink)
-//						.transform(body().convertToString())
-//						.process(new FromArdulinkProtocol(config))
-//						.setHeader("CamelMQTTPublishTopic")
-//						.expression(simple("${in.header.topic}"))
-//						.to(mqtt)
+				from(ardulink)
+						.transform(body().convertToString())
+						.process(new FromArdulinkProtocol(config))
+						.setHeader("CamelMQTTPublishTopic")
+						.expression(simple("${in.header.topic}"))
+						.to(mqtt)
 						//
-						from(mqtt)
+						.from(mqtt)
 						.transform(body().convertToString())
 						.setHeader(propertyForTopic)
 						.expression(
 								simple("${in.header.CamelMQTTSubscribeTopic}"))
-						.process(new ToArdulinkProtocol(config))
-						.to(ardulink)
+						.process(new ToArdulinkProtocol(config)).to(ardulink)
 						.shutdownRunningTask(CompleteAllTasks);
+			}
+
+			private String listenTo() {
+				List<String> pins = Lists.newArrayList();
+				for (int pin : analogs) {
+					pins.add("A" + pin);
+				}
+				for (int pin : digitals) {
+					pins.add("D" + pin);
+				}
+				return Joiner.on(",").join(pins);
 			}
 
 			private String appendClientId(String brokerUri) {
@@ -200,14 +212,6 @@ public class MqttMain {
 		this.context = createCamelContext(this.control ? config
 				.withControlChannelEnabled() : config);
 		this.context.start();
-
-		// TODO must(?) be added to ardulink URL (?enabled=a1,a2,d3,d4)
-		for (int analog : analogs) {
-			// enable listener
-		}
-		for (int digital : digitals) {
-			// enable listener
-		}
 	}
 
 	protected Builder createBroker() {

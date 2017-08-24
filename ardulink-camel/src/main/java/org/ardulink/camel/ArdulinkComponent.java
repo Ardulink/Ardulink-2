@@ -15,11 +15,21 @@ limitations under the License.
  */
 package org.ardulink.camel;
 
+import static java.lang.Character.toUpperCase;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.util.Integers.tryParse;
+import static org.ardulink.util.Preconditions.checkNotNull;
+
+import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.UriEndpointComponent;
 import org.apache.camel.spi.UriEndpoint;
+import org.ardulink.core.Pin;
+import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
 
 /**
@@ -44,10 +54,34 @@ public class ArdulinkComponent extends UriEndpointComponent {
 		ArdulinkEndpoint.Config config = new ArdulinkEndpoint.Config();
 		config.setType(remaining);
 		config.setTypeParams(getOptional(parameters, "linkparams").orNull());
-
+		config.setListenTo(parsePins(getOptional(parameters, "listenTo").or("")));
 		ArdulinkEndpoint endpoint = new ArdulinkEndpoint(uri, this, config);
 		setProperties(endpoint, parameters);
 		return endpoint;
+	}
+
+	private List<Pin> parsePins(String pinsString) {
+		List<Pin> pins = Lists.newArrayList();
+		for (StringTokenizer tokenizer = new StringTokenizer(pinsString, ","); tokenizer
+				.hasMoreTokens();) {
+			pins.add(toPin(tokenizer.nextToken().trim()));
+		}
+		return pins;
+	}
+
+	private static Pin toPin(String pin) {
+		if (pin.length() >= 2) {
+			char pinType = toUpperCase(pin.charAt(0));
+			String numString = pin.substring(1);
+			Integer num = checkNotNull(tryParse(numString),
+					"Cannot parse %s as int", numString);
+			if (pinType == 'A') {
+				return analogPin(num);
+			} else if (pinType == 'D') {
+				return digitalPin(num);
+			}
+		}
+		throw new IllegalStateException("Cannot parse " + pin + " as pin");
 	}
 
 	private Optional<String> getOptional(Map<String, Object> parameters,
