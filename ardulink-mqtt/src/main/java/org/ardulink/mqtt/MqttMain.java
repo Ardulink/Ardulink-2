@@ -23,6 +23,7 @@ import io.moquette.server.Server;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.camel.CamelContext;
@@ -36,7 +37,6 @@ import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.camel.FromArdulinkProtocol;
 import org.ardulink.mqtt.camel.ToArdulinkProtocol;
 import org.ardulink.util.Joiner;
-import org.ardulink.util.Lists;
 import org.ardulink.util.URIs;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -142,14 +142,16 @@ public class MqttMain {
 			}
 
 			private String listenTo() {
-				List<String> pins = Lists.newArrayList();
-				for (int pin : analogs) {
-					pins.add("A" + pin);
+				return Joiner.on(",").join(
+						add("D%s", digitals,
+								add("A%s", analogs, new ArrayList<String>())));
+			}
+
+			private List<String> add(String format, int[] pins, List<String> to) {
+				for (int pin : pins) {
+					to.add(String.format(format, pin));
 				}
-				for (int pin : digitals) {
-					pins.add("D" + pin);
-				}
-				return Joiner.on(",").join(pins);
+				return to;
 			}
 
 			private String appendClientId(String brokerUri) {
