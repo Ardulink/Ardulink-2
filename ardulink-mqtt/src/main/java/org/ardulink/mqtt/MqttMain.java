@@ -124,17 +124,18 @@ public class MqttMain {
 				String ardulink = connection + "?listenTo=" + listenTo();
 				String propertyForTopic = "topic";
 				String mqtt = appendClientId(appendAuth("mqtt://" + brokerHost
-						+ ":" + brokerPort + "?"));
-				mqtt += "subscribeTopicNames=" + config.getTopic() + "#"
+						+ ":" + brokerPort + "?"))
+						+ "subscribeTopicNames="
+						+ config.getTopic()
+						+ "#"
 						+ "&mqttTopicPropertyName=" + propertyForTopic;
-				from(ardulink)
-						.transform(body().convertToString())
+
+				from(ardulink).transform(body().convertToString())
 						.process(new FromArdulinkProtocol(config))
 						.setHeader("CamelMQTTPublishTopic")
-						.expression(simple("${in.header.topic}"))
-						.to(mqtt)
-						//
-						.from(mqtt)
+						.expression(simple("${in.header.topic}")).to(mqtt);
+
+				from(mqtt)
 						.transform(body().convertToString())
 						.setHeader(propertyForTopic)
 						.expression(
