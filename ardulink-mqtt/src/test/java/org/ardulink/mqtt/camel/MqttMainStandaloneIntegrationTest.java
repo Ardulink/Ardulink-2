@@ -17,11 +17,8 @@ limitations under the License.
 package org.ardulink.mqtt.camel;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
 
-import java.io.IOException;
-
+import org.apache.camel.FailedToCreateProducerException;
 import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttMain;
@@ -38,13 +35,12 @@ import org.junit.rules.Timeout;
  * [adsense]
  *
  */
-// TODO PF fix test class
 public class MqttMainStandaloneIntegrationTest {
 
 	private static final String topic = "myTestTopic";
 
 	@Rule
-	public Timeout timeout = new Timeout(5, SECONDS);
+	public Timeout timeout = new Timeout(10, SECONDS);
 
 	@Rule
 	public ExpectedException exceptions = ExpectedException.none();
@@ -83,10 +79,9 @@ public class MqttMainStandaloneIntegrationTest {
 		mqttMain.setCredentials(user + ":" + "wrongPassword");
 
 		try {
-			exceptions.expect(IOException.class);
-			exceptions.expectMessage(allOf(containsString("BAD"),
-					containsString("USERNAME"), containsString("OR"),
-					containsString("PASSWORD")));
+			exceptions.expect(FailedToCreateProducerException.class);
+			exceptions
+					.expectMessage("CONNECTION_REFUSED_BAD_USERNAME_OR_PASSWORD");
 			mqttMain.connectToMqttBroker();
 		} finally {
 			mqttMain.close();
