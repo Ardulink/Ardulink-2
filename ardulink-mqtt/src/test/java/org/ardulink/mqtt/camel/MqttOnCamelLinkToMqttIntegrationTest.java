@@ -35,7 +35,7 @@ public class MqttOnCamelLinkToMqttIntegrationTest {
 	// why not a mock? tests want's to assure that ArdulinkConsumer's listener
 	// will work correctly. To do so, we need a Link where ArdulinkConsumer can
 	// register it's listener. Because of that, Link cannot be a Mock.
-	private static final String mockURI = "ardulink://dummy";
+	private static final String mockURI = "ardulink://connectionBasedMockLink";
 
 	private static final String TOPIC = "any/topic-"
 			+ System.currentTimeMillis();

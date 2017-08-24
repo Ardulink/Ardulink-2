@@ -35,25 +35,29 @@ import org.ardulink.core.proto.impl.ArdulinkProtocol2;
  * [adsense]
  *
  */
-public class DummyLinkFactory implements LinkFactory<LinkConfig> {
+public class ConnectionBasedMockLinkFactory implements LinkFactory<LinkConfig> {
 
 	@Override
 	public String getName() {
-		return "dummy";
+		return "connectionBasedMockLink";
 	}
 
 	@Override
 	public Link newLink(LinkConfig config) {
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		Protocol protocol = ArdulinkProtocol2.instance();
-		Connection connection = new StreamConnection(null, outputStream,
-				protocol);
-		return new ConnectionBasedLink(connection, protocol);
+		return new ConnectionBasedLink(connection(protocol()), protocol());
 	}
 
 	@Override
 	public LinkConfig newLinkConfig() {
 		return LinkConfig.NO_ATTRIBUTES;
+	}
+
+	private static Protocol protocol() {
+		return ArdulinkProtocol2.instance();
+	}
+
+	private static StreamConnection connection(Protocol protocol) {
+		return new StreamConnection(null, new ByteArrayOutputStream(), protocol);
 	}
 
 }
