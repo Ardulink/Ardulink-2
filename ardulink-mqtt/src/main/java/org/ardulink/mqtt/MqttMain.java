@@ -16,7 +16,6 @@ limitations under the License.
  */
 package org.ardulink.mqtt;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.camel.ShutdownRunningTask.CompleteAllTasks;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
@@ -38,12 +37,11 @@ import org.ardulink.mqtt.camel.FromArdulinkProtocol;
 import org.ardulink.mqtt.camel.ToArdulinkProtocol;
 import org.ardulink.util.Joiner;
 import org.ardulink.util.Lists;
+import org.ardulink.util.Preconditions;
 import org.ardulink.util.URIs;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -54,10 +52,6 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class MqttMain {
-
-	// TODO PF re-add logging
-	private static final Logger logger = LoggerFactory
-			.getLogger(MqttMain.class);
 
 	@Option(name = "-brokerTopic", usage = "Topic to register. To switch pins a message of the form $brokerTopic/[A|D]$pinNumber/value/set must be sent. A for analog pins, D for digital pins")
 	private String brokerTopic = Config.DEFAULT_TOPIC;
@@ -85,11 +79,15 @@ public class MqttMain {
 	@Option(name = "-a", aliases = "--analog", usage = "Analog pins to listen to")
 	private int[] analogs = new int[0];
 
-	@Option(name = "-ato", aliases = "--tolerance", usage = "Analog tolerance, publish only changes exceeding this value")
-	private int tolerance = 1;
+	// TODO PF re-add
+	// @Option(name = "-ato", aliases = "--tolerance", usage =
+	// "Analog tolerance, publish only changes exceeding this value")
+	// private int tolerance = 1;
 
-	@Option(name = "-athms", aliases = "--throttle", usage = "Analog throttle, do not publish multiple events within <throttleMillis>")
-	private int throttleMillis = (int) SECONDS.toMillis(10);
+	// TODO PF re-add
+	// @Option(name = "-athms", aliases = "--throttle", usage =
+	// "Analog throttle, do not publish multiple events within <throttleMillis>")
+	// private int throttleMillis = (int) SECONDS.toMillis(10);
 
 	// TODO PF reenable using camel's Throttler, Aggregator
 	// @Option(name = "-athstr", aliases = "--strategy", usage =
@@ -169,7 +167,8 @@ public class MqttMain {
 				String[] auth = credentials.split(":");
 				checkState(auth.length == 2,
 						"Credentials not in format user:password");
-				return "userName=" + auth[0] + "&password=" + auth[1] + "&";
+				return brokerUri + "userName=" + auth[0] + "&password="
+						+ auth[1] + "&";
 			}
 
 		});
@@ -189,6 +188,10 @@ public class MqttMain {
 			cmdLineParser.printUsage(System.err);
 			return;
 		}
+
+		checkState(analogs.length > 0 || digitals.length > 0 || control,
+				"Not listening on any pin nor control messages enabled. "
+						+ "Please specify at least some pins to listen to");
 
 		connectToMqttBroker();
 		try {
@@ -275,10 +278,6 @@ public class MqttMain {
 
 	public void setDigitals(int... digitals) {
 		this.digitals = digitals == null ? new int[0] : digitals.clone();
-	}
-
-	public void setThrottleMillis(int throttleMillis) {
-		this.throttleMillis = throttleMillis;
 	}
 
 	public void setConnection(String connection) {
