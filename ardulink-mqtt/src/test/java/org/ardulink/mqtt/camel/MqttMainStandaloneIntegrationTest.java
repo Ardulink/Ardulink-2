@@ -14,17 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package org.ardulink.mqtt;
+package org.ardulink.mqtt.camel;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 
-import org.ardulink.core.Link;
+import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.MqttBroker.Builder;
+import org.ardulink.mqtt.MqttMain;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -38,11 +38,10 @@ import org.junit.rules.Timeout;
  * [adsense]
  *
  */
+// TODO PF fix test class
 public class MqttMainStandaloneIntegrationTest {
 
 	private static final String topic = "myTestTopic";
-
-	private final Link link = mock(Link.class);
 
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
@@ -52,12 +51,8 @@ public class MqttMainStandaloneIntegrationTest {
 
 	@Test
 	public void clientCanConnectToNewlyStartedBroker() throws Exception {
-		MqttMain mqttMain = new MqttMain() {
-			@Override
-			protected Link createLink() {
-				return link;
-			}
-		};
+		MqttMain mqttMain = new MqttMain();
+		mqttMain.setConnection("ardulink://mock");
 		mqttMain.setStandalone(true);
 		mqttMain.setBrokerTopic(topic);
 
@@ -76,16 +71,12 @@ public class MqttMainStandaloneIntegrationTest {
 		final String password = "secret";
 		MqttMain mqttMain = new MqttMain() {
 			@Override
-			protected Link createLink() {
-				return link;
-			}
-
-			@Override
 			protected Builder createBroker() {
 				return super.createBroker().addAuthenication(user,
 						password.getBytes());
 			}
 		};
+		mqttMain.setConnection("ardulink://mock");
 		mqttMain.setStandalone(true);
 		mqttMain.setBrokerTopic(topic);
 
@@ -109,16 +100,12 @@ public class MqttMainStandaloneIntegrationTest {
 		final String password = "secret";
 		MqttMain mqttMain = new MqttMain() {
 			@Override
-			protected Link createLink() {
-				return link;
-			}
-
-			@Override
 			protected Builder createBroker() {
 				return super.createBroker().addAuthenication(user,
 						password.getBytes());
 			}
 		};
+		mqttMain.setConnection("ardulink://mock");
 		mqttMain.setStandalone(true);
 		mqttMain.setBrokerTopic(topic);
 

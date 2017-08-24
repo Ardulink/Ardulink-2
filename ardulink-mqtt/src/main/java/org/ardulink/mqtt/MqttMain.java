@@ -97,15 +97,13 @@ public class MqttMain {
 	// private CompactStrategy compactStrategy = AVERAGE;
 
 	@Option(name = "-connection", usage = "Connection URI to the arduino")
-	private String connString = "ardulink://serial";
+	private String connection = "ardulink://serial";
 
 	@Option(name = "-control", usage = "Enable the control of listeners via mqtt")
 	private boolean control;
 
 	@Option(name = "-standalone", usage = "Start a mqtt server on this host")
 	private boolean standalone;
-
-	// private MqttClient mqttClient;
 
 	private Link link;
 
@@ -123,9 +121,7 @@ public class MqttMain {
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
-				// TODO PF place here the right link!
-				String ardulink = "ardulink://mock?listenTo=" + listenTo();
-
+				String ardulink = connection + "?listenTo=" + listenTo();
 				String propertyForTopic = "topic";
 				String mqtt = appendClientId(appendAuth("mqtt://" + brokerHost
 						+ ":" + brokerPort + "?"));
@@ -224,7 +220,7 @@ public class MqttMain {
 
 	protected Link createLink() throws Exception {
 		Configurer configurer = LinkManager.getInstance().getConfigurer(
-				URIs.newURI(connString));
+				URIs.newURI(connection));
 		return configurer.newLink();
 	}
 
@@ -282,6 +278,10 @@ public class MqttMain {
 
 	public void setThrottleMillis(int throttleMillis) {
 		this.throttleMillis = throttleMillis;
+	}
+
+	public void setConnection(String connection) {
+		this.connection = connection;
 	}
 
 	public void setStandalone(boolean standalone) {
