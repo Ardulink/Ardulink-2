@@ -20,7 +20,6 @@ import org.ardulink.mqtt.Config;
 import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.util.URIs;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
