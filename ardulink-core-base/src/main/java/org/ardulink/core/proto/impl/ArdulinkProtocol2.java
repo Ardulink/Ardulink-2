@@ -182,10 +182,10 @@ public class ArdulinkProtocol2 implements Protocol {
 
 		URI uri = URIs.newURI(in);
 
-		String alpPrefix = uri.getScheme();
-		checkState("alp".equals(checkNotNull(alpPrefix,
-				"Message hasn't a prefix")),
-				"Message prefix isn't equal to alp. It is: %s", alpPrefix);
+		String prefix = uri.getScheme();
+		checkState("alp".equals(checkNotNull(prefix,
+				"Message %s has no prefix", in)),
+				"Expected message prefix to be %s but was %s", "alp", prefix);
 
 		String command = checkNotNull(uri.getHost(), "Message hasn't a command");
 		String specs = removeFirstSlash(checkNotNull(uri.getPath(),
