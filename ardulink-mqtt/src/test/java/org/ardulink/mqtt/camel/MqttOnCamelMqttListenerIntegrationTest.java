@@ -32,8 +32,6 @@ public class MqttOnCamelMqttListenerIntegrationTest {
 
 	private Link link;
 
-	private CamelContext context;
-
 	@Before
 	public void setup() throws Exception {
 		link = Links.getLink(URIs.newURI(mockURI));
@@ -46,8 +44,7 @@ public class MqttOnCamelMqttListenerIntegrationTest {
 
 	@Test
 	public void startListeningOnPassedPins() throws Exception {
-		context = camelContext(config());
-		haltCamel();
+		haltCamel(startCamel(withConfig(), "listenTo=d1,d2,a1"));
 		Link mock = getMock(link);
 		verify(mock).startListening(digitalPin(1));
 		verify(mock).startListening(digitalPin(2));
@@ -56,23 +53,45 @@ public class MqttOnCamelMqttListenerIntegrationTest {
 		verifyNoMoreInteractions(mock);
 	}
 
-	private Config config() {
+	@Test
+	public void listeningIsCaseInsensitive() throws Exception {
+		haltCamel(startCamel(withConfig(), "listenTo=d1,D2,a3,A4"));
+		Link mock = getMock(link);
+		verify(mock).startListening(digitalPin(1));
+		verify(mock).startListening(digitalPin(2));
+		verify(mock).startListening(analogPin(3));
+		verify(mock).startListening(analogPin(4));
+		verify(mock).close();
+		verifyNoMoreInteractions(mock);
+	}
+
+	@Test
+	public void ignoresMultipleOccurencesOfSamePin() throws Exception {
+		haltCamel(startCamel(withConfig(), "listenTo=d1,D1,a2,A2"));
+		Link mock = getMock(link);
+		verify(mock).startListening(digitalPin(1));
+		verify(mock).startListening(analogPin(2));
+		verify(mock).close();
+		verifyNoMoreInteractions(mock);
+	}
+
+	private Config withConfig() {
 		return Config.withTopic("any/topic-" + System.currentTimeMillis());
 	}
 
-	private CamelContext haltCamel() throws Exception {
+	private CamelContext haltCamel(CamelContext context) throws Exception {
 		context.stop();
 		return context;
 	}
 
-	private CamelContext camelContext(final Config config) throws Exception {
+	private CamelContext startCamel(final Config config, final String args)
+			throws Exception {
 		CamelContext context = new DefaultCamelContext();
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
-				from(noMatterWhat()).to(mockURI + "?listenTo=d1,d2,a1");
+				from(noMatterWhat()).to(mockURI + "?" + args);
 			}
-
 		});
 		return startAndBlock(context);
 	}

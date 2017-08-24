@@ -19,17 +19,19 @@ import static java.lang.Character.toUpperCase;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.util.Integers.tryParse;
+import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.UriEndpointComponent;
 import org.apache.camel.spi.UriEndpoint;
 import org.ardulink.core.Pin;
-import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
 
 /**
@@ -54,14 +56,15 @@ public class ArdulinkComponent extends UriEndpointComponent {
 		ArdulinkEndpoint.Config config = new ArdulinkEndpoint.Config();
 		config.setType(remaining);
 		config.setTypeParams(getOptional(parameters, "linkparams").orNull());
-		config.setListenTo(parsePins(getOptional(parameters, "listenTo").or("")));
+		config.setListenTo(newArrayList(parsePins(getOptional(parameters,
+				"listenTo").or(""))));
 		ArdulinkEndpoint endpoint = new ArdulinkEndpoint(uri, this, config);
 		setProperties(endpoint, parameters);
 		return endpoint;
 	}
 
-	private List<Pin> parsePins(String pinsString) {
-		List<Pin> pins = Lists.newArrayList();
+	private Collection<Pin> parsePins(String pinsString) {
+		Set<Pin> pins = new LinkedHashSet<Pin>();
 		for (StringTokenizer tokenizer = new StringTokenizer(pinsString, ","); tokenizer
 				.hasMoreTokens();) {
 			pins.add(toPin(tokenizer.nextToken().trim()));
