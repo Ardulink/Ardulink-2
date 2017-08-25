@@ -2,6 +2,7 @@ package org.ardulink.mqtt.camel;
 
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.util.Preconditions.checkState;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -21,9 +22,15 @@ public final class FromArdulinkProtocol implements Processor {
 
 	private final Protocol protocol = ArdulinkProtocol2.instance();
 	private final Config config;
+	private String headerNameForTopic = "topic";
 
 	public FromArdulinkProtocol(Config config) {
 		this.config = config;
+	}
+
+	public FromArdulinkProtocol headerNameForTopic(String headerNameForTopic) {
+		this.headerNameForTopic = headerNameForTopic;
+		return this;
 	}
 
 	@Override
@@ -31,15 +38,17 @@ public final class FromArdulinkProtocol implements Processor {
 		Message in = exchange.getIn();
 		FromDeviceMessage deviceMessage = protocol.fromDevice(in.getBody(
 				String.class).getBytes());
-		if (deviceMessage instanceof FromDeviceMessagePinStateChanged) {
-			FromDeviceMessagePinStateChanged pinChangeEvent = (FromDeviceMessagePinStateChanged) deviceMessage;
-			Pin pin = pinChangeEvent.getPin();
-			in.setHeader("topic", String.format(getPattern(pin), pin.pinNum()));
-			in.setBody(String.valueOf(pinChangeEvent.getValue()));
-			return;
-		}
-		// TODO throw RTE or NOOP?
-		throw new IllegalStateException("Cannot handle " + in);
+		checkState(deviceMessage instanceof FromDeviceMessagePinStateChanged,
+				"Cannot handle %s", in);
+		handle(in, (FromDeviceMessagePinStateChanged) deviceMessage);
+	}
+
+	private void handle(Message in,
+			FromDeviceMessagePinStateChanged pinChangeEvent) {
+		Pin pin = pinChangeEvent.getPin();
+		in.setHeader(headerNameForTopic,
+				String.format(getPattern(pin), pin.pinNum()));
+		in.setBody(String.valueOf(pinChangeEvent.getValue()));
 	}
 
 	private String getPattern(Pin pin) {

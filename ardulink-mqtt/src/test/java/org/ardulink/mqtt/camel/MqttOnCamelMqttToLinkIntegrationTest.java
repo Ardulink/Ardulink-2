@@ -199,12 +199,10 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
-				from(mqtt())
-						.transform(body().convertToString())
-						.setHeader("topic")
-						.expression(
-								simple("${in.header.CamelMQTTSubscribeTopic}"))
-						.process(new ToArdulinkProtocol(config)).to(mockURI)
+				ToArdulinkProtocol toArdulinkProtocol = new ToArdulinkProtocol(
+						config).headerNameForTopic("CamelMQTTSubscribeTopic");
+				from(mqtt()).transform(body().convertToString())
+						.process(toArdulinkProtocol).to(mockURI)
 						.shutdownRunningTask(CompleteAllTasks);
 			}
 		});

@@ -169,16 +169,23 @@ public final class ToArdulinkProtocol implements Processor {
 	}
 
 	private final List<MessageCreator> creators;
+	private String headerNameForTopic = "topic";
 
 	public ToArdulinkProtocol(Config config) {
 		this.creators = unmodifiableList(newArrayList(creators(config)));
+	}
+
+	public ToArdulinkProtocol headerNameForTopic(String headerNameForTopic) {
+		this.headerNameForTopic = headerNameForTopic;
+		return this;
 	}
 
 	@Override
 	public void process(Exchange exchange) {
 		Message in = exchange.getIn();
 		Optional<String> result = createMessage(
-				in.getHeader("topic", String.class), in.getBody(String.class));
+				in.getHeader(headerNameForTopic, String.class),
+				in.getBody(String.class));
 		if (result.isPresent()) {
 			exchange.getOut().setBody(result.get(), String.class);
 		} else {

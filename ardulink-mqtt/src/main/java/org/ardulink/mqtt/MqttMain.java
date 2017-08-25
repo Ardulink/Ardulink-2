@@ -21,7 +21,6 @@ import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import io.moquette.server.Server;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,14 +29,10 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Route;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.ardulink.core.Link;
-import org.ardulink.core.linkmanager.LinkManager;
-import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.camel.FromArdulinkProtocol;
 import org.ardulink.mqtt.camel.ToArdulinkProtocol;
 import org.ardulink.util.Joiner;
-import org.ardulink.util.URIs;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -102,8 +97,6 @@ public class MqttMain {
 	@Option(name = "-standalone", usage = "Start a mqtt server on this host")
 	private boolean standalone;
 
-	private Link link;
-
 	private Server standaloneServer;
 
 	private CamelContext context;
@@ -119,25 +112,19 @@ public class MqttMain {
 			@Override
 			public void configure() {
 				String ardulink = connection + "?listenTo=" + listenTo();
-				String propertyForTopic = "topic";
 				String mqtt = appendClientId(appendAuth("mqtt://" + brokerHost
 						+ ":" + brokerPort + "?"))
-						+ "subscribeTopicNames="
-						+ config.getTopic()
-						+ "#"
-						+ "&mqttTopicPropertyName=" + propertyForTopic;
+						+ "subscribeTopicNames=" + config.getTopic() + "#";
 
+				FromArdulinkProtocol fromArdulinkProtocol = new FromArdulinkProtocol(
+						config).headerNameForTopic("CamelMQTTPublishTopic");
 				from(ardulink).transform(body().convertToString())
-						.process(new FromArdulinkProtocol(config))
-						.setHeader("CamelMQTTPublishTopic")
-						.expression(simple("${in.header.topic}")).to(mqtt);
+						.process(fromArdulinkProtocol).to(mqtt);
 
-				from(mqtt)
-						.transform(body().convertToString())
-						.setHeader(propertyForTopic)
-						.expression(
-								simple("${in.header.CamelMQTTSubscribeTopic}"))
-						.process(new ToArdulinkProtocol(config)).to(ardulink)
+				ToArdulinkProtocol toArdulinkProtocol = new ToArdulinkProtocol(
+						config).headerNameForTopic("CamelMQTTSubscribeTopic");
+				from(mqtt).transform(body().convertToString())
+						.process(toArdulinkProtocol).to(ardulink)
 						.shutdownRunningTask(CompleteAllTasks);
 			}
 
@@ -204,7 +191,6 @@ public class MqttMain {
 	}
 
 	public void connectToMqttBroker() throws Exception {
-		this.link = createLink();
 		ensureBrokerTopicIsnormalized();
 		if (standalone) {
 			this.standaloneServer = createBroker().startBroker();
@@ -223,12 +209,6 @@ public class MqttMain {
 		setBrokerTopic(this.brokerTopic);
 	}
 
-	protected Link createLink() throws Exception {
-		Configurer configurer = LinkManager.getInstance().getConfigurer(
-				URIs.newURI(connection));
-		return configurer.newLink();
-	}
-
 	public boolean isConnected() {
 		List<Route> routes = context.getRoutes();
 		for (Route route : routes) {
@@ -241,10 +221,6 @@ public class MqttMain {
 	}
 
 	public void close() throws IOException {
-		Closeable closeable;
-		if ((closeable = this.link) != null) {
-			closeable.close();
-		}
 		CamelContext tmpContext = this.context;
 		if ((tmpContext) != null) {
 			try {

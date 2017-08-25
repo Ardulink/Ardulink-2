@@ -18,10 +18,14 @@ package org.ardulink.mqtt.camel;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import java.io.IOException;
+
 import org.apache.camel.FailedToCreateProducerException;
 import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttMain;
+import org.ardulink.util.Strings;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -37,6 +41,58 @@ import org.junit.rules.Timeout;
  */
 public class MqttMainStandaloneIntegrationTest {
 
+	private static final class MqttMainForTest extends MqttMain {
+
+		private String brokerUser;
+		private String brokerPassword;
+		private String clientUser;
+		private String clientPassword;
+		private Builder createBroker;
+
+		public MqttMainForTest() {
+			setStandalone(true);
+			setBrokerTopic(topic);
+			setConnection("ardulink://mock");
+		}
+
+		public MqttMainForTest withBrokerUser(String brokerUser) {
+			this.brokerUser = brokerUser;
+			return this;
+		}
+
+		public MqttMainForTest withBrokerPassword(String brokerPassword) {
+			this.brokerPassword = brokerPassword;
+			return this;
+		}
+
+		public MqttMainForTest withClientUser(String clientUser) {
+			this.clientUser = clientUser;
+			return updateCredentials();
+		}
+
+		public MqttMainForTest withClientPassword(String clientPassword) {
+			this.clientPassword = clientPassword;
+			return updateCredentials();
+		}
+
+		private MqttMainForTest updateCredentials() {
+			setCredentials(clientUser + ":" + clientPassword);
+			return this;
+		}
+
+		@Override
+		protected Builder createBroker() {
+			this.createBroker = super.createBroker();
+			return hasAuthentication() ? this.createBroker.addAuthenication(
+					brokerUser, brokerPassword.getBytes()) : this.createBroker;
+		}
+
+		private boolean hasAuthentication() {
+			return !Strings.nullOrEmpty(brokerPassword)
+					&& brokerPassword != null;
+		}
+	}
+
 	private static final String topic = "myTestTopic";
 
 	@Rule
@@ -45,73 +101,44 @@ public class MqttMainStandaloneIntegrationTest {
 	@Rule
 	public ExpectedException exceptions = ExpectedException.none();
 
-	@Test
-	public void clientCanConnectToNewlyStartedBroker() throws Exception {
-		MqttMain mqttMain = new MqttMain();
-		mqttMain.setConnection("ardulink://mock");
-		mqttMain.setStandalone(true);
-		mqttMain.setBrokerTopic(topic);
+	private MqttMainForTest sut;
 
-		try {
-			mqttMain.connectToMqttBroker();
-		} finally {
-			mqttMain.close();
-		}
+	@After
+	public void tearDown() throws IOException {
+		sut.close();
+		System.clearProperty(MqttBroker.Builder.propertyName());
+	}
 
+	private MqttMainForTest mqttMain() {
+		return new MqttMainForTest();
 	}
 
 	@Test
-	public void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker()
-			throws Exception {
-		final String user = "someUser";
-		final String password = "secret";
-		MqttMain mqttMain = new MqttMain() {
-			@Override
-			protected Builder createBroker() {
-				return super.createBroker().addAuthenication(user,
-						password.getBytes());
-			}
-		};
-		mqttMain.setConnection("ardulink://mock");
-		mqttMain.setStandalone(true);
-		mqttMain.setBrokerTopic(topic);
-
-		mqttMain.setCredentials(user + ":" + "wrongPassword");
-
-		try {
-			exceptions.expect(FailedToCreateProducerException.class);
-			exceptions
-					.expectMessage("CONNECTION_REFUSED_BAD_USERNAME_OR_PASSWORD");
-			mqttMain.connectToMqttBroker();
-		} finally {
-			mqttMain.close();
-		}
+	public void clientCanConnectToNewlyStartedBroker() throws Exception {
+		sut = mqttMain();
+		sut.connectToMqttBroker();
 	}
 
 	@Test
 	public void clientCanConnectUsingCredentialsToNewlyStartedBroker()
 			throws Exception {
-		final String user = "someUser";
-		final String password = "secret";
-		MqttMain mqttMain = new MqttMain() {
-			@Override
-			protected Builder createBroker() {
-				return super.createBroker().addAuthenication(user,
-						password.getBytes());
-			}
-		};
-		mqttMain.setConnection("ardulink://mock");
-		mqttMain.setStandalone(true);
-		mqttMain.setBrokerTopic(topic);
+		String user = "someUser";
+		String password = "someSecret";
+		sut = mqttMain().withBrokerUser(user).withBrokerPassword(password)
+				.withClientUser(user).withClientPassword(password);
+		sut.connectToMqttBroker();
+	}
 
-		mqttMain.setCredentials("someUser" + ":" + password);
-
-		try {
-			mqttMain.connectToMqttBroker();
-		} finally {
-			mqttMain.close();
-			System.clearProperty(MqttBroker.Builder.propertyName());
-		}
+	@Test
+	public void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker()
+			throws Exception {
+		String user = "someUser";
+		sut = mqttMain().withBrokerUser(user)
+				.withBrokerPassword("theBrokersPassword").withClientUser(user)
+				.withClientPassword("notTheBrokersPassword");
+		exceptions.expect(FailedToCreateProducerException.class);
+		exceptions.expectMessage("CONNECTION_REFUSED_BAD_USERNAME_OR_PASSWORD");
+		sut.connectToMqttBroker();
 	}
 
 }

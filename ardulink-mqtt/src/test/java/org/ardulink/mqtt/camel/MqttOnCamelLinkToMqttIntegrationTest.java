@@ -100,10 +100,10 @@ public class MqttOnCamelLinkToMqttIntegrationTest {
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
+				FromArdulinkProtocol fromArdulinkProtocol = new FromArdulinkProtocol(
+						config).headerNameForTopic("CamelMQTTPublishTopic");
 				from(mockURI).transform(body().convertToString())
-						.process(new FromArdulinkProtocol(config))
-						.setHeader("CamelMQTTPublishTopic")
-						.expression(simple("${in.header.topic}")).to(mqtt())
+						.process(fromArdulinkProtocol).to(mqtt())
 						.shutdownRunningTask(CompleteAllTasks);
 			}
 		});
