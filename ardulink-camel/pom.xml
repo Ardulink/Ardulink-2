@@ -9,24 +9,6 @@
 		<version>2.0.2-SNAPSHOT</version>
 	</parent>
 
-	<!-- https://stackoverflow.com/questions/174560/sharing-test-code-in-maven#174670 -->
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>
