@@ -21,13 +21,16 @@ import static io.moquette.BrokerConstants.AUTHENTICATOR_CLASS_NAME;
 import static io.moquette.BrokerConstants.HOST_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
+import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Throwables.propagate;
 import io.moquette.server.Server;
+import io.moquette.server.config.IConfig;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.security.IAuthenticator;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Properties;
 
 import org.ardulink.util.Strings;
@@ -48,17 +51,17 @@ public class MqttBroker implements Closeable {
 		private String host = "localhost";
 		private int port = 1883;
 
-		public Builder host(String host) {
+		public Builder host(final String host) {
 			this.host = host;
 			return this;
 		}
 
-		public Builder port(int port) {
+		public Builder port(final int port) {
 			this.port = port;
 			return this;
 		}
 
-		public Builder addAuthenication(String user, byte[] password) {
+		public Builder addAuthenication(final String user, final byte[] password) {
 			System.setProperty(propertyName(), user + ":"
 					+ new String(password));
 			return this;
@@ -69,12 +72,27 @@ public class MqttBroker implements Closeable {
 		}
 
 		public static class EnvironmentAuthenticator implements IAuthenticator {
-			@Override
-			public boolean checkValid(String user, byte[] pass) {
-				String userPass = userPass();
+
+			private final String user;
+			private final byte[] pass;
+
+			public EnvironmentAuthenticator() {
+				this(userPass());
+			}
+
+			public EnvironmentAuthenticator(String userPass) {
 				String[] split = userPass.split("\\:");
-				return split.length == 2 && split[0].equals(user)
-						&& split[1].equals(new String(pass));
+				checkState(
+						split.length == 2,
+						"Could not split %s into user:password using separator ':'",
+						userPass);
+				this.user = split[0];
+				this.pass = split[1].getBytes();
+			}
+
+			@Override
+			public boolean checkValid(final String user, final byte[] pass) {
+				return this.user.equals(user) && Arrays.equals(this.pass, pass);
 			}
 
 		}
@@ -82,7 +100,7 @@ public class MqttBroker implements Closeable {
 		public Properties properties() {
 			properties.put(HOST_PROPERTY_NAME, host);
 			properties.put(PORT_PROPERTY_NAME, String.valueOf(port));
-			String property = userPass();
+			final String property = userPass();
 			if (!Strings.nullOrEmpty(property)) {
 				properties.setProperty(AUTHENTICATOR_CLASS_NAME,
 						EnvironmentAuthenticator.class.getName());
@@ -109,11 +127,16 @@ public class MqttBroker implements Closeable {
 		return new Builder();
 	}
 
-	public MqttBroker(Builder builder) {
-		broker = new Server();
+	public MqttBroker(final Builder builder) {
+		broker = startBroker(new Server(),
+				new MemoryConfig(builder.properties()));
+	}
+
+	private Server startBroker(Server server, IConfig memoryConfig) {
 		try {
-			broker.startServer(new MemoryConfig(builder.properties()));
-		} catch (IOException e) {
+			server.startServer(memoryConfig);
+			return server;
+		} catch (final IOException e) {
 			throw propagate(e);
 		}
 	}
