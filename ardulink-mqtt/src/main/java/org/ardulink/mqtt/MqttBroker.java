@@ -19,6 +19,7 @@ package org.ardulink.mqtt;
 import static io.moquette.BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.AUTHENTICATOR_CLASS_NAME;
 import static io.moquette.BrokerConstants.HOST_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
 import static org.ardulink.util.Throwables.propagate;
 import io.moquette.server.Server;
@@ -88,6 +89,7 @@ public class MqttBroker implements Closeable {
 				properties.setProperty(ALLOW_ANONYMOUS_PROPERTY_NAME,
 						Boolean.FALSE.toString());
 			}
+			properties.put(PERSISTENT_STORE_PROPERTY_NAME, "");
 			return properties;
 		}
 
