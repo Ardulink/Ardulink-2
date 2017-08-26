@@ -25,7 +25,7 @@ import org.apache.camel.MultipleConsumersSupport;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.impl.DefaultEndpoint;
-import org.ardulink.mail.Command;
+import org.ardulink.camel.command.Command;
 import org.ardulink.util.ListMultiMap;
 
 /**

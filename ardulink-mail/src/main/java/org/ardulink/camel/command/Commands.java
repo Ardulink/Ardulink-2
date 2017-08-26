@@ -12,9 +12,9 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
-package org.ardulink.mail;
+package org.ardulink.camel.command;
 
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -31,42 +31,23 @@ import org.ardulink.core.Link;
  * [adsense]
  *
  */
+@Deprecated
 public class Commands {
 
-	private static class SwitchDigitalPinCommand implements Command {
-
-		private final int pin;
-		private final boolean value;
-
-		public SwitchDigitalPinCommand(int pin, boolean value) {
-			this.pin = pin;
-			this.value = value;
-		}
-
-		@Override
-		public void execute(Link link) throws URISyntaxException, Exception {
-			link.switchDigitalPin(digitalPin(pin), value);
-		}
-
-		@Override
-		public String toString() {
-			return "SwitchDigitalPinCommand [pin=" + pin + ", value=" + value
-					+ "]";
-		}
-
-	}
-
+	@Deprecated
 	private static class SwitchAnalogPinCommand implements Command {
 
 		private final int pin;
 		private final int value;
 
+		@Deprecated
 		public SwitchAnalogPinCommand(int pin, int value) {
 			this.pin = pin;
 			this.value = value;
 		}
 
 		@Override
+		@Deprecated
 		public void execute(Link link) throws URISyntaxException, Exception {
 			link.switchAnalogPin(analogPin(pin), value);
 		}
@@ -79,12 +60,38 @@ public class Commands {
 
 	}
 
-	public static Command switchDigitalPin(int pin, boolean value) {
-		return new SwitchDigitalPinCommand(pin, value);
+	@Deprecated
+	private static class SwitchDigitalPinCommand implements Command {
+
+		private final int pin;
+		private final boolean value;
+
+		@Deprecated
+		public SwitchDigitalPinCommand(int pin, boolean value) {
+			this.pin = pin;
+			this.value = value;
+		}
+
+		@Override
+		@Deprecated
+		public void execute(Link link) throws URISyntaxException, Exception {
+			link.switchDigitalPin(digitalPin(pin), value);
+		}
+
+		@Override
+		public String toString() {
+			return "SwitchDigitalPinCommand [pin=" + pin + ", value=" + value
+					+ "]";
+		}
+
 	}
 
 	public static Command switchAnalogPin(int pin, int value) {
 		return new SwitchAnalogPinCommand(pin, value);
+	}
+
+	public static Command switchDigitalPin(int pin, boolean value) {
+		return new SwitchDigitalPinCommand(pin, value);
 	}
 
 }

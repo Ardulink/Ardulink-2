@@ -41,11 +41,11 @@ public abstract class Config {
 		private Pattern topicPatternAnalogControl;
 
 		private DefaultConfig(String topic) {
-			this.topic = topic;
-			this.topicPatternDigitalWrite = compile(write(topic, "D"));
-			this.topicPatternDigitalRead = read(topic, "D");
-			this.topicPatternAnalogWrite = compile(write(topic, "A"));
-			this.topicPatternAnalogRead = read(topic, "A");
+			this.topic = topic.endsWith("/") ? topic : topic + "/";
+			this.topicPatternDigitalWrite = compile(write(this.topic, "D"));
+			this.topicPatternDigitalRead = read(this.topic, "D");
+			this.topicPatternAnalogWrite = compile(write(this.topic, "A"));
+			this.topicPatternAnalogRead = read(this.topic, "A");
 		}
 
 		private DefaultConfig(Config c) {

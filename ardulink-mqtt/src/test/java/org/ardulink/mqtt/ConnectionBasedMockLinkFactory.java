@@ -12,16 +12,20 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
-package org.ardulink.mail.test;
+package org.ardulink.mqtt;
 
-import static org.mockito.Mockito.mock;
+import java.io.ByteArrayOutputStream;
 
+import org.ardulink.core.Connection;
+import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
+import org.ardulink.core.StreamConnection;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.mail.test.MockLinkFactory.MockLinkConfig;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -31,44 +35,29 @@ import org.ardulink.mail.test.MockLinkFactory.MockLinkConfig;
  * [adsense]
  *
  */
-public class MockLinkFactory implements LinkFactory<MockLinkConfig> {
-
-	public static class MockLinkConfig implements LinkConfig {
-		@Named("num")
-		private int num;
-		@Named("foo")
-		private String foo;
-
-		public int getNum() {
-			return num;
-		}
-
-		public void setNum(int num) {
-			this.num = num;
-		}
-
-		public String getFoo() {
-			return foo;
-		}
-
-		public void setFoo(String foo) {
-			this.foo = foo;
-		}
-	}
+public class ConnectionBasedMockLinkFactory implements LinkFactory<LinkConfig> {
 
 	@Override
 	public String getName() {
-		return "mock";
+		return "connectionBasedMockLink";
 	}
 
 	@Override
-	public Link newLink(MockLinkConfig config) {
-		return mock(Link.class);
+	public Link newLink(LinkConfig config) {
+		return new ConnectionBasedLink(connection(protocol()), protocol());
 	}
 
 	@Override
-	public MockLinkConfig newLinkConfig() {
-		return new MockLinkConfig();
+	public LinkConfig newLinkConfig() {
+		return LinkConfig.NO_ATTRIBUTES;
+	}
+
+	private static Protocol protocol() {
+		return ArdulinkProtocol2.instance();
+	}
+
+	private static StreamConnection connection(Protocol protocol) {
+		return new StreamConnection(null, new ByteArrayOutputStream(), protocol);
 	}
 
 }

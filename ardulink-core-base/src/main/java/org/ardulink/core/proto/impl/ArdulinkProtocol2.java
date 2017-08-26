@@ -22,6 +22,8 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.messages.api.FromDeviceChangeListeningState.Mode.START;
+import static org.ardulink.core.messages.api.FromDeviceChangeListeningState.Mode.STOP;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.CHAR_PRESSED;
@@ -53,6 +55,7 @@ import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
+import org.ardulink.core.messages.impl.DefaultFromDeviceChangeListeningState;
 import org.ardulink.core.messages.impl.DefaultFromDeviceMessageCustom;
 import org.ardulink.core.messages.impl.DefaultFromDeviceMessagePinStateChanged;
 import org.ardulink.core.messages.impl.DefaultFromDeviceMessageReady;
@@ -179,10 +182,10 @@ public class ArdulinkProtocol2 implements Protocol {
 
 		URI uri = URIs.newURI(in);
 
-		String alpPrefix = uri.getScheme();
-		checkState("alp".equals(checkNotNull(alpPrefix,
-				"Message hasn't a prefix")),
-				"Message prefix isn't equal to alp. It is: %s", alpPrefix);
+		String prefix = uri.getScheme();
+		checkState("alp".equals(checkNotNull(prefix,
+				"Message %s has no prefix", in)),
+				"Expected message prefix to be %s but was %s", "alp", prefix);
 
 		String command = checkNotNull(uri.getHost(), "Message hasn't a command");
 		String specs = removeFirstSlash(checkNotNull(uri.getPath(),
@@ -206,6 +209,20 @@ public class ArdulinkProtocol2 implements Protocol {
 			return new DefaultFromDeviceMessageCustom(specs);
 		}
 
+		if (key == START_LISTENING_ANALOG) {
+			return new DefaultFromDeviceChangeListeningState(
+					analogPin(tryParse(specs)), START);
+		} else if (key == START_LISTENING_DIGITAL) {
+			return new DefaultFromDeviceChangeListeningState(
+					digitalPin(tryParse(specs)), START);
+		} else if (key == STOP_LISTENING_ANALOG) {
+			return new DefaultFromDeviceChangeListeningState(
+					analogPin(tryParse(specs)), STOP);
+		} else if (key == STOP_LISTENING_DIGITAL) {
+			return new DefaultFromDeviceChangeListeningState(
+					digitalPin(tryParse(specs)), STOP);
+		}
+
 		String pinAndState = specs;
 		String[] split = pinAndState.split("\\/");
 		checkState(split.length == 2, "Error splitting %s, cannot process %s",
@@ -222,6 +239,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			return new DefaultFromDeviceMessagePinStateChanged(digitalPin(pin),
 					toBoolean(value));
 		}
+
 		throw new IllegalStateException(key + " " + in);
 	}
 

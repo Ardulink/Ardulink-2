@@ -17,8 +17,8 @@ limitations under the License.
 package org.ardulink.mail.camel;
 
 import static java.lang.Boolean.parseBoolean;
-import static org.ardulink.mail.Commands.switchAnalogPin;
-import static org.ardulink.mail.Commands.switchDigitalPin;
+import static org.ardulink.camel.command.Commands.switchAnalogPin;
+import static org.ardulink.camel.command.Commands.switchDigitalPin;
 import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
@@ -29,7 +29,7 @@ import java.util.Map.Entry;
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.UriEndpointComponent;
 import org.apache.camel.spi.UriEndpoint;
-import org.ardulink.mail.Command;
+import org.ardulink.camel.command.Command;
 import org.ardulink.util.Optional;
 
 /**

@@ -12,11 +12,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
-package org.ardulink.mail;
+package org.ardulink.core.messages.impl;
 
-import org.ardulink.core.Link;
+import org.ardulink.core.Pin;
+import org.ardulink.core.messages.api.FromDeviceChangeListeningState;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -26,8 +27,23 @@ import org.ardulink.core.Link;
  * [adsense]
  *
  */
-public interface Command {
+public class DefaultFromDeviceChangeListeningState implements
+		FromDeviceChangeListeningState {
 
-	void execute(Link link) throws Exception;
+	private final Pin pin;
+	private final Mode mode;
+
+	public DefaultFromDeviceChangeListeningState(Pin pin, Mode mode) {
+		this.pin = pin;
+		this.mode = mode;
+	}
+
+	public Pin getPin() {
+		return this.pin;
+	}
+
+	public Mode getMode() {
+		return mode;
+	}
 
 }
