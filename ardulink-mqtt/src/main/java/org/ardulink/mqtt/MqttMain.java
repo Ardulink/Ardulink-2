@@ -19,7 +19,6 @@ package org.ardulink.mqtt;
 import static org.apache.camel.ShutdownRunningTask.CompleteAllTasks;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
-import io.moquette.server.Server;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -111,7 +110,7 @@ public class MqttMain {
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
-				String ardulink = connection + "?listenTo=" + listenTo();
+				String ardulink = appendListenTo(connection);
 				String mqtt = appendClientId(appendAuth("mqtt://" + brokerHost
 						+ ":" + brokerPort + "?"))
 						+ "subscribeTopicNames=" + config.getTopic() + "#";
@@ -126,6 +125,15 @@ public class MqttMain {
 				from(mqtt).transform(body().convertToString())
 						.process(toArdulinkProtocol).to(ardulink)
 						.shutdownRunningTask(CompleteAllTasks);
+			}
+
+			private String appendListenTo(String connection) {
+				String listenTo = listenTo();
+				if (listenTo.isEmpty()) {
+					return connection;
+				}
+				return connection + (connection.contains("?") ? "&" : "?")
+						+ "listenTo=" + listenTo;
 			}
 
 			private String listenTo() {
