@@ -25,6 +25,7 @@ import io.moquette.server.Server;
 import io.moquette.server.config.MemoryConfig;
 import io.moquette.spi.security.IAuthenticator;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -38,7 +39,7 @@ import org.ardulink.util.Strings;
  * [adsense]
  *
  */
-public class MqttBroker {
+public class MqttBroker implements Closeable {
 
 	public static class Builder {
 
@@ -62,14 +63,8 @@ public class MqttBroker {
 			return this;
 		}
 
-		public Server startBroker() {
-			Server broker = new Server();
-			try {
-				broker.startServer(new MemoryConfig(properties()));
-				return broker;
-			} catch (IOException e) {
-				throw propagate(e);
-			}
+		public MqttBroker startBroker() {
+			return new MqttBroker(this);
 		}
 
 		public static class EnvironmentAuthenticator implements IAuthenticator {
@@ -106,8 +101,27 @@ public class MqttBroker {
 
 	}
 
+	private final Server broker;
+
 	public static Builder builder() {
 		return new Builder();
+	}
+
+	public MqttBroker(Builder builder) {
+		broker = new Server();
+		try {
+			broker.startServer(new MemoryConfig(builder.properties()));
+		} catch (IOException e) {
+			throw propagate(e);
+		}
+	}
+
+	public void close() {
+		broker.stopServer();
+	}
+
+	public void stop() {
+		close();
 	}
 
 }

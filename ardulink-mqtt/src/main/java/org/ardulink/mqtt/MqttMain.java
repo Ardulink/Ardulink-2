@@ -97,7 +97,7 @@ public class MqttMain {
 	@Option(name = "-standalone", usage = "Start a mqtt server on this host")
 	private boolean standalone;
 
-	private Server standaloneServer;
+	private MqttBroker standaloneServer;
 
 	private CamelContext context;
 
@@ -230,9 +230,9 @@ public class MqttMain {
 			}
 		}
 
-		Server tmpServer = this.standaloneServer;
+		MqttBroker tmpServer = this.standaloneServer;
 		if (tmpServer != null) {
-			tmpServer.stopServer();
+			tmpServer.stop();
 		}
 	}
 

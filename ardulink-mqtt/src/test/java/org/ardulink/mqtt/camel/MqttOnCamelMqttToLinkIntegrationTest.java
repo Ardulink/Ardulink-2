@@ -5,7 +5,6 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import io.moquette.server.Server;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +37,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	private AnotherMqttClient mqttClient;
 
-	private Server broker;
+	private MqttBroker broker;
 
 	private CamelContext context;
 
@@ -52,7 +51,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 	@After
 	public void tearDown() throws IOException {
 		mqttClient.close();
-		broker.stopServer();
+		broker.close();
 		link.close();
 	}
 
@@ -60,7 +59,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 	@Ignore
 	public void routeFailsIfBrokerIsNotRunning() throws Exception {
 		context = camelContext(config());
-		broker.stopServer();
+		broker.close();
 		context.stop();
 		Link mock = getMock(link);
 		verify(mock).close();

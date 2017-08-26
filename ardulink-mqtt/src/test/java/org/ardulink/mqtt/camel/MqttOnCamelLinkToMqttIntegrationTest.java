@@ -6,7 +6,6 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import io.moquette.server.Server;
 
 import java.io.IOException;
 import java.util.List;
@@ -44,7 +43,7 @@ public class MqttOnCamelLinkToMqttIntegrationTest {
 
 	private final Link link = Links.getLink(URIs.newURI(mockURI));
 
-	private Server broker;
+	private MqttBroker broker;
 
 	private CamelContext context;
 
@@ -57,7 +56,7 @@ public class MqttOnCamelLinkToMqttIntegrationTest {
 	@After
 	public void tearDown() throws IOException {
 		mqttClient.close();
-		broker.stopServer();
+		broker.close();
 		link.close();
 	}
 
