@@ -38,21 +38,6 @@
 		<developerConnection>scm:git:git@github.com:Ardulink/Ardulink-2.git</developerConnection>
 	</scm>
 
-	<repositories>
-		<repository>
-			<id>local-repo</id>
-			<url>file://${project.basedir}/../local-repo</url>
-		</repository>
-		<repository>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<id>central</id>
-			<name>Central Repository</name>
-			<url>http://repo.maven.apache.org/maven2</url>
-		</repository>
-	</repositories>
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<compilerVersion>1.6</compilerVersion>
