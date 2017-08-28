@@ -16,38 +16,28 @@ limitations under the License.
 
 package org.ardulink.mail.camel;
 
-import static org.ardulink.camel.command.Commands.switchAnalogPin;
-import static org.ardulink.camel.command.Commands.switchDigitalPin;
-import static org.ardulink.core.Pin.analogPin;
-import static org.ardulink.core.Pin.digitalPin;
 import static java.util.Collections.singletonList;
-import static org.apache.camel.ExchangePattern.InOut;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
+import static org.ardulink.mail.camel.FromValidator.validateFromHeader;
+import static org.ardulink.mail.camel.ScenarioProcessor.processScenario;
+import static org.ardulink.mail.test.CauseMatcher.exceptionWithMessage;
 import static org.ardulink.util.Throwables.propagate;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.IsNull.nullValue;
-import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.hamcrest.CoreMatchers.containsString;
 
-import java.net.URI;
 import java.util.Collections;
 
-import org.apache.camel.Endpoint;
-import org.apache.camel.Exchange;
+import org.apache.camel.CamelContext;
 import org.apache.camel.Message;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.DefaultExchange;
 import org.apache.camel.impl.DefaultMessage;
-import org.junit.After;
+import org.ardulink.core.proto.impl.ALProtoBuilder;
+import org.ardulink.util.Lists;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.ardulink.core.Link;
-import org.ardulink.core.convenience.LinkDelegate;
-import org.ardulink.core.convenience.Links;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -59,120 +49,168 @@ import org.ardulink.core.convenience.Links;
  */
 public class ArdulinkProducerTest {
 
+	private CamelContext createContext(final FromValidator fromValidator,
+			final ScenarioProcessor scenarioProcessor) {
+		try {
+			CamelContext context = new DefaultCamelContext();
+			context.addRoutes(new RouteBuilder() {
+				@Override
+				public void configure() {
+					from(IN).process(fromValidator).process(scenarioProcessor)
+							.split(body()).to(OUT);
+				}
+
+			});
+			context.start();
+			return context;
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+	}
+
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
-	private ArdulinkProducer producer = new ArdulinkProducer(
-			mock(Endpoint.class), "mock", null);
+	private static final String IN = "direct:in";
+	private static final String OUT = "mock:result";
 
 	private Message message = new DefaultMessage();
+	private CamelContext context;
 
-	private final String uri = "ardulink://mock";
-	private Link link = getLink(uri);
-
-	@After
 	public void tearDown() throws Exception {
-		link.close();
-		producer.stop();
+		context.stop();
 	}
 
 	@Test
 	public void doesNotAcceptMessagesWithUnknownFromAddresses()
 			throws Exception {
+		context = createContext(
+				validateFromHeader(Collections.<String> emptyList()),
+				processScenario());
 		message.setHeader("From", "userA");
-		expectedException.expect(IllegalStateException.class);
-		expectedException
-				.expectMessage(containsString("user userA not a valid from"));
+
+		MockEndpoint mockEndpoint = getMockEndpoint();
+		mockEndpoint.expectedMessageCount(0);
+
+		expectedException.expect(RuntimeException.class);
+		expectedException.expectCause(exceptionWithMessage(
+				IllegalStateException.class,
+				containsString("not a valid from address")));
 		process();
+		mockEndpoint.assertIsSatisfied();
 	}
 
 	@Test
 	public void doesNotAcceptMeesagesWithEmptyBody() throws Exception {
+		context = createContext(
+				validateFromHeader(singletonList("aValidUser")),
+				processScenario());
 		message.setHeader("From", "aValidUser");
-		producer.setValidFroms(singletonList("aValidUser"));
-		expectedException.expect(IllegalStateException.class);
-		expectedException.expectMessage(containsString("Body not a String"));
+
+		MockEndpoint mockEndpoint = getMockEndpoint();
+		mockEndpoint.expectedMessageCount(0);
+
+		expectedException.expect(RuntimeException.class);
+		expectedException.expectCause(exceptionWithMessage(
+				IllegalStateException.class, containsString("body is empty")));
 		process();
+		mockEndpoint.assertIsSatisfied();
 	}
 
 	@Test
 	public void doesNotAcceptMessagesWithNullOrEmptyFromAddress()
 			throws Exception {
-		expectedException.expect(IllegalStateException.class);
-		expectedException.expectMessage(containsString("No from"));
+		context = createContext(validateFromHeader(singletonList("anyuser")),
+				processScenario());
+
+		MockEndpoint mockEndpoint = getMockEndpoint();
+		mockEndpoint.expectedMessageCount(0);
+
+		expectedException.expect(RuntimeException.class);
+		expectedException.expectCause(exceptionWithMessage(
+				IllegalStateException.class, containsString("No from")));
 		process();
+		mockEndpoint.assertIsSatisfied();
 	}
 
 	@Test
-	public void returnsNullIfCommandIsNotKnown() throws Exception {
+	public void doesNotAcceptMessagesWhereScenarioNameIsNotKnown()
+			throws Exception {
 		String anyUser = "anyuser";
 		message.setHeader("From", anyUser);
 		String commandName = "unknown command name";
 		message.setBody(commandName);
-		producer.setValidFroms(singletonList(anyUser));
-		Exchange exchange = process();
 
-		verifyNoMoreInteractions(getMock());
-		assertThat(exchange.getOut().getBody(), nullValue());
+		context = createContext(validateFromHeader(singletonList(anyUser)),
+				processScenario());
+
+		MockEndpoint mockEndpoint = getMockEndpoint();
+		mockEndpoint.expectedMessageCount(0);
+
+		expectedException.expect(RuntimeException.class);
+		expectedException.expectCause(exceptionWithMessage(
+				IllegalStateException.class, containsString("not known")));
+
+		process();
+		mockEndpoint.assertIsSatisfied();
 	}
 
 	@Test
 	public void doesProcessDigitalPinMessages() throws Exception {
-		String anyUser = "anyuser";
-		message.setHeader("From", anyUser);
-		String commandName = "scenario 1";
-		message.setBody(commandName);
-		producer.setValidFroms(Collections.singletonList(anyUser));
-		producer.setCommands(commandName,
-				singletonList(switchDigitalPin(7, true)));
-		Exchange exchange = process();
-		assertThat(exchange.getOut().getBody(), is(not(nullValue())));
+		String switchDigital7 = ALProtoBuilder
+				.alpProtocolMessage(POWER_PIN_SWITCH).forPin(7).withState(true);
 
-		Link mock = getMock();
-		verify(mock).switchDigitalPin(digitalPin(7), true);
-		verifyNoMoreInteractions(mock);
+		String anyUser = "anyuser";
+		String commandName = "scenario 1";
+
+		message.setHeader("From", anyUser);
+		message.setBody(commandName);
+
+		context = createContext(
+				validateFromHeader(singletonList(anyUser)),
+				processScenario().withCommand(commandName,
+						singletonList(switchDigital7)));
+
+		MockEndpoint mockEndpoint = getMockEndpoint();
+		mockEndpoint.expectedBodiesReceived(switchDigital7);
+
+		process();
+
+		mockEndpoint.assertIsSatisfied();
 	}
 
 	@Test
 	public void doesProcessDigitalAndAnalogPinMessages() throws Exception {
+		String switchDigital7 = ALProtoBuilder
+				.alpProtocolMessage(POWER_PIN_SWITCH).forPin(7).withState(true);
+		String switchAnalog8 = ALProtoBuilder
+				.alpProtocolMessage(POWER_PIN_INTENSITY).forPin(8)
+				.withValue(123);
+
 		String anyUser = "anyuser";
 		message.setHeader("From", anyUser);
 		String commandName = "scenario 2";
 		message.setBody(commandName);
-		producer.setValidFroms(Collections.singletonList(anyUser));
-		producer.setCommands(commandName, switchDigitalPin(7, true),
-				switchAnalogPin(4, 123));
+
+		context = createContext(
+				validateFromHeader(singletonList(anyUser)),
+				processScenario().withCommand(commandName,
+						Lists.newArrayList(switchDigital7, switchAnalog8)));
+
+		MockEndpoint mockEndpoint = getMockEndpoint();
+
+		mockEndpoint.expectedBodiesReceived(switchDigital7, switchAnalog8);
 		process();
-
-		Link mock = getMock();
-		verify(mock).switchDigitalPin(digitalPin(7), true);
-		verify(mock).switchAnalogPin(analogPin(4), 123);
-		verifyNoMoreInteractions(mock);
+		mockEndpoint.assertIsSatisfied();
 	}
 
-	private Exchange process() throws Exception {
-		Exchange exchange = exchange();
-		producer.process(exchange);
-		return exchange;
+	private void process() throws Exception {
+		context.createProducerTemplate().sendBodyAndHeaders(IN,
+				message.getBody(), message.getHeaders());
 	}
 
-	private Exchange exchange() {
-		Exchange exchange = new DefaultExchange(new DefaultCamelContext());
-		exchange.setPattern(InOut);
-		exchange.setIn(message);
-		return exchange;
-	}
-
-	private Link getMock() {
-		return ((LinkDelegate) link).getDelegate();
-	}
-
-	private Link getLink(String uri) {
-		try {
-			return Links.getLink(new URI(uri));
-		} catch (Exception e) {
-			throw propagate(e);
-		}
+	private MockEndpoint getMockEndpoint() {
+		return context.getEndpoint(OUT, MockEndpoint.class);
 	}
 
 }

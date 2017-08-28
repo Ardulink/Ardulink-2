@@ -62,13 +62,19 @@ public class ArdulinkProducer extends DefaultProducer {
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		byte[] bytes = exchange.getIn().getBody(byte[].class);
-		FromDeviceMessage fromDevice = protocol.fromDevice(bytes);
+		String body = exchange.getIn().getBody(String.class);
+		FromDeviceMessage fromDevice = protocol.fromDevice(body.getBytes());
 		if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
 			handlePinStateChange((FromDeviceMessagePinStateChanged) fromDevice);
+			setResponse(exchange, body, "OK");
 		} else if (fromDevice instanceof FromDeviceChangeListeningState) {
 			handleListeningStateChange((FromDeviceChangeListeningState) fromDevice);
+			setResponse(exchange, body, "OK");
 		}
+	}
+
+	private void setResponse(Exchange exchange, String bodyIn, String rc) {
+		exchange.getIn().setBody(bodyIn + "=" + rc);
 	}
 
 	private void handlePinStateChange(FromDeviceMessagePinStateChanged event)

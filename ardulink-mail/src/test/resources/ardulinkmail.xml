@@ -1,13 +1,26 @@
 <routes xmlns="http://camel.apache.org/schema/spring">
+
 	<route>
-		<from uri="imap://receiver@someReceiverDomain.com?username=loginIdReceiver&amp;password=secretOfReceiver&amp;host=${imaphost}&amp;port=${imapport}&amp;folderName=INBOX&amp;delete=true&amp;consumer.delay=600000&amp;unseen=true"/>
-		<to uri="ardulink://mock?scenario.${commandname}=${command}&amp;validfroms=valid.sender@someSenderDomain.com"/>
+		<from
+			uri="imap://receiver@someReceiverDomain.com?username=loginIdReceiver&amp;password=secretOfReceiver&amp;host=${imaphost}&amp;port=${imapport}&amp;folderName=INBOX&amp;delete=true&amp;consumer.delay=600000&amp;unseen=true" />
+
+		<to
+			uri="class:org.ardulink.mail.camel.xmlconfig.MFromValidator?bean.validFroms=valid.sender@someSenderDomain.com" />
+		<to
+			uri="class:org.ardulink.mail.camel.xmlconfig.MScenarioProcessor?bean.nameAndCommands=${commandname},${command}" />
+
+		<split strategyRef="org.ardulink.mail.camel.StringJoiningStrategy">
+			<simple>${body}</simple>
+			<to uri="ardulink://mock" />
+		</split>
+
 		<setHeader headerName="to">
 			<simple>${in.header.from}</simple>
 		</setHeader>
 		<setHeader headerName="from">
 			<simple>${in.header.to}</simple>
 		</setHeader>
-		<to uri="smtp://${smtphost}:${smtpport}?username=loginIdSender&amp;password=secretOfSender"/>
+		<to
+			uri="smtp://${smtphost}:${smtpport}?username=loginIdSender&amp;password=secretOfSender" />
 	</route>
 </routes>
