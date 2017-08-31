@@ -1,10 +1,9 @@
 package org.ardulink.core.virtual;
 
 import org.ardulink.core.Link;
-import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 
-public class VirtualLinkFactory implements LinkFactory<LinkConfig> {
+public class VirtualLinkFactory implements LinkFactory<VirtualLinkConfig> {
 
 	@Override
 	public String getName() {
@@ -12,13 +11,13 @@ public class VirtualLinkFactory implements LinkFactory<LinkConfig> {
 	}
 
 	@Override
-	public Link newLink(LinkConfig config) throws Exception {
+	public Link newLink(VirtualLinkConfig config) throws Exception {
 		return new VirtualLink(config);
 	}
 
 	@Override
-	public LinkConfig newLinkConfig() {
-		return LinkConfig.NO_ATTRIBUTES;
+	public VirtualLinkConfig newLinkConfig() {
+		return new VirtualLinkConfig();
 	}
 
 }
