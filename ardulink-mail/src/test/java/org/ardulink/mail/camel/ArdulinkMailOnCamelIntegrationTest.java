@@ -283,6 +283,13 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	}
 
+	// TODO PF this could be referred inside route.xml!
+	private static class Route1 extends RouteBuilder {
+		@Override
+		public void configure() throws Exception {
+			from("").routeId(Route1.class.getName()).to("");
+		}
+	}
 	@Test
 	// ignored since it seems impossible to set the split strategy as a POJO
 	// (CamelContext#loadRoutesDefinition() loads routes only), it seems we have
