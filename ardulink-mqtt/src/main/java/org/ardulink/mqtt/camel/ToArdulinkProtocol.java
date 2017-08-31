@@ -187,7 +187,7 @@ public final class ToArdulinkProtocol implements Processor {
 				in.getHeader(headerNameForTopic, String.class),
 				in.getBody(String.class));
 		if (result.isPresent()) {
-			exchange.getOut().setBody(result.get(), String.class);
+			in.setBody(result.get(), String.class);
 		} else {
 			cancelExchange(exchange);
 		}
