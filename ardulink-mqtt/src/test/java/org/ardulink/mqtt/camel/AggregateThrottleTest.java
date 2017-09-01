@@ -2,14 +2,17 @@ package org.ardulink.mqtt.camel;
 
 import static java.math.RoundingMode.HALF_UP;
 import static org.ardulink.mqtt.camel.AggregateThrottleTest.CompactStrategy.AVERAGE;
-import static org.ardulink.mqtt.camel.AggregateThrottleTest.CompactStrategy.LAST_WINS;
+import static org.ardulink.mqtt.camel.AggregateThrottleTest.CompactStrategy.USE_LATEST;
+import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.math.BigDecimal;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.builder.ValueBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.model.AggregateDefinition;
@@ -32,7 +35,7 @@ public class AggregateThrottleTest {
 	private CamelContext context;
 
 	public enum CompactStrategy {
-		AVERAGE, LAST_WINS;
+		AVERAGE, USE_LATEST;
 	}
 
 	@After
@@ -43,18 +46,18 @@ public class AggregateThrottleTest {
 	@Test
 	public void doesAggregateAnalogsUsingLastAndKeepsDigitals()
 			throws Exception {
-		context = camelContext(config(), LAST_WINS);
+		context = camelContext(config(), USE_LATEST);
 		MockEndpoint out = getMockEndpoint();
 		out.expectedBodiesReceived("alp://dred/0/1", "alp://dred/0/0",
 				"alp://ared/0/12", "alp://ared/1/1");
 
-		mqttSend("A0", 1);
-		mqttSend("A0", 3);
-		mqttSend("A1", 999);
-		mqttSend("D0", true);
-		mqttSend("D0", false);
-		mqttSend("A0", 12);
-		mqttSend("A1", 1);
+		ardulinkSend("A0", 1);
+		ardulinkSend("A0", 3);
+		ardulinkSend("A1", 999);
+		ardulinkSend("D0", true);
+		ardulinkSend("D0", false);
+		ardulinkSend("A0", 12);
+		ardulinkSend("A1", 1);
 
 		out.assertIsSatisfied();
 	}
@@ -67,19 +70,19 @@ public class AggregateThrottleTest {
 		out.expectedBodiesReceived("alp://dred/0/1", "alp://dred/0/0",
 				"alp://ared/0/5", "alp://ared/1/500");
 
-		mqttSend("A0", 1);
-		mqttSend("A0", 3);
-		mqttSend("A1", 999);
-		mqttSend("D0", true);
-		mqttSend("D0", false);
-		mqttSend("A0", 12);
-		mqttSend("A1", 1);
+		ardulinkSend("A0", 1);
+		ardulinkSend("A0", 3);
+		ardulinkSend("A1", 999);
+		ardulinkSend("D0", true);
+		ardulinkSend("D0", false);
+		ardulinkSend("A0", 12);
+		ardulinkSend("A1", 1);
 
 		out.assertIsSatisfied();
 
 	}
 
-	private void mqttSend(String pin, Object value) {
+	private void ardulinkSend(String pin, Object value) {
 		context.createProducerTemplate().sendBodyAndHeader(IN, value,
 				HEADER_FOR_TOPIC, TOPIC + pin + "/value/set");
 	}
@@ -103,16 +106,17 @@ public class AggregateThrottleTest {
 				ChoiceDefinition pre = from(IN).choice().when(
 						simple("${in.body} is 'java.lang.Number'"));
 				useStrategy(pre, compactStrategy).endChoice().otherwise()
-						.to("seda:seda1");
-				from("seda:seda1").transform(body().convertToString())
+						.to("direct:endOfAnalogAggregation");
+				from("direct:endOfAnalogAggregation")
+						.transform(body().convertToString())
 						.process(toArdulinkProtocol).to(OUT);
 			}
 
 			private AggregateDefinition useStrategy(ChoiceDefinition def,
 					final CompactStrategy strategy) {
 				switch (strategy) {
-				case LAST_WINS:
-					return appendLastStrategy(def);
+				case USE_LATEST:
+					return appendUseLatestStrategy(def);
 				case AVERAGE:
 					return appendAverageStrategy(def);
 				default:
@@ -120,36 +124,41 @@ public class AggregateThrottleTest {
 				}
 			}
 
-			private AggregateDefinition appendLastStrategy(ChoiceDefinition def) {
+			private AggregateDefinition appendUseLatestStrategy(
+					ChoiceDefinition def) {
 				return def
 						.aggregate(header(HEADER_FOR_TOPIC),
 								new UseLatestAggregationStrategy())
 						.completionInterval(1000).completeAllOnStop()
-						.to("seda:seda1");
+						.to("direct:endOfAnalogAggregation");
 			}
 
 			private AggregateDefinition appendAverageStrategy(
 					ChoiceDefinition def) {
-				return def.aggregate(header(HEADER_FOR_TOPIC), sum())
-						.completionInterval(1000).completeAllOnStop()
-						.process(divide()).to("seda:seda1");
+				return def
+						.aggregate(header(HEADER_FOR_TOPIC), sum())
+						.completionInterval(1000)
+						.completeAllOnStop()
+						.process(
+								divideByValueOf(exchangeProperty("CamelAggregatedSize")))
+						.to("direct:endOfAnalogAggregation");
 			}
 
-			private Processor divide() {
+			private Processor divideByValueOf(final ValueBuilder valueBuilder) {
 				return new Processor() {
 					@Override
 					public void process(Exchange exchange) throws Exception {
-						Integer messageCount = exchange.getProperty(
-								"CamelAggregatedSize", Integer.class);
-						if (messageCount != null) {
-							BigDecimal sum = new BigDecimal(exchange.getIn()
-									.getBody(Number.class).toString());
-							exchange.getIn().setBody(
-									sum.divide(
-											new BigDecimal(messageCount
-													.toString()), HALF_UP));
-						}
+						Message in = exchange.getIn();
+						BigDecimal sum = new BigDecimal(checkNotNull(
+								in.getBody(Number.class), "Body of %s is null",
+								in).toString());
+						BigDecimal divisor = new BigDecimal(checkNotNull(
+								valueBuilder.evaluate(exchange, Integer.class),
+								"No %s set in exchange %s", valueBuilder,
+								exchange).toString());
+						in.setBody(sum.divide(divisor, HALF_UP));
 					}
+
 				};
 			}
 
