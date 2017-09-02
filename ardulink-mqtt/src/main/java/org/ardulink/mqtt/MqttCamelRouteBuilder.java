@@ -17,8 +17,8 @@ public class MqttCamelRouteBuilder {
 					ToArdulinkProtocol toArdulinkProtocol = new ToArdulinkProtocol(
 							config)
 							.headerNameForTopic("CamelMQTTSubscribeTopic");
-					from(to).transform(body().convertToString())
-							.process(toArdulinkProtocol).to(from)
+					from(mqtt).transform(body().convertToString())
+							.process(toArdulinkProtocol).to(something)
 							.shutdownRunningTask(CompleteAllTasks);
 				}
 
@@ -29,8 +29,8 @@ public class MqttCamelRouteBuilder {
 
 	private final CamelContext context;
 	private final Config config;
-	private String from;
-	private String to;
+	private String something;
+	private String mqtt;
 
 	public MqttCamelRouteBuilder(final CamelContext context, final Config config) {
 		this.context = context;
@@ -41,17 +41,17 @@ public class MqttCamelRouteBuilder {
 		return this;
 	}
 
-	public ConfiguredMqttCamelRouteBuilder addRoute(final String from,
-			final String to) throws Exception {
-		this.from = from;
-		this.to = to;
+	public ConfiguredMqttCamelRouteBuilder fromSomethingToMqtt(
+			final String something, final String mqtt) throws Exception {
+		this.something = something;
+		this.mqtt = mqtt;
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
 				FromArdulinkProtocol fromArdulinkProtocol = new FromArdulinkProtocol(
 						config).headerNameForTopic("CamelMQTTPublishTopic");
-				from(from).transform(body().convertToString())
-						.process(fromArdulinkProtocol).to(to);
+				from(something).process(fromArdulinkProtocol)
+						.transform(body().convertToString()).to(mqtt);
 			}
 
 		});

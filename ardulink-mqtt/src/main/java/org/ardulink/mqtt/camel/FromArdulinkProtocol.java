@@ -46,17 +46,23 @@ public final class FromArdulinkProtocol implements Processor {
 	private void handle(Message in,
 			FromDeviceMessagePinStateChanged pinChangeEvent) {
 		Pin pin = pinChangeEvent.getPin();
-		in.setHeader(headerNameForTopic,
-				String.format(getPattern(pin), pin.pinNum()));
-		in.setBody(String.valueOf(pinChangeEvent.getValue()));
+
+		Object value = pinChangeEvent.getValue();
+		if (pin.is(DIGITAL)) {
+			setHeaderAndBody(in, pin, config.getTopicPatternDigitalRead(),
+					value);
+		} else if (pin.is(ANALOG)) {
+			setHeaderAndBody(in, pin, config.getTopicPatternAnalogRead(), value);
+		} else {
+			throw new IllegalStateException("Unknown pin type of pin " + pin);
+		}
+
 	}
 
-	private String getPattern(Pin pin) {
-		if (pin.is(DIGITAL)) {
-			return config.getTopicPatternDigitalRead();
-		} else if (pin.is(ANALOG)) {
-			return config.getTopicPatternAnalogRead();
-		}
-		throw new IllegalStateException("Unknown pin type of pin " + pin);
+	private void setHeaderAndBody(Message in, Pin pin, String pattern,
+			Object value) {
+		in.setHeader(headerNameForTopic, String.format(pattern, pin.pinNum()));
+		in.setBody(value);
 	}
+
 }

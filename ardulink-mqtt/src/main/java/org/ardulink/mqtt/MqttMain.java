@@ -107,8 +107,8 @@ public class MqttMain {
 		String mqtt = appendClientId(appendAuth("mqtt://" + brokerHost + ":"
 				+ brokerPort + "?"))
 				+ "subscribeTopicNames=" + config.getTopic() + "#";
-		new MqttCamelRouteBuilder(context, config).addRoute(ardulink, mqtt)
-				.andReverse();
+		new MqttCamelRouteBuilder(context, config).fromSomethingToMqtt(
+				ardulink, mqtt).andReverse();
 		return context;
 	}
 
