@@ -37,10 +37,6 @@ public class MqttCamelRouteBuilder {
 		this.config = config;
 	}
 
-	public MqttCamelRouteBuilder from(final String from) {
-		return this;
-	}
-
 	public MqttCamelRouteBuilder to(final String to) {
 		return this;
 	}
