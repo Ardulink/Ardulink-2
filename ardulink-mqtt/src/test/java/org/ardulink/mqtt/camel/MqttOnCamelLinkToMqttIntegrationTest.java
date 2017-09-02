@@ -1,7 +1,6 @@
 package org.ardulink.mqtt.camel;
 
 import static java.util.Arrays.asList;
-import static org.apache.camel.ShutdownRunningTask.CompleteAllTasks;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.hamcrest.CoreMatchers.is;
@@ -12,7 +11,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Link;
@@ -22,6 +20,7 @@ import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import org.ardulink.mqtt.Config;
 import org.ardulink.mqtt.MqttBroker;
+import org.ardulink.mqtt.MqttCamelRouteBuilder;
 import org.ardulink.mqtt.util.AnotherMqttClient;
 import org.ardulink.mqtt.util.Message;
 import org.ardulink.util.URIs;
@@ -96,16 +95,8 @@ public class MqttOnCamelLinkToMqttIntegrationTest {
 
 	private CamelContext camelContext(final Config config) throws Exception {
 		CamelContext context = new DefaultCamelContext();
-		context.addRoutes(new RouteBuilder() {
-			@Override
-			public void configure() {
-				FromArdulinkProtocol fromArdulinkProtocol = new FromArdulinkProtocol(
-						config).headerNameForTopic("CamelMQTTPublishTopic");
-				from(mockURI).transform(body().convertToString())
-						.process(fromArdulinkProtocol).to(mqtt())
-						.shutdownRunningTask(CompleteAllTasks);
-			}
-		});
+		new MqttCamelRouteBuilder(context, config).fromSomethingToMqtt(mockURI,
+				mqtt());
 		context.start();
 		return context;
 	}
@@ -115,8 +106,8 @@ public class MqttOnCamelLinkToMqttIntegrationTest {
 	}
 
 	private String mqtt() {
-		return "mqtt:localhost?connectAttemptsMax=1"
-				+ "&reconnectAttemptsMax=0" + "&mqttTopicPropertyName=topic";
+		return "mqtt:localhost" + "?connectAttemptsMax=1"
+				+ "&reconnectAttemptsMax=0";
 	}
 
 }
