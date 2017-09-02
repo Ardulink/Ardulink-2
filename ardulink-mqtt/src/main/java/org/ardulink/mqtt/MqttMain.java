@@ -16,7 +16,6 @@ limitations under the License.
  */
 package org.ardulink.mqtt;
 
-import static org.apache.camel.ShutdownRunningTask.CompleteAllTasks;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
 
@@ -26,11 +25,8 @@ import java.util.List;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Route;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.mqtt.MqttBroker.Builder;
-import org.ardulink.mqtt.camel.FromArdulinkProtocol;
-import org.ardulink.mqtt.camel.ToArdulinkProtocol;
 import org.ardulink.util.Joiner;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -105,70 +101,53 @@ public class MqttMain {
 		return addRoutes(config, new DefaultCamelContext());
 	}
 
-	private CamelContext addRoutes(final Config config, CamelContext context)
+	private CamelContext addRoutes(Config config, CamelContext context)
 			throws Exception {
-		context.addRoutes(new RouteBuilder() {
-			@Override
-			public void configure() {
-				String ardulink = appendListenTo(connection);
-				String mqtt = appendClientId(appendAuth("mqtt://" + brokerHost
-						+ ":" + brokerPort + "?"))
-						+ "subscribeTopicNames=" + config.getTopic() + "#";
-
-				FromArdulinkProtocol fromArdulinkProtocol = new FromArdulinkProtocol(
-						config).headerNameForTopic("CamelMQTTPublishTopic");
-				from(ardulink).transform(body().convertToString())
-						.process(fromArdulinkProtocol).to(mqtt);
-
-				ToArdulinkProtocol toArdulinkProtocol = new ToArdulinkProtocol(
-						config).headerNameForTopic("CamelMQTTSubscribeTopic");
-				from(mqtt).transform(body().convertToString())
-						.process(toArdulinkProtocol).to(ardulink)
-						.shutdownRunningTask(CompleteAllTasks);
-			}
-
-			private String appendListenTo(String connection) {
-				String listenTo = listenTo();
-				if (listenTo.isEmpty()) {
-					return connection;
-				}
-				return connection + (connection.contains("?") ? "&" : "?")
-						+ "listenTo=" + listenTo;
-			}
-
-			private String listenTo() {
-				return Joiner.on(",").join(
-						add("D%s", digitals,
-								add("A%s", analogs, new ArrayList<String>())));
-			}
-
-			private List<String> add(String format, int[] pins, List<String> to) {
-				for (int pin : pins) {
-					to.add(String.format(format, pin));
-				}
-				return to;
-			}
-
-			private String appendClientId(String brokerUri) {
-				if (nullOrEmpty(clientId)) {
-					return brokerUri;
-				}
-				return brokerUri + "clientId=" + clientId + "&";
-			}
-
-			private String appendAuth(String brokerUri) {
-				if (nullOrEmpty(credentials)) {
-					return brokerUri;
-				}
-				String[] auth = credentials.split(":");
-				checkState(auth.length == 2,
-						"Credentials not in format user:password");
-				return brokerUri + "userName=" + auth[0] + "&password="
-						+ auth[1] + "&";
-			}
-
-		});
+		String ardulink = appendListenTo(connection);
+		String mqtt = appendClientId(appendAuth("mqtt://" + brokerHost + ":"
+				+ brokerPort + "?"))
+				+ "subscribeTopicNames=" + config.getTopic() + "#";
+		new MqttCamelRouteBuilder(context, config).from(ardulink).to(mqtt)
+				.addRoute(ardulink, mqtt).andReverse();
 		return context;
+	}
+
+	private String appendListenTo(String connection) {
+		String listenTo = listenTo();
+		if (listenTo.isEmpty()) {
+			return connection;
+		}
+		return connection + (connection.contains("?") ? "&" : "?")
+				+ "listenTo=" + listenTo;
+	}
+
+	private String appendAuth(String brokerUri) {
+		if (nullOrEmpty(credentials)) {
+			return brokerUri;
+		}
+		String[] auth = credentials.split(":");
+		checkState(auth.length == 2, "Credentials not in format user:password");
+		return brokerUri + "userName=" + auth[0] + "&password=" + auth[1] + "&";
+	}
+
+	private String appendClientId(String brokerUri) {
+		if (nullOrEmpty(clientId)) {
+			return brokerUri;
+		}
+		return brokerUri + "clientId=" + clientId + "&";
+	}
+
+	private String listenTo() {
+		return Joiner.on(",").join(
+				add("D%s", digitals,
+						add("A%s", analogs, new ArrayList<String>())));
+	}
+
+	private List<String> add(String format, int[] pins, List<String> to) {
+		for (int pin : pins) {
+			to.add(String.format(format, pin));
+		}
+		return to;
 	}
 
 	public static void main(String[] args) throws Exception {
