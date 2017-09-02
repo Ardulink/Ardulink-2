@@ -1,6 +1,9 @@
 package org.ardulink.mqtt.camel;
 
 import static java.math.RoundingMode.HALF_UP;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.mqtt.camel.AggregateThrottleTest.CompactStrategy.AVERAGE;
 import static org.ardulink.mqtt.camel.AggregateThrottleTest.CompactStrategy.USE_LATEST;
 import static org.ardulink.util.Preconditions.checkNotNull;
@@ -19,13 +22,14 @@ import org.apache.camel.model.AggregateDefinition;
 import org.apache.camel.model.ChoiceDefinition;
 import org.apache.camel.processor.aggregate.AggregationStrategy;
 import org.apache.camel.processor.aggregate.UseLatestAggregationStrategy;
+import org.ardulink.core.Pin;
 import org.ardulink.mqtt.Config;
 import org.junit.After;
 import org.junit.Test;
 
 public class AggregateThrottleTest {
 
-	private static final String HEADER_FOR_TOPIC = "CamelMQTTSubscribeTopic";
+	private static final String HEADER_FOR_TOPIC = "CamelMQTTPublishTopic";
 
 	private static final String TOPIC = "foo/bar/topic/";
 
@@ -48,16 +52,19 @@ public class AggregateThrottleTest {
 			throws Exception {
 		context = camelContext(config(), USE_LATEST);
 		MockEndpoint out = getMockEndpoint();
-		out.expectedBodiesReceived("alp://dred/0/1", "alp://dred/0/0",
-				"alp://ared/0/12", "alp://ared/1/1");
 
-		ardulinkSend("A0", 1);
-		ardulinkSend("A0", 3);
-		ardulinkSend("A1", 999);
-		ardulinkSend("D0", true);
-		ardulinkSend("D0", false);
-		ardulinkSend("A0", 12);
-		ardulinkSend("A1", 1);
+		out.expectedBodiesReceived(true, false, 1, 12);
+		out.expectedHeaderValuesReceivedInAnyOrder(HEADER_FOR_TOPIC,
+				"foo/bar/topic/D0/value/get", "foo/bar/topic/D0/value/get",
+				"foo/bar/topic/A1/value/get", "foo/bar/topic/A0/value/get");
+
+		simArdulinkSends(analogPin(0), 1);
+		simArdulinkSends(analogPin(0), 3);
+		simArdulinkSends(analogPin(1), 999);
+		simArdulinkSends(digitalPin(0), true);
+		simArdulinkSends(digitalPin(0), false);
+		simArdulinkSends(analogPin(0), 12);
+		simArdulinkSends(analogPin(1), 1);
 
 		out.assertIsSatisfied();
 	}
@@ -67,24 +74,35 @@ public class AggregateThrottleTest {
 			throws Exception {
 		context = camelContext(config(), AVERAGE);
 		MockEndpoint out = getMockEndpoint();
-		out.expectedBodiesReceived("alp://dred/0/1", "alp://dred/0/0",
-				"alp://ared/0/5", "alp://ared/1/500");
+		out.expectedBodiesReceived(true, false, 500, 5);
+		out.expectedHeaderValuesReceivedInAnyOrder(HEADER_FOR_TOPIC,
+				"foo/bar/topic/D0/value/get", "foo/bar/topic/D0/value/get",
+				"foo/bar/topic/A1/value/get", "foo/bar/topic/A0/value/get");
 
-		ardulinkSend("A0", 1);
-		ardulinkSend("A0", 3);
-		ardulinkSend("A1", 999);
-		ardulinkSend("D0", true);
-		ardulinkSend("D0", false);
-		ardulinkSend("A0", 12);
-		ardulinkSend("A1", 1);
+		simArdulinkSends(analogPin(0), 1);
+		simArdulinkSends(analogPin(0), 3);
+		simArdulinkSends(analogPin(1), 999);
+		simArdulinkSends(digitalPin(0), true);
+		simArdulinkSends(digitalPin(0), false);
+		simArdulinkSends(analogPin(0), 12);
+		simArdulinkSends(analogPin(1), 1);
 
 		out.assertIsSatisfied();
-
 	}
 
-	private void ardulinkSend(String pin, Object value) {
-		context.createProducerTemplate().sendBodyAndHeader(IN, value,
-				HEADER_FOR_TOPIC, TOPIC + pin + "/value/set");
+	private void simArdulinkSends(Pin pin, Object value) {
+		String body = String.format("alp://%sred/%s/%s", pin.is(ANALOG) ? "a"
+				: "d", pin.pinNum(), alpValue(value));
+		context.createProducerTemplate().sendBody(IN, body);
+	}
+
+	private Integer alpValue(Object value) {
+		if (value instanceof Integer) {
+			return (Integer) value;
+		} else if (value instanceof Boolean) {
+			return Boolean.TRUE.equals(value) ? 1 : 0;
+		}
+		throw new IllegalStateException("Cannot handle " + value);
 	}
 
 	private MockEndpoint getMockEndpoint() {
@@ -101,15 +119,15 @@ public class AggregateThrottleTest {
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
-				ToArdulinkProtocol toArdulinkProtocol = new ToArdulinkProtocol(
-						config).headerNameForTopic(HEADER_FOR_TOPIC);
-				ChoiceDefinition pre = from(IN).choice().when(
-						simple("${in.body} is 'java.lang.Number'"));
+				FromArdulinkProtocol fromArdulinkProtocol = new FromArdulinkProtocol(
+						config).headerNameForTopic("CamelMQTTPublishTopic");
+				ChoiceDefinition pre = from(IN).bean(fromArdulinkProtocol)
+						.choice()
+						.when(simple("${in.body} is 'java.lang.Number'"));
 				useStrategy(pre, compactStrategy).endChoice().otherwise()
 						.to("direct:endOfAnalogAggregation");
-				from("direct:endOfAnalogAggregation")
-						.transform(body().convertToString())
-						.process(toArdulinkProtocol).to(OUT);
+				from("direct:endOfAnalogAggregation").transform(
+						body().convertToString()).to(OUT);
 			}
 
 			private AggregateDefinition useStrategy(ChoiceDefinition def,
