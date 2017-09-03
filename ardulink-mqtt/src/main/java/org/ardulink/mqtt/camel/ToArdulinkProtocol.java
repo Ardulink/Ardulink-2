@@ -20,6 +20,8 @@ import java.util.regex.Pattern;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.apache.camel.builder.ValueBuilder;
+import org.apache.camel.model.language.HeaderExpression;
 import org.ardulink.core.proto.impl.ALProtoBuilder;
 import org.ardulink.mqtt.Config;
 import org.ardulink.util.ListBuilder;
@@ -168,22 +170,26 @@ public final class ToArdulinkProtocol implements Processor {
 	}
 
 	private final List<MessageCreator> creators;
-	private String headerNameForTopic = "topic";
+	private ValueBuilder topicFrom = new ValueBuilder(new HeaderExpression(
+			"topic"));
+
+	public static ToArdulinkProtocol toArdulinkProtocol(Config config) {
+		return new ToArdulinkProtocol(config);
+	}
 
 	public ToArdulinkProtocol(Config config) {
 		this.creators = unmodifiableList(newArrayList(creators(config)));
 	}
 
-	public ToArdulinkProtocol headerNameForTopic(String headerNameForTopic) {
-		this.headerNameForTopic = headerNameForTopic;
+	public ToArdulinkProtocol topicFrom(ValueBuilder topicFrom) {
+		this.topicFrom = topicFrom;
 		return this;
 	}
 
 	@Override
 	public void process(Exchange exchange) {
 		Message in = exchange.getIn();
-		String topic = checkNotNull(
-				in.getHeader(headerNameForTopic, String.class),
+		String topic = checkNotNull(topicFrom.evaluate(exchange, String.class),
 				"topic must not be null");
 		String body = checkNotNull(in.getBody(String.class),
 				"body must not be null");

@@ -1,29 +1,18 @@
 package org.ardulink.mqtt.camel;
 
-import static java.math.RoundingMode.HALF_UP;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
-import static org.ardulink.mqtt.camel.AggregateThrottleTest.CompactStrategy.AVERAGE;
-import static org.ardulink.mqtt.camel.AggregateThrottleTest.CompactStrategy.USE_LATEST;
-import static org.ardulink.util.Preconditions.checkNotNull;
-
-import java.math.BigDecimal;
+import static org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy.AVERAGE;
+import static org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy.USE_LATEST;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.Processor;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.ValueBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.model.AggregateDefinition;
-import org.apache.camel.model.ChoiceDefinition;
-import org.apache.camel.processor.aggregate.AggregationStrategy;
-import org.apache.camel.processor.aggregate.UseLatestAggregationStrategy;
 import org.ardulink.core.Pin;
 import org.ardulink.mqtt.Config;
+import org.ardulink.mqtt.MqttCamelRouteBuilder;
+import org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy;
 import org.junit.After;
 import org.junit.Test;
 
@@ -37,10 +26,6 @@ public class AggregateThrottleTest {
 	private static final String OUT = "mock:result";
 
 	private CamelContext context;
-
-	public enum CompactStrategy {
-		AVERAGE, USE_LATEST;
-	}
 
 	@After
 	public void testDown() throws Exception {
@@ -58,13 +43,13 @@ public class AggregateThrottleTest {
 				"foo/bar/topic/D0/value/get", "foo/bar/topic/D0/value/get",
 				"foo/bar/topic/A1/value/get", "foo/bar/topic/A0/value/get");
 
-		simArdulinkSends(analogPin(0), 1);
-		simArdulinkSends(analogPin(0), 3);
-		simArdulinkSends(analogPin(1), 999);
-		simArdulinkSends(digitalPin(0), true);
-		simArdulinkSends(digitalPin(0), false);
-		simArdulinkSends(analogPin(0), 12);
-		simArdulinkSends(analogPin(1), 1);
+		simArduinoSends(alpMessage(analogPin(0), 1));
+		simArduinoSends(alpMessage(analogPin(0), 3));
+		simArduinoSends(alpMessage(analogPin(1), 999));
+		simArduinoSends(alpMessage(digitalPin(0), true));
+		simArduinoSends(alpMessage(digitalPin(0), false));
+		simArduinoSends(alpMessage(analogPin(0), 12));
+		simArduinoSends(alpMessage(analogPin(1), 1));
 
 		out.assertIsSatisfied();
 	}
@@ -79,21 +64,24 @@ public class AggregateThrottleTest {
 				"foo/bar/topic/D0/value/get", "foo/bar/topic/D0/value/get",
 				"foo/bar/topic/A1/value/get", "foo/bar/topic/A0/value/get");
 
-		simArdulinkSends(analogPin(0), 1);
-		simArdulinkSends(analogPin(0), 3);
-		simArdulinkSends(analogPin(1), 999);
-		simArdulinkSends(digitalPin(0), true);
-		simArdulinkSends(digitalPin(0), false);
-		simArdulinkSends(analogPin(0), 12);
-		simArdulinkSends(analogPin(1), 1);
+		simArduinoSends(alpMessage(analogPin(0), 1));
+		simArduinoSends(alpMessage(analogPin(0), 3));
+		simArduinoSends(alpMessage(analogPin(1), 999));
+		simArduinoSends(alpMessage(digitalPin(0), true));
+		simArduinoSends(alpMessage(digitalPin(0), false));
+		simArduinoSends(alpMessage(analogPin(0), 12));
+		simArduinoSends(alpMessage(analogPin(1), 1));
 
 		out.assertIsSatisfied();
 	}
 
-	private void simArdulinkSends(Pin pin, Object value) {
-		String body = String.format("alp://%sred/%s/%s", pin.is(ANALOG) ? "a"
-				: "d", pin.pinNum(), alpValue(value));
-		context.createProducerTemplate().sendBody(IN, body);
+	private void simArduinoSends(String message) {
+		context.createProducerTemplate().sendBody(IN, message);
+	}
+
+	private String alpMessage(Pin pin, Object value) {
+		return String.format("alp://%sred/%s/%s", pin.is(ANALOG) ? "a" : "d",
+				pin.pinNum(), alpValue(value));
 	}
 
 	private Integer alpValue(Object value) {
@@ -116,97 +104,8 @@ public class AggregateThrottleTest {
 	private CamelContext camelContext(final Config config,
 			final CompactStrategy compactStrategy) throws Exception {
 		CamelContext context = new DefaultCamelContext();
-		context.addRoutes(new RouteBuilder() {
-			@Override
-			public void configure() {
-				FromArdulinkProtocol fromArdulinkProtocol = new FromArdulinkProtocol(
-						config).headerNameForTopic("CamelMQTTPublishTopic");
-				ChoiceDefinition pre = from(IN).bean(fromArdulinkProtocol)
-						.choice()
-						.when(simple("${in.body} is 'java.lang.Number'"));
-				useStrategy(pre, compactStrategy).endChoice().otherwise()
-						.to("direct:endOfAnalogAggregation");
-				from("direct:endOfAnalogAggregation").transform(
-						body().convertToString()).to(OUT);
-			}
-
-			private AggregateDefinition useStrategy(ChoiceDefinition def,
-					final CompactStrategy strategy) {
-				switch (strategy) {
-				case USE_LATEST:
-					return appendUseLatestStrategy(def);
-				case AVERAGE:
-					return appendAverageStrategy(def);
-				default:
-					throw new IllegalStateException("Cannot handle " + strategy);
-				}
-			}
-
-			private AggregateDefinition appendUseLatestStrategy(
-					ChoiceDefinition def) {
-				return def
-						.aggregate(header(HEADER_FOR_TOPIC),
-								new UseLatestAggregationStrategy())
-						.completionInterval(1000).completeAllOnStop()
-						.to("direct:endOfAnalogAggregation");
-			}
-
-			private AggregateDefinition appendAverageStrategy(
-					ChoiceDefinition def) {
-				return def
-						.aggregate(header(HEADER_FOR_TOPIC), sum())
-						.completionInterval(1000)
-						.completeAllOnStop()
-						.process(
-								divideByValueOf(exchangeProperty("CamelAggregatedSize")))
-						.to("direct:endOfAnalogAggregation");
-			}
-
-			private Processor divideByValueOf(final ValueBuilder valueBuilder) {
-				return new Processor() {
-					@Override
-					public void process(Exchange exchange) throws Exception {
-						Message in = exchange.getIn();
-						BigDecimal sum = new BigDecimal(checkNotNull(
-								in.getBody(Number.class), "Body of %s is null",
-								in).toString());
-						BigDecimal divisor = new BigDecimal(checkNotNull(
-								valueBuilder.evaluate(exchange, Integer.class),
-								"No %s set in exchange %s", valueBuilder,
-								exchange).toString());
-						in.setBody(sum.divide(divisor, HALF_UP));
-					}
-
-				};
-			}
-
-			private AggregationStrategy sum() {
-				return new AggregationStrategy() {
-					@Override
-					public Exchange aggregate(Exchange oldExchange,
-							Exchange newExchange) {
-						if (oldExchange == null) {
-							return newExchange;
-						}
-						oldExchange.getIn().setBody(
-								sum(oldExchange, newExchange));
-						return oldExchange;
-					}
-
-					private BigDecimal sum(Exchange oldExchange,
-							Exchange newExchange) {
-						return numberFromPayload(oldExchange).add(
-								numberFromPayload(newExchange));
-					}
-
-					private BigDecimal numberFromPayload(Exchange oldExchange) {
-						return new BigDecimal(oldExchange.getIn()
-								.getBody(Number.class).toString());
-					}
-
-				};
-			}
-		});
+		new MqttCamelRouteBuilder(context, config).compactStrategy(
+				compactStrategy).fromSomethingToMqtt(IN, OUT);
 		context.start();
 		return context;
 	}

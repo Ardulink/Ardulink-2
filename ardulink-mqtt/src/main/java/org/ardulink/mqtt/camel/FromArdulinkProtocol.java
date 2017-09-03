@@ -24,6 +24,10 @@ public final class FromArdulinkProtocol implements Processor {
 	private final Config config;
 	private String headerNameForTopic = "topic";
 
+	public static FromArdulinkProtocol fromArdulinkProtocol(Config config) {
+		return new FromArdulinkProtocol(config);
+	}
+
 	public FromArdulinkProtocol(Config config) {
 		this.config = config;
 	}
@@ -43,26 +47,21 @@ public final class FromArdulinkProtocol implements Processor {
 		handle(in, (FromDeviceMessagePinStateChanged) deviceMessage);
 	}
 
-	private void handle(Message in,
-			FromDeviceMessagePinStateChanged pinChangeEvent) {
-		Pin pin = pinChangeEvent.getPin();
+	private void handle(Message in, FromDeviceMessagePinStateChanged event) {
+		Pin pin = event.getPin();
+		String topic = String.format(patternFor(pin), pin.pinNum());
+		in.setHeader(headerNameForTopic, topic);
+		in.setBody(event.getValue());
+	}
 
-		Object value = pinChangeEvent.getValue();
+	private String patternFor(Pin pin) {
 		if (pin.is(DIGITAL)) {
-			setHeaderAndBody(in, pin, config.getTopicPatternDigitalRead(),
-					value);
+			return config.getTopicPatternDigitalRead();
 		} else if (pin.is(ANALOG)) {
-			setHeaderAndBody(in, pin, config.getTopicPatternAnalogRead(), value);
+			return config.getTopicPatternAnalogRead();
 		} else {
 			throw new IllegalStateException("Unknown pin type of pin " + pin);
 		}
-
-	}
-
-	private void setHeaderAndBody(Message in, Pin pin, String pattern,
-			Object value) {
-		in.setHeader(headerNameForTopic, String.format(pattern, pin.pinNum()));
-		in.setBody(value);
 	}
 
 }

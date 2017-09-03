@@ -3,6 +3,7 @@ package org.ardulink.mqtt.camel;
 import static org.apache.camel.ShutdownRunningTask.CompleteAllTasks;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.mqtt.camel.ToArdulinkProtocol.toArdulinkProtocol;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -198,11 +199,12 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
-				ToArdulinkProtocol toArdulinkProtocol = new ToArdulinkProtocol(
-						config).headerNameForTopic("CamelMQTTSubscribeTopic");
-				from(mqtt()).transform(body().convertToString())
-						.process(toArdulinkProtocol).to(mockURI)
-						.shutdownRunningTask(CompleteAllTasks);
+				from(mqtt())
+						.transform(body().convertToString())
+						.process(
+								toArdulinkProtocol(config).topicFrom(
+										header("CamelMQTTSubscribeTopic")))
+						.to(mockURI).shutdownRunningTask(CompleteAllTasks);
 			}
 		});
 		context.start();
