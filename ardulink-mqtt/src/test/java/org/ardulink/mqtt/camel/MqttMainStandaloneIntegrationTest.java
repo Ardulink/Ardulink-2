@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.mqtt.camel;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.ardulink.util.ServerSockets.freePort;
 
 import java.io.IOException;
 
@@ -53,6 +54,11 @@ public class MqttMainStandaloneIntegrationTest {
 			setStandalone(true);
 			setBrokerTopic(topic);
 			setConnection("ardulink://mock");
+		}
+
+		private MqttMainForTest withBrokerPort(int port) {
+			setBrokerPort(port);
+			return this;
 		}
 
 		public MqttMainForTest withBrokerUser(String brokerUser) {
@@ -115,7 +121,7 @@ public class MqttMainStandaloneIntegrationTest {
 
 	@Test
 	public void clientCanConnectToNewlyStartedBroker() throws Exception {
-		sut = mqttMain();
+		sut = mqttMain().withBrokerPort(freePort());
 		sut.connectToMqttBroker();
 	}
 
@@ -124,8 +130,9 @@ public class MqttMainStandaloneIntegrationTest {
 			throws Exception {
 		String user = "someUser";
 		String password = "someSecret";
-		sut = mqttMain().withBrokerUser(user).withBrokerPassword(password)
-				.withClientUser(user).withClientPassword(password);
+		sut = mqttMain().withBrokerPort(freePort()).withBrokerUser(user)
+				.withBrokerPassword(password).withClientUser(user)
+				.withClientPassword(password);
 		sut.connectToMqttBroker();
 	}
 
@@ -133,7 +140,7 @@ public class MqttMainStandaloneIntegrationTest {
 	public void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker()
 			throws Exception {
 		String user = "someUser";
-		sut = mqttMain().withBrokerUser(user)
+		sut = mqttMain().withBrokerPort(freePort()).withBrokerUser(user)
 				.withBrokerPassword("theBrokersPassword").withClientUser(user)
 				.withClientPassword("notTheBrokersPassword");
 		exceptions.expect(FailedToCreateProducerException.class);

@@ -11,6 +11,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.mqtt.camel.ToArdulinkProtocol.toArdulinkProtocol;
+import static org.ardulink.util.ServerSockets.freePort;
 
 import java.util.concurrent.TimeUnit;
 
@@ -42,7 +43,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	@Before
 	public void setup() throws Exception {
-		broker = MqttBroker.builder().randomPort().startBroker();
+		broker = MqttBroker.builder().port(freePort()).startBroker();
 		mqttClient = AnotherMqttClient.builder().port(broker.getPort())
 				.topic(TOPIC).connect();
 	}

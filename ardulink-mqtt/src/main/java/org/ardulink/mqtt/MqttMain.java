@@ -218,6 +218,10 @@ public class MqttMain {
 		}
 	}
 
+	public void setBrokerPort(int brokerPort) {
+		this.brokerPort = brokerPort;
+	}
+
 	public void setBrokerTopic(String brokerTopic) {
 		this.brokerTopic = brokerTopic.endsWith("/") ? brokerTopic
 				: brokerTopic + '/';
