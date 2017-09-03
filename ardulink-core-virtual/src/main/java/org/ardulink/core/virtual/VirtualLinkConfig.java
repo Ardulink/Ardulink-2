@@ -29,6 +29,16 @@ public class VirtualLinkConfig implements LinkConfig {
 		this.delayUnit = TimeUnit.valueOf(delayUnit);
 	}
 
+	@ChoiceFor("delayUnit")
+	public String[] getDelayUnits() {
+		TimeUnit[] timeUnits = TimeUnit.values();
+		String[] names = new String[timeUnits.length];
+		for (int i = 0; i < timeUnits.length; i++) {
+			names[i] = timeUnits[i].name();
+		}
+		return names;
+	}
+
 	public void delay() {
 		try {
 			this.delayUnit.sleep(delay);
