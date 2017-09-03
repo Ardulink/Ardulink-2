@@ -25,7 +25,6 @@ import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.util.AnotherMqttClient;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class MqttOnCamelMqttToLinkIntegrationTest {
@@ -43,43 +42,24 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	@Before
 	public void setup() throws Exception {
-		broker = MqttBroker.builder().startBroker();
-		mqttClient = AnotherMqttClient.builder().topic(TOPIC).connect();
+		broker = MqttBroker.builder().randomPort().startBroker();
+		mqttClient = AnotherMqttClient.builder().port(broker.getPort())
+				.topic(TOPIC).connect();
 	}
 
 	@After
-	public void tearDown() throws InterruptedException, Exception {
-		context.stop();
+	public void tearDown() throws Exception {
 		mqttClient.close();
+		context.stop();
 		broker.close();
 	}
 
 	@Test
-	public void canSwitchDigitalPin2OnViaBroker() throws Exception {
-		testDigital(digitalPin(2), true);
-	}
-
-	@Test
-	public void canSwitchDigitalPin2OffViaBroker() throws Exception {
-		testDigital(digitalPin(2), false);
-	}
-
-	@Test
-	public void canSwitchDigitalPin3ViaBroker() throws Exception {
+	public void canSwitchPins() throws Exception {
+		testAnalog(analogPin(2), 123);
+		testAnalog(analogPin(2), 245);
+		testDigital(digitalPin(3), false);
 		testDigital(digitalPin(3), true);
-	}
-
-	@Test
-	public void canSwitchAnalogPin3ViaBroker() throws Exception {
-		testAnalog(analogPin(5), 123);
-	}
-
-	@Test
-	@Ignore
-	public void ignoresNegativeValues() throws Exception {
-		context = camelContext(config());
-		mqttClient.switchPin(analogPin(6), -1);
-		assertNoMessage(getMockEndpoint());
 	}
 
 	@Test
@@ -198,9 +178,9 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 	}
 
 	private String mqtt() {
-		return "mqtt:localhost?" + "connectAttemptsMax=1"
-				+ "&reconnectAttemptsMax=0" + "&subscribeTopicNames=" + TOPIC
-				+ "/#";
+		return "mqtt:foo?host=tcp://localhost:" + broker.getPort()
+				+ "&connectAttemptsMax=1" + "&reconnectAttemptsMax=0"
+				+ "&subscribeTopicNames=" + TOPIC + "/#";
 	}
 
 }

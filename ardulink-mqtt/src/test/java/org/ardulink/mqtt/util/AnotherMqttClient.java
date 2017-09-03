@@ -123,9 +123,10 @@ public class AnotherMqttClient implements Closeable {
 			context.addRoutes(new RouteBuilder() {
 				@Override
 				public void configure() {
-					String mqtt = "mqtt://" + host + ":" + port;
+					String mqtt = "mqtt://" + host + port + "?host=tcp://"
+							+ host + ":" + port;
 					from("direct:start").to(mqtt);
-					from(mqtt + "?subscribeTopicNames=#").process(
+					from(mqtt + "&subscribeTopicNames=#").process(
 							addTo(messages));
 				}
 			});

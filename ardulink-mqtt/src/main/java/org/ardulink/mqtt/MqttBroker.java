@@ -30,10 +30,12 @@ import io.moquette.spi.security.IAuthenticator;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.Arrays;
 import java.util.Properties;
 
 import org.ardulink.util.Strings;
+import org.ardulink.util.Throwables;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -59,6 +61,20 @@ public class MqttBroker implements Closeable {
 		public Builder port(final int port) {
 			this.port = port;
 			return this;
+		}
+
+		public Builder randomPort() {
+			return port(freePort());
+		}
+
+		private static int freePort() {
+			try {
+				ServerSocket socket = new ServerSocket(0);
+				socket.close();
+				return socket.getLocalPort();
+			} catch (IOException e) {
+				throw Throwables.propagate(e);
+			}
 		}
 
 		public Builder addAuthenication(final String user, final byte[] password) {
@@ -122,14 +138,15 @@ public class MqttBroker implements Closeable {
 	}
 
 	private final Server broker;
+	private final IConfig config;
 
 	public static Builder builder() {
 		return new Builder();
 	}
 
 	public MqttBroker(final Builder builder) {
-		broker = startBroker(new Server(),
-				new MemoryConfig(builder.properties()));
+		config = new MemoryConfig(builder.properties());
+		broker = startBroker(new Server(), config);
 	}
 
 	private Server startBroker(Server server, IConfig memoryConfig) {
@@ -139,6 +156,10 @@ public class MqttBroker implements Closeable {
 		} catch (final IOException e) {
 			throw propagate(e);
 		}
+	}
+
+	public int getPort() {
+		return Integer.parseInt(config.getProperty(PORT_PROPERTY_NAME));
 	}
 
 	public void close() {

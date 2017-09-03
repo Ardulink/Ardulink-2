@@ -99,13 +99,12 @@ public class MqttMain {
 	private CamelContext addRoutes(Config config, CamelContext context)
 			throws Exception {
 		String ardulink = appendListenTo(connection);
-		String mqtt = appendClientId(appendAuth("mqtt://" + brokerHost + ":"
-				+ brokerPort + "?"))
-				+ "subscribeTopicNames=" + config.getTopic() + "#";
+		String mqtt = appendClientId(appendAuth("mqtt://mqttMain?host=tcp://"
+				+ brokerHost + ":" + brokerPort))
+				+ "&subscribeTopicNames=" + config.getTopic() + "#";
 		MqttCamelRouteBuilder rb = new MqttCamelRouteBuilder(context, config);
 		if (throttleMillis > 0 && compactStrategy != null) {
-			rb = rb.compact(compactStrategy, throttleMillis,
-					MILLISECONDS);
+			rb = rb.compact(compactStrategy, throttleMillis, MILLISECONDS);
 		}
 		rb.fromSomethingToMqtt(ardulink, mqtt).andReverse();
 		return context;
@@ -113,11 +112,8 @@ public class MqttMain {
 
 	private String appendListenTo(String connection) {
 		String listenTo = listenTo();
-		if (listenTo.isEmpty()) {
-			return connection;
-		}
-		return connection + (connection.contains("?") ? "&" : "?")
-				+ "listenTo=" + listenTo;
+		return listenTo.isEmpty() ? connection : connection + "&listenTo="
+				+ listenTo;
 	}
 
 	private String appendAuth(String brokerUri) {
@@ -126,14 +122,14 @@ public class MqttMain {
 		}
 		String[] auth = credentials.split(":");
 		checkState(auth.length == 2, "Credentials not in format user:password");
-		return brokerUri + "userName=" + auth[0] + "&password=" + auth[1] + "&";
+		return brokerUri + "&userName=" + auth[0] + "&password=" + auth[1];
 	}
 
 	private String appendClientId(String brokerUri) {
 		if (nullOrEmpty(clientId)) {
 			return brokerUri;
 		}
-		return brokerUri + "clientId=" + clientId + "&";
+		return brokerUri + "&clientId=" + clientId;
 	}
 
 	private String listenTo() {
