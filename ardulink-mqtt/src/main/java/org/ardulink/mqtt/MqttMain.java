@@ -16,6 +16,9 @@ limitations under the License.
  */
 package org.ardulink.mqtt;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy.AVERAGE;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
 
@@ -27,6 +30,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Route;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.mqtt.MqttBroker.Builder;
+import org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy;
 import org.ardulink.util.Joiner;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -68,20 +72,11 @@ public class MqttMain {
 	@Option(name = "-a", aliases = "--analog", usage = "Analog pins to listen to")
 	private int[] analogs = new int[0];
 
-	// TODO PF re-add
-	// @Option(name = "-ato", aliases = "--tolerance", usage =
-	// "Analog tolerance, publish only changes exceeding this value")
-	// private int tolerance = 1;
+	@Option(name = "-athms", aliases = "--throttle", usage = "Analog throttle, do not publish multiple events within <throttleMillis>")
+	private int throttleMillis = (int) SECONDS.toMillis(10);
 
-	// TODO PF re-add
-	// @Option(name = "-athms", aliases = "--throttle", usage =
-	// "Analog throttle, do not publish multiple events within <throttleMillis>")
-	// private int throttleMillis = (int) SECONDS.toMillis(10);
-
-	// TODO PF reenable using camel's Throttler, Aggregator
-	// @Option(name = "-athstr", aliases = "--strategy", usage =
-	// "Analog throttle strategy")
-	// private CompactStrategy compactStrategy = AVERAGE;
+	@Option(name = "-athstr", aliases = "--strategy", usage = "Analog throttle strategy")
+	private CompactStrategy compactStrategy = AVERAGE;
 
 	@Option(name = "-connection", usage = "Connection URI to the arduino")
 	private String connection = "ardulink://serial";
@@ -107,8 +102,12 @@ public class MqttMain {
 		String mqtt = appendClientId(appendAuth("mqtt://" + brokerHost + ":"
 				+ brokerPort + "?"))
 				+ "subscribeTopicNames=" + config.getTopic() + "#";
-		new MqttCamelRouteBuilder(context, config).fromSomethingToMqtt(
-				ardulink, mqtt).andReverse();
+		MqttCamelRouteBuilder rb = new MqttCamelRouteBuilder(context, config);
+		if (throttleMillis > 0 && compactStrategy != null) {
+			rb = rb.compact(compactStrategy, throttleMillis,
+					MILLISECONDS);
+		}
+		rb.fromSomethingToMqtt(ardulink, mqtt).andReverse();
 		return context;
 	}
 

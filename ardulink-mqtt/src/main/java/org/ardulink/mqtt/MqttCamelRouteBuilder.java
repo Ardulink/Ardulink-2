@@ -4,9 +4,11 @@ import static java.math.RoundingMode.HALF_UP;
 import static org.apache.camel.ShutdownRunningTask.CompleteAllTasks;
 import static org.ardulink.mqtt.camel.FromArdulinkProtocol.fromArdulinkProtocol;
 import static org.ardulink.mqtt.camel.ToArdulinkProtocol.toArdulinkProtocol;
+import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.math.BigDecimal;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -53,15 +55,23 @@ public class MqttCamelRouteBuilder {
 	private final Config config;
 	private String something;
 	private String mqtt;
+
 	private CompactStrategy compactStrategy;
+	private long compactMillis;
 
 	public MqttCamelRouteBuilder(final CamelContext context, final Config config) {
 		this.context = context;
 		this.config = config;
 	}
 
-	public MqttCamelRouteBuilder compactStrategy(CompactStrategy compactStrategy) {
-		this.compactStrategy = compactStrategy;
+	public MqttCamelRouteBuilder compact(CompactStrategy strategy,
+			int duration, TimeUnit timeUnit) {
+		this.compactStrategy = checkNotNull(strategy,
+				"strategy must not be null");
+		checkArgument(duration > 0,
+				"duration must not be zero or negative but was %s", duration);
+		this.compactMillis = checkNotNull(timeUnit, "timeUnit must not be null")
+				.toMillis(duration);
 		return this;
 	}
 
@@ -107,14 +117,14 @@ public class MqttCamelRouteBuilder {
 				return def
 						.aggregate(header(PUBLISH_HEADER),
 								new UseLatestAggregationStrategy())
-						.completionInterval(1000).completeAllOnStop();
+						.completionInterval(compactMillis).completeAllOnStop();
 			}
 
 			private AggregateDefinition appendAverageStrategy(
 					ChoiceDefinition def) {
 				return def
 						.aggregate(header(PUBLISH_HEADER), sum())
-						.completionInterval(1000)
+						.completionInterval(compactMillis)
 						.completeAllOnStop()
 						.process(
 								divideByValueOf(exchangeProperty("CamelAggregatedSize")));

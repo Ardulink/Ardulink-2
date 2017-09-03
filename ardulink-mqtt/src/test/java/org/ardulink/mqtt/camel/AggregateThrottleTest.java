@@ -1,5 +1,6 @@
 package org.ardulink.mqtt.camel;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -104,8 +105,8 @@ public class AggregateThrottleTest {
 	private CamelContext camelContext(final Config config,
 			final CompactStrategy compactStrategy) throws Exception {
 		CamelContext context = new DefaultCamelContext();
-		new MqttCamelRouteBuilder(context, config).compactStrategy(
-				compactStrategy).fromSomethingToMqtt(IN, OUT);
+		new MqttCamelRouteBuilder(context, config).compact(
+				compactStrategy, 1, SECONDS).fromSomethingToMqtt(IN, OUT);
 		context.start();
 		return context;
 	}
