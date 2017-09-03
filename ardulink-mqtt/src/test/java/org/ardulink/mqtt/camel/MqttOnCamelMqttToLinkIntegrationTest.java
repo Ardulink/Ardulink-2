@@ -3,25 +3,26 @@ package org.ardulink.mqtt.camel;
 import static org.apache.camel.ShutdownRunningTask.CompleteAllTasks;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.mqtt.camel.ToArdulinkProtocol.toArdulinkProtocol;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.ardulink.core.Link;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
-import org.ardulink.core.convenience.LinkDelegate;
-import org.ardulink.core.convenience.Links;
 import org.ardulink.mqtt.Config;
 import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.util.AnotherMqttClient;
-import org.ardulink.util.URIs;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -29,9 +30,7 @@ import org.junit.Test;
 
 public class MqttOnCamelMqttToLinkIntegrationTest {
 
-	private static final String mockURI = "ardulink://mock";
-
-	private Link link;
+	private static final String OUT = "mock:result";
 
 	private static final String TOPIC = "any/topic-"
 			+ System.currentTimeMillis();
@@ -44,27 +43,15 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	@Before
 	public void setup() throws Exception {
-		link = Links.getLink(URIs.newURI(mockURI));
 		broker = MqttBroker.builder().startBroker();
 		mqttClient = AnotherMqttClient.builder().topic(TOPIC).connect();
 	}
 
 	@After
-	public void tearDown() throws IOException {
+	public void tearDown() throws InterruptedException, Exception {
+		context.stop();
 		mqttClient.close();
 		broker.close();
-		link.close();
-	}
-
-	@Test
-	@Ignore
-	public void routeFailsIfBrokerIsNotRunning() throws Exception {
-		context = camelContext(config());
-		broker.close();
-		context.stop();
-		Link mock = getMock(link);
-		verify(mock).close();
-		verifyNoMoreInteractions(mock);
 	}
 
 	@Test
@@ -92,54 +79,51 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 	public void ignoresNegativeValues() throws Exception {
 		context = camelContext(config());
 		mqttClient.switchPin(analogPin(6), -1);
-		haltCamel();
-		Link mock = getMock(link);
-		verify(mock).close();
-		verifyNoMoreInteractions(mock);
+		assertNoMessage(getMockEndpoint());
 	}
 
 	@Test
 	public void canEnableAnalogListening() throws Exception {
 		context = camelContext(config().withControlChannelEnabled());
-		mqttClient.startListenig(analogPin(6));
-		haltCamel();
-		Link mock = getMock(link);
-		verify(mock).startListening(analogPin(6));
-		verify(mock).close();
-		verifyNoMoreInteractions(mock);
+		AnalogPin pin = analogPin(6);
+		MockEndpoint out = getMockEndpoint();
+		out.expectedBodiesReceived(alpProtocolMessage(START_LISTENING_ANALOG)
+				.forPin(pin.pinNum()).withoutValue());
+		mqttClient.startListenig(pin);
+		assertIsSatisfied(out);
 	}
 
 	@Test
 	public void canEnableDigitalListening() throws Exception {
 		context = camelContext(config().withControlChannelEnabled());
-		mqttClient.startListenig(digitalPin(7));
-		haltCamel();
-		Link mock = getMock(link);
-		verify(mock).startListening(digitalPin(7));
-		verify(mock).close();
-		verifyNoMoreInteractions(mock);
+		DigitalPin pin = digitalPin(7);
+		MockEndpoint out = getMockEndpoint();
+		out.expectedBodiesReceived(alpProtocolMessage(START_LISTENING_DIGITAL)
+				.forPin(pin.pinNum()).withoutValue());
+		mqttClient.startListenig(pin);
+		assertIsSatisfied(out);
 	}
 
 	@Test
 	public void canDisableAnalogListening() throws Exception {
 		context = camelContext(config().withControlChannelEnabled());
-		mqttClient.stopListenig(analogPin(6));
-		haltCamel();
-		Link mock = getMock(link);
-		verify(mock).stopListening(analogPin(6));
-		verify(mock).close();
-		verifyNoMoreInteractions(mock);
+		AnalogPin pin = analogPin(6);
+		MockEndpoint out = getMockEndpoint();
+		out.expectedBodiesReceived(alpProtocolMessage(STOP_LISTENING_ANALOG)
+				.forPin(pin.pinNum()).withoutValue());
+		mqttClient.stopListenig(pin);
+		assertIsSatisfied(out);
 	}
 
 	@Test
 	public void canDisableDigitalListening() throws Exception {
 		context = camelContext(config().withControlChannelEnabled());
-		mqttClient.stopListenig(digitalPin(7));
-		haltCamel();
-		Link mock = getMock(link);
-		verify(mock).stopListening(digitalPin(7));
-		verify(mock).close();
-		verifyNoMoreInteractions(mock);
+		DigitalPin pin = digitalPin(7);
+		MockEndpoint out = getMockEndpoint();
+		out.expectedBodiesReceived(alpProtocolMessage(STOP_LISTENING_DIGITAL)
+				.forPin(pin.pinNum()).withoutValue());
+		mqttClient.stopListenig(pin);
+		assertIsSatisfied(out);
 	}
 
 	@Test
@@ -147,10 +131,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 			throws Exception {
 		context = camelContext(config());
 		mqttClient.startListenig(analogPin(6));
-		haltCamel();
-		Link mock = getMock(link);
-		verify(mock).close();
-		verifyNoMoreInteractions(mock);
+		assertNoMessage(getMockEndpoint());
 	}
 
 	@Test
@@ -158,40 +139,41 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 			throws Exception {
 		context = camelContext(config());
 		mqttClient.startListenig(digitalPin(7));
-		haltCamel();
-		Link mock = getMock(link);
-		verify(mock).close();
-		verifyNoMoreInteractions(mock);
+		assertNoMessage(getMockEndpoint());
 	}
 
 	private void testDigital(DigitalPin pin, boolean state) throws Exception {
 		context = camelContext(config());
+		MockEndpoint out = getMockEndpoint();
+		out.expectedBodiesReceived(alpProtocolMessage(DIGITAL_PIN_READ).forPin(
+				pin.pinNum()).withState(state));
 		mqttClient.switchPin(pin, state);
-		haltCamel();
-		Link mock = getMock(link);
-		verify(mock).switchDigitalPin(pin, state);
-		verify(mock).close();
-		verifyNoMoreInteractions(mock);
+		assertIsSatisfied(out);
 	}
 
 	private void testAnalog(AnalogPin pin, int value) throws Exception {
 		context = camelContext(config());
+		MockEndpoint out = getMockEndpoint();
+		out.expectedBodiesReceived(alpProtocolMessage(ANALOG_PIN_READ).forPin(
+				pin.pinNum()).withValue(value));
 		mqttClient.switchPin(pin, value);
-		haltCamel();
-		Link mock = getMock(link);
-		verify(mock).switchAnalogPin(pin, value);
-		verify(mock).close();
-		verifyNoMoreInteractions(mock);
+		assertIsSatisfied(out);
+	}
+
+	private static void assertNoMessage(MockEndpoint out)
+			throws InterruptedException {
+		out.expectedMessageCount(0);
+		assertIsSatisfied(out);
+	}
+
+	private static void assertIsSatisfied(MockEndpoint out)
+			throws InterruptedException {
+		TimeUnit.MILLISECONDS.sleep(100);
+		out.assertIsSatisfied();
 	}
 
 	private Config config() {
 		return Config.withTopic(TOPIC);
-	}
-
-	private CamelContext haltCamel() throws InterruptedException, Exception {
-		TimeUnit.MILLISECONDS.sleep(500);
-		context.stop();
-		return context;
 	}
 
 	private CamelContext camelContext(final Config config) throws Exception {
@@ -204,19 +186,19 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 						.process(
 								toArdulinkProtocol(config).topicFrom(
 										header("CamelMQTTSubscribeTopic")))
-						.to(mockURI).shutdownRunningTask(CompleteAllTasks);
+						.to(OUT).shutdownRunningTask(CompleteAllTasks);
 			}
 		});
 		context.start();
 		return context;
 	}
 
-	private Link getMock(Link link) {
-		return ((LinkDelegate) link).getDelegate();
+	private MockEndpoint getMockEndpoint() {
+		return context.getEndpoint(OUT, MockEndpoint.class);
 	}
 
 	private String mqtt() {
-		return "mqtt:localhost?connectAttemptsMax=1"
+		return "mqtt:localhost?" + "connectAttemptsMax=1"
 				+ "&reconnectAttemptsMax=0" + "&subscribeTopicNames=" + TOPIC
 				+ "/#";
 	}

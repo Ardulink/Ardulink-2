@@ -1,4 +1,4 @@
-package org.ardulink.mqtt.camel;
+package org.ardulink.camel.test;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
@@ -15,7 +15,6 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.convenience.Links;
-import org.ardulink.mqtt.Config;
 import org.ardulink.util.URIs;
 import org.junit.After;
 import org.junit.Before;
@@ -23,7 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 
-public class MqttOnCamelMqttListenerIntegrationTest {
+public class ArdulinkComponentListenerTest {
 
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
@@ -44,7 +43,7 @@ public class MqttOnCamelMqttListenerIntegrationTest {
 
 	@Test
 	public void startListeningOnPassedPins() throws Exception {
-		haltCamel(startCamel(withConfig(), "listenTo=d1,d2,a1"));
+		haltCamel(startCamel("listenTo=d1,d2,a1"));
 		Link mock = getMock(link);
 		verify(mock).startListening(digitalPin(1));
 		verify(mock).startListening(digitalPin(2));
@@ -55,7 +54,7 @@ public class MqttOnCamelMqttListenerIntegrationTest {
 
 	@Test
 	public void listeningIsCaseInsensitive() throws Exception {
-		haltCamel(startCamel(withConfig(), "listenTo=d1,D2,a3,A4"));
+		haltCamel(startCamel("listenTo=d1,D2,a3,A4"));
 		Link mock = getMock(link);
 		verify(mock).startListening(digitalPin(1));
 		verify(mock).startListening(digitalPin(2));
@@ -67,7 +66,7 @@ public class MqttOnCamelMqttListenerIntegrationTest {
 
 	@Test
 	public void ignoresMultipleOccurencesOfSamePin() throws Exception {
-		haltCamel(startCamel(withConfig(), "listenTo=d1,D1,a2,A2"));
+		haltCamel(startCamel("listenTo=d1,D1,a2,A2"));
 		Link mock = getMock(link);
 		verify(mock).startListening(digitalPin(1));
 		verify(mock).startListening(analogPin(2));
@@ -75,17 +74,12 @@ public class MqttOnCamelMqttListenerIntegrationTest {
 		verifyNoMoreInteractions(mock);
 	}
 
-	private Config withConfig() {
-		return Config.withTopic("any/topic-" + System.currentTimeMillis());
-	}
-
 	private CamelContext haltCamel(CamelContext context) throws Exception {
 		context.stop();
 		return context;
 	}
 
-	private CamelContext startCamel(final Config config, final String args)
-			throws Exception {
+	private CamelContext startCamel(final String args) throws Exception {
 		CamelContext context = new DefaultCamelContext();
 		context.addRoutes(new RouteBuilder() {
 			@Override

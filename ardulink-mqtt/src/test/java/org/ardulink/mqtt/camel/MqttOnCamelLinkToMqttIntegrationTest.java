@@ -28,19 +28,20 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+// TODO this should be moved to ardulink-camel
 public class MqttOnCamelLinkToMqttIntegrationTest {
 
 	// why not a mock? tests want's to assure that ArdulinkConsumer's listener
 	// will work correctly. To do so, we need a Link where ArdulinkConsumer can
 	// register it's listener. Because of that, Link cannot be a Mock.
-	private static final String mockURI = "ardulink://connectionBasedMockLink";
+	private static final String MOCK_URI = "ardulink://connectionBasedMockLink";
 
 	private static final String TOPIC = "any/topic-"
 			+ System.currentTimeMillis();
 
 	private AnotherMqttClient mqttClient;
 
-	private final Link link = Links.getLink(URIs.newURI(mockURI));
+	private final Link link = Links.getLink(URIs.newURI(MOCK_URI));
 
 	private MqttBroker broker;
 
@@ -95,7 +96,7 @@ public class MqttOnCamelLinkToMqttIntegrationTest {
 
 	private CamelContext camelContext(final Config config) throws Exception {
 		CamelContext context = new DefaultCamelContext();
-		new MqttCamelRouteBuilder(context, config).fromSomethingToMqtt(mockURI,
+		new MqttCamelRouteBuilder(context, config).fromSomethingToMqtt(MOCK_URI,
 				mqtt());
 		context.start();
 		return context;

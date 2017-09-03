@@ -9,6 +9,13 @@
 		<version>2.0.2-SNAPSHOT</version>
 	</parent>
 
+	<!-- camel depends on Java7 -->
+	<properties>
+		<compilerVersion>1.7</compilerVersion>
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>
