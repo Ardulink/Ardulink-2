@@ -14,11 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package org.ardulink.mqtt;
+package org.ardulink.camel.test;
 
 import java.io.ByteArrayOutputStream;
 
-import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.StreamConnection;

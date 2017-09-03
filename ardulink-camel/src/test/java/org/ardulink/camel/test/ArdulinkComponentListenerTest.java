@@ -27,13 +27,13 @@ public class ArdulinkComponentListenerTest {
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
 
-	private static final String mockURI = "ardulink://mock";
+	private static final String MOCK_URI = "ardulink://mock";
 
 	private Link link;
 
 	@Before
 	public void setup() throws Exception {
-		link = Links.getLink(URIs.newURI(mockURI));
+		link = Links.getLink(URIs.newURI(MOCK_URI));
 	}
 
 	@After
@@ -84,7 +84,7 @@ public class ArdulinkComponentListenerTest {
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
-				from(noMatterWhat()).to(mockURI + "?" + args);
+				from(noMatterWhat()).to(MOCK_URI + "?" + args);
 			}
 		});
 		return startAndBlock(context);
