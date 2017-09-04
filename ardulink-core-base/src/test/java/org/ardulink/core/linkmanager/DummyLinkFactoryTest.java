@@ -56,38 +56,36 @@ public class DummyLinkFactoryTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
+	private final LinkManager sut = LinkManager.getInstance();
+
 	@Test
 	public void throwsExceptionOnInvalidNames() {
 		String name = "non.existing.name";
-		LinkManager connectionManager = LinkManager.getInstance();
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("No factory registered for \"" + name + "\"");
-		connectionManager.getConfigurer(URIs.newURI("ardulink://" + name + ""));
+		sut.getConfigurer(URIs.newURI("ardulink://" + name + ""));
 	}
 
 	@Test
 	public void schemaHasToBeArdulink() {
-		LinkManager connectionManager = LinkManager.getInstance();
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("schema not ardulink");
-		connectionManager.getConfigurer(URIs.newURI("wrongSchema://dummy"));
+		sut.getConfigurer(URIs.newURI("wrongSchema://dummy"));
 	}
 
 	@Test
 	public void canCreateDummyDonnection() {
-		LinkManager connectionManager = LinkManager.getInstance();
-		Link link = connectionManager.getConfigurer(
-				URIs.newURI("ardulink://dummyLink")).newLink();
+		Link link = sut.getConfigurer(URIs.newURI("ardulink://dummyLink"))
+				.newLink();
 		assertThat(link, is(notNullValue()));
 	}
 
 	@Test
 	public void canConfigureDummyConnection() {
-		LinkManager connectionManager = LinkManager.getInstance();
 		String aValue = "aVal1";
 		int bValue = 1;
 		String cValue = "cValue";
-		Link link = (Link) connectionManager.getConfigurer(
+		Link link = (Link) sut.getConfigurer(
 				URIs.newURI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue
 						+ "&c=" + cValue + "&proto=dummyProto")).newLink();
 
@@ -106,18 +104,16 @@ public class DummyLinkFactoryTest {
 	@Test
 	public void throwsExceptionOnInvalidKey() {
 		String nonExistingKey = "nonExistingKey";
-		LinkManager connectionManager = LinkManager.getInstance();
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("Could not determine attribute "
 				+ nonExistingKey);
-		connectionManager.getConfigurer(URIs.newURI("ardulink://dummyLink?"
-				+ nonExistingKey + "=someValue"));
+		sut.getConfigurer(URIs.newURI("ardulink://dummyLink?" + nonExistingKey
+				+ "=someValue"));
 	}
 
 	@Test
 	public void canDefineChoiceValues() throws Exception {
-		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(URIs
+		Configurer configurer = sut.getConfigurer(URIs
 				.newURI("ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
 		assertThat(a.hasChoiceValues(), is(TRUE));
@@ -135,8 +131,7 @@ public class DummyLinkFactoryTest {
 	@Test
 	public void cannotSetChoiceValuesThatDoNotExist_WithPreviousQuery() {
 		Locale.setDefault(ENGLISH);
-		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(URIs
+		Configurer configurer = sut.getConfigurer(URIs
 				.newURI("ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
 		assertThat(a.getChoiceValues(), is(new Object[] { "aVal1", "aVal2" }));
@@ -152,8 +147,7 @@ public class DummyLinkFactoryTest {
 	@Test
 	public void cannotSetChoiceValuesThatDoNotExist_WithoutPreviousQuery() {
 		Locale.setDefault(ENGLISH);
-		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(URIs
+		Configurer configurer = sut.getConfigurer(URIs
 				.newURI("ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
 		String invalidValue = "aVal3IsNotAvalidValue";
@@ -167,8 +161,7 @@ public class DummyLinkFactoryTest {
 
 	@Test
 	public void attributeQithoutChoiceValueThrowsRTE() {
-		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(URIs
+		Configurer configurer = sut.getConfigurer(URIs
 				.newURI("ardulink://dummyLink"));
 		ConfigAttribute c = configurer.getAttribute("c");
 		assertThat(c.hasChoiceValues(), is(false));
@@ -179,9 +172,8 @@ public class DummyLinkFactoryTest {
 
 	@Test
 	public void canIterateRegisteredFactories() {
-		LinkManager connectionManager = LinkManager.getInstance();
 		assertThat(
-				connectionManager.listURIs(),
+				sut.listURIs(),
 				is(links("ardulink://dummyLink", "ardulink://dummyLink2",
 						"ardulink://dependendAttributes")));
 	}
@@ -225,8 +217,7 @@ public class DummyLinkFactoryTest {
 
 	@Test
 	public void hasMinValue() {
-		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(URIs
+		Configurer configurer = sut.getConfigurer(URIs
 				.newURI("ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("b");
 		NumberValidationInfo vi = (NumberValidationInfo) a.getValidationInfo();
@@ -234,17 +225,16 @@ public class DummyLinkFactoryTest {
 		assertThat(((int) vi.max()), is(12));
 	}
 
-	private static String getName(String name) {
+	private String getName(String name) {
 		return getAttribute(name).getName();
 	}
 
-	private static String getDescription(String name) {
+	private String getDescription(String name) {
 		return getAttribute(name).getDescription();
 	}
 
-	private static ConfigAttribute getAttribute(String name) {
-		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(URIs
+	private ConfigAttribute getAttribute(String name) {
+		Configurer configurer = sut.getConfigurer(URIs
 				.newURI("ardulink://dummyLink"));
 		return configurer.getAttribute(name);
 	}
