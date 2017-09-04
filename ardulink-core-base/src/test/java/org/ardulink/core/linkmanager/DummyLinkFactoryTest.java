@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
@@ -74,7 +75,7 @@ public class DummyLinkFactoryTest {
 	}
 
 	@Test
-	public void canCreateDummyDonnection() {
+	public void canCreateDummyConnection() {
 		Link link = sut.getConfigurer(URIs.newURI("ardulink://dummyLink"))
 				.newLink();
 		assertThat(link, is(notNullValue()));
@@ -85,9 +86,10 @@ public class DummyLinkFactoryTest {
 		String aValue = "aVal1";
 		int bValue = 1;
 		String cValue = "cValue";
+		TimeUnit eValue = TimeUnit.DAYS;
 		Link link = (Link) sut.getConfigurer(
 				URIs.newURI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue
-						+ "&c=" + cValue + "&proto=dummyProto")).newLink();
+						+ "&c=" + cValue + "&proto=dummyProto&e=" + eValue.name())).newLink();
 
 		assertThat(link.getClass().getName(),
 				is(ConnectionBasedLink.class.getName()));
@@ -99,6 +101,7 @@ public class DummyLinkFactoryTest {
 		assertThat(config.c, is(cValue));
 		assertThat(config.protocol.getClass().getName(), is(DummyProtocol
 				.getInstance().getClass().getName()));
+		assertThat(config.e, is(eValue));
 	}
 
 	@Test

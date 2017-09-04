@@ -25,6 +25,7 @@ package org.ardulink.core.linkmanager;
  *
  */
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -47,6 +48,9 @@ public class DummyLinkConfig implements LinkConfig {
 
 	@Named("d")
 	public String d;
+	
+	@Named("e")
+	public TimeUnit e;
 
 	public static final ThreadLocal<String[]> choiceValuesOfD = new ThreadLocal<String[]>() {
 		@Override

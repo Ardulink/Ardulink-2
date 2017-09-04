@@ -561,9 +561,26 @@ public abstract class LinkManager {
 				return configurer;
 			}
 
-			private Object convert(String value, Class<?> targetType) {
-				return targetType.isInstance(value) ? value : Primitive
-						.parseAs(targetType, value);
+			private Object convert(String value,
+					Class<? extends Object> targetType) {
+				if (targetType.isInstance(value)) {
+					return value;
+				} else if (targetType.isEnum()) {
+					@SuppressWarnings("unchecked")
+					Class<Enum<?>> enumClass = (Class<Enum<?>>) targetType;
+					return enumWithName(enumClass, value);
+				} else {
+					return Primitive.parseAs(targetType, value);
+				}
+			}
+
+			private Object enumWithName(Class<Enum<?>> targetType, String value) {
+				for (Enum<?> enumConstant : targetType.getEnumConstants()) {
+					if (enumConstant.name().equals(value)) {
+						return enumConstant;
+					}
+				}
+				return null;
 			}
 
 		};
