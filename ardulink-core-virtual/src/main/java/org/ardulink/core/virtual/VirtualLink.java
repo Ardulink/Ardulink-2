@@ -6,9 +6,9 @@ import static org.ardulink.core.Pin.Type.DIGITAL;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Pin;
@@ -36,7 +36,7 @@ public class VirtualLink extends AbstractListenerLink {
 		}
 	};
 
-	private final Map<Pin, Object> listeningPins = new HashMap<Pin, Object>();
+	private final Map<Pin, Object> listeningPins = new ConcurrentHashMap<Pin, Object>();
 
 	private VirtualLinkConfig config;
 
