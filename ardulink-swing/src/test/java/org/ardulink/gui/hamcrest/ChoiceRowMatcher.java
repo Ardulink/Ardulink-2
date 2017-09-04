@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.ardulink.gui.hamcrest;
 
 import static java.lang.Boolean.FALSE;
@@ -78,10 +78,25 @@ public class ChoiceRowMatcher extends TypeSafeMatcher<JPanel> {
 
 	private boolean valueEq(JPanel jPanel) {
 		Component component = baseBuilder.getComponent(jPanel);
-		return (component instanceof JCheckBox && choice
-				.equals(((JCheckBox) component).isSelected()))
-				|| (component instanceof JComboBox && String.valueOf(choice)
-						.equals(((JComboBox) component).getSelectedItem()));
+		return (component instanceof JCheckBox && isCheckBoxEq((JCheckBox) component))
+				|| (component instanceof JComboBox && isComboBoxEq((JComboBox) component));
+	}
+
+	private boolean isComboBoxEq(JComboBox component) {
+		return Arrays.equals(choices, items(component))
+				&& choice.equals(component.getSelectedItem());
+	}
+
+	private static Object[] items(JComboBox component) {
+		Object[] items = new Object[component.getItemCount()];
+		for (int i = 0; i < items.length; i++) {
+			items[i] = component.getItemAt(i);
+		}
+		return items;
+	}
+
+	private boolean isCheckBoxEq(JCheckBox component) {
+		return choice.equals(component.isSelected());
 	}
 
 	private boolean choiceEq(JPanel jPanel) {

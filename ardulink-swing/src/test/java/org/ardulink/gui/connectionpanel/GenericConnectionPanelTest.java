@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.gui.connectionpanel;
 
 import static java.lang.Boolean.TRUE;
+import static java.util.concurrent.TimeUnit.DAYS;
 import static org.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
 import static org.ardulink.gui.hamcrest.RowMatcherBuilder.row;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -25,6 +26,7 @@ import static org.hamcrest.core.Is.is;
 import java.awt.Component;
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
@@ -58,7 +60,7 @@ public class GenericConnectionPanelTest {
 		JPanel panel = sut.createPanel(LinkManager.getInstance().getConfigurer(
 				uri));
 		JComboBox comboBox = findFirst(JComboBox.class, componentsOf(panel))
-				.get();
+				.getOrThrow("No %s found on panel %s", JComboBox.class, panel);
 		comboBox.setSelectedItem("ardulink://dummy");
 		assertThat(panel, has(row(0).withLabel("a").withValue(42)));
 		assertThat(panel, has(row(1).withLabel("b").withChoice("foo", "bar")
@@ -66,6 +68,9 @@ public class GenericConnectionPanelTest {
 		assertThat(panel,
 				has(row(2).withLabel("c").withYesNo().withValue(TRUE)));
 		assertThat(panel, has(row(3).withLabel("d").withValue("")));
+		Object[] timeUnits = TimeUnit.values();
+		assertThat(panel, has(row(4).withLabel("e").withChoice(timeUnits)
+				.withValue(DAYS)));
 	}
 
 	private <T> Optional<T> findFirst(Class<T> clazz,

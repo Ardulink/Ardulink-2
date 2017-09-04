@@ -18,6 +18,7 @@ package org.ardulink.gui;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.linkmanager.LinkConfig;
 
@@ -43,6 +44,9 @@ public class DummyLinkConfig implements LinkConfig {
 	@Named("d")
 	private String d;
 
+	@Named("e")
+	private TimeUnit e = TimeUnit.DAYS;
+	
 	public int getA() {
 		return a;
 	}
@@ -78,6 +82,14 @@ public class DummyLinkConfig implements LinkConfig {
 
 	public void setD(String d) {
 		this.d = d;
+	}
+	
+	public TimeUnit getE() {
+		return e;
+	}
+	
+	public void setE(TimeUnit e) {
+		this.e = e;
 	}
 
 }

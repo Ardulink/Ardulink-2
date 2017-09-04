@@ -56,8 +56,8 @@ public class BaseBuilder {
 		return new NumberRowMatcher(this, number);
 	}
 
-	public ChoiceRowBuilder withChoice(String... choices) {
-		return new ChoiceRowBuilder(this, choices);
+	public ChoiceRowBuilder<Object> withChoice(Object... choices) {
+		return new ChoiceRowBuilder<Object>(this, choices);
 	}
 
 	public YesNoRowBuilder withYesNo() {

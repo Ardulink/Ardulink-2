@@ -136,10 +136,11 @@ public class GenericPanelBuilder implements PanelBuilder {
 					new PropertyChangeListener() {
 						@Override
 						public void propertyChange(PropertyChangeEvent pce) {
-							selectFirstValue(jComboBox);
+							setSelection(jComboBox, attribute.getValue());
 						}
 					});
-			return selectFirstValue(jComboBox);
+			setSelection(jComboBox, attribute.getValue());
+			return jComboBox;
 		} else if (isNumber(attribute)) {
 			final JSpinner spinner = new JSpinner(createModel(attribute));
 			JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner);
@@ -192,9 +193,16 @@ public class GenericPanelBuilder implements PanelBuilder {
 		return checkBox;
 	}
 
-	private static JComponent selectFirstValue(JComboBox comboBox) {
+	private static void setSelection(JComboBox comboBox, Object value) {
+		if (value == null) {
+			selectFirstValue(comboBox);
+		} else {
+			comboBox.setSelectedItem(value);
+		}
+	}
+
+	private static void selectFirstValue(JComboBox comboBox) {
 		comboBox.setSelectedIndex(comboBox.getModel().getSize() > 0 ? 0 : -1);
-		return comboBox;
 	}
 
 	private static boolean isChoice(ConfigAttribute attribute) {

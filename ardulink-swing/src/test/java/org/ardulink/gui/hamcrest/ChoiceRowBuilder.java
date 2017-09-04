@@ -27,17 +27,17 @@ import org.hamcrest.Matcher;
  * [adsense]
  *
  */
-public class ChoiceRowBuilder {
+public class ChoiceRowBuilder<T> {
 
-	private final String[] choices;
+	private final T[] choices;
 	private final BaseBuilder baseBuilder;
 
-	public ChoiceRowBuilder(BaseBuilder baseBuilder, String... choices) {
+	public ChoiceRowBuilder(BaseBuilder baseBuilder, T... choices) {
 		this.baseBuilder = baseBuilder;
 		this.choices = choices;
 	}
 
-	public Matcher<JPanel> withValue(String value) {
+	public Matcher<JPanel> withValue(T value) {
 		return new ChoiceRowMatcher(baseBuilder, choices, value);
 	}
 

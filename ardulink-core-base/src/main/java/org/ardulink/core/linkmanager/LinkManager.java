@@ -46,7 +46,9 @@ import javax.validation.constraints.Min;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.beans.Attribute;
+import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.BeanProperties;
+import org.ardulink.core.beans.BeanProperties.DefaultAttribute;
 import org.ardulink.core.classloader.ModuleClassLoader;
 import org.ardulink.core.linkmanager.LinkConfig.ChoiceFor;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
@@ -169,6 +171,40 @@ public abstract class LinkManager {
 
 	}
 
+	private static final class HardCodedValues implements AttributeReader {
+
+		private final String name;
+		private final Class<?> type;
+		private final Object value;
+
+		public HardCodedValues(String name, Class<?> type, Object value) {
+			this.name = name;
+			this.type = type;
+			this.value = value;
+		}
+
+		@Override
+		public String getName() {
+			return name;
+		}
+
+		@Override
+		public Class<?> getType() {
+			return type;
+		}
+
+		@Override
+		public Object getValue() throws Exception {
+			return value;
+		}
+
+		@Override
+		public void addAnnotations(Collection<Annotation> annotations) {
+			// since this class has no reference to a method or field there are
+			// no annos to add
+		}
+	}
+
 	private static class DefaultConfigurer<T extends LinkConfig> implements
 			Configurer {
 
@@ -191,9 +227,7 @@ public abstract class LinkManager {
 				this.attribute = beanProperties.getAttribute(key);
 				checkArgument(attribute != null,
 						"Could not determine attribute %s", key);
-				this.getChoicesFor = BeanProperties.builder(linkConfig)
-						.using(propertyAnnotated(ChoiceFor.class)).build()
-						.getAttribute(attribute.getName());
+				this.getChoicesFor = choicesFor(linkConfig);
 				this.dependsOn = this.getChoicesFor == null ? Collections
 						.<ConfigAttribute> emptyList()
 						: resolveDeps(this.getChoicesFor);
@@ -203,8 +237,25 @@ public abstract class LinkManager {
 						.getClassLoader());
 			}
 
+			private Attribute choicesFor(T linkConfig) {
+				Attribute choiceFor = BeanProperties.builder(linkConfig)
+						.using(propertyAnnotated(ChoiceFor.class)).build()
+						.getAttribute(attribute.getName());
+				if (choiceFor == null && attribute.getType().isEnum()) {
+					HardCodedValues reader = new HardCodedValues(
+							attribute.getName(), attribute.getType(), attribute
+									.getType().getEnumConstants());
+					return new DefaultAttribute(attribute.getName(),
+							attribute.getType(), reader, null);
+				}
+				return choiceFor;
+			}
+
 			private List<ConfigAttribute> resolveDeps(Attribute choiceFor) {
 				ChoiceFor cfa = choiceFor.getAnnotation(ChoiceFor.class);
+				if (cfa == null) {
+					return Collections.emptyList();
+				}
 				List<ConfigAttribute> deps = new ArrayList<ConfigAttribute>(
 						cfa.dependsOn().length);
 				for (String name : cfa.dependsOn()) {

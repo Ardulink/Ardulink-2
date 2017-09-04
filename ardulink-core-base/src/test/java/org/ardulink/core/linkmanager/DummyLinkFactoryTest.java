@@ -21,8 +21,10 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Locale.CHINESE;
 import static java.util.Locale.ENGLISH;
 import static java.util.Locale.GERMAN;
+import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
@@ -40,6 +42,7 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import org.ardulink.core.proto.impl.DummyProtocol;
 import org.ardulink.util.URIs;
+import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -89,7 +92,8 @@ public class DummyLinkFactoryTest {
 		TimeUnit eValue = TimeUnit.DAYS;
 		Link link = (Link) sut.getConfigurer(
 				URIs.newURI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue
-						+ "&c=" + cValue + "&proto=dummyProto&e=" + eValue.name())).newLink();
+						+ "&c=" + cValue + "&proto=dummyProto&e="
+						+ eValue.name())).newLink();
 
 		assertThat(link.getClass().getName(),
 				is(ConnectionBasedLink.class.getName()));
@@ -102,6 +106,29 @@ public class DummyLinkFactoryTest {
 		assertThat(config.protocol.getClass().getName(), is(DummyProtocol
 				.getInstance().getClass().getName()));
 		assertThat(config.e, is(eValue));
+
+	}
+
+	@Test
+	public void enumsHaveDefaultChoiceValues() {
+		// if type is an enum and there is no @ChoiceFor defined the enum's
+		// constants should be returned
+		Configurer configurer = sut.getConfigurer(URIs
+				.newURI("ardulink://dummyLink"));
+		ConfigAttribute e = configurer.getAttribute("e");
+		assertThat(e.hasChoiceValues(), is(TRUE));
+		assertThat(e.getChoiceValues(),
+				CoreMatchers.is((Object[]) TimeUnit.values()));
+	}
+
+	@Test
+	public void enumsWithChoiceValuesDoNotUseDefaultValues() {
+		Configurer configurer = sut.getConfigurer(URIs
+				.newURI("ardulink://dummyLink"));
+		ConfigAttribute f = configurer.getAttribute("f");
+		assertThat(f.hasChoiceValues(), is(TRUE));
+		assertThat(Arrays.asList(f.getChoiceValues()),
+				is(Arrays.<Object> asList(NANOSECONDS, DAYS)));
 	}
 
 	@Test

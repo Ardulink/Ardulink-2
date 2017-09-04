@@ -24,6 +24,10 @@ package org.ardulink.core.linkmanager;
  * [adsense]
  *
  */
+import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -48,9 +52,12 @@ public class DummyLinkConfig implements LinkConfig {
 
 	@Named("d")
 	public String d;
-	
+
 	@Named("e")
 	public TimeUnit e;
+
+	@Named("f")
+	public TimeUnit f;
 
 	public static final ThreadLocal<String[]> choiceValuesOfD = new ThreadLocal<String[]>() {
 		@Override
@@ -85,6 +92,11 @@ public class DummyLinkConfig implements LinkConfig {
 	public static String[] names() {
 		List<String> names = Protocols.names();
 		return names.toArray(new String[names.size()]);
+	}
+
+	@ChoiceFor("f")
+	public List<TimeUnit> choiceValuesForAtttribute_F() {
+		return Arrays.asList(NANOSECONDS, DAYS);
 	}
 
 	@Named("a")

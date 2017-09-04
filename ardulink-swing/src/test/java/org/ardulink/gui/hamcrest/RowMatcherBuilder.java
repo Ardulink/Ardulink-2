@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package org.ardulink.gui.hamcrest;
 
 import static java.util.Arrays.asList;
@@ -20,7 +20,6 @@ import static java.util.Arrays.asList;
 import java.awt.Component;
 import java.util.List;
 
-import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
 /**
@@ -37,18 +36,8 @@ public class RowMatcherBuilder {
 		return asList(panel.getComponents());
 	}
 
-	public static Object[] items(JComboBox jComboBox) {
-		int itemCount = jComboBox.getItemCount();
-		Object[] objects = new Object[itemCount];
-		for (int i = 0; i < itemCount; i++) {
-			objects[i] = jComboBox.getItemAt(i);
-		}
-		return objects;
-	}
-
 	public static BaseBuilder row(int row) {
 		return new BaseBuilder(row);
-
 	}
 
 }
