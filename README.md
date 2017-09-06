@@ -5,11 +5,9 @@ This is the repository for Ardulink 2. Ardulink 2 is a complete, open source, ja
 		public static void main(String[] args) throws InterruptedException, IOException {
 			Link link = Links.getDefault();
 			DigitalPin pin = Pin.digitalPin(2);
-			boolean power = true;
-			while (true) {
+			for (boolean power = true;; power = !power) {
 				System.out.println("Send power: " + power);
 				link.switchDigitalPin(pin, power);
-				power = !power;
 				TimeUnit.SECONDS.sleep(2);
 			}
 		}
