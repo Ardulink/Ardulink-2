@@ -27,7 +27,6 @@ import static org.ardulink.util.Throwables.propagate;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,6 +40,7 @@ import org.ardulink.core.Tone;
 import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import org.ardulink.core.proto.api.MessageIdHolders;
+import org.ardulink.util.MapBuilder;
 import org.ardulink.util.Strings;
 import org.ardulink.util.URIs;
 import org.fusesource.hawtbuf.Buffer;
@@ -69,19 +69,15 @@ public class MqttLink extends AbstractListenerLink {
 
 	private static final String ANALOG = "A";
 	private static final String DIGITAL = "D";
+
 	private final String topic;
 	private final Pattern mqttReceivePattern;
 	private final MQTT mqttClient;
-	private BlockingConnection connection;
+	private final BlockingConnection connection;
 
-	private static final Map<Type, String> typeMap = unmodifiableMap(typeMap());
-
-	private static Map<Type, String> typeMap() {
-		Map<Type, String> typeMap = new HashMap<Type, String>();
-		typeMap.put(Type.ANALOG, ANALOG);
-		typeMap.put(Type.DIGITAL, DIGITAL);
-		return typeMap;
-	}
+	private static final Map<Type, String> typeMap = unmodifiableMap(MapBuilder
+			.<Type, String> newMapBuilder().put(Type.ANALOG, ANALOG)
+			.put(Type.DIGITAL, DIGITAL).build());
 
 	public MqttLink(MqttLinkConfig config) throws IOException {
 		checkArgument(config.getHost() != null, "host must not be null");
@@ -91,8 +87,20 @@ public class MqttLink extends AbstractListenerLink {
 		this.mqttReceivePattern = Pattern.compile(MqttLink.this.topic
 				+ "([aAdD])(\\d+)\\/value\\/set");
 		this.mqttClient = newClient(config);
-		this.connection = new BlockingConnection(futureConnection());
-		new Thread() {
+		this.mqttClient.setConnectAttemptsMax(1);
+		this.connection = new BlockingConnection(new FutureConnection(
+				newCallbackConnection()));
+		newReceivedThread().start();
+		try {
+			connection.connect();
+			subscribe();
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
+	}
+
+	private Thread newReceivedThread() {
+		return new Thread() {
 			@Override
 			public void run() {
 				while (true) {
@@ -135,20 +143,10 @@ public class MqttLink extends AbstractListenerLink {
 				return null;
 			}
 
-		}.start();
-		try {
-			connection.connect();
-			subscribe();
-		} catch (Exception e) {
-			throw new IOException(e);
-		}
+		};
 	}
 
-	private FutureConnection futureConnection() {
-		return new FutureConnection(callbackConnection());
-	}
-
-	private CallbackConnection callbackConnection() {
+	private CallbackConnection newCallbackConnection() {
 		return new CallbackConnection(new MQTT(this.mqttClient)) {
 
 			@Override
