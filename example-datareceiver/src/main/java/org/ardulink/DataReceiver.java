@@ -20,18 +20,15 @@ package org.ardulink;
 import static java.lang.String.format;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static org.ardulink.core.convenience.Links.setChoiceValues;
-
-import java.util.concurrent.TimeUnit;
+import static org.ardulink.util.URIs.newURI;
 
 import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
+import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
-import org.ardulink.core.linkmanager.LinkManager;
-import org.ardulink.util.URIs;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -48,14 +45,11 @@ import org.slf4j.LoggerFactory;
  */
 public class DataReceiver {
 
-	@Option(name = "-delay", usage = "Do a n seconds delay after connecting")
-	private int sleepSecs = 10;
-
 	@Option(name = "-v", usage = "Be verbose")
 	private boolean verbose;
 
 	@Option(name = "-connection", usage = "Connection URI to the arduino")
-	private String connString = "ardulink://serial";
+	private String connection = "ardulink://serial";
 
 	@Option(name = "-d", aliases = "--digital", usage = "Digital pins to listen to")
 	private int[] digitals = new int[] { 2 };
@@ -91,31 +85,21 @@ public class DataReceiver {
 	}
 
 	private void work() throws Exception {
-		this.link = createLink();
+		this.link = Links.getLink(newURI(connection));
+		link.addListener(eventListener());
 
-		try {
-			logger.info("Wait a while for Arduino boot");
-			TimeUnit.SECONDS.sleep(sleepSecs);
-			logger.info("Ok, now it should be ready...");
-
-			link.addListener(eventListener());
-
-			for (int analog : analogs) {
-				link.startListening(analogPin(analog));
-			}
-			for (int digital : digitals) {
-				link.startListening(digitalPin(digital));
-			}
-
-			if (verbose && link instanceof ConnectionBasedLink) {
-				((ConnectionBasedLink) link).getConnection().addListener(
-						rawDataListener());
-			}
-
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
+		for (int analog : analogs) {
+			link.startListening(analogPin(analog));
+		}
+		for (int digital : digitals) {
+			link.startListening(digitalPin(digital));
 		}
 
+		if (verbose && link instanceof ConnectionBasedLink) {
+			Connection connection = ((ConnectionBasedLink) link)
+					.getConnection();
+			connection.addListener(rawDataListener());
+		}
 	}
 
 	private EventListener eventListener() {
@@ -139,12 +123,6 @@ public class DataReceiver {
 				logger.info("Message from Arduino: %s", new String(bytes));
 			}
 		};
-	}
-
-	private Link createLink() {
-		return setChoiceValues(
-				LinkManager.getInstance()
-						.getConfigurer(URIs.newURI(connString))).newLink();
 	}
 
 }
