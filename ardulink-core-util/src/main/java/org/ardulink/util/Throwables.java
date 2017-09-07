@@ -2,6 +2,8 @@ package org.ardulink.util;
 
 import static org.ardulink.util.Preconditions.checkNotNull;
 
+import java.util.Iterator;
+
 public final class Throwables {
 
 	private Throwables() {
@@ -9,11 +11,29 @@ public final class Throwables {
 	}
 
 	public static Throwable getRootCause(Throwable throwable) {
-		Throwable cause;
-		while ((cause = throwable.getCause()) != null) {
-			throwable = cause;
-		}
-		return throwable;
+		return Iterators.getLast(getCauses(throwable)).or(throwable);
+	}
+
+	public static Iterator<Throwable> getCauses(final Throwable throwable) {
+		return new Iterator<Throwable>() {
+
+			private Throwable actual = throwable;
+
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public Throwable next() {
+				return this.actual = this.actual.getCause();
+			}
+
+			@Override
+			public boolean hasNext() {
+				return this.actual.getCause() != null;
+			}
+		};
 	}
 
 	public static RuntimeException propagate(Throwable throwable) {
