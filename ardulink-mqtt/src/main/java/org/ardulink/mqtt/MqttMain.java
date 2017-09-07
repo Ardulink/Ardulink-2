@@ -55,6 +55,9 @@ public class MqttMain {
 	@Option(name = "-brokerPort", usage = "Port of the broker to connect to")
 	private int brokerPort = 1883;
 
+	@Option(name = "-brokerssl", usage = "Communicate encrypted with the broker using SSL")
+	private boolean ssl;
+
 	@Option(name = "-clientId", usage = "This client's name")
 	private String clientId = "ardulink";
 
@@ -99,8 +102,8 @@ public class MqttMain {
 	private CamelContext addRoutes(Config config, CamelContext context)
 			throws Exception {
 		String ardulink = appendListenTo(connection);
-		String mqtt = appendClientId(appendAuth("mqtt://mqttMain?host=tcp://"
-				+ brokerHost + ":" + brokerPort))
+		String mqtt = appendClientId(appendAuth("mqtt://mqttMain?host="
+				+ connectionPrefix() + "://" + brokerHost + ":" + brokerPort))
 				+ "&subscribeTopicNames=" + config.getTopic() + "#";
 		MqttCamelRouteBuilder rb = new MqttCamelRouteBuilder(context, config);
 		if (throttleMillis > 0 && compactStrategy != null) {
@@ -108,6 +111,10 @@ public class MqttMain {
 		}
 		rb.fromSomethingToMqtt(ardulink, mqtt).andReverse();
 		return context;
+	}
+
+	private String connectionPrefix() {
+		return ssl ? "ssl" : "tcp";
 	}
 
 	private String appendListenTo(String connection) {

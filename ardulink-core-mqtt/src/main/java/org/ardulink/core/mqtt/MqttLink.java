@@ -39,6 +39,7 @@ import org.ardulink.core.Pin.Type;
 import org.ardulink.core.Tone;
 import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
+import org.ardulink.core.mqtt.MqttLinkConfig.Connection;
 import org.ardulink.core.proto.api.MessageIdHolders;
 import org.ardulink.util.MapBuilder;
 import org.ardulink.util.Strings;
@@ -219,8 +220,8 @@ public class MqttLink extends AbstractListenerLink {
 	private MQTT newClient(MqttLinkConfig config) {
 		MQTT client = new MQTT();
 		client.setClientId(config.getClientId());
-		client.setHost(URIs.newURI("tcp://" + config.getHost() + ":"
-				+ config.getPort()));
+		client.setHost(URIs.newURI(connectionPrefix(config) + "://"
+				+ config.getHost() + ":" + config.getPort()));
 		String user = config.getUser();
 		if (!Strings.nullOrEmpty(user)) {
 			client.setUserName(user);
@@ -231,6 +232,19 @@ public class MqttLink extends AbstractListenerLink {
 		}
 		return client;
 
+	}
+
+	private static String connectionPrefix(MqttLinkConfig config) {
+		Connection connection = config.getConnection();
+		switch (connection) {
+		case TCP:
+			return "tcp";
+		case SSL:
+			return "ssl";
+		case TLS:
+			return "tls";
+		}
+		throw new IllegalStateException("Could not resolve " + connection);
 	}
 
 	private void subscribe() throws Exception {

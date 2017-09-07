@@ -34,6 +34,10 @@ import org.ardulink.core.linkmanager.LinkConfig;
  */
 public class MqttLinkConfig implements LinkConfig {
 
+	public enum Connection {
+		TCP, SSL, TLS;
+	}
+
 	private static final String LOCALHOST = "localhost";
 
 	@Named("host")
@@ -44,6 +48,9 @@ public class MqttLinkConfig implements LinkConfig {
 	@Min(1)
 	@Max(2 << 16 - 1)
 	private int port = 1883;
+
+	@Named("connection")
+	private Connection connection;
 
 	@Named("topic")
 	@NotNull
@@ -73,6 +80,15 @@ public class MqttLinkConfig implements LinkConfig {
 
 	public void setPort(int port) {
 		this.port = port;
+	}
+
+	public Connection getConnection() {
+		return connection;
+	}
+
+	public void setConnection(Connection connection) {
+		this.connection = checkNotNull(connection,
+				"connection must not be null");
 	}
 
 	public String getTopic() {
