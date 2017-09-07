@@ -30,7 +30,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -129,12 +128,11 @@ public class Console extends JFrame implements Linkable {
 
 	private static void setupExceptionHandler(final Console console) {
 		final UncaughtExceptionHandler exceptionHandler = new UncaughtExceptionHandler() {
-			public void uncaughtException(final Thread thread, final Throwable t) {
+			public void uncaughtException(final Thread thread, Throwable t) {
 				try {
 					t.printStackTrace();
-					JOptionPane.showMessageDialog(console,
-							rootCauseWithMessage(t).getMessage(), "Error",
-							ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(console, t.getMessage(),
+							"Error", ERROR_MESSAGE);
 				} catch (final Throwable t2) {
 					/*
 					 * don't let the Throwable get thrown out, will cause
@@ -142,18 +140,6 @@ public class Console extends JFrame implements Linkable {
 					 */
 					t2.printStackTrace();
 				}
-			}
-
-			private Throwable rootCauseWithMessage(Throwable throwable) {
-				Throwable cause = throwable;
-				for (Iterator<Throwable> causes = Throwables.getCauses(cause); causes
-						.hasNext();) {
-					Throwable next = causes.next();
-					if (next.getMessage() != null) {
-						cause = next;
-					}
-				}
-				return cause;
 			}
 
 		};
