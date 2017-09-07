@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.util;
 
@@ -66,6 +66,17 @@ public final class Iterators {
 	public static <T> Optional<T> getFirst(Iterator<T> iterator) {
 		return iterator.hasNext() ? Optional.<T> of(iterator.next()) : Optional
 				.<T> absent();
+	}
+
+	public static <T> Optional<T> getLast(Iterator<T> iterator) {
+		if (!iterator.hasNext()) {
+			return Optional.absent();
+		}
+		T last;
+		do {
+			last = iterator.next();
+		} while (iterator.hasNext());
+		return Optional.of(last);
 	}
 
 }
