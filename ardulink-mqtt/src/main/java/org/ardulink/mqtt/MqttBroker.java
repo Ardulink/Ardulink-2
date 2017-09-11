@@ -101,7 +101,11 @@ public class MqttBroker implements Closeable {
 			}
 
 			@Override
-			public boolean checkValid(final String user, final byte[] pass) {
+			public boolean checkValid(String username, byte[] password) {
+				return checkValid(null, username, password);
+			}
+
+			public boolean checkValid(String clientId, String user, byte[] pass) {
 				return this.user.equals(user) && Arrays.equals(this.pass, pass);
 			}
 
@@ -109,6 +113,7 @@ public class MqttBroker implements Closeable {
 
 		public Properties properties() {
 			properties.put(HOST_PROPERTY_NAME, host);
+			properties.put(PORT_PROPERTY_NAME, String.valueOf(port));
 			if (ssl) {
 				properties.put(SSL_PORT_PROPERTY_NAME, String.valueOf(port));
 				properties.put(KEY_STORE_PASSWORD_PROPERTY_NAME, "passw0rdsrv");
@@ -116,8 +121,6 @@ public class MqttBroker implements Closeable {
 				properties.put(JKS_PATH_PROPERTY_NAME, "just-a-non-null-value");
 				properties.put(KEY_MANAGER_PASSWORD_PROPERTY_NAME,
 						"just-a-non-null-value");
-			} else {
-				properties.put(PORT_PROPERTY_NAME, String.valueOf(port));
 			}
 			final String property = userPass();
 			if (!Strings.nullOrEmpty(property)) {
