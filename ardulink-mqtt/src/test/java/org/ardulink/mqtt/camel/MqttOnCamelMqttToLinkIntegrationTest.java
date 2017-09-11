@@ -1,6 +1,5 @@
 package org.ardulink.mqtt.camel;
 
-import static org.apache.camel.ShutdownRunningTask.CompleteAllTasks;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
@@ -10,19 +9,21 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
-import static org.ardulink.mqtt.camel.ToArdulinkProtocol.toArdulinkProtocol;
 import static org.ardulink.util.ServerSockets.freePort;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.model.FromDefinition;
+import org.apache.camel.model.RouteDefinition;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.mqtt.Config;
 import org.ardulink.mqtt.MqttBroker;
+import org.ardulink.mqtt.MqttCamelRouteBuilder;
 import org.ardulink.mqtt.util.AnotherMqttClient;
 import org.junit.After;
 import org.junit.Before;
@@ -159,19 +160,23 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	private CamelContext camelContext(final Config config) throws Exception {
 		CamelContext context = new DefaultCamelContext();
-		context.addRoutes(new RouteBuilder() {
-			@Override
-			public void configure() {
-				from(mqtt())
-						.transform(body().convertToString())
-						.process(
-								toArdulinkProtocol(config).topicFrom(
-										header("CamelMQTTSubscribeTopic")))
-						.to(OUT).shutdownRunningTask(CompleteAllTasks);
-			}
-		});
+		new MqttCamelRouteBuilder(context, config).fromSomethingToMqtt(OUT,
+				mqtt()).andReverse();
+		replaceInputs(context.getRouteDefinitions(), OUT, "direct:noop");
 		context.start();
 		return context;
+	}
+
+	private static void replaceInputs(Iterable<RouteDefinition> definitions,
+			String oldFrom, String newFrom) {
+		for (RouteDefinition definition : definitions) {
+			List<FromDefinition> inputs = definition.getInputs();
+			for (int i = 0; i < inputs.size(); i++) {
+				if (oldFrom.equals(inputs.get(i).getEndpointUri())) {
+					inputs.set(i, new FromDefinition(newFrom));
+				}
+			}
+		}
 	}
 
 	private MockEndpoint getMockEndpoint() {
