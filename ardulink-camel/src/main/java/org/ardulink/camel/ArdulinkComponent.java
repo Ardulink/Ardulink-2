@@ -23,6 +23,7 @@ import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -55,9 +56,13 @@ public class ArdulinkComponent extends UriEndpointComponent {
 
 		ArdulinkEndpoint.Config config = new ArdulinkEndpoint.Config();
 		config.setType(remaining);
-		config.setTypeParams(getOptional(parameters, "linkparams").orNull());
 		config.setListenTo(newArrayList(parsePins(getOptional(parameters,
 				"listenTo").or(""))));
+		
+		// all remainig params goto the link
+		config.setLinkParams(parameters);
+		parameters.clear();
+		
 		ArdulinkEndpoint endpoint = new ArdulinkEndpoint(uri, this, config);
 		setProperties(endpoint, parameters);
 		return endpoint;

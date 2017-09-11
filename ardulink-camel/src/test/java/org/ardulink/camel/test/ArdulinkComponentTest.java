@@ -10,12 +10,19 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
+import static org.ardulink.util.Iterables.getFirst;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.camel.CamelContext;
+import org.apache.camel.Route;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.ardulink.camel.ArdulinkEndpoint;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
@@ -39,7 +46,7 @@ public class ArdulinkComponentTest {
 
 	@Before
 	public void setup() throws Exception {
-		context = camelContext();
+		context = camelContext(IN, MOCK_URI);
 		link = Links.getLink(URIs.newURI(MOCK_URI));
 	}
 
@@ -130,12 +137,13 @@ public class ArdulinkComponentTest {
 		verifyNoMoreInteractions(mock);
 	}
 
-	private CamelContext camelContext() throws Exception {
+	private CamelContext camelContext(final String in, final String to)
+			throws Exception {
 		CamelContext context = new DefaultCamelContext();
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
-				from(IN).to(MOCK_URI).shutdownRunningTask(CompleteAllTasks);
+				from(in).to(to).shutdownRunningTask(CompleteAllTasks);
 			}
 		});
 		context.start();
@@ -143,11 +151,32 @@ public class ArdulinkComponentTest {
 	}
 
 	private static Link getMock(Link link) {
+		return extractDelegated(link);
+	}
+
+	private static Link extractDelegated(Link link) {
 		return ((LinkDelegate) link).getDelegate();
 	}
 
 	private void send(String message) {
 		context.createProducerTemplate().sendBody(MOCK_URI, message);
+	}
+
+	@Test
+	public void canSetLinkParameters() throws Exception {
+		String a = "foo";
+		String b = "HOURS";
+		context = camelContext("ardulink://testlink?a=" + a + "&b=" + b,
+				MOCK_URI);
+
+		Route route = getFirst(context.getRoutes()).getOrThrow(
+				"Context %s has no routes", context);
+		ArdulinkEndpoint endpoint = (ArdulinkEndpoint) route.getEndpoint();
+		TestLink link = (TestLink) extractDelegated(endpoint.getLink());
+		TestLinkConfig config = link.getConfig();
+
+		assertThat(config.getA(), is(a));
+		assertThat(config.getB(), is(TimeUnit.valueOf(b)));
 	}
 
 }

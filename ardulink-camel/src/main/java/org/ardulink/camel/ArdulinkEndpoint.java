@@ -5,7 +5,9 @@ import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.camel.Consumer;
 import org.apache.camel.MultipleConsumersSupport;
@@ -15,8 +17,9 @@ import org.apache.camel.impl.DefaultEndpoint;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
 import org.ardulink.core.convenience.Links;
+import org.ardulink.util.Joiner;
+import org.ardulink.util.Joiner.MapJoiner;
 import org.ardulink.util.Lists;
-import org.ardulink.util.Strings;
 import org.ardulink.util.Throwables;
 import org.ardulink.util.URIs;
 
@@ -26,15 +29,15 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements
 	public static class Config {
 
 		private String type;
-		private String typeParams;
+		private Map<String, Object> typeParams = Collections.emptyMap();
 		private List<Pin> pins = Collections.emptyList();
 
 		public void setType(String type) {
 			this.type = type;
 		}
 
-		public void setTypeParams(String typeParams) {
-			this.typeParams = typeParams;
+		public void setLinkParams(Map<String, Object> parameters) {
+			this.typeParams = new HashMap<String, Object>(parameters);
 		}
 
 		public void setListenTo(List<Pin> pins) {
@@ -42,6 +45,9 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements
 		}
 
 	}
+
+	private static final MapJoiner joiner = Joiner.on("&")
+			.withKeyValueSeparator("=");
 
 	private Config config;
 	private final Link link;
@@ -59,9 +65,8 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements
 
 	private Link createLink() {
 		try {
-			String base = "ardulink://"
-					+ checkNotNull(config.type, "type must not be null");
-			return Links.getLink(URIs.newURI(appendParams(base,
+			return Links.getLink(URIs.newURI(appendParams("ardulink://"
+					+ checkNotNull(config.type, "type must not be null"),
 					config.typeParams)));
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
@@ -73,8 +78,10 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements
 		return new ArdulinkProducer(this, this.link);
 	}
 
-	private static String appendParams(String base, String typeParams) {
-		return Strings.nullOrEmpty(typeParams) ? base : base + "?" + typeParams;
+	private static String appendParams(String base,
+			Map<String, Object> typeParams) {
+		return typeParams.isEmpty() ? base : base + "?"
+				+ joiner.join(typeParams);
 	}
 
 	@Override

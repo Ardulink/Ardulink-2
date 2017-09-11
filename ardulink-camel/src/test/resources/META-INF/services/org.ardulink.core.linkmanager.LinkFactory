@@ -1,2 +1,3 @@
 org.ardulink.camel.test.MockLinkFactory
 org.ardulink.camel.test.ConnectionBasedMockLinkFactory
+org.ardulink.camel.test.TestLinkFactory
