@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
@@ -87,19 +86,12 @@ public class ArdulinkComponentListenerTest {
 				from(noMatterWhat()).to(MOCK_URI + "?" + args);
 			}
 		});
-		return startAndBlock(context);
+		context.start();
+		return context;
 	}
 
 	private String noMatterWhat() {
 		return "direct:bean";
-	}
-
-	private CamelContext startAndBlock(CamelContext context) throws Exception {
-		context.start();
-		while (!context.getStatus().isStarted()) {
-			TimeUnit.MILLISECONDS.sleep(50);
-		}
-		return context;
 	}
 
 	private Link getMock(Link link) {
