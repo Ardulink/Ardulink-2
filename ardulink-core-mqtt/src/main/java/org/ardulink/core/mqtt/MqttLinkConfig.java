@@ -50,7 +50,7 @@ public class MqttLinkConfig implements LinkConfig {
 	private int port = 1883;
 
 	@Named("connection")
-	private Connection connection;
+	private Connection connection = Connection.TCP;
 
 	@Named("topic")
 	@NotNull
