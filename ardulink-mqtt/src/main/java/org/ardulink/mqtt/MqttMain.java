@@ -94,8 +94,7 @@ public class MqttMain {
 
 	private CamelContext context;
 
-	private CamelContext createCamelContext(final Config config)
-			throws Exception {
+	private CamelContext createCamelContext(Config config) throws Exception {
 		return addRoutes(config, new DefaultCamelContext());
 	}
 
@@ -167,10 +166,6 @@ public class MqttMain {
 			cmdLineParser.printUsage(System.err);
 			return;
 		}
-
-		checkState(analogs.length > 0 || digitals.length > 0 || control,
-				"Not listening on any pin nor control messages enabled. "
-						+ "Please specify at least some pins to listen to");
 
 		connectToMqttBroker();
 		try {
