@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.ServiceLoader;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -49,7 +48,6 @@ import org.ardulink.core.beans.Attribute;
 import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.BeanProperties;
 import org.ardulink.core.beans.BeanProperties.DefaultAttribute;
-import org.ardulink.core.classloader.ModuleClassLoader;
 import org.ardulink.core.linkmanager.LinkConfig.ChoiceFor;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.linkmanager.LinkConfig.Named;
@@ -567,20 +565,15 @@ public abstract class LinkManager {
 				return Optional.<LinkFactory<?>> absent();
 			}
 
+			// of course we also could load the FactoryFactories via
+			// serviceloader to enable additional FactoryFactories
 			private List<LinkFactory> getConnectionFactories() {
-				return Lists.newArrayList(ServiceLoader.load(LinkFactory.class,
-						classloader()).iterator());
-			}
-
-			private ClassLoader classloader() {
-				ClassLoader classLoader = Thread.currentThread()
-						.getContextClassLoader();
-				return new ModuleClassLoader(classLoader, systemProperty(
-						"ardulink.module.dir").or("."));
-			}
-
-			private Optional<String> systemProperty(String propertyName) {
-				return Optional.ofNullable(System.getProperty(propertyName));
+				List<LinkFactory> factories = Lists.newArrayList();
+				factories.addAll(new FactoriesViaServiceLoader()
+						.loadLinkFactories());
+				factories.addAll(new FactoriesViaMetaInfArdulink()
+						.loadLinkFactories());
+				return factories;
 			}
 
 			@Override

@@ -16,11 +16,15 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
+import static org.ardulink.util.URIs.newURI;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
+import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.util.URIs;
+import org.ardulink.core.linkmanager.viaservices.AlLinkWithoutArealLinkFactoryWithConfig;
+import org.ardulink.core.linkmanager.viaservices.AlLinkWithoutArealLinkFactoryWithoutConfig;
 import org.junit.Test;
 
 /**
@@ -33,11 +37,12 @@ import org.junit.Test;
  */
 public class LinkManagerTest {
 
+	LinkManager sut = LinkManager.getInstance();
+
 	@Test
 	public void onceQueriedChoiceValuesStayValid() throws Exception {
-		LinkManager linkManager = LinkManager.getInstance();
-		Configurer configurer = linkManager.getConfigurer(URIs
-				.newURI("ardulink://dummyLink"));
+		Configurer configurer = sut
+				.getConfigurer(newURI("ardulink://dummyLink"));
 
 		choiceValuesOfDNowAre("x", "y");
 
@@ -59,6 +64,25 @@ public class LinkManagerTest {
 
 	private void choiceValuesOfDNowAre(String... values) {
 		DummyLinkConfig.choiceValuesOfD.set(values);
+	}
+
+	@Test
+	public void canLoadViaMetaInfServicesArdulinkLinkfactoryWithoutConfig() {
+		Link link = sut.getConfigurer(
+				newURI("ardulink://aLinkWithoutArealLinkFactoryWithoutConfig"))
+				.newLink();
+		assertThat(
+				link,
+				is(instanceOf(AlLinkWithoutArealLinkFactoryWithoutConfig.class)));
+	}
+
+	@Test
+	public void canLoadViaMetaInfServicesArdulinkLinkfactoryWithConfig() {
+		Link link = sut.getConfigurer(
+				newURI("ardulink://aLinkWithoutArealLinkFactoryWithConfig"))
+				.newLink();
+		assertThat(link,
+				is(instanceOf(AlLinkWithoutArealLinkFactoryWithConfig.class)));
 	}
 
 }

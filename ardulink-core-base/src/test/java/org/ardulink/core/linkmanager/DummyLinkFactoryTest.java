@@ -205,7 +205,9 @@ public class DummyLinkFactoryTest {
 		assertThat(
 				sut.listURIs(),
 				is(links("ardulink://dummyLink", "ardulink://dummyLink2",
-						"ardulink://dependendAttributes")));
+						"ardulink://dependendAttributes",
+						"ardulink://aLinkWithoutArealLinkFactoryWithoutConfig",
+						"ardulink://aLinkWithoutArealLinkFactoryWithConfig")));
 	}
 
 	private List<URI> links(String... links) {
