@@ -102,11 +102,11 @@ public class MqttBroker implements Closeable {
 
 			@Override
 			public boolean checkValid(String username, byte[] password) {
-				return checkValid(null, username, password);
+				return this.user.equals(username) && Arrays.equals(this.pass, password);
 			}
 
-			public boolean checkValid(String clientId, String user, byte[] pass) {
-				return this.user.equals(user) && Arrays.equals(this.pass, pass);
+			public boolean checkValid(String clientId, String username, byte[] password) {
+				return checkValid(username, password);
 			}
 
 		}

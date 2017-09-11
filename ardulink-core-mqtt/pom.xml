@@ -10,8 +10,7 @@
 	</parent>
 
 	<repositories>
-		<!-- io.moquette:moquette-broker -->
-		<!-- org.dna.mqtt:moquette-broker -->
+		<!-- moquette -->
 		<repository>
 			<id>bintray</id>
 			<url>http://dl.bintray.com/andsel/maven/</url>
