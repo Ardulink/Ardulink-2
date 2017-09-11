@@ -103,7 +103,8 @@ public class MqttMain {
 			throws Exception {
 		String ardulink = appendListenTo(connection);
 		String mqtt = appendClientId(appendAuth("mqtt://mqttMain?host="
-				+ connectionPrefix() + "://" + brokerHost + ":" + getBrokerPort()))
+				+ connectionPrefix() + "://" + brokerHost + ":"
+				+ getBrokerPort()))
 				+ "?subscribeTopicNames=" + config.getTopic() + "#";
 		MqttCamelRouteBuilder rb = new MqttCamelRouteBuilder(context, config);
 		if (throttleMillis > 0 && compactStrategy != null) {
@@ -193,7 +194,7 @@ public class MqttMain {
 
 	protected Builder createBroker() {
 		return MqttBroker.builder().host(this.brokerHost).port(getBrokerPort())
-				.useSsl(true);
+				.useSsl(this.ssl);
 	}
 
 	public void ensureBrokerTopicIsnormalized() {
