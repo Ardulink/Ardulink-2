@@ -19,8 +19,12 @@ package org.ardulink.mqtt;
 import static io.moquette.BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.AUTHENTICATOR_CLASS_NAME;
 import static io.moquette.BrokerConstants.HOST_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.JKS_PATH_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.KEY_MANAGER_PASSWORD_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.KEY_STORE_PASSWORD_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.SSL_PORT_PROPERTY_NAME;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Throwables.propagate;
 import io.moquette.server.Server;
@@ -50,6 +54,7 @@ public class MqttBroker implements Closeable {
 		private final Properties properties = new Properties();
 		private String host = "localhost";
 		private int port = 1883;
+		private boolean ssl;
 
 		public Builder host(final String host) {
 			this.host = host;
@@ -58,6 +63,11 @@ public class MqttBroker implements Closeable {
 
 		public Builder port(final int port) {
 			this.port = port;
+			return this;
+		}
+
+		public Builder useSsl(boolean ssl) {
+			this.ssl = ssl;
 			return this;
 		}
 
@@ -99,7 +109,16 @@ public class MqttBroker implements Closeable {
 
 		public Properties properties() {
 			properties.put(HOST_PROPERTY_NAME, host);
-			properties.put(PORT_PROPERTY_NAME, String.valueOf(port));
+			if (ssl) {
+				properties.put(SSL_PORT_PROPERTY_NAME, String.valueOf(port));
+				properties.put(KEY_STORE_PASSWORD_PROPERTY_NAME, "passw0rdsrv");
+
+				properties.put(JKS_PATH_PROPERTY_NAME, "just-a-non-null-value");
+				properties.put(KEY_MANAGER_PASSWORD_PROPERTY_NAME,
+						"just-a-non-null-value");
+			} else {
+				properties.put(PORT_PROPERTY_NAME, String.valueOf(port));
+			}
 			final String property = userPass();
 			if (!Strings.nullOrEmpty(property)) {
 				properties.setProperty(AUTHENTICATOR_CLASS_NAME,

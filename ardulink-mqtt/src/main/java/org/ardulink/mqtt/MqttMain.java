@@ -53,7 +53,7 @@ public class MqttMain {
 	private String brokerHost = "localhost";
 
 	@Option(name = "-brokerPort", usage = "Port of the broker to connect to")
-	private int brokerPort = 1883;
+	private Integer brokerPort;
 
 	@Option(name = "-brokerssl", usage = "Communicate encrypted with the broker using SSL")
 	private boolean ssl;
@@ -103,8 +103,8 @@ public class MqttMain {
 			throws Exception {
 		String ardulink = appendListenTo(connection);
 		String mqtt = appendClientId(appendAuth("mqtt://mqttMain?host="
-				+ connectionPrefix() + "://" + brokerHost + ":" + brokerPort))
-				+ "&subscribeTopicNames=" + config.getTopic() + "#";
+				+ connectionPrefix() + "://" + brokerHost + ":" + getBrokerPort()))
+				+ "?subscribeTopicNames=" + config.getTopic() + "#";
 		MqttCamelRouteBuilder rb = new MqttCamelRouteBuilder(context, config);
 		if (throttleMillis > 0 && compactStrategy != null) {
 			rb = rb.compact(compactStrategy, throttleMillis, MILLISECONDS);
@@ -119,7 +119,8 @@ public class MqttMain {
 
 	private String appendListenTo(String connection) {
 		String listenTo = listenTo();
-		return listenTo.isEmpty() ? connection : connection + "&listenTo="
+		return listenTo.isEmpty() ? connection : connection
+				+ (connection.contains("?") ? "&" : "?") + "listenTo="
 				+ listenTo;
 	}
 
@@ -191,7 +192,8 @@ public class MqttMain {
 	}
 
 	protected Builder createBroker() {
-		return MqttBroker.builder().host(this.brokerHost).port(this.brokerPort);
+		return MqttBroker.builder().host(this.brokerHost).port(getBrokerPort())
+				.useSsl(true);
 	}
 
 	public void ensureBrokerTopicIsnormalized() {
@@ -227,6 +229,18 @@ public class MqttMain {
 
 	public void setBrokerPort(int brokerPort) {
 		this.brokerPort = brokerPort;
+	}
+
+	public int getBrokerPort() {
+		return brokerPort == null ? defaultPort() : brokerPort.intValue();
+	}
+
+	private int defaultPort() {
+		return ssl ? 8883 : 1883;
+	}
+
+	public void setSsl(boolean ssl) {
+		this.ssl = ssl;
 	}
 
 	public void setBrokerTopic(String brokerTopic) {
