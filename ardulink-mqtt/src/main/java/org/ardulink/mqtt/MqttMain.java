@@ -18,6 +18,8 @@ package org.ardulink.mqtt;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy.AVERAGE;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
@@ -29,10 +31,12 @@ import java.util.List;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Route;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.ardulink.core.Pin;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy;
 import org.ardulink.mqtt.MqttCamelRouteBuilder.MqttConnectionProperties;
 import org.ardulink.util.Joiner;
+import org.ardulink.util.Lists;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -115,6 +119,13 @@ public class MqttMain {
 	}
 
 	private String appendListenTo(String connection) {
+		List<Pin> listen = Lists.newArrayList();
+		for (int digital : digitals) {
+			listen.add(digitalPin(digital));
+		}
+		for (int analog : analogs) {
+			listen.add(analogPin(analog));
+		}
 		String listenTo = listenTo();
 		return listenTo.isEmpty() ? connection : connection
 				+ (connection.contains("?") ? "&" : "?") + "listenTo="

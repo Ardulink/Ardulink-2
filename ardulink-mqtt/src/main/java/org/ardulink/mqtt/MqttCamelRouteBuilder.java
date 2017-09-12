@@ -8,6 +8,7 @@ import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
