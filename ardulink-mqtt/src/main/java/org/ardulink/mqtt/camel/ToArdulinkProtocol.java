@@ -1,7 +1,9 @@
 package org.ardulink.mqtt.camel;
 
+import static java.lang.Boolean.TRUE;
 import static java.lang.Boolean.parseBoolean;
 import static java.util.Collections.unmodifiableList;
+import static org.apache.camel.Exchange.ROUTE_STOP;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
@@ -11,7 +13,6 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LI
 import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Preconditions.checkNotNull;
-import static org.ardulink.util.Preconditions.checkState;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -193,10 +194,15 @@ public final class ToArdulinkProtocol implements Processor {
 				"topic must not be null");
 		String body = checkNotNull(in.getBody(String.class),
 				"body must not be null");
-		Optional<String> result = createMessage(topic, body);
-		checkState(result.isPresent(), "Cannot handle body %s with topic %s",
-				body, topic);
-		in.setBody(result.get(), String.class);
+		Optional<String> message = createMessage(topic, body);
+
+		if (message.isPresent()) {
+			in.setBody(message.getOrThrow(
+					"Cannot handle body %s with topic %s", body, topic),
+					String.class);
+		} else {
+			exchange.setProperty(ROUTE_STOP, TRUE);
+		}
 	}
 
 	private Optional<String> createMessage(String topic, String value) {
