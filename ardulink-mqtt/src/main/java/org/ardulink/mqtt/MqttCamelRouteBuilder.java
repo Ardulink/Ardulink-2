@@ -8,6 +8,7 @@ import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
@@ -21,6 +22,7 @@ import org.apache.camel.model.ChoiceDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.processor.aggregate.AggregationStrategy;
 import org.apache.camel.processor.aggregate.UseLatestAggregationStrategy;
+import org.ardulink.util.Strings;
 
 public class MqttCamelRouteBuilder {
 
@@ -29,6 +31,79 @@ public class MqttCamelRouteBuilder {
 
 	public enum CompactStrategy {
 		AVERAGE, USE_LATEST;
+	}
+
+	public static class MqttConnectionProperties {
+
+		private String name = "ardulink-mqtt";
+		private String brokerHost = "localhost";
+		private Integer brokerPort;
+		private boolean ssl;
+		private String clientId;
+		private String user;
+		private byte[] pass;
+
+		public MqttConnectionProperties name(String name) {
+			this.name = name;
+			return this;
+		}
+
+		public MqttConnectionProperties brokerHost(String brokerHost) {
+			this.brokerHost = brokerHost;
+			return this;
+		}
+
+		public MqttConnectionProperties brokerPort(int brokerPort) {
+			this.brokerPort = brokerPort;
+			return this;
+		}
+
+		public MqttConnectionProperties ssl(boolean ssl) {
+			this.ssl = ssl;
+			return this;
+		}
+
+		public MqttConnectionProperties clientId(String clientId) {
+			this.clientId = clientId;
+			return this;
+		}
+
+		public int getBrokerPort() {
+			return brokerPort == null ? (ssl ? 8883 : 1883) : brokerPort
+					.intValue();
+		}
+
+		public MqttConnectionProperties auth(String user, byte[] pass) {
+			checkArgument(!Strings.nullOrEmpty(user),
+					"user must not be null or empty");
+			checkArgument(pass != null, "pass must not be null");
+			this.user = user;
+			this.pass = pass;
+			return this;
+		}
+
+		public String buildCamelURI(Config config) {
+			StringBuilder sb = new StringBuilder();
+			sb = sb.append(String.format("mqtt:%s?host=%s://%s:%s", name,
+					(ssl ? "ssl" : "tcp"), brokerHost, getBrokerPort()));
+			sb = hasAuth() ? sb.append(String.format(
+					"&userName=%s&password=%s", user, new String(pass))) : sb;
+			sb = hasClientId() ? sb.append(String.format("&clientId=%s",
+					clientId)) : sb;
+			sb = sb.append(String.format("&subscribeTopicNames=%s#",
+					config.getTopic()));
+			sb = sb.append("&connectAttemptsMax=1&reconnectAttemptsMax=0");
+			return sb.toString();
+		}
+
+		private boolean hasAuth() {
+			return user != null && pass != null;
+		}
+
+		private boolean hasClientId() {
+			return clientId != null;
+		}
+
 	}
 
 	public class ConfiguredMqttCamelRouteBuilder {
@@ -77,6 +152,12 @@ public class MqttCamelRouteBuilder {
 
 	public MqttCamelRouteBuilder to(final String to) {
 		return this;
+	}
+
+	public ConfiguredMqttCamelRouteBuilder fromSomethingToMqtt(
+			final String something, final MqttConnectionProperties properties)
+			throws Exception {
+		return fromSomethingToMqtt(something, properties.buildCamelURI(config));
 	}
 
 	public ConfiguredMqttCamelRouteBuilder fromSomethingToMqtt(

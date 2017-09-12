@@ -24,6 +24,7 @@ import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.mqtt.Config;
 import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.MqttCamelRouteBuilder;
+import org.ardulink.mqtt.MqttCamelRouteBuilder.MqttConnectionProperties;
 import org.ardulink.mqtt.util.AnotherMqttClient;
 import org.junit.After;
 import org.junit.Before;
@@ -160,8 +161,11 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	private CamelContext camelContext(final Config config) throws Exception {
 		CamelContext context = new DefaultCamelContext();
+		MqttConnectionProperties mqtt = new MqttConnectionProperties()
+				.name("foo").brokerHost("localhost")
+				.brokerPort(broker.getPort());
 		new MqttCamelRouteBuilder(context, config).fromSomethingToMqtt(OUT,
-				mqtt()).andReverse();
+				mqtt).andReverse();
 		replaceInputs(context.getRouteDefinitions(), OUT, "direct:noop");
 		context.start();
 		return context;
@@ -181,12 +185,6 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	private MockEndpoint getMockEndpoint() {
 		return context.getEndpoint(OUT, MockEndpoint.class);
-	}
-
-	private String mqtt() {
-		return "mqtt:foo?host=tcp://localhost:" + broker.getPort()
-				+ "&connectAttemptsMax=1" + "&reconnectAttemptsMax=0"
-				+ "&subscribeTopicNames=" + TOPIC + "/#";
 	}
 
 }
