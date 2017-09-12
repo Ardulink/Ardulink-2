@@ -31,6 +31,7 @@ import org.apache.camel.Route;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy;
+import org.ardulink.mqtt.MqttCamelRouteBuilder.MqttConnectionProperties;
 import org.ardulink.util.Joiner;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -100,21 +101,17 @@ public class MqttMain {
 
 	private CamelContext addRoutes(Config config, CamelContext context)
 			throws Exception {
+		MqttConnectionProperties mqtt = appendAuth(new MqttConnectionProperties()
+				.name("mqttMain").brokerHost(brokerHost)
+				.brokerPort(getBrokerPort()).ssl(ssl));
 		String ardulink = appendListenTo(connection);
-		String mqtt = appendClientId(appendAuth("mqtt://mqttMain?host="
-				+ connectionPrefix() + "://" + brokerHost + ":"
-				+ getBrokerPort()))
-				+ "?subscribeTopicNames=" + config.getTopic() + "#";
+
 		MqttCamelRouteBuilder rb = new MqttCamelRouteBuilder(context, config);
 		if (throttleMillis > 0 && compactStrategy != null) {
 			rb = rb.compact(compactStrategy, throttleMillis, MILLISECONDS);
 		}
 		rb.fromSomethingToMqtt(ardulink, mqtt).andReverse();
 		return context;
-	}
-
-	private String connectionPrefix() {
-		return ssl ? "ssl" : "tcp";
 	}
 
 	private String appendListenTo(String connection) {
@@ -124,20 +121,14 @@ public class MqttMain {
 				+ listenTo;
 	}
 
-	private String appendAuth(String brokerUri) {
+	private MqttConnectionProperties appendAuth(
+			MqttConnectionProperties properties) {
 		if (nullOrEmpty(credentials)) {
-			return brokerUri;
+			return properties;
 		}
 		String[] auth = credentials.split(":");
 		checkState(auth.length == 2, "Credentials not in format user:password");
-		return brokerUri + "&userName=" + auth[0] + "&password=" + auth[1];
-	}
-
-	private String appendClientId(String brokerUri) {
-		if (nullOrEmpty(clientId)) {
-			return brokerUri;
-		}
-		return brokerUri + "&clientId=" + clientId;
+		return properties.auth(auth[0], auth[1].getBytes());
 	}
 
 	private String listenTo() {
