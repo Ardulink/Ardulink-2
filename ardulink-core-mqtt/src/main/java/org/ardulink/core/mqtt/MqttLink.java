@@ -23,10 +23,12 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Preconditions.checkArgument;
+import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Throwables.propagate;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 
 import java.io.IOException;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -76,9 +78,9 @@ public class MqttLink extends AbstractListenerLink {
 	private final MQTT mqttClient;
 	private final BlockingConnection connection;
 
-	private static final Map<Type, String> typeMap = unmodifiableMap(MapBuilder
-			.<Type, String> newMapBuilder().put(Type.ANALOG, ANALOG)
-			.put(Type.DIGITAL, DIGITAL).build());
+	private static final Map<Type, String> typeMap = unmodifiableMap(new EnumMap<Type, String>(
+			MapBuilder.<Type, String> newMapBuilder().put(Type.ANALOG, ANALOG)
+					.put(Type.DIGITAL, DIGITAL).build()));
 
 	public MqttLink(MqttLinkConfig config) throws IOException {
 		checkArgument(config.getHost() != null, "host must not be null");
@@ -270,7 +272,8 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	private String getType(Pin pin) {
-		return typeMap.get(pin.getType());
+		return checkNotNull(typeMap.get(pin.getType()), "Cannot handle pin %s",
+				pin);
 	}
 
 	@Override
