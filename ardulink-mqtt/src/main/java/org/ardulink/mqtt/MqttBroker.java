@@ -53,7 +53,7 @@ public class MqttBroker implements Closeable {
 
 		private final Properties properties = new Properties();
 		private String host = "localhost";
-		private int port = 1883;
+		private Integer port;
 		private boolean ssl;
 
 		public Builder host(final String host) {
@@ -61,9 +61,13 @@ public class MqttBroker implements Closeable {
 			return this;
 		}
 
-		public Builder port(final int port) {
+		public Builder port(Integer port) {
 			this.port = port;
 			return this;
+		}
+
+		public Builder port(int port) {
+			return port(Integer.valueOf(port));
 		}
 
 		public Builder useSsl(boolean ssl) {
@@ -102,20 +106,24 @@ public class MqttBroker implements Closeable {
 
 			@Override
 			public boolean checkValid(String username, byte[] password) {
-				return this.user.equals(username) && Arrays.equals(this.pass, password);
+				return this.user.equals(username)
+						&& Arrays.equals(this.pass, password);
 			}
 
-			public boolean checkValid(String clientId, String username, byte[] password) {
+			public boolean checkValid(String clientId, String username,
+					byte[] password) {
 				return checkValid(username, password);
 			}
 
 		}
 
 		public Properties properties() {
+			String sPort = String.valueOf(port == null ? (ssl ? 8883 : 1883)
+					: port.intValue());
 			properties.put(HOST_PROPERTY_NAME, host);
-			properties.put(PORT_PROPERTY_NAME, String.valueOf(port));
+			properties.put(PORT_PROPERTY_NAME, sPort);
 			if (ssl) {
-				properties.put(SSL_PORT_PROPERTY_NAME, String.valueOf(port));
+				properties.put(SSL_PORT_PROPERTY_NAME, sPort);
 				properties.put(KEY_STORE_PASSWORD_PROPERTY_NAME, "passw0rdsrv");
 
 				properties.put(JKS_PATH_PROPERTY_NAME, "just-a-non-null-value");

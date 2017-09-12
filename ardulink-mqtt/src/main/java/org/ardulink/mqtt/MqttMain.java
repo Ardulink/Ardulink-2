@@ -101,15 +101,15 @@ public class MqttMain {
 
 	private CamelContext addRoutes(Config config, CamelContext context)
 			throws Exception {
-		MqttConnectionProperties mqtt = appendAuth(new MqttConnectionProperties()
-				.name("mqttMain").brokerHost(brokerHost)
-				.brokerPort(getBrokerPort()).ssl(ssl));
-		String ardulink = appendListenTo(connection);
-
 		MqttCamelRouteBuilder rb = new MqttCamelRouteBuilder(context, config);
 		if (throttleMillis > 0 && compactStrategy != null) {
 			rb = rb.compact(compactStrategy, throttleMillis, MILLISECONDS);
 		}
+		String ardulink = appendListenTo(connection);
+		MqttConnectionProperties mqtt = appendAuth(
+				new MqttConnectionProperties().name("mqttMain")
+						.brokerHost(brokerHost).ssl(ssl))
+				.brokerPort(brokerPort);
 		rb.fromSomethingToMqtt(ardulink, mqtt).andReverse();
 		return context;
 	}
@@ -179,8 +179,8 @@ public class MqttMain {
 	}
 
 	protected Builder createBroker() {
-		return MqttBroker.builder().host(this.brokerHost).port(getBrokerPort())
-				.useSsl(this.ssl);
+		return MqttBroker.builder().host(this.brokerHost).useSsl(this.ssl)
+				.port(brokerPort);
 	}
 
 	public void ensureBrokerTopicIsnormalized() {
@@ -195,7 +195,6 @@ public class MqttMain {
 			}
 		}
 		return true;
-		// return context.getStatus().isStarted();
 	}
 
 	public void close() throws IOException {
@@ -216,14 +215,6 @@ public class MqttMain {
 
 	public void setBrokerPort(int brokerPort) {
 		this.brokerPort = brokerPort;
-	}
-
-	public int getBrokerPort() {
-		return brokerPort == null ? defaultPort() : brokerPort.intValue();
-	}
-
-	private int defaultPort() {
-		return ssl ? 8883 : 1883;
 	}
 
 	public void setSsl(boolean ssl) {
