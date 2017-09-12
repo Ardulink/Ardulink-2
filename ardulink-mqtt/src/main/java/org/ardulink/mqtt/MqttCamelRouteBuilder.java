@@ -137,7 +137,7 @@ public class MqttCamelRouteBuilder {
 	private CompactStrategy compactStrategy;
 	private long compactMillis;
 
-	public MqttCamelRouteBuilder(final CamelContext context, final Config config) {
+	public MqttCamelRouteBuilder(CamelContext context, Config config) {
 		this.context = context;
 		this.config = config;
 	}
@@ -153,12 +153,12 @@ public class MqttCamelRouteBuilder {
 		return this;
 	}
 
-	public MqttCamelRouteBuilder to(final String to) {
+	public MqttCamelRouteBuilder to(String to) {
 		return this;
 	}
 
 	public ConfiguredMqttCamelRouteBuilder fromSomethingToMqtt(
-			final String something, final MqttConnectionProperties properties)
+			String something, MqttConnectionProperties properties)
 			throws Exception {
 		return fromSomethingToMqtt(something, properties.buildCamelURI(config));
 	}
@@ -185,7 +185,7 @@ public class MqttCamelRouteBuilder {
 			}
 
 			private AggregateDefinition useStrategy(ChoiceDefinition def,
-					final CompactStrategy strategy) {
+					CompactStrategy strategy) {
 				switch (strategy) {
 				case USE_LATEST:
 					return appendUseLatestStrategy(def);
