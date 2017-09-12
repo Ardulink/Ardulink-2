@@ -42,10 +42,10 @@ public abstract class Config {
 
 		private DefaultConfig(String topic) {
 			this.topic = topic.endsWith("/") ? topic : topic + "/";
-			this.topicPatternDigitalWrite = compile(write(this.topic, "D"));
-			this.topicPatternDigitalRead = read(this.topic, "D");
-			this.topicPatternAnalogWrite = compile(write(this.topic, "A"));
-			this.topicPatternAnalogRead = read(this.topic, "A");
+			this.topicPatternDigitalWrite = compile(write(this.topic + "D%s/value/set"));
+			this.topicPatternDigitalRead = read(this.topic + "D%s/value/get");
+			this.topicPatternAnalogWrite = compile(write(this.topic + "A%s/value/set"));
+			this.topicPatternAnalogRead = read(this.topic + "A%s/value/get");
 		}
 
 		private DefaultConfig(Config c) {
@@ -142,8 +142,8 @@ public abstract class Config {
 
 	public Config withControlChannelEnabled() {
 		String topic = getTopic();
-		String topicD = write(topic + "system/listening/", "D");
-		String topicA = write(topic + "system/listening/", "A");
+		String topicD = write(topic + "system/listening/D%s/value/set");
+		String topicA = write(topic + "system/listening/A%s/value/set");
 		return DefaultConfig.typedCopy(this)
 				.withTopicPatternDigitalControl(topicD)
 				.withTopicPatternAnalogControl(topicA);
@@ -161,18 +161,12 @@ public abstract class Config {
 		return copy;
 	}
 
-	private static String read(String brokerTopic, String prefix) {
-		return format(brokerTopic, prefix, "%s", "/get");
+	private static String write(String format) {
+		return String.format(format, "(\\w+)");
 	}
 
-	private static String write(String brokerTopic, String prefix) {
-		return format(brokerTopic, prefix, "(\\w+)", "/set");
-	}
-
-	private static String format(String brokerTopic, String prefix,
-			String numerated, String appendix) {
-		return brokerTopic + prefix + String.format("%s/value", numerated)
-				+ appendix;
+	private static String read(String format) {
+		return String.format(format, "%s");
 	}
 
 	protected abstract String getTopic();
