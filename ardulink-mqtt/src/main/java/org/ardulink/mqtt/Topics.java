@@ -28,9 +28,9 @@ import java.util.regex.Pattern;
  * [adsense]
  *
  */
-public abstract class Config {
+public abstract class Topics {
 
-	public static class DefaultConfig extends Config {
+	public static class DefaultTopics extends Topics {
 
 		private final String topic;
 		private Pattern topicPatternDigitalWrite;
@@ -40,7 +40,7 @@ public abstract class Config {
 		private Pattern topicPatternDigitalControl;
 		private Pattern topicPatternAnalogControl;
 
-		private DefaultConfig(String topic) {
+		private DefaultTopics(String topic) {
 			this.topic = topic.endsWith("/") ? topic : topic + "/";
 			this.topicPatternDigitalWrite = write(getTopic() + "D%s");
 			this.topicPatternDigitalRead = read(getTopic() + "D%s");
@@ -48,7 +48,7 @@ public abstract class Config {
 			this.topicPatternAnalogRead = read(getTopic() + "A%s");
 		}
 
-		private DefaultConfig(Config c) {
+		private DefaultTopics(Topics c) {
 			this.topic = c.getTopic();
 			this.topicPatternDigitalWrite = c.getTopicPatternDigitalWrite();
 			this.topicPatternDigitalRead = c.getTopicPatternDigitalRead();
@@ -93,28 +93,28 @@ public abstract class Config {
 			return topicPatternAnalogControl;
 		}
 
-		public static Config copyOf(Config config) {
+		public static Topics copyOf(Topics config) {
 			return typedCopy(config);
 		}
 
-		private static DefaultConfig typedCopy(Config config) {
-			return new DefaultConfig(config);
+		private static DefaultTopics typedCopy(Topics config) {
+			return new DefaultTopics(config);
 		}
 
-		public static Config withTopic(String topic) {
-			return new DefaultConfig(topic);
+		public static Topics withTopic(String topic) {
+			return new DefaultTopics(topic);
 		}
 
 	}
 
-	public static final String DEFAULT_TOPIC = "home/devices/ardulink/";
+	public static final String DEFAULT_BASE_TOPIC = "home/devices/ardulink/";
 
-	public static Config withTopic(String topic) {
-		return DefaultConfig.withTopic(topic);
+	public static Topics basedOn(String topic) {
+		return DefaultTopics.withTopic(topic);
 	}
 
-	public static Config withSeparateReadWriteTopics(String topic) {
-		Config config = withTopic(topic);
+	public static Topics withSeparateReadWriteTopics(String topic) {
+		Topics config = basedOn(topic);
 		String aw = "/value/set";
 		String ar = "/value/get";
 		String norm = config.getTopic();
@@ -124,33 +124,33 @@ public abstract class Config {
 				.withTopicPatternDigitalRead(read(norm + "D%s" + ar));
 	}
 
-	public Config withTopicPatternAnalogWrite(Pattern topicPatternAnalogWrite) {
-		DefaultConfig copy = DefaultConfig.typedCopy(this);
+	public Topics withTopicPatternAnalogWrite(Pattern topicPatternAnalogWrite) {
+		DefaultTopics copy = DefaultTopics.typedCopy(this);
 		copy.topicPatternAnalogWrite = topicPatternAnalogWrite;
 		return copy;
 	}
 
-	public Config withTopicPatternAnalogRead(String topicPatternAnalogRead) {
-		DefaultConfig copy = DefaultConfig.typedCopy(this);
+	public Topics withTopicPatternAnalogRead(String topicPatternAnalogRead) {
+		DefaultTopics copy = DefaultTopics.typedCopy(this);
 		copy.topicPatternAnalogRead = topicPatternAnalogRead;
 		return copy;
 	}
 
-	public Config withTopicPatternDigitalWrite(Pattern topicPatternDigitalWrite) {
-		DefaultConfig copy = DefaultConfig.typedCopy(this);
+	public Topics withTopicPatternDigitalWrite(Pattern topicPatternDigitalWrite) {
+		DefaultTopics copy = DefaultTopics.typedCopy(this);
 		copy.topicPatternDigitalWrite = topicPatternDigitalWrite;
 		return copy;
 	}
 
-	public Config withTopicPatternDigitalRead(String topicPatternDigitalRead) {
-		DefaultConfig copy = DefaultConfig.typedCopy(this);
+	public Topics withTopicPatternDigitalRead(String topicPatternDigitalRead) {
+		DefaultTopics copy = DefaultTopics.typedCopy(this);
 		copy.topicPatternDigitalRead = topicPatternDigitalRead;
 		return copy;
 	}
 
-	public Config withControlChannelEnabled() {
+	public Topics withControlChannelEnabled() {
 		String prefix = "system/listening/";
-		return DefaultConfig
+		return DefaultTopics
 				.typedCopy(this)
 				.withTopicPatternDigitalControl(
 						prefix(getTopicPatternDigitalWrite(), prefix))
@@ -163,14 +163,14 @@ public abstract class Config {
 				getTopic().length(), prefix).toString();
 	}
 
-	public Config withTopicPatternDigitalControl(String write) {
-		DefaultConfig copy = DefaultConfig.typedCopy(this);
+	public Topics withTopicPatternDigitalControl(String write) {
+		DefaultTopics copy = DefaultTopics.typedCopy(this);
 		copy.topicPatternDigitalControl = compile(write);
 		return copy;
 	}
 
-	public Config withTopicPatternAnalogControl(String write) {
-		DefaultConfig copy = DefaultConfig.typedCopy(this);
+	public Topics withTopicPatternAnalogControl(String write) {
+		DefaultTopics copy = DefaultTopics.typedCopy(this);
 		copy.topicPatternAnalogControl = compile(write);
 		return copy;
 	}

@@ -24,7 +24,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.ValueBuilder;
 import org.apache.camel.model.language.HeaderExpression;
 import org.ardulink.core.proto.impl.ALProtoBuilder;
-import org.ardulink.mqtt.Config;
+import org.ardulink.mqtt.Topics;
 import org.ardulink.util.ListBuilder;
 import org.ardulink.util.Optional;
 
@@ -64,7 +64,7 @@ public final class ToArdulinkProtocol implements Processor {
 	 */
 	private static class DigitalMessageCreator extends AbstractMessageCreator {
 
-		public DigitalMessageCreator(Config config) {
+		public DigitalMessageCreator(Topics config) {
 			super(config.getTopicPatternDigitalWrite());
 		}
 
@@ -81,7 +81,7 @@ public final class ToArdulinkProtocol implements Processor {
 	 */
 	private static class AnalogMessageCreator extends AbstractMessageCreator {
 
-		public AnalogMessageCreator(Config config) {
+		public AnalogMessageCreator(Topics config) {
 			super(config.getTopicPatternAnalogWrite());
 		}
 
@@ -105,7 +105,7 @@ public final class ToArdulinkProtocol implements Processor {
 
 			private final Pattern pattern;
 
-			public Builder(Config config) {
+			public Builder(Topics config) {
 				this.pattern = config.getTopicPatternAnalogControl();
 			}
 
@@ -142,7 +142,7 @@ public final class ToArdulinkProtocol implements Processor {
 
 			private final Pattern pattern;
 
-			public Builder(Config config) {
+			public Builder(Topics config) {
 				this.pattern = config.getTopicPatternDigitalControl();
 			}
 
@@ -174,11 +174,11 @@ public final class ToArdulinkProtocol implements Processor {
 	private ValueBuilder topicFrom = new ValueBuilder(new HeaderExpression(
 			"topic"));
 
-	public static ToArdulinkProtocol toArdulinkProtocol(Config config) {
+	public static ToArdulinkProtocol toArdulinkProtocol(Topics config) {
 		return new ToArdulinkProtocol(config);
 	}
 
-	public ToArdulinkProtocol(Config config) {
+	public ToArdulinkProtocol(Topics config) {
 		this.creators = unmodifiableList(newArrayList(creators(config)));
 	}
 
@@ -215,7 +215,7 @@ public final class ToArdulinkProtocol implements Processor {
 		return Optional.absent();
 	}
 
-	private List<MessageCreator> creators(Config config) {
+	private List<MessageCreator> creators(Topics config) {
 		ListBuilder<MessageCreator> b = ListBuilder
 				.<MessageCreator> newBuilder().addAll(
 						new DigitalMessageCreator(config),

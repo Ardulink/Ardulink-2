@@ -50,7 +50,7 @@ public class MqttMain {
 			+ "To switch pins a message of the form $brokerTopic/[A|D]$pinNumber must be sent. "
 			+ "When separateTopics is enabled the topis has to be $brokerTopic/[A|D]$pinNumber/value/set. "
 			+ "A for analog pins, D for digital pins")
-	private String brokerTopic = Config.DEFAULT_TOPIC;
+	private String brokerTopic = Topics.DEFAULT_BASE_TOPIC;
 
 	@Option(name = "-separateTopics", usage = "use one toic for read/write or use separate topics (value/set and value/get)")
 	private boolean separateTopics;
@@ -100,11 +100,11 @@ public class MqttMain {
 
 	private CamelContext context;
 
-	private CamelContext createCamelContext(Config config) throws Exception {
+	private CamelContext createCamelContext(Topics config) throws Exception {
 		return addRoutes(config, new DefaultCamelContext());
 	}
 
-	private CamelContext addRoutes(Config config, CamelContext context)
+	private CamelContext addRoutes(Topics config, CamelContext context)
 			throws Exception {
 		MqttCamelRouteBuilder rb = new MqttCamelRouteBuilder(context, config);
 		if (throttleMillis > 0 && compactStrategy != null) {
@@ -177,11 +177,11 @@ public class MqttMain {
 		if (standalone) {
 			this.standaloneServer = createBroker().startBroker();
 		}
-		Config config = separateTopics ? Config
-				.withSeparateReadWriteTopics(this.brokerTopic) : Config
-				.withTopic(this.brokerTopic);
-		this.context = createCamelContext(this.control ? config
-				.withControlChannelEnabled() : config);
+		Topics topics = separateTopics ? Topics
+				.withSeparateReadWriteTopics(this.brokerTopic) : Topics
+				.basedOn(this.brokerTopic);
+		this.context = createCamelContext(this.control ? topics
+				.withControlChannelEnabled() : topics);
 		this.context.start();
 	}
 

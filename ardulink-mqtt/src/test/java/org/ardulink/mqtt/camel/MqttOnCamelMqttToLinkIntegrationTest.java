@@ -22,7 +22,7 @@ import org.apache.camel.model.FromDefinition;
 import org.apache.camel.model.RouteDefinition;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
-import org.ardulink.mqtt.Config;
+import org.ardulink.mqtt.Topics;
 import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.MqttCamelRouteBuilder;
 import org.ardulink.mqtt.MqttCamelRouteBuilder.MqttConnectionProperties;
@@ -45,7 +45,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	private final MqttBroker broker;
 
-	private final Config config;
+	private final Topics topics;
 
 	private CamelContext context;
 
@@ -56,22 +56,21 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	private static Object[] sameTopic() {
 		return new Object[] { "sameTopic",
-				AnotherMqttClient.builder().topic(TOPIC),
-				Config.withTopic(TOPIC) };
+				AnotherMqttClient.builder().topic(TOPIC), Topics.basedOn(TOPIC) };
 	}
 
 	private static Object[] separateTopics() {
 		return new Object[] { "separateTopics",
 				AnotherMqttClient.builder().topic(TOPIC).appendValueSet(true),
-				Config.withSeparateReadWriteTopics(TOPIC) };
+				Topics.withSeparateReadWriteTopics(TOPIC) };
 	}
 
 	public MqttOnCamelMqttToLinkIntegrationTest(String description,
-			AnotherMqttClient.Builder mqttClientBuilder, Config config) {
+			AnotherMqttClient.Builder mqttClientBuilder, Topics config) {
 		this.broker = MqttBroker.builder().port(freePort()).startBroker();
 		this.mqttClient = mqttClientBuilder.port(this.broker.getPort())
 				.connect();
-		this.config = config;
+		this.topics = config;
 	}
 
 	@After
@@ -91,7 +90,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	@Test
 	public void canEnableAnalogListening() throws Exception {
-		context = camelContext(config.withControlChannelEnabled());
+		context = camelContext(topics.withControlChannelEnabled());
 		AnalogPin pin = analogPin(6);
 		MockEndpoint out = getMockEndpoint();
 		out.expectedBodiesReceived(alpProtocolMessage(START_LISTENING_ANALOG)
@@ -102,7 +101,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	@Test
 	public void canEnableDigitalListening() throws Exception {
-		context = camelContext(config.withControlChannelEnabled());
+		context = camelContext(topics.withControlChannelEnabled());
 		DigitalPin pin = digitalPin(7);
 		MockEndpoint out = getMockEndpoint();
 		out.expectedBodiesReceived(alpProtocolMessage(START_LISTENING_DIGITAL)
@@ -113,7 +112,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	@Test
 	public void canDisableAnalogListening() throws Exception {
-		context = camelContext(config.withControlChannelEnabled());
+		context = camelContext(topics.withControlChannelEnabled());
 		AnalogPin pin = analogPin(6);
 		MockEndpoint out = getMockEndpoint();
 		out.expectedBodiesReceived(alpProtocolMessage(STOP_LISTENING_ANALOG)
@@ -124,7 +123,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	@Test
 	public void canDisableDigitalListening() throws Exception {
-		context = camelContext(config.withControlChannelEnabled());
+		context = camelContext(topics.withControlChannelEnabled());
 		DigitalPin pin = digitalPin(7);
 		MockEndpoint out = getMockEndpoint();
 		out.expectedBodiesReceived(alpProtocolMessage(STOP_LISTENING_DIGITAL)
@@ -136,7 +135,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 	@Test
 	public void doesNotEnableAnalogListening_WhenControlChannelInsNOTenabled()
 			throws Exception {
-		context = camelContext(config);
+		context = camelContext(topics);
 		mqttClient.startListenig(analogPin(6));
 		assertNoMessage(getMockEndpoint());
 	}
@@ -144,13 +143,13 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 	@Test
 	public void doesNotEnableDigitalListening_WhenControlChannelInsNOTenabled()
 			throws Exception {
-		context = camelContext(config);
+		context = camelContext(topics);
 		mqttClient.startListenig(digitalPin(7));
 		assertNoMessage(getMockEndpoint());
 	}
 
 	private void testDigital(DigitalPin pin, boolean state) throws Exception {
-		context = camelContext(config);
+		context = camelContext(topics);
 		MockEndpoint out = getMockEndpoint();
 		out.expectedBodiesReceived(alpProtocolMessage(DIGITAL_PIN_READ).forPin(
 				pin.pinNum()).withState(state));
@@ -159,7 +158,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 	}
 
 	private void testAnalog(AnalogPin pin, int value) throws Exception {
-		context = camelContext(config);
+		context = camelContext(topics);
 		MockEndpoint out = getMockEndpoint();
 		out.expectedBodiesReceived(alpProtocolMessage(ANALOG_PIN_READ).forPin(
 				pin.pinNum()).withValue(value));
@@ -173,7 +172,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		out.assertIsSatisfied();
 	}
 
-	private CamelContext camelContext(final Config config) throws Exception {
+	private CamelContext camelContext(final Topics config) throws Exception {
 		CamelContext context = new DefaultCamelContext();
 		MqttConnectionProperties mqtt = new MqttConnectionProperties()
 				.name("foo").brokerHost("localhost")

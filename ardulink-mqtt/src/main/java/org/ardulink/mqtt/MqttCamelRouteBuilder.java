@@ -85,7 +85,7 @@ public class MqttCamelRouteBuilder {
 			return this;
 		}
 
-		public String buildCamelURI(Config config) {
+		public String buildCamelURI(Topics config) {
 			StringBuilder sb = new StringBuilder();
 			sb = sb.append(String.format("mqtt:%s?host=%s://%s:%s", name,
 					(ssl ? "ssl" : "tcp"), brokerHost, getBrokerPort()));
@@ -118,7 +118,7 @@ public class MqttCamelRouteBuilder {
 					from(mqtt)
 							.transform(body().convertToString())
 							.process(
-									toArdulinkProtocol(config).topicFrom(
+									toArdulinkProtocol(topics).topicFrom(
 											header(SUBSCRIBE_HEADER)))
 							.to(something)
 							.shutdownRunningTask(CompleteAllTasks);
@@ -130,16 +130,16 @@ public class MqttCamelRouteBuilder {
 	}
 
 	private final CamelContext context;
-	private final Config config;
+	private final Topics topics;
 	private String something;
 	private String mqtt;
 
 	private CompactStrategy compactStrategy;
 	private long compactMillis;
 
-	public MqttCamelRouteBuilder(CamelContext context, Config config) {
+	public MqttCamelRouteBuilder(CamelContext context, Topics topics) {
 		this.context = context;
-		this.config = config;
+		this.topics = topics;
 	}
 
 	public MqttCamelRouteBuilder compact(CompactStrategy strategy,
@@ -160,7 +160,7 @@ public class MqttCamelRouteBuilder {
 	public ConfiguredMqttCamelRouteBuilder fromSomethingToMqtt(
 			String something, MqttConnectionProperties properties)
 			throws Exception {
-		return fromSomethingToMqtt(something, properties.buildCamelURI(config));
+		return fromSomethingToMqtt(something, properties.buildCamelURI(topics));
 	}
 
 	public ConfiguredMqttCamelRouteBuilder fromSomethingToMqtt(
@@ -171,7 +171,7 @@ public class MqttCamelRouteBuilder {
 			@Override
 			public void configure() {
 				RouteDefinition routeDef = from(something).process(
-						fromArdulinkProtocol(config).headerNameForTopic(
+						fromArdulinkProtocol(topics).headerNameForTopic(
 								PUBLISH_HEADER));
 				if (compactStrategy != null) {
 					ChoiceDefinition pre = routeDef.choice().when(

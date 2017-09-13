@@ -2,6 +2,7 @@ package org.ardulink.mqtt.camel;
 
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
 import org.apache.camel.Exchange;
@@ -12,28 +13,30 @@ import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.mqtt.Config;
+import org.ardulink.mqtt.Topics;
+import org.ardulink.util.Preconditions;
 
 /**
  * Translates from protocol into the topic using the patterns from
- * {@link Config}.
+ * {@link Topics}.
  */
 public final class FromArdulinkProtocol implements Processor {
 
 	private final Protocol protocol = ArdulinkProtocol2.instance();
-	private final Config config;
+	private final Topics topics;
 	private String headerNameForTopic = "topic";
 
-	public static FromArdulinkProtocol fromArdulinkProtocol(Config config) {
+	public static FromArdulinkProtocol fromArdulinkProtocol(Topics config) {
 		return new FromArdulinkProtocol(config);
 	}
 
-	public FromArdulinkProtocol(Config config) {
-		this.config = config;
+	public FromArdulinkProtocol(Topics topics) {
+		this.topics = topics;
 	}
 
 	public FromArdulinkProtocol headerNameForTopic(String headerNameForTopic) {
-		this.headerNameForTopic = headerNameForTopic;
+		this.headerNameForTopic = checkNotNull(headerNameForTopic,
+				"headerNameForTopic must not be null");
 		return this;
 	}
 
@@ -56,9 +59,9 @@ public final class FromArdulinkProtocol implements Processor {
 
 	private String patternFor(Pin pin) {
 		if (pin.is(DIGITAL)) {
-			return config.getTopicPatternDigitalRead();
+			return topics.getTopicPatternDigitalRead();
 		} else if (pin.is(ANALOG)) {
-			return config.getTopicPatternAnalogRead();
+			return topics.getTopicPatternAnalogRead();
 		} else {
 			throw new IllegalStateException("Unknown pin type of pin " + pin);
 		}
