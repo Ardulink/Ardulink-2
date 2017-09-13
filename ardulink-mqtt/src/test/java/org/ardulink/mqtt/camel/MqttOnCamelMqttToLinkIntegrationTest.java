@@ -156,7 +156,7 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 	}
 
 	private Config config() {
-		return Config.withSeparateReadWriteTopics(TOPIC);
+		return Config.withTopic(TOPIC);
 	}
 
 	private CamelContext camelContext(final Config config) throws Exception {

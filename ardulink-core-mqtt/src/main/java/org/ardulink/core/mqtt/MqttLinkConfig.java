@@ -66,6 +66,9 @@ public class MqttLinkConfig implements LinkConfig {
 	@Named("password")
 	private String password;
 
+	@Named("separatedTopics")
+	private boolean separateTopics;
+
 	public String getHost() {
 		return host;
 	}
@@ -121,6 +124,14 @@ public class MqttLinkConfig implements LinkConfig {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public boolean isSeparateTopics() {
+		return this.separateTopics;
+	}
+
+	public void setSeparateTopics(boolean separateTopics) {
+		this.separateTopics = separateTopics;
 	}
 
 	private static String normalize(String topic) {

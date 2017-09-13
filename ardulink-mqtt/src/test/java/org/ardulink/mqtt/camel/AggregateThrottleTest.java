@@ -39,10 +39,10 @@ public class AggregateThrottleTest {
 		context = camelContext(config(), USE_LATEST);
 		MockEndpoint out = getMockEndpoint();
 
-		out.expectedBodiesReceived(true, false, 1, 12);
+		out.expectedBodiesReceived(true, false, 12, 1);
 		out.expectedHeaderValuesReceivedInAnyOrder(HEADER_FOR_TOPIC,
-				"foo/bar/topic/D0/value/get", "foo/bar/topic/D0/value/get",
-				"foo/bar/topic/A1/value/get", "foo/bar/topic/A0/value/get");
+				"foo/bar/topic/D0", "foo/bar/topic/D0", "foo/bar/topic/A1",
+				"foo/bar/topic/A0");
 
 		simArduinoSends(alpMessage(analogPin(0), 1));
 		simArduinoSends(alpMessage(analogPin(0), 3));
@@ -60,10 +60,10 @@ public class AggregateThrottleTest {
 			throws Exception {
 		context = camelContext(config(), AVERAGE);
 		MockEndpoint out = getMockEndpoint();
-		out.expectedBodiesReceived(true, false, 500, 5);
+		out.expectedBodiesReceived(true, false, 5, 500);
 		out.expectedHeaderValuesReceivedInAnyOrder(HEADER_FOR_TOPIC,
-				"foo/bar/topic/D0/value/get", "foo/bar/topic/D0/value/get",
-				"foo/bar/topic/A1/value/get", "foo/bar/topic/A0/value/get");
+				"foo/bar/topic/D0", "foo/bar/topic/D0", "foo/bar/topic/A1",
+				"foo/bar/topic/A0");
 
 		simArduinoSends(alpMessage(analogPin(0), 1));
 		simArduinoSends(alpMessage(analogPin(0), 3));
@@ -99,14 +99,14 @@ public class AggregateThrottleTest {
 	}
 
 	private Config config() {
-		return Config.withSeparateReadWriteTopics(TOPIC);
+		return Config.withTopic(TOPIC);
 	}
 
 	private CamelContext camelContext(final Config config,
 			final CompactStrategy compactStrategy) throws Exception {
 		CamelContext context = new DefaultCamelContext();
-		new MqttCamelRouteBuilder(context, config).compact(
-				compactStrategy, 1, SECONDS).fromSomethingToMqtt(IN, OUT);
+		new MqttCamelRouteBuilder(context, config).compact(compactStrategy, 1,
+				SECONDS).fromSomethingToMqtt(IN, OUT);
 		context.start();
 		return context;
 	}

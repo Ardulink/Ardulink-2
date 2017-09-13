@@ -57,6 +57,7 @@ public class AnotherMqttClient implements Closeable {
 		private int port = 1883;
 		private String topic;
 		public String clientId = "anotherMqttClient";
+		public boolean appendValueSet;
 
 		public Builder host(String host) {
 			this.host = host;
@@ -75,6 +76,11 @@ public class AnotherMqttClient implements Closeable {
 
 		public Builder clientId(String clientId) {
 			this.clientId = clientId;
+			return this;
+		}
+
+		public Builder appendValueSet(boolean appendValueSet) {
+			this.appendValueSet = appendValueSet;
 			return this;
 		}
 
@@ -102,6 +108,8 @@ public class AnotherMqttClient implements Closeable {
 
 	private CamelContext context;
 
+	private boolean appendValueSet;
+
 	private static Map<Type, String> typeMap() {
 		Map<Type, String> typeMap = new HashMap<Type, String>();
 		typeMap.put(ANALOG, "A");
@@ -115,6 +123,7 @@ public class AnotherMqttClient implements Closeable {
 		this.controlTopic = this.topic + "system/listening/";
 		this.context = camelRoute(builder.host, builder.port);
 		this.producerTemplate = context.createProducerTemplate();
+		this.appendValueSet = builder.appendValueSet;
 	}
 
 	private CamelContext camelRoute(final String host, final int port) {
@@ -174,8 +183,13 @@ public class AnotherMqttClient implements Closeable {
 	}
 
 	public void switchPin(Pin pin, Object value) throws IOException {
-		sendMessage(new Message(this.topic + typeMap.get(pin.getType())
-				+ pin.pinNum() + "/value/set", String.valueOf(value)));
+		sendMessage(new Message(messageTopic(pin), String.valueOf(value)));
+	}
+
+	private String messageTopic(Pin pin) {
+		String msgTopic = this.topic + typeMap.get(pin.getType())
+				+ pin.pinNum();
+		return appendValueSet ? msgTopic + "/value/set" : msgTopic;
 	}
 
 	public void startListenig(Pin pin) throws IOException {
@@ -188,7 +202,7 @@ public class AnotherMqttClient implements Closeable {
 
 	private void startStopListening(Pin pin, boolean state) throws IOException {
 		sendMessage(new Message(this.controlTopic + typeMap.get(pin.getType())
-				+ pin.pinNum() + "/value/set", String.valueOf(state)));
+				+ pin.pinNum() + appendValueSet, String.valueOf(state)));
 	}
 
 	private void sendMessage(Message message) throws IOException {

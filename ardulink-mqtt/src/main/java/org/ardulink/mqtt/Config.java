@@ -109,8 +109,6 @@ public abstract class Config {
 
 	public static final String DEFAULT_TOPIC = "home/devices/ardulink/";
 
-	public static final Config DEFAULT = withSeparateReadWriteTopics(DEFAULT_TOPIC);
-
 	public static Config withTopic(String topic) {
 		return DefaultConfig.withTopic(topic);
 	}

@@ -49,6 +49,9 @@ public class MqttMain {
 	@Option(name = "-brokerTopic", usage = "Topic to register. To switch pins a message of the form $brokerTopic/[A|D]$pinNumber/value/set must be sent. A for analog pins, D for digital pins")
 	private String brokerTopic = Config.DEFAULT_TOPIC;
 
+	@Option(name = "-separateTopics", usage = "use one toic for read/write or use separate topics (value/set and value/get)")
+	private boolean separateTopics;
+
 	@Option(name = "-brokerHost", usage = "Hostname of the broker to connect to")
 	private String brokerHost = "localhost";
 
@@ -171,7 +174,9 @@ public class MqttMain {
 		if (standalone) {
 			this.standaloneServer = createBroker().startBroker();
 		}
-		Config config = Config.withSeparateReadWriteTopics(this.brokerTopic);
+		Config config = separateTopics ? Config
+				.withSeparateReadWriteTopics(this.brokerTopic) : Config
+				.withTopic(this.brokerTopic);
 		this.context = createCamelContext(this.control ? config
 				.withControlChannelEnabled() : config);
 		this.context.start();

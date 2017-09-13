@@ -77,6 +77,7 @@ public class MqttLink extends AbstractListenerLink {
 	private final Pattern mqttReceivePattern;
 	private final MQTT mqttClient;
 	private final BlockingConnection connection;
+	private final boolean hasAppendix;
 
 	private static final Map<Type, String> typeMap = unmodifiableMap(new EnumMap<Type, String>(
 			MapBuilder.<Type, String> newMapBuilder().put(Type.ANALOG, ANALOG)
@@ -86,9 +87,10 @@ public class MqttLink extends AbstractListenerLink {
 		checkArgument(config.getHost() != null, "host must not be null");
 		checkArgument(config.getClientId() != null, "clientId must not be null");
 		checkArgument(config.getTopic() != null, "topic must not be null");
+		this.hasAppendix = config.isSeparateTopics();
 		this.topic = config.getTopic();
 		this.mqttReceivePattern = Pattern.compile(MqttLink.this.topic
-				+ "([aAdD])(\\d+)\\/value\\/set");
+				+ "([aAdD])(\\d+)" + Pattern.quote(appendix()));
 		this.mqttClient = newClient(config);
 		this.mqttClient.setConnectAttemptsMax(1);
 		this.connection = new BlockingConnection(new FutureConnection(
@@ -100,6 +102,10 @@ public class MqttLink extends AbstractListenerLink {
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
+	}
+
+	private String appendix() {
+		return hasAppendix ? "/value/set" : "";
 	}
 
 	private Thread newReceivedThread() {
@@ -268,7 +274,7 @@ public class MqttLink extends AbstractListenerLink {
 
 	private String controlTopic(Pin pin) {
 		return topic + "system/listening/" + getType(pin) + pin.pinNum()
-				+ "/value/set";
+				+ appendix();
 	}
 
 	private String getType(Pin pin) {
@@ -292,7 +298,7 @@ public class MqttLink extends AbstractListenerLink {
 
 	private void switchPin(String type, Pin pin, Object value)
 			throws IOException {
-		publish(topic + type + pin.pinNum() + "/value/set", value);
+		publish(topic + type + pin.pinNum() + appendix(), value);
 	}
 
 	private void publish(final String topic, Object value) throws IOException {
