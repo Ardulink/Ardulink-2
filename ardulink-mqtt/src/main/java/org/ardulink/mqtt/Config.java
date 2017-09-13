@@ -42,10 +42,10 @@ public abstract class Config {
 
 		private DefaultConfig(String topic) {
 			this.topic = topic.endsWith("/") ? topic : topic + "/";
-			this.topicPatternDigitalWrite = compile(write(this.topic + "D%s/value/set"));
-			this.topicPatternDigitalRead = read(this.topic + "D%s/value/get");
-			this.topicPatternAnalogWrite = compile(write(this.topic + "A%s/value/set"));
-			this.topicPatternAnalogRead = read(this.topic + "A%s/value/get");
+			this.topicPatternDigitalWrite = write(getTopic() + "D%s");
+			this.topicPatternDigitalRead = read(getTopic() + "D%s");
+			this.topicPatternAnalogWrite = write(getTopic() + "A%s");
+			this.topicPatternAnalogRead = read(getTopic() + "A%s");
 		}
 
 		private DefaultConfig(Config c) {
@@ -102,7 +102,14 @@ public abstract class Config {
 		}
 
 		public static Config withTopic(String topic) {
-			return new DefaultConfig(topic);
+			DefaultConfig config = new DefaultConfig(topic);
+			String aw = "/value/set";
+			String ar = "/value/get";
+			String norm = config.getTopic();
+			return config.withTopicPatternAnalogWrite(write(norm + "A%s" + aw))
+					.withTopicPatternDigitalWrite(write(norm + "D%s" + aw))
+					.withTopicPatternAnalogRead(read(norm + "A%s" + ar))
+					.withTopicPatternDigitalRead(read(norm + "D%s" + ar));
 		}
 
 	}
@@ -141,12 +148,18 @@ public abstract class Config {
 	}
 
 	public Config withControlChannelEnabled() {
-		String topic = getTopic();
-		String topicD = write(topic + "system/listening/D%s/value/set");
-		String topicA = write(topic + "system/listening/A%s/value/set");
-		return DefaultConfig.typedCopy(this)
-				.withTopicPatternDigitalControl(topicD)
-				.withTopicPatternAnalogControl(topicA);
+		String prefix = "system/listening/";
+		return DefaultConfig
+				.typedCopy(this)
+				.withTopicPatternDigitalControl(
+						prefix(getTopicPatternDigitalWrite(), prefix))
+				.withTopicPatternAnalogControl(
+						prefix(getTopicPatternAnalogWrite(), prefix));
+	}
+
+	private String prefix(Pattern writePattern, String prefix) {
+		return new StringBuilder(writePattern.pattern()).insert(
+				getTopic().length(), prefix).toString();
 	}
 
 	public Config withTopicPatternDigitalControl(String write) {
@@ -161,8 +174,8 @@ public abstract class Config {
 		return copy;
 	}
 
-	private static String write(String format) {
-		return String.format(format, "(\\w+)");
+	private static Pattern write(String format) {
+		return compile(String.format(format, "(\\w+)"));
 	}
 
 	private static String read(String format) {
