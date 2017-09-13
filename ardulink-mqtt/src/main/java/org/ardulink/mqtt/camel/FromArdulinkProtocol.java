@@ -25,8 +25,8 @@ public final class FromArdulinkProtocol implements Processor {
 	private final Topics topics;
 	private String headerNameForTopic = "topic";
 
-	public static FromArdulinkProtocol fromArdulinkProtocol(Topics config) {
-		return new FromArdulinkProtocol(config);
+	public static FromArdulinkProtocol fromArdulinkProtocol(Topics topics) {
+		return new FromArdulinkProtocol(topics);
 	}
 
 	public FromArdulinkProtocol(Topics topics) {
