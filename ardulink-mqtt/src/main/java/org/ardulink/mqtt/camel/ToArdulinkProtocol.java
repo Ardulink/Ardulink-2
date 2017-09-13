@@ -64,8 +64,8 @@ public final class ToArdulinkProtocol implements Processor {
 	 */
 	private static class DigitalMessageCreator extends AbstractMessageCreator {
 
-		public DigitalMessageCreator(Topics config) {
-			super(config.getTopicPatternDigitalWrite());
+		public DigitalMessageCreator(Topics topics) {
+			super(topics.getTopicPatternDigitalWrite());
 		}
 
 		@Override
@@ -81,8 +81,8 @@ public final class ToArdulinkProtocol implements Processor {
 	 */
 	private static class AnalogMessageCreator extends AbstractMessageCreator {
 
-		public AnalogMessageCreator(Topics config) {
-			super(config.getTopicPatternAnalogWrite());
+		public AnalogMessageCreator(Topics topics) {
+			super(topics.getTopicPatternAnalogWrite());
 		}
 
 		@Override
@@ -105,8 +105,8 @@ public final class ToArdulinkProtocol implements Processor {
 
 			private final Pattern pattern;
 
-			public Builder(Topics config) {
-				this.pattern = config.getTopicPatternAnalogControl();
+			public Builder(Topics topics) {
+				this.pattern = topics.getTopicPatternAnalogControl();
 			}
 
 			public boolean patternIsValid() {
@@ -142,8 +142,8 @@ public final class ToArdulinkProtocol implements Processor {
 
 			private final Pattern pattern;
 
-			public Builder(Topics config) {
-				this.pattern = config.getTopicPatternDigitalControl();
+			public Builder(Topics topics) {
+				this.pattern = topics.getTopicPatternDigitalControl();
 			}
 
 			public boolean patternIsValid() {
@@ -174,12 +174,12 @@ public final class ToArdulinkProtocol implements Processor {
 	private ValueBuilder topicFrom = new ValueBuilder(new HeaderExpression(
 			"topic"));
 
-	public static ToArdulinkProtocol toArdulinkProtocol(Topics config) {
-		return new ToArdulinkProtocol(config);
+	public static ToArdulinkProtocol toArdulinkProtocol(Topics topics) {
+		return new ToArdulinkProtocol(topics);
 	}
 
-	public ToArdulinkProtocol(Topics config) {
-		this.creators = unmodifiableList(newArrayList(creators(config)));
+	public ToArdulinkProtocol(Topics topics) {
+		this.creators = unmodifiableList(newArrayList(creators(topics)));
 	}
 
 	public ToArdulinkProtocol topicFrom(ValueBuilder topicFrom) {
@@ -215,18 +215,18 @@ public final class ToArdulinkProtocol implements Processor {
 		return Optional.absent();
 	}
 
-	private List<MessageCreator> creators(Topics config) {
+	private List<MessageCreator> creators(Topics topics) {
 		ListBuilder<MessageCreator> b = ListBuilder
 				.<MessageCreator> newBuilder().addAll(
-						new DigitalMessageCreator(config),
-						new AnalogMessageCreator(config));
+						new DigitalMessageCreator(topics),
+						new AnalogMessageCreator(topics));
 		ControlHandlerAnalog.Builder ab = new ControlHandlerAnalog.Builder(
-				config);
+				topics);
 		if (ab.patternIsValid()) {
 			b = b.add(ab.build());
 		}
 		ControlHandlerDigital.Builder db = new ControlHandlerDigital.Builder(
-				config);
+				topics);
 		if (db.patternIsValid()) {
 			b = b.add(db.build());
 		}

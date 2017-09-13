@@ -85,7 +85,7 @@ public class MqttCamelRouteBuilder {
 			return this;
 		}
 
-		public String buildCamelURI(Topics config) {
+		public String buildCamelURI(Topics topics) {
 			StringBuilder sb = new StringBuilder();
 			sb = sb.append(String.format("mqtt:%s?host=%s://%s:%s", name,
 					(ssl ? "ssl" : "tcp"), brokerHost, getBrokerPort()));
@@ -94,7 +94,7 @@ public class MqttCamelRouteBuilder {
 			sb = hasClientId() ? sb.append(String.format("&clientId=%s",
 					clientId)) : sb;
 			sb = sb.append(String.format("&subscribeTopicNames=%s#",
-					config.getTopic()));
+					topics.getTopic()));
 			sb = sb.append("&connectAttemptsMax=1&reconnectAttemptsMax=0");
 			return sb.toString();
 		}

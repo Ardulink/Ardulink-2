@@ -66,11 +66,11 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 	}
 
 	public MqttOnCamelMqttToLinkIntegrationTest(String description,
-			AnotherMqttClient.Builder mqttClientBuilder, Topics config) {
+			AnotherMqttClient.Builder mqttClientBuilder, Topics topics) {
 		this.broker = MqttBroker.builder().port(freePort()).startBroker();
 		this.mqttClient = mqttClientBuilder.port(this.broker.getPort())
 				.connect();
-		this.topics = config;
+		this.topics = topics;
 	}
 
 	@After
@@ -172,12 +172,12 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		out.assertIsSatisfied();
 	}
 
-	private CamelContext camelContext(final Topics config) throws Exception {
+	private CamelContext camelContext(final Topics topics) throws Exception {
 		CamelContext context = new DefaultCamelContext();
 		MqttConnectionProperties mqtt = new MqttConnectionProperties()
 				.name("foo").brokerHost("localhost")
 				.brokerPort(broker.getPort());
-		new MqttCamelRouteBuilder(context, config).fromSomethingToMqtt(OUT,
+		new MqttCamelRouteBuilder(context, topics).fromSomethingToMqtt(OUT,
 				mqtt).andReverse();
 		replaceInputs(context.getRouteDefinitions(), OUT, "direct:noop");
 		context.start();

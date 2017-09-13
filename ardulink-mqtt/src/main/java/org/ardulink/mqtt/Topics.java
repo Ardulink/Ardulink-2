@@ -48,14 +48,14 @@ public abstract class Topics {
 			this.topicPatternAnalogRead = read(getTopic() + "A%s");
 		}
 
-		private DefaultTopics(Topics c) {
-			this.topic = c.getTopic();
-			this.topicPatternDigitalWrite = c.getTopicPatternDigitalWrite();
-			this.topicPatternDigitalRead = c.getTopicPatternDigitalRead();
-			this.topicPatternAnalogWrite = c.getTopicPatternAnalogWrite();
-			this.topicPatternAnalogRead = c.getTopicPatternAnalogRead();
-			this.topicPatternDigitalControl = c.getTopicPatternDigitalControl();
-			this.topicPatternAnalogControl = c.getTopicPatternAnalogControl();
+		private DefaultTopics(Topics t) {
+			this.topic = t.getTopic();
+			this.topicPatternDigitalWrite = t.getTopicPatternDigitalWrite();
+			this.topicPatternDigitalRead = t.getTopicPatternDigitalRead();
+			this.topicPatternAnalogWrite = t.getTopicPatternAnalogWrite();
+			this.topicPatternAnalogRead = t.getTopicPatternAnalogRead();
+			this.topicPatternDigitalControl = t.getTopicPatternDigitalControl();
+			this.topicPatternAnalogControl = t.getTopicPatternAnalogControl();
 		}
 
 		@Override
@@ -93,12 +93,12 @@ public abstract class Topics {
 			return topicPatternAnalogControl;
 		}
 
-		public static Topics copyOf(Topics config) {
-			return typedCopy(config);
+		public static Topics copyOf(Topics topics) {
+			return typedCopy(topics);
 		}
 
-		private static DefaultTopics typedCopy(Topics config) {
-			return new DefaultTopics(config);
+		private static DefaultTopics typedCopy(Topics topics) {
+			return new DefaultTopics(topics);
 		}
 
 		public static Topics withTopic(String topic) {
@@ -114,11 +114,11 @@ public abstract class Topics {
 	}
 
 	public static Topics withSeparateReadWriteTopics(String topic) {
-		Topics config = basedOn(topic);
+		Topics topics = basedOn(topic);
 		String aw = "/value/set";
 		String ar = "/value/get";
-		String norm = config.getTopic();
-		return config.withTopicPatternAnalogWrite(write(norm + "A%s" + aw))
+		String norm = topics.getTopic();
+		return topics.withTopicPatternAnalogWrite(write(norm + "A%s" + aw))
 				.withTopicPatternDigitalWrite(write(norm + "D%s" + aw))
 				.withTopicPatternAnalogRead(read(norm + "A%s" + ar))
 				.withTopicPatternDigitalRead(read(norm + "D%s" + ar));

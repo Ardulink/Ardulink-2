@@ -100,13 +100,13 @@ public class MqttMain {
 
 	private CamelContext context;
 
-	private CamelContext createCamelContext(Topics config) throws Exception {
-		return addRoutes(config, new DefaultCamelContext());
+	private CamelContext createCamelContext(Topics topics) throws Exception {
+		return addRoutes(topics, new DefaultCamelContext());
 	}
 
-	private CamelContext addRoutes(Topics config, CamelContext context)
+	private CamelContext addRoutes(Topics topics, CamelContext context)
 			throws Exception {
-		MqttCamelRouteBuilder rb = new MqttCamelRouteBuilder(context, config);
+		MqttCamelRouteBuilder rb = new MqttCamelRouteBuilder(context, topics);
 		if (throttleMillis > 0 && compactStrategy != null) {
 			rb = rb.compact(compactStrategy, throttleMillis, MILLISECONDS);
 		}
