@@ -9,7 +9,10 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
+import static org.ardulink.util.ServerSockets.freePort;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.camel.CamelContext;
@@ -26,21 +29,43 @@ import org.ardulink.mqtt.MqttCamelRouteBuilder.MqttConnectionProperties;
 import org.ardulink.mqtt.util.AnotherMqttClient;
 import org.junit.After;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public abstract class AbstractMqttOnCamelMqttToLinkIntegrationTest {
+@RunWith(Parameterized.class)
+public class MqttOnCamelMqttToLinkIntegrationTest {
 
 	private static final String OUT = "mock:result";
 
-	protected static final String TOPIC = "any/topic-"
+	private static final String TOPIC = "any/topic-"
 			+ System.currentTimeMillis();
 
-	protected AnotherMqttClient mqttClient;
+	private AnotherMqttClient mqttClient;
 
-	protected MqttBroker broker;
+	private MqttBroker broker;
 
-	protected CamelContext context;
+	private CamelContext context;
 
-	protected Config config;
+	private Config config;
+
+	@Parameters
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] {
+				{ AnotherMqttClient.builder().topic(TOPIC),
+						Config.withTopic(TOPIC) },
+				{
+						AnotherMqttClient.builder().topic(TOPIC)
+								.appendValueSet(true),
+						Config.withSeparateReadWriteTopics(TOPIC) } });
+	}
+
+	public MqttOnCamelMqttToLinkIntegrationTest(
+			AnotherMqttClient.Builder mqttClientBuilder, Config config) {
+		this.broker = MqttBroker.builder().port(freePort()).startBroker();
+		this.mqttClient = mqttClientBuilder.port(this.broker.getPort()).connect();
+		this.config = config;
+	}
 
 	@After
 	public void tearDown() throws Exception {
