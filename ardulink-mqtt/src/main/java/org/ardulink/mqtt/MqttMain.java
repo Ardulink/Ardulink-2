@@ -171,7 +171,7 @@ public class MqttMain {
 		if (standalone) {
 			this.standaloneServer = createBroker().startBroker();
 		}
-		Config config = Config.withTopic(this.brokerTopic);
+		Config config = Config.withSeparateReadWriteTopics(this.brokerTopic);
 		this.context = createCamelContext(this.control ? config
 				.withControlChannelEnabled() : config);
 		this.context.start();

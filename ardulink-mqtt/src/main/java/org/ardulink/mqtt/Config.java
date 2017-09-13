@@ -102,25 +102,28 @@ public abstract class Config {
 		}
 
 		public static Config withTopic(String topic) {
-			DefaultConfig config = new DefaultConfig(topic);
-			String aw = "/value/set";
-			String ar = "/value/get";
-			String norm = config.getTopic();
-			return config.withTopicPatternAnalogWrite(write(norm + "A%s" + aw))
-					.withTopicPatternDigitalWrite(write(norm + "D%s" + aw))
-					.withTopicPatternAnalogRead(read(norm + "A%s" + ar))
-					.withTopicPatternDigitalRead(read(norm + "D%s" + ar));
+			return new DefaultConfig(topic);
 		}
 
 	}
 
 	public static final String DEFAULT_TOPIC = "home/devices/ardulink/";
 
-	public static final Config DEFAULT = withTopic(DEFAULT_TOPIC);
+	public static final Config DEFAULT = withSeparateReadWriteTopics(DEFAULT_TOPIC);
 
 	public static Config withTopic(String topic) {
 		return DefaultConfig.withTopic(topic);
+	}
 
+	public static Config withSeparateReadWriteTopics(String topic) {
+		Config config = withTopic(topic);
+		String aw = "/value/set";
+		String ar = "/value/get";
+		String norm = config.getTopic();
+		return config.withTopicPatternAnalogWrite(write(norm + "A%s" + aw))
+				.withTopicPatternDigitalWrite(write(norm + "D%s" + aw))
+				.withTopicPatternAnalogRead(read(norm + "A%s" + ar))
+				.withTopicPatternDigitalRead(read(norm + "D%s" + ar));
 	}
 
 	public Config withTopicPatternAnalogWrite(Pattern topicPatternAnalogWrite) {

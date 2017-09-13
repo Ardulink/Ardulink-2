@@ -99,7 +99,7 @@ public class AggregateThrottleTest {
 	}
 
 	private Config config() {
-		return Config.withTopic(TOPIC);
+		return Config.withSeparateReadWriteTopics(TOPIC);
 	}
 
 	private CamelContext camelContext(final Config config,
