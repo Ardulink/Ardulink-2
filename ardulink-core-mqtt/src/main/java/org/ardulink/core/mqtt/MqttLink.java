@@ -90,7 +90,7 @@ public class MqttLink extends AbstractListenerLink {
 		this.hasAppendix = config.isSeparateTopics();
 		this.topic = config.getTopic();
 		this.mqttReceivePattern = Pattern.compile(MqttLink.this.topic
-				+ "([aAdD])(\\d+)" + Pattern.quote(appendix()));
+				+ "([aAdD])(\\d+)" + Pattern.quote(appendixSub()));
 		this.mqttClient = newClient(config);
 		this.mqttClient.setConnectAttemptsMax(1);
 		this.connection = new BlockingConnection(new FutureConnection(
@@ -104,7 +104,11 @@ public class MqttLink extends AbstractListenerLink {
 		}
 	}
 
-	private String appendix() {
+	private String appendixSub() {
+		return hasAppendix ? "/value/get" : "";
+	}
+
+	private String appendixPub() {
 		return hasAppendix ? "/value/set" : "";
 	}
 
@@ -274,7 +278,7 @@ public class MqttLink extends AbstractListenerLink {
 
 	private String controlTopic(Pin pin) {
 		return topic + "system/listening/" + getType(pin) + pin.pinNum()
-				+ appendix();
+				+ appendixPub();
 	}
 
 	private String getType(Pin pin) {
@@ -298,7 +302,7 @@ public class MqttLink extends AbstractListenerLink {
 
 	private void switchPin(String type, Pin pin, Object value)
 			throws IOException {
-		publish(topic + type + pin.pinNum() + appendix(), value);
+		publish(topic + type + pin.pinNum() + appendixPub(), value);
 	}
 
 	private void publish(final String topic, Object value) throws IOException {

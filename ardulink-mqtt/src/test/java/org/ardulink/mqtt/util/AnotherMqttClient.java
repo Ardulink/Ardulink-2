@@ -183,12 +183,11 @@ public class AnotherMqttClient implements Closeable {
 	}
 
 	public void switchPin(Pin pin, Object value) throws IOException {
-		sendMessage(new Message(messageTopic(pin), String.valueOf(value)));
+		sendMessage(new Message(append(this.topic + typeMap.get(pin.getType())
+				+ pin.pinNum()), String.valueOf(value)));
 	}
 
-	private String messageTopic(Pin pin) {
-		String msgTopic = this.topic + typeMap.get(pin.getType())
-				+ pin.pinNum();
+	private String append(String msgTopic) {
 		return appendValueSet ? msgTopic + "/value/set" : msgTopic;
 	}
 
@@ -201,8 +200,9 @@ public class AnotherMqttClient implements Closeable {
 	}
 
 	private void startStopListening(Pin pin, boolean state) throws IOException {
-		sendMessage(new Message(this.controlTopic + typeMap.get(pin.getType())
-				+ pin.pinNum() + appendValueSet, String.valueOf(state)));
+		sendMessage(new Message(append(this.controlTopic
+				+ typeMap.get(pin.getType()) + pin.pinNum()),
+				String.valueOf(state)));
 	}
 
 	private void sendMessage(Message message) throws IOException {
