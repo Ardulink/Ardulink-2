@@ -41,29 +41,36 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 	private static final String TOPIC = "any/topic-"
 			+ System.currentTimeMillis();
 
-	private AnotherMqttClient mqttClient;
+	private final AnotherMqttClient mqttClient;
 
-	private MqttBroker broker;
+	private final MqttBroker broker;
+
+	private final Config config;
 
 	private CamelContext context;
 
-	private Config config;
-
-	@Parameters
+	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-				{ AnotherMqttClient.builder().topic(TOPIC),
-						Config.withTopic(TOPIC) },
-				{
-						AnotherMqttClient.builder().topic(TOPIC)
-								.appendValueSet(true),
-						Config.withSeparateReadWriteTopics(TOPIC) } });
+		return Arrays.asList(new Object[][] { sameTopic(), separateTopics() });
 	}
 
-	public MqttOnCamelMqttToLinkIntegrationTest(
+	private static Object[] sameTopic() {
+		return new Object[] { "sameTopic",
+				AnotherMqttClient.builder().topic(TOPIC),
+				Config.withTopic(TOPIC) };
+	}
+
+	private static Object[] separateTopics() {
+		return new Object[] { "separateTopics",
+				AnotherMqttClient.builder().topic(TOPIC).appendValueSet(true),
+				Config.withSeparateReadWriteTopics(TOPIC) };
+	}
+
+	public MqttOnCamelMqttToLinkIntegrationTest(String description,
 			AnotherMqttClient.Builder mqttClientBuilder, Config config) {
 		this.broker = MqttBroker.builder().port(freePort()).startBroker();
-		this.mqttClient = mqttClientBuilder.port(this.broker.getPort()).connect();
+		this.mqttClient = mqttClientBuilder.port(this.broker.getPort())
+				.connect();
 		this.config = config;
 	}
 
