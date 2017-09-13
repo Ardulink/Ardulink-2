@@ -46,7 +46,10 @@ import org.kohsuke.args4j.Option;
  */
 public class MqttMain {
 
-	@Option(name = "-brokerTopic", usage = "Topic to register. To switch pins a message of the form $brokerTopic/[A|D]$pinNumber/value/set must be sent. A for analog pins, D for digital pins")
+	@Option(name = "-brokerTopic", usage = "Topic to register. "
+			+ "To switch pins a message of the form $brokerTopic/[A|D]$pinNumber must be sent. "
+			+ "When separateTopics is enabled the topis has to be $brokerTopic/[A|D]$pinNumber/value/set. "
+			+ "A for analog pins, D for digital pins")
 	private String brokerTopic = Config.DEFAULT_TOPIC;
 
 	@Option(name = "-separateTopics", usage = "use one toic for read/write or use separate topics (value/set and value/get)")
