@@ -11,7 +11,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Pin;
-import org.ardulink.mqtt.Config;
+import org.ardulink.mqtt.Topics;
 import org.ardulink.mqtt.MqttCamelRouteBuilder;
 import org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy;
 import org.junit.After;
@@ -36,7 +36,7 @@ public class AggregateThrottleTest {
 	@Test
 	public void doesAggregateAnalogsUsingLastAndKeepsDigitals()
 			throws Exception {
-		context = camelContext(config(), USE_LATEST);
+		context = camelContext(topics(), USE_LATEST);
 		MockEndpoint out = getMockEndpoint();
 
 		out.expectedBodiesReceived(true, false, 12, 1);
@@ -58,7 +58,7 @@ public class AggregateThrottleTest {
 	@Test
 	public void agregateAnalogsSeparatlyUsingAverageAndKeepsDigitals()
 			throws Exception {
-		context = camelContext(config(), AVERAGE);
+		context = camelContext(topics(), AVERAGE);
 		MockEndpoint out = getMockEndpoint();
 		out.expectedBodiesReceived(true, false, 5, 500);
 		out.expectedHeaderValuesReceivedInAnyOrder(HEADER_FOR_TOPIC,
@@ -98,11 +98,11 @@ public class AggregateThrottleTest {
 		return context.getEndpoint(OUT, MockEndpoint.class);
 	}
 
-	private Config config() {
-		return Config.withTopic(TOPIC);
+	private Topics topics() {
+		return Topics.basedOn(TOPIC);
 	}
 
-	private CamelContext camelContext(final Config config,
+	private CamelContext camelContext(final Topics config,
 			final CompactStrategy compactStrategy) throws Exception {
 		CamelContext context = new DefaultCamelContext();
 		new MqttCamelRouteBuilder(context, config).compact(compactStrategy, 1,
