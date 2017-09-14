@@ -59,7 +59,7 @@ public interface LinkConfig {
 
 	@Retention(RUNTIME)
 	public @interface I18n {
-		String value();
+		String value() default "";
 	}
 
 }

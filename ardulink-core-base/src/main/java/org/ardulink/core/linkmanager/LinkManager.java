@@ -23,6 +23,7 @@ import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnot
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.lang.annotation.Annotation;
@@ -54,6 +55,7 @@ import org.ardulink.core.linkmanager.LinkConfig.Named;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
 import org.ardulink.util.Primitive;
+import org.ardulink.util.Strings;
 import org.ardulink.util.Throwables;
 import org.ardulink.util.URIs;
 
@@ -229,10 +231,26 @@ public abstract class LinkManager {
 				this.dependsOn = this.getChoicesFor == null ? Collections
 						.<ConfigAttribute> emptyList()
 						: resolveDeps(this.getChoicesFor);
-				I18n nls = linkConfig.getClass().getAnnotation(I18n.class);
-				this.nls = nls == null ? null : ResourceBundle.getBundle(nls
-						.value(), Locale.getDefault(), linkConfig.getClass()
-						.getClassLoader());
+				Class<?> linkConfigClass = linkConfig.getClass();
+				I18n nls = linkConfigClass.getAnnotation(I18n.class);
+				this.nls = nls == null ? null : resourceBundle(linkConfigClass,
+						nls);
+			}
+
+			private ResourceBundle resourceBundle(Class<?> linkConfigClass,
+					I18n nls) {
+				String baseName = nullOrEmpty(nls.value()) ? useClassname(linkConfigClass)
+						: usePackageAndName(linkConfigClass, nls);
+				return ResourceBundle.getBundle(baseName, Locale.getDefault(),
+						linkConfigClass.getClassLoader());
+			}
+
+			private String useClassname(Class<?> clazz) {
+				return clazz.getName();
+			}
+
+			private String usePackageAndName(Class<?> clazz, I18n nls) {
+				return clazz.getPackage().getName() + "." + nls.value();
 			}
 
 			private Attribute choicesFor(T linkConfig) {
