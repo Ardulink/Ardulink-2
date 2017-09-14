@@ -18,6 +18,8 @@ package org.ardulink.core.proto.impl;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.lang.Integer.parseInt;
+import static java.lang.Long.parseLong;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -39,7 +41,6 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.TONE;
-import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
@@ -64,7 +65,6 @@ import org.ardulink.core.proto.api.MessageIdHolder;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 import org.ardulink.util.Bytes;
-import org.ardulink.util.Longs;
 import org.ardulink.util.MapBuilder;
 import org.ardulink.util.URIs;
 
@@ -202,25 +202,23 @@ public class ArdulinkProtocol2 implements Protocol {
 			String id = checkNotNull(params.get("id"),
 					"Reply message needs for mandatory param: id");
 			return new DefaultFromDeviceMessageReply(
-					"ok".equalsIgnoreCase(specs), checkNotNull(
-							Longs.tryParse(id), "%s not a long value", id)
-							.longValue(), params);
+					"ok".equalsIgnoreCase(specs), parseLong(id), params);
 		} else if (key == ALPProtocolKey.CUSTOM_EVENT) {
 			return new DefaultFromDeviceMessageCustom(specs);
 		}
 
 		if (key == START_LISTENING_ANALOG) {
 			return new DefaultFromDeviceChangeListeningState(
-					analogPin(tryParse(specs)), START);
+					analogPin(parseInt(specs)), START);
 		} else if (key == START_LISTENING_DIGITAL) {
 			return new DefaultFromDeviceChangeListeningState(
-					digitalPin(tryParse(specs)), START);
+					digitalPin(parseInt(specs)), START);
 		} else if (key == STOP_LISTENING_ANALOG) {
 			return new DefaultFromDeviceChangeListeningState(
-					analogPin(tryParse(specs)), STOP);
+					analogPin(parseInt(specs)), STOP);
 		} else if (key == STOP_LISTENING_DIGITAL) {
 			return new DefaultFromDeviceChangeListeningState(
-					digitalPin(tryParse(specs)), STOP);
+					digitalPin(parseInt(specs)), STOP);
 		}
 
 		String pinAndState = specs;
@@ -228,10 +226,8 @@ public class ArdulinkProtocol2 implements Protocol {
 		checkState(split.length == 2, "Error splitting %s, cannot process %s",
 				pinAndState, in);
 
-		Integer pin = tryParse(split[0]);
-		Integer value = tryParse(split[1]);
-		checkState(key != null && pin != null && value != null,
-				"key %s pin %s value %s", key, pin, value);
+		int pin = parseInt(split[0]);
+		int value = parseInt(split[1]);
 		if (key == ANALOG_PIN_READ) {
 			return new DefaultFromDeviceMessagePinStateChanged(analogPin(pin),
 					value);

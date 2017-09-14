@@ -32,11 +32,11 @@ public final class Integers {
 		super();
 	}
 
-	public static Integer tryParse(String string) {
+	public static Optional<Integer> tryParse(String string) {
 		try {
-			return Integer.valueOf(string);
+			return Optional.of(Integer.valueOf(string));
 		} catch (NumberFormatException e) {
-			return null;
+			return Optional.absent();
 		}
 	}
 	

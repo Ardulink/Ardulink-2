@@ -30,11 +30,11 @@ public final class Longs {
 		super();
 	}
 
-	public static Long tryParse(String string) {
+	public static Optional<Long> tryParse(String string) {
 		try {
-			return Long.valueOf(string);
+			return Optional.of(Long.valueOf(string));
 		} catch (NumberFormatException e) {
-			return null;
+			return Optional.absent();
 		}
 	}
 

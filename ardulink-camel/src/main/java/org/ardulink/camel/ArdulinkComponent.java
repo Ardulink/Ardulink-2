@@ -16,14 +16,12 @@ limitations under the License.
 package org.ardulink.camel;
 
 import static java.lang.Character.toUpperCase;
+import static java.lang.Integer.parseInt;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Lists.newArrayList;
-import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -58,11 +56,11 @@ public class ArdulinkComponent extends UriEndpointComponent {
 		config.setType(remaining);
 		config.setListenTo(newArrayList(parsePins(getOptional(parameters,
 				"listenTo").or(""))));
-		
+
 		// all remainig params goto the link
 		config.setLinkParams(parameters);
 		parameters.clear();
-		
+
 		ArdulinkEndpoint endpoint = new ArdulinkEndpoint(uri, this, config);
 		setProperties(endpoint, parameters);
 		return endpoint;
@@ -80,9 +78,7 @@ public class ArdulinkComponent extends UriEndpointComponent {
 	private static Pin toPin(String pin) {
 		if (pin.length() >= 2) {
 			char pinType = toUpperCase(pin.charAt(0));
-			String numString = pin.substring(1);
-			Integer num = checkNotNull(tryParse(numString),
-					"Cannot parse %s as int", numString);
+			int num = parseInt(pin.substring(1));
 			if (pinType == 'A') {
 				return analogPin(num);
 			} else if (pinType == 'D') {

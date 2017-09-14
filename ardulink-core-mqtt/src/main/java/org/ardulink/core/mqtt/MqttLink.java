@@ -18,10 +18,10 @@ package org.ardulink.core.mqtt;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.lang.Integer.parseInt;
 import static java.util.Collections.unmodifiableMap;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Throwables.propagate;
@@ -123,7 +123,7 @@ public class MqttLink extends AbstractListenerLink {
 								.getTopic());
 						if (matcher.matches() && matcher.groupCount() == 2) {
 							Pin pin = pin(matcher.group(1),
-									tryParse(matcher.group(2)));
+									parseInt(matcher.group(2)));
 							if (pin != null) {
 								if (pin.is(Type.DIGITAL)) {
 									fireStateChanged(new DefaultDigitalPinValueChangedEvent(

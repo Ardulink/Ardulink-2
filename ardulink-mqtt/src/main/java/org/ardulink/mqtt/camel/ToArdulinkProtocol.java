@@ -2,6 +2,7 @@ package org.ardulink.mqtt.camel;
 
 import static java.lang.Boolean.TRUE;
 import static java.lang.Boolean.parseBoolean;
+import static java.lang.Integer.parseInt;
 import static java.util.Collections.unmodifiableList;
 import static org.apache.camel.Exchange.ROUTE_STOP;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
@@ -47,9 +48,9 @@ public final class ToArdulinkProtocol implements Processor {
 		public Optional<String> createMessage(String topic, String message) {
 			Matcher matcher = this.pattern.matcher(topic);
 			if (matcher.matches() && matcher.groupCount() > 0) {
-				Integer pin = tryParse(matcher.group(1));
-				if (pin != null) {
-					return Optional.of(createMessage(pin.intValue(), message));
+				Optional<Integer> pin = tryParse(matcher.group(1));
+				if (pin.isPresent()) {
+					return Optional.of(createMessage(pin.get(), message));
 				}
 			}
 			return Optional.absent();
@@ -87,12 +88,9 @@ public final class ToArdulinkProtocol implements Processor {
 
 		@Override
 		protected String createMessage(int pin, String value) {
-			int intensity = checkNotNull(tryParse(value),
-					"%s not a valid int value", value).intValue();
 			return ALProtoBuilder.alpProtocolMessage(ANALOG_PIN_READ)
-					.forPin(pin).withValue(intensity);
+					.forPin(pin).withValue(parseInt(value));
 		}
-
 	}
 
 	/**
