@@ -23,6 +23,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.ardulink.core.linkmanager.LinkConfig;
+import org.ardulink.core.linkmanager.LinkConfig.I18n;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -32,6 +33,7 @@ import org.ardulink.core.linkmanager.LinkConfig;
  * [adsense]
  *
  */
+@I18n("message")
 public class MqttLinkConfig implements LinkConfig {
 
 	public enum Connection {
@@ -56,7 +58,7 @@ public class MqttLinkConfig implements LinkConfig {
 	@NotNull
 	private String topic = normalize("home/devices/ardulink/");
 
-	@Named("clientid")
+	@Named("clientId")
 	@NotNull
 	private String clientId = "ardulink-mqtt-link";
 
