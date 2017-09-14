@@ -55,7 +55,6 @@ import org.ardulink.core.linkmanager.LinkConfig.Named;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
 import org.ardulink.util.Primitive;
-import org.ardulink.util.Strings;
 import org.ardulink.util.Throwables;
 import org.ardulink.util.URIs;
 
