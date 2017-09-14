@@ -59,6 +59,13 @@ public interface LinkConfig {
 
 	@Retention(RUNTIME)
 	public @interface I18n {
+		/**
+		 * Name of the property file holding the i18n texts. If omitted the name
+		 * has to have the same name like the LinkConfig class. In both cases
+		 * the file has to resist in the same package like the LinkConfig class.
+		 * 
+		 * @return the name of the i18n property file
+		 */
 		String value() default "";
 	}
 
