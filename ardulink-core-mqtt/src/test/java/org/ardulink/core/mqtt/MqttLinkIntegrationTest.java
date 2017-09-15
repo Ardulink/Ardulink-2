@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.mqtt;
 
@@ -38,7 +38,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.Timeout;
-
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
@@ -54,6 +53,8 @@ import org.ardulink.core.mqtt.duplicated.Message;
  *
  */
 public class MqttLinkIntegrationTest {
+
+	private static final String APPENDIX = "";
 
 	public static class TrackStateConnectionListener implements
 			ConnectionListener {
@@ -80,7 +81,8 @@ public class MqttLinkIntegrationTest {
 
 	private final Broker broker = Broker.newBroker();
 
-	private final AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC);
+	private final AnotherMqttClient mqttClient = AnotherMqttClient.newClient(
+			TOPIC).appendix(APPENDIX);
 
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
@@ -108,7 +110,7 @@ public class MqttLinkIntegrationTest {
 
 		link.switchAnalogPin(analogPin(8), 9);
 		assertThat(mqttClient.getMessages(),
-				is(Arrays.asList(new Message(TOPIC + "/A8/value/set", "9"))));
+				is(Arrays.asList(new Message(TOPIC + "/A8" + APPENDIX, "9"))));
 		link.close();
 	}
 

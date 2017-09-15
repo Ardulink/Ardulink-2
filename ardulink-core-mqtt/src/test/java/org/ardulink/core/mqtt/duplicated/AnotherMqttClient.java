@@ -57,6 +57,7 @@ public class AnotherMqttClient extends ExternalResource {
 	private final String topic;
 
 	private static final Map<Type, String> typeMap = unmodifiableMap(typeMap());
+	private String appendix = "";
 
 	private static Map<Type, String> typeMap() {
 		Map<Type, String> typeMap = new HashMap<Type, String>();
@@ -72,6 +73,11 @@ public class AnotherMqttClient extends ExternalResource {
 	private AnotherMqttClient(String topic) {
 		this.topic = topic.endsWith("/") ? topic : topic + "/";
 		this.mqttClient = mqttClient("localhost", 1883);
+	}
+
+	public AnotherMqttClient appendix(String appendix) {
+		this.appendix = appendix;
+		return this;
 	}
 
 	protected static MQTT mqttClient(String host, int port) {
@@ -130,7 +136,7 @@ public class AnotherMqttClient extends ExternalResource {
 
 	public void switchPin(Pin pin, Object value) throws IOException {
 		sendMessage(new Message(this.topic + typeMap.get(pin.getType())
-				+ pin.pinNum() + "/value/set", String.valueOf(value)));
+				+ pin.pinNum() + appendix, String.valueOf(value)));
 	}
 
 	private void sendMessage(final Message message) throws IOException {

@@ -30,6 +30,7 @@ import static org.junit.rules.RuleChain.outerRule;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
@@ -56,9 +57,12 @@ import org.junit.rules.Timeout;
  */
 public class MqttIntegrationTest {
 
+	private static final String APPENDIX = "";
+
 	private static final String TOPIC = "myTopic" + System.currentTimeMillis();
 
-	private AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC);
+	private AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC)
+			.appendix(APPENDIX);
 
 	@Rule
 	public RuleChain chain = outerRule(Broker.newBroker()).around(mqttClient);
@@ -88,16 +92,15 @@ public class MqttIntegrationTest {
 	@Test
 	public void canSwitchDigitalPin() throws IOException {
 		this.link.switchDigitalPin(digitalPin(30), true);
-		assertThat(
-				mqttClient.getMessages(),
-				is(Arrays.asList(new Message(TOPIC + "/D30/value/set", "true"))));
+		assertThat(mqttClient.getMessages(), is(Arrays.asList(new Message(TOPIC
+				+ "/D30" + APPENDIX, "true"))));
 	}
 
 	@Test
 	public void canSwitchAnalogPin() throws IOException {
 		this.link.switchAnalogPin(analogPin(12), 34);
 		assertThat(mqttClient.getMessages(),
-				is(Arrays.asList(new Message(TOPIC + "/A12/value/set", "34"))));
+				is(Arrays.asList(new Message(TOPIC + "/A12" + APPENDIX, "34"))));
 	}
 
 	@Test
@@ -107,8 +110,8 @@ public class MqttIntegrationTest {
 				delegate()));
 		assertThat(
 				mqttClient.getMessages(),
-				is(Arrays.asList(new Message(TOPIC
-						+ "/system/listening/A1/value/set", "true"))));
+				is(Arrays.asList(new Message(TOPIC + "/system/listening/A1"
+						+ APPENDIX, "true"))));
 	}
 
 	@Test
@@ -118,8 +121,8 @@ public class MqttIntegrationTest {
 				delegate()));
 		assertThat(
 				mqttClient.getMessages(),
-				is(Arrays.asList(new Message(TOPIC
-						+ "/system/listening/D2/value/set", "true"))));
+				is(Arrays.asList(new Message(TOPIC + "/system/listening/D2"
+						+ APPENDIX, "true"))));
 	}
 
 	@Test
@@ -129,7 +132,7 @@ public class MqttIntegrationTest {
 				analogPin(1), delegate());
 		this.link.addListener(listener);
 		this.link.addListener(listener);
-		Message m = new Message(TOPIC + "/system/listening/A1/value/set",
+		Message m = new Message(TOPIC + "/system/listening/A1" + APPENDIX,
 				"true");
 		// at the moment this is sent twice (see ListenerSupport)
 		assertThat(mqttClient.pollMessages(), is(Arrays.asList(m, m)));
@@ -137,7 +140,7 @@ public class MqttIntegrationTest {
 		assertThat(mqttClient.getMessages(),
 				is(Collections.<Message> emptyList()));
 		this.link.removeListener(listener);
-		Message m2 = new Message(TOPIC + "/system/listening/A1/value/set",
+		Message m2 = new Message(TOPIC + "/system/listening/A1" + APPENDIX,
 				"false");
 		assertThat(mqttClient.getMessages(), is(Arrays.asList(m2)));
 	}
@@ -149,7 +152,7 @@ public class MqttIntegrationTest {
 				digitalPin(1), delegate());
 		this.link.addListener(listener);
 		this.link.addListener(listener);
-		Message m = new Message(TOPIC + "/system/listening/D1/value/set",
+		Message m = new Message(TOPIC + "/system/listening/D1" + APPENDIX,
 				"true");
 		// at the moment this is sent twice (see ListenerSupport)
 		assertThat(mqttClient.pollMessages(), is(Arrays.asList(m, m)));
@@ -157,7 +160,7 @@ public class MqttIntegrationTest {
 		assertThat(mqttClient.getMessages(),
 				is(Collections.<Message> emptyList()));
 		this.link.removeListener(listener);
-		Message m2 = new Message(TOPIC + "/system/listening/D1/value/set",
+		Message m2 = new Message(TOPIC + "/system/listening/D1" + APPENDIX,
 				"false");
 		assertThat(mqttClient.getMessages(), is(Arrays.asList(m2)));
 	}
