@@ -55,7 +55,8 @@ public class FactoriesViaMetaInfArdulink {
 
 		@Override
 		public Link newLink(LinkConfig config) throws Exception {
-			Class<Link> linkClass = loadLinkClass(linkClassName, Link.class);
+			Class<? extends Link> linkClass = loadLinkClass(linkClassName,
+					Link.class);
 			Class<? extends Object> cClass = configClass == null ? LinkConfig.class
 					: configClass;
 			Constructor<?> constructor = checkNotNull(
@@ -71,13 +72,12 @@ public class FactoriesViaMetaInfArdulink {
 			}
 		}
 
-		@SuppressWarnings("unchecked")
-		private static <T> Class<T> loadLinkClass(String name,
+		private static <T> Class<? extends T> loadLinkClass(String name,
 				Class<T> targetType) throws ClassNotFoundException {
 			Class<?> clazz = Class.forName(name);
 			checkState(targetType.isAssignableFrom(clazz), "%s not of type %s",
 					clazz.getName(), targetType.getName());
-			return (Class<T>) clazz;
+			return clazz.asSubclass(targetType);
 		}
 
 		@Override
