@@ -12,18 +12,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.raspi;
 
-import java.net.URI;
-
+import org.ardulink.core.convenience.Links;
+import org.ardulink.util.URIs;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import org.ardulink.core.linkmanager.LinkManager;
-import org.ardulink.core.linkmanager.LinkManager.Configurer;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -39,13 +36,10 @@ public class PiLinkTest {
 	public ExpectedException exceptions = ExpectedException.none();
 
 	@Test
-	public void creatingInstanceWillFailOnX86withUnsatisfiedLinkError()
-			throws Exception {
+	public void creatingInstanceWillFailOnX86withUnsatisfiedLinkError() {
 		// TODO should do a Assume if we are on a raspi or not
-		Configurer configurer = LinkManager.getInstance().getConfigurer(
-				new URI("ardulink://raspberry"));
 		exceptions.expect(UnsatisfiedLinkError.class);
-		configurer.newLink();
+		Links.getLink(URIs.newURI("ardulink://raspberry"));
 	}
 
 }
