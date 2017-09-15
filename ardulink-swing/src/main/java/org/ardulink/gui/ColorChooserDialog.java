@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-*/
+ */
 
 package org.ardulink.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,40 +32,38 @@ import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
 /**
- * [ardulinktitle] [ardulinkversion]
- * Used from a RGBController class to choose the right color.
- * project Ardulink http://www.ardulink.org/
- * @see RGBController
- * [adsense]
+ * [ardulinktitle] [ardulinkversion] Used from a RGBController class to choose
+ * the right color. project Ardulink http://www.ardulink.org/
+ * 
+ * @see RGBController [adsense]
  *
  */
 public class ColorChooserDialog extends JDialog {
 
 	private static final long serialVersionUID = -9016876523594283575L;
 
-	private final JPanel contentPanel = new JPanel();
-	private final RGBController rgbController;
-	private JColorChooser colorChooser;
+	private Color color;
 
-	/**
-	 * Launch the application.
-	 * @param args nothing
-	 */
+	public Color getColor() {
+		return color;
+	}
+
 	public static void main(String[] args) {
-		ColorChooserDialog dialog = new ColorChooserDialog(new RGBController());
+		ColorChooserDialog dialog = new ColorChooserDialog(Color.black);
 		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		dialog.setVisible(true);
 	}
 
-	/**
-	 * Create the dialog.
-	 */
-	public ColorChooserDialog(RGBController rgbControllerParam) {
+	public ColorChooserDialog(Color color) {
+		this.color = color;
 		setModal(true);
 		setTitle("Color Chooser");
-		this.rgbController = rgbControllerParam;
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());
+		JPanel contentPanel = new JPanel();
+		final JColorChooser colorChooser = new JColorChooser();
+		colorChooser.setColor(color);
+
 		contentPanel.setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -77,7 +76,7 @@ public class ColorChooserDialog extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						rgbController.setColor(colorChooser.getColor());
+						ColorChooserDialog.this.color = colorChooser.getColor();
 						setVisible(false);
 						dispose();
 					}
@@ -97,9 +96,7 @@ public class ColorChooserDialog extends JDialog {
 				buttonPane.add(cancelButton);
 			}
 		}
-		
-		colorChooser = new JColorChooser();
-		colorChooser.setColor(rgbController.getColor());
+
 		contentPanel.add(colorChooser, BorderLayout.CENTER);
 		pack();
 	}

@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.ardulink.gui;
 
+import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -30,7 +32,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.WindowConstants;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -105,7 +106,6 @@ public class RGBController extends JPanel implements Linkable {
 	private JLabel lblColor;
 	private JTextField colorTextField;
 	private JCheckBox chckbxInverted;
-	private final RGBController instance = this;
 
 	private final PWMControllerListener redListener = new AbstractPWMControllerListener() {
 
@@ -186,9 +186,11 @@ public class RGBController extends JPanel implements Linkable {
 		coloredPanel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				ColorChooserDialog dialog = new ColorChooserDialog(instance);
-				dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+				ColorChooserDialog dialog = new ColorChooserDialog(coloredPanel
+						.getBackground());
+				dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 				dialog.setVisible(true);
+				setColor(dialog.getColor());
 			}
 		});
 		southPanel.add(coloredPanel);
@@ -240,10 +242,6 @@ public class RGBController extends JPanel implements Linkable {
 		String colorString = UtilityColor.toString(color);
 		colorTextField.setText(colorString);
 		updateColor();
-	}
-
-	public Color getColor() {
-		return coloredPanel.getBackground();
 	}
 
 }
