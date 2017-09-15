@@ -5,11 +5,13 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL
 
 import java.io.IOException;
 
+import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.impl.DefaultConsumer;
 import org.apache.camel.impl.DefaultMessage;
+import org.ardulink.core.Link;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
@@ -18,26 +20,24 @@ import org.ardulink.core.proto.impl.ALProtoBuilder;
 public class ArdulinkConsumer extends DefaultConsumer {
 
 	private final EventListener listener = listener();
+	private final Link link;
 
-	public ArdulinkConsumer(ArdulinkEndpoint endpoint, Processor processor)
+	public ArdulinkConsumer(Endpoint endpoint, Processor processor, Link link)
 			throws IOException {
 		super(endpoint, processor);
+		this.link = link;
 	}
 
 	@Override
 	public void start() throws Exception {
-		getEndpoint().getLink().addListener(listener);
+		link.addListener(listener);
 		super.start();
 	}
 
 	@Override
 	public void stop() throws Exception {
-		getEndpoint().getLink().removeListener(listener);
+		link.removeListener(listener);
 		super.stop();
-	}
-
-	public ArdulinkEndpoint getEndpoint() {
-		return (ArdulinkEndpoint) super.getEndpoint();
 	}
 
 	private EventListener listener() {

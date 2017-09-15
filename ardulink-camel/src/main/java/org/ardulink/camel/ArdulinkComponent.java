@@ -19,9 +19,7 @@ import static java.lang.Character.toUpperCase;
 import static java.lang.Integer.parseInt;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static org.ardulink.util.Lists.newArrayList;
 
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -51,22 +49,17 @@ public class ArdulinkComponent extends UriEndpointComponent {
 	@Override
 	protected Endpoint createEndpoint(String uri, String remaining,
 			Map<String, Object> parameters) throws Exception {
-
-		ArdulinkEndpoint.Config config = new ArdulinkEndpoint.Config();
-		config.setType(remaining);
-		config.setListenTo(newArrayList(parsePins(getOptional(parameters,
-				"listenTo").or(""))));
-
-		// all remainig params goto the link
-		config.setLinkParams(parameters);
+		EndpointConfig config = new EndpointConfig()
+				.type(remaining)
+				.listenTo(parsePins(getOptional(parameters, "listenTo").or("")))
+				.linkParams(parameters);
 		parameters.clear();
-
 		ArdulinkEndpoint endpoint = new ArdulinkEndpoint(uri, this, config);
 		setProperties(endpoint, parameters);
 		return endpoint;
 	}
 
-	private Collection<Pin> parsePins(String pinsString) {
+	private Set<Pin> parsePins(String pinsString) {
 		Set<Pin> pins = new LinkedHashSet<Pin>();
 		for (StringTokenizer tokenizer = new StringTokenizer(pinsString, ","); tokenizer
 				.hasMoreTokens();) {
