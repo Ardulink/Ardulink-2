@@ -4,10 +4,13 @@ import static org.ardulink.util.Iterables.forEnumeration;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Throwables.propagate;
+import static org.ardulink.util.Throwables.propagateIfInstanceOf;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.List;
 
@@ -55,10 +58,17 @@ public class FactoriesViaMetaInfArdulink {
 			Class<?> linkClass = Class.forName(linkClassName);
 			Class<? extends Object> cClass = configClass == null ? LinkConfig.class
 					: configClass;
-			Constructor<?> constructor = linkClass.getConstructor(cClass);
-			return (Link) checkNotNull(constructor,
+			Constructor<?> constructor = checkNotNull(
+					linkClass.getConstructor(cClass),
 					"%s has no public constructor with argument of type %s",
-					linkClass.getName(), cClass.getName()).newInstance(config);
+					linkClass.getName(), cClass.getName());
+			try {
+				return (Link) constructor.newInstance(config);
+			} catch (InvocationTargetException e) {
+				propagateIfInstanceOf(e.getTargetException(), Error.class);
+				propagateIfInstanceOf(e.getTargetException(), Exception.class);
+				throw propagate(e);
+			}
 		}
 
 		@Override
