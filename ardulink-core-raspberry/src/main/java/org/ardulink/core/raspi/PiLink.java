@@ -13,28 +13,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 package org.ardulink.core.raspi;
 
-import static org.ardulink.core.Pin.analogPin;
-import static org.ardulink.core.Pin.digitalPin;
-import static org.ardulink.core.Pin.Type.ANALOG;
-import static org.ardulink.core.Pin.Type.DIGITAL;
 import static com.pi4j.io.gpio.PinMode.ANALOG_INPUT;
 import static com.pi4j.io.gpio.PinMode.DIGITAL_INPUT;
 import static com.pi4j.io.gpio.PinMode.DIGITAL_OUTPUT;
 import static com.pi4j.io.gpio.PinMode.PWM_OUTPUT;
-import static com.pi4j.io.gpio.PinPullResistance.PULL_DOWN;
 import static com.pi4j.io.gpio.RaspiPin.getPinByName;
 import static com.pi4j.io.gpio.event.PinEventType.ANALOG_VALUE_CHANGE;
 import static com.pi4j.io.gpio.event.PinEventType.DIGITAL_STATE_CHANGE;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.Type.ANALOG;
+import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
 import java.util.List;
-
-import org.ardulink.util.ListMultiMap;
 
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Pin;
@@ -44,6 +40,7 @@ import org.ardulink.core.Tone;
 import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import org.ardulink.core.proto.api.MessageIdHolders;
+import org.ardulink.util.ListMultiMap;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
@@ -67,8 +64,13 @@ import com.pi4j.io.gpio.event.GpioPinListenerDigital;
  */
 public class PiLink extends AbstractListenerLink {
 
+	private final PiLinkConfig config;
 	private final GpioController gpioController = GpioFactory.getInstance();
 	private final ListMultiMap<GpioPin, GpioPinListener> listeners = new ListMultiMap<GpioPin, GpioPinListener>();
+
+	public PiLink(PiLinkConfig config) {
+		this.config = config;
+	}
 
 	@Override
 	public void close() throws IOException {
@@ -90,7 +92,7 @@ public class PiLink extends AbstractListenerLink {
 
 	private void addListener(Pin pin, GpioPinListener listener) {
 		GpioPin gpioPin = getOrCreate(pin.pinNum(), pi4jInputMode(pin));
-		gpioPin.setPullResistance(PULL_DOWN);
+		gpioPin.setPullResistance(config.getPinPullResistance());
 		gpioPin.addListener(listener);
 		this.listeners.put(gpioPin, listener);
 	}
