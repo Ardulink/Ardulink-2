@@ -55,7 +55,7 @@ public class FactoriesViaMetaInfArdulink {
 
 		@Override
 		public Link newLink(LinkConfig config) throws Exception {
-			Class<?> linkClass = Class.forName(linkClassName);
+			Class<Link> linkClass = loadLinkClass(linkClassName, Link.class);
 			Class<? extends Object> cClass = configClass == null ? LinkConfig.class
 					: configClass;
 			Constructor<?> constructor = checkNotNull(
@@ -63,12 +63,21 @@ public class FactoriesViaMetaInfArdulink {
 					"%s has no public constructor with argument of type %s",
 					linkClass.getName(), cClass.getName());
 			try {
-				return (Link) constructor.newInstance(config);
+				return linkClass.cast(constructor.newInstance(config));
 			} catch (InvocationTargetException e) {
 				propagateIfInstanceOf(e.getTargetException(), Error.class);
 				propagateIfInstanceOf(e.getTargetException(), Exception.class);
 				throw propagate(e);
 			}
+		}
+
+		@SuppressWarnings("unchecked")
+		private static <T> Class<T> loadLinkClass(String name,
+				Class<T> targetType) throws ClassNotFoundException {
+			Class<?> clazz = Class.forName(name);
+			checkState(targetType.isAssignableFrom(clazz), "%s not of type %s",
+					clazz.getName(), targetType.getName());
+			return (Class<T>) clazz;
 		}
 
 		@Override
