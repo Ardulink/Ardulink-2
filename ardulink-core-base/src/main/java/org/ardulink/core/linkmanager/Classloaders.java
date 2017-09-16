@@ -10,9 +10,8 @@ public final class Classloaders {
 	}
 
 	public static ClassLoader moduleClassloader() {
-		ClassLoader classLoader = Thread.currentThread()
-				.getContextClassLoader();
-		return new ModuleClassLoader(classLoader, systemProperty(
+		ClassLoader parent = Thread.currentThread().getContextClassLoader();
+		return new ModuleClassLoader(parent, systemProperty(
 				"ardulink.module.dir").or("."));
 	}
 

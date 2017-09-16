@@ -2,7 +2,6 @@ package org.ardulink.core.linkmanager;
 
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
 import static org.ardulink.util.Iterables.forEnumeration;
-import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Throwables.propagate;
@@ -28,7 +27,7 @@ public class FactoriesViaMetaInfArdulink {
 		private final ClassLoader classloader;
 		private final String name;
 		private final String linkClassName;
-		private final Class<?> configClass;
+		private Class<? extends LinkConfig> configClass;
 
 		private GenericLinkFactory(ClassLoader classloader, String name,
 				String configClassName, String linkClassName)
@@ -39,19 +38,6 @@ public class FactoriesViaMetaInfArdulink {
 			this.linkClassName = linkClassName;
 		}
 
-		private Class<?> loadConfigClass(String configClassName)
-				throws ClassNotFoundException {
-			if (Strings.nullOrEmpty(configClassName)
-					|| "null".equalsIgnoreCase(configClassName)) {
-				return null;
-			}
-			Class<?> loaded = loadClass(configClassName);
-			checkArgument(LinkConfig.class.isAssignableFrom(loaded),
-					"%s not subtype of %s", loaded.getName(),
-					LinkConfig.class.getName());
-			return loaded;
-		}
-
 		@Override
 		public String getName() {
 			return name;
@@ -59,16 +45,15 @@ public class FactoriesViaMetaInfArdulink {
 
 		@Override
 		public Link newLink(LinkConfig config) throws Exception {
-			Class<? extends Link> linkClass = loadLinkClass(linkClassName,
+			Class<? extends Link> linkClass = loadClass(linkClassName,
 					Link.class);
-			Class<? extends Object> cClass = configClass == null ? LinkConfig.class
-					: configClass;
-			Constructor<?> constructor = checkNotNull(
-					linkClass.getConstructor(cClass),
+			Class<? extends LinkConfig> configClass = getConfigClass();
+			Constructor<? extends Link> constructor = checkNotNull(
+					linkClass.getConstructor(configClass),
 					"%s has no public constructor with argument of type %s",
-					linkClass.getName(), cClass.getName());
+					linkClass.getName(), configClass.getName());
 			try {
-				return linkClass.cast(constructor.newInstance(config));
+				return constructor.newInstance(config);
 			} catch (InvocationTargetException e) {
 				propagateIfInstanceOf(e.getTargetException(), Error.class);
 				propagateIfInstanceOf(e.getTargetException(), Exception.class);
@@ -76,16 +61,28 @@ public class FactoriesViaMetaInfArdulink {
 			}
 		}
 
-		private <T> Class<? extends T> loadLinkClass(String name,
+		private Class<? extends LinkConfig> loadConfigClass(
+				String configClassName) throws ClassNotFoundException {
+			return isNull(configClassName) ? null : loadClass(configClassName,
+					LinkConfig.class);
+		}
+
+		private static boolean isNull(String configClassName) {
+			return Strings.nullOrEmpty(configClassName)
+					|| "null".equalsIgnoreCase(configClassName);
+		}
+
+		private Class<? extends LinkConfig> getConfigClass() {
+			return this.configClass == null ? LinkConfig.class
+					: this.configClass;
+		}
+
+		private <T> Class<? extends T> loadClass(String name,
 				Class<T> targetType) throws ClassNotFoundException {
-			Class<?> clazz = loadClass(name);
+			Class<?> clazz = this.classloader.loadClass(name);
 			checkState(targetType.isAssignableFrom(clazz), "%s not of type %s",
 					clazz.getName(), targetType.getName());
 			return clazz.asSubclass(targetType);
-		}
-
-		private Class<?> loadClass(String name) throws ClassNotFoundException {
-			return this.classloader.loadClass(name);
 		}
 
 		@Override
