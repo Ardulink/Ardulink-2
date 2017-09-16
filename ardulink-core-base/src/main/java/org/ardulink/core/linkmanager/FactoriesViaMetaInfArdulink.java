@@ -1,5 +1,6 @@
 package org.ardulink.core.linkmanager;
 
+import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
 import static org.ardulink.util.Iterables.forEnumeration;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
@@ -24,24 +25,27 @@ public class FactoriesViaMetaInfArdulink {
 	private static final class GenericLinkFactory implements
 			LinkFactory<LinkConfig> {
 
+		private final ClassLoader classloader;
 		private final String name;
 		private final String linkClassName;
 		private final Class<?> configClass;
 
-		private GenericLinkFactory(String name, String configClassName,
-				String linkClassName) throws ClassNotFoundException {
+		private GenericLinkFactory(ClassLoader classloader, String name,
+				String configClassName, String linkClassName)
+				throws ClassNotFoundException {
+			this.classloader = classloader;
 			this.name = name;
 			this.configClass = loadConfigClass(configClassName);
 			this.linkClassName = linkClassName;
 		}
 
-		private static Class<?> loadConfigClass(String configClassName)
+		private Class<?> loadConfigClass(String configClassName)
 				throws ClassNotFoundException {
 			if (Strings.nullOrEmpty(configClassName)
 					|| "null".equalsIgnoreCase(configClassName)) {
 				return null;
 			}
-			Class<?> loaded = Class.forName(configClassName);
+			Class<?> loaded = loadClass(configClassName);
 			checkArgument(LinkConfig.class.isAssignableFrom(loaded),
 					"%s not subtype of %s", loaded.getName(),
 					LinkConfig.class.getName());
@@ -72,12 +76,16 @@ public class FactoriesViaMetaInfArdulink {
 			}
 		}
 
-		private static <T> Class<? extends T> loadLinkClass(String name,
+		private <T> Class<? extends T> loadLinkClass(String name,
 				Class<T> targetType) throws ClassNotFoundException {
-			Class<?> clazz = Class.forName(name);
+			Class<?> clazz = loadClass(name);
 			checkState(targetType.isAssignableFrom(clazz), "%s not of type %s",
 					clazz.getName(), targetType.getName());
 			return clazz.asSubclass(targetType);
+		}
+
+		private Class<?> loadClass(String name) throws ClassNotFoundException {
+			return this.classloader.loadClass(name);
 		}
 
 		@Override
@@ -96,15 +104,15 @@ public class FactoriesViaMetaInfArdulink {
 	public List<LinkFactory> loadLinkFactories() {
 		List<LinkFactory> factories = Lists.newArrayList();
 		try {
-			for (URL url : forEnumeration(Thread.currentThread()
-					.getContextClassLoader()
+			ClassLoader classloader = moduleClassloader();
+			for (URL url : forEnumeration(classloader
 					.getResources("META-INF/services/ardulink/linkfactory"))) {
 				BufferedReader reader = new BufferedReader(
 						new InputStreamReader(url.openStream()));
 				String line;
 				while ((line = reader.readLine()) != null) {
 					if (!line.isEmpty()) {
-						factories.add(processLine(line));
+						factories.add(processLine(classloader, line));
 					}
 				}
 				reader.close();
@@ -115,18 +123,19 @@ public class FactoriesViaMetaInfArdulink {
 		}
 	}
 
-	private LinkFactory<LinkConfig> processLine(String line)
-			throws ClassNotFoundException {
+	private LinkFactory<LinkConfig> processLine(ClassLoader classloader,
+			String line) throws ClassNotFoundException {
 		String[] split = line.split("\\:");
 		checkState(split.length == 3,
 				"Could not split %s into name:configclass:linkclass", line);
-		return createLinkFactory(split[0], split[1], split[2]);
+		return createLinkFactory(classloader, split[0], split[1], split[2]);
 	}
 
-	private LinkFactory<LinkConfig> createLinkFactory(String name,
-			String configClassName, String linkClassName)
+	private LinkFactory<LinkConfig> createLinkFactory(ClassLoader classloader,
+			String name, String configClassName, String linkClassName)
 			throws ClassNotFoundException {
-		return new GenericLinkFactory(name, configClassName, linkClassName);
+		return new GenericLinkFactory(classloader, name, configClassName,
+				linkClassName);
 	}
 
 }
