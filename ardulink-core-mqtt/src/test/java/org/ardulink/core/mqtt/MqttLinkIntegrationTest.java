@@ -22,6 +22,7 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
+import static org.ardulink.util.ServerSockets.freePort;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -82,10 +83,10 @@ public class MqttLinkIntegrationTest {
 
 	private static final String TOPIC = "myTopic" + System.currentTimeMillis();
 
-	private final Broker broker = Broker.newBroker();
+	private final Broker broker = Broker.newBroker().port(freePort());
 
-	private final AnotherMqttClient mqttClient = AnotherMqttClient
-			.newClient(TOPIC);
+	private final AnotherMqttClient mqttClient = AnotherMqttClient.newClient(
+			TOPIC, broker.getPort());
 
 	private final String messageFormat;
 
@@ -178,6 +179,7 @@ public class MqttLinkIntegrationTest {
 	private MqttLinkConfig makeConfig(MqttLinkFactory factory) {
 		MqttLinkConfig config = factory.newLinkConfig();
 		config.setTopic(TOPIC);
+		config.setPort(broker.getPort());
 		config.setSeparateTopics(separateTopics);
 		return config;
 	}

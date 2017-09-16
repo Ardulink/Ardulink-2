@@ -66,13 +66,13 @@ public class AnotherMqttClient extends ExternalResource {
 		return typeMap;
 	}
 
-	public static AnotherMqttClient newClient(String topic) {
-		return new AnotherMqttClient(topic);
+	public static AnotherMqttClient newClient(String topic, int port) {
+		return new AnotherMqttClient(topic, port);
 	}
 
-	private AnotherMqttClient(String topic) {
+	private AnotherMqttClient(String topic, int port) {
 		this.topic = topic.endsWith("/") ? topic : topic + "/";
-		this.mqttClient = mqttClient("localhost", 1883);
+		this.mqttClient = mqttClient("localhost", port);
 	}
 
 	public AnotherMqttClient appendValueSet(boolean appendValueGet) {

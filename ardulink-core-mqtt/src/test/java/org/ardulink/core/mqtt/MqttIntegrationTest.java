@@ -22,6 +22,7 @@ import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
+import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.URIs.newURI;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -36,9 +37,9 @@ import java.util.Collections;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
+import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.EventListenerAdapter;
 import org.ardulink.core.events.FilteredEventListenerAdapter;
-import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
 import org.ardulink.core.mqtt.duplicated.Message;
 import org.junit.After;
@@ -64,10 +65,12 @@ public class MqttIntegrationTest {
 
 	private static final String TOPIC = "myTopic" + System.currentTimeMillis();
 
-	private AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC);
+	private final Broker broker = Broker.newBroker().port(freePort());
+	
+	private AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC, broker.getPort());
 
 	@Rule
-	public RuleChain chain = outerRule(Broker.newBroker()).around(mqttClient);
+	public RuleChain chain = outerRule(broker).around(mqttClient);
 
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
@@ -82,7 +85,7 @@ public class MqttIntegrationTest {
 	public void setup() {
 		// must not be initialized at declaration point since then the broker is
 		// not started and so the client can't connect!
-		link = LinkManager.getInstance().getConfigurer(clientUri).newLink();
+		link = Links.getLink(clientUri);
 	}
 
 	@After
@@ -107,8 +110,9 @@ public class MqttIntegrationTest {
 			String messageFormat) {
 		this.mqttClient.appendValueSet(separateTopics);
 		this.messageFormat = messageFormat;
-		clientUri = newURI("ardulink://mqtt?host=localhost&port=1883&topic="
-				+ TOPIC + "&separatedTopics=" + separateTopics);
+		clientUri = newURI("ardulink://mqtt?host=localhost&port="
+				+ broker.getPort() + "&topic=" + TOPIC + "&separatedTopics="
+				+ separateTopics);
 	}
 
 	@Test

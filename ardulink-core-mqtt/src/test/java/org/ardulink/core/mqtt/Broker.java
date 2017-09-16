@@ -150,6 +150,10 @@ public class Broker extends ExternalResource {
 		return this;
 	}
 
+	public int getPort() {
+		return port;
+	}
+
 	public Broker authentication(String authentication) {
 		this.env2restore = System.setProperty(propertyName(), authentication);
 		return this;
