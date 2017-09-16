@@ -51,13 +51,6 @@ public class EventMatchers {
 			pinState(description, pin, value);
 		}
 
-//		@Override
-//		protected void describeMismatchSafely(PinValueChangedEvent event,
-//				Description description) {
-//			pinState(description.appendText(" was "), event.getPin(),
-//					event.getValue());
-//		}
-
 		private Description pinState(Description description, Pin pin,
 				Object value) {
 			return description.appendText(pin.getClass().getSimpleName())

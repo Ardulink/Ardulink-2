@@ -16,12 +16,12 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -30,19 +30,23 @@ import static org.junit.rules.RuleChain.outerRule;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
+import org.ardulink.core.ConnectionListener;
+import org.ardulink.core.events.PinValueChangedEvent;
+import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
+import org.ardulink.core.mqtt.duplicated.EventMatchers.PinValueChangedEventMatcher;
+import org.ardulink.core.mqtt.duplicated.Message;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsCollectionContaining;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.Timeout;
-import org.ardulink.core.ConnectionListener;
-import org.ardulink.core.events.PinValueChangedEvent;
-import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
-import org.ardulink.core.mqtt.duplicated.EventMatchers.PinValueChangedEventMatcher;
-import org.ardulink.core.mqtt.duplicated.Message;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -52,9 +56,8 @@ import org.ardulink.core.mqtt.duplicated.Message;
  * [adsense]
  *
  */
+@RunWith(Parameterized.class)
 public class MqttLinkIntegrationTest {
-
-	private boolean separateTopics;
 
 	public static class TrackStateConnectionListener implements
 			ConnectionListener {
@@ -81,14 +84,38 @@ public class MqttLinkIntegrationTest {
 
 	private final Broker broker = Broker.newBroker();
 
-	private final AnotherMqttClient mqttClient = AnotherMqttClient.newClient(
-			TOPIC).appendValueSet(separateTopics);
+	private final AnotherMqttClient mqttClient = AnotherMqttClient
+			.newClient(TOPIC);
+
+	private final String messageFormat;
+
+	private final boolean separateTopics;
 
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
 
 	@Rule
 	public RuleChain chain = outerRule(broker).around(mqttClient);
+
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] { sameTopic(), separateTopics() });
+	}
+
+	private static Object[] sameTopic() {
+		return new Object[] { "sameTopic", false, TOPIC + "/%s" };
+	}
+
+	private static Object[] separateTopics() {
+		return new Object[] { "separateTopics", true, TOPIC + "/%s/value/set" };
+	}
+
+	public MqttLinkIntegrationTest(String name, boolean separateTopics,
+			String messageFormat) {
+		this.separateTopics = separateTopics;
+		this.mqttClient.appendValueSet(separateTopics);
+		this.messageFormat = messageFormat;
+	}
 
 	@Test
 	public void defaultHostIsLocalhostAndLinkHasCreatedWithoutConfiguring()
@@ -110,8 +137,12 @@ public class MqttLinkIntegrationTest {
 
 		link.switchAnalogPin(analogPin(8), 9);
 		assertThat(mqttClient.getMessages(),
-				is(Arrays.asList(new Message(append(TOPIC + "/A8"), "9"))));
+				is(Arrays.asList(new Message(topic("A8"), "9"))));
 		link.close();
+	}
+
+	private String topic(String pin) {
+		return String.format(messageFormat, pin);
 	}
 
 	@Test
@@ -124,10 +155,6 @@ public class MqttLinkIntegrationTest {
 		assertThat(eventCollector.events(DIGITAL),
 				hasItems(eventFor(digitalPin(2)).withValue(true)));
 		link.close();
-	}
-
-	private String append(String message) {
-		return separateTopics ? message + "/value/set" : message;
 	}
 
 	private void breedReconnectedState(MqttLink link) throws IOException,
@@ -151,6 +178,7 @@ public class MqttLinkIntegrationTest {
 	private MqttLinkConfig makeConfig(MqttLinkFactory factory) {
 		MqttLinkConfig config = factory.newLinkConfig();
 		config.setTopic(TOPIC);
+		config.setSeparateTopics(separateTopics);
 		return config;
 	}
 

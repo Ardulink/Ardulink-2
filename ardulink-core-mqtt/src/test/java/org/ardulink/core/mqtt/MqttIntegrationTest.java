@@ -22,13 +22,16 @@ import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
+import static org.ardulink.util.URIs.newURI;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.rules.RuleChain.outerRule;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 
 import org.ardulink.core.Link;
@@ -38,13 +41,15 @@ import org.ardulink.core.events.FilteredEventListenerAdapter;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
 import org.ardulink.core.mqtt.duplicated.Message;
-import org.ardulink.util.URIs;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.Timeout;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -54,14 +59,12 @@ import org.junit.rules.Timeout;
  * [adsense]
  *
  */
+@RunWith(Parameterized.class)
 public class MqttIntegrationTest {
-
-	private boolean separateTopics;
 
 	private static final String TOPIC = "myTopic" + System.currentTimeMillis();
 
-	private AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC)
-			.appendValueSet(separateTopics);
+	private AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC);
 
 	@Rule
 	public RuleChain chain = outerRule(Broker.newBroker()).around(mqttClient);
@@ -71,16 +74,15 @@ public class MqttIntegrationTest {
 
 	private Link link;
 
+	private final String messageFormat;
+
+	private URI clientUri;
+
 	@Before
 	public void setup() {
 		// must not be initialized at declaration point since then the broker is
 		// not started and so the client can't connect!
-		link = LinkManager
-				.getInstance()
-				.getConfigurer(
-						URIs.newURI("ardulink://mqtt?host=localhost&port=1883&topic="
-								+ TOPIC)).newLink();
-
+		link = LinkManager.getInstance().getConfigurer(clientUri).newLink();
 	}
 
 	@After
@@ -88,18 +90,39 @@ public class MqttIntegrationTest {
 		link.close();
 	}
 
+	@Parameters(name = "{index}: {0}")
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] { sameTopic(), separateTopics() });
+	}
+
+	private static Object[] sameTopic() {
+		return new Object[] { "sameTopic", false, TOPIC + "/%s" };
+	}
+
+	private static Object[] separateTopics() {
+		return new Object[] { "separateTopics", true, TOPIC + "/%s/value/set" };
+	}
+
+	public MqttIntegrationTest(String name, boolean separateTopics,
+			String messageFormat) {
+		this.mqttClient.appendValueSet(separateTopics);
+		this.messageFormat = messageFormat;
+		clientUri = newURI("ardulink://mqtt?host=localhost&port=1883&topic="
+				+ TOPIC + "&separatedTopics=" + separateTopics);
+	}
+
 	@Test
 	public void canSwitchDigitalPin() throws IOException {
 		this.link.switchDigitalPin(digitalPin(30), true);
 		assertThat(mqttClient.getMessages(),
-				is(Arrays.asList(new Message(append(TOPIC + "/D30"), "true"))));
+				is(Arrays.asList(new Message(topic("D30"), "true"))));
 	}
 
 	@Test
 	public void canSwitchAnalogPin() throws IOException {
 		this.link.switchAnalogPin(analogPin(12), 34);
 		assertThat(mqttClient.getMessages(),
-				is(Arrays.asList(new Message(append(TOPIC + "/A12"), "34"))));
+				is(Arrays.asList(new Message(topic("A12"), "34"))));
 	}
 
 	@Test
@@ -107,10 +130,8 @@ public class MqttIntegrationTest {
 			throws IOException {
 		this.link.addListener(new FilteredEventListenerAdapter(analogPin(1),
 				delegate()));
-		assertThat(
-				mqttClient.getMessages(),
-				is(Arrays.asList(new Message(append(TOPIC
-						+ "/system/listening/A1"), "true"))));
+		assertThat(mqttClient.getMessages(), is(Arrays.asList(new Message(
+				topic("system/listening/A1"), "true"))));
 	}
 
 	@Test
@@ -118,10 +139,8 @@ public class MqttIntegrationTest {
 			throws IOException {
 		this.link.addListener(new FilteredEventListenerAdapter(digitalPin(2),
 				delegate()));
-		assertThat(
-				mqttClient.getMessages(),
-				is(Arrays.asList(new Message(append(TOPIC
-						+ "/system/listening/D2"), "true"))));
+		assertThat(mqttClient.getMessages(), is(Arrays.asList(new Message(
+				topic("system/listening/D2"), "true"))));
 	}
 
 	@Test
@@ -131,15 +150,14 @@ public class MqttIntegrationTest {
 				analogPin(1), delegate());
 		this.link.addListener(listener);
 		this.link.addListener(listener);
-		Message m = new Message(append(TOPIC + "/system/listening/A1"), "true");
+		Message m = new Message(topic("system/listening/A1"), "true");
 		// at the moment this is sent twice (see ListenerSupport)
 		assertThat(mqttClient.pollMessages(), is(Arrays.asList(m, m)));
 		this.link.removeListener(listener);
 		assertThat(mqttClient.getMessages(),
 				is(Collections.<Message> emptyList()));
 		this.link.removeListener(listener);
-		Message m2 = new Message(append(TOPIC + "/system/listening/A1"),
-				"false");
+		Message m2 = new Message(topic("system/listening/A1"), "false");
 		assertThat(mqttClient.getMessages(), is(Arrays.asList(m2)));
 	}
 
@@ -150,20 +168,19 @@ public class MqttIntegrationTest {
 				digitalPin(1), delegate());
 		this.link.addListener(listener);
 		this.link.addListener(listener);
-		Message m = new Message(append(TOPIC + "/system/listening/D1"), "true");
+		Message m = new Message(topic("system/listening/D1"), "true");
 		// at the moment this is sent twice (see ListenerSupport)
 		assertThat(mqttClient.pollMessages(), is(Arrays.asList(m, m)));
 		this.link.removeListener(listener);
 		assertThat(mqttClient.getMessages(),
 				is(Collections.<Message> emptyList()));
 		this.link.removeListener(listener);
-		Message m2 = new Message(append(TOPIC + "/system/listening/D1"),
-				"false");
+		Message m2 = new Message(topic("system/listening/D1"), "false");
 		assertThat(mqttClient.getMessages(), is(Arrays.asList(m2)));
 	}
 
-	private String append(String message) {
-		return separateTopics ? message + "/value/set" : message;
+	private String topic(String pin) {
+		return String.format(messageFormat, pin);
 	}
 
 	// ---------------------------------------------------------------------------

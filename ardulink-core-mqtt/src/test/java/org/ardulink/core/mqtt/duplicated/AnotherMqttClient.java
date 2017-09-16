@@ -57,7 +57,7 @@ public class AnotherMqttClient extends ExternalResource {
 	private final String topic;
 
 	private static final Map<Type, String> typeMap = unmodifiableMap(typeMap());
-	private boolean appendValueSet;
+	private boolean appendValueGet;
 
 	private static Map<Type, String> typeMap() {
 		Map<Type, String> typeMap = new HashMap<Type, String>();
@@ -75,8 +75,8 @@ public class AnotherMqttClient extends ExternalResource {
 		this.mqttClient = mqttClient("localhost", 1883);
 	}
 
-	public AnotherMqttClient appendValueSet(boolean appendValueSet) {
-		this.appendValueSet = appendValueSet;
+	public AnotherMqttClient appendValueSet(boolean appendValueGet) {
+		this.appendValueGet = appendValueGet;
 		return this;
 	}
 
@@ -140,7 +140,7 @@ public class AnotherMqttClient extends ExternalResource {
 	}
 
 	private String append(String message) {
-		return appendValueSet ? message + "/vakue/set" : message;
+		return appendValueGet ? message + "/value/get" : message;
 	}
 
 	private void sendMessage(final Message message) throws IOException {
