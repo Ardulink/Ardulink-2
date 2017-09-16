@@ -19,6 +19,7 @@ package org.ardulink.core.mqtt;
 import static io.moquette.BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.AUTHENTICATOR_CLASS_NAME;
 import static io.moquette.BrokerConstants.HOST_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
 import io.moquette.interception.AbstractInterceptHandler;
 import io.moquette.interception.InterceptHandler;
@@ -109,7 +110,7 @@ public class Broker extends ExternalResource {
 			properties.setProperty(ALLOW_ANONYMOUS_PROPERTY_NAME,
 					Boolean.FALSE.toString());
 		}
-
+		properties.put(PERSISTENT_STORE_PROPERTY_NAME, "");
 		return properties;
 	}
 
