@@ -56,7 +56,7 @@ public class ModuleClassLoader extends URLClassLoader {
 	private static URL toURL(File file) {
 		try {
 			checkState(file.exists(), "File %s not found", file);
-			return file.toURI().toURL();
+			return file.toURI().normalize().toURL();
 		} catch (MalformedURLException e) {
 			throw propagate(e);
 		}
