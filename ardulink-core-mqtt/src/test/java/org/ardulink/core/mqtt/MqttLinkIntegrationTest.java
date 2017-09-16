@@ -54,7 +54,7 @@ import org.ardulink.core.mqtt.duplicated.Message;
  */
 public class MqttLinkIntegrationTest {
 
-	private static final String APPENDIX = "";
+	private boolean separateTopics;
 
 	public static class TrackStateConnectionListener implements
 			ConnectionListener {
@@ -82,7 +82,7 @@ public class MqttLinkIntegrationTest {
 	private final Broker broker = Broker.newBroker();
 
 	private final AnotherMqttClient mqttClient = AnotherMqttClient.newClient(
-			TOPIC).appendix(APPENDIX);
+			TOPIC).appendValueSet(separateTopics);
 
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
@@ -110,7 +110,7 @@ public class MqttLinkIntegrationTest {
 
 		link.switchAnalogPin(analogPin(8), 9);
 		assertThat(mqttClient.getMessages(),
-				is(Arrays.asList(new Message(TOPIC + "/A8" + APPENDIX, "9"))));
+				is(Arrays.asList(new Message(append(TOPIC + "/A8"), "9"))));
 		link.close();
 	}
 
@@ -124,6 +124,10 @@ public class MqttLinkIntegrationTest {
 		assertThat(eventCollector.events(DIGITAL),
 				hasItems(eventFor(digitalPin(2)).withValue(true)));
 		link.close();
+	}
+
+	private String append(String message) {
+		return separateTopics ? message + "/value/set" : message;
 	}
 
 	private void breedReconnectedState(MqttLink link) throws IOException,

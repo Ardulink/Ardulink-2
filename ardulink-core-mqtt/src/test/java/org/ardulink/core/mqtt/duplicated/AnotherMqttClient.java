@@ -57,7 +57,7 @@ public class AnotherMqttClient extends ExternalResource {
 	private final String topic;
 
 	private static final Map<Type, String> typeMap = unmodifiableMap(typeMap());
-	private String appendix = "";
+	private boolean appendValueSet;
 
 	private static Map<Type, String> typeMap() {
 		Map<Type, String> typeMap = new HashMap<Type, String>();
@@ -75,8 +75,8 @@ public class AnotherMqttClient extends ExternalResource {
 		this.mqttClient = mqttClient("localhost", 1883);
 	}
 
-	public AnotherMqttClient appendix(String appendix) {
-		this.appendix = appendix;
+	public AnotherMqttClient appendValueSet(boolean appendValueSet) {
+		this.appendValueSet = appendValueSet;
 		return this;
 	}
 
@@ -135,8 +135,12 @@ public class AnotherMqttClient extends ExternalResource {
 	}
 
 	public void switchPin(Pin pin, Object value) throws IOException {
-		sendMessage(new Message(this.topic + typeMap.get(pin.getType())
-				+ pin.pinNum() + appendix, String.valueOf(value)));
+		sendMessage(new Message(append(this.topic + typeMap.get(pin.getType())
+				+ pin.pinNum()), String.valueOf(value)));
+	}
+
+	private String append(String message) {
+		return appendValueSet ? message + "/vakue/set" : message;
 	}
 
 	private void sendMessage(final Message message) throws IOException {
