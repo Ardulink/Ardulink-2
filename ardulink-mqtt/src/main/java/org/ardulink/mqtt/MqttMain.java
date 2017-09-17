@@ -150,7 +150,14 @@ public class MqttMain {
 	}
 
 	public static void main(String[] args) throws Exception {
-		new MqttMain().doMain(args);
+		try {
+			new MqttMain().doMain(args);
+		} catch (Exception e) {
+			// we have to System#exit because the camel context keeps MqttMain
+			// running (even when calling Context#stop)
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 	public void doMain(String... args) throws Exception {
