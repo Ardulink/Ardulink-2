@@ -20,6 +20,7 @@ import static java.awt.event.ItemEvent.SELECTED;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.gui.connectionpanel.GridBagConstraintsBuilder.constraints;
+import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Throwables.getRootCause;
 import static org.ardulink.util.Throwables.propagate;
 
@@ -31,6 +32,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.net.URI;
+import java.util.ServiceLoader;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -50,6 +52,7 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.gui.Linkable;
 import org.ardulink.gui.facility.UtilityGeometry;
 import org.ardulink.legacy.Link;
+import org.ardulink.util.Lists;
 import org.ardulink.util.URIs;
 
 /**
@@ -209,19 +212,18 @@ public class ConnectionPanel extends JPanel implements Linkable {
 	}
 
 	private PanelBuilder findPanelBuilder(URI uri) {
-		// Here we could place a discover mechanism
-		// ServiceLoader<PanelBuilder> loader =
-		// ServiceLoader.load(PanelBuilder.class);
-		// if none of the loaded PanelBuilder supports the URI we would fall
-		// back to GenericPanelBuilder.
 		// To not create circular dependencies PanelBuilder should be moved to
 		// an own module (e.g. ardulink-ui-support) so ardulink-console would
 		// depend on ardulink-ui-support and the module providing a specific
 		// PanelBuilder would depend on ardulink-ui-support, too.
-		if (fallback.canHandle(uri)) {
-			return fallback;
+		for (PanelBuilder panelBuilder : Lists.newArrayList(ServiceLoader.load(
+				PanelBuilder.class).iterator())) {
+			if (panelBuilder.canHandle(uri)) {
+				return panelBuilder;
+			}
 		}
-		throw new IllegalStateException("No PanelBuilder found for " + uri);
+		checkState(fallback.canHandle(uri), "No PanelBuilder found for %s", uri);
+		return fallback;
 	}
 
 	public Link createLink() {
