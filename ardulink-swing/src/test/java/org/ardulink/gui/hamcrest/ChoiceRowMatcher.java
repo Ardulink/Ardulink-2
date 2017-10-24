@@ -25,6 +25,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
+import org.ardulink.util.Objects;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
@@ -84,7 +85,7 @@ public class ChoiceRowMatcher extends TypeSafeMatcher<JPanel> {
 
 	private boolean isComboBoxEq(JComboBox component) {
 		return Arrays.equals(choices, items(component))
-				&& choice.equals(component.getSelectedItem());
+				&& Objects.equals(choice,component.getSelectedItem());
 	}
 
 	private static Object[] items(JComboBox component) {
