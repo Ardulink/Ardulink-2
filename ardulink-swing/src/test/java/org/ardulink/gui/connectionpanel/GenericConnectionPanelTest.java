@@ -16,8 +16,6 @@ limitations under the License.
 
 package org.ardulink.gui.connectionpanel;
 
-import static java.lang.Boolean.TRUE;
-import static java.util.concurrent.TimeUnit.DAYS;
 import static org.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
 import static org.ardulink.gui.hamcrest.RowMatcherBuilder.row;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,6 +30,7 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
 import org.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.gui.DummyLinkConfig;
 import org.ardulink.util.Optional;
 import org.ardulink.util.URIs;
 import org.hamcrest.Matcher;
@@ -57,20 +56,34 @@ public class GenericConnectionPanelTest {
 
 	@Test
 	public void hasSubPanelWithConnectionIndividualComponents() {
+
+		DummyLinkConfig dlc = new DummyLinkConfig();
+
 		JPanel panel = sut.createPanel(LinkManager.getInstance().getConfigurer(
 				uri));
 		JComboBox comboBox = findFirst(JComboBox.class, componentsOf(panel))
-				.getOrThrow("No %s found on panel %s", JComboBox.class, panel);
+				.getOrThrow("No %s found on panel %s",
+						JComboBox.class.getName(), panel);
 		comboBox.setSelectedItem("ardulink://dummy");
-		assertThat(panel, has(row(0).withLabel("a").withValue(42)));
-		assertThat(panel, has(row(1).withLabel("b").withChoice("foo", "bar")
-				.withValue("foo")));
 		assertThat(panel,
-				has(row(2).withLabel("c").withYesNo().withValue(TRUE)));
-		assertThat(panel, has(row(3).withLabel("d").withValue("")));
+				has(row(0).withLabel("1_aIntValue")
+						.withValue(dlc.getIntValue())));
+		assertThat(panel, has(row(1).withLabel("2_aBooleanValue").withYesNo()
+				.withValue(dlc.getBooleanValue())));
+		assertThat(panel, has(row(2).withLabel("3_aStringValue").withValue("")));
+		Object[] choices1 = dlc.someValuesForChoiceWithoutNull().toArray(
+				new String[0]);
+		assertThat(panel, has(row(3).withLabel("4_aStringValueWithChoices")
+				.withChoice(choices1).withValue(choices1[0])));
+		Object[] choices2 = dlc.someValuesForChoiceWithNull().toArray(
+				new String[0]);
+		assertThat(panel,
+				has(row(4).withLabel("5_aStringValueWithChoicesIncludingNull")
+						.withChoice(choices2).withValue(null)));
 		Object[] timeUnits = TimeUnit.values();
-		assertThat(panel, has(row(4).withLabel("e").withChoice(timeUnits)
-				.withValue(DAYS)));
+		assertThat(panel,
+				has(row(5).withLabel("6_aEnumValue").withChoice(timeUnits)
+						.withValue(dlc.getEnumValue())));
 	}
 
 	private <T> Optional<T> findFirst(Class<T> clazz,

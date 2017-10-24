@@ -32,64 +32,81 @@ import org.ardulink.core.linkmanager.LinkConfig;
  */
 public class DummyLinkConfig implements LinkConfig {
 
-	@Named("a")
-	private int a = 42;
+	@Named("1_aIntValue")
+	private int intValue = 42;
 
-	@Named("b")
-	private String b;
+	@Named("2_aBooleanValue")
+	private Boolean booleanValue = Boolean.TRUE;
 
-	@Named("c")
-	private Boolean c = Boolean.TRUE;
+	@Named("3_aStringValue")
+	private String stringValue;
 
-	@Named("d")
-	private String d;
+	@Named("4_aStringValueWithChoices")
+	private String stringValueWithChoices;
 
-	@Named("e")
-	private TimeUnit e = TimeUnit.DAYS;
-	
-	public int getA() {
-		return a;
-	}
+	@Named("5_aStringValueWithChoicesIncludingNull")
+	private String stringValueWithChoicesIncludingNull;
 
-	public String getB() {
-		return b;
-	}
+	@Named("6_aEnumValue")
+	private TimeUnit enumValue = TimeUnit.DAYS;
 
-	@ChoiceFor("b")
-	public List<String> someValuesForB() {
+	@ChoiceFor("4_aStringValueWithChoices")
+	public List<String> someValuesForChoiceWithoutNull() {
 		return Arrays.asList("foo", "bar");
 	}
 
-	public Boolean getC() {
-		return c;
+	@ChoiceFor("5_aStringValueWithChoicesIncludingNull")
+	public List<String> someValuesForChoiceWithNull() {
+		return Arrays.asList(null, "foo", "bar");
 	}
 
-	public void setC(Boolean c) {
-		this.c = c;
+	public int getIntValue() {
+		return intValue;
 	}
 
-	public String getD() {
-		return d;
+	public void setIntValue(int intValue) {
+		this.intValue = intValue;
 	}
 
-	public void setA(int a) {
-		this.a = a;
+	public Boolean getBooleanValue() {
+		return booleanValue;
 	}
 
-	public void setB(String b) {
-		this.b = b;
+	public void setBooleanValue(Boolean booleanValue) {
+		this.booleanValue = booleanValue;
 	}
 
-	public void setD(String d) {
-		this.d = d;
+	public String getStringValue() {
+		return stringValue;
 	}
-	
-	public TimeUnit getE() {
-		return e;
+
+	public void setStringValue(String stringValue) {
+		this.stringValue = stringValue;
 	}
-	
-	public void setE(TimeUnit e) {
-		this.e = e;
+
+	public String getStringValueWithChoices() {
+		return stringValueWithChoices;
+	}
+
+	public void setStringValueWithChoices(String stringValueWithChoices) {
+		this.stringValueWithChoices = stringValueWithChoices;
+	}
+
+	public String getStringValueWithChoicesIncludingNull() {
+		return stringValueWithChoicesIncludingNull;
+	}
+
+	public void setStringValueWithChoicesIncludingNull(
+			String stringValueWithChoicesIncludingNull) {
+		this.stringValueWithChoicesIncludingNull = stringValueWithChoicesIncludingNull;
+	}
+
+	public TimeUnit getEnumValue() {
+		return enumValue;
+	}
+
+	public void setEnumValue(TimeUnit enumValue) {
+		this.enumValue = enumValue;
 	}
 
 }
