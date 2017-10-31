@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.ardulink.util.Optional;
-
+import org.ardulink.util.Throwables;
 import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.Attribute.AttributeWriter;
 import org.ardulink.core.beans.Attribute.TypedAttributeProvider;
@@ -158,7 +158,7 @@ public class BeanProperties {
 			return (reader == null && writer == null) || !type.isPresent() ? null
 					: new DefaultAttribute(name, type.orNull(),
 							reader.orNull(), writer.orNull());
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			return null;
 		}
 	}
@@ -210,11 +210,15 @@ public class BeanProperties {
 		return Optional.absent();
 	}
 
-	public Collection<String> attributeNames() throws Exception {
+	public Collection<String> attributeNames() {
 		Set<String> attributeNames = new LinkedHashSet<String>();
-		for (AttributeFinder finder : finders) {
-			attributeNames.addAll(namesOf(finder.listReaders(bean)));
-			attributeNames.addAll(namesOf(finder.listWriters(bean)));
+		try {
+			for (AttributeFinder finder : finders) {
+				attributeNames.addAll(namesOf(finder.listReaders(bean)));
+				attributeNames.addAll(namesOf(finder.listWriters(bean)));
+			}
+		} catch (Exception e) {
+			throw Throwables.propagate(e);
 		}
 		return new ArrayList<String>(attributeNames);
 	}

@@ -253,7 +253,7 @@ public class BeanPropertiesTest {
 	}
 
 	@Test
-	public void canlistAttributes() throws Exception {
+	public void canlistAttributes() {
 		BeanProperties bp = BeanProperties
 				.forBean(new BeanWithMultpleAttributes());
 		assertThat(new ArrayList<String>(bp.attributeNames()),

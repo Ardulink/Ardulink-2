@@ -224,8 +224,10 @@ public abstract class LinkManager {
 			public ConfigAttributeAdapter(T linkConfig,
 					BeanProperties beanProperties, String key) {
 				this.attribute = beanProperties.getAttribute(key);
-				checkArgument(attribute != null,
-						"Could not determine attribute %s", key);
+				checkArgument(
+						attribute != null,
+						"Could not determine attribute %s. Available attributes are %s",
+						key, beanProperties.attributeNames());
 				this.getChoicesFor = choicesFor(linkConfig);
 				this.dependsOn = this.getChoicesFor == null ? Collections
 						.<ConfigAttribute> emptyList()
