@@ -159,7 +159,9 @@ public class ConnectionPanel extends JPanel implements Linkable {
 			private void errorPanel(Exception e) {
 				JPanel newPanel = new JPanel();
 				newPanel.setBackground(RED);
-				newPanel.add(new JLabel(getRootCause(e).getMessage()));
+				Throwable rootCause = getRootCause(e);
+				newPanel.add(new JLabel(rootCause.getClass().getName() + ": "
+						+ rootCause.getMessage()));
 				exchangePanel(newPanel);
 				throw propagate(e);
 			}
