@@ -15,7 +15,6 @@ limitations under the License.
  */
 package org.ardulink.util;
 
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -23,40 +22,25 @@ import org.junit.Test;
 
 public class ByteArrayTest {
 
-	private final ByteArray sut = new ByteArray(
-			"1111.:2222_3333:.4444".getBytes());
+	private final ByteArray sut = new ByteArray(10);
 
 	@Test
-	public void arrayNext() {
-		byte[] token;
+	public void canAppend() {
+		byte[] delimiter = ";".getBytes();
+		append("abc;def;gh");
+		assertNextIs(delimiter, "abc");
+		assertNextIs(delimiter, "def");
+		append("i;jkl;");
+		assertNextIs(delimiter, "ghi");
+		assertNextIs(delimiter, "jkl");
+	}
 
-		token = sut.next("//".getBytes());
-		assertThat(token, is(nullValue()));
-		assertThat(sut.size(), is(21));
+	void assertNextIs(byte[] delimiter, String expected) {
+		assertThat(new String(sut.next(delimiter)), is(expected));
+	}
 
-		token = sut.next(".:".getBytes());
-		assertThat(token, is("1111".getBytes()));
-		assertThat(sut.size(), is(15));
-
-		token = sut.next("_".getBytes());
-		assertThat(token, is("2222".getBytes()));
-		assertThat(sut.size(), is(10));
-
-		token = sut.next(":.".getBytes());
-		assertThat(token, is("3333".getBytes()));
-		assertThat(sut.size(), is(4));
-
-		token = sut.next(".:".getBytes());
-		assertThat(token, is(nullValue()));
-		assertThat(sut.size(), is(4));
-
-		token = sut.next("4444".getBytes());
-		assertThat(token, is(new byte[0]));
-		assertThat(sut.size(), is(0));
-
-		token = sut.next(" ".getBytes());
-		assertThat(token, is(nullValue()));
-		assertThat(sut.size(), is(0));
+	private void append(String toAppend) {
+		sut.append(toAppend.getBytes(), toAppend.length());
 	}
 
 }

@@ -15,6 +15,7 @@ limitations under the License.
  */
 package org.ardulink.util;
 
+import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
@@ -24,12 +25,16 @@ public class ByteArray {
 
 	private static final int MAX_BUFFER_LEN = 2048;
 
-	private byte[] byteArray;
+	private final byte[] byteArray;
 
 	private int pointer;
 
-	public ByteArray(byte[] byteArray) {
-		this.byteArray = checkNotNull(byteArray, "Array must not be null");
+	public ByteArray() {
+		this(MAX_BUFFER_LEN);
+	}
+
+	public ByteArray(int maxLength) {
+		byteArray = new byte[maxLength];
 	}
 
 	public boolean contains(byte[] delimiter) {
@@ -37,50 +42,32 @@ public class ByteArray {
 	}
 
 	private int indexOf(byte[] delimiter) {
-		checkState(
-				checkNotNull(delimiter, "delimiter must not be null").length > 0,
-				"delimiter must not be empty");
-		return Bytes.indexOf(byteArray, delimiter, pointer);
+		checkState(checkNotNull(delimiter, "delimiter must not be null").length > 0, "delimiter must not be empty");
+		return Bytes.indexOf(byteArray, delimiter, 0, pointer);
 	}
 
-	public byte[] next(byte[] delimiter) {
-		int nextPointer = indexOf(delimiter);
-		if (nextPointer < 0) {
+	public synchronized byte[] next(byte[] delimiter) {
+		int delimiterAt = indexOf(delimiter);
+		if (delimiterAt < 0) {
 			return null;
 		}
-
-		byte[] next = Arrays.copyOfRange(this.byteArray, this.pointer,
-				nextPointer);
-		this.pointer = nextPointer + delimiter.length;
+		byte[] next = Arrays.copyOfRange(this.byteArray, 0, delimiterAt);
+		int nextTokenAt = delimiterAt + delimiter.length;
+		System.arraycopy(this.byteArray, nextTokenAt, this.byteArray, 0, this.byteArray.length - nextTokenAt);
+		pointer -= nextTokenAt;
 		return next;
 	}
 
 	/**
-	 * Appends the passed buffer to the internal byte[]. Simultaneously the
-	 * internal byte[] is compacted by the data already returned by calls to
-	 * {@link #next(byte[])}.
+	 * Appends the passed buffer to the internal byte[].
 	 * 
-	 * @param buffer
-	 *            the data to append
-	 * @param bytesRead
-	 *            length of the data to append from <code>buffer</code>
+	 * @param buffer    the data to append
+	 * @param bytesRead length of the data to append from <code>buffer</code>
 	 */
-	public void append(byte[] buffer, int bytesRead) {
-		int newLen = this.byteArray.length - pointer + bytesRead;
-		checkState(newLen <= MAX_BUFFER_LEN,
-				"Buffer size exceed MAX_BUFFER_LEN (%s > %s)", newLen,
-				MAX_BUFFER_LEN);
-		byte[] newBytes = new byte[newLen];
-		System.arraycopy(this.byteArray, 0 + pointer, newBytes, 0,
-				this.byteArray.length - pointer);
-		System.arraycopy(buffer, 0, newBytes, this.byteArray.length - pointer,
-				bytesRead);
-		this.pointer = 0;
-		this.byteArray = newBytes;
-	}
-
-	public int size() {
-		return byteArray.length - pointer;
+	public synchronized void append(byte[] buffer, int bytesRead) {
+		checkArgument(this.pointer + bytesRead <= this.byteArray.length, "buffer overrun");
+		System.arraycopy(buffer, 0, this.byteArray, this.pointer, bytesRead);
+		this.pointer += bytesRead;
 	}
 
 }

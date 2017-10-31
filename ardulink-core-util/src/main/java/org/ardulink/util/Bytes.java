@@ -35,7 +35,11 @@ public final class Bytes {
 	}
 
 	public static int indexOf(byte[] array, byte[] target, int startpos) {
-		outer: for (int i = startpos; i < array.length - target.length + 1; i++) {
+		return indexOf(array, target, startpos, array.length);
+	}
+
+	public static int indexOf(byte[] array, byte[] target, int startpos, int endpos) {
+		outer: for (int i = startpos; i < endpos - target.length + 1; i++) {
 			for (int j = 0; j < target.length; j++) {
 				if (array[i + j] != target[j]) {
 					continue outer;

@@ -16,10 +16,10 @@ limitations under the License.
 package org.ardulink.gui.connectionpanel;
 
 import static java.awt.GridBagConstraints.REMAINDER;
+import static org.ardulink.gui.connectionpanel.GridBagConstraintsBuilder.constraints;
 import static org.ardulink.util.Primitive.parseAs;
 import static org.ardulink.util.Primitive.unwrap;
 import static org.ardulink.util.Primitive.wrap;
-import static org.ardulink.gui.connectionpanel.GridBagConstraintsBuilder.constraints;
 
 import java.awt.Component;
 import java.awt.GridBagLayout;
@@ -30,6 +30,7 @@ import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URI;
+import java.util.Arrays;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -143,15 +144,18 @@ public class GenericPanelBuilder implements PanelBuilder {
 				attribute.setValue(jComboBox.getSelectedItem());
 			}
 		});
+		final boolean nullIsAvalidItem = Arrays.asList(
+				attribute.getChoiceValues()).contains(null);
 		// raise a selection event on model changes
 		jComboBox.addPropertyChangeListener("model",
 				new PropertyChangeListener() {
 					@Override
 					public void propertyChange(PropertyChangeEvent pce) {
-						setSelection(jComboBox, attribute.getValue());
+						setSelection(jComboBox, attribute.getValue(),
+								nullIsAvalidItem);
 					}
 				});
-		setSelection(jComboBox, attribute.getValue());
+		setSelection(jComboBox, attribute.getValue(), nullIsAvalidItem);
 		return jComboBox;
 	}
 
@@ -207,9 +211,14 @@ public class GenericPanelBuilder implements PanelBuilder {
 		return checkBox;
 	}
 
-	private static void setSelection(JComboBox comboBox, Object value) {
+	private static void setSelection(JComboBox comboBox, Object value,
+			boolean nullIsAvalidItem) {
 		if (value == null) {
-			selectFirstValue(comboBox);
+			if (nullIsAvalidItem) {
+				comboBox.setSelectedIndex(-1);
+			} else {
+				selectFirstValue(comboBox);
+			}
 		} else {
 			comboBox.setSelectedItem(value);
 		}
