@@ -57,7 +57,7 @@ public class DummyLinkConfig implements LinkConfig {
 
 	@ChoiceFor("5_aStringValueWithChoicesIncludingNull")
 	public List<String> someValuesForChoiceWithNull() {
-		return Arrays.asList(null, "foo", "bar");
+		return Arrays.asList("foo", null, "bar");
 	}
 
 	public int getIntValue() {
