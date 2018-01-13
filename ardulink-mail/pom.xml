@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.ardulink</groupId>
 		<artifactId>parent</artifactId>
-		<version>2.1.0</version>
+		<version>2.1.1-SNAPSHOT</version>
 	</parent>
 
 	<!-- camel depends on Java7 so we so -->
