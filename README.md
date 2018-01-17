@@ -17,7 +17,7 @@ Recommended way of using Ardulink-2 inside your own application is declaring a d
 <dependency>
     <groupId>org.ardulink</groupId>
     <artifactId>ardulink-core-base</artifactId>
-    <version>2.0.1</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 Without adding additional jars ```Links.getDefault()``` would throw an exception because no link type is available. For each link type a separate jar is available. So if you like to connect using a serial link you have to add the corresponding module.For serial link this is
@@ -25,7 +25,7 @@ Without adding additional jars ```Links.getDefault()``` would throw an exception
 <dependency>
     <groupId>org.ardulink</groupId>
     <artifactId>ardulink-core-serial-jssc</artifactId>
-    <version>2.0.1</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 
