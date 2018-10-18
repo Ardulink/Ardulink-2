@@ -101,7 +101,7 @@ public class MqttLinkConfig implements LinkConfig {
 	}
 
 	public void setTopic(String topic) {
-		this.topic = checkNotNull(normalize(topic), "topic must not be null");
+		this.topic = normalize(checkNotNull(topic, "topic must not be null"));
 	}
 
 	public String getClientId() {

@@ -36,10 +36,10 @@
 
 	<target name="modifyVersion" depends="prepare4dist">
 		<replace dir="generated" token="[ardulinkversion]">
-			  <replacevalue><![CDATA[<p>v2.0.2-SNAPSHOT RELEASE NAME</p>]]></replacevalue>
+			  <replacevalue><![CDATA[<p>v2.1.1-SNAPSHOT NOME RELEASE</p>]]></replacevalue>
 		</replace>
 		<replace dir="generated4dist" token="[ardulinkversion]">
-			  <replacevalue><![CDATA[<p>v2.0.2-SNAPSHOT RELEASE NAME</p>]]></replacevalue>
+			  <replacevalue><![CDATA[<p>v2.1.1-SNAPSHOT NOME RELEASE</p>]]></replacevalue>
 		</replace>
 	</target>
 
@@ -74,6 +74,9 @@
 		</copy>
 		<copy todir="generated/ardulink-core-mqtt" overwrite="true">
 			<fileset dir="../ardulink-core-mqtt/target/apidocs" />
+		</copy>
+		<copy todir="generated/ardulink-core-nodemcu" overwrite="true">
+			<fileset dir="../ardulink-core-nodemcu/target/apidocs" />
 		</copy>
 		<copy todir="generated/ardulink-core-proxy" overwrite="true">
 			<fileset dir="../ardulink-core-proxy/target/apidocs" />

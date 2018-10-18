@@ -132,9 +132,10 @@ public class Console extends JFrame implements Linkable {
 			public void uncaughtException(Thread thread, Throwable t) {
 				try {
 					t.printStackTrace();
-					JOptionPane.showMessageDialog(console,
-							rootCauseWithMessage(t).getMessage(), "Error",
-							ERROR_MESSAGE);
+					Throwable rootCause = rootCauseWithMessage(t);
+					JOptionPane.showMessageDialog(console, rootCause.getClass()
+							.getName() + ": " + rootCause.getMessage(),
+							"Error", ERROR_MESSAGE);
 				} catch (final Throwable t2) {
 					/*
 					 * don't let the Throwable get thrown out, will cause
