@@ -31,7 +31,7 @@ public class StreamScanner {
 
 	private final byte[] readBuffer;
 
-	private ByteArray underBuffer = new ByteArray(new byte[0]);
+	private ByteArray underBuffer = new ByteArray();
 
 	private boolean interrupted;
 
