@@ -27,24 +27,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.URI;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-import org.ardulink.core.Connection;
-import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
-import org.ardulink.core.linkmanager.LinkManager;
-import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.core.linkmanager.LinkManager.ValidationInfo;
-import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.core.virtual.VirtualLink;
-import org.ardulink.core.virtual.VirtualLinkConfig;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -63,110 +51,15 @@ public abstract class Handshaker {
 	private final Configurer configurer;
 
 	public Handshaker(InputStream inputStream, OutputStream outputStream) {
-		this.configurer = new Configurer() {
-
-			@Override
-			public Object uniqueIdentifier() {
-				return "foo";
-			}
-
-			@Override
-			public Link newLink() {
-				return new ConnectionBasedLink(new Connection() {
-
-					@Override
-					public void close() throws IOException {
-						System.out.println("close");
-
-					}
-
-					@Override
-					public void write(byte[] bytes) throws IOException {
-						System.out.println(new String(bytes));
-					}
-
-					@Override
-					public void addListener(Listener listener) {
-						System.out.println("addListener " + listener);
-					}
-
-					@Override
-					public void removeListener(Listener listener) {
-						System.out.println("removeListener " + listener);
-
-					}
-				}, ArdulinkProtocol2.instance());
-			}
-
-			@Override
-			public Collection<String> getAttributes() {
-				return Collections.singleton("port");
-			}
-
-			@Override
-			public ConfigAttribute getAttribute(String key) {
-				return new ConfigAttribute() {
-
-					@Override
-					public void setValue(Object value) {
-						// TODO Auto-generated method stub
-
-					}
-
-					@Override
-					public boolean hasChoiceValues() {
-						return true;
-					}
-
-					@Override
-					public Object getValue() {
-						// TODO Auto-generated method stub
-						return null;
-					}
-
-					@Override
-					public ValidationInfo getValidationInfo() {
-						// TODO Auto-generated method stub
-						return null;
-					}
-
-					@Override
-					public Class<?> getType() {
-						return String.class;
-					}
-
-					@Override
-					public String getName() {
-						return "port";
-					}
-
-					@Override
-					public String getDescription() {
-						// TODO Auto-generated method stub
-						return null;
-					}
-
-					@Override
-					public Object[] getChoiceValues() {
-						return new String[] { "COM1" };
-					}
-
-					@Override
-					public ConfigAttribute[] choiceDependsOn() {
-						// TODO Auto-generated method stub
-						return null;
-					}
-				};
-			}
-		};
+		this.configurer = Links.getDefaultConfigurer();
 		this.printWriter = new PrintWriter(outputStream);
 		this.scanner = new Scanner(inputStream).useDelimiter(Pattern.quote(PROXY_CONNECTION_SEPARATOR));
 	}
 
 	/**
 	 * Does the handshaking. If the client sends a
-	 * {@link NetworkProxyMessages#STOP_SERVER_CMD} command the parent Thread will
-	 * be interrupted.
+	 * {@link NetworkProxyMessages#STOP_SERVER_CMD} command the parent Thread
+	 * will be interrupted.
 	 * 
 	 * @return a Link to communicate with, e.g. a serial one
 	 * @throws Exception
