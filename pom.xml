@@ -69,6 +69,8 @@
 		<args4j.version>2.32</args4j.version>
 		<slf4j.version>1.7.12</slf4j.version>
 		<junit.version>4.12</junit.version>
+		<!-- default image name for JIB -->
+		<image>docker.io/ardulink/${project.artifactId}:${project.version}</image>
 	</properties>
 
 	<modules>
@@ -140,6 +142,14 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>0.9.13</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
