@@ -93,7 +93,7 @@ public class NetworkProxyServerConnection implements Runnable {
 				}
 			};
 			try {
-				streamReader.readUntilClosed(proto.getSeparator());
+				streamReader.runReaderThread(proto.getSeparator());
 			} finally {
 				streamReader.close();
 			}
