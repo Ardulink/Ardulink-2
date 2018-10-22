@@ -90,9 +90,12 @@ public abstract class StreamReader implements Closeable {
 
 	@Override
 	public void close() throws IOException {
+		StreamScanner locScanner = this.scanner;
+		if (locScanner != null) {
+			locScanner.interrupt();
+		}
 		Thread locThread = this.thread;
 		if (locThread != null) {
-			scanner.interrupt();
 			locThread.interrupt();
 		}
 	}
