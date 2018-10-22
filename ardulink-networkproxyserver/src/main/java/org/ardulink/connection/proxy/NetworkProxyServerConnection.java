@@ -44,8 +44,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NetworkProxyServerConnection implements Runnable {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(NetworkProxyServerConnection.class);
+	private static final Logger logger = LoggerFactory.getLogger(NetworkProxyServerConnection.class);
 
 	private final Protocol proto = ArdulinkProtocol2.instance();
 
@@ -63,20 +62,11 @@ public class NetworkProxyServerConnection implements Runnable {
 			final OutputStream osRemote = socket.getOutputStream();
 			InputStream isRemote = socket.getInputStream();
 
-			Handshaker handshaker = new Handshaker(isRemote, osRemote) {
-				@Override
-				protected Link newLink(Configurer configurer) throws Exception {
-					return Links.getLink(configurer);
-				}
-			};
-
-			Link link = getRoot(handshaker.doHandshake());
-			checkState(link instanceof ConnectionBasedLink,
-					"Only %s links supported for now (got %s)",
+			Link link = getRoot(handshaker(isRemote, osRemote).doHandshake());
+			checkState(link instanceof ConnectionBasedLink, "Only %s links supported for now (got %s)",
 					ConnectionBasedLink.class.getName(), link.getClass());
 
-			final Connection connection = ((ConnectionBasedLink) link)
-					.getConnection();
+			final Connection connection = ((ConnectionBasedLink) link).getConnection();
 			connection.addListener(new Connection.ListenerAdapter() {
 				@Override
 				public void received(byte[] bytes) throws IOException {
@@ -93,18 +83,21 @@ public class NetworkProxyServerConnection implements Runnable {
 				}
 			};
 			try {
-				streamReader.runReaderThread(proto.getSeparator());
+				streamReader.readUntilClosed(proto.getSeparator());
 			} finally {
 				streamReader.close();
 			}
 		} catch (Exception e) {
 			logger.error("Error while doing proxy", e);
 		} finally {
-			logger.info("{} connection closed.",
-					socket.getRemoteSocketAddress());
+			logger.info("{} connection closed.", socket.getRemoteSocketAddress());
 			close(link);
 			close(socket);
 		}
+	}
+
+	protected Handshaker handshaker(InputStream isRemote, final OutputStream osRemote) {
+		return new Handshaker(isRemote, osRemote);
 	}
 
 	private Link getRoot(Link link) {

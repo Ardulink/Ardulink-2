@@ -42,7 +42,7 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
  * [adsense]
  *
  */
-public abstract class Handshaker {
+public class Handshaker {
 
 	public static final String PROXY_CONNECTION_SEPARATOR = "\n";
 
@@ -51,15 +51,19 @@ public abstract class Handshaker {
 	private final Configurer configurer;
 
 	public Handshaker(InputStream inputStream, OutputStream outputStream) {
-		this.configurer = Links.getDefaultConfigurer();
+		this(inputStream, outputStream, Links.getDefaultConfigurer());
+	}
+
+	public Handshaker(InputStream inputStream, OutputStream outputStream, Configurer configurer) {
 		this.printWriter = new PrintWriter(outputStream);
 		this.scanner = new Scanner(inputStream).useDelimiter(Pattern.quote(PROXY_CONNECTION_SEPARATOR));
+		this.configurer = configurer;
 	}
 
 	/**
 	 * Does the handshaking. If the client sends a
-	 * {@link NetworkProxyMessages#STOP_SERVER_CMD} command the parent Thread
-	 * will be interrupted.
+	 * {@link NetworkProxyMessages#STOP_SERVER_CMD} command the parent Thread will
+	 * be interrupted.
 	 * 
 	 * @return a Link to communicate with, e.g. a serial one
 	 * @throws Exception
@@ -87,6 +91,7 @@ public abstract class Handshaker {
 					write(OK);
 					return link;
 				} catch (Exception e) {
+					e.printStackTrace();
 					write(KO);
 				}
 			}
@@ -117,7 +122,9 @@ public abstract class Handshaker {
 		printWriter.flush();
 	}
 
-	protected abstract Link newLink(Configurer configurer) throws Exception;
+	protected Link newLink(Configurer configurer) {
+		return Links.getLink(configurer);
+	}
 
 	private Object[] getPortList() {
 		return configurer.getAttribute("port").getChoiceValues();

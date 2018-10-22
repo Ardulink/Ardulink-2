@@ -18,6 +18,7 @@ package org.ardulink.connection.proxy;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -41,6 +42,8 @@ import org.kohsuke.args4j.spi.SubCommands;
  */
 public class NetworkProxyServer {
 
+	public static final String NAME = "Ardulink Network Proxy Server";
+
 	private interface Command {
 		void execute(int portNumber);
 	}
@@ -52,11 +55,9 @@ public class NetworkProxyServer {
 			try {
 				ServerSocket serverSocket = new ServerSocket(portNumber);
 				try {
-					System.out
-							.println("Ardulink Network Proxy Server running...");
+					System.out.println(NAME + " listening on port " + portNumber);
 					while (true) {
-						new Thread(new NetworkProxyServerConnection(
-								serverSocket.accept())).start();
+						new Thread(newConnection(serverSocket)).start();
 					}
 				} finally {
 					serverSocket.close();
@@ -65,7 +66,11 @@ public class NetworkProxyServer {
 				e.printStackTrace();
 				System.exit(-1);
 			}
-			System.out.println("Ardulink Network Proxy Server stops.");
+			System.out.println(NAME + " stops.");
+		}
+
+		protected NetworkProxyServerConnection newConnection(ServerSocket serverSocket) throws IOException {
+			return new NetworkProxyServerConnection(serverSocket.accept());
 		}
 
 	}
@@ -76,16 +81,13 @@ public class NetworkProxyServer {
 		public void execute(int portNumber) {
 			try {
 				InetAddress localHost = InetAddress.getLocalHost();
-				Socket socket = new Socket("127.0.0.1",
-						portNumber);
+				Socket socket = new Socket("127.0.0.1", portNumber);
 				socket.setSoTimeout((int) SECONDS.toMillis(5));
-				PrintWriter writer = new PrintWriter(socket.getOutputStream(),
-						true);
+				PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 				writer.println(STOP_SERVER_CMD);
 				writer.close();
 				socket.close();
-				System.out
-						.println("Ardulink Network Proxy Server stop requested.");
+				System.out.println(NAME + " stop requested.");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -118,6 +120,5 @@ public class NetworkProxyServer {
 		}
 		command.execute(portNumber);
 	}
-
 
 }
