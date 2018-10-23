@@ -1,5 +1,6 @@
 package org.ardulink.connection.proxy;
 
+import static java.lang.Integer.MAX_VALUE;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
@@ -8,7 +9,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_P
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,24 +39,29 @@ public class NetworkProxyServerTest {
 	@Rule
 	public Timeout timeout = new Timeout(15, SECONDS);
 
-	private final Connection mockedConnection = mock(Connection.class);
+	private final Connection proxySideConnection = mock(Connection.class);
 
 	@Test
 	public void proxyServerDoesReceiveMessagesSentByClient() throws UnknownHostException, IOException {
 		int freePort = freePort();
 		startServerInBackground(freePort);
-		Link link = clientLinkToServer("localhost", freePort);
+		ConnectionBasedLink link = clientLinkToServer("localhost", freePort);
 
 		int times = 3;
 		for (int i = 0; i < times; i++) {
 			link.switchAnalogPin(analogPin(1), 2);
 		}
 
-		String expectedMsg = alpProtocolMessage(POWER_PIN_INTENSITY).forPin(1).withValue(2);
-		verify(mockedConnection, times(times)).write(expectedMsg.getBytes());
+		String expectedMsg = alpProtocolMessage(POWER_PIN_INTENSITY).forPin(1).withValue(2)
+				+ new String(ArdulinkProtocol2.instance().getSeparator());
+		assertReceived(expectedMsg, times);
 	}
 
-	private Link clientLinkToServer(String hostname, int port) throws UnknownHostException, IOException {
+	private void assertReceived(String expectedMsg, int times) throws IOException {
+		verify(proxySideConnection, timeout(MAX_VALUE).times(times)).write(expectedMsg.getBytes());
+	}
+
+	private ConnectionBasedLink clientLinkToServer(String hostname, int port) throws UnknownHostException, IOException {
 		ProxyLinkFactory linkFactory = new ProxyLinkFactory();
 		ProxyLinkConfig linkConfig = linkFactory.newLinkConfig();
 		return linkFactory.newLink(configure(linkConfig, hostname, port));
@@ -99,7 +105,7 @@ public class NetworkProxyServerTest {
 						when(configurer.newLink()).then(new Answer<Link>() {
 							@Override
 							public Link answer(InvocationOnMock invocation) {
-								return new ConnectionBasedLink(mockedConnection, ArdulinkProtocol2.instance());
+								return new ConnectionBasedLink(proxySideConnection, ArdulinkProtocol2.instance());
 							}
 						});
 						return configurer;
