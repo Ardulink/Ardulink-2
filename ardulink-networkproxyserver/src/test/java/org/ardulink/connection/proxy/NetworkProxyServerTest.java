@@ -18,6 +18,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.ardulink.connection.proxy.NetworkProxyServer.StartCommand;
 import org.ardulink.core.Connection;
@@ -42,7 +44,8 @@ public class NetworkProxyServerTest {
 	private final Connection proxySideConnection = mock(Connection.class);
 
 	@Test
-	public void proxyServerDoesReceiveMessagesSentByClient() throws UnknownHostException, IOException {
+	public void proxyServerDoesReceiveMessagesSentByClient()
+			throws UnknownHostException, IOException, InterruptedException {
 		int freePort = freePort();
 		startServerInBackground(freePort);
 		ConnectionBasedLink link = clientLinkToServer("localhost", freePort);
@@ -67,52 +70,65 @@ public class NetworkProxyServerTest {
 		return linkFactory.newLink(configure(linkConfig, hostname, port));
 	}
 
-	private void startServerInBackground(final int freePort) {
-		new Thread(new Runnable() {
+	private void startServerInBackground(final int freePort) throws InterruptedException {
+		final ReentrantLock lock = new ReentrantLock();
+		final Condition condition = lock.newCondition();
+		new Thread() {
+
 			@Override
 			public void run() {
-				newStartCommand().execute(freePort);
-			}
+				new StartCommand() {
 
-		}).start();
-	}
-
-	private StartCommand newStartCommand() {
-		return new StartCommand() {
-			@Override
-			protected NetworkProxyServerConnection newConnection(ServerSocket serverSocket) throws IOException {
-				return new NetworkProxyServerConnection(serverSocket.accept()) {
 					@Override
-					protected Handshaker handshaker(InputStream isRemote, OutputStream osRemote) {
-						return new Handshaker(isRemote, osRemote, configurer());
+					protected void serverIsUp(int portNumber) {
+						super.serverIsUp(portNumber);
+						lock.lock();
+						condition.signal();
+						lock.unlock();
+
 					}
 
-					private Configurer configurer() {
-						Configurer configurer = mock(Configurer.class);
-						when(configurer.getAttributes()).thenReturn(singletonList("port"));
-						when(configurer.getAttribute(anyString())).thenAnswer(new Answer<ConfigAttribute>() {
+					@Override
+					protected NetworkProxyServerConnection newConnection(ServerSocket serverSocket) throws IOException {
+						return new NetworkProxyServerConnection(serverSocket.accept()) {
 							@Override
-							public ConfigAttribute answer(InvocationOnMock invocation) {
-								return configAttributeofName((String) invocation.getArguments()[0]);
+							protected Handshaker handshaker(InputStream isRemote, OutputStream osRemote) {
+								return new Handshaker(isRemote, osRemote, configurer());
 							}
 
-							private ConfigAttribute configAttributeofName(String key) {
-								ConfigAttribute attribute = mock(ConfigAttribute.class);
-								when(attribute.getName()).thenReturn(key);
-								return attribute;
+							private Configurer configurer() {
+								Configurer configurer = mock(Configurer.class);
+								when(configurer.getAttributes()).thenReturn(singletonList("port"));
+								when(configurer.getAttribute(anyString())).thenAnswer(new Answer<ConfigAttribute>() {
+									@Override
+									public ConfigAttribute answer(InvocationOnMock invocation) {
+										return configAttributeofName((String) invocation.getArguments()[0]);
+									}
+
+									private ConfigAttribute configAttributeofName(String key) {
+										ConfigAttribute attribute = mock(ConfigAttribute.class);
+										when(attribute.getName()).thenReturn(key);
+										return attribute;
+									}
+								});
+								when(configurer.newLink()).then(new Answer<Link>() {
+									@Override
+									public Link answer(InvocationOnMock invocation) {
+										return new ConnectionBasedLink(proxySideConnection,
+												ArdulinkProtocol2.instance());
+									}
+								});
+								return configurer;
 							}
-						});
-						when(configurer.newLink()).then(new Answer<Link>() {
-							@Override
-							public Link answer(InvocationOnMock invocation) {
-								return new ConnectionBasedLink(proxySideConnection, ArdulinkProtocol2.instance());
-							}
-						});
-						return configurer;
+						};
 					}
-				};
+				}.execute(freePort);
 			}
-		};
+		}.start();
+
+		lock.lock();
+		condition.await();
+		lock.unlock();
 	}
 
 	private ProxyLinkConfig configure(ProxyLinkConfig linkConfig, String hostname, int tcpPort) {

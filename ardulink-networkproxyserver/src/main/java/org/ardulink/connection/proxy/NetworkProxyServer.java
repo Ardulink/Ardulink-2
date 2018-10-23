@@ -55,7 +55,7 @@ public class NetworkProxyServer {
 			try {
 				ServerSocket serverSocket = new ServerSocket(portNumber);
 				try {
-					System.out.println(NAME + " listening on port " + portNumber);
+					serverIsUp(portNumber);
 					while (true) {
 						new Thread(newConnection(serverSocket)).start();
 					}
@@ -67,6 +67,10 @@ public class NetworkProxyServer {
 				System.exit(-1);
 			}
 			System.out.println(NAME + " stops.");
+		}
+
+		protected void serverIsUp(int portNumber) {
+			System.out.println(NAME + " listening on port " + portNumber);
 		}
 
 		protected NetworkProxyServerConnection newConnection(ServerSocket serverSocket) throws IOException {
