@@ -59,10 +59,8 @@ public class StreamConnection extends AbstractConnection {
 	@Override
 	public void write(byte[] bytes) throws IOException {
 		logger.debug("Stream write {}", bytes);
-		synchronized (outputStream) {
-			outputStream.write(checkNotNull(bytes, "bytes must not be null"));
-			outputStream.flush();
-		}
+		outputStream.write(checkNotNull(bytes, "bytes must not be null"));
+		outputStream.flush();
 		contactListeners4Sent(bytes);
 	}
 
