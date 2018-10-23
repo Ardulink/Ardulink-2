@@ -11,7 +11,7 @@
 	</parent>
 
 	<repositories>
-		<!-- org.rxtx<:rxtx -->
+		<!-- org.rxtx:rxtx -->
 		<repository>
 			<id>opennms</id>
 			<name>OpenNMS Repository</name>
