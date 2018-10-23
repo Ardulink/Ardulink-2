@@ -15,6 +15,7 @@ limitations under the License.
  */
 package org.ardulink.connection.proxy;
 
+import static org.ardulink.util.Bytes.concat;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
@@ -27,8 +28,6 @@ import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.StreamReader;
 import org.ardulink.core.convenience.LinkDelegate;
-import org.ardulink.core.convenience.Links;
-import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.slf4j.Logger;
@@ -70,16 +69,14 @@ public class NetworkProxyServerConnection implements Runnable {
 			connection.addListener(new Connection.ListenerAdapter() {
 				@Override
 				public void received(byte[] bytes) throws IOException {
-					osRemote.write(bytes);
-					osRemote.write(proto.getSeparator());
+					osRemote.write(concat(bytes, proto.getSeparator()));
 				}
 			});
 
 			StreamReader streamReader = new StreamReader(isRemote) {
 				@Override
 				protected void received(byte[] bytes) throws Exception {
-					connection.write(bytes);
-					connection.write(proto.getSeparator());
+					connection.write(concat(bytes, proto.getSeparator()));
 				}
 			};
 			try {
