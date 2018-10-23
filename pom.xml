@@ -51,14 +51,6 @@
 			<name>Central Repository</name>
 			<url>http://repo.maven.apache.org/maven2</url>
 		</repository>
-		<repository>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<id>opennms</id>
-			<name>OpenNMS Repository</name>
-			<url>http://repo.opennms.org/maven2</url>
-		</repository>
 	</repositories>
 
 	<properties>
