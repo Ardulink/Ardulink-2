@@ -138,7 +138,7 @@
 			<plugin>
 				<groupId>com.google.cloud.tools</groupId>
 				<artifactId>jib-maven-plugin</artifactId>
-				<version>0.9.13</version>
+                                <version>1.0.1</version>
 				<configuration>
 					<skip>true</skip>
 				</configuration>

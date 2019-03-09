@@ -30,18 +30,10 @@
 				<artifactId>jib-maven-plugin</artifactId>
 				<configuration>
 					<container>
+						<args>start</args>
 						<useCurrentTimestamp>true</useCurrentTimestamp>
-						<!-- bug in JIB? classes of dependent projects resides in /app/libs/classes 
-							but this is missing in cp -->
-						<entrypoint>
-							<arg>java</arg>
-							<arg>-cp</arg>
-							<arg>/app/resources:/app/classes:/app/libs/classes:/app/libs/*</arg>
-							<arg>org.ardulink.connection.proxy.NetworkProxyServer</arg>
-						</entrypoint>
 					</container>
 					<skip>false</skip>
-					<args>start</args>
 					<ports>4478</ports>
 				</configuration>
 			</plugin>
