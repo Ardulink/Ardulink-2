@@ -30,6 +30,7 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.proxy.ProxyLinkConfig;
 import org.ardulink.core.proxy.ProxyLinkFactory;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -43,16 +44,20 @@ public class NetworkProxyServerTest {
 
 	private final Connection proxySideConnection = mock(Connection.class);
 
-	@Test
-	public void proxyServerDoesReceiveMessagesSentByClient()
-			throws UnknownHostException, IOException, InterruptedException {
+	private ConnectionBasedLink clientSideLink;
+
+	@Before
+	public void setup() throws InterruptedException, UnknownHostException, IOException {
 		int freePort = freePort();
 		startServerInBackground(freePort);
-		ConnectionBasedLink link = clientLinkToServer("localhost", freePort);
+		this.clientSideLink = clientLinkToServer("localhost", freePort);
+	}
 
+	@Test
+	public void proxyServerDoesReceiveMessagesSentByClient() throws IOException {
 		int times = 3;
 		for (int i = 0; i < times; i++) {
-			link.switchAnalogPin(analogPin(1), 2);
+			this.clientSideLink.switchAnalogPin(analogPin(1), 2);
 		}
 
 		String expectedMsg = alpProtocolMessage(POWER_PIN_INTENSITY).forPin(1).withValue(2)
@@ -61,10 +66,13 @@ public class NetworkProxyServerTest {
 	}
 
 	private void assertReceived(String expectedMsg, int times) throws IOException {
-		verify(proxySideConnection, timeout(MAX_VALUE).times(times)).write(expectedMsg.getBytes());
+		verify(this.proxySideConnection, timeout(MAX_VALUE).times(times)).write(expectedMsg.getBytes());
 	}
 
 	private ConnectionBasedLink clientLinkToServer(String hostname, int port) throws UnknownHostException, IOException {
+		// TODO PF use Links?
+		// Links.getLink(URIs.newURI(String.format("ardulink://proxy?tcphost=%s&tcpport=%s&port=%s",
+		// hostname, port, "someNonNullPort")));
 		ProxyLinkFactory linkFactory = new ProxyLinkFactory();
 		ProxyLinkConfig linkConfig = linkFactory.newLinkConfig();
 		return linkFactory.newLink(configure(linkConfig, hostname, port));
@@ -72,7 +80,7 @@ public class NetworkProxyServerTest {
 
 	private void startServerInBackground(final int freePort) throws InterruptedException {
 		final ReentrantLock lock = new ReentrantLock();
-		final Condition condition = lock.newCondition();
+		final Condition waitUntilServerIsUp = lock.newCondition();
 		new Thread() {
 
 			@Override
@@ -83,9 +91,11 @@ public class NetworkProxyServerTest {
 					protected void serverIsUp(int portNumber) {
 						super.serverIsUp(portNumber);
 						lock.lock();
-						condition.signal();
-						lock.unlock();
-
+						try {
+							waitUntilServerIsUp.signal();
+						} finally {
+							lock.unlock();
+						}
 					}
 
 					@Override
@@ -127,8 +137,11 @@ public class NetworkProxyServerTest {
 		}.start();
 
 		lock.lock();
-		condition.await();
-		lock.unlock();
+		try {
+			waitUntilServerIsUp.await();
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	private ProxyLinkConfig configure(ProxyLinkConfig linkConfig, String hostname, int tcpPort) {
