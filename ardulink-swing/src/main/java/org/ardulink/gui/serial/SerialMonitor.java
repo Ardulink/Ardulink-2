@@ -34,6 +34,8 @@ import javax.swing.JTextField;
 
 import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.Link;
+import org.ardulink.core.qos.QosLink;
 import org.ardulink.gui.Linkable;
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -140,17 +142,21 @@ public class SerialMonitor extends JPanel implements Linkable, Connection.Listen
 
 	@Override
 	public void setLink(org.ardulink.legacy.Link link) {
-		if(this.link != null) {
+		if (this.link != null) {
 			this.link.getConnection().removeListener(this);
 			this.link = null;
 		}
-		if(link != null ) {
-			if(link.getDelegate() instanceof ConnectionBasedLink) {
-				this.link = (ConnectionBasedLink)link.getDelegate();
+		if (link == null) {
+			this.link = null;
+		} else {
+			Link delegate = link.getDelegate();
+			if (delegate instanceof QosLink) {
+				delegate = ((QosLink) delegate).getDelegate();
+			}
+			if (delegate instanceof ConnectionBasedLink) {
+				this.link = (ConnectionBasedLink) delegate;
 				this.link.getConnection().addListener(this);
 			}
-		} else {
-			this.link = null;
 		}
 		sentTextArea.setText("");
 		receivedTextArea.setText("");

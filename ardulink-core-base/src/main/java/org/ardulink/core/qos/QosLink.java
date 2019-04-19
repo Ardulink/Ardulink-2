@@ -145,6 +145,10 @@ public class QosLink implements Link {
 		checkState(rplyEvent.isOk(), "Response status is not ok");
 		return rplyEvent.getId();
 	}
-
+	
+	@Deprecated // quick fix for https://github.com/Ardulink/Ardulink-2/issues/43
+	public Link getDelegate() {
+		return delegate;
+	}
 
 }
