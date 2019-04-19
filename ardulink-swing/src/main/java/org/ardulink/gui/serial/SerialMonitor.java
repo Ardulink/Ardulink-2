@@ -32,7 +32,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import org.ardulink.core.Connection;
+import org.ardulink.core.Connection.Listener;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.qos.QosLink;
@@ -45,13 +45,26 @@ import org.ardulink.gui.Linkable;
  * [adsense]
  *
  */
-public class SerialMonitor extends JPanel implements Linkable, Connection.Listener {
+public class SerialMonitor extends JPanel implements Linkable  {
 
 	private static final long serialVersionUID = -3662905914867077959L;
 	private ConnectionBasedLink link;
 	private JTextArea sentTextArea;
 	private JTextArea receivedTextArea;
 	private JTextField messageTextField;
+	private final Listener listener = new Listener() {
+
+		@Override
+		public void received(byte[] bytes) throws IOException {
+			receivedTextArea.append("\n" + new String(bytes));
+		}
+
+		@Override
+		public void sent(byte[] bytes) throws IOException {
+			sentTextArea.append(new String(bytes));
+		}
+
+	};
 	
 
 	/**
@@ -143,7 +156,7 @@ public class SerialMonitor extends JPanel implements Linkable, Connection.Listen
 	@Override
 	public void setLink(org.ardulink.legacy.Link link) {
 		if (this.link != null) {
-			this.link.getConnection().removeListener(this);
+			this.link.getConnection().removeListener(listener);
 			this.link = null;
 		}
 		if (link == null) {
@@ -155,20 +168,11 @@ public class SerialMonitor extends JPanel implements Linkable, Connection.Listen
 			}
 			if (delegate instanceof ConnectionBasedLink) {
 				this.link = (ConnectionBasedLink) delegate;
-				this.link.getConnection().addListener(this);
+				this.link.getConnection().addListener(listener);
 			}
 		}
 		sentTextArea.setText("");
 		receivedTextArea.setText("");
 	}
 
-	@Override
-	public void received(byte[] bytes) throws IOException {
-		receivedTextArea.append("\n" + new String(bytes));
-	}
-
-	@Override
-	public void sent(byte[] bytes) throws IOException {
-		sentTextArea.append(new String(bytes));
-	}
 }
