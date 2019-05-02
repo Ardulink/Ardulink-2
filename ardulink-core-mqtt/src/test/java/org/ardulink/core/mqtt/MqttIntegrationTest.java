@@ -23,14 +23,12 @@ import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
 import static org.ardulink.util.ServerSockets.freePort;
-import static org.ardulink.util.URIs.newURI;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.rules.RuleChain.outerRule;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -79,7 +77,7 @@ public class MqttIntegrationTest {
 
 	private final String messageFormat;
 
-	private URI clientUri;
+	private String clientUri;
 
 	@Before
 	public void setup() {
@@ -110,9 +108,9 @@ public class MqttIntegrationTest {
 			String messageFormat) {
 		this.mqttClient.appendValueSet(separateTopics);
 		this.messageFormat = messageFormat;
-		clientUri = newURI("ardulink://mqtt?host=localhost&port="
+		clientUri = "ardulink://mqtt?host=localhost&port="
 				+ broker.getPort() + "&topic=" + TOPIC + "&separatedTopics="
-				+ separateTopics);
+				+ separateTopics;
 	}
 
 	@Test

@@ -14,7 +14,6 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.convenience.Links;
-import org.ardulink.util.URIs;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,7 +31,7 @@ public class ArdulinkComponentListenerTest {
 
 	@Before
 	public void setup() throws Exception {
-		link = Links.getLink(URIs.newURI(MOCK_URI));
+		link = Links.getLink(MOCK_URI);
 	}
 
 	@After

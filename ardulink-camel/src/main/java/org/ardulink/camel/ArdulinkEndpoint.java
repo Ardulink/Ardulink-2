@@ -17,7 +17,6 @@ import org.ardulink.core.convenience.Links;
 import org.ardulink.util.Joiner;
 import org.ardulink.util.Joiner.MapJoiner;
 import org.ardulink.util.Throwables;
-import org.ardulink.util.URIs;
 
 public class ArdulinkEndpoint extends DefaultEndpoint implements
 		MultipleConsumersSupport {
@@ -40,9 +39,8 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements
 
 	private Link createLink() {
 		try {
-			return Links.getLink(URIs.newURI(appendParams("ardulink://"
-					+ checkNotNull(config.getType(), "type must not be null"),
-					config.getTypeParams())));
+			return Links.getLink(appendParams("ardulink://" + checkNotNull(config.getType(), "type must not be null"),
+					config.getTypeParams()));
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}

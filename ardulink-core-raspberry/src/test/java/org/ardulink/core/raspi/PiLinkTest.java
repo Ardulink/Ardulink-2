@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.core.raspi;
 
 import org.ardulink.core.convenience.Links;
-import org.ardulink.util.URIs;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -39,7 +38,7 @@ public class PiLinkTest {
 	public void creatingInstanceWillFailOnX86withUnsatisfiedLinkError() {
 		// TODO should do a Assume if we are on a raspi or not
 		exceptions.expect(UnsatisfiedLinkError.class);
-		Links.getLink(URIs.newURI("ardulink://raspberry"));
+		Links.getLink("ardulink://raspberry");
 	}
 
 }

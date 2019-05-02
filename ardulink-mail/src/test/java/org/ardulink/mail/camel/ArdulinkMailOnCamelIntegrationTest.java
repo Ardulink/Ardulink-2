@@ -38,7 +38,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Map;
@@ -99,7 +98,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	@Before
 	public void setup() throws URISyntaxException, Exception {
-		link = Links.getLink(new URI(mockURI));
+		link = Links.getLink(mockURI);
 	}
 
 	@After

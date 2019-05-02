@@ -28,7 +28,6 @@ import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.convenience.Links;
-import org.ardulink.util.URIs;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -47,7 +46,7 @@ public class ArdulinkComponentTest {
 	@Before
 	public void setup() throws Exception {
 		context = camelContext(IN, MOCK_URI);
-		link = Links.getLink(URIs.newURI(MOCK_URI));
+		link = Links.getLink(MOCK_URI);
 	}
 
 	@After

@@ -23,14 +23,12 @@ import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
-import java.net.URI;
 
 import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.DummyConnection;
 import org.ardulink.core.linkmanager.DummyLinkConfig;
-import org.ardulink.util.URIs;
 import org.junit.Test;
 
 /**
@@ -63,15 +61,15 @@ public class LinksTest {
 
 	@Test
 	public void registeredSpecialNameDefault() throws IOException {
-		Link link = Links.getLink(URIs.newURI("ardulink://default"));
+		Link link = Links.getLink("ardulink://default");
 		assertThat(link, sameInstance(Links.getDefault()));
 		close(link);
 	}
 
 	@Test
 	public void doesCacheLinks() throws IOException {
-		Link link1 = Links.getLink(URIs.newURI("ardulink://dummyLink"));
-		Link link2 = Links.getLink(URIs.newURI("ardulink://dummyLink"));
+		Link link1 = Links.getLink("ardulink://dummyLink");
+		Link link2 = Links.getLink("ardulink://dummyLink");
 		assertThat(link1, notNullValue());
 		assertThat(link2, notNullValue());
 		assertAllSameInstances(link1, link2);
@@ -80,9 +78,8 @@ public class LinksTest {
 
 	@Test
 	public void doesCacheLinksWhenUsingDefaultValues() throws IOException {
-		Link link1 = Links.getLink(URIs.newURI("ardulink://dummyLink"));
-		Link link2 = Links.getLink(URIs
-				.newURI("ardulink://dummyLink?a=&b=42&c="));
+		Link link1 = Links.getLink("ardulink://dummyLink");
+		Link link2 = Links.getLink("ardulink://dummyLink?a=&b=42&c=");
 		assertThat(link1, notNullValue());
 		assertThat(link2, notNullValue());
 		assertAllSameInstances(link1, link2);
@@ -100,7 +97,7 @@ public class LinksTest {
 
 	@Test
 	public void doesNotCloseConnectionIfStillInUse() throws IOException {
-		URI randomURI = getRandomURI();
+		String randomURI = getRandomURI();
 		Link[] links = { createConnectionBasedLink(randomURI),
 				createConnectionBasedLink(randomURI),
 				createConnectionBasedLink(randomURI) };
@@ -115,7 +112,7 @@ public class LinksTest {
 
 	@Test
 	public void afterClosingWeGetAfreshLink() throws IOException {
-		URI randomURI = getRandomURI();
+		String randomURI = getRandomURI();
 		Link link1 = createConnectionBasedLink(randomURI);
 		Link link2 = createConnectionBasedLink(randomURI);
 		assertAllSameInstances(link1, link2);
@@ -128,8 +125,8 @@ public class LinksTest {
 
 	@Test
 	public void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws IOException {
-		URI uri1 = URIs.newURI("ardulink://dummyLink?a=aVal1&b=4");
-		URI uri2 = URIs.newURI("ardulink://dummyLink2?a=aVal1&b=4");
+		String uri1 = "ardulink://dummyLink?a=aVal1&b=4";
+		String uri2 = "ardulink://dummyLink2?a=aVal1&b=4";
 		Link link1 = Links.getLink(uri1);
 		Link link2 = Links.getLink(uri2);
 		assertThat(link1, not(sameInstance(link2)));
@@ -153,8 +150,8 @@ public class LinksTest {
 		return Links.getLink(getRandomURI());
 	}
 
-	private Link createConnectionBasedLink(URI randomURI) {
-		return Links.getLink(randomURI);
+	private Link createConnectionBasedLink(String uri) {
+		return Links.getLink(uri);
 	}
 
 	private DummyConnection getConnection(Link link) {
@@ -162,10 +159,10 @@ public class LinksTest {
 				.getDelegate()).getConnection();
 	}
 
-	private URI getRandomURI() {
-		return URIs.newURI("ardulink://dummyLink?a=" + "&b="
+	private String getRandomURI() {
+		return "ardulink://dummyLink?a=" + "&b="
 				+ String.valueOf(Thread.currentThread().getId()) + "&c="
-				+ System.currentTimeMillis());
+				+ System.currentTimeMillis();
 	}
 
 }

@@ -20,7 +20,6 @@ package org.ardulink;
 import static java.lang.String.format;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static org.ardulink.util.URIs.newURI;
 
 import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
@@ -85,7 +84,7 @@ public class DataReceiver {
 	}
 
 	private void work() throws Exception {
-		this.link = Links.getLink(newURI(connection));
+		this.link = Links.getLink(connection);
 		link.addListener(eventListener());
 
 		for (int analog : analogs) {

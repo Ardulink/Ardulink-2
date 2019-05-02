@@ -77,20 +77,33 @@ public final class Links {
 	}
 
 	/**
-	 * Returns a shared Link to the passed URI. If the Link already was created
-	 * the cached Link is returned. If the Link is not used anymore it should be
-	 * closed by calling {@link Link#close()} on it. Doing so will decrease the
-	 * usage counter and finally in cache eviction if it's unused.
+	 * Returns a shared Link to the passed URI. If the Link already was created the
+	 * cached Link is returned. If the Link is not used anymore it should be closed
+	 * by calling {@link Link#close()} on it. Doing so will decrease the usage
+	 * counter and finally in cache eviction if it's unused.
 	 * 
-	 * @param uri
-	 *            the URI to create the Link for
-	 * @return shared Link for the passed URI or a newly created one if no Link
-	 *         for that URI exists
+	 * @param uri the URI to create the Link for
+	 * @return shared Link for the passed URI or a newly created one if no Link for
+	 *         that URI exists
+	 * @throws Exception
+	 */
+	public static Link getLink(String uri) {
+		return getLink(URIs.newURI(uri));
+	}
+
+	/**
+	 * Returns a shared Link to the passed URI. If the Link already was created the
+	 * cached Link is returned. If the Link is not used anymore it should be closed
+	 * by calling {@link Link#close()} on it. Doing so will decrease the usage
+	 * counter and finally in cache eviction if it's unused.
+	 * 
+	 * @param uri the URI to create the Link for
+	 * @return shared Link for the passed URI or a newly created one if no Link for
+	 *         that URI exists
 	 * @throws Exception
 	 */
 	public static Link getLink(URI uri) {
-		return isDefault(uri) ? getDefault() : getLink(linkManager()
-				.getConfigurer(uri));
+		return isDefault(uri) ? getDefault() : getLink(linkManager().getConfigurer(uri));
 	}
 
 	private static boolean isDefault(URI uri) {
@@ -102,10 +115,7 @@ public final class Links {
 		synchronized (cache) {
 			CacheValue cacheValue = cache.get(cacheKey);
 			if (cacheValue == null) {
-				cache.put(
-						cacheKey,
-						(cacheValue = new CacheValue(newDelegate(cacheKey,
-								configurer.newLink()))));
+				cache.put(cacheKey, (cacheValue = new CacheValue(newDelegate(cacheKey, configurer.newLink()))));
 			}
 			cacheValue.increaseUsageCounter();
 			return cacheValue.getLink();
@@ -118,8 +128,7 @@ public final class Links {
 			public void close() throws IOException {
 				synchronized (cache) {
 					CacheValue cacheValue = cache.get(cacheKey);
-					if (cacheValue != null
-							&& cacheValue.decreaseUsageCounter() == 0) {
+					if (cacheValue != null && cacheValue.decreaseUsageCounter() == 0) {
 						cache.remove(cacheKey);
 						super.close();
 					}

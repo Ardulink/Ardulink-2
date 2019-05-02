@@ -16,7 +16,6 @@ import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
-import org.ardulink.util.URIs;
 import org.junit.After;
 import org.junit.Test;
 
@@ -30,7 +29,7 @@ public class ArdulinkConsumerIntegrationTest {
 
 	private static final String OUT = "mock:result";
 
-	private final Link link = Links.getLink(URIs.newURI(MOCK_URI));
+	private final Link link = Links.getLink(MOCK_URI);
 
 	private CamelContext context;
 
