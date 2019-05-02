@@ -1,4 +1,4 @@
+dist: trusty
 language: java
-jdk: oraclejdk9
 sudo: false
 script: mvn clean package
