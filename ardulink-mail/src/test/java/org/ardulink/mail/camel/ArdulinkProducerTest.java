@@ -49,15 +49,13 @@ import org.junit.rules.ExpectedException;
  */
 public class ArdulinkProducerTest {
 
-	private CamelContext createContext(final FromValidator fromValidator,
-			final ScenarioProcessor scenarioProcessor) {
+	private CamelContext createContext(final FromValidator fromValidator, final ScenarioProcessor scenarioProcessor) {
 		try {
 			CamelContext context = new DefaultCamelContext();
 			context.addRoutes(new RouteBuilder() {
 				@Override
 				public void configure() {
-					from(IN).process(fromValidator).process(scenarioProcessor)
-							.split(body()).to(OUT);
+					from(IN).process(fromValidator).process(scenarioProcessor).split(body()).to(OUT);
 				}
 
 			});
@@ -74,7 +72,7 @@ public class ArdulinkProducerTest {
 	private static final String IN = "direct:in";
 	private static final String OUT = "mock:result";
 
-	private Message message = new DefaultMessage();
+	private Message message;
 	private CamelContext context;
 
 	public void tearDown() throws Exception {
@@ -82,74 +80,66 @@ public class ArdulinkProducerTest {
 	}
 
 	@Test
-	public void doesNotAcceptMessagesWithUnknownFromAddresses()
-			throws Exception {
-		context = createContext(
-				validateFromHeader(Collections.<String> emptyList()),
-				processScenario());
+	public void doesNotAcceptMessagesWithUnknownFromAddresses() throws Exception {
+		context = createContext(validateFromHeader(Collections.<String>emptyList()), processScenario());
+		message = new DefaultMessage(context);
 		message.setHeader("From", "userA");
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedMessageCount(0);
 
 		expectedException.expect(RuntimeException.class);
-		expectedException.expectCause(exceptionWithMessage(
-				IllegalStateException.class,
-				containsString("not a valid from address")));
+		expectedException.expectCause(
+				exceptionWithMessage(IllegalStateException.class, containsString("not a valid from address")));
 		process();
 		mockEndpoint.assertIsSatisfied();
 	}
 
 	@Test
 	public void doesNotAcceptMeesagesWithEmptyBody() throws Exception {
-		context = createContext(
-				validateFromHeader(singletonList("aValidUser")),
-				processScenario());
+		context = createContext(validateFromHeader(singletonList("aValidUser")), processScenario());
+		message = new DefaultMessage(context);
 		message.setHeader("From", "aValidUser");
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedMessageCount(0);
 
 		expectedException.expect(RuntimeException.class);
-		expectedException.expectCause(exceptionWithMessage(
-				IllegalStateException.class, containsString("body is empty")));
+		expectedException
+				.expectCause(exceptionWithMessage(IllegalStateException.class, containsString("body is empty")));
 		process();
 		mockEndpoint.assertIsSatisfied();
 	}
 
 	@Test
-	public void doesNotAcceptMessagesWithNullOrEmptyFromAddress()
-			throws Exception {
-		context = createContext(validateFromHeader(singletonList("anyuser")),
-				processScenario());
+	public void doesNotAcceptMessagesWithNullOrEmptyFromAddress() throws Exception {
+		context = createContext(validateFromHeader(singletonList("anyuser")), processScenario());
+		message = new DefaultMessage(context);
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedMessageCount(0);
 
 		expectedException.expect(RuntimeException.class);
-		expectedException.expectCause(exceptionWithMessage(
-				IllegalStateException.class, containsString("No from")));
+		expectedException.expectCause(exceptionWithMessage(IllegalStateException.class, containsString("No from")));
 		process();
 		mockEndpoint.assertIsSatisfied();
 	}
 
 	@Test
-	public void doesNotAcceptMessagesWhereScenarioNameIsNotKnown()
-			throws Exception {
+	public void doesNotAcceptMessagesWhereScenarioNameIsNotKnown() throws Exception {
 		String anyUser = "anyuser";
+		context = createContext(validateFromHeader(singletonList(anyUser)), processScenario());
+
+		message = new DefaultMessage(context);
 		message.setHeader("From", anyUser);
 		String commandName = "unknown command name";
 		message.setBody(commandName);
 
-		context = createContext(validateFromHeader(singletonList(anyUser)),
-				processScenario());
-
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedMessageCount(0);
 
 		expectedException.expect(RuntimeException.class);
-		expectedException.expectCause(exceptionWithMessage(
-				IllegalStateException.class, containsString("not known")));
+		expectedException.expectCause(exceptionWithMessage(IllegalStateException.class, containsString("not known")));
 
 		process();
 		mockEndpoint.assertIsSatisfied();
@@ -157,19 +147,17 @@ public class ArdulinkProducerTest {
 
 	@Test
 	public void doesProcessDigitalPinMessages() throws Exception {
-		String switchDigital7 = ALProtoBuilder
-				.alpProtocolMessage(POWER_PIN_SWITCH).forPin(7).withState(true);
+		String switchDigital7 = ALProtoBuilder.alpProtocolMessage(POWER_PIN_SWITCH).forPin(7).withState(true);
 
 		String anyUser = "anyuser";
 		String commandName = "scenario 1";
 
+		context = createContext(validateFromHeader(singletonList(anyUser)),
+				processScenario().withCommand(commandName, singletonList(switchDigital7)));
+
+		message = new DefaultMessage(context);
 		message.setHeader("From", anyUser);
 		message.setBody(commandName);
-
-		context = createContext(
-				validateFromHeader(singletonList(anyUser)),
-				processScenario().withCommand(commandName,
-						singletonList(switchDigital7)));
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedBodiesReceived(switchDigital7);
@@ -181,21 +169,17 @@ public class ArdulinkProducerTest {
 
 	@Test
 	public void doesProcessDigitalAndAnalogPinMessages() throws Exception {
-		String switchDigital7 = ALProtoBuilder
-				.alpProtocolMessage(POWER_PIN_SWITCH).forPin(7).withState(true);
-		String switchAnalog8 = ALProtoBuilder
-				.alpProtocolMessage(POWER_PIN_INTENSITY).forPin(8)
-				.withValue(123);
+		String switchDigital7 = ALProtoBuilder.alpProtocolMessage(POWER_PIN_SWITCH).forPin(7).withState(true);
+		String switchAnalog8 = ALProtoBuilder.alpProtocolMessage(POWER_PIN_INTENSITY).forPin(8).withValue(123);
 
 		String anyUser = "anyuser";
-		message.setHeader("From", anyUser);
 		String commandName = "scenario 2";
-		message.setBody(commandName);
+		context = createContext(validateFromHeader(singletonList(anyUser)),
+				processScenario().withCommand(commandName, Lists.newArrayList(switchDigital7, switchAnalog8)));
 
-		context = createContext(
-				validateFromHeader(singletonList(anyUser)),
-				processScenario().withCommand(commandName,
-						Lists.newArrayList(switchDigital7, switchAnalog8)));
+		message = new DefaultMessage(context);
+		message.setHeader("From", anyUser);
+		message.setBody(commandName);
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 
@@ -205,8 +189,7 @@ public class ArdulinkProducerTest {
 	}
 
 	private void process() throws Exception {
-		context.createProducerTemplate().sendBodyAndHeaders(IN,
-				message.getBody(), message.getHeaders());
+		context.createProducerTemplate().sendBodyAndHeaders(IN, message.getBody(), message.getHeaders());
 	}
 
 	private MockEndpoint getMockEndpoint() {
