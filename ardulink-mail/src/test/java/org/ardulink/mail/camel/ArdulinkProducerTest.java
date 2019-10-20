@@ -17,13 +17,16 @@ limitations under the License.
 package org.ardulink.mail.camel;
 
 import static java.util.Collections.singletonList;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
 import static org.ardulink.mail.camel.FromValidator.validateFromHeader;
 import static org.ardulink.mail.camel.ScenarioProcessor.processScenario;
 import static org.ardulink.mail.test.CauseMatcher.exceptionWithMessage;
+import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Throwables.propagate;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.rules.ExpectedException.none;
 
 import java.util.Collections;
 
@@ -33,8 +36,6 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.DefaultMessage;
-import org.ardulink.core.proto.impl.ALProtoBuilder;
-import org.ardulink.util.Lists;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -49,7 +50,7 @@ import org.junit.rules.ExpectedException;
  */
 public class ArdulinkProducerTest {
 
-	private CamelContext createContext(final FromValidator fromValidator, final ScenarioProcessor scenarioProcessor) {
+	private void setup(final FromValidator fromValidator, final ScenarioProcessor scenarioProcessor) {
 		try {
 			CamelContext context = new DefaultCamelContext();
 			context.addRoutes(new RouteBuilder() {
@@ -60,14 +61,15 @@ public class ArdulinkProducerTest {
 
 			});
 			context.start();
-			return context;
+			ArdulinkProducerTest.this.context = context;
+			ArdulinkProducerTest.this.message = new DefaultMessage(context);
 		} catch (Exception e) {
 			throw propagate(e);
 		}
 	}
 
 	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+	public ExpectedException expectedException = none();
 
 	private static final String IN = "direct:in";
 	private static final String OUT = "mock:result";
@@ -81,9 +83,8 @@ public class ArdulinkProducerTest {
 
 	@Test
 	public void doesNotAcceptMessagesWithUnknownFromAddresses() throws Exception {
-		context = createContext(validateFromHeader(Collections.<String>emptyList()), processScenario());
-		message = new DefaultMessage(context);
-		message.setHeader("From", "userA");
+		setup(validateFromHeader(Collections.<String>emptyList()), processScenario());
+		setFrom("anyuser");
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedMessageCount(0);
@@ -97,9 +98,8 @@ public class ArdulinkProducerTest {
 
 	@Test
 	public void doesNotAcceptMeesagesWithEmptyBody() throws Exception {
-		context = createContext(validateFromHeader(singletonList("aValidUser")), processScenario());
-		message = new DefaultMessage(context);
-		message.setHeader("From", "aValidUser");
+		setup(validateFromHeader(singletonList("aValidUser")), processScenario());
+		setFrom("aValidUser");
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedMessageCount(0);
@@ -113,8 +113,7 @@ public class ArdulinkProducerTest {
 
 	@Test
 	public void doesNotAcceptMessagesWithNullOrEmptyFromAddress() throws Exception {
-		context = createContext(validateFromHeader(singletonList("anyuser")), processScenario());
-		message = new DefaultMessage(context);
+		setup(validateFromHeader(singletonList("anyuser")), processScenario());
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedMessageCount(0);
@@ -128,12 +127,10 @@ public class ArdulinkProducerTest {
 	@Test
 	public void doesNotAcceptMessagesWhereScenarioNameIsNotKnown() throws Exception {
 		String anyUser = "anyuser";
-		context = createContext(validateFromHeader(singletonList(anyUser)), processScenario());
+		setup(validateFromHeader(singletonList(anyUser)), processScenario());
 
-		message = new DefaultMessage(context);
-		message.setHeader("From", anyUser);
-		String commandName = "unknown command name";
-		message.setBody(commandName);
+		setFrom(anyUser);
+		setBody("unknown command name");
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedMessageCount(0);
@@ -147,45 +144,50 @@ public class ArdulinkProducerTest {
 
 	@Test
 	public void doesProcessDigitalPinMessages() throws Exception {
-		String switchDigital7 = ALProtoBuilder.alpProtocolMessage(POWER_PIN_SWITCH).forPin(7).withState(true);
+		String switchDigital7 = alpProtocolMessage(POWER_PIN_SWITCH).forPin(7).withState(true);
 
 		String anyUser = "anyuser";
 		String commandName = "scenario 1";
 
-		context = createContext(validateFromHeader(singletonList(anyUser)),
+		setup(validateFromHeader(singletonList(anyUser)),
 				processScenario().withCommand(commandName, singletonList(switchDigital7)));
 
-		message = new DefaultMessage(context);
-		message.setHeader("From", anyUser);
-		message.setBody(commandName);
+		setFrom(anyUser);
+		setBody(commandName);
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedBodiesReceived(switchDigital7);
 
 		process();
-
 		mockEndpoint.assertIsSatisfied();
 	}
 
 	@Test
 	public void doesProcessDigitalAndAnalogPinMessages() throws Exception {
-		String switchDigital7 = ALProtoBuilder.alpProtocolMessage(POWER_PIN_SWITCH).forPin(7).withState(true);
-		String switchAnalog8 = ALProtoBuilder.alpProtocolMessage(POWER_PIN_INTENSITY).forPin(8).withValue(123);
+		String digital7 = alpProtocolMessage(POWER_PIN_SWITCH).forPin(7).withState(true);
+		String analog8 = alpProtocolMessage(POWER_PIN_INTENSITY).forPin(8).withValue(123);
 
 		String anyUser = "anyuser";
 		String commandName = "scenario 2";
-		context = createContext(validateFromHeader(singletonList(anyUser)),
-				processScenario().withCommand(commandName, Lists.newArrayList(switchDigital7, switchAnalog8)));
+		setup(validateFromHeader(singletonList(anyUser)),
+				processScenario().withCommand(commandName, newArrayList(digital7, analog8)));
 
-		message = new DefaultMessage(context);
-		message.setHeader("From", anyUser);
-		message.setBody(commandName);
+		setFrom(anyUser);
+		setBody(commandName);
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 
-		mockEndpoint.expectedBodiesReceived(switchDigital7, switchAnalog8);
+		mockEndpoint.expectedBodiesReceived(digital7, analog8);
 		process();
 		mockEndpoint.assertIsSatisfied();
+	}
+
+	private void setBody(String body) {
+		message.setBody(body);
+	}
+
+	private void setFrom(String from) {
+		message.setHeader("From", from);
 	}
 
 	private void process() throws Exception {
