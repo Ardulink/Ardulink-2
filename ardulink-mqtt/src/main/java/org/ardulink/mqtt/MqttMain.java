@@ -104,30 +104,25 @@ public class MqttMain {
 		return addRoutes(topics, new DefaultCamelContext());
 	}
 
-	private CamelContext addRoutes(Topics topics, CamelContext context)
-			throws Exception {
+	private CamelContext addRoutes(Topics topics, CamelContext context) throws Exception {
 		MqttCamelRouteBuilder rb = new MqttCamelRouteBuilder(context, topics);
 		if (throttleMillis > 0 && compactStrategy != null) {
 			rb = rb.compact(compactStrategy, throttleMillis, MILLISECONDS);
 		}
 		String ardulink = appendListenTo(connection);
 		MqttConnectionProperties mqtt = appendAuth(
-				new MqttConnectionProperties().name("mqttMain")
-						.brokerHost(brokerHost).ssl(ssl))
-				.brokerPort(brokerPort);
+				new MqttConnectionProperties().name("mqttMain").brokerHost(brokerHost).ssl(ssl)).brokerPort(brokerPort);
 		rb.fromSomethingToMqtt(ardulink, mqtt).andReverse();
 		return context;
 	}
 
 	private String appendListenTo(String connection) {
 		String listenTo = listenTo();
-		return listenTo.isEmpty() ? connection : connection
-				+ (connection.contains("?") ? "&" : "?") + "listenTo="
-				+ listenTo;
+		return listenTo.isEmpty() ? connection
+				: connection + (connection.contains("?") ? "&" : "?") + "listenTo=" + listenTo;
 	}
 
-	private MqttConnectionProperties appendAuth(
-			MqttConnectionProperties properties) {
+	private MqttConnectionProperties appendAuth(MqttConnectionProperties properties) {
 		if (nullOrEmpty(credentials)) {
 			return properties;
 		}
@@ -137,9 +132,7 @@ public class MqttMain {
 	}
 
 	private String listenTo() {
-		return Joiner.on(",").join(
-				add("D%s", digitals,
-						add("A%s", analogs, new ArrayList<String>())));
+		return Joiner.on(",").join(add("D%s", digitals, add("A%s", analogs, new ArrayList<String>())));
 	}
 
 	private List<String> add(String format, int[] pins, List<String> to) {
@@ -184,17 +177,14 @@ public class MqttMain {
 		if (standalone) {
 			this.standaloneServer = createBroker().startBroker();
 		}
-		Topics topics = separateTopics ? Topics
-				.withSeparateReadWriteTopics(this.brokerTopic) : Topics
-				.basedOn(this.brokerTopic);
-		this.context = createCamelContext(this.control ? topics
-				.withControlChannelEnabled() : topics);
+		Topics topics = separateTopics ? Topics.withSeparateReadWriteTopics(this.brokerTopic)
+				: Topics.basedOn(this.brokerTopic);
+		this.context = createCamelContext(this.control ? topics.withControlChannelEnabled() : topics);
 		this.context.start();
 	}
 
 	protected Builder createBroker() {
-		return MqttBroker.builder().host(this.brokerHost).useSsl(this.ssl)
-				.port(brokerPort);
+		return MqttBroker.builder().host(this.brokerHost).useSsl(this.ssl).port(brokerPort);
 	}
 
 	public void ensureBrokerTopicIsnormalized() {
@@ -202,9 +192,8 @@ public class MqttMain {
 	}
 
 	public boolean isConnected() {
-		List<Route> routes = context.getRoutes();
-		for (Route route : routes) {
-			if (!context.getRouteStatus(route.getId()).isStarted()) {
+		for (Route route : context.getRoutes()) {
+			if (!context.getRouteController().getRouteStatus(route.getId()).isStarted()) {
 				return false;
 			}
 		}
@@ -236,8 +225,7 @@ public class MqttMain {
 	}
 
 	public void setBrokerTopic(String brokerTopic) {
-		this.brokerTopic = brokerTopic.endsWith("/") ? brokerTopic
-				: brokerTopic + '/';
+		this.brokerTopic = brokerTopic.endsWith("/") ? brokerTopic : brokerTopic + '/';
 	}
 
 	public void setClientId(String clientId) {

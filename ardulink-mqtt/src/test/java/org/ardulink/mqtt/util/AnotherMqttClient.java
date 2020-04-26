@@ -20,6 +20,8 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.mqtt.MqttCamelRouteBuilder.PUBLISH_HEADER;
+import static org.ardulink.mqtt.MqttCamelRouteBuilder.SUBSCRIBE_HEADER;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.io.Closeable;
@@ -118,25 +120,22 @@ public class AnotherMqttClient implements Closeable {
 	}
 
 	private AnotherMqttClient(Builder builder) {
-		this.topic = builder.topic.endsWith("/") ? builder.topic
-				: builder.topic + "/";
+		this.topic = builder.topic.endsWith("/") ? builder.topic : builder.topic + "/";
 		this.controlTopic = this.topic + "system/listening/";
 		this.context = camelRoute(builder.host, builder.port);
 		this.producerTemplate = context.createProducerTemplate();
 		this.appendValueSet = builder.appendValueSet;
 	}
 
-	private CamelContext camelRoute(final String host, final int port) {
+	private CamelContext camelRoute(String host, int port) {
+		final String mqtt = "paho://#?brokerUrl=tcp://" + host + ":" + port + "&qos=0";
 		try {
 			CamelContext context = new DefaultCamelContext();
 			context.addRoutes(new RouteBuilder() {
 				@Override
 				public void configure() {
-					String mqtt = "mqtt://" + host + port + "?host=tcp://"
-							+ host + ":" + port;
 					from("direct:start").to(mqtt);
-					from(mqtt + "&subscribeTopicNames=#").process(
-							addTo(messages));
+					from(mqtt).process(addTo(messages));
 				}
 			});
 			return context;
@@ -158,11 +157,10 @@ public class AnotherMqttClient implements Closeable {
 	private Processor addTo(final List<Message> addTo) {
 		return new Processor() {
 			@Override
-			public void process(Exchange exchange) throws Exception {
-				org.apache.camel.Message in = exchange.getIn();
-				addTo.add(new Message(String.valueOf(in
-						.getHeader("CamelMQTTSubscribeTopic")), in
-						.getBody(String.class)));
+			public void process(Exchange exchange) {
+				org.apache.camel.Message inMessage = exchange.getIn();
+				addTo.add(new Message(String.valueOf(inMessage.getHeader(SUBSCRIBE_HEADER)),
+						inMessage.getBody(String.class)));
 			}
 		};
 	}
@@ -183,8 +181,7 @@ public class AnotherMqttClient implements Closeable {
 	}
 
 	public void switchPin(Pin pin, Object value) throws IOException {
-		sendMessage(new Message(append(this.topic + typeMap.get(pin.getType())
-				+ pin.pinNum()), String.valueOf(value)));
+		sendMessage(new Message(append(this.topic + typeMap.get(pin.getType()) + pin.pinNum()), String.valueOf(value)));
 	}
 
 	private String append(String msgTopic) {
@@ -200,15 +197,12 @@ public class AnotherMqttClient implements Closeable {
 	}
 
 	private void startStopListening(Pin pin, boolean state) throws IOException {
-		sendMessage(new Message(append(this.controlTopic
-				+ typeMap.get(pin.getType()) + pin.pinNum()),
+		sendMessage(new Message(append(this.controlTopic + typeMap.get(pin.getType()) + pin.pinNum()),
 				String.valueOf(state)));
 	}
 
 	private void sendMessage(Message message) throws IOException {
-		producerTemplate.sendBodyAndHeader("direct:start",
-				message.getMessage(), "CamelMQTTPublishTopic",
-				message.getTopic());
+		producerTemplate.sendBodyAndHeader("direct:start", message.getMessage(), PUBLISH_HEADER, message.getTopic());
 	}
 
 	@Override

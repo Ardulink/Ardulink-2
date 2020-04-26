@@ -10,7 +10,7 @@ import org.apache.camel.Consumer;
 import org.apache.camel.MultipleConsumersSupport;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.impl.DefaultEndpoint;
+import org.apache.camel.support.DefaultEndpoint;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
 import org.ardulink.core.convenience.Links;

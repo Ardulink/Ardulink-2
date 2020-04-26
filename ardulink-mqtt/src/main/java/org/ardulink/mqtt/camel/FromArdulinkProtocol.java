@@ -66,4 +66,12 @@ public final class FromArdulinkProtocol implements Processor {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return "FromArdulinkProtocol [protocol=" + protocol + ", topics=" + topics + ", headerNameForTopic="
+				+ headerNameForTopic + "]";
+	}
+	
+	
+
 }

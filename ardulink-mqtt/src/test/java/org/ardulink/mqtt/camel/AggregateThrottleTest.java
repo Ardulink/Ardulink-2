@@ -4,6 +4,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
+import static org.ardulink.mqtt.MqttCamelRouteBuilder.PUBLISH_HEADER;
 import static org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy.AVERAGE;
 import static org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy.USE_LATEST;
 
@@ -18,8 +19,6 @@ import org.junit.After;
 import org.junit.Test;
 
 public class AggregateThrottleTest {
-
-	private static final String HEADER_FOR_TOPIC = "CamelMQTTPublishTopic";
 
 	private static final String TOPIC = "foo/bar/topic/";
 
@@ -40,7 +39,7 @@ public class AggregateThrottleTest {
 		MockEndpoint out = getMockEndpoint();
 
 		out.expectedBodiesReceived(true, false, 12, 1);
-		out.expectedHeaderValuesReceivedInAnyOrder(HEADER_FOR_TOPIC,
+		out.expectedHeaderValuesReceivedInAnyOrder(PUBLISH_HEADER,
 				"foo/bar/topic/D0", "foo/bar/topic/D0", "foo/bar/topic/A1",
 				"foo/bar/topic/A0");
 
@@ -61,7 +60,7 @@ public class AggregateThrottleTest {
 		context = camelContext(topics(), AVERAGE);
 		MockEndpoint out = getMockEndpoint();
 		out.expectedBodiesReceived(true, false, 5, 500);
-		out.expectedHeaderValuesReceivedInAnyOrder(HEADER_FOR_TOPIC,
+		out.expectedHeaderValuesReceivedInAnyOrder(PUBLISH_HEADER,
 				"foo/bar/topic/D0", "foo/bar/topic/D0", "foo/bar/topic/A1",
 				"foo/bar/topic/A0");
 
