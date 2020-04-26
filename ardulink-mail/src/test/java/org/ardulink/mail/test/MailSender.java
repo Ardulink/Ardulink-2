@@ -31,17 +31,27 @@ public class MailSender {
 	private String to;
 	private String from;
 	private String subject;
+	private String body;
 
-	private MailSender(String to) {
-		this.to = to;
+	public static void send(MailSender mailSender) {
+		sendTextEmailTest(mailSender.to, mailSender.from, mailSender.subject, mailSender.body);
 	}
 
-	public static MailSender sendMailTo(String to) {
-		return new MailSender(to);
+	public static MailSender mailFrom(String from) {
+		return new MailSender().from(from);
+	}
+
+	public static MailSender mailTo(String to) {
+		return new MailSender().to(to);
 	}
 
 	public MailSender from(String from) {
 		this.from = from;
+		return this;
+	}
+
+	public MailSender to(String to) {
+		this.to = to;
 		return this;
 	}
 
@@ -50,8 +60,9 @@ public class MailSender {
 		return this;
 	}
 
-	public void andText(String body) {
-		sendTextEmailTest(to, from, subject, body);
+	public MailSender withText(String body) {
+		this.body = body;
+		return this;
 	}
 
 }

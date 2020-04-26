@@ -26,8 +26,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.camel.Endpoint;
-import org.apache.camel.impl.UriEndpointComponent;
 import org.apache.camel.spi.UriEndpoint;
+import org.apache.camel.support.DefaultComponent;
 import org.ardulink.core.Pin;
 import org.ardulink.util.Optional;
 
@@ -40,11 +40,7 @@ import org.ardulink.util.Optional;
  *
  */
 @UriEndpoint(scheme = "ardulink", syntax = "ardulink:type", title = "Ardulink Link")
-public class ArdulinkComponent extends UriEndpointComponent {
-
-	public ArdulinkComponent() {
-		super(ArdulinkEndpoint.class);
-	}
+public class ArdulinkComponent extends DefaultComponent {
 
 	@Override
 	protected Endpoint createEndpoint(String uri, String remaining,

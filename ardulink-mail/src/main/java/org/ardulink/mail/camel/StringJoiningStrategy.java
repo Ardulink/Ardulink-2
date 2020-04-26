@@ -1,7 +1,7 @@
 package org.ardulink.mail.camel;
 
+import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
-import org.apache.camel.processor.aggregate.AggregationStrategy;
 
 public final class StringJoiningStrategy implements
 		AggregationStrategy {

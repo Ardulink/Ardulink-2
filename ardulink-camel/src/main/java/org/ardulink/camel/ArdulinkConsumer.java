@@ -9,8 +9,8 @@ import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
-import org.apache.camel.impl.DefaultConsumer;
-import org.apache.camel.impl.DefaultMessage;
+import org.apache.camel.support.DefaultConsumer;
+import org.apache.camel.support.DefaultMessage;
 import org.ardulink.core.Link;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
@@ -29,15 +29,23 @@ public class ArdulinkConsumer extends DefaultConsumer {
 	}
 
 	@Override
-	public void start() throws Exception {
-		link.addListener(listener);
-		super.start();
+	public void start() {
+		try {
+			link.addListener(listener);
+			super.start();
+		} catch (IOException e) {
+			fail(e);
+		}
 	}
 
 	@Override
-	public void stop() throws Exception {
-		link.removeListener(listener);
-		super.stop();
+	public void stop() {
+		try {
+			link.removeListener(listener);
+			super.stop();
+		} catch (IOException e) {
+			fail(e);
+		}
 	}
 
 	private EventListener listener() {
@@ -63,7 +71,7 @@ public class ArdulinkConsumer extends DefaultConsumer {
 
 			private Exchange exchangeWithBody(String body) {
 				Exchange exchange = getEndpoint().createExchange();
-				Message message = new DefaultMessage();
+				Message message = new DefaultMessage(exchange.getContext());
 				message.setBody(body);
 				exchange.setIn(message);
 				return exchange;

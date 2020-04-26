@@ -28,7 +28,7 @@ import java.io.IOException;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.camel.impl.DefaultProducer;
+import org.apache.camel.support.DefaultProducer;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceChangeListeningState;
@@ -100,8 +100,12 @@ public class ArdulinkProducer extends DefaultProducer {
 	}
 
 	@Override
-	public void stop() throws Exception {
-		this.link.close();
+	public void stop() {
+		try {
+			this.link.close();
+		} catch (IOException e) {
+			fail(e);
+		}
 		super.stop();
 	}
 
