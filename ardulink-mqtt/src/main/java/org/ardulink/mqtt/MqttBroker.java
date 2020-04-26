@@ -23,14 +23,11 @@ import static io.moquette.BrokerConstants.JKS_PATH_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.KEY_MANAGER_PASSWORD_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.KEY_STORE_PASSWORD_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.PORT;
 import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.SSL_PORT_PROPERTY_NAME;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Throwables.propagate;
-import io.moquette.server.Server;
-import io.moquette.server.config.IConfig;
-import io.moquette.server.config.MemoryConfig;
-import io.moquette.spi.security.IAuthenticator;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -38,6 +35,11 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import org.ardulink.util.Strings;
+
+import io.moquette.broker.Server;
+import io.moquette.broker.config.IConfig;
+import io.moquette.broker.config.MemoryConfig;
+import io.moquette.broker.security.IAuthenticator;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -95,30 +97,20 @@ public class MqttBroker implements Closeable {
 
 			public EnvironmentAuthenticator(String userPass) {
 				String[] split = userPass.split("\\:");
-				checkState(
-						split.length == 2,
-						"Could not split %s into user:password using separator ':'",
-						userPass);
+				checkState(split.length == 2, "Could not split %s into user:password using separator ':'", userPass);
 				this.user = split[0];
 				this.pass = split[1].getBytes();
 			}
 
 			@Override
-			public boolean checkValid(String username, byte[] password) {
-				return this.user.equals(username)
-						&& Arrays.equals(this.pass, password);
-			}
-
-			public boolean checkValid(String clientId, String username,
-					byte[] password) {
-				return checkValid(username, password);
+			public boolean checkValid(String clientId, String username, byte[] password) {
+				return this.user.equals(username) && Arrays.equals(this.pass, password);
 			}
 
 		}
 
 		public Properties properties() {
-			String sPort = String.valueOf(port == null ? (ssl ? 8883 : 1883)
-					: port.intValue());
+			String sPort = String.valueOf(port == null ? (ssl ? PORT + 7000 : PORT) : port.intValue());
 			properties.put(HOST_PROPERTY_NAME, host);
 			properties.put(PORT_PROPERTY_NAME, sPort);
 			if (ssl) {
@@ -126,15 +118,12 @@ public class MqttBroker implements Closeable {
 				properties.put(KEY_STORE_PASSWORD_PROPERTY_NAME, "passw0rdsrv");
 
 				properties.put(JKS_PATH_PROPERTY_NAME, "just-a-non-null-value");
-				properties.put(KEY_MANAGER_PASSWORD_PROPERTY_NAME,
-						"just-a-non-null-value");
+				properties.put(KEY_MANAGER_PASSWORD_PROPERTY_NAME, "just-a-non-null-value");
 			}
 			String property = userPass();
 			if (!Strings.nullOrEmpty(property)) {
-				properties.setProperty(AUTHENTICATOR_CLASS_NAME,
-						EnvironmentAuthenticator.class.getName());
-				properties.setProperty(ALLOW_ANONYMOUS_PROPERTY_NAME,
-						Boolean.FALSE.toString());
+				properties.setProperty(AUTHENTICATOR_CLASS_NAME, EnvironmentAuthenticator.class.getName());
+				properties.setProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, Boolean.FALSE.toString());
 			}
 			properties.put(PERSISTENT_STORE_PROPERTY_NAME, "");
 			return properties;
