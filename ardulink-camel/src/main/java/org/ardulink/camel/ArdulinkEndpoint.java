@@ -24,7 +24,7 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements
 	private static final MapJoiner joiner = Joiner.on("&")
 			.withKeyValueSeparator("=");
 
-	private EndpointConfig config;
+	private final EndpointConfig config;
 	private final Link link;
 
 	public ArdulinkEndpoint(String uri, Component ardulinkComponent,

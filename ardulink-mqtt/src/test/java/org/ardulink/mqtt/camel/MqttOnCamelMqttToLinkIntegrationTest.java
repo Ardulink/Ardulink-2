@@ -169,6 +169,9 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 				.brokerPort(broker.getPort());
 		new MqttCamelRouteBuilder(context, topics).fromSomethingToMqtt(MOCK, mqtt).andReverse();
 		replaceInputEndpoints(context.getRouteDefinitions(), MOCK, "direct:noop");
+		// CamelContext#start is aysnc so it does not guarantee that routes are ready,
+		// so we call #startRouteDefinitions
+		context.startRouteDefinitions();
 		context.start();
 		return context;
 	}

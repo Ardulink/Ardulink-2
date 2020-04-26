@@ -17,12 +17,14 @@ package org.ardulink.camel;
 
 import static java.lang.Character.toUpperCase;
 import static java.lang.Integer.parseInt;
+import static java.util.Collections.list;
+import static java.util.stream.Collectors.toCollection;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.camel.Endpoint;
@@ -55,13 +57,12 @@ public class ArdulinkComponent extends DefaultComponent {
 		return endpoint;
 	}
 
-	private Set<Pin> parsePins(String pinsString) {
-		Set<Pin> pins = new LinkedHashSet<Pin>();
-		for (StringTokenizer tokenizer = new StringTokenizer(pinsString, ","); tokenizer
-				.hasMoreTokens();) {
-			pins.add(toPin(tokenizer.nextToken().trim()));
-		}
-		return pins;
+	private Collection<Pin> parsePins(String pinsString) {
+		return list(new StringTokenizer(pinsString, ",")).stream() //
+				.map(String::valueOf) //
+				.map(String::trim) //
+				.map(ArdulinkComponent::toPin) //
+				.collect(toCollection(LinkedHashSet::new));
 	}
 
 	private static Pin toPin(String pin) {

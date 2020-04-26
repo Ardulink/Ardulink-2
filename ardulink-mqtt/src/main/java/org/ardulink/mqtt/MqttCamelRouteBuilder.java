@@ -153,8 +153,7 @@ public class MqttCamelRouteBuilder {
 		return fromSomethingToMqtt(something, properties.buildCamelURI(topics));
 	}
 
-	public ConfiguredMqttCamelRouteBuilder fromSomethingToMqtt(final String something, final String mqtt)
-			throws Exception {
+	public ConfiguredMqttCamelRouteBuilder fromSomethingToMqtt(String something, String mqtt) throws Exception {
 		this.something = something;
 		this.mqtt = mqtt;
 		context.addRoutes(new RouteBuilder() {
@@ -196,7 +195,7 @@ public class MqttCamelRouteBuilder {
 		return new ConfiguredMqttCamelRouteBuilder();
 	}
 
-	private Processor divideByValueOf(final ValueBuilder valueBuilder) {
+	private Processor divideByValueOf(ValueBuilder valueBuilder) {
 		return new Processor() {
 			@Override
 			public void process(Exchange exchange) throws Exception {
@@ -206,6 +205,11 @@ public class MqttCamelRouteBuilder {
 				BigDecimal divisor = new BigDecimal(checkNotNull(valueBuilder.evaluate(exchange, Integer.class),
 						"No %s set in exchange %s", valueBuilder, exchange).toString());
 				in.setBody(sum.divide(divisor, HALF_UP));
+			}
+
+			@Override
+			public String toString() {
+				return "Processor divideByValueOf by " + valueBuilder;
 			}
 
 		};

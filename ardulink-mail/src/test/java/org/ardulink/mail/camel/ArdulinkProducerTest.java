@@ -50,7 +50,7 @@ import org.junit.rules.ExpectedException;
  */
 public class ArdulinkProducerTest {
 
-	private void setup(final FromValidator fromValidator, final ScenarioProcessor scenarioProcessor) {
+	private void setup(FromValidator fromValidator, ScenarioProcessor scenarioProcessor) {
 		try {
 			CamelContext context = new DefaultCamelContext();
 			context.addRoutes(new RouteBuilder() {

@@ -10,11 +10,11 @@
 		<version>2.1.2-SNAPSHOT</version>
 	</parent>
 
-	<!-- camel depends on Java7 so we so -->
+	<!-- camel3 depends on Java8 so we so -->
 	<properties>
-		<compilerVersion>1.7</compilerVersion>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
+		<compilerVersion>1.8</compilerVersion>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
 
 	<dependencies>

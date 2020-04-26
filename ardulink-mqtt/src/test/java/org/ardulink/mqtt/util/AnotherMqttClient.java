@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
@@ -128,7 +127,7 @@ public class AnotherMqttClient implements Closeable {
 	}
 
 	private CamelContext camelRoute(String host, int port) {
-		final String mqtt = "paho://#?brokerUrl=tcp://" + host + ":" + port + "&qos=0";
+		String mqtt = "paho://#?brokerUrl=tcp://" + host + ":" + port + "&qos=0";
 		try {
 			CamelContext context = new DefaultCamelContext();
 			context.addRoutes(new RouteBuilder() {
@@ -154,14 +153,11 @@ public class AnotherMqttClient implements Closeable {
 		return this;
 	}
 
-	private Processor addTo(final List<Message> addTo) {
-		return new Processor() {
-			@Override
-			public void process(Exchange exchange) {
-				org.apache.camel.Message inMessage = exchange.getIn();
-				addTo.add(new Message(String.valueOf(inMessage.getHeader(SUBSCRIBE_HEADER)),
-						inMessage.getBody(String.class)));
-			}
+	private Processor addTo(List<Message> addTo) {
+		return exchange -> {
+			org.apache.camel.Message inMessage = exchange.getIn();
+			addTo.add(new Message(String.valueOf(inMessage.getHeader(SUBSCRIBE_HEADER)),
+					inMessage.getBody(String.class)));
 		};
 	}
 

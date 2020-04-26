@@ -80,10 +80,10 @@ public class ArdulinkConsumer extends DefaultConsumer {
 			private void process(Exchange exchange) {
 				try {
 					getAsyncProcessor().process(exchange);
-				} catch (Exception ex) {
-					ex.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
 					getExceptionHandler().handleException(
-							"Failed to process notification", ex);
+							"Failed to process notification", e);
 				}
 			}
 
