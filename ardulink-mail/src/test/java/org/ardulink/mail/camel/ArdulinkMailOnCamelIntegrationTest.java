@@ -109,16 +109,16 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	@Test
 	public void canProcessViaImap() throws Exception {
-		final String user = "receiver";
-		final String username = "loginIdReceiver";
-		final String password = "secretOfReceiver";
+		String user = "receiver";
+		String username = "loginIdReceiver";
+		String password = "secretOfReceiver";
 		String receiver = user + "@" + "someReceiverDomain.com";
 		createMailUser(receiver, username, password);
 
-		final String validSender = "valid.sender@someSenderDomain.com";
+		String validSender = "valid.sender@someSenderDomain.com";
 		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText("usedScenario"));
 
-		final String devNull = makeURI(mockURI, emptyMap());
+		String devNull = makeURI(mockURI, emptyMap());
 
 		try (CamelContext context = new DefaultCamelContext()) {
 			context.addRoutes(new RouteBuilder() {
@@ -170,22 +170,22 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	@Test
 	public void writesResultToMock() throws Exception {
-		final String receiverUser = "receiver";
-		final String username = "loginIdReceiver";
-		final String password = "secretOfReceiver";
-		final String receiver = receiverUser + "@" + "someReceiverDomain.com";
+		String receiverUser = "receiver";
+		String username = "loginIdReceiver";
+		String password = "secretOfReceiver";
+		String receiver = receiverUser + "@" + "someReceiverDomain.com";
 		createMailUser(receiver, username, password);
 
-		final String validSender = "valid.sender@someSenderDomain.com";
+		String validSender = "valid.sender@someSenderDomain.com";
 		createMailUser(validSender, "loginIdSender", "secretOfSender");
 		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText("usedScenario"));
 
-		final String ardulink = makeURI(mockURI, newMapBuilder().build());
+		String ardulink = makeURI(mockURI, newMapBuilder().build());
 
 		try (CamelContext context = new DefaultCamelContext()) {
-			final MockEndpoint mockEndpoint = context.getEndpoint("mock:result", MockEndpoint.class);
-			final String switchDigitalPin = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
-			final String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
+			MockEndpoint mockEndpoint = context.getEndpoint("mock:result", MockEndpoint.class);
+			String switchDigitalPin = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
+			String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
 
 			context.addRoutes(new RouteBuilder() {
 				@Override
@@ -210,23 +210,23 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	@Test
 	public void writesResultToSender() throws Exception {
-		final String receiverUser = "receiver";
-		final String username = "loginIdReceiver";
-		final String password = "secretOfReceiver";
-		final String receiver = receiverUser + "@" + "someReceiverDomain.com";
+		String receiverUser = "receiver";
+		String username = "loginIdReceiver";
+		String password = "secretOfReceiver";
+		String receiver = receiverUser + "@" + "someReceiverDomain.com";
 		createMailUser(receiver, username, password);
 
-		final String validSender = "valid.sender@someSenderDomain.com";
+		String validSender = "valid.sender@someSenderDomain.com";
 		createMailUser(validSender, "loginIdSender", "secretOfSender");
 		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText("usedScenario"));
 
-		final String ardulink = makeURI(mockURI, newMapBuilder().build());
+		String ardulink = makeURI(mockURI, newMapBuilder().build());
 
 		SmtpServer smtpd = mailMock.getSmtp();
-		final String smtp = "smtp://" + smtpd.getBindTo() + ":" + smtpd.getPort() + "?username=" + "loginIdReceiver"
+		String smtp = "smtp://" + smtpd.getBindTo() + ":" + smtpd.getPort() + "?username=" + "loginIdReceiver"
 				+ "&password=" + "secretOfReceiver" + "&debugMode=true";
-		final String switchDigitalPin = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
-		final String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
+		String switchDigitalPin = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
+		String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
 
 		try (CamelContext context = new DefaultCamelContext()) {
 			context.addRoutes(new RouteBuilder() {

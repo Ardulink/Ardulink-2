@@ -101,8 +101,7 @@ public class AggregateThrottleTest {
 		return Topics.basedOn(TOPIC);
 	}
 
-	private CamelContext camelContext(final Topics topics,
-			final CompactStrategy compactStrategy) throws Exception {
+	private CamelContext camelContext(Topics topics, CompactStrategy compactStrategy) throws Exception {
 		CamelContext context = new DefaultCamelContext();
 		new MqttCamelRouteBuilder(context, topics).compact(compactStrategy, 1,
 				SECONDS).fromSomethingToMqtt(IN, OUT);

@@ -136,8 +136,7 @@ public class ArdulinkComponentTest {
 		verifyNoMoreInteractions(mock);
 	}
 
-	private CamelContext camelContext(final String in, final String to)
-			throws Exception {
+	private CamelContext camelContext(String in, String to) throws Exception {
 		CamelContext context = new DefaultCamelContext();
 		context.addRoutes(new RouteBuilder() {
 			@Override

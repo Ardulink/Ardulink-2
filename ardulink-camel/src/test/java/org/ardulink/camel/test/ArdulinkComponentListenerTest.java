@@ -77,7 +77,7 @@ public class ArdulinkComponentListenerTest {
 		return context;
 	}
 
-	private CamelContext startCamel(final String args) throws Exception {
+	private CamelContext startCamel(String args) throws Exception {
 		CamelContext context = new DefaultCamelContext();
 		context.addRoutes(new RouteBuilder() {
 			@Override

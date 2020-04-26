@@ -56,7 +56,7 @@ public class MqttBroker implements Closeable {
 		private Integer port;
 		private boolean ssl;
 
-		public Builder host(final String host) {
+		public Builder host(String host) {
 			this.host = host;
 			return this;
 		}
@@ -75,9 +75,8 @@ public class MqttBroker implements Closeable {
 			return this;
 		}
 
-		public Builder addAuthenication(final String user, final byte[] password) {
-			System.setProperty(propertyName(), user + ":"
-					+ new String(password));
+		public Builder addAuthenication(String user, byte[] password) {
+			System.setProperty(propertyName(), user + ":" + new String(password));
 			return this;
 		}
 
@@ -130,7 +129,7 @@ public class MqttBroker implements Closeable {
 				properties.put(KEY_MANAGER_PASSWORD_PROPERTY_NAME,
 						"just-a-non-null-value");
 			}
-			final String property = userPass();
+			String property = userPass();
 			if (!Strings.nullOrEmpty(property)) {
 				properties.setProperty(AUTHENTICATOR_CLASS_NAME,
 						EnvironmentAuthenticator.class.getName());
@@ -158,7 +157,7 @@ public class MqttBroker implements Closeable {
 		return new Builder();
 	}
 
-	public MqttBroker(final Builder builder) {
+	public MqttBroker(Builder builder) {
 		config = new MemoryConfig(builder.properties());
 		broker = startBroker(new Server(), config);
 	}
@@ -167,7 +166,7 @@ public class MqttBroker implements Closeable {
 		try {
 			server.startServer(memoryConfig);
 			return server;
-		} catch (final IOException e) {
+		} catch (IOException e) {
 			throw propagate(e);
 		}
 	}
