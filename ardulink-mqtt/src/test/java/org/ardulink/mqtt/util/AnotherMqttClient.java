@@ -39,6 +39,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
+import org.ardulink.mqtt.MqttCamelRouteBuilder;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Throwables;
 
@@ -55,7 +56,7 @@ public class AnotherMqttClient implements Closeable {
 	public static class Builder {
 
 		private String host = "localhost";
-		private int port = 1883;
+		private int port = MqttCamelRouteBuilder.DEFAULT_PORT;
 		private String topic;
 		public String clientId = "anotherMqttClient";
 		public boolean appendValueSet;

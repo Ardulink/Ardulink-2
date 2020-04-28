@@ -28,6 +28,8 @@ public class MqttCamelRouteBuilder {
 
 	public static final String SUBSCRIBE_HEADER = PahoConstants.MQTT_TOPIC;
 	public static final String PUBLISH_HEADER = PahoConstants.CAMEL_PAHO_OVERRIDE_TOPIC;
+	public static final int DEFAULT_PORT = 1883;
+	public static final int DEFAULT_SSL_PORT = 8883;
 
 	public enum CompactStrategy {
 		AVERAGE, USE_LATEST;
@@ -73,7 +75,7 @@ public class MqttCamelRouteBuilder {
 		}
 
 		public int getBrokerPort() {
-			return brokerPort == null ? (ssl ? 8883 : 1883) : brokerPort.intValue();
+			return brokerPort == null ? (ssl ? DEFAULT_SSL_PORT : DEFAULT_PORT) : brokerPort.intValue();
 		}
 
 		public MqttConnectionProperties auth(String user, byte[] pass) {

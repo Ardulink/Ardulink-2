@@ -63,7 +63,7 @@ public class Broker extends ExternalResource {
 
 	private Server mqttServer;
 	private String host = "localhost";
-	private int port = 1883;
+	private int port = MqttLinkConfig.DEFAULT_PORT;
 	private final List<InterceptHandler> listeners = Lists.newArrayList();
 	private final List<Message> messages = new CopyOnWriteArrayList<Message>();
 	private String env2restore;
