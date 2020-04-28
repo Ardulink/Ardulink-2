@@ -19,13 +19,11 @@ package org.ardulink.mqtt;
 import static io.moquette.BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.AUTHENTICATOR_CLASS_NAME;
 import static io.moquette.BrokerConstants.HOST_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.JKS_PATH_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.KEY_MANAGER_PASSWORD_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.KEY_STORE_PASSWORD_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.PORT;
 import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.SSL_PORT_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Throwables.propagate;
 
@@ -110,15 +108,17 @@ public class MqttBroker implements Closeable {
 		}
 
 		public Properties properties() {
-			String sPort = String.valueOf(port == null ? (ssl ? PORT + 7000 : PORT) : port.intValue());
+			String sPort = String.valueOf(port == null ? defaultPort() : port.intValue());
 			properties.put(HOST_PROPERTY_NAME, host);
 			properties.put(PORT_PROPERTY_NAME, sPort);
 			if (ssl) {
+				properties.put(PORT_PROPERTY_NAME, 0);
 				properties.put(SSL_PORT_PROPERTY_NAME, sPort);
-				properties.put(KEY_STORE_PASSWORD_PROPERTY_NAME, "passw0rdsrv");
+				properties.put(WEB_SOCKET_PORT_PROPERTY_NAME, 0);
 
-				properties.put(JKS_PATH_PROPERTY_NAME, "just-a-non-null-value");
-				properties.put(KEY_MANAGER_PASSWORD_PROPERTY_NAME, "just-a-non-null-value");
+				properties.put(KEY_MANAGER_PASSWORD_PROPERTY_NAME, "non-null-value");
+				// properties.put(KEY_STORE_PASSWORD_PROPERTY_NAME, password);
+				// properties.put(JKS_PATH_PROPERTY_NAME, keystoreFilename);
 			}
 			String property = userPass();
 			if (!Strings.nullOrEmpty(property)) {
@@ -127,6 +127,10 @@ public class MqttBroker implements Closeable {
 			}
 			properties.put(PERSISTENT_STORE_PROPERTY_NAME, "");
 			return properties;
+		}
+
+		private int defaultPort() {
+			return ssl ? MqttCamelRouteBuilder.DEFAULT_SSL_PORT : MqttCamelRouteBuilder.DEFAULT_PORT;
 		}
 
 		private static String userPass() {

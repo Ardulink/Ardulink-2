@@ -36,6 +36,8 @@ import org.ardulink.core.linkmanager.LinkConfig.I18n;
 @I18n("message")
 public class MqttLinkConfig implements LinkConfig {
 
+	public static final int DEFAULT_PORT = 1883;
+
 	public enum Connection {
 		TCP, SSL, TLS;
 	}
@@ -49,7 +51,7 @@ public class MqttLinkConfig implements LinkConfig {
 	@Named("port")
 	@Min(1)
 	@Max(2 << 16 - 1)
-	private int port = 1883;
+	private int port = DEFAULT_PORT;
 
 	@Named("connection")
 	private Connection connection = Connection.TCP;

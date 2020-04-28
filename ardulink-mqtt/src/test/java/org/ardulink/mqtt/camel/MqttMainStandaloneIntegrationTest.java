@@ -21,7 +21,6 @@ import static org.ardulink.util.ServerSockets.freePort;
 
 import java.io.IOException;
 
-import org.apache.camel.FailedToCreateProducerException;
 import org.apache.camel.FailedToStartRouteException;
 import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.MqttBroker.Builder;
@@ -157,8 +156,7 @@ public class MqttMainStandaloneIntegrationTest {
 
 	@Test
 	@Ignore
-	// fails because of bug? in moquette?
-	// io.netty.handler.codec.DecoderException:
+	// test fails with io.netty.handler.codec.DecoderException:
 	// javax.net.ssl.SSLHandshakeException: no cipher suites in common
 	public void clientCanConnectUsingCredentialsToNewlyStartedSslBroker()
 			throws Exception {

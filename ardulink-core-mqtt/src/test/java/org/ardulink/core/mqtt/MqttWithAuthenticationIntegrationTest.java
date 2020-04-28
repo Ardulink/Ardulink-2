@@ -44,8 +44,7 @@ public class MqttWithAuthenticationIntegrationTest {
 	private static final String TOPIC = "myTopic" + System.currentTimeMillis();
 
 	@Rule
-	public Broker broker = Broker.newBroker().authentication(
-			USER + ":" + PASSWORD);
+	public Broker broker = Broker.newBroker().authentication(USER + ":" + PASSWORD);
 
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
@@ -56,43 +55,28 @@ public class MqttWithAuthenticationIntegrationTest {
 	@Test
 	public void canNotConnectWithoutUserAndPassword() {
 		exceptions.expect(RuntimeException.class);
-		exceptions.expectMessage(allOf(containsString("BAD"),
-				containsString("USERNAME"), containsString("OR"),
+		exceptions.expectMessage(allOf(containsString("BAD"), containsString("USERNAME"), containsString("OR"),
 				containsString("PASSWORD")));
-		LinkManager
-				.getInstance()
-				.getConfigurer(
-						URIs.newURI("ardulink://mqtt?host=localhost&port=1883&topic="
-								+ TOPIC)).newLink();
+		LinkManager.getInstance().getConfigurer(URIs.newURI("ardulink://mqtt?topic=" + TOPIC)).newLink();
 	}
 
 	@Test
 	public void canNotConnectWithWrongPassword() {
 		exceptions.expect(RuntimeException.class);
-		exceptions.expectMessage(allOf(containsString("BAD"),
-				containsString("USERNAME"), containsString("OR"),
+		exceptions.expectMessage(allOf(containsString("BAD"), containsString("USERNAME"), containsString("OR"),
 				containsString("PASSWORD")));
 		String wrongPassword = "wrong";
-		LinkManager
-				.getInstance()
+		LinkManager.getInstance()
 				.getConfigurer(
-						URIs.newURI("ardulink://mqtt?host=localhost&port=1883&user="
-								+ USER
-								+ "&password="
-								+ wrongPassword
-								+ "&topic=" + TOPIC)).newLink();
+						URIs.newURI("ardulink://mqtt?user=" + USER + "&password=" + wrongPassword + "&topic=" + TOPIC))
+				.newLink();
 	}
 
 	@Test
 	public void canConnectUsingUserAndPassword() {
-		LinkManager
-				.getInstance()
+		LinkManager.getInstance()
 				.getConfigurer(
-						URIs.newURI("ardulink://mqtt?host=localhost&port=1883&user="
-								+ USER
-								+ "&password="
-								+ PASSWORD
-								+ "&topic="
-								+ TOPIC)).newLink();
+						URIs.newURI("ardulink://mqtt?user=" + USER + "&password=" + PASSWORD + "&topic=" + TOPIC))
+				.newLink();
 	}
 }
