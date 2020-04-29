@@ -91,6 +91,7 @@
 		<module>example-joysticksmartcardriver</module>
 		<module>example-simplesmartcardriver</module>
 		<module>deploy-dist</module>
+		<module>ardulink-rest</module>
 	</modules>
 
 	<build>
