@@ -42,9 +42,9 @@ public final class Joiner {
 		}
 
 		public String join(Map<?, ?> map) {
-			Set<?> keySet = map.entrySet();
-			Iterator<Entry<Object, Object>> it = (Iterator<Entry<Object, Object>>) keySet
-					.iterator();
+			Set<?> entrySet = map.entrySet();
+			@SuppressWarnings("unchecked")
+			Iterator<Entry<Object, Object>> it = (Iterator<Entry<Object, Object>>) entrySet.iterator();
 			if (!it.hasNext()) {
 				return "";
 			}
@@ -55,11 +55,9 @@ public final class Joiner {
 			return sb.toString();
 		}
 
-		private StringBuilder append(Iterator<Entry<Object, Object>> iterator,
-				StringBuilder sb) {
+		private StringBuilder append(Iterator<Entry<Object, Object>> iterator, StringBuilder sb) {
 			Entry<Object, Object> entry = iterator.next();
-			return sb.append(entry.getKey()).append(kvSeparator)
-					.append(entry.getValue());
+			return sb.append(entry.getKey()).append(kvSeparator).append(entry.getValue());
 		}
 
 	}
