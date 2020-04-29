@@ -107,7 +107,7 @@ public class AnnotationsTest {
 	@Test
 	public void anotherAnnoOnTheFieldWithGetterAndSetter() throws Exception {
 		// this will only work if the property was found using propertyAnnotated
-		// since when looking up via findByIntrospection their is no relation
+		// since when looking up via findByIntrospection there is no relation
 		// between the reader/setter and the private field!
 		assertHasBothAnnotations(BeanProperties
 				.builder(new AnotherAnnoOnTheFieldWithGetterAndSetter())
