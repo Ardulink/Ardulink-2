@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.util;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.ardulink.util.Preconditions.checkState;
 
 import java.util.concurrent.TimeUnit;
 
@@ -31,17 +30,26 @@ import java.util.concurrent.TimeUnit;
  */
 public class StopWatch {
 
-	private Long started;
+	private static class StartedStopWatch extends StopWatch {
+
+		private final long started = System.currentTimeMillis();
+
+		@Override
+		public StopWatch start() {
+			throw new IllegalStateException("StopWatch already started");
+		}
+
+		public long getTime() {
+			return System.currentTimeMillis() - started;
+		}
+	}
 
 	public StopWatch start() {
-		checkState(this.started == null, "StopWatch already started");
-		this.started = Long.valueOf(System.currentTimeMillis());
-		return this;
+		return new StartedStopWatch();
 	}
 
 	public long getTime() {
-		Long tmp = started;
-		return tmp == null ? 0 : System.currentTimeMillis() - tmp.longValue();
+		return 0;
 	}
 
 	public long getTime(TimeUnit timeUnit) {
