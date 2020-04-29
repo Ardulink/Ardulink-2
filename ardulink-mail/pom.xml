@@ -20,11 +20,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-base</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-camel</artifactId>
 			<version>${project.version}</version>
 		</dependency>
