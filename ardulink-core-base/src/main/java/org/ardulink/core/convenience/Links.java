@@ -34,7 +34,7 @@ import org.ardulink.util.URIs;
  * [ardulinktitle] [ardulinkversion]
  * 
  * This is a convenience layer for retrieving links. Links retrieved via this
- * class are cached and shared.
+ * class are cached and can be shared.
  * 
  * [adsense]
  */
@@ -48,7 +48,9 @@ public final class Links {
 	}
 
 	/**
-	 * Returns the default Link which is a connection to the first serial port.
+	 * Returns the default Link which is a connection to the first serial port if
+	 * the serial module is available. Otherwise the first available link is
+	 * returned. If no links are available a {@link RuntimeException} will be thrown. 
 	 * 
 	 * @return default Link
 	 */
