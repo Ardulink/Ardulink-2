@@ -18,6 +18,7 @@ package org.ardulink.mail.camel;
 
 import static com.icegreen.greenmail.util.ServerSetupTest.SMTP_IMAP;
 import static java.util.Collections.emptyMap;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -45,7 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.concurrent.Executors;
 
 import javax.mail.Folder;
 import javax.mail.Message;
@@ -67,7 +67,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.rules.Timeout;
 
 import com.icegreen.greenmail.imap.ImapServer;
@@ -94,9 +93,6 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	@Rule
 	public Timeout timeout = new Timeout(10, SECONDS);
 
-	@Rule
-	public TemporaryFolder tmpFolder = new TemporaryFolder();
-
 	@Before
 	public void setup() throws URISyntaxException, Exception {
 		link = Links.getLink(mockURI);
@@ -116,21 +112,20 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		createMailUser(receiver, username, password);
 
 		String validSender = "valid.sender@someSenderDomain.com";
-		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText("usedScenario"));
-
-		String devNull = makeURI(mockURI, emptyMap());
+		String commandName = "usedScenario";
+		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText(commandName));
 
 		try (CamelContext context = new DefaultCamelContext()) {
-			context.addRoutes(
-					ardulinkProcessing(localImap(username, password), validSender,
-							Arrays.asList(alpProtocolMessage(DIGITAL_PIN_READ).forPin(13).withState(true),
-									alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123)),
-							devNull, "mock:noop"));
+			ScenarioProcessor processScenario = scenarioProcessor(commandName,
+					alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true),
+					alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123));
+			context.addRoutes(ardulinkProcessing(imapUri(username, password), validSender, processScenario,
+					makeURI(mockURI, emptyMap()), "mock:noop"));
 			context.start();
 
 			Link mock = getMock();
 			try {
-				verify(mock, timeout(5_000)).switchDigitalPin(digitalPin(13), true);
+				verify(mock, timeout(5_000)).switchDigitalPin(digitalPin(1), true);
 				verify(mock, timeout(5_000)).switchAnalogPin(analogPin(2), 123);
 			} finally {
 				context.stop();
@@ -138,18 +133,6 @@ public class ArdulinkMailOnCamelIntegrationTest {
 			verify(mock).close();
 			verifyNoMoreInteractions(mock);
 		}
-	}
-
-	private String localImap(String username, String password) {
-		return makeURI("imap://localhost:" + mailMock.getImap().getPort(), newMapBuilder() //
-				.put("username", username) //
-				.put("password", password) //
-				.put("delete", true) //
-				.put("initialDelay", 0) //
-				.put("delay", 10) //
-				.put("timeUnit", MINUTES.name()) //
-				.build() //
-		);
 	}
 
 	@Test
@@ -162,7 +145,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 		String validSender = "valid.sender@someSenderDomain.com";
 		createMailUser(validSender, "loginIdSender", "secretOfSender");
-		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText("usedScenario"));
+		String commandName = "usedScenario";
+		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText(commandName));
 
 		String ardulink = makeURI(mockURI, emptyMap());
 
@@ -170,8 +154,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 			String switchDigitalPin = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
 			String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
 
-			context.addRoutes(ardulinkProcessing(localImap(username, password), validSender,
-					Arrays.asList(switchDigitalPin, switchAnalogPin), ardulink, "mock:result"));
+			context.addRoutes(ardulinkProcessing(imapUri(username, password), validSender,
+					scenarioProcessor(commandName, switchDigitalPin, switchAnalogPin), ardulink, "mock:result"));
 			context.start();
 			try {
 				MockEndpoint mockEndpoint = context.getEndpoint("mock:result", MockEndpoint.class);
@@ -185,27 +169,6 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	}
 
-	private RouteBuilder ardulinkProcessing(String from, String validSender, List<String> commands, String ardulink,
-			String to) {
-		return new RouteBuilder() {
-
-			@Override
-			public void configure() {
-				List<String> dummy1 = Arrays.asList(alpProtocolMessage(DIGITAL_PIN_READ).forPin(13).withState(false),
-						alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(42));
-				List<String> dummy2 = Arrays.asList(alpProtocolMessage(DIGITAL_PIN_READ).forPin(13).withState(false),
-						alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(21));
-				from(from) //
-						.process(validateFromHeader(Arrays.asList(validSender))) //
-						.process(processScenario() //
-								.withCommand("xxx", dummy1) //
-								.withCommand("usedScenario", commands) //
-								.withCommand("yyy", dummy2) //
-				).split(body(), joinUsing("\r\n")).to(ardulink).end().to(to);
-			}
-		};
-	}
-
 	@Test
 	public void writesResultToSender() throws Exception {
 		String receiverUser = "receiver";
@@ -216,7 +179,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 		String validSender = "valid.sender@someSenderDomain.com";
 		createMailUser(validSender, "loginIdSender", "secretOfSender");
-		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText("usedScenario"));
+		String commandName = "usedScenario";
+		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText(commandName));
 
 		String ardulink = makeURI(mockURI, newMapBuilder().build());
 
@@ -225,9 +189,9 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 		try (CamelContext context = new DefaultCamelContext()) {
 			String smtpName = "direct:routeLink-" + UUID.randomUUID();
-			context.addRoutes(setToAndFrom(smtpName, smtpUri()));
-			context.addRoutes(ardulinkProcessing(localImap(username, password), validSender,
-					Arrays.asList(switchDigitalPin, switchAnalogPin), ardulink, smtpName));
+			context.addRoutes(setToAndFromHeaderAndSendTo(smtpName, smtpUri(username, password)));
+			context.addRoutes(ardulinkProcessing(imapUri(username, password), validSender,
+					scenarioProcessor(commandName, switchDigitalPin, switchAnalogPin), ardulink, smtpName));
 			context.start();
 
 			try {
@@ -243,42 +207,69 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	@Test
 	public void writesResultToSender_ConfiguredViaProperties() throws Exception {
 		String receiver = "receiver@someReceiverDomain.com";
-		createMailUser(receiver, "loginIdReceiver", "secretOfReceiver");
+		String username = "loginIdReceiver";
+		String password = "secretOfReceiver";
+		createMailUser(receiver, username, password);
 
 		String validSender = "valid.sender@someSenderDomain.com";
 		createMailUser(validSender, "loginIdSender", "secretOfSender");
 
 		String commandName = "usedScenario";
-		String username = "loginIdReceiver";
-		String password = "secretOfReceiver";
-		createMailUser(receiver, username, password);
+		String command1 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
+		String command2 = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
+		String command = command1 + "," + command2;
 
 		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText(commandName));
 
-		String switchDigitalPin = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
-		String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
-		String ardulink = makeURI(mockURI, emptyMap());
+		Main main = new Main();
+		main.addProperty("from", imapUri(username, password));
+		main.addProperty("to", smtpUri(username, password));
+//		main.addProperty("commandName", commandName);
+//		main.addProperty("command", command);
 
 		String smtpRouteStart = "direct:smtp-" + UUID.randomUUID();
-
-		Main main = new Main();
-		addProperties(main, commandName, Arrays.asList(switchDigitalPin, switchAnalogPin));
-		main.addRoutesBuilder(setToAndFrom(smtpRouteStart, smtpUri()));
-		main.addRoutesBuilder(ardulinkProcessing(localImap(username, password), validSender,
-				Arrays.asList(switchDigitalPin, switchAnalogPin), ardulink, smtpRouteStart));
+		main.addRoutesBuilder(setToAndFromHeaderAndSendTo(smtpRouteStart, "{{to}}"));
+		main.addRoutesBuilder(ardulinkProcessing("{{from}}", validSender, processScenario() //
+				.withCommand(commandName, Arrays.asList(command.split("\\,"))), makeURI(mockURI, emptyMap()),
+				smtpRouteStart));
 		runInBackground(main);
 
 		try {
 			assertThat(((String) fetchMail("loginIdSender", "secretOfSender").getContent()),
-					is(is(alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true) + "=OK\r\n"
-							+ alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123) + "=OK")));
+					is(command1 + "=OK\r\n" + command2 + "=OK"));
 		} finally {
 			main.stop();
 		}
 
 	}
 
-	private RouteBuilder setToAndFrom(String from, String to) {
+	private RouteBuilder ardulinkProcessing(String from, String validSender, ScenarioProcessor scenarioProcessor,
+			String ardulink, String to) {
+		return new RouteBuilder() {
+			@Override
+			public void configure() {
+				from(from) //
+						.process(validateFromHeader(Arrays.asList(validSender))) //
+						.process(scenarioProcessor) //
+						.split(body(), joinUsing("\r\n")).to(ardulink).end() //
+						.to(to);
+			}
+		};
+	}
+
+	private ScenarioProcessor scenarioProcessor(String commandName, String switchDigitalPin, String switchAnalogPin) {
+		List<String> dummy1 = Arrays.asList(alpProtocolMessage(DIGITAL_PIN_READ).forPin(13).withState(false),
+				alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(42));
+		List<String> dummy2 = Arrays.asList(alpProtocolMessage(DIGITAL_PIN_READ).forPin(13).withState(false),
+				alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(21));
+
+		return processScenario() //
+				.withCommand("xxx", dummy1) //
+				.withCommand(commandName, Arrays.asList(switchDigitalPin, switchAnalogPin)) //
+				.withCommand("yyy", dummy2);
+	}
+
+	private RouteBuilder setToAndFromHeaderAndSendTo(String from, String to) {
 		return new RouteBuilder() {
 			@Override
 			public void configure() throws Exception {
@@ -288,32 +279,36 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		};
 	}
 
-	private String smtpUri() {
+	private String imapUri(String username, String password) {
+		ImapServer imapd = mailMock.getImap();
+		return makeURI("imap://" + imapd.getBindTo() + ":" + imapd.getPort(), newMapBuilder() //
+				.put("username", username) //
+				.put("password", password) //
+				.put("delete", true) //
+				.put("initialDelay", 0) //
+				.put("delay", 10) //
+				.put("timeUnit", MINUTES.name()) //
+				.build() //
+		);
+	}
+
+	private String smtpUri(String username, String password) {
 		SmtpServer smtpd = mailMock.getSmtp();
-		return "smtp://" + smtpd.getBindTo() + ":" + smtpd.getPort() + "?username=" + "loginIdReceiver" + "&password="
-				+ "secretOfReceiver" + "&debugMode=true";
+		return makeURI("smtp://" + smtpd.getBindTo() + ":" + smtpd.getPort(), newMapBuilder() //
+				.put("username", username) //
+				.put("password", password) //
+				.put("debugMode", true) //
+				.build());
 	}
 
 	private void runInBackground(Main main) {
-		Executors.newSingleThreadExecutor().execute(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					main.run();
-				} catch (Exception e) {
-					Throwables.propagate(e);
-				}
+		newSingleThreadExecutor().execute(() -> {
+			try {
+				main.run();
+			} catch (Exception e) {
+				Throwables.propagate(e);
 			}
 		});
-	}
-
-	private void addProperties(Main main, String commandName, List<String> commands) {
-		main.addProperty("imaphost", mailMock.getImap().getBindTo());
-		main.addProperty("imapport", String.valueOf(mailMock.getImap().getPort()));
-		main.addProperty("commandname", commandName);
-		main.addProperty("command", Joiner.on(",").join(commands));
-		main.addProperty("smtphost", mailMock.getSmtp().getBindTo());
-		main.addProperty("smtpport", String.valueOf(mailMock.getSmtp().getPort()));
 	}
 
 	private void createMailUser(String email, String login, String password) {
