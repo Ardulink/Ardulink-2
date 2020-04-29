@@ -104,39 +104,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	@Test
-	public void canProcessViaImap() throws Exception {
-		String user = "receiver";
-		String username = "loginIdReceiver";
-		String password = "secretOfReceiver";
-		String receiver = user + "@" + "someReceiverDomain.com";
-		createMailUser(receiver, username, password);
-
-		String validSender = "valid.sender@someSenderDomain.com";
-		String commandName = "usedScenario";
-		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText(commandName));
-
-		try (CamelContext context = new DefaultCamelContext()) {
-			ScenarioProcessor processScenario = scenarioProcessor(commandName,
-					alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true),
-					alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123));
-			context.addRoutes(ardulinkProcessing(imapUri(username, password), validSender, processScenario,
-					makeURI(mockURI, emptyMap()), "mock:noop"));
-			context.start();
-
-			Link mock = getMock();
-			try {
-				verify(mock, timeout(5_000)).switchDigitalPin(digitalPin(1), true);
-				verify(mock, timeout(5_000)).switchAnalogPin(analogPin(2), 123);
-			} finally {
-				context.stop();
-			}
-			verify(mock).close();
-			verifyNoMoreInteractions(mock);
-		}
-	}
-
-	@Test
-	public void writesResultToMock() throws Exception {
+	public void readsFromImap_controlsArdulink_sendsResultToEndpoint() throws Exception {
 		String receiverUser = "receiver";
 		String username = "loginIdReceiver";
 		String password = "secretOfReceiver";
@@ -148,16 +116,20 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		String commandName = "usedScenario";
 		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText(commandName));
 
-		String ardulink = makeURI(mockURI, emptyMap());
-
 		try (CamelContext context = new DefaultCamelContext()) {
 			String switchDigitalPin = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
 			String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
 
 			context.addRoutes(ardulinkProcessing(imapUri(username, password), validSender,
-					scenarioProcessor(commandName, switchDigitalPin, switchAnalogPin), ardulink, "mock:result"));
+					scenarioProcessor(commandName, switchDigitalPin, switchAnalogPin), makeURI(mockURI, emptyMap()),
+					"mock:result"));
 			context.start();
+
+			Link mockLink = getMock();
 			try {
+				verify(mockLink, timeout(5_000)).switchDigitalPin(digitalPin(1), true);
+				verify(mockLink, timeout(5_000)).switchAnalogPin(analogPin(2), 123);
+
 				MockEndpoint mockEndpoint = context.getEndpoint("mock:result", MockEndpoint.class);
 				mockEndpoint.expectedMessageCount(1);
 				mockEndpoint.expectedBodiesReceived(switchDigitalPin + "=OK" + "\r\n" + switchAnalogPin + "=OK");
@@ -165,6 +137,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 			} finally {
 				context.stop();
 			}
+			verify(mockLink).close();
+			verifyNoMoreInteractions(mockLink);
 		}
 
 	}
