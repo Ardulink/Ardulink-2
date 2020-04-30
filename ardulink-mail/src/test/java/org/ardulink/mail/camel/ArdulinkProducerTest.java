@@ -20,15 +20,12 @@ import static java.util.Collections.singletonList;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
-import static org.ardulink.mail.camel.FromValidator.validateFromHeader;
 import static org.ardulink.mail.camel.ScenarioProcessor.processScenario;
 import static org.ardulink.mail.test.CauseMatcher.exceptionWithMessage;
 import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Throwables.propagate;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.rules.ExpectedException.none;
-
-import java.util.Collections;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Message;
@@ -50,13 +47,17 @@ import org.junit.rules.ExpectedException;
  */
 public class ArdulinkProducerTest {
 
-	private void setup(FromValidator fromValidator, ScenarioProcessor scenarioProcessor) {
+	private void setup(String validSender, ScenarioProcessor scenarioProcessor) {
 		try {
 			CamelContext context = new DefaultCamelContext();
 			context.addRoutes(new RouteBuilder() {
 				@Override
 				public void configure() {
-					from(IN).process(fromValidator).process(scenarioProcessor).split(body()).to(OUT);
+					from(IN) //
+							.filter(header("From").isEqualToIgnoreCase(validSender)) //
+							.process(scenarioProcessor) //
+							.split(body()) //
+							.to(OUT);
 				}
 
 			});
@@ -82,23 +83,8 @@ public class ArdulinkProducerTest {
 	}
 
 	@Test
-	public void doesNotAcceptMessagesWithUnknownFromAddresses() throws Exception {
-		setup(validateFromHeader(Collections.<String>emptyList()), processScenario());
-		setFrom("anyuser");
-
-		MockEndpoint mockEndpoint = getMockEndpoint();
-		mockEndpoint.expectedMessageCount(0);
-
-		expectedException.expect(RuntimeException.class);
-		expectedException.expectCause(
-				exceptionWithMessage(IllegalStateException.class, containsString("not a valid from address")));
-		process();
-		mockEndpoint.assertIsSatisfied();
-	}
-
-	@Test
 	public void doesNotAcceptMeesagesWithEmptyBody() throws Exception {
-		setup(validateFromHeader(singletonList("aValidUser")), processScenario());
+		setup("aValidUser", processScenario());
 		setFrom("aValidUser");
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
@@ -113,13 +99,11 @@ public class ArdulinkProducerTest {
 
 	@Test
 	public void doesNotAcceptMessagesWithNullOrEmptyFromAddress() throws Exception {
-		setup(validateFromHeader(singletonList("anyuser")), processScenario());
+		setup("anyuser", processScenario());
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedMessageCount(0);
 
-		expectedException.expect(RuntimeException.class);
-		expectedException.expectCause(exceptionWithMessage(IllegalStateException.class, containsString("No from")));
 		process();
 		mockEndpoint.assertIsSatisfied();
 	}
@@ -127,7 +111,7 @@ public class ArdulinkProducerTest {
 	@Test
 	public void doesNotAcceptMessagesWhereScenarioNameIsNotKnown() throws Exception {
 		String anyUser = "anyuser";
-		setup(validateFromHeader(singletonList(anyUser)), processScenario());
+		setup(anyUser, processScenario());
 
 		setFrom(anyUser);
 		setBody("unknown command name");
@@ -149,8 +133,7 @@ public class ArdulinkProducerTest {
 		String anyUser = "anyuser";
 		String commandName = "scenario 1";
 
-		setup(validateFromHeader(singletonList(anyUser)),
-				processScenario().withCommand(commandName, singletonList(switchDigital7)));
+		setup(anyUser, processScenario().withCommand(commandName, singletonList(switchDigital7)));
 
 		setFrom(anyUser);
 		setBody(commandName);
@@ -169,8 +152,7 @@ public class ArdulinkProducerTest {
 
 		String anyUser = "anyuser";
 		String commandName = "scenario 2";
-		setup(validateFromHeader(singletonList(anyUser)),
-				processScenario().withCommand(commandName, newArrayList(digital7, analog8)));
+		setup(anyUser, processScenario().withCommand(commandName, newArrayList(digital7, analog8)));
 
 		setFrom(anyUser);
 		setBody(commandName);

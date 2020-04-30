@@ -22,12 +22,12 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.joining;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
-import static org.ardulink.mail.camel.FromValidator.validateFromHeader;
 import static org.ardulink.mail.camel.ScenarioProcessor.processScenario;
 import static org.ardulink.mail.camel.StringJoiningStrategy.joinUsing;
 import static org.ardulink.mail.test.MailSender.mailFrom;
@@ -120,7 +120,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 			String switchDigitalPin = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
 			String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
 
-			context.addRoutes(ardulinkProcessing(imapUri(username, password), validSender,
+			context.addRoutes(ardulinkProcessing(imapUri(username, password), swapUpperLower(validSender),
 					scenarioProcessor(commandName, switchDigitalPin, switchAnalogPin), makeURI(mockURI, emptyMap()),
 					"mock:result"));
 			context.start();
@@ -141,6 +141,16 @@ public class ArdulinkMailOnCamelIntegrationTest {
 			verifyNoMoreInteractions(mockLink);
 		}
 
+	}
+
+	private String swapUpperLower(String validSender) {
+		return validSender.codePoints().mapToObj(c -> Character.valueOf((char) c)).map(c -> {
+			return Character.isUpperCase(c) //
+					? Character.toLowerCase(c)
+					: Character.isLowerCase(c) //
+							? Character.toUpperCase(c)
+							: c;
+		}).map(String::valueOf).collect(joining());
 	}
 
 	@Test
@@ -223,7 +233,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 			@Override
 			public void configure() {
 				from(from) //
-						.process(validateFromHeader(Arrays.asList(validSender))) //
+						.filter(header("From").isEqualToIgnoreCase(validSender)) //
 						.process(scenarioProcessor) //
 						.split(body(), joinUsing("\r\n")).to(ardulink).end() //
 						.to(to);
