@@ -5,6 +5,7 @@ import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
@@ -12,7 +13,6 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Link;
-import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
 import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
@@ -82,7 +82,7 @@ public class ArdulinkConsumerIntegrationTest {
 	}
 
 	private AbstractListenerLink getDelegate() {
-		return (AbstractListenerLink) ((LinkDelegate) link).getDelegate();
+		return (AbstractListenerLink) extractDelegated(link);
 	}
 
 }

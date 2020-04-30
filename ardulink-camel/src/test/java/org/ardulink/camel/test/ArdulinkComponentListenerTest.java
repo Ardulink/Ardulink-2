@@ -3,6 +3,7 @@ package org.ardulink.camel.test;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -12,7 +13,6 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Link;
-import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.convenience.Links;
 import org.junit.After;
 import org.junit.Before;
@@ -91,10 +91,6 @@ public class ArdulinkComponentListenerTest {
 
 	private String noMatterWhat() {
 		return "direct:bean";
-	}
-
-	private Link getMock(Link link) {
-		return ((LinkDelegate) link).getDelegate();
 	}
 
 }

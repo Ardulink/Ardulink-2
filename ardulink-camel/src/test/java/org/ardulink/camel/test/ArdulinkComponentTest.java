@@ -10,6 +10,8 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
+import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
+import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -26,7 +28,6 @@ import org.ardulink.camel.ArdulinkEndpoint;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
-import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.convenience.Links;
 import org.junit.After;
 import org.junit.Before;
@@ -146,14 +147,6 @@ public class ArdulinkComponentTest {
 		});
 		context.start();
 		return context;
-	}
-
-	private static Link getMock(Link link) {
-		return extractDelegated(link);
-	}
-
-	private static Link extractDelegated(Link link) {
-		return ((LinkDelegate) link).getDelegate();
 	}
 
 	private void send(String message) {

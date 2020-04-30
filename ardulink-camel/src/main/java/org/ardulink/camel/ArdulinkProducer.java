@@ -74,7 +74,7 @@ public class ArdulinkProducer extends DefaultProducer {
 	}
 
 	private void setResponse(Exchange exchange, String bodyIn, String rc) {
-		exchange.getIn().setBody(bodyIn + "=" + rc);
+		exchange.getMessage().setBody(bodyIn + "=" + rc);
 	}
 
 	private void handlePinStateChange(FromDeviceMessagePinStateChanged event)

@@ -40,6 +40,12 @@
 			<artifactId>junit</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.ardulink</groupId>
+			<artifactId>ardulink-core-testsupport</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>io.rest-assured</groupId>
 			<artifactId>rest-assured</artifactId>
 			<version>4.3.0</version>

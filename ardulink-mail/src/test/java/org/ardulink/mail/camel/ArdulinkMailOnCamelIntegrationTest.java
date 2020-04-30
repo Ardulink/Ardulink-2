@@ -32,6 +32,7 @@ import static org.ardulink.mail.camel.ScenarioProcessor.processScenario;
 import static org.ardulink.mail.camel.StringJoiningStrategy.joinUsing;
 import static org.ardulink.mail.test.MailSender.mailFrom;
 import static org.ardulink.mail.test.MailSender.send;
+import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.MapBuilder.newMapBuilder;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -59,7 +60,6 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.main.Main;
 import org.ardulink.core.Link;
-import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.util.Joiner;
 import org.ardulink.util.Throwables;
@@ -125,7 +125,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 					"mock:result"));
 			context.start();
 
-			Link mockLink = getMock();
+			Link mockLink = getMock(link);
 			try {
 				verify(mockLink, timeout(5_000)).switchDigitalPin(digitalPin(1), true);
 				verify(mockLink, timeout(5_000)).switchAnalogPin(analogPin(2), 123);
@@ -317,14 +317,6 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	private String anySubject() {
 		return "Subject";
-	}
-
-	private Link getMock() {
-		return getMock(link);
-	}
-
-	private Link getMock(Link link) {
-		return ((LinkDelegate) link).getDelegate();
 	}
 
 }

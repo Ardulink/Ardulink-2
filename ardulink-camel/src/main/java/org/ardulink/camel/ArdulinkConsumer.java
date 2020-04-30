@@ -73,7 +73,7 @@ public class ArdulinkConsumer extends DefaultConsumer {
 				Exchange exchange = getEndpoint().createExchange();
 				Message message = new DefaultMessage(exchange.getContext());
 				message.setBody(body);
-				exchange.setIn(message);
+				exchange.setMessage(message);
 				return exchange;
 			}
 
