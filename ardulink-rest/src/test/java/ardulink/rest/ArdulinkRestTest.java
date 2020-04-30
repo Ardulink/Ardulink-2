@@ -51,6 +51,7 @@ import org.junit.Test;
 public class ArdulinkRestTest {
 
 	private static final String MOCK_URI = "ardulink://mock";
+
 	private Link link;
 
 	@Before

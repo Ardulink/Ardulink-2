@@ -19,7 +19,6 @@ package org.ardulink.testsupport.mock;
 import static org.mockito.Mockito.mock;
 
 import org.ardulink.core.Link;
-import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 
 /**
@@ -30,7 +29,7 @@ import org.ardulink.core.linkmanager.LinkFactory;
  * [adsense]
  *
  */
-public class MockLinkFactory implements LinkFactory<LinkConfig> {
+public class MockLinkFactory implements LinkFactory<MockLinkConfig> {
 
 	@Override
 	public String getName() {
@@ -38,13 +37,13 @@ public class MockLinkFactory implements LinkFactory<LinkConfig> {
 	}
 
 	@Override
-	public Link newLink(LinkConfig config) {
+	public Link newLink(MockLinkConfig config) {
 		return mock(Link.class);
 	}
 
 	@Override
-	public LinkConfig newLinkConfig() {
-		return LinkConfig.NO_ATTRIBUTES;
+	public MockLinkConfig newLinkConfig() {
+		return new MockLinkConfig();
 	}
 
 }
