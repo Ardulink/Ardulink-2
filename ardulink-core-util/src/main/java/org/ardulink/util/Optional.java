@@ -18,9 +18,12 @@ package org.ardulink.util;
 
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -30,6 +33,7 @@ import java.util.Arrays;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK8)
 public abstract class Optional<T> {
 
 	private static class PresentOptional<T> extends Optional<T> {

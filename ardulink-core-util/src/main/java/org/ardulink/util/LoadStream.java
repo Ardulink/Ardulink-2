@@ -15,12 +15,16 @@ limitations under the License.
  */
 package org.ardulink.util;
 
+import static org.ardulink.util.Throwables.propagate;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.ardulink.util.Throwables.propagate;
+import org.ardulink.util.anno.LapsedWith;
 
+@LapsedWith(value = JDK8, module = "BufferedReader#lines/Collectors#joining")
 public final class LoadStream {
 
 	private LoadStream() {

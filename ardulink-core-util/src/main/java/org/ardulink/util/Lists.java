@@ -16,10 +16,14 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static org.ardulink.util.anno.LapsedWith.JDK9;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -29,6 +33,7 @@ import java.util.List;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK9, module = "List#of")
 public final class Lists {
 
 	private Lists() {

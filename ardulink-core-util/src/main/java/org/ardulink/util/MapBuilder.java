@@ -16,8 +16,12 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static org.ardulink.util.anno.LapsedWith.JDK9;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -27,6 +31,7 @@ import java.util.Map;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK9, module = "Map#of")
 public class MapBuilder<K, V> {
 
 	private final Map<K, V> data = new HashMap<K, V>();

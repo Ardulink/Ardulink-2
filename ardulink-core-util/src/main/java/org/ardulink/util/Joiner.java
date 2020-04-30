@@ -16,9 +16,14 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.ardulink.util.anno.LapsedWith;
+
 import java.util.Set;
 
 /**
@@ -72,6 +77,7 @@ public final class Joiner {
 		return new Joiner(separator);
 	}
 
+	@LapsedWith(value = JDK8, module = "Stream/Collectors#joining")
 	public String join(Iterable<? extends Object> values) {
 		Iterator<? extends Object> iterator = values.iterator();
 		if (!iterator.hasNext()) {

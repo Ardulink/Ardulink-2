@@ -17,10 +17,9 @@ limitations under the License.
 package org.ardulink.core.serial.rxtx;
 
 import static gnu.io.CommPortIdentifier.PORT_SERIAL;
-import static org.ardulink.util.Iterables.forEnumeration;
 import static org.ardulink.util.Iterables.getFirst;
-import gnu.io.CommPortIdentifier;
 
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -33,6 +32,8 @@ import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.Lists;
+
+import gnu.io.CommPortIdentifier;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -125,8 +126,7 @@ public class SerialLinkConfig implements LinkConfig {
 
 	@SuppressWarnings("unchecked")
 	private Iterable<CommPortIdentifier> portIdentifiers() {
-		return forEnumeration((Enumeration<CommPortIdentifier>) CommPortIdentifier
-				.getPortIdentifiers());
+		return Collections.list((Enumeration<CommPortIdentifier>) CommPortIdentifier.getPortIdentifiers());
 	}
 
 	public void setBaudrate(int baudrate) {

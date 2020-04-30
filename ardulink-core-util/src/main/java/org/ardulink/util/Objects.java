@@ -1,5 +1,10 @@
 package org.ardulink.util;
 
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+
+import org.ardulink.util.anno.LapsedWith;
+
+@LapsedWith(value = JDK8)
 public final class Objects {
 
 	private Objects() {

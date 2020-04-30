@@ -16,8 +16,9 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import java.util.Enumeration;
-import java.util.Iterator;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -33,16 +34,7 @@ public final class Iterables {
 		super();
 	}
 
-	public static <T> Iterable<T> forEnumeration(
-			final Enumeration<T> enumeration) {
-		return new Iterable<T>() {
-			@Override
-			public Iterator<T> iterator() {
-				return Iterators.forEnumeration(enumeration);
-			}
-		};
-	}
-
+	@LapsedWith(value = JDK8, module = "Stream")
 	public static <T> Optional<T> getFirst(Iterable<T> iterable) {
 		return Iterators.getFirst(iterable.iterator());
 	}

@@ -16,6 +16,10 @@ limitations under the License.
  */
 package org.ardulink.util;
 
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+
+import org.ardulink.util.anno.LapsedWith;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -30,6 +34,7 @@ public final class Preconditions {
 		super();
 	}
 
+	@LapsedWith(value = JDK8, module = "Objects#requireNonNull")
 	public static <T> T checkNotNull(T t, String message, Object... args) {
 		if (t == null) {
 			throw new IllegalStateException(String.format(message, args));

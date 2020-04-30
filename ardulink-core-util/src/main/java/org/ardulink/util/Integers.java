@@ -16,7 +16,11 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+
 import java.util.Collection;
+
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -40,10 +44,12 @@ public final class Integers {
 		}
 	}
 	
+	@LapsedWith(value = JDK8, module = "IntStream")
 	public static int average(Collection<Integer> values) {
 		return sum(values) / values.size();
 	}
 
+	@LapsedWith(value = JDK8, module = "IntStream")
 	public static int sum(Iterable<Integer> values) {
 		int sum = 0;
 		for (Integer integer : values) {

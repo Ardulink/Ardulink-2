@@ -1,7 +1,6 @@
 package org.ardulink.core.linkmanager;
 
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
-import static org.ardulink.util.Iterables.forEnumeration;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Throwables.propagate;
@@ -12,6 +11,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 
 import org.ardulink.core.Link;
@@ -102,8 +102,7 @@ public class FactoriesViaMetaInfArdulink {
 		List<LinkFactory> factories = Lists.newArrayList();
 		try {
 			ClassLoader classloader = moduleClassloader();
-			for (URL url : forEnumeration(classloader
-					.getResources("META-INF/services/ardulink/linkfactory"))) {
+			for (URL url : Collections.list(classloader.getResources("META-INF/services/ardulink/linkfactory"))) {
 				BufferedReader reader = new BufferedReader(
 						new InputStreamReader(url.openStream()));
 				String line;
