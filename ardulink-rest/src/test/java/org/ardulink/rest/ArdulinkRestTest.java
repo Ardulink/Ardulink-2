@@ -32,6 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
@@ -107,25 +108,28 @@ public class ArdulinkRestTest {
 						.post("/analog/{pin}").to(switchAnalog) //
 						.post("/digital/{pin}").to(switchDigital) //
 				;
-
-				from(switchAnalog).process(exchange -> {
-					Message message = exchange.getMessage();
-					Object pinRaw = message.getHeader("pin");
-					String valueRaw = message.getBody(String.class);
-					int pin = tryParse(String.valueOf(pinRaw)).getOrThrow("Pin %s not parseable", pinRaw);
-					int value = tryParse(valueRaw).getOrThrow("Value %s not parseable", valueRaw);
-					message.setBody(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
-				}).to(out);
-
-				from(switchDigital).process(exchange -> {
-					Message message = exchange.getMessage();
-					Object pinRaw = message.getHeader("pin");
-					String stateRaw = message.getBody(String.class);
-					int pin = tryParse(String.valueOf(pinRaw)).getOrThrow("Pin %s not parseable", pinRaw);
-					boolean state = parseBoolean(stateRaw);
-					message.setBody(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(state));
-				}).to(out);
+				from(switchAnalog).process(exchange -> switchAnalog(exchange)).to(out);
+				from(switchDigital).process(exchange -> switchDigital(exchange)).to(out);
 			}
+
+			private void switchDigital(Exchange exchange) {
+				Message message = exchange.getMessage();
+				Object pinRaw = message.getHeader("pin");
+				String stateRaw = message.getBody(String.class);
+				int pin = tryParse(String.valueOf(pinRaw)).getOrThrow("Pin %s not parseable", pinRaw);
+				boolean state = parseBoolean(stateRaw);
+				message.setBody(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(state));
+			}
+
+			private void switchAnalog(Exchange exchange) {
+				Message message = exchange.getMessage();
+				Object pinRaw = message.getHeader("pin");
+				String valueRaw = message.getBody(String.class);
+				int pin = tryParse(String.valueOf(pinRaw)).getOrThrow("Pin %s not parseable", pinRaw);
+				int value = tryParse(valueRaw).getOrThrow("Value %s not parseable", valueRaw);
+				message.setBody(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
+			}
+
 		});
 		context.start();
 		return context;
