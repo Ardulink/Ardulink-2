@@ -31,6 +31,17 @@ import org.ardulink.core.linkmanager.LinkFactory;
  */
 public class MockLinkFactory implements LinkFactory<MockLinkConfig> {
 
+	private static final ThreadLocal<Link> links = new ThreadLocal<Link>() {
+		@Override
+		protected Link initialValue() {
+			return mock(Link.class);
+		}
+	};
+
+	public static void setLink(Link link) {
+		links.set(link);
+	}
+
 	@Override
 	public String getName() {
 		return "mock";
@@ -38,7 +49,7 @@ public class MockLinkFactory implements LinkFactory<MockLinkConfig> {
 
 	@Override
 	public Link newLink(MockLinkConfig config) {
-		return mock(Link.class);
+		return config.useThreadLocal ? links.get() : mock(Link.class);
 	}
 
 	@Override
