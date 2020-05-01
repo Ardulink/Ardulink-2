@@ -183,7 +183,7 @@ public class ArdulinkRestTest {
 				Pin pin = polled.getPin();
 				if (Integer.compare(pin.pinNum(), ((int) message.getHeader(HEADER_PIN))) == 0) {
 					message.setBody(polled.getValue(), String.class);
-					// TODO not we should stop listening
+					// TODO now we should stop listening
 				} else {
 					messages.offer(polled);
 				}
