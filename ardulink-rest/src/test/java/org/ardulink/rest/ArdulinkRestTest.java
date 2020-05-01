@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package ardulink.rest;
+package org.ardulink.rest;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.port;
 import static java.lang.Boolean.parseBoolean;
+import static java.lang.System.identityHashCode;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
@@ -98,14 +99,16 @@ public class ArdulinkRestTest {
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() throws Exception {
+				String switchAnalog = "direct:switchAnalog-" + identityHashCode(this);
+				String switchDigital = "direct:switchDigital-" + identityHashCode(this);
 				restConfiguration().host("localhost").port(port);
 				rest("/pin") //
 						.consumes("application/json").produces("application/json") //
-						.post("/analog/{pin}").to("direct:switchAnalog") //
-						.post("/digital/{pin}").to("direct:switchDigital") //
+						.post("/analog/{pin}").to(switchAnalog) //
+						.post("/digital/{pin}").to(switchDigital) //
 				;
 
-				from("direct:switchAnalog").process(exchange -> {
+				from(switchAnalog).process(exchange -> {
 					Message message = exchange.getMessage();
 					Object pinRaw = message.getHeader("pin");
 					String valueRaw = message.getBody(String.class);
@@ -114,7 +117,7 @@ public class ArdulinkRestTest {
 					message.setBody(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
 				}).to(out);
 
-				from("direct:switchDigital").process(exchange -> {
+				from(switchDigital).process(exchange -> {
 					Message message = exchange.getMessage();
 					Object pinRaw = message.getHeader("pin");
 					String stateRaw = message.getBody(String.class);
