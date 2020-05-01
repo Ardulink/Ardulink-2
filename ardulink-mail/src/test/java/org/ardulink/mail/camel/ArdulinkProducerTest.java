@@ -16,16 +16,16 @@ limitations under the License.
 
 package org.ardulink.mail.camel;
 
+import static java.lang.System.identityHashCode;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
-import static org.ardulink.mail.camel.ScenarioProcessor.processScenario;
-import static org.ardulink.mail.test.CauseMatcher.exceptionWithMessage;
 import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Throwables.propagate;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.rules.ExpectedException.none;
+
+import java.util.List;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Message;
@@ -33,9 +33,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultMessage;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -47,17 +45,21 @@ import org.junit.rules.ExpectedException;
  */
 public class ArdulinkProducerTest {
 
-	private void setup(String validSender, ScenarioProcessor scenarioProcessor) {
+	private void setup(String validSender, String commandName, List<String> commands) {
 		try {
 			CamelContext context = new DefaultCamelContext();
+			context.setTracing(true);
 			context.addRoutes(new RouteBuilder() {
 				@Override
 				public void configure() {
+					String splitter = "direct:splitter-" + identityHashCode(this);
+					from(splitter).split(body()).to(OUT);
 					from(IN) //
 							.filter(header("From").isEqualToIgnoreCase(validSender)) //
-							.process(scenarioProcessor) //
-							.split(body()) //
-							.to(OUT);
+							.choice() //
+							.when(body().isEqualToIgnoreCase(commandName)).setBody(constant(commands)).to(splitter) //
+							.otherwise().stop() //
+					;
 				}
 
 			});
@@ -68,9 +70,6 @@ public class ArdulinkProducerTest {
 			throw propagate(e);
 		}
 	}
-
-	@Rule
-	public ExpectedException expectedException = none();
 
 	private static final String IN = "direct:in";
 	private static final String OUT = "mock:result";
@@ -84,22 +83,19 @@ public class ArdulinkProducerTest {
 
 	@Test
 	public void doesNotAcceptMeesagesWithEmptyBody() throws Exception {
-		setup("aValidUser", processScenario());
+		setup("aValidUser", null, emptyList());
 		setFrom("aValidUser");
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedMessageCount(0);
 
-		expectedException.expect(RuntimeException.class);
-		expectedException
-				.expectCause(exceptionWithMessage(IllegalStateException.class, containsString("body is empty")));
 		process();
 		mockEndpoint.assertIsSatisfied();
 	}
 
 	@Test
 	public void doesNotAcceptMessagesWithNullOrEmptyFromAddress() throws Exception {
-		setup("anyuser", processScenario());
+		setup("anyuser", null, emptyList());
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedMessageCount(0);
@@ -111,16 +107,13 @@ public class ArdulinkProducerTest {
 	@Test
 	public void doesNotAcceptMessagesWhereScenarioNameIsNotKnown() throws Exception {
 		String anyUser = "anyuser";
-		setup(anyUser, processScenario());
+		setup(anyUser, null, emptyList());
 
 		setFrom(anyUser);
 		setBody("unknown command name");
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedMessageCount(0);
-
-		expectedException.expect(RuntimeException.class);
-		expectedException.expectCause(exceptionWithMessage(IllegalStateException.class, containsString("not known")));
 
 		process();
 		mockEndpoint.assertIsSatisfied();
@@ -133,7 +126,7 @@ public class ArdulinkProducerTest {
 		String anyUser = "anyuser";
 		String commandName = "scenario 1";
 
-		setup(anyUser, processScenario().withCommand(commandName, singletonList(switchDigital7)));
+		setup(anyUser, commandName, singletonList(switchDigital7));
 
 		setFrom(anyUser);
 		setBody(commandName);
@@ -152,7 +145,7 @@ public class ArdulinkProducerTest {
 
 		String anyUser = "anyuser";
 		String commandName = "scenario 2";
-		setup(anyUser, processScenario().withCommand(commandName, newArrayList(digital7, analog8)));
+		setup(anyUser, commandName, newArrayList(digital7, analog8));
 
 		setFrom(anyUser);
 		setBody(commandName);

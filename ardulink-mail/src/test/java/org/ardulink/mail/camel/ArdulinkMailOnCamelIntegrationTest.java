@@ -17,19 +17,19 @@ limitations under the License.
 package org.ardulink.mail.camel;
 
 import static com.icegreen.greenmail.util.ServerSetupTest.SMTP_IMAP;
+import static java.lang.System.identityHashCode;
 import static java.util.Collections.emptyMap;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.joining;
+import static org.apache.camel.builder.AggregationStrategies.string;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
-import static org.ardulink.mail.camel.ScenarioProcessor.processScenario;
-import static org.ardulink.mail.camel.StringJoiningStrategy.joinUsing;
 import static org.ardulink.mail.test.MailSender.mailFrom;
 import static org.ardulink.mail.test.MailSender.send;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
@@ -120,9 +120,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 			String switchDigitalPin = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
 			String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
 
-			context.addRoutes(ardulinkProcessing(imapUri(username, password), swapUpperLower(validSender),
-					scenarioProcessor(commandName, switchDigitalPin, switchAnalogPin), makeURI(mockURI, emptyMap()),
-					"mock:result"));
+			context.addRoutes(ardulinkProcessing(imapUri(username, password), swapUpperLower(validSender), commandName,
+					Arrays.asList(switchDigitalPin, switchAnalogPin), makeURI(mockURI, emptyMap()), "mock:result"));
 			context.start();
 
 			Link mockLink = getMock(link);
@@ -174,8 +173,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 		try (CamelContext context = new DefaultCamelContext()) {
 			String smtpName = "direct:routeLink-" + UUID.randomUUID();
 			context.addRoutes(setToAndFromHeaderAndSendTo(smtpName, smtpUri(username, password)));
-			context.addRoutes(ardulinkProcessing(imapUri(username, password), validSender,
-					scenarioProcessor(commandName, switchDigitalPin, switchAnalogPin), ardulink, smtpName));
+			context.addRoutes(ardulinkProcessing(imapUri(username, password), validSender, commandName,
+					Arrays.asList(switchDigitalPin, switchAnalogPin), ardulink, smtpName));
 			context.start();
 
 			try {
@@ -213,9 +212,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 		String smtpRouteStart = "direct:smtp-" + UUID.randomUUID();
 		main.addRoutesBuilder(setToAndFromHeaderAndSendTo(smtpRouteStart, "{{to}}"));
-		main.addRoutesBuilder(ardulinkProcessing("{{from}}", validSender, processScenario() //
-				.withCommand(commandName, Arrays.asList(command.split("\\,"))), makeURI(mockURI, emptyMap()),
-				smtpRouteStart));
+		main.addRoutesBuilder(ardulinkProcessing("{{from}}", validSender, commandName,
+				Arrays.asList(command.split("\\,")), makeURI(mockURI, emptyMap()), smtpRouteStart));
 		runInBackground(main);
 
 		try {
@@ -227,30 +225,21 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	}
 
-	private RouteBuilder ardulinkProcessing(String from, String validSender, ScenarioProcessor scenarioProcessor,
+	private RouteBuilder ardulinkProcessing(String from, String validSender, String commandName, List<String> commands,
 			String ardulink, String to) {
 		return new RouteBuilder() {
 			@Override
 			public void configure() {
+				String splitter = "direct:splitter-" + identityHashCode(this);
+				from(splitter).split(body(), string("\r\n")).to(ardulink).end().to(to);
 				from(from) //
 						.filter(header("From").isEqualToIgnoreCase(validSender)) //
-						.process(scenarioProcessor) //
-						.split(body(), joinUsing("\r\n")).to(ardulink).end() //
-						.to(to);
+						.choice() //
+						.when(body().isEqualToIgnoreCase(commandName)).setBody(constant(commands)).to(splitter) //
+						.otherwise().stop() //
+				;
 			}
 		};
-	}
-
-	private ScenarioProcessor scenarioProcessor(String commandName, String switchDigitalPin, String switchAnalogPin) {
-		List<String> dummy1 = Arrays.asList(alpProtocolMessage(DIGITAL_PIN_READ).forPin(13).withState(false),
-				alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(42));
-		List<String> dummy2 = Arrays.asList(alpProtocolMessage(DIGITAL_PIN_READ).forPin(13).withState(false),
-				alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(21));
-
-		return processScenario() //
-				.withCommand("xxx", dummy1) //
-				.withCommand(commandName, Arrays.asList(switchDigitalPin, switchAnalogPin)) //
-				.withCommand("yyy", dummy2);
 	}
 
 	private RouteBuilder setToAndFromHeaderAndSendTo(String from, String to) {
