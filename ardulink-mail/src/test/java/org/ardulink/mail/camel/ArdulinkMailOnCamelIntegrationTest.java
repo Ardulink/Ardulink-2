@@ -142,14 +142,17 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 	}
 
-	private String swapUpperLower(String validSender) {
-		return validSender.codePoints().mapToObj(c -> Character.valueOf((char) c)).map(c -> {
+	private String swapUpperLower(String in) {
+		String swapped = in.codePoints().mapToObj(c -> Character.valueOf((char) c)).map(c -> {
 			return Character.isUpperCase(c) //
 					? Character.toLowerCase(c)
 					: Character.isLowerCase(c) //
 							? Character.toUpperCase(c)
 							: c;
 		}).map(String::valueOf).collect(joining());
+		assert !swapped.equals(in);
+		assert swapped.equalsIgnoreCase(in);
+		return swapped;
 	}
 
 	@Test
