@@ -38,6 +38,7 @@ import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.ardulinkUr
 import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.register;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.Integers.tryParse;
+import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.hamcrest.CoreMatchers.is;
@@ -203,9 +204,9 @@ public class ArdulinkRestTest {
 				;
 				from(patchAnalog).process(exchange -> patchAnalog(exchange)).to(arduino);
 				from(patchDigital).process(exchange -> patchDigital(exchange)).to(arduino);
-				from(readAnalog).process(exchange -> readAnalog(exchange)).to(arduino)
+				from(readAnalog).process(exchange -> readAnalog(exchange))
 						.process(exchange -> readQueue(exchange, messages));
-				from(readDigital).process(exchange -> readDigital(exchange)).to(arduino)
+				from(readDigital).process(exchange -> readDigital(exchange))
 						.process(exchange -> readQueue(exchange, messages));
 				from(switchAnalog).process(exchange -> switchAnalog(exchange)).to(arduino);
 				from(switchDigital).process(exchange -> switchDigital(exchange)).to(arduino);
@@ -214,17 +215,11 @@ public class ArdulinkRestTest {
 
 			private void readQueue(Exchange exchange, BlockingQueue<FromDeviceMessagePinStateChanged> messages)
 					throws InterruptedException {
-				FromDeviceMessagePinStateChanged polled = messages.poll(1, SECONDS);
-
+				FromDeviceMessagePinStateChanged polled = checkNotNull(messages.poll(1, SECONDS),
+						"Timout retrieving message from arduino");
 				Message message = exchange.getMessage();
-				if (polled == null) {
-					message.setBody(null);
-					return;
-				}
-				Pin pin = polled.getPin();
-				if (Integer.compare(pin.pinNum(), ((int) message.getHeader(HEADER_PIN))) == 0) {
+				if (Integer.compare(polled.getPin().pinNum(), ((int) message.getHeader(HEADER_PIN))) == 0) {
 					message.setBody(polled.getValue(), String.class);
-					// TODO now we should stop listening
 				} else {
 					messages.offer(polled);
 				}
@@ -253,22 +248,19 @@ public class ArdulinkRestTest {
 			}
 
 			private void readAnalog(Exchange exchange) {
-				Type type = ANALOG;
-				Message message = exchange.getMessage();
-				int pin = readPin(type, message);
-				setHeaders(message, type, pin)
-						.setBody(alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin).withoutValue());
+				setTypeAndPinHeader(exchange, ANALOG);
 			}
 
 			private void readDigital(Exchange exchange) {
-				Type type = DIGITAL;
-				Message message = exchange.getMessage();
-				int pin = readPin(type, message);
-				setHeaders(message, type, pin)
-						.setBody(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(pin).withoutValue());
+				setTypeAndPinHeader(exchange, DIGITAL);
 			}
 
-			private Message setHeaders(Message message, Type type, int pin) {
+			private void setTypeAndPinHeader(Exchange exchange, Type type) {
+				Message message = exchange.getMessage();
+				setTypeAndPinHeader(message, type, readPin(type, message));
+			}
+
+			private Message setTypeAndPinHeader(Message message, Type type, int pin) {
 				message.setHeader(HEADER_PIN, pin);
 				message.setHeader(HEADER_TYPE, type);
 				return message;
