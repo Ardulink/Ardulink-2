@@ -25,6 +25,7 @@ import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
@@ -57,6 +58,7 @@ import org.ardulink.util.Optional;
 import org.ardulink.util.Primitive;
 import org.ardulink.util.Throwables;
 import org.ardulink.util.URIs;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -448,6 +450,7 @@ public abstract class LinkManager {
 				this.values = Collections.unmodifiableMap(extractData());
 			}
 
+			@LapsedWith(value = JDK8, module = "Streams")
 			private Map<String, Object> extractData() {
 				Map<String, Object> values = new HashMap<String, Object>();
 				for (String attribute : DefaultConfigurer.this.getAttributes()) {
