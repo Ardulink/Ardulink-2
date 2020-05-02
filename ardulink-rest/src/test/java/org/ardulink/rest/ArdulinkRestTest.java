@@ -32,6 +32,8 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
+import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.ardulinkUri;
+import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.register;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.ServerSockets.freePort;
@@ -56,8 +58,6 @@ import org.ardulink.core.Pin.Type;
 import org.ardulink.core.Tone;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
-import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
-import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.PinValueChangedEvent;
@@ -65,7 +65,6 @@ import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.testsupport.mock.ThreadLocalMockLinkFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -122,8 +121,7 @@ public class ArdulinkRestTest {
 		int pin = 5;
 		boolean state = true;
 		try (AbstractListenerLink link = createAbstractListenerLink(digitalPinValueChanged(digitalPin(pin), state))) {
-			ThreadLocalMockLinkFactory.setLink(link);
-			try (CamelContext context = startCamelRest("ardulink://threadlocalmock")) {
+			try (CamelContext context = startCamelRest(ardulinkUri(register(link)))) {
 				given().get("/pin/digital/{pin}", pin).then().statusCode(200).body(is(String.valueOf(state)));
 				context.stop();
 			}
@@ -135,8 +133,7 @@ public class ArdulinkRestTest {
 		int pin = 7;
 		int value = 456;
 		try (AbstractListenerLink link = createAbstractListenerLink(analogPinValueChanged(analogPin(pin), value))) {
-			ThreadLocalMockLinkFactory.setLink(link);
-			try (CamelContext context = startCamelRest("ardulink://threadlocalmock")) {
+			try (CamelContext context = startCamelRest(ardulinkUri(register(link)))) {
 				given().get("/pin/analog/{pin}", pin).then().statusCode(200).body(is(String.valueOf(value)));
 				context.stop();
 			}
