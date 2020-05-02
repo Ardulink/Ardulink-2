@@ -16,17 +16,23 @@ limitations under the License.
 
 package org.ardulink.core.convenience;
 
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 
 import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
+import org.ardulink.core.Pin;
 import org.ardulink.core.linkmanager.DummyConnection;
 import org.ardulink.core.linkmanager.DummyLinkConfig;
 import org.junit.Test;
@@ -42,12 +48,10 @@ import org.junit.Test;
 public class LinksTest {
 
 	@Test
-	public void returnsSerialConnectionWhenAvailableAndFallsbackToFirstAvailable()
-			throws IOException {
+	public void returnsSerialConnectionWhenAvailableAndFallsbackToFirstAvailable() throws IOException {
 		Link link = Links.getDefault();
 		Connection connection = getConnection(link);
-		assertThat(connection.getClass().getName(),
-				is(DummyConnection.class.getName()));
+		assertThat(connection.getClass().getName(), startsWith(DummyConnection.class.getName()));
 		close(link);
 	}
 
@@ -90,24 +94,23 @@ public class LinksTest {
 	public void canCloseConnection() throws IOException {
 		Link link = getRandomLink();
 		DummyConnection connection = getConnection(link);
-		assertThat(connection.getCloseCalls(), is(0));
+		verify(connection, times(0)).close();
 		close(link);
-		assertThat(connection.getCloseCalls(), is(1));
+		verify(connection, times(1)).close();
 	}
 
 	@Test
 	public void doesNotCloseConnectionIfStillInUse() throws IOException {
 		String randomURI = getRandomURI();
-		Link[] links = { createConnectionBasedLink(randomURI),
-				createConnectionBasedLink(randomURI),
+		Link[] links = { createConnectionBasedLink(randomURI), createConnectionBasedLink(randomURI),
 				createConnectionBasedLink(randomURI) };
 		// all links point to the same instance, so choose one of them
 		Link link = assertAllSameInstances(links)[0];
 		link.close();
 		link.close();
-		assertThat(getConnection(links[0]).getCloseCalls(), is(0));
+		verify(getConnection(link), times(0)).close();
 		link.close();
-		assertThat(getConnection(link).getCloseCalls(), is(1));
+		verify(getConnection(link), times(1)).close();
 	}
 
 	@Test
@@ -121,6 +124,28 @@ public class LinksTest {
 		assertThat(link3, not(sameInstance(link1)));
 		assertThat(link3, not(sameInstance(link2)));
 		close(link3);
+	}
+
+	@Test
+	public void stopsListenigAfterAllCallersLikeToStopListening() throws IOException {
+		String randomURI = getRandomURI();
+		Link link0 = createConnectionBasedLink(randomURI);
+		Link link1 = createConnectionBasedLink(randomURI);
+		ConnectionBasedLink delegate = assertAllSameInstances(getDelegate(link0), getDelegate(link1))[0];
+		Pin anyPin = digitalPin(3);
+		link0.startListening(anyPin);
+		link1.startListening(anyPin);
+
+		link0.stopListening(anyPin);
+		// stop on others (not listening-started) pins
+		link0.stopListening(analogPin(anyPin.pinNum()));
+		link0.stopListening(analogPin(anyPin.pinNum() + 1));
+		link0.stopListening(digitalPin(anyPin.pinNum() + 1));
+		verify(delegate, times(0)).stopListening(anyPin);
+
+		link1.stopListening(anyPin);
+		verify(delegate, times(1)).stopListening(anyPin);
+		close(link0, link1);
 	}
 
 	@Test
@@ -155,13 +180,15 @@ public class LinksTest {
 	}
 
 	private DummyConnection getConnection(Link link) {
-		return (DummyConnection) ((ConnectionBasedLink) ((LinkDelegate) link)
-				.getDelegate()).getConnection();
+		return (DummyConnection) getDelegate(link).getConnection();
+	}
+
+	private ConnectionBasedLink getDelegate(Link link) {
+		return (ConnectionBasedLink) ((LinkDelegate) link).getDelegate();
 	}
 
 	private String getRandomURI() {
-		return "ardulink://dummyLink?a=" + "&b="
-				+ String.valueOf(Thread.currentThread().getId()) + "&c="
+		return "ardulink://dummyLink?a=" + "&b=" + String.valueOf(Thread.currentThread().getId()) + "&c="
 				+ System.currentTimeMillis();
 	}
 

@@ -37,6 +37,7 @@ import javax.validation.constraints.Min;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.Protocols;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 @I18n("message")
 public class DummyLinkConfig implements LinkConfig {
@@ -48,7 +49,7 @@ public class DummyLinkConfig implements LinkConfig {
 	@Named("c")
 	public String c;
 
-	public Protocol protocol;
+	public Protocol protocol = ArdulinkProtocol2.instance();
 
 	@Named("d")
 	public String d;

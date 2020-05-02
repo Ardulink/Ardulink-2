@@ -23,8 +23,11 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.ardulink.core.Link;
+import org.ardulink.core.Pin;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
@@ -50,7 +53,8 @@ public final class Links {
 	/**
 	 * Returns the default Link which is a connection to the first serial port if
 	 * the serial module is available. Otherwise the first available link is
-	 * returned. If no links are available a {@link RuntimeException} will be thrown. 
+	 * returned. If no links are available a {@link RuntimeException} will be
+	 * thrown.
 	 * 
 	 * @return default Link
 	 */
@@ -135,6 +139,32 @@ public final class Links {
 						super.close();
 					}
 				}
+			}
+
+			private final ConcurrentHashMap<Pin, AtomicInteger> listenCounter = new ConcurrentHashMap<Pin, AtomicInteger>();
+
+			@Override
+			public long startListening(Pin pin) throws IOException {
+				long result = super.startListening(pin);
+				AtomicInteger counter = getCounter(pin);
+				if (counter == null) {
+					AtomicInteger oldValue = listenCounter.putIfAbsent(pin, counter = new AtomicInteger());
+					if (oldValue != null) {
+						counter = oldValue;
+					}
+				}
+				counter.getAndIncrement();
+				return result;
+			}
+
+			@Override
+			public long stopListening(Pin pin) throws IOException {
+				AtomicInteger counter = getCounter(pin);
+				return counter != null && counter.decrementAndGet() == 0 ? super.stopListening(pin) : -1;
+			}
+
+			private AtomicInteger getCounter(Pin pin) {
+				return listenCounter.get(pin);
 			}
 		};
 	}

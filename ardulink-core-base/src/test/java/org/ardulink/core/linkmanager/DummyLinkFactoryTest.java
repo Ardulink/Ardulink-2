@@ -24,6 +24,7 @@ import static java.util.Locale.GERMAN;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -96,7 +97,7 @@ public class DummyLinkFactoryTest {
 						+ eValue.name())).newLink();
 
 		assertThat(link.getClass().getName(),
-				is(ConnectionBasedLink.class.getName()));
+				startsWith(ConnectionBasedLink.class.getName()));
 		DummyConnection connection = (DummyConnection) ((ConnectionBasedLink) link)
 				.getConnection();
 		DummyLinkConfig config = connection.getConfig();

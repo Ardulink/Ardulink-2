@@ -17,11 +17,8 @@ limitations under the License.
 package org.ardulink.core.linkmanager;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.ardulink.core.Connection;
+import org.ardulink.core.AbstractConnection;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -31,11 +28,9 @@ import org.ardulink.core.Connection;
  * [adsense]
  *
  */
-public class DummyConnection implements Connection {
+public class DummyConnection extends AbstractConnection {
 
 	private final DummyLinkConfig config;
-	private final List<Listener> listeners = new ArrayList<Listener>();
-	private AtomicInteger closeCalls = new AtomicInteger();
 
 	public DummyConnection(DummyLinkConfig config) {
 		this.config = config;
@@ -43,26 +38,12 @@ public class DummyConnection implements Connection {
 
 	@Override
 	public void close() throws IOException {
-		closeCalls.incrementAndGet();
-	}
-
-	public int getCloseCalls() {
-		return closeCalls.get();
+		// do nothing
 	}
 
 	@Override
 	public void write(byte[] bytes) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void addListener(Listener listener) {
-		this.listeners.add(listener);
-	}
-
-	@Override
-	public void removeListener(Listener listener) {
-		this.listeners.remove(listener);
+		// do nothing
 	}
 
 	public DummyLinkConfig getConfig() {

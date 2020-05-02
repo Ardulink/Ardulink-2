@@ -105,18 +105,20 @@ public class ArdulinkComponentTest {
 
 	@Test
 	public void canDisableAnalogListening() throws Exception {
-		send(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(
-				analogPin(6).pinNum()).withoutValue());
+		send(alpProtocolMessage(START_LISTENING_ANALOG).forPin(6).withoutValue());
+		send(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(6).withoutValue());
 		Link mock = getMock(link);
+		verify(mock).startListening(analogPin(6));
 		verify(mock).stopListening(analogPin(6));
 		verifyNoMoreInteractions(mock);
 	}
 
 	@Test
 	public void canDisableDigitalListening() throws Exception {
-		send(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(
-				digitalPin(7).pinNum()).withoutValue());
+		send(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(7).withoutValue());
+		send(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(7).withoutValue());
 		Link mock = getMock(link);
+		verify(mock).startListening(digitalPin(7));
 		verify(mock).stopListening(digitalPin(7));
 		verifyNoMoreInteractions(mock);
 	}

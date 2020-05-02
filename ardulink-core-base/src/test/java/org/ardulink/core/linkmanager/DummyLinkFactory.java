@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
+import static org.mockito.Mockito.spy;
+
 import org.ardulink.core.ConnectionBasedLink;
 
 /**
@@ -35,8 +37,7 @@ public class DummyLinkFactory implements LinkFactory<DummyLinkConfig> {
 
 	@Override
 	public ConnectionBasedLink newLink(DummyLinkConfig config) {
-		return new ConnectionBasedLink(new DummyConnection(config),
-				config.protocol);
+		return spy(new ConnectionBasedLink(spy(new DummyConnection(config)), config.protocol));
 	}
 
 	@Override
