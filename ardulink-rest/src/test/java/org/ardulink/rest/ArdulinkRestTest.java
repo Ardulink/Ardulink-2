@@ -63,7 +63,7 @@ import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.testsupport.mock.MockLinkFactory;
+import org.ardulink.testsupport.mock.ThreadLocalMockLinkFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -121,8 +121,8 @@ public class ArdulinkRestTest {
 		boolean state = true;
 		try (AbstractListenerLink link = createAbstractListenerLink(
 				new DefaultDigitalPinValueChangedEvent(digitalPin(pin), state))) {
-			MockLinkFactory.setLink(link);
-			try (CamelContext context = startCamelRest("ardulink://mock?useThreadLocal=true")) {
+			ThreadLocalMockLinkFactory.setLink(link);
+			try (CamelContext context = startCamelRest("ardulink://threadlocalmock")) {
 				given().get("/pin/digital/{pin}", pin).then().statusCode(200).body(is(String.valueOf(state)));
 				context.stop();
 			}
@@ -135,8 +135,8 @@ public class ArdulinkRestTest {
 		int value = 456;
 		try (AbstractListenerLink link = createAbstractListenerLink(
 				new DefaultAnalogPinValueChangedEvent(analogPin(pin), value))) {
-			MockLinkFactory.setLink(link);
-			try (CamelContext context = startCamelRest("ardulink://mock?useThreadLocal=true")) {
+			ThreadLocalMockLinkFactory.setLink(link);
+			try (CamelContext context = startCamelRest("ardulink://threadlocalmock")) {
 				given().get("/pin/analog/{pin}", pin).then().statusCode(200).body(is(String.valueOf(value)));
 				context.stop();
 			}

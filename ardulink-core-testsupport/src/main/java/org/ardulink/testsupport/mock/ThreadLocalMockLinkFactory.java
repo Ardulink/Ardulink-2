@@ -16,12 +16,11 @@ limitations under the License.
 
 package org.ardulink.testsupport.mock;
 
-import static org.mockito.Mockito.mock;
+import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.testsupport.mock.MockLinkFactory.MockLinkConfig;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -31,26 +30,27 @@ import org.ardulink.testsupport.mock.MockLinkFactory.MockLinkConfig;
  * [adsense]
  *
  */
-public class MockLinkFactory implements LinkFactory<MockLinkConfig> {
+public class ThreadLocalMockLinkFactory implements LinkFactory<LinkConfig> {
 
-	public static class MockLinkConfig implements LinkConfig {
-		@Named("name")
-		public String name = "default";
+	private static final ThreadLocal<Link> links = new ThreadLocal<Link>();
+
+	public static void setLink(Link link) {
+		links.set(link);
 	}
 
 	@Override
 	public String getName() {
-		return "mock";
+		return "threadlocalmock";
 	}
 
 	@Override
-	public Link newLink(MockLinkConfig config) {
-		return mock(Link.class);
+	public Link newLink(LinkConfig config) {
+		return links.get();
 	}
 
 	@Override
-	public MockLinkConfig newLinkConfig() {
-		return new MockLinkConfig();
+	public LinkConfig newLinkConfig() {
+		return NO_ATTRIBUTES;
 	}
 
 }
