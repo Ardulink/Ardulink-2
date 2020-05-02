@@ -26,8 +26,11 @@ import org.ardulink.core.Pin.DigitalPin;
  * [adsense]
  *
  */
-public class DefaultDigitalPinValueChangedEvent implements
-		DigitalPinValueChangedEvent {
+public class DefaultDigitalPinValueChangedEvent implements DigitalPinValueChangedEvent {
+
+	public static DefaultDigitalPinValueChangedEvent digitalPinValueChanged(DigitalPin pin, boolean value) {
+		return new DefaultDigitalPinValueChangedEvent(pin, value);
+	}
 
 	private final DigitalPin pin;
 	private final Boolean value;
@@ -47,8 +50,7 @@ public class DefaultDigitalPinValueChangedEvent implements
 
 	@Override
 	public String toString() {
-		return "DefaultDigitalPinValueChangedEvent [pin=" + pin + ", value="
-				+ value + "]";
+		return "DefaultDigitalPinValueChangedEvent [pin=" + pin + ", value=" + value + "]";
 	}
 
 }

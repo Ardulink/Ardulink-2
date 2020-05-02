@@ -2,6 +2,8 @@ package org.ardulink.core.virtual;
 
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
+import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
 
 import java.io.IOException;
 import java.security.SecureRandom;
@@ -15,8 +17,6 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.Tone;
-import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
-import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import org.ardulink.core.proto.api.MessageIdHolders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,11 +56,9 @@ public class VirtualLink extends AbstractListenerLink {
 		for (Entry<Pin, Object> entry : listeningPins.entrySet()) {
 			Pin pin = entry.getKey();
 			if (pin.is(ANALOG)) {
-				fireStateChanged(new DefaultAnalogPinValueChangedEvent(
-						(AnalogPin) pin, getRandomAnalog()));
+				fireStateChanged(analogPinValueChanged((AnalogPin) pin, getRandomAnalog()));
 			} else if (pin.is(DIGITAL)) {
-				fireStateChanged(new DefaultDigitalPinValueChangedEvent(
-						(DigitalPin) pin, getRandomDigital()));
+				fireStateChanged(digitalPinValueChanged((DigitalPin) pin, getRandomDigital()));
 			}
 		}
 	}

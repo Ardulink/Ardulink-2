@@ -26,6 +26,8 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
+import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
@@ -37,8 +39,6 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.Tone;
-import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
-import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import org.ardulink.core.proto.api.MessageIdHolders;
 import org.ardulink.util.ListMultiMap;
 
@@ -179,8 +179,7 @@ public class PiLink extends AbstractListenerLink {
 			public void handleGpioPinDigitalStateChangeEvent(
 					GpioPinDigitalStateChangeEvent event) {
 				if (event.getEventType() == DIGITAL_STATE_CHANGE) {
-					fireStateChanged(new DefaultDigitalPinValueChangedEvent(
-							digitalPin(event.getPin().getPin().getAddress()),
+					fireStateChanged(digitalPinValueChanged(digitalPin(event.getPin().getPin().getAddress()),
 							event.getState().isHigh()));
 				}
 			}
@@ -193,9 +192,7 @@ public class PiLink extends AbstractListenerLink {
 			public void handleGpioPinAnalogValueChangeEvent(
 					GpioPinAnalogValueChangeEvent event) {
 				if (event.getEventType() == ANALOG_VALUE_CHANGE) {
-					fireStateChanged(new DefaultAnalogPinValueChangedEvent(
-							analogPin(event.getPin().getPin().getAddress()),
-							(int) event.getValue()));
+					fireStateChanged(analogPinValueChanged(analogPin(event.getPin().getPin().getAddress()), (int) event.getValue()));
 				}
 			}
 		};

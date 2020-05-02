@@ -22,6 +22,8 @@ import static java.lang.Integer.parseInt;
 import static java.util.Collections.unmodifiableMap;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
+import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Throwables.propagate;
@@ -39,8 +41,6 @@ import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.Pin.Type;
 import org.ardulink.core.Tone;
-import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
-import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import org.ardulink.core.mqtt.MqttLinkConfig.Connection;
 import org.ardulink.core.proto.api.MessageIdHolders;
 import org.ardulink.util.MapBuilder;
@@ -126,15 +126,11 @@ public class MqttLink extends AbstractListenerLink {
 									parseInt(matcher.group(2)));
 							if (pin != null) {
 								if (pin.is(Type.DIGITAL)) {
-									fireStateChanged(new DefaultDigitalPinValueChangedEvent(
-											(DigitalPin) pin,
-											Boolean.parseBoolean(new String(
-													message.getPayload()))));
+									fireStateChanged(digitalPinValueChanged((DigitalPin) pin,
+											Boolean.parseBoolean(new String(message.getPayload()))));
 								} else if (pin.is(Type.ANALOG)) {
-									fireStateChanged(new DefaultAnalogPinValueChangedEvent(
-											(AnalogPin) pin,
-											Integer.parseInt(new String(message
-													.getPayload()))));
+									fireStateChanged(analogPinValueChanged((AnalogPin) pin,
+											Integer.parseInt(new String(message.getPayload()))));
 								}
 							}
 						}

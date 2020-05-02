@@ -26,8 +26,11 @@ import org.ardulink.core.Pin.AnalogPin;
  * [adsense]
  *
  */
-public class DefaultAnalogPinValueChangedEvent implements
-		AnalogPinValueChangedEvent {
+public class DefaultAnalogPinValueChangedEvent implements AnalogPinValueChangedEvent {
+
+	public static DefaultAnalogPinValueChangedEvent analogPinValueChanged(AnalogPin pin, int value) {
+		return new DefaultAnalogPinValueChangedEvent(pin, value);
+	}
 
 	private final AnalogPin pin;
 	private final Integer value;
@@ -47,8 +50,7 @@ public class DefaultAnalogPinValueChangedEvent implements
 
 	@Override
 	public String toString() {
-		return "DefaultAnalogPinValueChangedEvent [pin=" + pin + ", value="
-				+ value + "]";
+		return "DefaultAnalogPinValueChangedEvent [pin=" + pin + ", value=" + value + "]";
 	}
 
 }

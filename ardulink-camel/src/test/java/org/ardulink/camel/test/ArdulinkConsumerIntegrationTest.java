@@ -2,6 +2,8 @@ package org.ardulink.camel.test;
 
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
+import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
@@ -14,8 +16,6 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
-import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
-import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import org.junit.After;
 import org.junit.Test;
 
@@ -45,10 +45,8 @@ public class ArdulinkConsumerIntegrationTest {
 		int value = 42;
 		context = camelContext();
 		MockEndpoint out = getMockEndpoint();
-		out.expectedBodiesReceived(alpProtocolMessage(ANALOG_PIN_READ).forPin(
-				pin).withValue(value));
-		getDelegate().fireStateChanged(
-				new DefaultAnalogPinValueChangedEvent(analogPin(pin), value));
+		out.expectedBodiesReceived(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
+		getDelegate().fireStateChanged(analogPinValueChanged(analogPin(pin), value));
 		out.assertIsSatisfied();
 	}
 
@@ -58,10 +56,8 @@ public class ArdulinkConsumerIntegrationTest {
 		boolean state = true;
 		context = camelContext();
 		MockEndpoint out = getMockEndpoint();
-		out.expectedBodiesReceived(alpProtocolMessage(DIGITAL_PIN_READ).forPin(
-				pin).withState(state));
-		getDelegate().fireStateChanged(
-				new DefaultDigitalPinValueChangedEvent(digitalPin(pin), state));
+		out.expectedBodiesReceived(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(state));
+		getDelegate().fireStateChanged(digitalPinValueChanged(digitalPin(pin), state));
 		out.assertIsSatisfied();
 	}
 

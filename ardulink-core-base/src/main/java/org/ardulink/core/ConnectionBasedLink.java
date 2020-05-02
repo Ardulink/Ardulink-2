@@ -20,6 +20,8 @@ import static org.ardulink.core.ConnectionBasedLink.Mode.ANY_MESSAGE_RECEIVED;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
+import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
 import static org.ardulink.core.proto.api.MessageIdHolders.NO_ID;
 import static org.ardulink.core.proto.api.MessageIdHolders.addMessageId;
 import static org.ardulink.core.proto.api.MessageIdHolders.toHolder;
@@ -122,13 +124,9 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		Pin pin = pinChanged.getPin();
 		Object value = pinChanged.getValue();
 		if (pin.is(ANALOG) && value instanceof Integer) {
-			AnalogPinValueChangedEvent event = new DefaultAnalogPinValueChangedEvent(
-					(AnalogPin) pin, (Integer) value);
-			fireStateChanged(event);
+			fireStateChanged(analogPinValueChanged((AnalogPin) pin, (Integer) value));
 		} else if (pin.is(DIGITAL) && value instanceof Boolean) {
-			DigitalPinValueChangedEvent event = new DefaultDigitalPinValueChangedEvent(
-					(DigitalPin) pin, (Boolean) value);
-			fireStateChanged(event);
+			fireStateChanged(digitalPinValueChanged((DigitalPin) pin, (Boolean) value));
 		} else {
 			throw new IllegalStateException(
 					"Cannot handle pin change event for pin " + pin
