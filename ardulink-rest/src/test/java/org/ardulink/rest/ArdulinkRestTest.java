@@ -32,10 +32,13 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.ardulinkUri;
 import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.register;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.Integers.tryParse;
+import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.verify;
@@ -64,6 +67,7 @@ import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.junit.Before;
 import org.junit.Test;
@@ -140,6 +144,40 @@ public class ArdulinkRestTest {
 		}
 	}
 
+	@Test
+	public void canEnableAndDisableListeningDigitalPin() throws Exception {
+		int pin = 5;
+		try (Link link = Links.getLink("ardulink://mock")) {
+			Link mock = getMock(link);
+			try (CamelContext context = startCamelRest("ardulink://mock")) {
+				given().body("listen=true").patch("/pin/digital/{pin}", pin).then().statusCode(200);
+				verify(mock).startListening(digitalPin(pin));
+				given().body("listen=false").patch("/pin/digital/{pin}", pin).then().statusCode(200);
+				verify(mock).stopListening(digitalPin(pin));
+				context.stop();
+			}
+			verify(mock).close();
+		}
+
+	}
+
+	@Test
+	public void canEnableAndDisableListeningAnalogPin() throws Exception {
+		int pin = 7;
+		try (Link link = Links.getLink("ardulink://mock")) {
+			Link mock = getMock(link);
+			try (CamelContext context = startCamelRest("ardulink://mock")) {
+				given().body("listen=true").patch("/pin/analog/{pin}", pin).then().statusCode(200);
+				verify(mock).startListening(analogPin(pin));
+				given().body("listen=false").patch("/pin/analog/{pin}", pin).then().statusCode(200);
+				verify(mock).stopListening(analogPin(pin));
+				context.stop();
+			}
+			verify(mock).close();
+		}
+
+	}
+
 	private CamelContext startCamelRest(String arduino) throws Exception {
 		CamelContext context = new DefaultCamelContext();
 		context.addRoutes(new RouteBuilder() {
@@ -147,6 +185,8 @@ public class ArdulinkRestTest {
 			public void configure() throws Exception {
 				BlockingQueue<FromDeviceMessagePinStateChanged> messages = new ArrayBlockingQueue<FromDeviceMessagePinStateChanged>(
 						16);
+				String patchAnalog = "direct:patchAnalog-" + identityHashCode(this);
+				String patchDigital = "direct:patchDigital-" + identityHashCode(this);
 				String readAnalog = "direct:readAnalog-" + identityHashCode(this);
 				String readDigital = "direct:readDigital-" + identityHashCode(this);
 				String switchAnalog = "direct:switchAnalog-" + identityHashCode(this);
@@ -154,11 +194,15 @@ public class ArdulinkRestTest {
 				restConfiguration().host("localhost").port(port);
 				rest("/pin") //
 						.consumes("application/json").produces("application/json") //
+						.patch("/analog/{pin}").to(patchAnalog) //
+						.patch("/digital/{pin}").to(patchDigital) //
 						.get("/analog/{pin}").to(readAnalog) //
 						.get("/digital/{pin}").to(readDigital) //
 						.post("/analog/{pin}").to(switchAnalog) //
 						.post("/digital/{pin}").to(switchDigital) //
 				;
+				from(patchAnalog).process(exchange -> patchAnalog(exchange)).to(arduino);
+				from(patchDigital).process(exchange -> patchDigital(exchange)).to(arduino);
 				from(readAnalog).process(exchange -> readAnalog(exchange)).to(arduino)
 						.process(exchange -> readQueue(exchange, messages));
 				from(readDigital).process(exchange -> readDigital(exchange)).to(arduino)
@@ -184,6 +228,28 @@ public class ArdulinkRestTest {
 				} else {
 					messages.offer(polled);
 				}
+			}
+
+			private void patchDigital(Exchange exchange) {
+				patch(exchange, START_LISTENING_DIGITAL, STOP_LISTENING_DIGITAL);
+			}
+
+			private void patchAnalog(Exchange exchange) {
+				patch(exchange, START_LISTENING_ANALOG, STOP_LISTENING_ANALOG);
+			}
+
+			private void patch(Exchange exchange, ALPProtocolKey startKey, ALPProtocolKey stopKey) {
+				Message message = exchange.getMessage();
+				Object pinRaw = message.getHeader("pin");
+				String stateRaw = message.getBody(String.class);
+
+				String[] split = stateRaw.split("=");
+				checkState(split.length == 2, "Could not split %s by =", stateRaw);
+				checkState(split[0].equalsIgnoreCase("listen"), "Expected listen=${state} but was %s", stateRaw);
+
+				int pin = tryParse(String.valueOf(pinRaw)).getOrThrow("Pin %s not parseable", pinRaw);
+				boolean state = parseBoolean(split[1]);
+				message.setBody(alpProtocolMessage(state ? startKey : stopKey).forPin(pin).withoutValue());
 			}
 
 			private void readAnalog(Exchange exchange) {
