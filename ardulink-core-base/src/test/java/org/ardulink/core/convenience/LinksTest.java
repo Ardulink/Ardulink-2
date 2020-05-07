@@ -18,7 +18,7 @@ package org.ardulink.core.convenience;
 
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -29,7 +29,6 @@ import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 
-import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
@@ -50,8 +49,7 @@ public class LinksTest {
 	@Test
 	public void returnsSerialConnectionWhenAvailableAndFallsbackToFirstAvailable() throws IOException {
 		Link link = Links.getDefault();
-		Connection connection = getConnection(link);
-		assertThat(connection.getClass().getName(), startsWith(DummyConnection.class.getName()));
+		assertThat(getConnection(link), instanceOf(DummyConnection.class));
 		close(link);
 	}
 
