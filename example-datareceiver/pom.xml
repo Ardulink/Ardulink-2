@@ -50,7 +50,7 @@
 
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-serial-rxtx</artifactId>
+			<artifactId>ardulink-core-serial-jssc</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
