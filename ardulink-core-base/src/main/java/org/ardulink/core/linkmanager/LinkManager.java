@@ -53,6 +53,7 @@ import org.ardulink.core.beans.BeanProperties.DefaultAttribute;
 import org.ardulink.core.linkmanager.LinkConfig.ChoiceFor;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.linkmanager.LinkConfig.Named;
+import org.ardulink.core.linkmanager.LinkFactory.Alias;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
 import org.ardulink.util.Primitive;
@@ -568,6 +569,7 @@ public abstract class LinkManager {
 		return new LinkManager() {
 
 			@Override
+			@LapsedWith(module = JDK8, value = "Streams")
 			public List<URI> listURIs() {
 				List<LinkFactory> factories = getConnectionFactories();
 				List<URI> result = new ArrayList<URI>(factories.size());
@@ -578,10 +580,17 @@ public abstract class LinkManager {
 				return result;
 			}
 
+			@LapsedWith(module = JDK8, value = "Streams")
 			private Optional<LinkFactory<?>> getConnectionFactory(String name) {
 				for (LinkFactory<?> connectionFactory : getConnectionFactories()) {
 					if (connectionFactory.getName().equals(name)) {
 						return Optional.<LinkFactory<?>> of(connectionFactory);
+					}
+				}
+				for (LinkFactory<?> connectionFactory : getConnectionFactories()) {
+					Alias alias = connectionFactory.getClass().getAnnotation(LinkFactory.Alias.class);
+					if (alias != null && Arrays.asList(alias.value()).contains(name)) {
+						return Optional.<LinkFactory<?>>of(connectionFactory);
 					}
 				}
 				return Optional.<LinkFactory<?>> absent();

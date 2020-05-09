@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
+import org.ardulink.core.linkmanager.LinkFactory.Alias;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -25,6 +26,7 @@ package org.ardulink.core.linkmanager;
  * [adsense]
  *
  */
+@Alias({ "dummyLink2Alias" })
 public class DummyLinkFactory2 extends DummyLinkFactory {
 
 	@Override

@@ -16,6 +16,10 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Retention;
+
 import org.ardulink.core.Link;
 
 /**
@@ -27,6 +31,14 @@ import org.ardulink.core.Link;
  *
  */
 public interface LinkFactory<T extends LinkConfig> {
+	
+	/**
+	 * LinkFactories can have beside their primary name additionally alias names. 
+	 */
+	@Retention(RUNTIME)
+	public static @interface Alias {
+		String[] value();
+	}
 
 	String getName();
 
