@@ -16,13 +16,8 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static org.ardulink.util.anno.LapsedWith.JDK9;
-
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -32,35 +27,16 @@ import org.ardulink.util.anno.LapsedWith;
  * [adsense]
  *
  */
-@LapsedWith(value = JDK9, module = "Map#of")
-public class MapBuilder<K, V> {
+public final class Maps {
 
-	private final Map<K, V> data = new HashMap<K, V>();
-
-	private MapBuilder() {
+	private Maps() {
 		super();
 	}
 
-	public static <K, V> MapBuilder<K, V> newMapBuilder() {
-		return new MapBuilder<K, V>();
+	public static Properties toProperties(Map<? extends Object, ? extends Object> map) {
+		Properties properties = new Properties();
+		properties.putAll(map);
+		return properties;
 	}
-
-	public MapBuilder<K, V> put(K key, V value) {
-		data.put(key, value);
-		return this;
-	}
-
-	public MapBuilder<K, V> putAll(Map<? extends K, ? extends V> other) {
-		data.putAll(other);
-		return this;
-	}
-
-	public Map<K, V> build() {
-		return new HashMap<K, V>(this.data);
-	}
-
-	public Properties asProperties() {
-		return Maps.toProperties(build());
-	}
-
+	
 }
