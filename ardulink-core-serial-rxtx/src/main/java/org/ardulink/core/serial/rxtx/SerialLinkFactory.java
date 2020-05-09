@@ -21,11 +21,6 @@ import static gnu.io.SerialPort.PARITY_NONE;
 import static gnu.io.SerialPort.STOPBITS_1;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.util.Preconditions.checkState;
-import gnu.io.CommPortIdentifier;
-import gnu.io.NoSuchPortException;
-import gnu.io.PortInUseException;
-import gnu.io.SerialPort;
-import gnu.io.UnsupportedCommOperationException;
 
 import java.io.IOException;
 
@@ -34,7 +29,14 @@ import org.ardulink.core.Link;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.linkmanager.LinkFactory;
+import org.ardulink.core.linkmanager.LinkFactory.Alias;
 import org.ardulink.core.qos.QosLink;
+
+import gnu.io.CommPortIdentifier;
+import gnu.io.NoSuchPortException;
+import gnu.io.PortInUseException;
+import gnu.io.SerialPort;
+import gnu.io.UnsupportedCommOperationException;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -44,11 +46,12 @@ import org.ardulink.core.qos.QosLink;
  * [adsense]
  *
  */
+@Alias({ "serial" })
 public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
 	@Override
 	public String getName() {
-		return "serial";
+		return "serial-rxtx";
 	}
 
 	@Override
