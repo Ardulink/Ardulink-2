@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.ardulink.core.Link;
-import org.ardulink.util.Classes;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Strings;
 import org.ardulink.util.Throwables;
