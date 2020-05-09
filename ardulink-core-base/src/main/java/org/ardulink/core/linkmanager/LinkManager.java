@@ -426,7 +426,7 @@ public abstract class LinkManager {
 
 		private final LinkFactory<T> linkFactory;
 		private final T linkConfig;
-		private BeanProperties beanProperties;
+		private final BeanProperties beanProperties;
 		private final Map<String, ConfigAttributeAdapter<T>> cache = new HashMap<String, ConfigAttributeAdapter<T>>();
 		private boolean changed = true;
 
