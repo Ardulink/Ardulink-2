@@ -1,7 +1,7 @@
 package org.ardulink.core.linkmanager;
 
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
-import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Classes.constructor;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.Throwables.propagateIfInstanceOf;
@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.ardulink.core.Link;
+import org.ardulink.util.Classes;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Strings;
 import org.ardulink.util.Throwables;
@@ -48,10 +49,9 @@ public class FactoriesViaMetaInfArdulink {
 			Class<? extends Link> linkClass = loadClass(linkClassName,
 					Link.class);
 			Class<? extends LinkConfig> configClass = getConfigClass();
-			Constructor<? extends Link> constructor = checkNotNull(
-					linkClass.getConstructor(configClass),
-					"%s has no public constructor with argument of type %s",
-					linkClass.getName(), configClass.getName());
+			Constructor<? extends Link> constructor = constructor(linkClass, configClass).getOrThrow(
+					"%s has no public constructor with argument of type %s", linkClass.getName(),
+					configClass.getName());
 			try {
 				return constructor.newInstance(config);
 			} catch (InvocationTargetException e) {
