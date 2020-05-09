@@ -20,7 +20,6 @@ import static gnu.io.CommPortIdentifier.PORT_SERIAL;
 import static org.ardulink.util.Iterables.getFirst;
 
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 
 import javax.validation.constraints.Max;
@@ -67,9 +66,6 @@ public class SerialLinkConfig implements LinkConfig {
 
 	@Named("pingprobe")
 	private boolean pingprobe = true;
-
-	@Named("searchport")
-	private boolean searchport;
 
 	public int getBaudrate() {
 		return baudrate;
@@ -126,7 +122,7 @@ public class SerialLinkConfig implements LinkConfig {
 
 	@SuppressWarnings("unchecked")
 	private Iterable<CommPortIdentifier> portIdentifiers() {
-		return Collections.list((Enumeration<CommPortIdentifier>) CommPortIdentifier.getPortIdentifiers());
+		return Collections.list(CommPortIdentifier.getPortIdentifiers());
 	}
 
 	public void setBaudrate(int baudrate) {
