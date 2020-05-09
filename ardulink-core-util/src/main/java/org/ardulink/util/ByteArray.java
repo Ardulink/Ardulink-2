@@ -21,6 +21,14 @@ import static org.ardulink.util.Preconditions.checkState;
 
 import java.util.Arrays;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ByteArray {
 
 	private static final int MAX_BUFFER_LEN = 2048;

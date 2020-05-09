@@ -17,6 +17,14 @@ package org.ardulink.util;
 
 import static java.lang.System.arraycopy;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public final class Bytes {
 
 	private Bytes() {
