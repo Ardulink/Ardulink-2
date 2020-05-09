@@ -5,6 +5,7 @@ import static org.ardulink.util.Classes.constructor;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.Throwables.propagateIfInstanceOf;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -18,6 +19,7 @@ import org.ardulink.core.Link;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Strings;
 import org.ardulink.util.Throwables;
+import org.ardulink.util.anno.LapsedWith;
 
 public class FactoriesViaMetaInfArdulink {
 
@@ -97,6 +99,7 @@ public class FactoriesViaMetaInfArdulink {
 		}
 	}
 
+	@LapsedWith(module = JDK8, value = "BufferedReader#lines")
 	public List<LinkFactory> loadLinkFactories() {
 		List<LinkFactory> factories = Lists.newArrayList();
 		try {
