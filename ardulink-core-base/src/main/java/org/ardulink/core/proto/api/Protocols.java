@@ -16,12 +16,15 @@ limitations under the License.
 
 package org.ardulink.core.proto.api;
 
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -42,6 +45,7 @@ public final class Protocols {
 				"No protocol with name %s registered", name);
 	}
 
+	@LapsedWith(module = JDK8, value = "Streams")
 	public static Optional<Protocol> tryByName(String name) {
 		for (Iterator<Protocol> it = iterator(); it.hasNext();) {
 			Protocol protocol = it.next();
@@ -56,6 +60,7 @@ public final class Protocols {
 		return Lists.newArrayList(iterator());
 	}
 
+	@LapsedWith(module = JDK8, value = "Streams")
 	public static List<String> names() {
 		List<String> names = Lists.newArrayList();
 		for (Iterator<Protocol> it = iterator(); it.hasNext();) {
