@@ -8,6 +8,6 @@ public class CommandLineArguments {
 	public String connection = "ardulink://serial";
 
 	@Option(name = "-port", usage = "Port for the REST server")
-	public Integer port;
+	public int port = 8080;
 
 }
