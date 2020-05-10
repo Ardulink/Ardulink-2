@@ -16,10 +16,14 @@ limitations under the License.
 
 package org.ardulink.core.convenience;
 
+import static java.util.Collections.sort;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
+import static org.ardulink.util.Iterables.getFirst;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +35,9 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.util.Lists;
 import org.ardulink.util.URIs;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -68,14 +74,26 @@ public final class Links {
 
 	private static Configurer getConfigurer() {
 		LinkManager linkManager = linkManager();
-		List<URI> availableURIs = linkManager.listURIs();
-		URI serial = URIs.newURI("ardulink://serial");
-		if (availableURIs.contains(serial)) {
-			return linkManager.getConfigurer(serial);
-		} else if (!availableURIs.isEmpty()) {
-			return linkManager.getConfigurer(availableURIs.get(0));
-		}
-		throw new IllegalStateException("No factory registered");
+		return linkManager.getConfigurer(getFirst(sortSerialsTop(linkManager.listURIs()))
+				.getOrThrow(IllegalStateException.class, "No factory registered"));
+	}
+
+	@LapsedWith(module = JDK8, value = "Comparator")
+	private static List<URI> sortSerialsTop(List<URI> uris) {
+		List<URI> sorted = Lists.newArrayList(uris);
+		sort(sorted, new Comparator<URI>() {
+			@Override
+			@LapsedWith(module = JDK8, value = "Integer#compare")
+			public int compare(URI uri1, URI uri2) {
+				return Integer.valueOf(val(uri1)).compareTo(Integer.valueOf(val(uri2)));
+			}
+
+			private int val(URI uri) {
+				String name = uri.getHost();
+				return name.equals("serial") ? 0 : name.startsWith("serial-") ? 1 : 100;
+			}
+		});
+		return sorted;
 	}
 
 	private static LinkManager linkManager() {

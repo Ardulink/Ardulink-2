@@ -29,7 +29,6 @@ import org.ardulink.core.Link;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.core.linkmanager.LinkFactory.Alias;
 import org.ardulink.core.qos.QosLink;
 
 import gnu.io.CommPortIdentifier;
@@ -46,7 +45,6 @@ import gnu.io.UnsupportedCommOperationException;
  * [adsense]
  *
  */
-@Alias({ "serial" })
 public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
 	@Override
@@ -70,7 +68,6 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
 		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(
 				connection, config.getProto());
-		@SuppressWarnings("resource")
 		Link link = config.isQos() ? new QosLink(connectionBasedLink)
 				: connectionBasedLink;
 

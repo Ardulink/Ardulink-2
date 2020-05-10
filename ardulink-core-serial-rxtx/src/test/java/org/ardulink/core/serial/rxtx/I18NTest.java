@@ -8,7 +8,7 @@ public class I18NTest {
 
 	@Test
 	public void allAttributesHaveAdescription() {
-		assertAllAttributesHaveDescriptions("ardulink://serial");
+		assertAllAttributesHaveDescriptions("ardulink://serial-rxtx");
 	}
 
 }
