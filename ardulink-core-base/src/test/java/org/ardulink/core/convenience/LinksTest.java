@@ -151,13 +151,13 @@ public class LinksTest {
 
 	@Test
 	public void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws Exception {
-		class DummyLinkFactory2 extends DummyLinkFactory {
+		class DummyLinkFactoryExtension extends DummyLinkFactory {
 			@Override
 			public String getName() {
 				return "DummyLINK";
 			}
 		}
-		withRegistered(new DummyLinkFactory2()).execute(new Statement() {
+		withRegistered(new DummyLinkFactoryExtension()).execute(new Statement() {
 			@Override
 			public void execute() throws Exception {
 				String uri1 = "ardulink://dummyLink?a=aVal1&b=4";
