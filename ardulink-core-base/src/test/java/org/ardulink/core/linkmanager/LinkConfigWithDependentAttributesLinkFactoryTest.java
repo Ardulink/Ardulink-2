@@ -16,12 +16,16 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
+import static org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.withRegistered;
+import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.URIs.newURI;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import org.ardulink.core.Link;
-import org.ardulink.util.URIs;
+import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.Statement;
 import org.junit.Test;
 
 /**
@@ -34,14 +38,78 @@ import org.junit.Test;
  */
 public class LinkConfigWithDependentAttributesLinkFactoryTest {
 
+	public static class LinkConfigWithDependentAttributes implements LinkConfig {
+
+		@Named("host")
+		private String host;
+		@Named("port")
+		private Integer port;
+		@Named("devicePort")
+		private String devicePort;
+
+		@ChoiceFor("devicePort")
+		public String[] availableDevicePort() {
+			checkNotNull(host, "host must not be null");
+			checkNotNull(port, "port must not be null");
+			return new String[] { "foo", "bar" };
+		}
+
+		public String getHost() {
+			return host;
+		}
+
+		public void setHost(String host) {
+			this.host = host;
+		}
+
+		public int getPort() {
+			return port == null ? -1 : port.intValue();
+		}
+
+		public void setPort(int port) {
+			this.port = Integer.valueOf(port);
+		}
+
+		public String getDevicePort() {
+			return devicePort;
+		}
+
+		public void setDevicePort(String devicePort) {
+			this.devicePort = devicePort;
+		}
+
+	}
+
+	public static class LinkConfigWithDependentAttributesLinkFactory
+			implements LinkFactory<LinkConfigWithDependentAttributes> {
+
+		@Override
+		public String getName() {
+			return "dependendAttributes";
+		}
+
+		@Override
+		public Link newLink(LinkConfigWithDependentAttributes config) {
+			return mock(Link.class);
+		}
+
+		@Override
+		public LinkConfigWithDependentAttributes newLinkConfig() {
+			return new LinkConfigWithDependentAttributes();
+		}
+
+	}
+
 	@Test
-	public void canInstantiateLinkWithDependentAttributes() {
-		LinkManager connectionManager = LinkManager.getInstance();
-		Link link = connectionManager
-				.getConfigurer(
-						URIs.newURI("ardulink://dependendAttributes?devicePort=foo&host=h&port=1"))
-				.newLink();
-		assertThat(link, is(notNullValue()));
+	public void canInstantiateLinkWithDependentAttributes() throws Exception {
+		withRegistered(new LinkConfigWithDependentAttributesLinkFactory()).execute(new Statement() {
+			@Override
+			public void execute() {
+				Link link = LinkManager.getInstance()
+						.getConfigurer(newURI("ardulink://dependendAttributes?devicePort=foo&host=h&port=1")).newLink();
+				assertThat(link, is(notNullValue()));
+			}
+		});
 	}
 
 }

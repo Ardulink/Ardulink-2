@@ -1,4 +1,2 @@
 org.ardulink.core.linkmanager.DummyLinkFactory
 org.ardulink.core.linkmanager.DummyLinkFactory2
-org.ardulink.core.linkmanager.LinkConfigWithDependentAttributesLinkFactory
-org.ardulink.core.linkmanager.AliasUsingLinkFactory

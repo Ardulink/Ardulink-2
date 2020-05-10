@@ -208,8 +208,6 @@ public class DummyLinkFactoryTest {
 				sut.listURIs(),
 				is(links("ardulink://dummyLink", //
 						"ardulink://dummyLink2", //
-						"ardulink://dependendAttributes", //
-						"ardulink://aliasLink", //
 						"ardulink://aLinkWithoutArealLinkFactoryWithoutConfig", //
 						"ardulink://aLinkWithoutArealLinkFactoryWithConfig" //
 				)));
