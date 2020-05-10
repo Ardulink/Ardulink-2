@@ -18,6 +18,7 @@ package org.ardulink.core.convenience;
 
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.withRegistered;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.Is.is;
@@ -25,6 +26,9 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -36,6 +40,8 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.linkmanager.DummyConnection;
 import org.ardulink.core.linkmanager.DummyLinkConfig;
 import org.ardulink.core.linkmanager.DummyLinkFactory;
+import org.ardulink.core.linkmanager.LinkConfig;
+import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.Statement;
 import org.junit.Test;
 
@@ -170,6 +176,55 @@ public class LinksTest {
 				return String.format("ardulink://%s?a=aVal1&b=4", name);
 			}
 		});
+	}
+
+	@Test
+	public void serialHasPriorityOverAllOthers() throws Exception {
+		final LinkFactory<LinkConfig> serial = spy(factoryNamed("serial"));
+		withRegistered(factoryNamed("serial-a"), factoryNamed("a"), serial, factoryNamed("z"), factoryNamed("serial-z"))
+				.execute(new Statement() {
+					@Override
+					public void execute() throws Exception {
+						assertLinkWasCreatedBy(Links.getDefault(), serial);
+					}
+				});
+	}
+
+	@Test
+	public void startingWithSerialDashHasPriorityOverAllOthers() throws Exception {
+		final LinkFactory<LinkConfig> serial = spy(factoryNamed("serial-foobar"));
+		withRegistered(factoryNamed("a"), serial, factoryNamed("z")).execute(new Statement() {
+			@Override
+			public void execute() throws Exception {
+				assertLinkWasCreatedBy(Links.getDefault(), serial);
+			}
+		});
+	}
+
+	private void assertLinkWasCreatedBy(Link link, LinkFactory<LinkConfig> serial) throws Exception {
+		verify(serial, times(1)).newLink(any(LinkConfig.class));
+		link.close();
+	}
+
+	private LinkFactory<LinkConfig> factoryNamed(final String name) {
+		return new LinkFactory<LinkConfig>() {
+
+			@Override
+			public String getName() {
+				return name;
+			}
+
+			@Override
+			public Link newLink(LinkConfig config) throws Exception {
+				return mock(Link.class);
+			}
+
+			@Override
+			public LinkConfig newLinkConfig() {
+				return NO_ATTRIBUTES;
+			}
+
+		};
 	}
 
 	private static <T> T[] assertAllSameInstances(T... objects) {

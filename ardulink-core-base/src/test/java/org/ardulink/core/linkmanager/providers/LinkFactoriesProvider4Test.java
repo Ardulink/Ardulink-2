@@ -3,6 +3,7 @@ package org.ardulink.core.linkmanager.providers;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -14,19 +15,19 @@ public class LinkFactoriesProvider4Test implements LinkFactoriesProvider {
 
 	public static class Executor {
 
-		private final LinkFactory<?> factory;
+		private final List<LinkFactory<?>> factories;
 
-		public Executor(LinkFactory<?> factory) {
-			this.factory = factory;
+		public Executor(LinkFactory<?>... factories) {
+			this.factories = Arrays.asList(factories);
 		}
 
 		@LapsedWith(module = JDK8, value = "Lambda")
 		public void execute(LinkFactoriesProvider4Test.Statement statement) throws Exception {
-			factories().add(factory);
+			factories().addAll(factories);
 			try {
 				statement.execute();
 			} finally {
-				factories().remove(factory);
+				factories().removeAll(factories);
 			}
 
 		}
@@ -52,8 +53,8 @@ public class LinkFactoriesProvider4Test implements LinkFactoriesProvider {
 		return factories();
 	}
 
-	public static Executor withRegistered(LinkFactory factory) {
-		return new Executor(factory);
+	public static Executor withRegistered(LinkFactory... factories) {
+		return new Executor(factories);
 	}
 
 }
