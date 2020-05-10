@@ -48,7 +48,7 @@ import org.ardulink.util.anno.LapsedWith;
  * [adsense]
  *
  */
-public class FactoriesViaMetaInfArdulink implements FactoriesProvider {
+public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 
 	private static final class GenericLinkFactory implements
 			LinkFactory<LinkConfig> {

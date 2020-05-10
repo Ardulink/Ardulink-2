@@ -20,13 +20,14 @@ import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
 import static java.lang.String.format;
 import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
+import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.ServiceLoaders.services;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
-import static org.ardulink.util.anno.LapsedWith.JDK9;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
@@ -38,12 +39,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.ServiceLoader;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -57,7 +56,7 @@ import org.ardulink.core.linkmanager.LinkConfig.ChoiceFor;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.linkmanager.LinkConfig.Named;
 import org.ardulink.core.linkmanager.LinkFactory.Alias;
-import org.ardulink.core.linkmanager.providers.FactoriesProvider;
+import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
 import org.ardulink.util.Primitive;
@@ -600,12 +599,12 @@ public abstract class LinkManager {
 				return Optional.<LinkFactory<?>> absent();
 			}
 			
-			@LapsedWith(module = JDK9, value = "ServiceLoader#stream")
+			@LapsedWith(module = JDK8, value = "Streams")
 			private List<LinkFactory> getConnectionFactories() {
 				List<LinkFactory> factories = Lists.newArrayList();
-				for (Iterator<FactoriesProvider> it = ServiceLoader.load(FactoriesProvider.class).iterator(); it
-						.hasNext();) {
-					factories.addAll(it.next().loadLinkFactories());
+				for (LinkFactoriesProvider linkFactoriesProvider : services(LinkFactoriesProvider.class,
+						moduleClassloader())) {
+					factories.addAll(linkFactoriesProvider.loadLinkFactories());
 				}
 				return factories;
 			}
@@ -619,11 +618,8 @@ public abstract class LinkManager {
 								IllegalArgumentException.class,
 								"No factory registered for \"%s\", available names are %s",
 								name, listURIs());
-				DefaultConfigurer defaultConfigurer = new DefaultConfigurer(
-						connectionFactory);
-				return configure(defaultConfigurer,
-						uri.getQuery() == null ? new String[0] : uri.getQuery()
-								.split("\\&"));
+				Configurer configurer = new DefaultConfigurer(connectionFactory);
+				return uri.getQuery() == null ? configurer : configure(configurer, uri.getQuery().split("\\&"));
 			}
 
 			private Configurer configure(Configurer configurer, String[] params) {

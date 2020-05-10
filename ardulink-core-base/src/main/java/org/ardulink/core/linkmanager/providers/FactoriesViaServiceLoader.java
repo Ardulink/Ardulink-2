@@ -17,12 +17,11 @@ limitations under the License.
 package org.ardulink.core.linkmanager.providers;
 
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
+import static org.ardulink.util.ServiceLoaders.services;
 
 import java.util.Collection;
-import java.util.ServiceLoader;
 
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.util.Lists;
 import org.ardulink.util.anno.LapsedWith;
 
 /**
@@ -33,13 +32,12 @@ import org.ardulink.util.anno.LapsedWith;
  * [adsense]
  *
  */
-public class FactoriesViaServiceLoader implements FactoriesProvider {
+public class FactoriesViaServiceLoader implements LinkFactoriesProvider {
 
 	@Override
 	@LapsedWith(module = LapsedWith.JDK9, value = "ServiceLoader#stream")
 	public Collection<LinkFactory> loadLinkFactories() {
-		return Lists.newArrayList(ServiceLoader.load(LinkFactory.class,
-				moduleClassloader()).iterator());
+		return services(LinkFactory.class, moduleClassloader());
 	}
 
 }

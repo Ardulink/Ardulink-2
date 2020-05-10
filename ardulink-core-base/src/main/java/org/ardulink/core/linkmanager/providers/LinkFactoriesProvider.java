@@ -28,6 +28,6 @@ import org.ardulink.core.linkmanager.LinkFactory;
  * [adsense]
  *
  */
-public interface FactoriesProvider {
+public interface LinkFactoriesProvider {
 	Collection<LinkFactory> loadLinkFactories();
 }
