@@ -42,6 +42,7 @@ import org.ardulink.core.linkmanager.DummyLinkConfig;
 import org.ardulink.core.linkmanager.DummyLinkFactory;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
+import org.ardulink.core.linkmanager.LinkManagerTest.AliasUsingLinkFactory;
 import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.Statement;
 import org.junit.Test;
 
@@ -197,6 +198,19 @@ public class LinksTest {
 			@Override
 			public void execute() throws Exception {
 				assertLinkWasCreatedBy(Links.getDefault(), serial);
+			}
+		});
+	}
+
+	@Test
+	public void aliasLinksAreSharedToo() throws Exception {
+		withRegistered(new AliasUsingLinkFactory()).execute(new Statement() {
+			@Override
+			public void execute() throws Exception {
+				Link link1 = Links.getLink("ardulink://aliasLink");
+				Link link2 = Links.getLink("ardulink://aliasLinkAlias");
+				assertAllSameInstances(link1, link2);
+				close(link1, link2);
 			}
 		});
 	}
