@@ -160,12 +160,14 @@ public class LinksTest {
 		withRegistered(new DummyLinkFactoryExtension()).execute(new Statement() {
 			@Override
 			public void execute() throws Exception {
-				String uri1 = "ardulink://dummyLink?a=aVal1&b=4";
-				String uri2 = "ardulink://DummyLINK?a=aVal1&b=4";
-				Link link1 = Links.getLink(uri1);
-				Link link2 = Links.getLink(uri2);
+				Link link1 = Links.getLink(makeUri("dummyLink"));
+				Link link2 = Links.getLink(makeUri("DummyLINK"));
 				assertThat(link1, not(sameInstance(link2)));
 				close(link1, link2);
+			}
+
+			private String makeUri(String name) {
+				return String.format("ardulink://%s?a=aVal1&b=4", name);
 			}
 		});
 	}
