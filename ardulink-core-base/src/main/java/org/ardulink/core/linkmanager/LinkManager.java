@@ -26,6 +26,7 @@ import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.ardulink.util.anno.LapsedWith.JDK9;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
@@ -37,10 +38,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.ServiceLoader;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -54,6 +57,7 @@ import org.ardulink.core.linkmanager.LinkConfig.ChoiceFor;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.linkmanager.LinkConfig.Named;
 import org.ardulink.core.linkmanager.LinkFactory.Alias;
+import org.ardulink.core.linkmanager.providers.FactoriesProvider;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
 import org.ardulink.util.Primitive;
@@ -595,15 +599,14 @@ public abstract class LinkManager {
 				}
 				return Optional.<LinkFactory<?>> absent();
 			}
-
-			// of course we also could load the FactoryFactories via
-			// serviceloader to enable additional FactoryFactories
+			
+			@LapsedWith(module = JDK9, value = "ServiceLoader#stream")
 			private List<LinkFactory> getConnectionFactories() {
 				List<LinkFactory> factories = Lists.newArrayList();
-				factories.addAll(new FactoriesViaServiceLoader()
-						.loadLinkFactories());
-				factories.addAll(new FactoriesViaMetaInfArdulink()
-						.loadLinkFactories());
+				for (Iterator<FactoriesProvider> it = ServiceLoader.load(FactoriesProvider.class).iterator(); it
+						.hasNext();) {
+					factories.addAll(it.next().loadLinkFactories());
+				}
 				return factories;
 			}
 

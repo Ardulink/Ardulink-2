@@ -1,0 +1,2 @@
+org.ardulink.core.linkmanager.providers.FactoriesViaServiceLoader
+org.ardulink.core.linkmanager.providers.FactoriesViaMetaInfArdulink
