@@ -16,16 +16,17 @@ limitations under the License.
 
 package org.ardulink.core.convenience;
 
-import static java.util.Collections.sort;
+import static java.lang.Integer.MIN_VALUE;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.util.Iterables.getFirst;
+import static org.ardulink.util.Lists.sortedCopy;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,7 +36,8 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.util.Lists;
+import org.ardulink.util.Integers;
+import org.ardulink.util.Optional;
 import org.ardulink.util.URIs;
 import org.ardulink.util.anno.LapsedWith;
 
@@ -51,6 +53,7 @@ public final class Links {
 
 	// TODO use a WeakHashMap and use PhantomReferences to close GCed Links
 	private static final Map<Object, CacheValue> cache = new HashMap<Object, CacheValue>();
+	private static final LinkManager linkManager = LinkManager.getInstance();
 
 	private Links() {
 		super();
@@ -69,37 +72,28 @@ public final class Links {
 	}
 
 	public static Configurer getDefaultConfigurer() {
-		return setChoiceValues(getConfigurer());
+		return setChoiceValues(linkManager.getConfigurer(defaultUri()));
 	}
 
-	private static Configurer getConfigurer() {
-		LinkManager linkManager = linkManager();
-		return linkManager.getConfigurer(getFirst(sortSerialsTop(linkManager.listURIs()))
-				.getOrThrow(IllegalStateException.class, "No factory registered"));
+	private static URI defaultUri() {
+		return getFirst(sortedCopy(linkManager.listURIs(), serialsFirst())).getOrThrow(IllegalStateException.class,
+				"No factory registered");
 	}
 
 	@LapsedWith(module = JDK8, value = "Comparator")
-	private static List<URI> sortSerialsTop(List<URI> uris) {
-		List<URI> sorted = Lists.newArrayList(uris);
-		sort(sorted, new Comparator<URI>() {
+	private static Comparator<URI> serialsFirst() {
+		return new Comparator<URI>() {
 			@Override
-			@LapsedWith(module = JDK8, value = "Integer#compare")
 			public int compare(URI uri1, URI uri2) {
-				return Integer.valueOf(val(uri1)).compareTo(Integer.valueOf(val(uri2)));
+				return Integers.compare(valueOf(uri1), valueOf(uri2));
 			}
 
-			private int val(URI uri) {
-				String name = uri.getHost();
-				return name.equals("serial") ? 0 : name.startsWith("serial-") ? 1 : 100;
+			private int valueOf(URI uri) {
+				String name = extractNameFromURI(uri);
+				return name.equals("serial") ? MIN_VALUE : name.startsWith("serial-") ? (MIN_VALUE + 1) : 0;
 			}
-		});
-		return sorted;
+		};
 	}
-
-	private static LinkManager linkManager() {
-		return LinkManager.getInstance();
-	}
-
 	/**
 	 * Returns a shared Link to the passed URI. If the Link already was created the
 	 * cached Link is returned. If the Link is not used anymore it should be closed
@@ -127,7 +121,7 @@ public final class Links {
 	 * @throws Exception
 	 */
 	public static Link getLink(URI uri) {
-		return isDefault(uri) ? getDefault() : getLink(linkManager().getConfigurer(uri));
+		return isDefault(uri) ? getDefault() : getLink(linkManager.getConfigurer(uri));
 	}
 
 	private static boolean isDefault(URI uri) {
@@ -166,6 +160,7 @@ public final class Links {
 				long result = super.startListening(pin);
 				AtomicInteger counter = getCounter(pin);
 				if (counter == null) {
+					@LapsedWith(module = JDK8, value = "Map#merge")
 					AtomicInteger oldValue = listenCounter.putIfAbsent(pin, counter = new AtomicInteger());
 					if (oldValue != null) {
 						counter = oldValue;
@@ -187,14 +182,15 @@ public final class Links {
 		};
 	}
 
+	@LapsedWith(module = JDK8, value = "Stream")
 	public static Configurer setChoiceValues(Configurer configurer) {
 		for (String key : configurer.getAttributes()) {
 			ConfigAttribute attribute = configurer.getAttribute(key);
 			if (attribute.hasChoiceValues() && !isConfigured(attribute)) {
-				Object[] choiceValues = attribute.getChoiceValues();
-				// we use the first one for each
-				if (choiceValues.length > 0) {
-					attribute.setValue(choiceValues[0]);
+				@LapsedWith(module = JDK8, value = "Optional")
+				Optional<Object> first = getFirst(Arrays.asList(attribute.getChoiceValues()));
+				if (first.isPresent()) {
+					attribute.setValue(first.get());
 				}
 			}
 		}

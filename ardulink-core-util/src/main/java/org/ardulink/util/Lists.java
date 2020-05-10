@@ -16,10 +16,12 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.ardulink.util.anno.LapsedWith.JDK9;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -56,6 +58,13 @@ public final class Lists {
 		List<T> list = new ArrayList<T>();
 		Collections.addAll(list, values);
 		return list;
+	}
+
+	@LapsedWith(module = JDK8, value = "Stream")
+	public static <T> List<T> sortedCopy(Iterable<T> iterable, Comparator<T> comparator) {
+		List<T> copy = newArrayList(iterable);
+		Collections.sort(copy, comparator);
+		return copy;
 	}
 
 }
