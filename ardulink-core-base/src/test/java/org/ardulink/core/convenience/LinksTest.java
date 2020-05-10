@@ -18,6 +18,7 @@ package org.ardulink.core.convenience;
 
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.withRegistered;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -34,6 +35,8 @@ import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
 import org.ardulink.core.linkmanager.DummyConnection;
 import org.ardulink.core.linkmanager.DummyLinkConfig;
+import org.ardulink.core.linkmanager.DummyLinkFactory;
+import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.Statement;
 import org.junit.Test;
 
 /**
@@ -147,13 +150,24 @@ public class LinksTest {
 	}
 
 	@Test
-	public void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws IOException {
-		String uri1 = "ardulink://dummyLink?a=aVal1&b=4";
-		String uri2 = "ardulink://dummyLink2?a=aVal1&b=4";
-		Link link1 = Links.getLink(uri1);
-		Link link2 = Links.getLink(uri2);
-		assertThat(link1, not(sameInstance(link2)));
-		close(link1, link2);
+	public void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws Exception {
+		class DummyLinkFactory2 extends DummyLinkFactory {
+			@Override
+			public String getName() {
+				return "DummyLINK";
+			}
+		}
+		withRegistered(new DummyLinkFactory2()).execute(new Statement() {
+			@Override
+			public void execute() throws Exception {
+				String uri1 = "ardulink://dummyLink?a=aVal1&b=4";
+				String uri2 = "ardulink://DummyLINK?a=aVal1&b=4";
+				Link link1 = Links.getLink(uri1);
+				Link link2 = Links.getLink(uri2);
+				assertThat(link1, not(sameInstance(link2)));
+				close(link1, link2);
+			}
+		});
 	}
 
 	private static <T> T[] assertAllSameInstances(T... objects) {
