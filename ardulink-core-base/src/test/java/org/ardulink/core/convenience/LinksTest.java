@@ -155,14 +155,7 @@ public class LinksTest {
 		assertThat(link1, not(sameInstance(link2)));
 		close(link1, link2);
 	}
-	
-	@Test
-	public void canLoadDummyLinkViaAlias() throws IOException {
-		Link link = Links.getLink("ardulink://dummyLink2Alias");
-		assertThat(link, notNullValue());
-		close(link, link);
-	}
-	
+
 	private static <T> T[] assertAllSameInstances(T... objects) {
 		for (int i = 0; i < objects.length - 1; i++) {
 			assertThat(objects[i], sameInstance(objects[i + 1]));

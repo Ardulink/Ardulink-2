@@ -30,9 +30,11 @@ import org.ardulink.core.ConnectionBasedLink;
  */
 public class DummyLinkFactory implements LinkFactory<DummyLinkConfig> {
 
+	static final String DUMMY_LINK_NAME = "dummyLink";
+
 	@Override
 	public String getName() {
-		return "dummyLink";
+		return DUMMY_LINK_NAME;
 	}
 
 	@Override

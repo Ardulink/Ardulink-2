@@ -23,6 +23,7 @@ import static java.util.Locale.ENGLISH;
 import static java.util.Locale.GERMAN;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.Is.is;
@@ -43,6 +44,7 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import org.ardulink.core.proto.impl.DummyProtocol;
 import org.ardulink.util.URIs;
+import org.ardulink.util.anno.LapsedWith;
 import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -204,12 +206,16 @@ public class DummyLinkFactoryTest {
 	public void canIterateRegisteredFactories() {
 		assertThat(
 				sut.listURIs(),
-				is(links("ardulink://dummyLink", "ardulink://dummyLink2",
-						"ardulink://dependendAttributes",
-						"ardulink://aLinkWithoutArealLinkFactoryWithoutConfig",
-						"ardulink://aLinkWithoutArealLinkFactoryWithConfig")));
+				is(links("ardulink://dummyLink", //
+						"ardulink://dummyLink2", //
+						"ardulink://dependendAttributes", //
+						"ardulink://aliasLink", //
+						"ardulink://aLinkWithoutArealLinkFactoryWithoutConfig", //
+						"ardulink://aLinkWithoutArealLinkFactoryWithConfig" //
+				)));
 	}
 
+	@LapsedWith(module = JDK8, value = "Streams")
 	private List<URI> links(String... links) {
 		List<URI> uris = new ArrayList<URI>(links.length);
 		for (String link : links) {

@@ -16,16 +16,30 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
+import static java.util.Arrays.asList;
+import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.util.URIs.newURI;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.rules.ExpectedException.none;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
 
 import org.ardulink.core.Link;
+import org.ardulink.core.linkmanager.LinkFactory.Alias;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.viaservices.AlLinkWithoutArealLinkFactoryWithConfig;
 import org.ardulink.core.linkmanager.viaservices.AlLinkWithoutArealLinkFactoryWithoutConfig;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -38,6 +52,9 @@ import org.junit.Test;
 public class LinkManagerTest {
 
 	LinkManager sut = LinkManager.getInstance();
+	
+	@Rule
+	public ExpectedException exception = none();
 
 	@Test
 	public void onceQueriedChoiceValuesStayValid() throws Exception {
@@ -84,5 +101,41 @@ public class LinkManagerTest {
 		assertThat(link,
 				is(instanceOf(AlLinkWithoutArealLinkFactoryWithConfig.class)));
 	}
+	
+	@Test
+	public void nonExistingNameWitllThrowRTE() throws IOException {
+		exception.expect(RuntimeException.class);
+		exception.expectMessage(allOf(containsString("registered"), containsString("factory")));
+		sut.getConfigurer(newURI("ardulink://XXX-aNameThatIsNotRegistered-XXX"));
+	}
+	
+	@Test
+	public void canLoadDummyLinkViaAlias() throws IOException {
+		sut.getConfigurer(aliasUri());
+	}
+
+	@Test
+	public void aliasNameNotListed() throws IOException {
+		List<URI> listURIs = sut.listURIs();
+		assertThat(listURIs, hasItem(aliasUri()));
+		assertThat(listURIs, not(hasItem(newURI("ardulink://aliasLinkAlias"))));
+	}
+
+	@Test
+	public void nameHasPriorityOverAlias() throws IOException {
+		String dummyLinkFactoryName = new DummyLinkFactory().getName();
+		List<String> aliasLinkAliases = asList(AliasUsingLinkFactory.class.getAnnotation(Alias.class).value());
+		assert aliasLinkAliases.contains(dummyLinkFactoryName);
+		assert new AliasUsingLinkFactory().newLink(NO_ATTRIBUTES) instanceof AliasUsingLinkFactory.LinkImplementation;
+
+		Link link = sut.getConfigurer(newURI("ardulink://" + dummyLinkFactoryName)).newLink();
+		assertThat(link, not(instanceOf(AliasUsingLinkFactory.LinkImplementation.class)));
+		link.close();
+	}
+
+	private URI aliasUri() {
+		return newURI("ardulink://aliasLink");
+	}
 
 }
+
