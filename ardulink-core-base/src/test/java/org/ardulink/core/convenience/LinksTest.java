@@ -65,9 +65,9 @@ public class LinksTest {
 
 	@Test
 	public void serialHasPriorityOverAllOthers() throws Exception {
-		final LinkFactory<LinkConfig> serial = spy(factoryNamed("serial"));
-		withRegistered(factoryNamed("serial-a"), factoryNamed("a"), serial, factoryNamed("z"), factoryNamed("serial-z"))
-				.execute(new Statement() {
+		final LinkFactory<LinkConfig> serial = spy(factoryNamed(serial()));
+		withRegistered(factoryNamed(serialDash("a")), factoryNamed("a"), serial, factoryNamed("z"),
+				factoryNamed(serialDash("z"))).execute(new Statement() {
 					@Override
 					public void execute() throws Exception {
 						assertLinkWasCreatedBy(Links.getDefault(), serial);
@@ -77,13 +77,21 @@ public class LinksTest {
 
 	@Test
 	public void startingWithSerialDashHasPriorityOverAllOthers() throws Exception {
-		final LinkFactory<LinkConfig> serial = spy(factoryNamed("serial-foobar"));
-		withRegistered(factoryNamed("a"), serial, factoryNamed("z")).execute(new Statement() {
+		final LinkFactory<LinkConfig> serialDashAnything = spy(factoryNamed(serialDash("appendix-does-not-matter")));
+		withRegistered(factoryNamed("a"), serialDashAnything, factoryNamed("z")).execute(new Statement() {
 			@Override
 			public void execute() throws Exception {
-				assertLinkWasCreatedBy(Links.getDefault(), serial);
+				assertLinkWasCreatedBy(Links.getDefault(), serialDashAnything);
 			}
 		});
+	}
+
+	private static String serialDash(String appendix) {
+		return serial() + "-" + appendix;
+	}
+
+	private static String serial() {
+		return "serial";
 	}
 
 	@Test
@@ -194,7 +202,7 @@ public class LinksTest {
 
 		withRegistered(new DummyLinkFactoryExtension()).execute(new Statement() {
 			@Override
-			public void execute() throws Exception {
+			public void execute() throws IOException {
 				Link link1 = Links.getLink(makeUri(name1));
 				Link link2 = Links.getLink(makeUri(name2));
 				assertThat(link1, not(sameInstance(link2)));
@@ -211,7 +219,7 @@ public class LinksTest {
 	public void aliasLinksAreSharedToo() throws Exception {
 		withRegistered(new AliasUsingLinkFactory()).execute(new Statement() {
 			@Override
-			public void execute() throws Exception {
+			public void execute() throws IOException {
 				Link link1 = Links.getLink("ardulink://aliasLink");
 				Link link2 = Links.getLink("ardulink://aliasLinkAlias");
 				assertAllSameInstances(link1, link2);
@@ -234,7 +242,7 @@ public class LinksTest {
 			}
 
 			@Override
-			public Link newLink(LinkConfig config) throws Exception {
+			public Link newLink(LinkConfig config) {
 				return mock(Link.class);
 			}
 
