@@ -50,11 +50,6 @@ public class RestMain implements AutoCloseable {
 				.asProperties();
 	}
 
-	@Deprecated
-	public void stop() {
-		close();
-	}
-
 	@Override
 	public void close() {
 		main.stop();

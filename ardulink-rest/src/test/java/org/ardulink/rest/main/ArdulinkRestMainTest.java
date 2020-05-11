@@ -59,17 +59,20 @@ public class ArdulinkRestMainTest {
 
 	@Test
 	public void canStartMainWithArgs() throws IOException, CmdLineException {
-		CommandLineArguments args = new CommandLineArguments();
-		args.connection = "ardulink://mock";
-		args.port = port;
-		RestMain restMain = new RestMain(args);
-		try (Link mock = getMock(Links.getLink(args.connection))) {
+		CommandLineArguments args = args();
+		try (RestMain restMain = new RestMain(args); Link mock = getMock(Links.getLink(args.connection))) {
 			int pin = 5;
 			boolean state = true;
 			given().body(state).post("/pin/digital/{pin}", pin).then().statusCode(200);
 			verify(mock).switchDigitalPin(digitalPin(pin), state);
 		}
-		restMain.stop();
+	}
+
+	private CommandLineArguments args() {
+		CommandLineArguments args = new CommandLineArguments();
+		args.connection = "ardulink://mock";
+		args.port = port;
+		return args;
 	}
 
 }

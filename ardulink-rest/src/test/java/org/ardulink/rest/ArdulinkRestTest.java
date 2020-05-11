@@ -129,7 +129,6 @@ public class ArdulinkRestTest {
 			}
 			verify(mock).close();
 		}
-
 	}
 
 	private RestMain startCamelRest(String target) throws Exception {
