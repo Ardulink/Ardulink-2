@@ -33,6 +33,7 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	public static final String VAR_TARGET = "to.uri";
 	public static final String VAR_HOST = "from.host";
+	public static final String VAR_BIND = "from.bind";
 	public static final String VAR_PORT = "from.port";
 
 	private static final String target = fromPlaceholder(VAR_TARGET);
@@ -42,10 +43,6 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	private static String fromPlaceholder(String var) {
 		return "{{" + var + "}}";
-	}
-
-	private static String fromPlaceholder(String var, String defaultValue) {
-		return "{{" + var + ":" + defaultValue + "}}";
 	}
 
 	@Override
@@ -58,7 +55,7 @@ public class RestRouteBuilder extends RouteBuilder {
 		String readDigital = "direct:readDigital-" + identityHashCode(this);
 		String switchAnalog = "direct:switchAnalog-" + identityHashCode(this);
 		String switchDigital = "direct:switchDigital-" + identityHashCode(this);
-		restConfiguration().host(fromPlaceholder(VAR_HOST, "localhost")).port(fromPlaceholder(VAR_PORT));
+		restConfiguration().host(fromPlaceholder(VAR_BIND)).port(fromPlaceholder(VAR_PORT));
 		rest("/pin") //
 				.consumes("application/json").produces("application/json") //
 				.patch("/analog/{pin}").to(patchAnalog) //

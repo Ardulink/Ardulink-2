@@ -22,22 +22,19 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
-import static org.ardulink.rest.RestRouteBuilder.VAR_PORT;
-import static org.ardulink.rest.RestRouteBuilder.VAR_TARGET;
 import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.ardulinkUri;
 import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.register;
 import static org.ardulink.testsupport.mock.TestSupport.createAbstractListenerLink;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
-import static org.ardulink.util.MapBuilder.newMapBuilder;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.verify;
 
-import org.apache.camel.CamelContext;
-import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
+import org.ardulink.rest.main.CommandLineArguments;
+import org.ardulink.rest.main.RestMain;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -60,12 +57,11 @@ public class ArdulinkRestTest {
 	public void canSwitchDigitalPin() throws Exception {
 		try (Link link = Links.getLink("ardulink://mock")) {
 			Link mock = getMock(link);
-			try (CamelContext context = startCamelRest("ardulink://mock")) {
+			try (RestMain main = startCamelRest("ardulink://mock")) {
 				int pin = 5;
 				boolean state = true;
 				given().body(state).post("/pin/digital/{pin}", pin).then().statusCode(200);
 				verify(mock).switchDigitalPin(digitalPin(pin), state);
-				context.stop();
 			}
 			verify(mock).close();
 		}
@@ -75,12 +71,11 @@ public class ArdulinkRestTest {
 	public void canSwitchAnalogPin() throws Exception {
 		try (Link link = Links.getLink("ardulink://mock")) {
 			Link mock = getMock(link);
-			try (CamelContext context = startCamelRest("ardulink://mock")) {
+			try (RestMain main = startCamelRest("ardulink://mock")) {
 				int pin = 9;
 				int value = 123;
 				given().body(value).post("/pin/analog/{pin}", pin).then().statusCode(200);
 				verify(mock).switchAnalogPin(analogPin(pin), value);
-				context.stop();
 			}
 			verify(mock).close();
 		}
@@ -90,11 +85,9 @@ public class ArdulinkRestTest {
 	public void canReadDigitalPin() throws Exception {
 		int pin = 5;
 		boolean state = true;
-		try (AbstractListenerLink link = createAbstractListenerLink(digitalPinValueChanged(digitalPin(pin), state))) {
-			try (CamelContext context = startCamelRest(ardulinkUri(register(link)))) {
-				given().get("/pin/digital/{pin}", pin).then().statusCode(200).body(is(String.valueOf(state)));
-				context.stop();
-			}
+		try (AbstractListenerLink link = createAbstractListenerLink(digitalPinValueChanged(digitalPin(pin), state));
+				RestMain main = startCamelRest(ardulinkUri(register(link)))) {
+			given().get("/pin/digital/{pin}", pin).then().statusCode(200).body(is(String.valueOf(state)));
 		}
 	}
 
@@ -102,11 +95,9 @@ public class ArdulinkRestTest {
 	public void canReadAnalogPin() throws Exception {
 		int pin = 7;
 		int value = 456;
-		try (AbstractListenerLink link = createAbstractListenerLink(analogPinValueChanged(analogPin(pin), value))) {
-			try (CamelContext context = startCamelRest(ardulinkUri(register(link)))) {
-				given().get("/pin/analog/{pin}", pin).then().statusCode(200).body(is(String.valueOf(value)));
-				context.stop();
-			}
+		try (AbstractListenerLink link = createAbstractListenerLink(analogPinValueChanged(analogPin(pin), value));
+				RestMain main = startCamelRest(ardulinkUri(register(link)))) {
+			given().get("/pin/analog/{pin}", pin).then().statusCode(200).body(is(String.valueOf(value)));
 		}
 	}
 
@@ -115,16 +106,14 @@ public class ArdulinkRestTest {
 		int pin = 5;
 		try (Link link = Links.getLink("ardulink://mock")) {
 			Link mock = getMock(link);
-			try (CamelContext context = startCamelRest("ardulink://mock")) {
+			try (RestMain main = startCamelRest("ardulink://mock")) {
 				given().body("listen=true").patch("/pin/digital/{pin}", pin).then().statusCode(200);
 				verify(mock).startListening(digitalPin(pin));
 				given().body("listen=false").patch("/pin/digital/{pin}", pin).then().statusCode(200);
 				verify(mock).stopListening(digitalPin(pin));
-				context.stop();
 			}
 			verify(mock).close();
 		}
-
 	}
 
 	@Test
@@ -132,24 +121,22 @@ public class ArdulinkRestTest {
 		int pin = 7;
 		try (Link link = Links.getLink("ardulink://mock")) {
 			Link mock = getMock(link);
-			try (CamelContext context = startCamelRest("ardulink://mock")) {
+			try (RestMain main = startCamelRest("ardulink://mock")) {
 				given().body("listen=true").patch("/pin/analog/{pin}", pin).then().statusCode(200);
 				verify(mock).startListening(analogPin(pin));
 				given().body("listen=false").patch("/pin/analog/{pin}", pin).then().statusCode(200);
 				verify(mock).stopListening(analogPin(pin));
-				context.stop();
 			}
 			verify(mock).close();
 		}
 
 	}
 
-	private CamelContext startCamelRest(String target) throws Exception {
-		CamelContext context = new DefaultCamelContext();
-		context.getPropertiesComponent()
-				.setInitialProperties(newMapBuilder().put(VAR_TARGET, target).put(VAR_PORT, port).asProperties());
-		context.addRoutes(new RestRouteBuilder());
-		context.start();
-		return context;
+	private RestMain startCamelRest(String target) throws Exception {
+		CommandLineArguments args = new CommandLineArguments();
+		args.connection = target;
+		args.port = port;
+		return new RestMain(args);
 	}
+
 }
