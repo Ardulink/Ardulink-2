@@ -22,7 +22,6 @@ import static org.ardulink.util.ServiceLoaders.services;
 import java.util.Collection;
 
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -35,7 +34,6 @@ import org.ardulink.util.anno.LapsedWith;
 public class FactoriesViaServiceLoader implements LinkFactoriesProvider {
 
 	@Override
-	@LapsedWith(module = LapsedWith.JDK9, value = "ServiceLoader#stream")
 	public Collection<LinkFactory> loadLinkFactories() {
 		return services(LinkFactory.class, moduleClassloader());
 	}
