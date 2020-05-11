@@ -17,10 +17,13 @@ limitations under the License.
 package org.ardulink.util;
 
 import static org.ardulink.util.Preconditions.checkArgument;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -30,7 +33,7 @@ import java.util.Set;
  * [adsense]
  *
  */
-public enum Primitive {
+public enum Primitives {
 
 	INT(Integer.TYPE, Integer.class) {
 		@Override
@@ -77,7 +80,7 @@ public enum Primitive {
 	CHAR(Character.TYPE, Character.class) {
 		@Override
 		public Object parse(String value) {
-			checkArgument(value.length() == 0,
+			checkArgument(value.length() == 1,
 					"single character expected but got %s", value);
 			return Character.valueOf(value.charAt(0));
 		}
@@ -86,7 +89,7 @@ public enum Primitive {
 	private final Class<?> type;
 	private final Class<?> wrapperType;
 
-	private Primitive(Class<?> type, Class<?> wrapperType) {
+	private Primitives(Class<?> type, Class<?> wrapperType) {
 		this.type = type;
 		this.wrapperType = wrapperType;
 	}
@@ -98,12 +101,12 @@ public enum Primitive {
 	}
 
 	public static Object parseAs(Class<?> type, String value) {
-		Optional<Primitive> primitive = findPrimitiveFor(type);
+		Optional<Primitives> primitive = findPrimitiveFor(type);
 		return primitive.isPresent() ? primitive.get().parse(value) : null;
 	}
 
-	private static Optional<Primitive> findPrimitiveFor(Class<?> type) {
-		for (Primitive primitive : Primitive.values()) {
+	private static Optional<Primitives> findPrimitiveFor(Class<?> type) {
+		for (Primitives primitive : Primitives.values()) {
 			if (type.isAssignableFrom(primitive.getType())) {
 				return Optional.of(primitive);
 			}
@@ -111,8 +114,8 @@ public enum Primitive {
 		return Optional.absent();
 	}
 
-	public static Primitive forClassName(String name) {
-		for (Primitive primitives : values()) {
+	public static Primitives forClassName(String name) {
+		for (Primitives primitives : values()) {
 			if (primitives.getType().getName().equals(name)) {
 				return primitives;
 			}
@@ -125,7 +128,7 @@ public enum Primitive {
 	}
 
 	public static boolean isWrapperType(Class<?> clazz) {
-		for (Primitive primitive : values()) {
+		for (Primitives primitive : values()) {
 			if (clazz.equals(primitive.getWrapperType())) {
 				return true;
 			}
@@ -133,16 +136,18 @@ public enum Primitive {
 		return false;
 	}
 
+	@LapsedWith(value = JDK8, module = "Streams")
 	public static Collection<Class<?>> allPrimitiveTypes() {
 		Set<Class<?>> primitives = new HashSet<Class<?>>();
-		for (Primitive primitive : values()) {
+		for (Primitives primitive : values()) {
 			primitives.add(primitive.getType());
 		}
 		return primitives;
 	}
 
+	@LapsedWith(value = JDK8, module = "Streams")
 	public static Class<?> unwrap(Class<?> clazz) {
-		for (Primitive primitive : values()) {
+		for (Primitives primitive : values()) {
 			if (clazz.equals(primitive.getWrapperType())) {
 				return primitive.getType();
 			}
@@ -150,8 +155,9 @@ public enum Primitive {
 		return clazz;
 	}
 
+	@LapsedWith(value = JDK8, module = "Streams")
 	public static Class<?> wrap(Class<?> clazz) {
-		for (Primitive primitive : values()) {
+		for (Primitives primitive : values()) {
 			if (clazz.equals(primitive.getType())) {
 				return primitive.getWrapperType();
 			}

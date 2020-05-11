@@ -37,71 +37,71 @@ public class PrimitiveTest {
 
 	@Test
 	public void canParseIntAsInt() {
-		assertThat(Primitive.parseAs(int.class, "123"),
+		assertThat(Primitives.parseAs(int.class, "123"),
 				Is.<Object> is(Integer.valueOf(123)));
 	}
 
 	@Test
 	public void canParseIntAsDouble() {
-		assertThat(Primitive.parseAs(double.class, "123"),
+		assertThat(Primitives.parseAs(double.class, "123"),
 				Is.<Object> is(Double.valueOf(123)));
 	}
 
 	@Test
 	public void canParseDoubleAsDouble() {
-		assertThat(Primitive.parseAs(double.class, "123.456"),
+		assertThat(Primitives.parseAs(double.class, "123.456"),
 				Is.<Object> is(Double.valueOf(123.456)));
 	}
 
 	@Test(expected = NumberFormatException.class)
 	public void cannotParseDoubleAsInt() {
-		Primitive.parseAs(int.class, "123.456");
+		Primitives.parseAs(int.class, "123.456");
 	}
 
 	@Test
 	public void testForClassName() {
-		assertThat(Primitive.forClassName("int"), is(Primitive.INT));
-		assertThat(Primitive.forClassName("double"), is(Primitive.DOUBLE));
-		assertThat(Primitive.forClassName(String.class.getName()),
+		assertThat(Primitives.forClassName("int"), is(Primitives.INT));
+		assertThat(Primitives.forClassName("double"), is(Primitives.DOUBLE));
+		assertThat(Primitives.forClassName(String.class.getName()),
 				is(nullValue()));
 	}
 
 	@Test
 	public void isWrapperTypeForNonWrapperReturnsFalse() {
-		assertThat(Primitive.isWrapperType(int.class), is(FALSE));
+		assertThat(Primitives.isWrapperType(int.class), is(FALSE));
 	}
 
 	@Test
 	public void isWrapperTypeForWrapperReturnsTrue() {
-		assertThat(Primitive.isWrapperType(Integer.class), is(TRUE));
+		assertThat(Primitives.isWrapperType(Integer.class), is(TRUE));
 	}
 
 	@Test
 	public void allPrimitiveTypesContainsInt() {
-		assertThat(Primitive.allPrimitiveTypes().contains(int.class), is(TRUE));
+		assertThat(Primitives.allPrimitiveTypes().contains(int.class), is(TRUE));
 	}
 
 	@Test
 	public void unwrapOnNonWrapperTypeReturnsArgument() {
-		assertThat(Primitive.unwrap(String.class).getName(),
+		assertThat(Primitives.unwrap(String.class).getName(),
 				is(String.class.getName()));
 	}
 
 	@Test
 	public void unwrapOnWrapperTypeReturnsWrappedPrimitive() {
-		assertThat(Primitive.unwrap(Integer.class).getName(),
+		assertThat(Primitives.unwrap(Integer.class).getName(),
 				is(int.class.getName()));
 	}
 
 	@Test
 	public void wrapOnNonPrimitiveTypeReturnsArgument() {
-		assertThat(Primitive.wrap(String.class).getName(),
+		assertThat(Primitives.wrap(String.class).getName(),
 				is(String.class.getName()));
 	}
 
 	@Test
 	public void wrapOnPrimitiveTypeReturnsWrappedType() {
-		assertThat(Primitive.wrap(int.class).getName(),
+		assertThat(Primitives.wrap(int.class).getName(),
 				is(Integer.class.getName()));
 	}
 

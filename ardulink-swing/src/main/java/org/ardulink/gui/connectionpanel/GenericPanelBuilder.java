@@ -17,9 +17,9 @@ package org.ardulink.gui.connectionpanel;
 
 import static java.awt.GridBagConstraints.REMAINDER;
 import static org.ardulink.gui.connectionpanel.GridBagConstraintsBuilder.constraints;
-import static org.ardulink.util.Primitive.parseAs;
-import static org.ardulink.util.Primitive.unwrap;
-import static org.ardulink.util.Primitive.wrap;
+import static org.ardulink.util.Primitives.parseAs;
+import static org.ardulink.util.Primitives.unwrap;
+import static org.ardulink.util.Primitives.wrap;
 
 import java.awt.Component;
 import java.awt.GridBagLayout;
@@ -52,7 +52,7 @@ import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import org.ardulink.core.linkmanager.LinkManager.ValidationInfo;
-import org.ardulink.util.Primitive;
+import org.ardulink.util.Primitives;
 
 public class GenericPanelBuilder implements PanelBuilder {
 
@@ -239,7 +239,7 @@ public class GenericPanelBuilder implements PanelBuilder {
 
 	private static boolean isNumber(ConfigAttribute attribute) {
 		return Number.class
-				.isAssignableFrom(Primitive.wrap(attribute.getType()));
+				.isAssignableFrom(Primitives.wrap(attribute.getType()));
 	}
 
 }

@@ -59,7 +59,7 @@ import org.ardulink.core.linkmanager.LinkFactory.Alias;
 import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
-import org.ardulink.util.Primitive;
+import org.ardulink.util.Primitives;
 import org.ardulink.util.Throwables;
 import org.ardulink.util.URIs;
 import org.ardulink.util.anno.LapsedWith;
@@ -373,7 +373,7 @@ public abstract class LinkManager {
 
 			@Override
 			public ValidationInfo getValidationInfo() {
-				if (Integer.class.isAssignableFrom(Primitive.wrap(getType()))) {
+				if (Integer.class.isAssignableFrom(Primitives.wrap(getType()))) {
 					Annotation[] annotations = attribute.getAnnotations();
 					return newNumberValidationInfo(find(annotations, Min.class)
 							.or(minValueProvider).value(),
@@ -644,7 +644,7 @@ public abstract class LinkManager {
 					Class<Enum<?>> enumClass = (Class<Enum<?>>) targetType;
 					return enumWithName(enumClass, value);
 				} else {
-					return Primitive.parseAs(targetType, value);
+					return Primitives.parseAs(targetType, value);
 				}
 			}
 
