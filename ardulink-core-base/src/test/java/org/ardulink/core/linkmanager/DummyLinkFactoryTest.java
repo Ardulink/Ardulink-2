@@ -206,7 +206,10 @@ public class DummyLinkFactoryTest {
 	public void canIterateRegisteredFactories() {
 		assertThat(
 				sut.listURIs(),
-				is(links("ardulink://dummyLink", //
+				is(links( //
+						"ardulink://dummyLink", //
+						"ardulink://mock", //
+						"ardulink://staticregistry", //
 						"ardulink://aLinkWithoutArealLinkFactoryWithoutConfig", //
 						"ardulink://aLinkWithoutArealLinkFactoryWithConfig" //
 				)));

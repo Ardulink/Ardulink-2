@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.ardulink</groupId>
@@ -68,7 +69,6 @@
 	<modules>
 		<module>ardulink-core-util</module>
 		<module>ardulink-core-base</module>
-		<module>ardulink-core-testsupport</module>
 		<module>ardulink-core-virtual</module>
 		<module>ardulink-core-nodemcu</module>
 		<module>ardulink-core-serial-rxtx</module>
@@ -140,7 +140,7 @@
 			<plugin>
 				<groupId>com.google.cloud.tools</groupId>
 				<artifactId>jib-maven-plugin</artifactId>
-                                <version>1.0.1</version>
+				<version>1.0.1</version>
 				<configuration>
 					<skip>true</skip>
 				</configuration>
@@ -176,8 +176,8 @@
 							<includeDependencySources>false</includeDependencySources>
 							<linksource>false</linksource>
 							<detectLinks>false</detectLinks>
-		            		<detectOfflineLinks>false</detectOfflineLinks>
-		            		<detectJavaApiLink>false</detectJavaApiLink>
+							<detectOfflineLinks>false</detectOfflineLinks>
+							<detectJavaApiLink>false</detectJavaApiLink>
 						</configuration>
 						<executions>
 							<execution>

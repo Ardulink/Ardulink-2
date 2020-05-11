@@ -56,7 +56,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-testsupport</artifactId>
+			<artifactId>ardulink-core-base</artifactId>
+			<type>test-jar</type>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

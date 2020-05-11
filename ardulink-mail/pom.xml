@@ -43,6 +43,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.9.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.icegreen</groupId>
 			<artifactId>greenmail</artifactId>
 			<version>1.5.13</version>
@@ -50,8 +56,9 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-testsupport</artifactId>
+			<artifactId>ardulink-core-base</artifactId>
 			<version>${project.version}</version>
+			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
