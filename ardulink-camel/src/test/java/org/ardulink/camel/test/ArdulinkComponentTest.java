@@ -3,6 +3,7 @@ package org.ardulink.camel.test;
 import static org.apache.camel.ShutdownRunningTask.CompleteAllTasks;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.withRegistered;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
@@ -25,6 +26,8 @@ import org.apache.camel.Route;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.camel.ArdulinkEndpoint;
+import org.ardulink.camel.test.TestLinkFactory.TestLink;
+import org.ardulink.camel.test.TestLinkFactory.TestLinkConfig;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
@@ -159,17 +162,15 @@ public class ArdulinkComponentTest {
 	public void canSetLinkParameters() throws Exception {
 		String a = "foo";
 		String b = "HOURS";
-		context = camelContext("ardulink://testlink?a=" + a + "&b=" + b,
-				MOCK_URI);
-
+		withRegistered(new TestLinkFactory()).execute(() -> {
+			context = camelContext("ardulink://testlink?a=" + a + "&b=" + b, MOCK_URI);
+		});
 		Route route = getFirst(context.getRoutes()).getOrThrow(
 				"Context %s has no routes", context);
 		ArdulinkEndpoint endpoint = (ArdulinkEndpoint) route.getEndpoint();
 		TestLink link = (TestLink) extractDelegated(endpoint.getLink());
-		TestLinkConfig config = link.getConfig();
-
-		assertThat(config.getA(), is(a));
-		assertThat(config.getB(), is(TimeUnit.valueOf(b)));
+		assertThat(link.getA(), is(a));
+		assertThat(link.getB(), is(TimeUnit.valueOf(b)));
 	}
 
 }
