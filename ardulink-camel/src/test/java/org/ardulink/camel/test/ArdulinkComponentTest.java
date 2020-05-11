@@ -21,7 +21,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
