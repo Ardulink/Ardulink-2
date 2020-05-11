@@ -7,78 +7,59 @@ import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digita
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
-import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
+import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.ardulinkUri;
+import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.register;
+import static org.ardulink.testsupport.mock.TestSupport.createAbstractListenerLink;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Link;
-import org.ardulink.core.convenience.Links;
-import org.junit.After;
 import org.junit.Test;
 
 public class ArdulinkConsumerIntegrationTest {
 
-	// why not a mock? The tests wants to assure that ArdulinkConsumer's
-	// listener will work correctly. To do so, we need a Link where
-	// ArdulinkConsumer can register it's listener. Because of that, Link cannot
-	// be a Mock.
-	private static final String MOCK_URI = "ardulink://connectionBasedMockLink";
-
 	private static final String OUT = "mock:result";
 
-	private final Link link = Links.getLink(MOCK_URI);
-
-	private CamelContext context;
-
-	@After
-	public void tearDown() throws Exception {
-		link.close();
-		context.stop();
-	}
-
 	@Test
-	public void mqttMessageIsSentOnAnalogPinChange() throws Exception {
+	public void messageIsSentOnAnalogPinChange() throws Exception {
 		int pin = 2;
 		int value = 42;
-		context = camelContext();
-		MockEndpoint out = getMockEndpoint();
-		out.expectedBodiesReceived(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
-		getDelegate().fireStateChanged(analogPinValueChanged(analogPin(pin), value));
-		out.assertIsSatisfied();
+		try (Link link = createAbstractListenerLink(analogPinValueChanged(analogPin(pin), value));
+				CamelContext context = camelContext(ardulinkUri(register(link)))) {
+			MockEndpoint out = getMockEndpoint(context);
+			out.expectedBodiesReceived(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
+			out.assertIsSatisfied();
+		}
 	}
 
 	@Test
-	public void mqttMessageIsSentOnDigitalPinChange() throws Exception {
+	public void messageIsSentOnDigitalPinChange() throws Exception {
 		int pin = 3;
 		boolean state = true;
-		context = camelContext();
-		MockEndpoint out = getMockEndpoint();
-		out.expectedBodiesReceived(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(state));
-		getDelegate().fireStateChanged(digitalPinValueChanged(digitalPin(pin), state));
-		out.assertIsSatisfied();
+		try (Link link = createAbstractListenerLink(digitalPinValueChanged(digitalPin(pin), state));
+				CamelContext context = camelContext(ardulinkUri(register(link)))) {
+			MockEndpoint out = getMockEndpoint(context);
+			out.expectedBodiesReceived(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(state));
+			out.assertIsSatisfied();
+		}
 	}
 
-	private CamelContext camelContext() throws Exception {
+	private CamelContext camelContext(String from) throws Exception {
 		CamelContext context = new DefaultCamelContext();
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() throws Exception {
-				from(MOCK_URI).to(OUT);
+				from(from).to(OUT);
 			}
 		});
 		context.start();
 		return context;
 	}
 
-	private MockEndpoint getMockEndpoint() {
+	private MockEndpoint getMockEndpoint(CamelContext context) {
 		return context.getEndpoint(OUT, MockEndpoint.class);
-	}
-
-	private AbstractListenerLink getDelegate() {
-		return (AbstractListenerLink) extractDelegated(link);
 	}
 
 }

@@ -26,27 +26,18 @@ import static org.ardulink.rest.RestRouteBuilder.VAR_PORT;
 import static org.ardulink.rest.RestRouteBuilder.VAR_TARGET;
 import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.ardulinkUri;
 import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.register;
+import static org.ardulink.testsupport.mock.TestSupport.createAbstractListenerLink;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.MapBuilder.newMapBuilder;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Link;
-import org.ardulink.core.Pin;
-import org.ardulink.core.Pin.AnalogPin;
-import org.ardulink.core.Pin.DigitalPin;
-import org.ardulink.core.Tone;
 import org.ardulink.core.convenience.Links;
-import org.ardulink.core.events.AnalogPinValueChangedEvent;
-import org.ardulink.core.events.DigitalPinValueChangedEvent;
-import org.ardulink.core.events.EventListener;
-import org.ardulink.core.events.PinValueChangedEvent;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -160,64 +151,5 @@ public class ArdulinkRestTest {
 		context.addRoutes(new RestRouteBuilder());
 		context.start();
 		return context;
-	}
-
-	private AbstractListenerLink createAbstractListenerLink(PinValueChangedEvent... events) {
-		return new AbstractListenerLink() {
-
-			@Override
-			public Link addListener(EventListener listener) throws IOException {
-				Link link = super.addListener(listener);
-				for (PinValueChangedEvent event : events) {
-					if (event instanceof AnalogPinValueChangedEvent) {
-						fireStateChanged((AnalogPinValueChangedEvent) event);
-					} else if (event instanceof DigitalPinValueChangedEvent) {
-						fireStateChanged((DigitalPinValueChangedEvent) event);
-					}
-				}
-				return link;
-			}
-
-			@Override
-			public long switchDigitalPin(DigitalPin digitalPin, boolean value) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public long switchAnalogPin(AnalogPin analogPin, int value) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public long stopListening(Pin pin) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public long startListening(Pin pin) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public long sendTone(Tone tone) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public long sendNoTone(AnalogPin analogPin) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers,
-					int keymodifiersex) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public long sendCustomMessage(String... messages) throws IOException {
-				return 0;
-			}
-		};
 	}
 }

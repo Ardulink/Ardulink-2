@@ -27,7 +27,6 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.camel.ArdulinkEndpoint;
 import org.ardulink.camel.test.TestLinkFactory.TestLink;
-import org.ardulink.camel.test.TestLinkFactory.TestLinkConfig;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
