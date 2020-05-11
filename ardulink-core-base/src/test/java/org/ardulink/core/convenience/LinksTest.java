@@ -57,10 +57,33 @@ import org.junit.Test;
 public class LinksTest {
 
 	@Test
-	public void returnsSerialConnectionWhenAvailableAndFallsbackToFirstAvailable() throws IOException {
+	public void returnsFirstAvailableConnectionIfSerialNotAvailable() throws IOException {
 		Link link = Links.getDefault();
 		assertThat(getConnection(link), instanceOf(DummyConnection.class));
 		close(link);
+	}
+
+	@Test
+	public void serialHasPriorityOverAllOthers() throws Exception {
+		final LinkFactory<LinkConfig> serial = spy(factoryNamed("serial"));
+		withRegistered(factoryNamed("serial-a"), factoryNamed("a"), serial, factoryNamed("z"), factoryNamed("serial-z"))
+				.execute(new Statement() {
+					@Override
+					public void execute() throws Exception {
+						assertLinkWasCreatedBy(Links.getDefault(), serial);
+					}
+				});
+	}
+
+	@Test
+	public void startingWithSerialDashHasPriorityOverAllOthers() throws Exception {
+		final LinkFactory<LinkConfig> serial = spy(factoryNamed("serial-foobar"));
+		withRegistered(factoryNamed("a"), serial, factoryNamed("z")).execute(new Statement() {
+			@Override
+			public void execute() throws Exception {
+				assertLinkWasCreatedBy(Links.getDefault(), serial);
+			}
+		});
 	}
 
 	@Test
@@ -80,8 +103,9 @@ public class LinksTest {
 
 	@Test
 	public void doesCacheLinks() throws IOException {
-		Link link1 = Links.getLink("ardulink://dummyLink");
-		Link link2 = Links.getLink("ardulink://dummyLink");
+		String uri = "ardulink://dummyLink";
+		Link link1 = Links.getLink(uri);
+		Link link2 = Links.getLink(uri);
 		assertThat(link1, notNullValue());
 		assertThat(link2, notNullValue());
 		assertAllSameInstances(link1, link2);
@@ -158,46 +182,27 @@ public class LinksTest {
 
 	@Test
 	public void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws Exception {
+		final String name1 = new DummyLinkFactory().getName();
+		final String name2 = "DummyLINK";
+		assert name1.equalsIgnoreCase(name2) && !name1.equals(name2);
 		class DummyLinkFactoryExtension extends DummyLinkFactory {
 			@Override
 			public String getName() {
-				return "DummyLINK";
+				return name2;
 			}
 		}
+
 		withRegistered(new DummyLinkFactoryExtension()).execute(new Statement() {
 			@Override
 			public void execute() throws Exception {
-				Link link1 = Links.getLink(makeUri("dummyLink"));
-				Link link2 = Links.getLink(makeUri("DummyLINK"));
+				Link link1 = Links.getLink(makeUri(name1));
+				Link link2 = Links.getLink(makeUri(name2));
 				assertThat(link1, not(sameInstance(link2)));
 				close(link1, link2);
 			}
 
 			private String makeUri(String name) {
 				return String.format("ardulink://%s?a=aVal1&b=4", name);
-			}
-		});
-	}
-
-	@Test
-	public void serialHasPriorityOverAllOthers() throws Exception {
-		final LinkFactory<LinkConfig> serial = spy(factoryNamed("serial"));
-		withRegistered(factoryNamed("serial-a"), factoryNamed("a"), serial, factoryNamed("z"), factoryNamed("serial-z"))
-				.execute(new Statement() {
-					@Override
-					public void execute() throws Exception {
-						assertLinkWasCreatedBy(Links.getDefault(), serial);
-					}
-				});
-	}
-
-	@Test
-	public void startingWithSerialDashHasPriorityOverAllOthers() throws Exception {
-		final LinkFactory<LinkConfig> serial = spy(factoryNamed("serial-foobar"));
-		withRegistered(factoryNamed("a"), serial, factoryNamed("z")).execute(new Statement() {
-			@Override
-			public void execute() throws Exception {
-				assertLinkWasCreatedBy(Links.getDefault(), serial);
 			}
 		});
 	}

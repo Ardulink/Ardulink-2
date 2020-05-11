@@ -279,6 +279,7 @@ public abstract class LinkManager {
 				if (cfa == null) {
 					return Collections.emptyList();
 				}
+				@LapsedWith(module = JDK8, value = "Streams")
 				List<ConfigAttribute> deps = new ArrayList<ConfigAttribute>(
 						cfa.dependsOn().length);
 				for (String name : cfa.dependsOn()) {

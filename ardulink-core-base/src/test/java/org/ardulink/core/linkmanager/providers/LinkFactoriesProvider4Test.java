@@ -2,7 +2,6 @@ package org.ardulink.core.linkmanager.providers;
 
 import static org.ardulink.util.anno.LapsedWith.JDK8;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
