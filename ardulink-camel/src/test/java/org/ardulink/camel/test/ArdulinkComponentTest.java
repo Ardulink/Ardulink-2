@@ -1,5 +1,6 @@
 package org.ardulink.camel.test;
 
+import static java.util.UUID.randomUUID;
 import static org.apache.camel.ShutdownRunningTask.CompleteAllTasks;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -11,30 +12,32 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
-import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
-import static org.ardulink.util.Iterables.getFirst;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentCaptor.forClass;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.Route;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.ardulink.camel.ArdulinkEndpoint;
-import org.ardulink.camel.test.TestLinkFactory.TestLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.convenience.Links;
+import org.ardulink.core.linkmanager.LinkConfig;
+import org.ardulink.core.linkmanager.LinkFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 public class ArdulinkComponentTest {
 
@@ -80,17 +83,15 @@ public class ArdulinkComponentTest {
 
 	@Test
 	@Ignore
-	public void ignoresNegativeValues() throws Exception {
-		send(alpProtocolMessage(ANALOG_PIN_READ).forPin(analogPin(6).pinNum())
-				.withValue(-1));
+	public void ignoresNegativeValues() {
+		send(alpProtocolMessage(ANALOG_PIN_READ).forPin(analogPin(6).pinNum()).withValue(-1));
 		Link mock = getMock(link);
 		verifyNoMoreInteractions(mock);
 	}
 
 	@Test
 	public void canEnableAnalogListening() throws Exception {
-		send(alpProtocolMessage(START_LISTENING_ANALOG).forPin(
-				analogPin(6).pinNum()).withoutValue());
+		send(alpProtocolMessage(START_LISTENING_ANALOG).forPin(analogPin(6).pinNum()).withoutValue());
 		Link mock = getMock(link);
 		verify(mock).startListening(analogPin(6));
 		verifyNoMoreInteractions(mock);
@@ -98,8 +99,7 @@ public class ArdulinkComponentTest {
 
 	@Test
 	public void canEnableDigitalListening() throws Exception {
-		send(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(
-				digitalPin(7).pinNum()).withoutValue());
+		send(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(digitalPin(7).pinNum()).withoutValue());
 		Link mock = getMock(link);
 		verify(mock).startListening(digitalPin(7));
 		verifyNoMoreInteractions(mock);
@@ -126,16 +126,14 @@ public class ArdulinkComponentTest {
 	}
 
 	private void testDigital(DigitalPin pin, boolean state) throws Exception {
-		send(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin.pinNum())
-				.withState(state));
+		send(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin.pinNum()).withState(state));
 		Link mock = getMock(link);
 		verify(mock).switchDigitalPin(pin, state);
 		verifyNoMoreInteractions(mock);
 	}
 
 	private void testAnalog(AnalogPin pin, int value) throws Exception {
-		send(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum())
-				.withValue(value));
+		send(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum()).withValue(value));
 		Link mock = getMock(link);
 		verify(mock).switchAnalogPin(pin, value);
 		verifyNoMoreInteractions(mock);
@@ -157,19 +155,58 @@ public class ArdulinkComponentTest {
 		context.createProducerTemplate().sendBody(MOCK_URI, message);
 	}
 
+	public static class TestLinkFactory implements LinkFactory<TestLinkConfig> {
+
+		private final String name;
+
+		public TestLinkFactory(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public String getName() {
+			return name;
+		}
+
+		@Override
+		public Link newLink(TestLinkConfig config) {
+			return mock(Link.class);
+		}
+
+		@Override
+		public TestLinkConfig newLinkConfig() {
+			return new TestLinkConfig();
+		}
+
+	}
+
+	public static class TestLinkConfig implements LinkConfig {
+		@Named("a")
+		public String a;
+
+		@Named("b")
+		public TimeUnit b;
+	}
+
 	@Test
 	public void canSetLinkParameters() throws Exception {
 		String a = "foo";
 		String b = "HOURS";
-		withRegistered(new TestLinkFactory()).execute(() -> {
-			context = camelContext("ardulink://testlink?a=" + a + "&b=" + b, MOCK_URI);
+		String name = "factoryName-" + randomUUID();
+		LinkFactory<TestLinkConfig> linkFactorySpy = spy(new TestLinkFactory(name));
+		withRegistered(linkFactorySpy).execute(() -> {
+			context = camelContext("ardulink://" + name + "?a=" + a + "&b=" + b, MOCK_URI);
 		});
-		Route route = getFirst(context.getRoutes()).getOrThrow(
-				"Context %s has no routes", context);
-		ArdulinkEndpoint endpoint = (ArdulinkEndpoint) route.getEndpoint();
-		TestLink link = (TestLink) extractDelegated(endpoint.getLink());
-		assertThat(link.getA(), is(a));
-		assertThat(link.getB(), is(TimeUnit.valueOf(b)));
+
+		TestLinkConfig value = getConfig(linkFactorySpy);
+		assertThat(value.a, is(a));
+		assertThat(value.b, is(TimeUnit.valueOf(b)));
+	}
+
+	private static TestLinkConfig getConfig(LinkFactory<TestLinkConfig> linkFactorySpy) throws Exception {
+		ArgumentCaptor<TestLinkConfig> captor = forClass(TestLinkConfig.class);
+		verify(linkFactorySpy).newLink(captor.capture());
+		return captor.getValue();
 	}
 
 }
