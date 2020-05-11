@@ -18,11 +18,10 @@ package org.ardulink.util;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
-import org.hamcrest.core.Is;
 import org.junit.Test;
 
 /**
@@ -33,24 +32,24 @@ import org.junit.Test;
  * [adsense]
  *
  */
-public class PrimitiveTest {
+public class PrimitivesTest {
 
 	@Test
 	public void canParseIntAsInt() {
 		assertThat(Primitives.parseAs(int.class, "123"),
-				Is.<Object> is(Integer.valueOf(123)));
+				is((Object) Integer.valueOf(123)));
 	}
 
 	@Test
 	public void canParseIntAsDouble() {
 		assertThat(Primitives.parseAs(double.class, "123"),
-				Is.<Object> is(Double.valueOf(123)));
+				is((Object) Double.valueOf(123)));
 	}
 
 	@Test
 	public void canParseDoubleAsDouble() {
 		assertThat(Primitives.parseAs(double.class, "123.456"),
-				Is.<Object> is(Double.valueOf(123.456)));
+				is((Object) Double.valueOf(123.456)));
 	}
 
 	@Test(expected = NumberFormatException.class)

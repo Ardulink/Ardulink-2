@@ -100,11 +100,13 @@ public enum Primitives {
 		return wrapperType;
 	}
 
+	@LapsedWith(value = JDK8, module = "Optional#map")
 	public static Object parseAs(Class<?> type, String value) {
 		Optional<Primitives> primitive = findPrimitiveFor(type);
 		return primitive.isPresent() ? primitive.get().parse(value) : null;
 	}
 
+	@LapsedWith(value = JDK8, module = "Streams")
 	private static Optional<Primitives> findPrimitiveFor(Class<?> type) {
 		for (Primitives primitive : Primitives.values()) {
 			if (type.isAssignableFrom(primitive.getType())) {
@@ -114,6 +116,7 @@ public enum Primitives {
 		return Optional.absent();
 	}
 
+	@LapsedWith(value = JDK8, module = "Streams")
 	public static Primitives forClassName(String name) {
 		for (Primitives primitives : values()) {
 			if (primitives.getType().getName().equals(name)) {
@@ -127,6 +130,7 @@ public enum Primitives {
 		return type;
 	}
 
+	@LapsedWith(value = JDK8, module = "Streams")
 	public static boolean isWrapperType(Class<?> clazz) {
 		for (Primitives primitive : values()) {
 			if (clazz.equals(primitive.getWrapperType())) {
