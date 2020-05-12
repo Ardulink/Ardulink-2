@@ -114,10 +114,19 @@ public class LinksTest {
 	}
 
 	@Test
-	public void registeredSpecialNameDefault() throws IOException {
-		Link link = Links.getLink("ardulink://default");
-		assertThat(link, sameInstance(Links.getDefault()));
-		close(link);
+	public void registeredSpecialNameDefault() throws Exception {
+		final LinkFactory<LinkConfig> serial = spy(factoryNamed(serial()));
+		assert serial.newLinkConfig()
+				.equals(NO_ATTRIBUTES) : "ardulink://default would differ if the config has attributes";
+		withRegistered(serial).execute(new Statement() {
+			@Override
+			public void execute() throws Exception {
+				Link link1 = Links.getLink("ardulink://default");
+				Link link2 = Links.getDefault();
+				assertAllSameInstances(link1, link2);
+				close(link1, link2);
+			}
+		});
 	}
 
 	@Test

@@ -75,13 +75,13 @@ public final class Links {
 		}
 
 		public boolean isAliasFor(String name) {
-			return aliasFor.matcher(name).matches();
+			return !isAliasName(name) && aliasFor.matcher(name).matches();
 		}
 
 	}
 
 	private static final Alias serialAlias = new Alias("serial", Pattern.compile("serial\\-.+"));
-	private static final List<Alias> aliases = Arrays.asList(serialAlias);
+	private static final List<Alias> aliases = Arrays.asList(new Alias("default", Pattern.compile(".*")), serialAlias);
 
 	/**
 	 * Returns the default Link which is a connection to the first serial port if
@@ -96,12 +96,12 @@ public final class Links {
 	}
 
 	public static Configurer getDefaultConfigurer() {
-		return setChoiceValues(linkManager.getConfigurer(defaultUri()));
+		return setChoiceValues(linkManager.getConfigurer(getFirst(sorted(linkManager.listURIs()))
+				.getOrThrow(IllegalStateException.class, "No factory registered")));
 	}
 
-	private static URI defaultUri() {
-		return getFirst(sortedCopy(linkManager.listURIs(), serialsFirst())).getOrThrow(IllegalStateException.class,
-				"No factory registered");
+	private static List<URI> sorted(List<URI> uris) {
+		return sortedCopy(uris, serialsFirst());
 	}
 
 	@LapsedWith(module = JDK8, value = "Comparator")
@@ -146,12 +146,12 @@ public final class Links {
 	 *         that URI exists
 	 */
 	public static Link getLink(URI uri) {
-		return isDefault(uri) ? getDefault() : getLink(linkManager.getConfigurer(aliasReplacement(uri)));
+		return getLink(linkManager.getConfigurer(aliasReplacement(uri)));
 	}
 
 	@LapsedWith(module = JDK8, value = "Optional#map")
 	private static URI aliasReplacement(URI uri) {
-		List<URI> availableUris = linkManager.listURIs();
+		List<URI> availableUris = sorted(linkManager.listURIs());
 		String name = extractNameFromURI(uri);
 		if (!containsName(availableUris, name)) {
 			Optional<Alias> alias = findAlias(name);
@@ -193,10 +193,6 @@ public final class Links {
 			}
 		}
 		return false;
-	}
-
-	private static boolean isDefault(URI uri) {
-		return "default".equalsIgnoreCase(extractNameFromURI(uri));
 	}
 
 	public static Link getLink(Configurer configurer) {
