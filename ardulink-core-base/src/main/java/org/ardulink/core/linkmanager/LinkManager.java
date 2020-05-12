@@ -34,6 +34,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -663,6 +664,15 @@ public abstract class LinkManager {
 
 	public static String extractNameFromURI(URI uri) {
 		return checkSchema(uri).getHost();
+	}
+	
+	public static URI replaceName(URI uri, String name) {
+		try {
+			return new URI(uri.getScheme(), uri.getUserInfo(), name, uri.getPort(), uri.getPath(), uri.getQuery(),
+					uri.getFragment());
+		} catch (URISyntaxException e) {
+			throw Throwables.propagate(e);
+		}
 	}
 
 	private static URI checkSchema(URI uri) {

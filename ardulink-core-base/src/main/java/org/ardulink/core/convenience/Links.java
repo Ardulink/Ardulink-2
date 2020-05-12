@@ -18,6 +18,7 @@ package org.ardulink.core.convenience;
 
 import static java.lang.Integer.MIN_VALUE;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
+import static org.ardulink.core.linkmanager.LinkManager.replaceName;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Lists.sortedCopy;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
@@ -27,6 +28,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -89,11 +91,20 @@ public final class Links {
 			}
 
 			private int valueOf(URI uri) {
-				String name = extractNameFromURI(uri);
-				return name.equals("serial") ? MIN_VALUE : name.startsWith("serial-") ? (MIN_VALUE + 1) : 0;
+				return isSerial(uri) ? MIN_VALUE : isSerialType(uri) ? (MIN_VALUE + 1) : 0;
 			}
+
 		};
 	}
+
+	private static boolean isSerial(URI uri) {
+		return extractNameFromURI(uri).equals("serial");
+	}
+
+	private static boolean isSerialType(URI uri) {
+		return extractNameFromURI(uri).startsWith("serial-");
+	}
+
 	/**
 	 * Returns a shared Link to the passed URI. If the Link already was created the
 	 * cached Link is returned. If the Link is not used anymore it should be closed
@@ -118,10 +129,37 @@ public final class Links {
 	 * @param uri the URI to create the Link for
 	 * @return shared Link for the passed URI or a newly created one if no Link for
 	 *         that URI exists
-	 * @throws Exception
 	 */
 	public static Link getLink(URI uri) {
-		return isDefault(uri) ? getDefault() : getLink(linkManager.getConfigurer(uri));
+		return isDefault(uri) ? getDefault() : getLink(linkManager.getConfigurer(fixSerial(uri)));
+	}
+
+	private static URI fixSerial(URI uri) {
+		List<URI> availableUris = linkManager.listURIs();
+		Optional<URI> firstSerialType = firstSerialType(availableUris);
+		return isSerial(uri) && !containsSerial(availableUris) && firstSerialType.isPresent()
+				? replaceName(uri, extractNameFromURI(firstSerialType.get()))
+				: uri;
+	}
+
+	@LapsedWith(module = JDK8, value = "Stream")
+	private static Optional<URI> firstSerialType(List<URI> uris) {
+		for (URI uri : uris) {
+			if (isSerialType(uri)) {
+				return Optional.of(uri);
+			}
+		}
+		return Optional.absent();
+	}
+
+	@LapsedWith(module = JDK8, value = "Stream")
+	private static boolean containsSerial(List<URI> uris) {
+		for (URI uri : uris) {
+			if (isSerial(uri)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static boolean isDefault(URI uri) {

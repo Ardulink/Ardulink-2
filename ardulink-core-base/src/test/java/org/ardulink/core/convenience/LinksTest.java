@@ -57,14 +57,14 @@ import org.junit.Test;
 public class LinksTest {
 
 	@Test
-	public void returnsFirstAvailableConnectionIfSerialNotAvailable() throws IOException {
+	public void whenRequestingDefaultLinkReturnsFirstAvailableConnectionIfSerialNotAvailable() throws IOException {
 		Link link = Links.getDefault();
 		assertThat(getConnection(link), instanceOf(DummyConnection.class));
 		close(link);
 	}
 
 	@Test
-	public void serialHasPriorityOverAllOthers() throws Exception {
+	public void whenRequestingDefaultLinkSerialHasPriorityOverAllOthers() throws Exception {
 		final LinkFactory<LinkConfig> serial = spy(factoryNamed(serial()));
 		withRegistered(factoryNamed(serialDash("a")), factoryNamed("a"), serial, factoryNamed("z"),
 				factoryNamed(serialDash("z"))).execute(new Statement() {
@@ -76,12 +76,23 @@ public class LinksTest {
 	}
 
 	@Test
-	public void startingWithSerialDashHasPriorityOverAllOthers() throws Exception {
+	public void whenRequestingDefaultLinkStartingWithSerialDashHasPriorityOverAllOthers() throws Exception {
 		final LinkFactory<LinkConfig> serialDashAnything = spy(factoryNamed(serialDash("appendix-does-not-matter")));
 		withRegistered(factoryNamed("a"), serialDashAnything, factoryNamed("z")).execute(new Statement() {
 			@Override
 			public void execute() throws Exception {
 				assertLinkWasCreatedBy(Links.getDefault(), serialDashAnything);
+			}
+		});
+	}
+
+	@Test
+	public void serialDashDoesHandleSerial() throws Exception {
+		final LinkFactory<LinkConfig> serialDashAnything = spy(factoryNamed(serialDash("appendix-does-not-matter")));
+		withRegistered(serialDashAnything).execute(new Statement() {
+			@Override
+			public void execute() throws Exception {
+				assertLinkWasCreatedBy(Links.getLink("ardulink://serial"), serialDashAnything);
 			}
 		});
 	}
