@@ -16,7 +16,6 @@ limitations under the License.
 
 package org.ardulink.core.convenience;
 
-import static java.lang.Integer.MIN_VALUE;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.core.linkmanager.LinkManager.replaceName;
 import static org.ardulink.util.Iterables.getFirst;
@@ -32,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
@@ -60,6 +60,28 @@ public final class Links {
 	private Links() {
 		super();
 	}
+
+	private static class Alias {
+		private final String aliasName;
+		private final Pattern aliasFor;
+
+		public Alias(String aliasName, Pattern aliasFor) {
+			this.aliasName = aliasName;
+			this.aliasFor = aliasFor;
+		}
+
+		private boolean isAliasName(String name) {
+			return name.equals(aliasName);
+		}
+
+		public boolean isAliasFor(String name) {
+			return aliasFor.matcher(name).matches();
+		}
+
+	}
+
+	private static final Alias serialAlias = new Alias("serial", Pattern.compile("serial\\-.+"));
+	private static final List<Alias> aliases = Arrays.asList(serialAlias);
 
 	/**
 	 * Returns the default Link which is a connection to the first serial port if
@@ -91,18 +113,11 @@ public final class Links {
 			}
 
 			private int valueOf(URI uri) {
-				return isSerial(uri) ? MIN_VALUE : isSerialType(uri) ? (MIN_VALUE + 1) : 0;
+				String name = extractNameFromURI(uri);
+				return serialAlias.isAliasName(name) ? -2 : serialAlias.isAliasFor(name) ? -1 : 0;
 			}
 
 		};
-	}
-
-	private static boolean isSerial(URI uri) {
-		return extractNameFromURI(uri).equals("serial");
-	}
-
-	private static boolean isSerialType(URI uri) {
-		return extractNameFromURI(uri).startsWith("serial-");
 	}
 
 	/**
@@ -131,21 +146,29 @@ public final class Links {
 	 *         that URI exists
 	 */
 	public static Link getLink(URI uri) {
-		return isDefault(uri) ? getDefault() : getLink(linkManager.getConfigurer(fixSerial(uri)));
+		return isDefault(uri) ? getDefault() : getLink(linkManager.getConfigurer(aliasReplacement(uri)));
 	}
 
-	private static URI fixSerial(URI uri) {
+	@LapsedWith(module = JDK8, value = "Optional#map")
+	private static URI aliasReplacement(URI uri) {
 		List<URI> availableUris = linkManager.listURIs();
-		Optional<URI> firstSerialType = firstSerialType(availableUris);
-		return isSerial(uri) && !containsSerial(availableUris) && firstSerialType.isPresent()
-				? replaceName(uri, extractNameFromURI(firstSerialType.get()))
-				: uri;
+		String name = extractNameFromURI(uri);
+		if (!containsName(availableUris, name)) {
+			Optional<Alias> alias = findAlias(name);
+			if (alias.isPresent()) {
+				Optional<URI> replacement = aliasReplacement(availableUris, alias.get());
+				if (replacement.isPresent()) {
+					return replaceName(uri, extractNameFromURI(replacement.get()));
+				}
+			}
+		}
+		return uri;
 	}
 
 	@LapsedWith(module = JDK8, value = "Stream")
-	private static Optional<URI> firstSerialType(List<URI> uris) {
-		for (URI uri : uris) {
-			if (isSerialType(uri)) {
+	private static Optional<URI> aliasReplacement(List<URI> availableUris, Alias alias) {
+		for (URI uri : availableUris) {
+			if (alias.isAliasFor(extractNameFromURI(uri))) {
 				return Optional.of(uri);
 			}
 		}
@@ -153,9 +176,19 @@ public final class Links {
 	}
 
 	@LapsedWith(module = JDK8, value = "Stream")
-	private static boolean containsSerial(List<URI> uris) {
+	private static Optional<Alias> findAlias(String name) {
+		for (Alias alias : aliases) {
+			if (alias.isAliasName(name)) {
+				return Optional.of(alias);
+			}
+		}
+		return Optional.<Alias>absent();
+	}
+
+	@LapsedWith(module = JDK8, value = "Stream")
+	private static boolean containsName(List<URI> uris, String name) {
 		for (URI uri : uris) {
-			if (isSerial(uri)) {
+			if (extractNameFromURI(uri).equals(name)) {
 				return true;
 			}
 		}
