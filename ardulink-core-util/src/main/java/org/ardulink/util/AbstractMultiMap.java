@@ -16,11 +16,15 @@ limitations under the License.
  */
 package org.ardulink.util;
 
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -65,6 +69,7 @@ public abstract class AbstractMultiMap<K, V> implements
 		return this.data.isEmpty();
 	}
 
+	@LapsedWith(module = JDK8, value = "Map#merge")
 	public boolean put(K key, V value) {
 		Collection<V> values = this.data.get(key);
 		if (values == null) {
