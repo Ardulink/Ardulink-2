@@ -3,6 +3,7 @@ package org.ardulink.rest;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.identityHashCode;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
@@ -16,6 +17,9 @@ import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -26,8 +30,11 @@ import org.ardulink.core.Pin.Type;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.rest.main.RestMain;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.webjars.WebJarAssetLocator;
 
 public class RestRouteBuilder extends RouteBuilder {
 
@@ -55,7 +62,19 @@ public class RestRouteBuilder extends RouteBuilder {
 		String readDigital = "direct:readDigital-" + identityHashCode(this);
 		String switchAnalog = "direct:switchAnalog-" + identityHashCode(this);
 		String switchDigital = "direct:switchDigital-" + identityHashCode(this);
-		restConfiguration().host(fromPlaceholder(VAR_BIND)).port(fromPlaceholder(VAR_PORT));
+
+		String apidocs = "/api-docs";
+		restConfiguration() //
+				.component("jetty") //
+//				.bindingMode(RestBindingMode.json) //
+				.host(fromPlaceholder(VAR_BIND)) //
+				.port(fromPlaceholder(VAR_PORT)) //
+//				.contextPath("/") //
+//				.setEnableCORS(true) //
+		;
+		swagger(apidocs);
+		swaggerUi(apidocs);
+
 		rest("/pin") //
 				.consumes("application/json").produces("application/json") //
 				.patch("/analog/{pin}").to(patchAnalog) //
@@ -74,12 +93,49 @@ public class RestRouteBuilder extends RouteBuilder {
 		writeArduinoMessagesTo(target, messages);
 	}
 
+	private void swagger(String apidocs) {
+		restConfiguration().apiContextPath(apidocs) //
+				.apiProperty("host", "localhost" + ":" + fromPlaceholder(VAR_PORT)) //
+				.apiProperty("base.path", "api-docs") //
+				.apiProperty("api.title", "User API") //
+				.apiProperty("api.version", "1.0.0") //
+				.apiProperty("cors", "true") //
+		;
+	}
+
+	private void swaggerUi(String apidocs) throws URISyntaxException {
+		Map<String, String> webJars = new WebJarAssetLocator("META-INF/resources/webjars/").getWebJars();
+		String key = "swagger-ui";
+		String version = checkNotNull(webJars.get(key), key);
+		String name = key + "Handler";
+
+		registerResourceHandler(name,
+				RestMain.class.getClassLoader().getResource("META-INF/resources/webjars/").toURI());
+		restConfiguration().endpointProperty("handlers", name);
+		from("jetty:http://" + fromPlaceholder(VAR_BIND) + ":" + fromPlaceholder(VAR_PORT) + "/api-browser") //
+				.process(exchange -> {
+					Message message = exchange.getMessage();
+					message.setHeader(HTTP_RESPONSE_CODE, 302);
+					message.setHeader("location", "/swagger-ui/" + version + "/index.html?url=" + apidocs + "#");
+				});
+	}
+
+	private void registerResourceHandler(String id, URI resource) throws URISyntaxException {
+		getContext().getRegistry().bind(id, ResourceHandler.class, resourceHandler(resource));
+	}
+
+	private ResourceHandler resourceHandler(URI resourceURI) throws URISyntaxException {
+		ResourceHandler rh = new ResourceHandler();
+		rh.setResourceBase(resourceURI.toASCIIString());
+		return rh;
+	}
+
 	private void readQueue(Exchange exchange, BlockingQueue<FromDeviceMessagePinStateChanged> messages)
 			throws InterruptedException {
 		FromDeviceMessagePinStateChanged polled = checkNotNull(messages.poll(1, SECONDS),
 				"Timout retrieving message from arduino");
 		Message message = exchange.getMessage();
-		if (Integer.compare(polled.getPin().pinNum(), ((int) message.getHeader(RestRouteBuilder.HEADER_PIN))) == 0) {
+		if (Integer.compare(polled.getPin().pinNum(), ((int) message.getHeader(HEADER_PIN))) == 0) {
 			message.setBody(polled.getValue(), String.class);
 		} else {
 			messages.offer(polled);
@@ -122,7 +178,7 @@ public class RestRouteBuilder extends RouteBuilder {
 	}
 
 	private Message setTypeAndPinHeader(Message message, Type type, int pin) {
-		message.setHeader(RestRouteBuilder.HEADER_PIN, pin);
+		message.setHeader(HEADER_PIN, pin);
 		message.setHeader(RestRouteBuilder.HEADER_TYPE, type);
 		return message;
 	}
