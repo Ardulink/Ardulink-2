@@ -164,6 +164,10 @@ public class MqttBroker implements Closeable {
 		}
 	}
 
+	public String getHost() {
+		return config.getProperty(HOST_PROPERTY_NAME);
+	}
+
 	public int getPort() {
 		return Integer.parseInt(config.getProperty(PORT_PROPERTY_NAME));
 	}
