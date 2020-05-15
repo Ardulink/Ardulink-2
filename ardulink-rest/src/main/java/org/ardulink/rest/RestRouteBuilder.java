@@ -76,7 +76,7 @@ public class RestRouteBuilder extends RouteBuilder {
 		swaggerUi(apidocs);
 
 		rest("/pin") //
-				.consumes("application/json").produces("application/json") //
+				.consumes("application/octet-stream").produces("application/json") //
 				.patch("/analog/{pin}").to(patchAnalog) //
 				.patch("/digital/{pin}").to(patchDigital) //
 				.get("/analog/{pin}").to(readAnalog) //
