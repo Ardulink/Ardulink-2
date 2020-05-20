@@ -18,10 +18,13 @@ package org.ardulink.core.mqtt.duplicated;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.util.Throwables.propagate;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,14 +32,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
+import org.ardulink.util.StopWatch;
 import org.ardulink.util.URIs;
+import org.ardulink.util.anno.LapsedWith;
 import org.fusesource.mqtt.client.Future;
 import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.Topic;
+import org.hamcrest.Matcher;
 import org.junit.rules.ExternalResource;
 
 // TODO create a Mqtt test package and move AnotherMQttClient, ... to it
@@ -119,6 +126,7 @@ public class AnotherMqttClient extends ExternalResource {
 		return this;
 	}
 
+	@Deprecated
 	public List<Message> getMessages() {
 		try {
 			MILLISECONDS.sleep(25);
@@ -127,11 +135,26 @@ public class AnotherMqttClient extends ExternalResource {
 		}
 		return new ArrayList<Message>(this.messages);
 	}
+	
+	@LapsedWith(module = JDK8, value = "org.awaitability")
+	public void awaitMessages(Matcher<List<Message>> matcher) {
+		StopWatch stopWatch = new StopWatch().start();
+		while (stopWatch.getTime(SECONDS) < 10) {
+			try {
+				assertThat(this.messages, matcher);
+				return;
+			} catch (AssertionError e) {
+				try {
+					TimeUnit.MILLISECONDS.sleep(100);
+				} catch (InterruptedException e1) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+	}
 
-	public List<Message> pollMessages() {
-		List<Message> messages = getMessages();
+	public void clear() {
 		this.messages.clear();
-		return messages;
 	}
 
 	public void switchPin(Pin pin, Object value) throws IOException {

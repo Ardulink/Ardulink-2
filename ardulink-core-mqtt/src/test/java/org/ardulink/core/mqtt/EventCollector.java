@@ -16,15 +16,20 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.junit.Assert.assertThat;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.ardulink.util.ListMultiMap;
-
+import org.ardulink.util.StopWatch;
+import org.ardulink.util.anno.LapsedWith;
+import org.hamcrest.Matcher;
 import org.ardulink.core.Pin.Type;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
@@ -53,15 +58,22 @@ public class EventCollector implements EventListener {
 		events.put(DIGITAL, event);
 	}
 
-	public List<PinValueChangedEvent> events(Type type) {
-		try {
-			TimeUnit.MILLISECONDS.sleep(250);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
+	@LapsedWith(module = JDK8, value = "org.awaitability")
+	public void awaitEvents(Type type, Matcher<? super List<PinValueChangedEvent>> matcher) {
+		StopWatch stopWatch = new StopWatch().start();
+		while (stopWatch.getTime(SECONDS) < 10) {
+			List<PinValueChangedEvent> list = events.asMap().get(type);
+			try {
+				assertThat(list == null ? Collections.<PinValueChangedEvent>emptyList() : list, matcher);
+				return;
+			} catch (AssertionError e) {
+				try {
+					TimeUnit.MILLISECONDS.sleep(100);
+				} catch (InterruptedException e1) {
+					Thread.currentThread().interrupt();
+				}
+			}
 		}
-		List<PinValueChangedEvent> list = events.asMap().get(type);
-		return list == null ? Collections.<PinValueChangedEvent> emptyList()
-				: list;
 	}
 
 }

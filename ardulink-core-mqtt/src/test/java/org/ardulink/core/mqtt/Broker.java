@@ -21,12 +21,7 @@ import static io.moquette.BrokerConstants.AUTHENTICATOR_CLASS_NAME;
 import static io.moquette.BrokerConstants.HOST_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
-import io.moquette.interception.AbstractInterceptHandler;
-import io.moquette.interception.InterceptHandler;
-import io.moquette.interception.messages.InterceptPublishMessage;
-import io.moquette.server.Server;
-import io.moquette.server.config.MemoryConfig;
-import io.moquette.spi.security.IAuthenticator;
+import static io.moquette.BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -38,6 +33,13 @@ import org.ardulink.core.mqtt.duplicated.Message;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Strings;
 import org.junit.rules.ExternalResource;
+
+import io.moquette.interception.AbstractInterceptHandler;
+import io.moquette.interception.InterceptHandler;
+import io.moquette.interception.messages.InterceptPublishMessage;
+import io.moquette.server.Server;
+import io.moquette.server.config.MemoryConfig;
+import io.moquette.spi.security.IAuthenticator;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -111,6 +113,7 @@ public class Broker extends ExternalResource {
 					Boolean.FALSE.toString());
 		}
 		properties.put(PERSISTENT_STORE_PROPERTY_NAME, "");
+		properties.put(WEB_SOCKET_PORT_PROPERTY_NAME, "0");
 		return properties;
 	}
 

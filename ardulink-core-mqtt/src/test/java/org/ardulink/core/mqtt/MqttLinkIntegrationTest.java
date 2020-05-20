@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
+import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
@@ -23,6 +24,7 @@ import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -38,6 +40,7 @@ import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
 import org.ardulink.core.mqtt.duplicated.EventMatchers.PinValueChangedEventMatcher;
+import org.ardulink.util.anno.LapsedWith;
 import org.ardulink.core.mqtt.duplicated.Message;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsCollectionContaining;
@@ -137,8 +140,7 @@ public class MqttLinkIntegrationTest {
 		breedReconnectedState(link);
 
 		link.switchAnalogPin(analogPin(8), 9);
-		assertThat(mqttClient.getMessages(),
-				is(Arrays.asList(new Message(topic("A8"), "9"))));
+		mqttClient.awaitMessages(is(asList(new Message(topic("A8"), "9"))));
 		link.close();
 	}
 
@@ -153,8 +155,7 @@ public class MqttLinkIntegrationTest {
 		breedReconnectedState(link);
 
 		mqttClient.switchPin(digitalPin(2), true);
-		assertThat(eventCollector.events(DIGITAL),
-				hasItems(eventFor(digitalPin(2)).withValue(true)));
+		eventCollector.awaitEvents(DIGITAL, hasItems(eventFor(digitalPin(2)).withValue(true)));
 		link.close();
 	}
 
@@ -184,6 +185,7 @@ public class MqttLinkIntegrationTest {
 		return config;
 	}
 
+	@LapsedWith(module = JDK8, value = "org.awaitability")
 	public void waitForLinkReconnect(
 			TrackStateConnectionListener connectionListener)
 			throws InterruptedException {
@@ -192,6 +194,7 @@ public class MqttLinkIntegrationTest {
 		}
 	}
 
+	@LapsedWith(module = JDK8, value = "org.awaitability")
 	public void restartBroker(TrackStateConnectionListener connectionListener)
 			throws InterruptedException, IOException {
 		this.broker.stop();

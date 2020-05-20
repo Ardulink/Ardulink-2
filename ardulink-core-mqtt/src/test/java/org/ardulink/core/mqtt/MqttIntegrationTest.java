@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
+import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -23,13 +24,11 @@ import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
 import static org.ardulink.util.ServerSockets.freePort;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.rules.RuleChain.outerRule;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -93,7 +92,7 @@ public class MqttIntegrationTest {
 
 	@Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] { sameTopic(), separateTopics() });
+		return asList(new Object[][] { sameTopic(), separateTopics() });
 	}
 
 	private static Object[] sameTopic() {
@@ -108,40 +107,38 @@ public class MqttIntegrationTest {
 			String messageFormat) {
 		this.mqttClient.appendValueSet(separateTopics);
 		this.messageFormat = messageFormat;
-		clientUri = "ardulink://mqtt?host=localhost&port="
+		this.clientUri = "ardulink://mqtt?host=localhost&port="
 				+ broker.getPort() + "&topic=" + TOPIC + "&separatedTopics="
 				+ separateTopics;
 	}
 
 	@Test
 	public void canSwitchDigitalPin() throws IOException {
-		this.link.switchDigitalPin(digitalPin(30), true);
-		assertThat(mqttClient.getMessages(),
-				is(Arrays.asList(new Message(topic("D30"), "true"))));
+		link.switchDigitalPin(digitalPin(30), true);
+		mqttClient.awaitMessages(is(asList(new Message(topic("D30"), "true"))));
 	}
 
 	@Test
 	public void canSwitchAnalogPin() throws IOException {
-		this.link.switchAnalogPin(analogPin(12), 34);
-		assertThat(mqttClient.getMessages(),
-				is(Arrays.asList(new Message(topic("A12"), "34"))));
+		link.switchAnalogPin(analogPin(12), 34);
+		mqttClient.awaitMessages(is(asList(new Message(topic("A12"), "34"))));
 	}
 
 	@Test
 	public void sendsControlMessageWhenAddingAnalogListener()
 			throws IOException {
-		this.link.addListener(new FilteredEventListenerAdapter(analogPin(1),
+		link.addListener(new FilteredEventListenerAdapter(analogPin(1),
 				delegate()));
-		assertThat(mqttClient.getMessages(), is(Arrays.asList(new Message(
+		mqttClient.awaitMessages(is(asList(new Message(
 				topic("system/listening/A1"), "true"))));
 	}
 
 	@Test
 	public void sendsControlMessageWhenAddingDigitalListener()
 			throws IOException {
-		this.link.addListener(new FilteredEventListenerAdapter(digitalPin(2),
+		link.addListener(new FilteredEventListenerAdapter(digitalPin(2),
 				delegate()));
-		assertThat(mqttClient.getMessages(), is(Arrays.asList(new Message(
+		mqttClient.awaitMessages(is(asList(new Message(
 				topic("system/listening/D2"), "true"))));
 	}
 
@@ -150,17 +147,17 @@ public class MqttIntegrationTest {
 			throws IOException {
 		EventListenerAdapter listener = new FilteredEventListenerAdapter(
 				analogPin(1), delegate());
-		this.link.addListener(listener);
-		this.link.addListener(listener);
-		Message m = new Message(topic("system/listening/A1"), "true");
-		// at the moment this is sent twice (see ListenerSupport)
-		assertThat(mqttClient.pollMessages(), is(Arrays.asList(m, m)));
-		this.link.removeListener(listener);
-		assertThat(mqttClient.getMessages(),
-				is(Collections.<Message> emptyList()));
-		this.link.removeListener(listener);
+		link.addListener(listener);
+		link.addListener(listener);
+		Message m1 = new Message(topic("system/listening/A1"), "true");
+		// at the moment this is sent twice (see AbstractListenerLink)
+		mqttClient.awaitMessages(is(asList(m1, m1)));
+		mqttClient.clear();
+		link.removeListener(listener);
+		mqttClient.awaitMessages(is(Collections.<Message> emptyList()));
+		link.removeListener(listener);
 		Message m2 = new Message(topic("system/listening/A1"), "false");
-		assertThat(mqttClient.getMessages(), is(Arrays.asList(m2)));
+		mqttClient.awaitMessages(is(is(asList(m2))));
 	}
 
 	@Test
@@ -168,17 +165,17 @@ public class MqttIntegrationTest {
 			throws IOException {
 		EventListenerAdapter listener = new FilteredEventListenerAdapter(
 				digitalPin(1), delegate());
-		this.link.addListener(listener);
-		this.link.addListener(listener);
-		Message m = new Message(topic("system/listening/D1"), "true");
-		// at the moment this is sent twice (see ListenerSupport)
-		assertThat(mqttClient.pollMessages(), is(Arrays.asList(m, m)));
-		this.link.removeListener(listener);
-		assertThat(mqttClient.getMessages(),
-				is(Collections.<Message> emptyList()));
-		this.link.removeListener(listener);
+		link.addListener(listener);
+		link.addListener(listener);
+		Message m1 = new Message(topic("system/listening/D1"), "true");
+		// at the moment this is sent twice (see AbstractListenerLink)
+		mqttClient.awaitMessages(is(asList(m1, m1)));
+		mqttClient.clear();
+		link.removeListener(listener);
+		mqttClient.awaitMessages(is(Collections.<Message> emptyList()));
+		link.removeListener(listener);
 		Message m2 = new Message(topic("system/listening/D1"), "false");
-		assertThat(mqttClient.getMessages(), is(Arrays.asList(m2)));
+		mqttClient.awaitMessages(is(asList(m2)));
 	}
 
 	private String topic(String pin) {
@@ -193,9 +190,9 @@ public class MqttIntegrationTest {
 		Pin pin = digitalPin(1);
 		boolean value = true;
 		EventCollector eventCollector = new EventCollector();
-		this.link.addListener(eventCollector);
+		link.addListener(eventCollector);
 		mqttClient.switchPin(pin, value);
-		assertThat(eventCollector.events(DIGITAL), hasItems(eventFor(pin)
+		eventCollector.awaitEvents(DIGITAL, hasItems(eventFor(pin)
 				.withValue(value)));
 	}
 
@@ -205,9 +202,9 @@ public class MqttIntegrationTest {
 		Pin pin = analogPin(2);
 		int value = 123;
 		EventCollector eventCollector = new EventCollector();
-		this.link.addListener(eventCollector);
+		link.addListener(eventCollector);
 		mqttClient.switchPin(pin, value);
-		assertThat(eventCollector.events(ANALOG), hasItems(eventFor(pin)
+		eventCollector.awaitEvents(ANALOG, hasItems(eventFor(pin)
 				.withValue(value)));
 	}
 
