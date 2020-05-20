@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.core.mqtt.duplicated;
 
 import static java.util.Collections.unmodifiableMap;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
@@ -126,16 +125,6 @@ public class AnotherMqttClient extends ExternalResource {
 		return this;
 	}
 
-	@Deprecated
-	public List<Message> getMessages() {
-		try {
-			MILLISECONDS.sleep(25);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
-		return new ArrayList<Message>(this.messages);
-	}
-	
 	@LapsedWith(module = JDK8, value = "org.awaitability")
 	public void awaitMessages(Matcher<List<Message>> matcher) {
 		StopWatch stopWatch = new StopWatch().start();

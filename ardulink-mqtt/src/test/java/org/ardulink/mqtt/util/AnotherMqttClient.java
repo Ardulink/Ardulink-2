@@ -17,12 +17,14 @@ limitations under the License.
 package org.ardulink.mqtt.util;
 
 import static java.util.Collections.unmodifiableMap;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.mqtt.MqttCamelRouteBuilder.PUBLISH_HEADER;
 import static org.ardulink.mqtt.MqttCamelRouteBuilder.SUBSCRIBE_HEADER;
 import static org.ardulink.util.Throwables.propagate;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.junit.Assert.assertThat;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -31,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Processor;
@@ -40,8 +43,10 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
 import org.ardulink.mqtt.MqttCamelRouteBuilder;
-import org.ardulink.util.Lists;
+import org.ardulink.util.StopWatch;
 import org.ardulink.util.Throwables;
+import org.ardulink.util.anno.LapsedWith;
+import org.hamcrest.Matcher;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -162,19 +167,25 @@ public class AnotherMqttClient implements Closeable {
 		};
 	}
 
-	public List<Message> getMessages() {
-		try {
-			MILLISECONDS.sleep(25);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
+	@LapsedWith(module = JDK8, value = "org.awaitability")
+	public void awaitMessages(Matcher<List<Message>> matcher) {
+		StopWatch stopWatch = new StopWatch().start();
+		while (stopWatch.getTime(SECONDS) < 10) {
+			try {
+				assertThat(this.messages, matcher);
+				return;
+			} catch (AssertionError e) {
+				try {
+					TimeUnit.MILLISECONDS.sleep(100);
+				} catch (InterruptedException e1) {
+					Thread.currentThread().interrupt();
+				}
+			}
 		}
-		return Lists.newArrayList(this.messages);
 	}
-
-	public List<Message> pollMessages() {
-		List<Message> messages = getMessages();
+	
+	public void clear() {
 		this.messages.clear();
-		return messages;
 	}
 
 	public void switchPin(Pin pin, Object value) throws IOException {
