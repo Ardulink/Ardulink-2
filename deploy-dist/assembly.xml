@@ -13,12 +13,6 @@
 	<moduleSets>
 		<moduleSet>
 			<useAllReactorProjects>true</useAllReactorProjects>
-			<includes>
-				<include>*:ardulink*</include>
-			</includes>
-			<excludes>
-				<exclude>*:ardulink-core-testsupport</exclude>
-			</excludes>
 			<binaries>
 				<!-- put Ardulink and applications jars under ${baseDirectory}/lib -->
 				<outputDirectory>ardulink/lib</outputDirectory>
