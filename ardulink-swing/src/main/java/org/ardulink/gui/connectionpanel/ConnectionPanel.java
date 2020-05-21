@@ -87,7 +87,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 			public Component getListCellRendererComponent(JList list,
 					Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
-				return super.getListCellRendererComponent(list,
+				return value == null ? null : super.getListCellRendererComponent(list,
 						extractNameFromURI(URIs.newURI((String) value)), index,
 						isSelected, cellHasFocus);
 			}
@@ -124,7 +124,9 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		refreshButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				replaceSubpanel();
+				if (uris.getItemCount() > 0) {
+					replaceSubpanel();
+				}
 			}
 		});
 		return refreshButton;
