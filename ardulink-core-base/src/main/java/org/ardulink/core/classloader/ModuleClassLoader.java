@@ -17,6 +17,7 @@ package org.ardulink.core.classloader;
 
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Throwables.propagate;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -26,6 +27,7 @@ import java.net.URLClassLoader;
 import java.util.List;
 
 import org.ardulink.util.Lists;
+import org.ardulink.util.anno.LapsedWith;
 
 public class ModuleClassLoader extends URLClassLoader {
 
@@ -34,7 +36,7 @@ public class ModuleClassLoader extends URLClassLoader {
 	}
 
 	public ModuleClassLoader(File moduleDir) {
-		this(Thread.currentThread().getContextClassLoader(), moduleDir);
+		this(contextClassLoader(), moduleDir);
 	}
 
 	public ModuleClassLoader(ClassLoader parent, String moduleDir) {
@@ -45,6 +47,11 @@ public class ModuleClassLoader extends URLClassLoader {
 		super(toUrls(list(moduleDir)), parent);
 	}
 
+	private static ClassLoader contextClassLoader() {
+		return Thread.currentThread().getContextClassLoader();
+	}
+
+	@LapsedWith(module = JDK8, value = "Streams")
 	private static URL[] toUrls(List<File> files) {
 		List<URL> urls = Lists.newArrayList();
 		for (File file : files) {
@@ -62,6 +69,7 @@ public class ModuleClassLoader extends URLClassLoader {
 		}
 	}
 
+	@LapsedWith(module = JDK8, value = "Streams")
 	private static List<File> list(File dir) {
 		checkState(dir.exists(), "Directory %s not found", dir);
 		List<File> files = Lists.newArrayList();
@@ -71,6 +79,7 @@ public class ModuleClassLoader extends URLClassLoader {
 		return files;
 	}
 
+	@LapsedWith(module = JDK8, value = "Lambda")
 	private static FilenameFilter jarFiler() {
 		return new FilenameFilter() {
 			@Override
