@@ -29,11 +29,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 import org.ardulink.core.Link;
+import org.ardulink.core.linkmanager.Classloaders;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.util.Lists;
@@ -133,7 +132,7 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 		List<LinkFactory> factories = Lists.newArrayList();
 		try {
 			ClassLoader classloader = moduleClassloader();
-			for (URL url : new HashSet<URL>(Collections.list(classloader.getResources("META-INF/services/ardulink/linkfactory")))) {
+			for (URL url : Classloaders.getResources(classloader, "META-INF/services/ardulink/linkfactory")) {
 				BufferedReader reader = new BufferedReader(
 						new InputStreamReader(url.openStream()));
 				String line;
