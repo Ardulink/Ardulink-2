@@ -15,7 +15,6 @@ limitations under the License.
  */
 package org.ardulink.util;
 
-import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.io.ByteArrayOutputStream;
@@ -25,27 +24,25 @@ import java.io.InputStream;
 import org.ardulink.util.anno.LapsedWith;
 
 @LapsedWith(value = JDK8, module = "BufferedReader#lines/Collectors#joining")
-public final class LoadStream {
+public final class Streams {
 
-	private LoadStream() {
+	private static final int BUFFER_SIZE = 1024;
+
+	private Streams() {
 		super();
 	}
 
-	public static String asString(InputStream is) {
-		byte[] buffer = new byte[1024];
-		ByteArrayOutputStream os = new ByteArrayOutputStream(buffer.length);
+	public static String toString(InputStream inputStream) throws IOException {
+		byte[] buffer = new byte[BUFFER_SIZE];
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream(BUFFER_SIZE);
 		try {
-			try {
 				int bytesRead;
-				while ((bytesRead = is.read(buffer)) != -1) {
-					os.write(buffer, 0, bytesRead);
+				while ((bytesRead = inputStream.read(buffer)) != -1) {
+					outputStream.write(buffer, 0, bytesRead);
 				}
-			} finally {
-				os.close();
-			}
-			return os.toString();
-		} catch (IOException e) {
-			throw propagate(e);
+			return outputStream.toString();
+		} finally {
+			outputStream.close();
 		}
 	}
 

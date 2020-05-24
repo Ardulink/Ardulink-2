@@ -17,7 +17,6 @@ package org.ardulink.core.proto.impl;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.regex.Pattern.quote;
-import static org.ardulink.util.LoadStream.asString;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
@@ -28,6 +27,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 import org.ardulink.util.Joiner;
+import org.ardulink.util.Streams;
 
 public class LuaProtoBuilder {
 
@@ -124,21 +124,22 @@ public class LuaProtoBuilder {
 		public abstract String message(LuaProtoBuilder luaProtoBuilder);
 
 		private static String loadSnippet(String snippet) {
-			InputStream is = LuaProtoBuilder.class.getResourceAsStream(snippet);
-			// Scripts on more than on line cause random error on NodeMCU
-			// because its echo
-			// We should investigate on ESPlorer code to understand how
-			// improve this code.
-			// Actually we remove CR and LF sending the script on a single
-			// line.
-			String content = asString(is).replaceAll("\\r", " ").replaceAll(
-					"\\n", " ");
 			try {
-				is.close();
+				InputStream is = LuaProtoBuilder.class.getResourceAsStream(snippet);
+				try {
+					// Scripts on more than on line cause random error on NodeMCU
+					// because its echo
+					// We should investigate on ESPlorer code to understand how
+					// improve this code.
+					// Actually we remove CR and LF sending the script on a single
+					// line.
+					return Streams.toString(is).replaceAll("\\r", " ").replaceAll("\\n", " ");
+				} finally {
+					is.close();
+				}
 			} catch (IOException e) {
 				throw propagate(e);
 			}
-			return content;
 		}
 	}
 
