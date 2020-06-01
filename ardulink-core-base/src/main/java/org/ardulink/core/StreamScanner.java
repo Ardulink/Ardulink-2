@@ -15,14 +15,15 @@ limitations under the License.
  */
 package org.ardulink.core;
 
+import static org.ardulink.util.Throwables.propagate;
+
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.ardulink.util.ByteArray;
 
 /**
- * Scanner for Stream. It returns byte arrays from a stream splitted by a
- * delimiter.
+ * Scanner for Stream. It returns byte arrays from a stream split by a delimiter.
  */
 public class StreamScanner {
 
@@ -31,9 +32,9 @@ public class StreamScanner {
 
 	private final byte[] readBuffer;
 
-	private ByteArray underBuffer = new ByteArray();
+	private final ByteArray underBuffer = new ByteArray();
 
-	private boolean interrupted;
+	private volatile boolean interrupted;
 
 	public StreamScanner(InputStream inputStream, byte[] delimiter) {
 		this(inputStream, delimiter, 1);
@@ -73,7 +74,7 @@ public class StreamScanner {
 		try {
 			inputStream.close();
 		} catch (IOException e) {
-			// TODO LZ why is this Exception swallowed?
+			propagate(e);
 		}
 	}
 
