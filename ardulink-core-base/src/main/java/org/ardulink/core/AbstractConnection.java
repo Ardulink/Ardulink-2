@@ -27,7 +27,7 @@ public abstract class AbstractConnection implements Connection {
 		return listeners;
 	}
 	
-	public void contactListeners4Sent(byte[] bytes) {
+	protected void fireSent(byte[] bytes) {
 		for (Listener listener : listeners) {
 			try {
 				listener.sent(bytes);
@@ -37,7 +37,7 @@ public abstract class AbstractConnection implements Connection {
 		}
 	}
 
-	public void contactListeners4Received(byte[] bytes) {
+	protected void fireReceived(byte[] bytes) {
 		for (Listener listener : listeners) {
 			try {
 				listener.received(bytes);

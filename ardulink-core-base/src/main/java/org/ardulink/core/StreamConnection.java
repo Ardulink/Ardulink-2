@@ -48,7 +48,7 @@ public class StreamConnection extends AbstractConnection {
 		this.streamReader = new StreamReader(inputStream) {
 			@Override
 			protected void received(byte[] bytes) throws Exception {
-				contactListeners4Received(bytes);
+				fireReceived(bytes);
 			}
 		};
 		if (inputStream != null) {
@@ -61,7 +61,7 @@ public class StreamConnection extends AbstractConnection {
 		logger.debug("Stream write {}", bytes);
 		outputStream.write(checkNotNull(bytes, "bytes must not be null"));
 		outputStream.flush();
-		contactListeners4Sent(bytes);
+		fireSent(bytes);
 	}
 
 	@Override

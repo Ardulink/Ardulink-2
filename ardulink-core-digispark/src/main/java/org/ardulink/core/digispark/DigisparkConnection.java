@@ -69,10 +69,10 @@ public class DigisparkConnection extends AbstractConnection {
 		usbDevHandle = usb_open(usbDevice);
 		checkState(usbDevHandle != 0, "usb_open: %s", usb_strerror());
 		checkState(isConnected(), "USB Digispark device not found on USB");
-		claim_interface(usbDevHandle, 1, 0);
+		claimInterface(usbDevHandle, 1, 0);
 	}
 
-	private void claim_interface(long usb_dev_handle, int configuration,
+	private void claimInterface(long usb_dev_handle, int configuration,
 			int interface_) {
 		if (usb_set_configuration(usb_dev_handle, configuration) < 0) {
 			usbDevHandle = 0;
@@ -132,7 +132,7 @@ public class DigisparkConnection extends AbstractConnection {
 		int len = usb_control_msg(usbDevHandle, (0x01 << 5), 0x09, 0, divider,
 				new byte[0], 0, 0);
 		checkState(len >= 0, "controlMsg: %s", usb_strerror());
-		contactListeners4Sent(bytes);
+		fireSent(bytes);
 	}
 
 	private void tryARecover() throws USBException {
