@@ -31,8 +31,6 @@ public interface Connection extends Closeable {
 
 	/**
 	 * The Listener is called on data received from the Arduino.
-	 * 
-	 *  
 	 */
 	public interface Listener {
 		Listener NULL = new Listener() {
