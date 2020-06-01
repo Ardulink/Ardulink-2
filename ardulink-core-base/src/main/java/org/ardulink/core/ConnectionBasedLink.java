@@ -28,8 +28,8 @@ import static org.ardulink.core.proto.api.MessageIdHolders.toHolder;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.ardulink.core.Connection.ListenerAdapter;
 import org.ardulink.core.Pin.AnalogPin;
@@ -56,6 +56,7 @@ import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageTone;
 import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,9 +125,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		} else if (pin.is(DIGITAL) && value instanceof Boolean) {
 			fireStateChanged(digitalPinValueChanged((DigitalPin) pin, (Boolean) value));
 		} else {
-			throw new IllegalStateException(
-					"Cannot handle pin change event for pin " + pin
-							+ " with value " + value);
+			throw new IllegalStateException("Cannot handle pin change event for pin " + pin + " with value " + value);
 		}
 	}
 
@@ -134,12 +133,10 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	 * Will wait for the arduino to received the "ready" paket or the arduino to
 	 * respond to our messages sent.
 	 * 
-	 * @param wait
-	 *            the maximum time to wait
-	 * @param timeUnit
-	 *            the units to wait
-	 * @return <code>true</code> if the arduino did response within the given
-	 *         time otherwise <code>false</code>
+	 * @param wait     the maximum time to wait
+	 * @param timeUnit the units to wait
+	 * @return <code>true</code> if the arduino did response within the given time
+	 *         otherwise <code>false</code>
 	 */
 	public boolean waitForArduinoToBoot(int wait, TimeUnit timeUnit) {
 		return waitForArduinoToBoot(wait, timeUnit, Mode.ANY_MESSAGE_RECEIVED);
@@ -149,7 +146,8 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		/**
 		 * interpret any message received from arduino to be ok
 		 */
-		ANY_MESSAGE_RECEIVED, /**
+		ANY_MESSAGE_RECEIVED,
+		/**
 		 * only interpret "ready" packets to be ok
 		 */
 		READY_MESSAGE_ONLY;
@@ -159,49 +157,40 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	 * Will wait for the arduino to received the "ready" paket or the arduino to
 	 * respond to our messages sent.
 	 * 
-	 * @param wait
-	 *            the maximum time to wait
-	 * @param timeUnit
-	 *            the units to wait
-	 * @param mode
-	 *            the messages to be interpreted as "ok"
+	 * @param wait     the maximum time to wait
+	 * @param timeUnit the units to wait
+	 * @param mode     the messages to be interpreted as "ok"
 	 * 
-	 * @return <code>true</code> if the arduino did response within the given
-	 *         time otherwise <code>false</code>
+	 * @return <code>true</code> if the arduino did response within the given time
+	 *         otherwise <code>false</code>
 	 */
 	public boolean waitForArduinoToBoot(int wait, TimeUnit timeUnit, final Mode mode) {
-
-		/*
-		 * lockingQueue used instead of Lock and Condition it has a shorter and simpler
-		 * implementation.
-		 */
-		final ArrayBlockingQueue<Boolean> lockingQueue = new ArrayBlockingQueue<Boolean>(1);
-
+		final AtomicBoolean deviceIsReady = new AtomicBoolean(false);
 		ListenerAdapter listener = new ListenerAdapter() {
 			@Override
 			public void received(byte[] bytes) throws IOException {
 				if (mode == ANY_MESSAGE_RECEIVED || readyMsgReceived) {
-					// messages are arriving so device is ready
-					lockingQueue.offer(true);
+					deviceIsReady.set(true);
 				}
 			}
 		};
 		this.connection.addListener(listener);
 
-		Boolean deviceIsReady = null;
 		try {
-			ping();
-			deviceIsReady = lockingQueue.poll(wait, timeUnit);
-			if (deviceIsReady == null) {
-				deviceIsReady = false;
-			}
-
+			StopWatch stopWatch = new StopWatch().start();
+			do {
+				ping();
+				TimeUnit.MILLISECONDS.sleep(100);
+				if (deviceIsReady.get()) {
+					return true;
+				}
+			} while (stopWatch.getTime(timeUnit) < wait);
 		} catch (InterruptedException e) {
 			throw propagate(e);
 		} finally {
 			this.connection.removeListener(listener);
 		}
-		return deviceIsReady;
+		return false;
 	}
 
 	private void ping() {
@@ -209,8 +198,8 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		// (yet). So let's write something that the arduino tries to respond to.
 		try {
 			long messageId = 0;
-			connection.write(this.protocol.toDevice(addMessageId(
-					new DefaultToDeviceMessageNoTone(analogPin(0)), messageId)));
+			connection.write(
+					this.protocol.toDevice(addMessageId(new DefaultToDeviceMessageNoTone(analogPin(0)), messageId)));
 		} catch (IOException e) {
 			// ignore
 		}
@@ -239,24 +228,22 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public long switchAnalogPin(AnalogPin analogPin, int value)
-			throws IOException {
+	public long switchAnalogPin(AnalogPin analogPin, int value) throws IOException {
 		return send(analogPin, value);
 	}
 
 	@Override
-	public long switchDigitalPin(DigitalPin digitalPin, boolean value)
-			throws IOException {
+	public long switchDigitalPin(DigitalPin digitalPin, boolean value) throws IOException {
 		return send(digitalPin, value);
 	}
 
 	@Override
-	public long sendKeyPressEvent(char keychar, int keycode, int keylocation,
-			int keymodifiers, int keymodifiersex) throws IOException {
+	public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers, int keymodifiersex)
+			throws IOException {
 		ToDeviceMessageKeyPress msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageKeyPress(
-					keychar, keycode, keylocation, keymodifiers, keymodifiersex));
+			msg = addMessageIdIfNeeded(
+					new DefaultToDeviceMessageKeyPress(keychar, keycode, keylocation, keymodifiers, keymodifiersex));
 			send(this.protocol.toDevice(msg));
 		}
 		return messageIdOf(msg);
@@ -286,8 +273,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	public long sendCustomMessage(String... messages) throws IOException {
 		ToDeviceMessageCustom msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageCustom(
-					messages));
+			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageCustom(messages));
 			send(this.protocol.toDevice(msg));
 		}
 		return messageIdOf(msg);
