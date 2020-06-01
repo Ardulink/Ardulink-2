@@ -32,7 +32,6 @@ import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.rest.main.RestMain;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.webjars.WebJarAssetLocator;
 
@@ -110,7 +109,7 @@ public class RestRouteBuilder extends RouteBuilder {
 		String name = key + "Handler";
 
 		registerResourceHandler(name,
-				RestMain.class.getClassLoader().getResource("META-INF/resources/webjars/").toURI());
+				RestRouteBuilder.class.getClassLoader().getResource("META-INF/resources/webjars/").toURI());
 		restConfiguration().endpointProperty("handlers", name);
 		from("jetty:http://" + fromPlaceholder(VAR_BIND) + ":" + fromPlaceholder(VAR_PORT) + "/api-browser") //
 				.process(exchange -> {
