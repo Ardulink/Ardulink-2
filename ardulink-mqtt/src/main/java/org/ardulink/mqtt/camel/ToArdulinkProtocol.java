@@ -1,22 +1,23 @@
 package org.ardulink.mqtt.camel;
 
-import static java.lang.Boolean.TRUE;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.util.Collections.unmodifiableList;
-import static org.apache.camel.Exchange.ROUTE_STOP;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
+import static org.ardulink.mqtt.util.Optionals.a2j;
 import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.anno.LapsedWith.JDK9;
 
 import java.util.List;
-import java.util.regex.Matcher;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.apache.camel.Exchange;
@@ -27,16 +28,15 @@ import org.apache.camel.model.language.HeaderExpression;
 import org.ardulink.core.proto.impl.ALProtoBuilder;
 import org.ardulink.mqtt.Topics;
 import org.ardulink.util.ListBuilder;
-import org.ardulink.util.Optional;
+import org.ardulink.util.anno.LapsedWith;
 
 public final class ToArdulinkProtocol implements Processor {
 
-	public interface MessageCreator {
+	private static interface MessageCreator {
 		Optional<String> createMessage(String topic, String value);
 	}
 
-	private static abstract class AbstractMessageCreator implements
-			MessageCreator {
+	private static abstract class AbstractMessageCreator implements MessageCreator {
 
 		private final Pattern pattern;
 
@@ -46,14 +46,10 @@ public final class ToArdulinkProtocol implements Processor {
 
 		@Override
 		public Optional<String> createMessage(String topic, String message) {
-			Matcher matcher = this.pattern.matcher(topic);
-			if (matcher.matches() && matcher.groupCount() > 0) {
-				Optional<Integer> pin = tryParse(matcher.group(1));
-				if (pin.isPresent()) {
-					return Optional.of(createMessage(pin.get(), message));
-				}
-			}
-			return Optional.absent();
+			return Optional.of(this.pattern.matcher(topic)) //
+					.filter(m -> m.matches() && m.groupCount() > 0) //
+					.flatMap(m -> a2j(tryParse(m.group(1)))) //
+					.map(pin -> createMessage(pin, message));
 		}
 
 		protected abstract String createMessage(int pin, String message);
@@ -71,8 +67,7 @@ public final class ToArdulinkProtocol implements Processor {
 
 		@Override
 		protected String createMessage(int pin, String value) {
-			return ALProtoBuilder.alpProtocolMessage(DIGITAL_PIN_READ)
-					.forPin(pin).withState(Boolean.parseBoolean(value));
+			return alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(parseBoolean(value));
 		}
 
 	}
@@ -88,8 +83,7 @@ public final class ToArdulinkProtocol implements Processor {
 
 		@Override
 		protected String createMessage(int pin, String value) {
-			return ALProtoBuilder.alpProtocolMessage(ANALOG_PIN_READ)
-					.forPin(pin).withValue(parseInt(value));
+			return alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(parseInt(value));
 		}
 	}
 
@@ -123,8 +117,7 @@ public final class ToArdulinkProtocol implements Processor {
 
 		@Override
 		protected String createMessage(int pin, String message) {
-			ALProtoBuilder builder = parseBoolean(message) ? ALProtoBuilder
-					.alpProtocolMessage(START_LISTENING_ANALOG)
+			ALProtoBuilder builder = parseBoolean(message) ? ALProtoBuilder.alpProtocolMessage(START_LISTENING_ANALOG)
 					: ALProtoBuilder.alpProtocolMessage(STOP_LISTENING_ANALOG);
 			return builder.forPin(pin).withoutValue();
 		}
@@ -160,8 +153,7 @@ public final class ToArdulinkProtocol implements Processor {
 
 		@Override
 		protected String createMessage(int pin, String message) {
-			ALProtoBuilder builder = parseBoolean(message) ? ALProtoBuilder
-					.alpProtocolMessage(START_LISTENING_DIGITAL)
+			ALProtoBuilder builder = parseBoolean(message) ? ALProtoBuilder.alpProtocolMessage(START_LISTENING_DIGITAL)
 					: ALProtoBuilder.alpProtocolMessage(STOP_LISTENING_DIGITAL);
 			return builder.forPin(pin).withoutValue();
 		}
@@ -169,8 +161,7 @@ public final class ToArdulinkProtocol implements Processor {
 	}
 
 	private final List<MessageCreator> creators;
-	private ValueBuilder topicFrom = new ValueBuilder(new HeaderExpression(
-			"topic"));
+	private ValueBuilder topicFrom = new ValueBuilder(new HeaderExpression("topic"));
 
 	public static ToArdulinkProtocol toArdulinkProtocol(Topics topics) {
 		return new ToArdulinkProtocol(topics);
@@ -187,44 +178,40 @@ public final class ToArdulinkProtocol implements Processor {
 
 	@Override
 	public void process(Exchange exchange) {
-		Message in = exchange.getIn();
-		String topic = checkNotNull(topicFrom.evaluate(exchange, String.class),
-				"topic must not be null");
-		String body = checkNotNull(in.getBody(String.class),
-				"body must not be null");
-		Optional<String> message = createMessage(topic, body);
+		extractedForAnnotation(createMessage(topic(exchange), body(exchange.getIn())), exchange);
+	}
 
-		if (message.isPresent()) {
-			in.setBody(message.getOrThrow(
-					"Cannot handle body %s with topic %s", body, topic),
-					String.class);
-		} else {
-			exchange.setProperty(ROUTE_STOP, TRUE);
+	@LapsedWith(module = JDK9, value = "Optional#ifPresentOrElse")
+	private void extractedForAnnotation(Optional<String> message, Exchange exchange) {
+		message.ifPresent(b -> exchange.getIn().setBody(b, String.class));
+		if (!message.isPresent()) {
+			exchange.setRouteStop(true);
 		}
+	}
+
+	private String topic(Exchange exchange) {
+		return checkNotNull(topicFrom.evaluate(exchange, String.class), "topic must not be null");
+	}
+
+	private String body(Message message) {
+		return checkNotNull(message.getBody(String.class), "body must not be null");
 	}
 
 	private Optional<String> createMessage(String topic, String value) {
-		for (MessageCreator creators : this.creators) {
-			Optional<String> msg = creators.createMessage(topic, value);
-			if (msg.isPresent()) {
-				return msg;
-			}
-		}
-		return Optional.absent();
+		return this.creators.stream() //
+				.map(creator -> creator.createMessage(topic, value)) //
+				.filter(Optional::isPresent) //
+				.findFirst().map(Optional::get);
 	}
 
-	private List<MessageCreator> creators(Topics topics) {
-		ListBuilder<MessageCreator> b = ListBuilder
-				.<MessageCreator> newBuilder().addAll(
-						new DigitalMessageCreator(topics),
-						new AnalogMessageCreator(topics));
-		ControlHandlerAnalog.Builder ab = new ControlHandlerAnalog.Builder(
-				topics);
+	private static List<MessageCreator> creators(Topics topics) {
+		ListBuilder<MessageCreator> b = ListBuilder.<MessageCreator>newBuilder()
+				.addAll(new DigitalMessageCreator(topics), new AnalogMessageCreator(topics));
+		ControlHandlerAnalog.Builder ab = new ControlHandlerAnalog.Builder(topics);
 		if (ab.patternIsValid()) {
 			b = b.add(ab.build());
 		}
-		ControlHandlerDigital.Builder db = new ControlHandlerDigital.Builder(
-				topics);
+		ControlHandlerDigital.Builder db = new ControlHandlerDigital.Builder(topics);
 		if (db.patternIsValid()) {
 			b = b.add(db.build());
 		}
