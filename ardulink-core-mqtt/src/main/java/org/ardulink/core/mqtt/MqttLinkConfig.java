@@ -42,16 +42,16 @@ public class MqttLinkConfig implements LinkConfig {
 		TCP, SSL, TLS;
 	}
 
-	private static final String LOCALHOST = "localhost";
+	private static final String DEFAULT_HOST = "localhost";
 
 	@Named("host")
 	@NotNull
-	private String host = LOCALHOST;
+	private String host = DEFAULT_HOST;
 
 	@Named("port")
 	@Min(1)
 	@Max(2 << 16 - 1)
-	private int port = DEFAULT_PORT;
+	public int port = DEFAULT_PORT;
 
 	@Named("connection")
 	private Connection connection = Connection.TCP;
@@ -60,33 +60,30 @@ public class MqttLinkConfig implements LinkConfig {
 	@NotNull
 	private String topic = normalize("home/devices/ardulink/");
 
+	@Named("qos")
+	@Min(0)
+	@Max(2)
+	public int qos;
+
 	@Named("clientId")
 	@NotNull
 	private String clientId = "ardulink-mqtt-link";
 
 	@Named("user")
-	private String user;
+	public String user;
 
 	@Named("password")
-	private String password;
+	public String password;
 
 	@Named("separatedTopics")
-	private boolean separateTopics;
+	public boolean separateTopics;
 
 	public String getHost() {
 		return host;
 	}
 
 	public void setHost(String host) {
-		this.host = host == null ? LOCALHOST : host;
-	}
-
-	public int getPort() {
-		return port;
-	}
-
-	public void setPort(int port) {
-		this.port = port;
+		this.host = host == null ? DEFAULT_HOST : host;
 	}
 
 	public Connection getConnection() {
@@ -94,8 +91,7 @@ public class MqttLinkConfig implements LinkConfig {
 	}
 
 	public void setConnection(Connection connection) {
-		this.connection = checkNotNull(connection,
-				"connection must not be null");
+		this.connection = checkNotNull(connection, "connection must not be null");
 	}
 
 	public String getTopic() {
@@ -112,30 +108,6 @@ public class MqttLinkConfig implements LinkConfig {
 
 	public void setClientId(String clientId) {
 		this.clientId = checkNotNull(clientId, "clientId must not be null");
-	}
-
-	public String getUser() {
-		return this.user;
-	}
-
-	public void setUser(String user) {
-		this.user = user;
-	}
-
-	public String getPassword() {
-		return this.password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public boolean isSeparateTopics() {
-		return this.separateTopics;
-	}
-
-	public void setSeparateTopics(boolean separateTopics) {
-		this.separateTopics = separateTopics;
 	}
 
 	private static String normalize(String topic) {
