@@ -214,8 +214,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 //		main.addProperty("command", command);
 
 		String smtpRouteStart = "direct:smtp-" + UUID.randomUUID();
-		main.addRoutesBuilder(setToAndFromHeaderAndSendTo(smtpRouteStart, "{{to}}"));
-		main.addRoutesBuilder(ardulinkProcessing("{{from}}", validSender, commandName,
+		main.configure().addRoutesBuilder(setToAndFromHeaderAndSendTo(smtpRouteStart, "{{to}}"));
+		main.configure().addRoutesBuilder(ardulinkProcessing("{{from}}", validSender, commandName,
 				Arrays.asList(command.split("\\,")), makeURI(mockURI, emptyMap()), smtpRouteStart));
 		runInBackground(main);
 
