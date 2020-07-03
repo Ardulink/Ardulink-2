@@ -1,0 +1,57 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>ardulink-core-plc4x</artifactId>
+
+	<parent>
+		<groupId>org.ardulink</groupId>
+		<artifactId>parent</artifactId>
+		<version>2.1.2-SNAPSHOT</version>
+	</parent>
+
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+
+
+
+	<!-- plc4x depends on Java8 -->
+	<properties>
+		<compilerVersion>1.8</compilerVersion>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+
+
+	<dependencies>
+		<dependency>
+			<groupId>org.ardulink</groupId>
+			<artifactId>ardulink-core-base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.4ntoine.Firmata</groupId>
+			<artifactId>Firmata</artifactId>
+			<version>24772777a9</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.github.4ntoine.Firmata</groupId>
+					<artifactId>Serial</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+
+
+	</dependencies>
+
+</project>

@@ -97,7 +97,6 @@
 			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-core-virtual</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
