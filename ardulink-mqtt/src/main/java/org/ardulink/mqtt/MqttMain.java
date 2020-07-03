@@ -17,21 +17,24 @@ limitations under the License.
 package org.ardulink.mqtt;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.stream.Collectors.joining;
 import static org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy.AVERAGE;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Route;
+import org.apache.camel.ServiceStatus;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.spi.RouteController;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy;
 import org.ardulink.mqtt.MqttCamelRouteBuilder.MqttConnectionProperties;
-import org.ardulink.util.Joiner;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -45,6 +48,8 @@ import org.kohsuke.args4j.Option;
  *
  */
 public class MqttMain {
+
+	private static final int[] NO_PINS = new int[0];
 
 	@Option(name = "-brokerTopic", usage = "Topic to register. "
 			+ "To switch pins a message of the form $brokerTopic/[A|D]$pinNumber must be sent. "
@@ -76,10 +81,10 @@ public class MqttMain {
 	// private String publishClientInfoTopic;
 
 	@Option(name = "-d", aliases = "--digital", usage = "Digital pins to listen to")
-	private int[] digitals = new int[0];
+	private int[] digitals = NO_PINS;
 
 	@Option(name = "-a", aliases = "--analog", usage = "Analog pins to listen to")
-	private int[] analogs = new int[0];
+	private int[] analogs = NO_PINS;
 
 	@Option(name = "-athms", aliases = "--throttle", usage = "Analog throttle, do not publish multiple events within <throttleMillis>")
 	private int throttleMillis = (int) MILLISECONDS.toMillis(250);
@@ -132,14 +137,11 @@ public class MqttMain {
 	}
 
 	private String listenTo() {
-		return Joiner.on(",").join(add("D%s", digitals, add("A%s", analogs, new ArrayList<String>())));
+		return Stream.concat(format("A%s", analogs), format("D%s", digitals)).collect(joining(","));
 	}
 
-	private List<String> add(String format, int[] pins, List<String> to) {
-		for (int pin : pins) {
-			to.add(String.format(format, pin));
-		}
-		return to;
+	private Stream<String> format(String format, int[] pins) {
+		return IntStream.of(pins).mapToObj(pin -> String.format(format, pin));
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -192,28 +194,16 @@ public class MqttMain {
 	}
 
 	public boolean isConnected() {
-		for (Route route : context.getRoutes()) {
-			if (!context.getRouteController().getRouteStatus(route.getId()).isStarted()) {
-				return false;
-			}
-		}
-		return true;
+		RouteController routeController = context.getRouteController();
+		return context.getRoutes().stream() //
+				.map(Route::getId) //
+				.map(routeController::getRouteStatus) //
+				.allMatch(ServiceStatus::isStarted);
 	}
 
 	public void close() throws IOException {
-		CamelContext tmpContext = this.context;
-		if ((tmpContext) != null) {
-			try {
-				tmpContext.stop();
-			} catch (Exception e) {
-				throw new IOException("Error stoping camel", e);
-			}
-		}
-
-		MqttBroker tmpServer = this.standaloneServer;
-		if (tmpServer != null) {
-			tmpServer.stop();
-		}
+		Optional.ofNullable(this.context).ifPresent(CamelContext::stop);
+		Optional.ofNullable(this.standaloneServer).ifPresent(MqttBroker::stop);
 	}
 
 	public void setBrokerPort(int brokerPort) {
@@ -237,11 +227,16 @@ public class MqttMain {
 	}
 
 	public void setAnalogs(int... analogs) {
-		this.analogs = analogs == null ? new int[0] : analogs.clone();
+		this.analogs = clone(analogs);
 	}
 
+
 	public void setDigitals(int... digitals) {
-		this.digitals = digitals == null ? new int[0] : digitals.clone();
+		this.digitals = clone(digitals);
+	}
+
+	private static int[] clone(int... pins) {
+		return pins == null ? NO_PINS : pins.clone();
 	}
 
 	public void setConnection(String connection) {

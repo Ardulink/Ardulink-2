@@ -180,8 +180,8 @@ public class MqttLinkIntegrationTest {
 	private MqttLinkConfig makeConfig(MqttLinkFactory factory) {
 		MqttLinkConfig config = factory.newLinkConfig();
 		config.setTopic(TOPIC);
-		config.setPort(broker.getPort());
-		config.setSeparateTopics(separateTopics);
+		config.port = broker.getPort();
+		config.separateTopics = separateTopics;
 		return config;
 	}
 

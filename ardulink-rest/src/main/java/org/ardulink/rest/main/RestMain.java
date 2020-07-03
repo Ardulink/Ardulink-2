@@ -41,7 +41,7 @@ public class RestMain implements AutoCloseable {
 	public RestMain(Properties properties) {
 		main = new Main();
 		main.setInitialProperties(properties);
-		main.addRoutesBuilder(new RestRouteBuilder());
+		main.configure().addRoutesBuilder(new RestRouteBuilder());
 		main.start();
 	}
 

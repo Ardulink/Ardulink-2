@@ -93,6 +93,7 @@ public class MqttCamelRouteBuilder {
 			sb = hasAuth() ? sb.append(String.format("&userName=%s&password=%s", user, new String(pass))) : sb;
 			sb = hasClientId() ? sb.append(String.format("&clientId=%s", clientId)) : sb;
 			sb = sb.append("&automaticReconnect=false");
+			sb = sb.append("&maxInflight=65535");
 			sb = sb.append("&clientId=").append(name);
 			sb = sb.append("&qos=0");
 			return sb.toString();
