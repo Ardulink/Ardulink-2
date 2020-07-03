@@ -27,7 +27,7 @@ import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digita
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Throwables.propagate;
-import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
+import static org.fusesource.mqtt.client.QoS.AT_MOST_ONCE;
 
 import java.io.IOException;
 import java.util.EnumMap;
@@ -87,7 +87,7 @@ public class MqttLink extends AbstractListenerLink {
 		checkArgument(config.getHost() != null, "host must not be null");
 		checkArgument(config.getClientId() != null, "clientId must not be null");
 		checkArgument(config.getTopic() != null, "topic must not be null");
-		this.hasAppendix = config.isSeparateTopics();
+		this.hasAppendix = config.separateTopics;
 		this.topic = config.getTopic();
 		this.mqttReceivePattern = Pattern.compile(MqttLink.this.topic
 				+ "([aAdD])(\\d+)" + Pattern.quote(appendixSub()));
@@ -229,12 +229,12 @@ public class MqttLink extends AbstractListenerLink {
 		MQTT client = new MQTT();
 		client.setClientId(config.getClientId());
 		client.setHost(URIs.newURI(connectionPrefix(config) + "://"
-				+ config.getHost() + ":" + config.getPort()));
-		String user = config.getUser();
+				+ config.getHost() + ":" + config.port));
+		String user = config.user;
 		if (!Strings.nullOrEmpty(user)) {
 			client.setUserName(user);
 		}
-		String password = config.getPassword();
+		String password = config.password;
 		if (!Strings.nullOrEmpty(password)) {
 			client.setPassword(password);
 		}
@@ -257,7 +257,7 @@ public class MqttLink extends AbstractListenerLink {
 
 	private void subscribe() throws Exception {
 		connection
-				.subscribe(new Topic[] { new Topic(topic + "#", AT_LEAST_ONCE) });
+				.subscribe(new Topic[] { new Topic(topic + "#", AT_MOST_ONCE) });
 	}
 
 	@Override
@@ -304,7 +304,7 @@ public class MqttLink extends AbstractListenerLink {
 	private void publish(final String topic, Object value) throws IOException {
 		try {
 			connection.publish(topic, String.valueOf(value).getBytes(),
-					AT_LEAST_ONCE, false);
+					AT_MOST_ONCE, false);
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
