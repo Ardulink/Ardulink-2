@@ -46,7 +46,7 @@ import org.kohsuke.args4j.CmdLineParser;
  */
 public class MqttMain {
 
-	private final CommandLineArgs args;
+	private final CommandLineArguments args;
 	
 	private CamelContext context;
 
@@ -110,7 +110,7 @@ public class MqttMain {
 		});
 	}
 
-	public MqttMain(CommandLineArgs args) {
+	public MqttMain(CommandLineArguments args) {
 		this.args = args;
 		ensureBrokerTopicIsnormalized(args);
 		if (args.standalone) {
@@ -119,14 +119,14 @@ public class MqttMain {
 	}
 
 	// TODO PF move to CommandLineArgs
-	private static void ensureBrokerTopicIsnormalized(CommandLineArgs args) {
+	private static void ensureBrokerTopicIsnormalized(CommandLineArguments args) {
 		if (args.brokerTopic != null && !args.brokerTopic.endsWith("/")) {
 			args.brokerTopic = args.brokerTopic + '/';
 		}
 	}
 
-	private static Optional<CommandLineArgs> tryParse(String... args) {
-		CommandLineArgs cmdLineArgs = new CommandLineArgs();
+	private static Optional<CommandLineArguments> tryParse(String... args) {
+		CommandLineArguments cmdLineArgs = new CommandLineArguments();
 		CmdLineParser cmdLineParser = new CmdLineParser(cmdLineArgs);
 		try {
 			cmdLineParser.parseArgument(args);

@@ -19,15 +19,12 @@ package org.ardulink.mqtt.camel;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.util.ServerSockets.freePort;
 
-import java.io.IOException;
-
 import org.apache.camel.FailedToStartRouteException;
-import org.ardulink.mqtt.CommandLineArgs;
+import org.ardulink.mqtt.CommandLineArguments;
 import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttMain;
 import org.ardulink.util.Strings;
-import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,16 +41,16 @@ import org.junit.rules.Timeout;
  */
 public class MqttMainStandaloneIntegrationTest {
 
-	private final CommandLineArgs args = args();
+	private final CommandLineArguments args = args();
 	private String brokerUser;
 	private String brokerPassword;
 	private String clientUser;
 	private String clientPassword;
 
-	private static CommandLineArgs args() {
-		CommandLineArgs args = new CommandLineArgs();
+	private static CommandLineArguments args() {
+		CommandLineArguments args = new CommandLineArguments();
 		args.standalone = true;
-		args.brokerTopic = topic;
+		args.brokerTopic = "myTestTopic";
 		args.connection = "ardulink://mock";
 		return args;
 	}
@@ -93,7 +90,9 @@ public class MqttMainStandaloneIntegrationTest {
 		return this;
 	}
 
-	private static final String topic = "myTestTopic";
+	private boolean hasAuthentication() {
+		return !Strings.nullOrEmpty(brokerPassword) && brokerPassword != null;
+	}
 
 	@Rule
 	public Timeout timeout = new Timeout(10, SECONDS);
@@ -152,10 +151,6 @@ public class MqttMainStandaloneIntegrationTest {
 		withSsl().withBrokerPort(freePort()).withBrokerUser(user).withBrokerPassword(password).withClientUser(user)
 				.withClientPassword(password);
 		runMain();
-	}
-
-	private boolean hasAuthentication() {
-		return !Strings.nullOrEmpty(brokerPassword) && brokerPassword != null;
 	}
 
 }
