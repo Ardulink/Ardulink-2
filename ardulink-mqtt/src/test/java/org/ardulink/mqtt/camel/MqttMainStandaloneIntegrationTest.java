@@ -22,6 +22,7 @@ import static org.ardulink.util.ServerSockets.freePort;
 import java.io.IOException;
 
 import org.apache.camel.FailedToStartRouteException;
+import org.ardulink.mqtt.CommandLineArgs;
 import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttMain;
@@ -43,66 +44,53 @@ import org.junit.rules.Timeout;
  */
 public class MqttMainStandaloneIntegrationTest {
 
-	private static final class MqttMainForTest extends MqttMain {
+	private final CommandLineArgs args = args();
+	private String brokerUser;
+	private String brokerPassword;
+	private String clientUser;
+	private String clientPassword;
 
-		private String brokerUser;
-		private String brokerPassword;
-		private String clientUser;
-		private String clientPassword;
-		private Builder createBroker;
+	private static CommandLineArgs args() {
+		CommandLineArgs args = new CommandLineArgs();
+		args.standalone = true;
+		args.brokerTopic = topic;
+		args.connection = "ardulink://mock";
+		return args;
+	}
 
-		public MqttMainForTest() {
-			setStandalone(true);
-			setBrokerTopic(topic);
-			setConnection("ardulink://mock");
-		}
+	private MqttMainStandaloneIntegrationTest withBrokerPort(int port) {
+		args.brokerPort = port;
+		return this;
+	}
 
-		private MqttMainForTest withBrokerPort(int port) {
-			setBrokerPort(port);
-			return this;
-		}
+	public MqttMainStandaloneIntegrationTest withBrokerUser(String brokerUser) {
+		this.brokerUser = brokerUser;
+		return this;
+	}
 
-		public MqttMainForTest withBrokerUser(String brokerUser) {
-			this.brokerUser = brokerUser;
-			return this;
-		}
+	public MqttMainStandaloneIntegrationTest withSsl() {
+		args.ssl = true;
+		return this;
+	}
 
-		public MqttMainForTest withSsl() {
-			setSsl(true);
-			return this;
-		}
+	public MqttMainStandaloneIntegrationTest withBrokerPassword(String brokerPassword) {
+		this.brokerPassword = brokerPassword;
+		return this;
+	}
 
-		public MqttMainForTest withBrokerPassword(String brokerPassword) {
-			this.brokerPassword = brokerPassword;
-			return this;
-		}
+	public MqttMainStandaloneIntegrationTest withClientUser(String clientUser) {
+		this.clientUser = clientUser;
+		return updateCredentials();
+	}
 
-		public MqttMainForTest withClientUser(String clientUser) {
-			this.clientUser = clientUser;
-			return updateCredentials();
-		}
+	public MqttMainStandaloneIntegrationTest withClientPassword(String clientPassword) {
+		this.clientPassword = clientPassword;
+		return updateCredentials();
+	}
 
-		public MqttMainForTest withClientPassword(String clientPassword) {
-			this.clientPassword = clientPassword;
-			return updateCredentials();
-		}
-
-		private MqttMainForTest updateCredentials() {
-			setCredentials(clientUser + ":" + clientPassword);
-			return this;
-		}
-
-		@Override
-		protected Builder createBroker() {
-			this.createBroker = super.createBroker();
-			return hasAuthentication() ? this.createBroker.addAuthenication(
-					brokerUser, brokerPassword.getBytes()) : this.createBroker;
-		}
-
-		private boolean hasAuthentication() {
-			return !Strings.nullOrEmpty(brokerPassword)
-					&& brokerPassword != null;
-		}
+	private MqttMainStandaloneIntegrationTest updateCredentials() {
+		args.credentials = clientUser + ":" + clientPassword;
+		return this;
 	}
 
 	private static final String topic = "myTestTopic";
@@ -113,59 +101,61 @@ public class MqttMainStandaloneIntegrationTest {
 	@Rule
 	public ExpectedException exceptions = ExpectedException.none();
 
-	private MqttMainForTest sut;
-
-	@After
-	public void tearDown() throws IOException {
-		sut.close();
-		System.clearProperty(MqttBroker.Builder.propertyName());
-	}
-
-	private MqttMainForTest mqttMain() {
-		return new MqttMainForTest();
-	}
-
 	@Test
 	public void clientCanConnectToNewlyStartedBroker() throws Exception {
-		sut = mqttMain().withBrokerPort(freePort());
-		sut.connectToMqttBroker();
+		withBrokerPort(freePort());
+		runMain();
 	}
 
 	@Test
-	public void clientCanConnectUsingCredentialsToNewlyStartedBroker()
-			throws Exception {
+	public void clientCanConnectUsingCredentialsToNewlyStartedBroker() throws Exception {
 		String user = "someUser";
 		String password = "someSecret";
-		sut = mqttMain().withBrokerPort(freePort()).withBrokerUser(user)
-				.withBrokerPassword(password).withClientUser(user)
+		withBrokerPort(freePort()).withBrokerUser(user).withBrokerPassword(password).withClientUser(user)
 				.withClientPassword(password);
-		sut.connectToMqttBroker();
+		runMain();
 	}
 
 	@Test
-	public void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker()
-			throws Exception {
+	public void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker() throws Exception {
 		String user = "someUser";
-		sut = mqttMain().withBrokerPort(freePort()).withBrokerUser(user)
-				.withBrokerPassword("theBrokersPassword").withClientUser(user)
+		withBrokerPort(freePort()).withBrokerUser(user).withBrokerPassword("theBrokersPassword").withClientUser(user)
 				.withClientPassword("notTheBrokersPassword");
 		exceptions.expect(FailedToStartRouteException.class);
+		runMain();
 //		exceptions.expectMessage("CONNECTION_REFUSED_BAD_USERNAME_OR_PASSWORD");
-		sut.connectToMqttBroker();
+	}
+
+	private void runMain() throws Exception {
+		MqttMain mqttMain = new MqttMain(args) {
+			@Override
+			protected Builder createBroker() {
+				Builder builder = super.createBroker();
+				if (hasAuthentication()) {
+					return builder.addAuthenication(brokerUser, brokerPassword.getBytes());
+				}
+				return builder;
+			}
+		};
+		mqttMain.connectToMqttBroker();
+		mqttMain.close();
+		System.clearProperty(MqttBroker.Builder.propertyName());
 	}
 
 	@Test
 	@Ignore
 	// test fails with io.netty.handler.codec.DecoderException:
 	// javax.net.ssl.SSLHandshakeException: no cipher suites in common
-	public void clientCanConnectUsingCredentialsToNewlyStartedSslBroker()
-			throws Exception {
+	public void clientCanConnectUsingCredentialsToNewlyStartedSslBroker() throws Exception {
 		String user = "someUser";
 		String password = "someSecret";
-		sut = mqttMain().withSsl().withBrokerPort(freePort())
-				.withBrokerUser(user).withBrokerPassword(password)
-				.withClientUser(user).withClientPassword(password);
-		sut.connectToMqttBroker();
+		withSsl().withBrokerPort(freePort()).withBrokerUser(user).withBrokerPassword(password).withClientUser(user)
+				.withClientPassword(password);
+		runMain();
+	}
+
+	private boolean hasAuthentication() {
+		return !Strings.nullOrEmpty(brokerPassword) && brokerPassword != null;
 	}
 
 }
