@@ -34,12 +34,12 @@ import org.ardulink.util.Lists;
 import org.ardulink.util.Strings;
 import org.junit.rules.ExternalResource;
 
+import io.moquette.broker.Server;
+import io.moquette.broker.config.MemoryConfig;
+import io.moquette.broker.security.IAuthenticator;
 import io.moquette.interception.AbstractInterceptHandler;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.interception.messages.InterceptPublishMessage;
-import io.moquette.server.Server;
-import io.moquette.server.config.MemoryConfig;
-import io.moquette.spi.security.IAuthenticator;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -54,11 +54,11 @@ public class Broker extends ExternalResource {
 	public static class EnvironmentAuthenticator implements IAuthenticator {
 
 		@Override
-		public boolean checkValid(String user, byte[] pass) {
+		public boolean checkValid(String clientId, String username, byte[] password) {
 			String userPass = userPass();
 			String[] split = userPass.split("\\:");
-			return split.length == 2 && split[0].equals(user)
-					&& split[1].equals(new String(pass));
+			return split.length == 2 && split[0].equals(username)
+					&& split[1].equals(new String(password));
 		}
 
 	}
@@ -139,6 +139,11 @@ public class Broker extends ExternalResource {
 			public void onPublish(InterceptPublishMessage message) {
 				messages.add(new Message(message.getTopicName(), new String(
 						message.getPayload().array())));
+			}
+
+			@Override
+			public String getID() {
+				throw new IllegalStateException("not implemented");
 			};
 		});
 		return this;

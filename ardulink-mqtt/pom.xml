@@ -33,14 +33,6 @@
 		</plugins>
 	</build>
 
-	<repositories>
-		<!-- moquette -->
-		<repository>
-			<id>bintray</id>
-			<url>http://dl.bintray.com/andsel/maven/</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>
@@ -71,11 +63,11 @@
 			<artifactId>mqtt-client</artifactId>
 			<version>1.14</version>
 		</dependency>
-		<dependency>
-			<groupId>io.moquette</groupId>
-			<artifactId>moquette-broker</artifactId>
-			<version>0.13</version>
-		</dependency>
+                <dependency>
+                        <groupId>de.fraunhofer.iosb.io.moquette</groupId>
+                        <artifactId>moquette-broker</artifactId>
+                        <version>0.14.3</version>
+                </dependency>
 		<dependency>
 			<groupId>args4j</groupId>
 			<artifactId>args4j</artifactId>
