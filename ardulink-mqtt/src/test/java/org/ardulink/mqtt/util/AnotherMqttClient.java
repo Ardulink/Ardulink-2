@@ -24,7 +24,7 @@ import static org.ardulink.mqtt.MqttCamelRouteBuilder.PUBLISH_HEADER;
 import static org.ardulink.mqtt.MqttCamelRouteBuilder.SUBSCRIBE_HEADER;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.Closeable;
 import java.io.IOException;

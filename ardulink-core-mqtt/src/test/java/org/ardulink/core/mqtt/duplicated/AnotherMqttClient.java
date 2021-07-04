@@ -23,7 +23,7 @@ import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.util.ArrayList;

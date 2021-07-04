@@ -2,7 +2,7 @@ package org.ardulink.testsupport.mock;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.core.IsSame.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;

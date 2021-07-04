@@ -5,7 +5,7 @@ import static org.ardulink.core.beans.finder.impl.FindByFieldAccess.directFieldA
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.lang.annotation.Annotation;

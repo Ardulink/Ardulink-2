@@ -27,7 +27,7 @@ import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.rules.RuleChain.outerRule;
 
 import java.io.IOException;
