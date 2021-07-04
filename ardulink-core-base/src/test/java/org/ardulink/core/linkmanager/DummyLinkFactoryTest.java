@@ -24,11 +24,13 @@ import static java.util.Locale.GERMAN;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -46,9 +48,8 @@ import org.ardulink.core.proto.impl.DummyProtocol;
 import org.ardulink.util.URIs;
 import org.ardulink.util.anno.LapsedWith;
 import org.hamcrest.CoreMatchers;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.function.ThrowingRunnable;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -60,24 +61,32 @@ import org.junit.rules.ExpectedException;
  */
 public class DummyLinkFactoryTest {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-
 	private final LinkManager sut = LinkManager.getInstance();
 
 	@Test
 	public void throwsExceptionOnInvalidNames() {
-		String name = "non.existing.name";
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("No factory registered for \"" + name + "\"");
-		sut.getConfigurer(URIs.newURI("ardulink://" + name + ""));
+		final String name = "non.existing.name";
+		
+		@LapsedWith(module = JDK8, value = "Lambda")
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				sut.getConfigurer(URIs.newURI("ardulink://" + name + ""));
+			}
+		});
+		assertThat(exception.getMessage(), containsString("No factory registered for \"" + name + "\""));
 	}
 
 	@Test
 	public void schemaHasToBeArdulink() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("schema not ardulink");
-		sut.getConfigurer(URIs.newURI("wrongSchema://dummy"));
+		@LapsedWith(module = JDK8, value = "Lambda")
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				sut.getConfigurer(URIs.newURI("wrongSchema://dummy"));
+			}
+		});
+		assertThat(exception.getMessage(), containsString("schema not ardulink"));
 	}
 
 	@Test
@@ -135,12 +144,16 @@ public class DummyLinkFactoryTest {
 
 	@Test
 	public void throwsExceptionOnInvalidKey() {
-		String nonExistingKey = "nonExistingKey";
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage("Could not determine attribute "
-				+ nonExistingKey);
-		sut.getConfigurer(URIs.newURI("ardulink://dummyLink?" + nonExistingKey
-				+ "=someValue"));
+		final String nonExistingKey = "nonExistingKey";
+		@LapsedWith(module = JDK8, value = "Lambda")
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				sut.getConfigurer(URIs.newURI("ardulink://dummyLink?" + nonExistingKey
+						+ "=someValue"));
+			}
+		});
+		assertThat(exception.getMessage(), containsString("Could not determine attribute " + nonExistingKey));
 	}
 
 	@Test
@@ -163,43 +176,58 @@ public class DummyLinkFactoryTest {
 	@Test
 	public void cannotSetChoiceValuesThatDoNotExist_WithPreviousQuery() {
 		Locale.setDefault(ENGLISH);
-		Configurer configurer = sut.getConfigurer(URIs
+		final Configurer configurer = sut.getConfigurer(URIs
 				.newURI("ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
 		assertThat(a.getChoiceValues(), is(new Object[] { "aVal1", "aVal2" }));
 		String invalidValue = "aVal3IsNotAvalidValue";
 		a.setValue(invalidValue);
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage(invalidValue + " is not a valid value for "
+		@LapsedWith(module = JDK8, value = "Lambda")
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				configurer.newLink();
+			}
+		});
+		assertThat(exception.getMessage(), is(invalidValue + " is not a valid value for "
 				+ "A is meant just to be an example attribute"
-				+ ", valid values are [aVal1, aVal2]");
-		configurer.newLink();
+				+ ", valid values are [aVal1, aVal2]"));
 	}
 
 	@Test
 	public void cannotSetChoiceValuesThatDoNotExist_WithoutPreviousQuery() {
 		Locale.setDefault(ENGLISH);
-		Configurer configurer = sut.getConfigurer(URIs
+		final Configurer configurer = sut.getConfigurer(URIs
 				.newURI("ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
 		String invalidValue = "aVal3IsNotAvalidValue";
 		a.setValue(invalidValue);
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage(invalidValue + " is not a valid value for "
+		@LapsedWith(module = JDK8, value = "Lambda")
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				configurer.newLink();
+			}
+		});
+		assertThat(exception.getMessage(), is(invalidValue + " is not a valid value for "
 				+ "A is meant just to be an example attribute"
-				+ ", valid values are [aVal1, aVal2]");
-		configurer.newLink();
+				+ ", valid values are [aVal1, aVal2]"));
 	}
 
 	@Test
-	public void attributeQithoutChoiceValueThrowsRTE() {
+	public void attributeWithoutChoiceValueThrowsRTE() {
 		Configurer configurer = sut.getConfigurer(URIs
 				.newURI("ardulink://dummyLink"));
-		ConfigAttribute c = configurer.getAttribute("c");
-		assertThat(c.hasChoiceValues(), is(false));
-		exception.expect(IllegalStateException.class);
-		exception.expectMessage("attribute does not have choiceValues");
-		c.getChoiceValues();
+		final ConfigAttribute configAttribute = configurer.getAttribute("c");
+		assertThat(configAttribute.hasChoiceValues(), is(false));
+		@LapsedWith(module = JDK8, value = "Lambda")
+		IllegalStateException exception = assertThrows(IllegalStateException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				configAttribute.getChoiceValues();
+			}
+		});
+		assertThat(exception.getMessage(), is("attribute does not have choiceValues"));
 	}
 
 	@Test

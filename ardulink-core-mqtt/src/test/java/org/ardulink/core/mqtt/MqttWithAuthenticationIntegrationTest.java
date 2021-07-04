@@ -17,14 +17,19 @@ limitations under the License.
 package org.ardulink.core.mqtt;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.util.URIs;
+import org.ardulink.util.anno.LapsedWith;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.function.ThrowingRunnable;
 import org.junit.rules.Timeout;
 
 /**
@@ -49,27 +54,34 @@ public class MqttWithAuthenticationIntegrationTest {
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
 
-	@Rule
-	public ExpectedException exceptions = ExpectedException.none();
-
 	@Test
 	public void canNotConnectWithoutUserAndPassword() {
-		exceptions.expect(RuntimeException.class);
-		exceptions.expectMessage(allOf(containsString("BAD"), containsString("USERNAME"), containsString("OR"),
-				containsString("PASSWORD")));
 		LinkManager.getInstance().getConfigurer(URIs.newURI("ardulink://mqtt?topic=" + TOPIC)).newLink();
+		@LapsedWith(module = JDK8, value = "Lambda")
+		RuntimeException exception = assertThrows(RuntimeException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+			}
+		});
+		assertThat(exception.getMessage(), is(allOf(containsString("BAD"), containsString("USERNAME"), containsString("OR"),
+				containsString("PASSWORD"))));
 	}
 
 	@Test
 	public void canNotConnectWithWrongPassword() {
-		exceptions.expect(RuntimeException.class);
-		exceptions.expectMessage(allOf(containsString("BAD"), containsString("USERNAME"), containsString("OR"),
-				containsString("PASSWORD")));
-		String wrongPassword = "wrong";
-		LinkManager.getInstance()
+		final String wrongPassword = "wrong";
+		@LapsedWith(module = JDK8, value = "Lambda")
+		RuntimeException exception = assertThrows(RuntimeException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				LinkManager.getInstance()
 				.getConfigurer(
 						URIs.newURI("ardulink://mqtt?user=" + USER + "&password=" + wrongPassword + "&topic=" + TOPIC))
 				.newLink();
+			}
+		});
+		assertThat(exception.getMessage(), is(allOf(containsString("BAD"), containsString("USERNAME"), containsString("OR"),
+				containsString("PASSWORD"))));
 	}
 
 	@Test

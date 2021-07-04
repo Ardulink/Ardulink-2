@@ -18,6 +18,8 @@ package org.ardulink.mqtt.camel;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.junit.Assert.assertThrows;
 
 import org.apache.camel.FailedToStartRouteException;
 import org.ardulink.mqtt.CommandLineArguments;
@@ -25,10 +27,11 @@ import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttMain;
 import org.ardulink.util.Strings;
+import org.ardulink.util.anno.LapsedWith;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.function.ThrowingRunnable;
 import org.junit.rules.Timeout;
 
 /**
@@ -97,9 +100,6 @@ public class MqttMainStandaloneIntegrationTest {
 	@Rule
 	public Timeout timeout = new Timeout(10, SECONDS);
 
-	@Rule
-	public ExpectedException exceptions = ExpectedException.none();
-
 	@Test
 	public void clientCanConnectToNewlyStartedBroker() throws Exception {
 		withBrokerPort(freePort());
@@ -120,9 +120,16 @@ public class MqttMainStandaloneIntegrationTest {
 		String user = "someUser";
 		withBrokerPort(freePort()).withBrokerUser(user).withBrokerPassword("theBrokersPassword").withClientUser(user)
 				.withClientPassword("notTheBrokersPassword");
-		exceptions.expect(FailedToStartRouteException.class);
-		runMain();
 //		exceptions.expectMessage("CONNECTION_REFUSED_BAD_USERNAME_OR_PASSWORD");
+		@LapsedWith(module = JDK8, value = "Lambda")
+		ThrowingRunnable runnable = new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				runMain();
+			}
+		};
+		assertThrows(FailedToStartRouteException.class, runnable);
+
 	}
 
 	private void runMain() throws Exception {

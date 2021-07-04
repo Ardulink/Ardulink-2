@@ -20,14 +20,15 @@ import static java.util.Arrays.asList;
 import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.withRegistered;
 import static org.ardulink.util.URIs.newURI;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.rules.ExpectedException.none;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -44,9 +45,9 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.Statement;
 import org.ardulink.core.linkmanager.viaservices.AlLinkWithoutArealLinkFactoryWithConfig;
 import org.ardulink.core.linkmanager.viaservices.AlLinkWithoutArealLinkFactoryWithoutConfig;
-import org.junit.Rule;
+import org.ardulink.util.anno.LapsedWith;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.function.ThrowingRunnable;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -81,9 +82,6 @@ public class LinkManagerTest {
 	}
 
 	LinkManager sut = LinkManager.getInstance();
-
-	@Rule
-	public ExpectedException exception = none();
 
 	@Test
 	public void onceQueriedChoiceValuesStayValid() throws Exception {
@@ -123,9 +121,14 @@ public class LinkManagerTest {
 
 	@Test
 	public void nonExistingNameWitllThrowRTE() throws IOException {
-		exception.expect(RuntimeException.class);
-		exception.expectMessage(allOf(containsString("registered"), containsString("factory")));
-		sut.getConfigurer(newURI("ardulink://XXX-aNameThatIsNotRegistered-XXX"));
+		@LapsedWith(module = JDK8, value = "Lambda")
+		RuntimeException exception = assertThrows(RuntimeException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				sut.getConfigurer(newURI("ardulink://XXX-aNameThatIsNotRegistered-XXX"));
+			}
+		});
+		assertThat(exception.getMessage(), is(allOf(containsString("registered"), containsString("factory"))));
 	}
 
 	@Test

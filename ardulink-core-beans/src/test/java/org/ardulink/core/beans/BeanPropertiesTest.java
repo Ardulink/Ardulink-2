@@ -16,14 +16,16 @@ limitations under the License.
 
 package org.ardulink.core.beans;
 
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static org.ardulink.core.beans.finder.impl.FindByFieldAccess.directFieldAccess;
 import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import java.lang.annotation.Retention;
 import java.util.ArrayList;
@@ -31,9 +33,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.junit.Rule;
+import org.ardulink.util.anno.LapsedWith;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.function.ThrowingRunnable;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -44,9 +46,6 @@ import org.junit.rules.ExpectedException;
  *
  */
 public class BeanPropertiesTest {
-
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 
 	@Retention(RUNTIME)
 	public @interface ThisAnnotationHasNoValueAttribute {
@@ -210,21 +209,33 @@ public class BeanPropertiesTest {
 
 	@Test
 	public void throwsExceptionsIfAnnotationHasNoValueAttribute() {
-		Class<ThisAnnotationHasNoValueAttribute> clazz = ThisAnnotationHasNoValueAttribute.class;
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage(allOf(containsString(clazz.getName()),
+		final Class<ThisAnnotationHasNoValueAttribute> clazz = ThisAnnotationHasNoValueAttribute.class;
+		
+		@LapsedWith(module = JDK8, value = "Lambda")
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				propertyAnnotated(clazz);
+			}
+		});
+		assertThat(exception.getMessage(), allOf(containsString(clazz.getName()),
 				containsString("has no attribute named value")));
-		propertyAnnotated(clazz);
 	}
 
 	@Test
 	public void throwsExceptionsIfAnnotationHasValueAttributeWithWrongType() {
-		Class<ThisAnnotationHasAnAttributeThatIsNotAstring> clazz = ThisAnnotationHasAnAttributeThatIsNotAstring.class;
-		exception.expect(IllegalArgumentException.class);
-		exception.expectMessage(allOf(containsString(clazz.getName()),
+		final Class<ThisAnnotationHasAnAttributeThatIsNotAstring> clazz = ThisAnnotationHasAnAttributeThatIsNotAstring.class;
+		
+		@LapsedWith(module = JDK8, value = "Lambda")
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				propertyAnnotated(clazz);
+			}
+		});
+		assertThat(exception.getMessage(), allOf(containsString(clazz.getName()),
 				containsString(String.class.getName()),
 				containsString(boolean.class.getName())));
-		propertyAnnotated(clazz);
 	}
 
 	@Test

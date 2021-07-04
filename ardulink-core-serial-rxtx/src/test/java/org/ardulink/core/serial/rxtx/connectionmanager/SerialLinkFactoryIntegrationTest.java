@@ -19,20 +19,22 @@ package org.ardulink.core.serial.rxtx.connectionmanager;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.ardulink.util.Lists.newArrayList;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.util.URIs;
+import org.ardulink.util.anno.LapsedWith;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.function.ThrowingRunnable;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -46,9 +48,6 @@ import org.junit.rules.ExpectedException;
 @Ignore
 public class SerialLinkFactoryIntegrationTest {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-	
 	@Test
 	public void canConfigureSerialConnectionViaURI() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
@@ -84,21 +83,26 @@ public class SerialLinkFactoryIntegrationTest {
 	@Test
 	public void cantConnectWithoutPort() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager
+		final Configurer configurer = connectionManager
 				.getConfigurer(URIs.newURI("ardulink://serial?baudrate=9600"));
 		
 		ConfigAttribute searchport = configurer.getAttribute("searchport");
 		assertEquals(searchport.getValue(), FALSE);
 
-		exception.expect(IllegalStateException.class);
-		
-		configurer.newLink();
+		@LapsedWith(module = JDK8, value = "Lambda")
+		ThrowingRunnable runnable = new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				configurer.newLink();
+			}
+		};
+		assertThrows(IllegalStateException.class, runnable);
 	}
 
 	@Test
 	public void canConnectWithoutPortButSearchEnabled() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager
+		final Configurer configurer = connectionManager
 				.getConfigurer(URIs.newURI("ardulink://serial?searchport=true&baudrate=9600&pingprobe=false"));
 		
 		ConfigAttribute searchport = configurer.getAttribute("searchport");
@@ -106,10 +110,17 @@ public class SerialLinkFactoryIntegrationTest {
 		
 		// if there aren't devices connected an exception is thrown
 		ConfigAttribute port = configurer.getAttribute("port");
-		if(port.getChoiceValues().length == 0) {
-			exception.expectMessage("no port found");
+		if (port.getChoiceValues().length == 0) {
+			@LapsedWith(module = JDK8, value = "Lambda")
+			RuntimeException exception = assertThrows(RuntimeException.class, new ThrowingRunnable() {
+				@Override
+				public void run() throws Throwable {
+					configurer.newLink();
+				}
+			});
+			assertThat(exception.getMessage(), is("no port found"));
+		} else {
+			assertNotNull(configurer.newLink());
 		}
-
-		assertNotNull(configurer.newLink());
 	}
 }

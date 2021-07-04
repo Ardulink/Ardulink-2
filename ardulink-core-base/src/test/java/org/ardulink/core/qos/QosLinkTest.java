@@ -20,9 +20,12 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.assertThrows;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -33,10 +36,11 @@ import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.Tone;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.util.anno.LapsedWith;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.function.ThrowingRunnable;
 import org.junit.rules.Timeout;
 
 /**
@@ -51,9 +55,6 @@ public class QosLinkTest {
 
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
-
-	@Rule
-	public ExpectedException exceptions = ExpectedException.none();
 
 	@Rule
 	public Arduino arduino = Arduino.newArduino();
@@ -79,10 +80,15 @@ public class QosLinkTest {
 		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
 				.thenDoNotRespond();
 		qosLink = newQosLink(connectionTo(arduino), 500, MILLISECONDS);
-		exceptions.expect(IllegalStateException.class);
-		exceptions.expectMessage(allOf(containsString("response"),
-				containsString("500 MILLISECONDS")));
-		qosLink.sendNoTone(analogPin(3));
+		@LapsedWith(module = JDK8, value = "Lambda")
+		IllegalStateException exception = assertThrows(IllegalStateException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				qosLink.sendNoTone(analogPin(3));
+			}
+		});
+		assertThat(exception.getMessage(), is(allOf(containsString("response"),
+				containsString("500 MILLISECONDS"))));
 	}
 
 	@Test
@@ -91,10 +97,15 @@ public class QosLinkTest {
 				.thenRespond("alp://rply/ko?id=%s");
 		Connection connection = connectionTo(arduino);
 		qosLink = newQosLink(connection, 500 + someMillisMore(), MILLISECONDS);
-		exceptions.expect(IllegalStateException.class);
-		exceptions.expectMessage(allOf(containsString("status"),
-				containsString("not ok")));
-		qosLink.sendNoTone(analogPin(3));
+		@LapsedWith(module = JDK8, value = "Lambda")
+		IllegalStateException exception = assertThrows(IllegalStateException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				qosLink.sendNoTone(analogPin(3));
+			}
+		});
+		assertThat(exception.getMessage(), is(allOf(containsString("status"),
+				containsString("not ok"))));
 	}
 
 	private int someMillisMore() {

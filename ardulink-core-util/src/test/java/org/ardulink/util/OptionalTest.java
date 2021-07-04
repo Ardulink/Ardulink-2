@@ -18,14 +18,16 @@ package org.ardulink.util;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
-import org.junit.Rule;
+import org.ardulink.util.anno.LapsedWith;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.function.ThrowingRunnable;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -36,9 +38,6 @@ import org.junit.rules.ExpectedException;
  *
  */
 public class OptionalTest {
-
-	@Rule
-	public ExpectedException exceptions = ExpectedException.none();
 
 	@Test
 	public void optionalFromNullableWithNullValueIsNotPresent() {
@@ -52,8 +51,14 @@ public class OptionalTest {
 
 	@Test
 	public void getOnNonPresentOptionalThrowsRTE() {
-		exceptions.expect(RuntimeException.class);
-		Optional.ofNullable(null).get();
+		@LapsedWith(module = JDK8, value = "Lambda")
+		ThrowingRunnable runnable = new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				Optional.ofNullable(null).get();
+			}
+		};
+		assertThrows(RuntimeException.class, runnable);
 	}
 
 	@Test
@@ -68,8 +73,15 @@ public class OptionalTest {
 
 	@Test
 	public void callingOfWithNullValueThrowsRTE() {
-		exceptions.expect(RuntimeException.class);
-		Optional.of(null);
+		@LapsedWith(module = JDK8, value = "Lambda")
+		ThrowingRunnable runnable = new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				Optional.of(null);
+			}
+		};
+		assertThrows(RuntimeException.class, runnable);
+
 	}
 
 	@Test
@@ -84,9 +96,14 @@ public class OptionalTest {
 
 	@Test
 	public void getOrThrowThrowsIllegalStateExceptionOnAbsentOptionals() {
-		exceptions.expect(IllegalStateException.class);
-		exceptions.expectMessage("exception text");
-		Optional.<String> absent().getOrThrow("exception text");
+		@LapsedWith(module = JDK8, value = "Lambda")
+		IllegalStateException exception = assertThrows(IllegalStateException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				Optional.<String> absent().getOrThrow("exception text");
+			}
+		});
+		assertThat(exception.getMessage(), is("exception text"));
 	}
 
 	@Test
@@ -96,10 +113,15 @@ public class OptionalTest {
 
 	@Test
 	public void canThrowIndividualExceptions() {
-		exceptions.expect(IllegalArgumentException.class);
-		exceptions.expectMessage("exception text");
-		Optional.<String> absent().getOrThrow(IllegalArgumentException.class,
-				"exception text");
+		@LapsedWith(module = JDK8, value = "Lambda")
+		RuntimeException exception = assertThrows(RuntimeException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				Optional.<String> absent().getOrThrow(IllegalArgumentException.class,
+						"exception text");
+			}
+		});
+		assertThat(exception.getMessage(), is("exception text"));
 	}
 
 	@Test
@@ -107,12 +129,17 @@ public class OptionalTest {
 		class MyRTEWithoutAstringConstructor extends RuntimeException {
 			private static final long serialVersionUID = 1L;
 		}
-		exceptions.expect(RuntimeException.class);
-		exceptions.expectMessage(allOf(
+		@LapsedWith(module = JDK8, value = "Lambda")
+		RuntimeException exception = assertThrows(RuntimeException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				Optional.<String> absent().getOrThrow(
+						MyRTEWithoutAstringConstructor.class,
+						"no matter what typed here");
+			}
+		});
+		assertThat(exception.getMessage(), is(allOf(
 				containsString(MyRTEWithoutAstringConstructor.class.getName()),
-				containsString("not"), containsString("String constructor")));
-		Optional.<String> absent().getOrThrow(
-				MyRTEWithoutAstringConstructor.class,
-				"no matter what typed here");
+				containsString("not"), containsString("String constructor"))));
 	}
 }
