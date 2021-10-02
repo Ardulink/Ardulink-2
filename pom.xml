@@ -62,7 +62,7 @@
 		<args4j.version>2.32</args4j.version>
 		<slf4j.version>1.7.12</slf4j.version>
 		<junit.version>4.13.2</junit.version>
-		<camel.version>3.11.0</camel.version>
+		<camel.version>3.11.2</camel.version>
 		<!-- default image name for JIB -->
 		<image>docker.io/ardulink/${project.artifactId}:${project.version}</image>
 	</properties>
