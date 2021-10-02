@@ -60,7 +60,7 @@
 		<maven.compiler.source>1.6</maven.compiler.source>
 		<maven.compiler.target>1.6</maven.compiler.target>
 		<args4j.version>2.33</args4j.version>
-		<slf4j.version>1.7.12</slf4j.version>
+		<slf4j.version>1.7.32</slf4j.version>
 		<junit.version>4.13.2</junit.version>
 		<camel.version>3.11.2</camel.version>
 		<!-- default image name for JIB -->
