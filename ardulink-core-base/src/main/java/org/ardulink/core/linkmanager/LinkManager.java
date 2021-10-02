@@ -391,6 +391,7 @@ public abstract class LinkManager {
 						.getClassLoader(), new Class<?>[] { clazz },
 						new InvocationHandler() {
 							@Override
+							@LapsedWith(module = JDK8, value = "Lambda")
 							public Object invoke(Object proxy, Method method,
 									Object[] args) throws Throwable {
 								if (methodName.equals(method.getName())) {
@@ -402,6 +403,7 @@ public abstract class LinkManager {
 						}));
 			}
 
+			@LapsedWith(module = JDK8, value = "Stream")
 			private <S extends Annotation> Optional<S> find(
 					Annotation[] annotations, Class<S> annoClass) {
 				for (Annotation annotation : annotations) {
