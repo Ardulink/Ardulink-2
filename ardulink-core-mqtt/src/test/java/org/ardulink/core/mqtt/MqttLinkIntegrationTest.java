@@ -96,7 +96,7 @@ public class MqttLinkIntegrationTest {
 	private final boolean separateTopics;
 
 	@Rule
-	public Timeout timeout = new Timeout(5, SECONDS);
+	public Timeout timeout = new Timeout(30, SECONDS);
 
 	@Rule
 	public RuleChain chain = outerRule(broker).around(mqttClient);

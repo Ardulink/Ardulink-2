@@ -24,6 +24,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
 
+import java.net.URI;
+
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.util.URIs;
 import org.ardulink.util.anno.LapsedWith;
@@ -52,43 +54,40 @@ public class MqttWithAuthenticationIntegrationTest {
 	public Broker broker = Broker.newBroker().authentication(USER + ":" + PASSWORD);
 
 	@Rule
-	public Timeout timeout = new Timeout(5, SECONDS);
+	public Timeout timeout = new Timeout(30, SECONDS);
 
 	@Test
 	public void canNotConnectWithoutUserAndPassword() {
-		LinkManager.getInstance().getConfigurer(URIs.newURI("ardulink://mqtt?topic=" + TOPIC)).newLink();
-		@LapsedWith(module = JDK8, value = "Lambda")
-		RuntimeException exception = assertThrows(RuntimeException.class, new ThrowingRunnable() {
-			@Override
-			public void run() throws Throwable {
-			}
-		});
-		assertThat(exception.getMessage(), is(allOf(containsString("BAD"), containsString("USERNAME"), containsString("OR"),
-				containsString("PASSWORD"))));
+		Exception exception = createLinkAndCatchRTE(URIs.newURI("ardulink://mqtt?topic=" + TOPIC));
+		assertThat(exception.getMessage(), is(allOf(containsString("BAD"), containsString("USERNAME"),
+				containsString("OR"), containsString("PASSWORD"))));
 	}
 
 	@Test
 	public void canNotConnectWithWrongPassword() {
-		final String wrongPassword = "wrong";
-		@LapsedWith(module = JDK8, value = "Lambda")
-		RuntimeException exception = assertThrows(RuntimeException.class, new ThrowingRunnable() {
-			@Override
-			public void run() throws Throwable {
-				LinkManager.getInstance()
-				.getConfigurer(
-						URIs.newURI("ardulink://mqtt?user=" + USER + "&password=" + wrongPassword + "&topic=" + TOPIC))
-				.newLink();
-			}
-		});
-		assertThat(exception.getMessage(), is(allOf(containsString("BAD"), containsString("USERNAME"), containsString("OR"),
-				containsString("PASSWORD"))));
+		Exception exception = createLinkAndCatchRTE(
+				URIs.newURI("ardulink://mqtt?user=" + USER + "&password=" + "anyWrongPassword" + "&topic=" + TOPIC));
+		assertThat(exception.getMessage(), is(allOf(containsString("BAD"), containsString("USERNAME"),
+				containsString("OR"), containsString("PASSWORD"))));
 	}
 
 	@Test
 	public void canConnectUsingUserAndPassword() {
-		LinkManager.getInstance()
-				.getConfigurer(
-						URIs.newURI("ardulink://mqtt?user=" + USER + "&password=" + PASSWORD + "&topic=" + TOPIC))
-				.newLink();
+		createLink(URIs.newURI("ardulink://mqtt?user=" + USER + "&password=" + PASSWORD + "&topic=" + TOPIC));
 	}
+
+	@LapsedWith(module = JDK8, value = "Lambda")
+	private static RuntimeException createLinkAndCatchRTE(final URI uri) {
+		return assertThrows(RuntimeException.class, new ThrowingRunnable() {
+			@Override
+			public void run() throws Throwable {
+				createLink(uri);
+			}
+		});
+	}
+
+	private static void createLink(URI uri) {
+		LinkManager.getInstance().getConfigurer(uri).newLink();
+	}
+
 }
