@@ -21,6 +21,7 @@ import static io.restassured.RestAssured.port;
 import static io.restassured.http.ContentType.HTML;
 import static io.restassured.http.ContentType.JSON;
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 import org.ardulink.rest.main.CommandLineArguments;
 import org.ardulink.rest.main.RestMain;
@@ -45,14 +46,18 @@ public class ArdulinkRestSwaggerTest {
 	@Test
 	public void canAccesApiDoc() throws Exception {
 		try (RestMain main = runRestComponent()) {
-			given().get("/api-docs").then().contentType(JSON).statusCode(200);
+			given().get("/api-docs").then().assertThat().statusCode(200).contentType(JSON) //
+					.body("info.title", equalTo("User API")) //
+//					.body("paths", hasKey("/pin/analog/{pin}"), hasKey("/pin/digital/{pin}")) //
+			;
 		}
 	}
 
 	@Test
 	public void canAccesApiUi() throws Exception {
 		try (RestMain main = runRestComponent()) {
-			given().get("/api-browser").then().contentType(HTML).statusCode(200);
+			// we cannot verify concrete content since content is loaded lazy using JS
+			given().get("/api-browser").then().assertThat().statusCode(200).contentType(HTML);
 		}
 	}
 
