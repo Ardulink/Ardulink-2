@@ -111,12 +111,14 @@ public class RestRouteBuilder extends RouteBuilder {
 		registerResourceHandler(name,
 				RestRouteBuilder.class.getClassLoader().getResource("META-INF/resources/webjars/").toURI());
 		restConfiguration().endpointProperty("handlers", name);
-		from("jetty:http://" + fromPlaceholder(VAR_BIND) + ":" + fromPlaceholder(VAR_PORT) + "/api-browser") //
-				.process(exchange -> {
-					Message message = exchange.getMessage();
-					message.setHeader(HTTP_RESPONSE_CODE, 302);
-					message.setHeader("location", "/swagger-ui/" + version + "/index.html?url=" + apidocs + "#");
-				});
+		from("jetty:http://" + fromPlaceholder(VAR_BIND) + ":" + fromPlaceholder(VAR_PORT) + "/api-browser")
+				.process(exchange -> redirect(exchange.getMessage(),
+						"/swagger-ui/" + version + "/index.html?url=" + apidocs + "#"));
+	}
+
+	private static void redirect(Message message, String location) {
+		message.setHeader(HTTP_RESPONSE_CODE, 302);
+		message.setHeader("location", location);
 	}
 
 	private void registerResourceHandler(String id, URI resource) throws URISyntaxException {
@@ -132,13 +134,17 @@ public class RestRouteBuilder extends RouteBuilder {
 	private void readQueue(Exchange exchange, BlockingQueue<FromDeviceMessagePinStateChanged> messages)
 			throws InterruptedException {
 		FromDeviceMessagePinStateChanged polled = checkNotNull(messages.poll(1, SECONDS),
-				"Timout retrieving message from arduino");
+				"Timeout retrieving message from arduino");
 		Message message = exchange.getMessage();
-		if (Integer.compare(polled.getPin().pinNum(), ((int) message.getHeader(HEADER_PIN))) == 0) {
+		if (pinInMessageIs(message, polled.getPin().pinNum())) {
 			message.setBody(polled.getValue(), String.class);
 		} else {
 			messages.offer(polled);
 		}
+	}
+
+	private static boolean pinInMessageIs(Message message, int pinNum) {
+		return Integer.compare(pinNum, ((Integer) message.getHeader(HEADER_PIN))) == 0;
 	}
 
 	private void patchDigital(Exchange exchange) {
