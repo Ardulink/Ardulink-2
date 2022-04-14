@@ -22,6 +22,7 @@ import static io.restassured.http.ContentType.HTML;
 import static io.restassured.http.ContentType.JSON;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
 
 import org.ardulink.rest.main.CommandLineArguments;
 import org.ardulink.rest.main.RestMain;
@@ -48,7 +49,8 @@ public class ArdulinkRestSwaggerTest {
 		try (RestMain main = runRestComponent()) {
 			given().get("/api-docs").then().assertThat().statusCode(200).contentType(JSON) //
 					.body("info.title", equalTo("User API")) //
-//					.body("paths", hasKey("/pin/analog/{pin}"), hasKey("/pin/digital/{pin}")) //
+					.body("paths", hasKey("/pin/analog/{pin}")) //
+					.body("paths", hasKey("/pin/digital/{pin}")) //
 			;
 		}
 	}
