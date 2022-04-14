@@ -1,4 +1,0 @@
-dist: trusty
-language: java
-sudo: false
-script: mvn clean package
