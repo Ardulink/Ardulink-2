@@ -32,7 +32,7 @@
 					</container>
 					<skip>false</skip>
 					<container>
-						<port>4478</port>
+						<ports>4478</ports>
 					</container>
 				</configuration>
 			</plugin>
