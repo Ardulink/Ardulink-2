@@ -65,7 +65,7 @@
 		<mockito.version>1.10.19</mockito.version>
 		<!-- The next LTS release Camel 3.14, scheduled for December 2021, will be the last release to support Java 8 -->
 		<!-- https://camel.apache.org/blog/2021/09/eol-java8/ -->
-		<camel.version>3.14.0</camel.version>
+		<camel.version>3.16.0</camel.version>
 		<!-- default image name for JIB -->
 		<image>docker.io/ardulink/${project.artifactId}:${project.version}</image>
 	</properties>
