@@ -2,7 +2,9 @@ package org.ardulink.rest;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.identityHashCode;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.joining;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
@@ -17,14 +19,18 @@ import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.regex.Matcher;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.camel.Predicate;
 import org.apache.camel.builder.RouteBuilder;
 import org.ardulink.core.Pin.Type;
 import org.ardulink.core.messages.api.FromDeviceMessage;
@@ -33,9 +39,13 @@ import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.util.resource.EmptyResource;
+import org.eclipse.jetty.util.resource.Resource;
 import org.webjars.WebJarAssetLocator;
 
 public class RestRouteBuilder extends RouteBuilder {
+
+	private static final String META_INF_RESOURCES_WEBJARS = "META-INF/resources/webjars";
 
 	public static final String VAR_TARGET = "to.uri";
 	public static final String VAR_HOST = "from.host";
@@ -103,17 +113,43 @@ public class RestRouteBuilder extends RouteBuilder {
 	}
 
 	private void swaggerUi(String apidocs) throws URISyntaxException {
-		Map<String, String> webJars = new WebJarAssetLocator("META-INF/resources/webjars/").getWebJars();
-		String key = "swagger-ui";
-		String version = checkNotNull(webJars.get(key), key);
-		String name = key + "Handler";
+		WebJarAssetLocator webJarAssetLocator = new WebJarAssetLocator(META_INF_RESOURCES_WEBJARS);
+		Map<String, String> webJars = webJarAssetLocator.getWebJars();
+		String swaggerUi = "swagger-ui";
+		String version = checkNotNull(webJars.get(swaggerUi), swaggerUi);
+		String swaggerUiHandler = swaggerUi + "Handler";
 
-		registerResourceHandler(name,
-				RestRouteBuilder.class.getClassLoader().getResource("META-INF/resources/webjars/").toURI());
-		restConfiguration().endpointProperty("handlers", name);
+		String initializer = "/" + ("swagger-ui/" + version + "/swagger-initializer.js");
+
+		registerResourceHandler(swaggerUiHandler, webJarsURI(), initializer);
+		restConfiguration().endpointProperty("handlers", swaggerUiHandler);
+		from("jetty:http://" + fromPlaceholder(VAR_BIND) + ":" + fromPlaceholder(VAR_PORT) + initializer)
+				.filter(isGet(initializer)).setBody().simple(patch(webJarsURI(), initializer, apidocs));
 		from("jetty:http://" + fromPlaceholder(VAR_BIND) + ":" + fromPlaceholder(VAR_PORT) + "/api-browser")
-				.process(exchange -> redirect(exchange.getMessage(),
-						"/swagger-ui/" + version + "/index.html?url=" + apidocs + "#"));
+				.process(exchange -> redirect(exchange.getMessage(), "/swagger-ui/" + version));
+	}
+
+	private String patch(URI webJarsURI, String initializer, String apidocs) {
+		return content(META_INF_RESOURCES_WEBJARS + initializer)
+				.replaceAll(Matcher.quoteReplacement("https://petstore.swagger.io/v2/swagger.json"), apidocs);
+	}
+
+	private String content(String in) {
+		return new BufferedReader(
+				new InputStreamReader(RestRouteBuilder.class.getClassLoader().getResourceAsStream(in), UTF_8)).lines()
+				.collect(joining("\n"));
+	}
+
+	private Predicate isGet(String initializer) {
+		return exchange -> initializer.equals(exchange.getMessage().getHeader("CamelHttpUri"));
+	}
+
+	private static URI webJarsURI() throws URISyntaxException {
+		return RestRouteBuilder.class.getClassLoader().getResource(META_INF_RESOURCES_WEBJARS).toURI();
+	}
+
+	private void registerResourceHandler(String id, URI resource, String ignore) throws URISyntaxException {
+		getContext().getRegistry().bind(id, ResourceHandler.class, resourceHandler(resource, ignore));
 	}
 
 	private static void redirect(Message message, String location) {
@@ -121,12 +157,13 @@ public class RestRouteBuilder extends RouteBuilder {
 		message.setHeader("location", location);
 	}
 
-	private void registerResourceHandler(String id, URI resource) throws URISyntaxException {
-		getContext().getRegistry().bind(id, ResourceHandler.class, resourceHandler(resource));
-	}
-
-	private ResourceHandler resourceHandler(URI resourceURI) throws URISyntaxException {
-		ResourceHandler rh = new ResourceHandler();
+	private ResourceHandler resourceHandler(URI resourceURI, String ignore) throws URISyntaxException {
+		ResourceHandler rh = new ResourceHandler() {
+			@Override
+			public Resource getResource(String path) {
+				return path.equals(ignore) ? EmptyResource.INSTANCE : super.getResource(path);
+			}
+		};
 		rh.setResourceBase(resourceURI.toASCIIString());
 		return rh;
 	}
