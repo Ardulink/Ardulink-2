@@ -29,6 +29,11 @@ import java.util.Arrays;
  * [adsense]
  *
  */
+/**
+ * This class is <b>not</b> threadsafe.
+ * 
+ * @author Peter Fichtner
+ */
 public class ByteArray {
 
 	private static final int MAX_BUFFER_LEN = 2048;
@@ -54,7 +59,7 @@ public class ByteArray {
 		return Bytes.indexOf(byteArray, delimiter, 0, pointer);
 	}
 
-	public synchronized byte[] next(byte[] delimiter) {
+	public byte[] next(byte[] delimiter) {
 		int delimiterAt = indexOf(delimiter);
 		if (delimiterAt < 0) {
 			return null;
@@ -72,10 +77,22 @@ public class ByteArray {
 	 * @param buffer    the data to append
 	 * @param bytesRead length of the data to append from <code>buffer</code>
 	 */
-	public synchronized void append(byte[] buffer, int bytesRead) {
+	public void append(byte[] buffer, int bytesRead) {
 		checkArgument(this.pointer + bytesRead <= this.byteArray.length, "buffer overrun");
 		System.arraycopy(buffer, 0, this.byteArray, this.pointer, bytesRead);
 		this.pointer += bytesRead;
+	}
+
+	public void append(byte b) {
+		append(new byte[] { b }, 1);
+	}
+
+	public int length() {
+		return pointer;
+	}
+
+	public byte[] copy() {
+		return Arrays.copyOf(byteArray, pointer);
 	}
 
 }
