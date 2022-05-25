@@ -105,7 +105,7 @@ public class RestRouteBuilder extends RouteBuilder {
 	private void swagger(String apidocs) {
 		restConfiguration().apiContextPath(apidocs) //
 				.apiProperty("host", "localhost" + ":" + fromPlaceholder(VAR_PORT)) //
-				.apiProperty("base.path", "api-docs") //
+				.apiProperty("base.path", "") //
 				.apiProperty("api.title", "User API") //
 				.apiProperty("api.version", "1.0.0") //
 				.apiProperty("cors", "true") //
