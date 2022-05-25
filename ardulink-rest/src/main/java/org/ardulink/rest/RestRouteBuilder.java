@@ -90,8 +90,8 @@ public class RestRouteBuilder extends RouteBuilder {
 				.patch("/digital/{pin}").to(patchDigital) //
 				.get("/analog/{pin}").to(readAnalog) //
 				.get("/digital/{pin}").to(readDigital) //
-				.post("/analog/{pin}").to(switchAnalog) //
-				.post("/digital/{pin}").to(switchDigital) //
+				.put("/analog/{pin}").to(switchAnalog) //
+				.put("/digital/{pin}").to(switchDigital) //
 		;
 		from(patchAnalog).process(exchange -> patchAnalog(exchange)).to(target);
 		from(patchDigital).process(exchange -> patchDigital(exchange)).to(target);

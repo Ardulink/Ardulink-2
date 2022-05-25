@@ -60,7 +60,7 @@ public class ArdulinkRestTest {
 			try (RestMain main = runRestComponent("ardulink://mock")) {
 				int pin = 5;
 				boolean state = true;
-				given().body(state).post("/pin/digital/{pin}", pin).then().statusCode(200);
+				given().body(state).put("/pin/digital/{pin}", pin).then().statusCode(200);
 				verify(mock).switchDigitalPin(digitalPin(pin), state);
 			}
 			verify(mock).close();
@@ -74,7 +74,7 @@ public class ArdulinkRestTest {
 			try (RestMain main = runRestComponent("ardulink://mock")) {
 				int pin = 9;
 				int value = 123;
-				given().body(value).post("/pin/analog/{pin}", pin).then().statusCode(200);
+				given().body(value).put("/pin/analog/{pin}", pin).then().statusCode(200);
 				verify(mock).switchAnalogPin(analogPin(pin), value);
 			}
 			verify(mock).close();
