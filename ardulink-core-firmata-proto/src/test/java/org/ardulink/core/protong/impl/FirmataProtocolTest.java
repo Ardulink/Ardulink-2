@@ -22,6 +22,8 @@ import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.ProtocolNG;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor.FromDeviceListener;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor.RawListener;
+import org.ardulink.util.ByteArray;
 import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
 import org.ardulink.util.anno.LapsedWith;
@@ -29,7 +31,7 @@ import org.junit.Test;
 
 public class FirmataProtocolTest {
 
-	private static final class Collector implements FromDeviceListener {
+	private static final class MessageCollector implements FromDeviceListener {
 
 		private final List<FromDeviceMessage> messages = Lists.newArrayList();
 
@@ -43,6 +45,24 @@ public class FirmataProtocolTest {
 		}
 	}
 
+	private static final class RawCollector implements RawListener {
+
+		private final ByteArray bytes = new ByteArray();
+
+		@Override
+		public void handle(byte[] fromDevice) {
+			bytes.append(fromDevice, fromDevice.length);
+		}
+		
+		public byte[] getBytes() {
+			return bytes.copy();
+		}
+
+	}
+
+	private final MessageCollector messageCollector = new MessageCollector();
+	private final RawCollector rawCollector = new RawCollector();
+
 	@Test
 	public void canReadAnalogPinViaFirmataProto() throws IOException {
 		byte command = ANALOG_MESSAGE;
@@ -50,8 +70,9 @@ public class FirmataProtocolTest {
 		byte valueLow = 127;
 		byte valueHigh = 42;
 		byte[] bytes = new byte[] { command |= pin, valueLow, valueHigh };
-		List<FromDeviceMessage> messages = process(new FirmataProtocol(), bytes);
-		assertMessage(messages, analogPin(pin), valueHigh << 7 | valueLow);
+		process(new FirmataProtocol(), bytes);
+		assertMessage(messageCollector.getMessages(), analogPin(pin), valueHigh << 7 | valueLow);
+		assertThat(rawCollector.getBytes(), is(bytes));
 	}
 
 	@Test
@@ -61,15 +82,15 @@ public class FirmataProtocolTest {
 		byte valueLow = binary("010" + "0101");
 		byte valueHigh = binary("1");
 		byte[] bytes = new byte[] { command |= port, valueLow, valueHigh };
-		List<FromDeviceMessage> messages = process(new FirmataProtocol(), bytes);
-
+		process(new FirmataProtocol(), bytes);
 		byte pin = (byte) pow(2, port + 1);
-		assertMessage(messages, MapBuilder.<Pin, Object>newMapBuilder() //
+		assertMessage(messageCollector.getMessages(), MapBuilder.<Pin, Object>newMapBuilder() //
 				.put(digitalPin(pin++), true).put(digitalPin(pin++), false) //
 				.put(digitalPin(pin++), true).put(digitalPin(pin++), false) //
 				.put(digitalPin(pin++), false).put(digitalPin(pin++), true) //
 				.put(digitalPin(pin++), false).put(digitalPin(pin++), true) //
 				.build());
+		assertThat(rawCollector.getBytes(), is(bytes));
 	}
 
 	private void assertMessage(List<FromDeviceMessage> messages, Pin pin, Object value) {
@@ -94,16 +115,14 @@ public class FirmataProtocolTest {
 		return (byte) parseInt(string, 2);
 	}
 
-	private List<FromDeviceMessage> process(ProtocolNG protocol, byte[] bytes) throws IOException {
+	private void process(ProtocolNG protocol, byte[] bytes) throws IOException {
 		InputStream stream = new ByteArrayInputStream(bytes);
-		Collector listener = new Collector();
 		ByteStreamProcessor processor = byteStreamProcessor(protocol);
-		processor.addListener(listener);
+		processor.addListener(messageCollector);
+		processor.addListener(rawCollector);
 
 		processor.process(read(stream, 2));
-		processor.process(read(stream, 5));
 		processor.process(read(stream, stream.available()));
-		return listener.getMessages();
 	}
 
 	private static ByteStreamProcessor byteStreamProcessor(ProtocolNG protocol) {

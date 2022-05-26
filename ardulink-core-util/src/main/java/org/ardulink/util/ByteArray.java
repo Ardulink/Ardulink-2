@@ -95,4 +95,8 @@ public class ByteArray {
 		return Arrays.copyOf(byteArray, pointer);
 	}
 
+	public void clear() {
+		pointer = 0;
+	}
+
 }

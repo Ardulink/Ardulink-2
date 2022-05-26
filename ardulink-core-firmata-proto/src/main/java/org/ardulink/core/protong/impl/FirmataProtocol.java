@@ -76,13 +76,15 @@ public class FirmataProtocol implements ProtocolNG {
 		}
 
 		@Override
-		public void process(byte[] read) {
-			delegate.process(read);
+		public void process(byte[] bytes) {
+			byteArray.append(bytes, bytes.length);
+			delegate.process(bytes);
 		}
 
 		@Override
-		public void process(byte read) {
-			delegate.process(read);
+		public void process(byte b) {
+			byteArray.append(b);
+			delegate.process(b);
 		}
 
 		@Override
