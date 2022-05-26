@@ -25,6 +25,8 @@ import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
 import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.ProtocolNG;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -34,7 +36,7 @@ import org.ardulink.core.proto.api.Protocol;
  * [adsense]
  *
  */
-public class DummyProtocol implements Protocol {
+public class DummyProtocol implements Protocol, ProtocolNG {
 
 	private static final DummyProtocol instance = new DummyProtocol();
 
@@ -89,6 +91,11 @@ public class DummyProtocol implements Protocol {
 
 	@Override
 	public FromDeviceMessage fromDevice(byte[] bytes) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public ByteStreamProcessor newByteStreamProcessor() {
 		throw new UnsupportedOperationException();
 	}
 

@@ -19,9 +19,11 @@ import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
 import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.ProtocolNG;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.util.MapBuilder;
 
-public class SimpleDigisparkProtocol implements Protocol {
+public class SimpleDigisparkProtocol implements Protocol, ProtocolNG {
 
 	private enum Message {
 		POWER_PIN_INTENSITY((byte) 11) {
@@ -123,6 +125,11 @@ public class SimpleDigisparkProtocol implements Protocol {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public ByteStreamProcessor newByteStreamProcessor() {
+		throw new UnsupportedOperationException();
+	}
+	
 	@Override
 	public String toString() {
 		return getName();
