@@ -112,10 +112,9 @@ public abstract class StreamReader implements Closeable {
 			int read;
 			while ((read = inputStream.read()) != -1 && !isInterrupted()) {
 				try {
-					byte[] bytes = scanner.next();
-					if (bytes != null) {
-						byteStreamProcessor.process((byte) read);
-					}
+					byte b = (byte) read;
+					received(new byte[] { b });
+					byteStreamProcessor.process(b);
 				} catch (Exception e) {
 					logger.error("Error while retrieving data", e);
 				}
