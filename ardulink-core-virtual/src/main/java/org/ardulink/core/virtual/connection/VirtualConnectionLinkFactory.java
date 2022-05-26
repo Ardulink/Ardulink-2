@@ -12,11 +12,10 @@ import org.ardulink.core.Link;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.util.Bytes;
+import org.ardulink.core.proto.api.ProtocolNG;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 
-public class VirtualConnectionLinkFactory implements
-		LinkFactory<VirtualConnectionConfig> {
+public class VirtualConnectionLinkFactory implements LinkFactory<VirtualConnectionConfig> {
 
 	public static class NullInputStream extends InputStream {
 
@@ -26,18 +25,10 @@ public class VirtualConnectionLinkFactory implements
 
 		private int byteReturned;
 
-		// TODO LZ Is this constructor really needed? Why is ArdulinkProtocol2's
-		// separator refereed here?
-		public NullInputStream() {
-			this("MESSAGE", 100, MILLISECONDS, ArdulinkProtocol2.instance()
-					.getSeparator());
-		}
-
-		public NullInputStream(String message, int waitTime, TimeUnit timeUnit,
-				byte[] separator) {
+		public NullInputStream(String message, int waitTime, TimeUnit timeUnit) {
 			this.waitTime = waitTime;
 			this.waitUnits = timeUnit;
-			this.message = Bytes.concat(message.getBytes(), separator);
+			this.message = message.getBytes();
 		}
 
 		@Override
@@ -69,10 +60,17 @@ public class VirtualConnectionLinkFactory implements
 	public Link newLink(VirtualConnectionConfig config) throws Exception {
 		String input = config.getInput();
 		Protocol protocol = config.getProto();
-		StreamConnection connection = new StreamConnection(new NullInputStream(
-				input, 500, MILLISECONDS, protocol.getSeparator()),
-				new NullOutputStream(), protocol);
 
+		StreamConnection connection ;
+		if (protocol instanceof ProtocolNG) {
+			ProtocolNG protocolNG = (ProtocolNG) protocol;
+			ByteStreamProcessor byteStreamProcessor = protocolNG.newByteStreamProcessor();
+			connection = new StreamConnection(new NullInputStream(input, 500, MILLISECONDS),
+					new NullOutputStream(), byteStreamProcessor);
+		} else {
+			connection = new StreamConnection(new NullInputStream(input, 500, MILLISECONDS),
+					new NullOutputStream(), protocol);
+		}
 		return new ConnectionBasedLink(connection, protocol);
 	}
 
