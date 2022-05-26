@@ -27,6 +27,7 @@ import org.ardulink.util.ByteArray;
 import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
 import org.ardulink.util.anno.LapsedWith;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 
 public class ArdulinkProtocol2Test {
@@ -70,7 +71,7 @@ public class ArdulinkProtocol2Test {
 		String message = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value) + "\n";
 		process(new ArdulinkProtocol2(), message);
 		assertMessage(messageCollector.getMessages(), analogPin(pin), (Object) value);
-		assertThat(new String(rawCollector.getBytes()), is(message));
+		assertRaw(is(message));
 	}
 
 	@Test
@@ -80,7 +81,7 @@ public class ArdulinkProtocol2Test {
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(value) + "\n";
 		process(new ArdulinkProtocol2(), message);
 		assertMessage(messageCollector.getMessages(), digitalPin(pin), (Object) value);
-		assertThat(new String(rawCollector.getBytes()), is(message));
+		assertRaw(is(message));
 	}
 
 	@Test
@@ -91,7 +92,7 @@ public class ArdulinkProtocol2Test {
 		FromDeviceMessageReply pinStateChanged = (FromDeviceMessageReply) messageCollector.getMessages().get(0);
 		assertThat(pinStateChanged.getParameters(), is((Object) MapBuilder.<String, String>newMapBuilder()
 				.put("UniqueID", "456-2342-2342").put("ciao", "boo").build()));
-		assertThat(new String(rawCollector.getBytes()), is(message));
+		assertRaw(is(message));
 	}
 
 	private void assertMessage(List<FromDeviceMessage> messages, Pin pin, Object value) {
@@ -99,6 +100,10 @@ public class ArdulinkProtocol2Test {
 		FromDeviceMessagePinStateChanged pinStateChanged = (FromDeviceMessagePinStateChanged) messages.get(0);
 		assertThat(pinStateChanged.getPin(), is(pin));
 		assertThat(pinStateChanged.getValue(), is(value));
+	}
+
+	private void assertRaw(Matcher<String> matcher) {
+		assertThat(new String(rawCollector.getBytes()), matcher);
 	}
 
 	@LapsedWith(module = "JDK7", value = "binary literals")

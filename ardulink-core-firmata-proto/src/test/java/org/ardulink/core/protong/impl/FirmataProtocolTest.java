@@ -27,6 +27,7 @@ import org.ardulink.util.ByteArray;
 import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
 import org.ardulink.util.anno.LapsedWith;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 
 public class FirmataProtocolTest {
@@ -53,7 +54,7 @@ public class FirmataProtocolTest {
 		public void handle(byte[] fromDevice) {
 			bytes.append(fromDevice, fromDevice.length);
 		}
-		
+
 		public byte[] getBytes() {
 			return bytes.copy();
 		}
@@ -72,7 +73,7 @@ public class FirmataProtocolTest {
 		byte[] bytes = new byte[] { command |= pin, valueLow, valueHigh };
 		process(new FirmataProtocol(), bytes);
 		assertMessage(messageCollector.getMessages(), analogPin(pin), valueHigh << 7 | valueLow);
-		assertThat(rawCollector.getBytes(), is(bytes));
+		assertRaw(is(bytes));
 	}
 
 	@Test
@@ -90,7 +91,7 @@ public class FirmataProtocolTest {
 				.put(digitalPin(pin++), false).put(digitalPin(pin++), true) //
 				.put(digitalPin(pin++), false).put(digitalPin(pin++), true) //
 				.build());
-		assertThat(rawCollector.getBytes(), is(bytes));
+		assertRaw(is(bytes));
 	}
 
 	private void assertMessage(List<FromDeviceMessage> messages, Pin pin, Object value) {
@@ -98,6 +99,10 @@ public class FirmataProtocolTest {
 		FromDeviceMessagePinStateChanged pinStateChanged = (FromDeviceMessagePinStateChanged) messages.get(0);
 		assertThat(pinStateChanged.getPin(), is(pin));
 		assertThat(pinStateChanged.getValue(), is(value));
+	}
+
+	private void assertRaw(Matcher<byte[]> matcher) {
+		assertThat(rawCollector.getBytes(), matcher);
 	}
 
 	private void assertMessage(List<FromDeviceMessage> messages, Map<Pin, Object> expectedStates) {
