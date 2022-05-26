@@ -364,7 +364,6 @@ public class ArdulinkProtocol2 implements Protocol, ProtocolNG {
 			if (state == null) {
 				state = new WaitingForAlpPrefix();
 			}
-			byteArray.append(b);
 			state = state.process(b);
 			if (state instanceof CommandParsed) {
 				fireEvent(((CommandParsed) state).message);

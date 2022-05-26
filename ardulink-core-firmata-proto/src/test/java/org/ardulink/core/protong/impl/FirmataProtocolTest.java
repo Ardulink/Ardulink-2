@@ -22,12 +22,9 @@ import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.ProtocolNG;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor.FromDeviceListener;
-import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor.RawListener;
-import org.ardulink.util.ByteArray;
 import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
 import org.ardulink.util.anno.LapsedWith;
-import org.hamcrest.Matcher;
 import org.junit.Test;
 
 public class FirmataProtocolTest {
@@ -46,23 +43,7 @@ public class FirmataProtocolTest {
 		}
 	}
 
-	private static final class RawCollector implements RawListener {
-
-		private final ByteArray bytes = new ByteArray();
-
-		@Override
-		public void handle(byte[] fromDevice) {
-			bytes.append(fromDevice, fromDevice.length);
-		}
-
-		public byte[] getBytes() {
-			return bytes.copy();
-		}
-
-	}
-
 	private final MessageCollector messageCollector = new MessageCollector();
-	private final RawCollector rawCollector = new RawCollector();
 
 	@Test
 	public void canReadAnalogPinViaFirmataProto() throws IOException {
@@ -73,7 +54,6 @@ public class FirmataProtocolTest {
 		byte[] bytes = new byte[] { command |= pin, valueLow, valueHigh };
 		process(new FirmataProtocol(), bytes);
 		assertMessage(messageCollector.getMessages(), analogPin(pin), valueHigh << 7 | valueLow);
-		assertRaw(is(bytes));
 	}
 
 	@Test
@@ -91,7 +71,6 @@ public class FirmataProtocolTest {
 				.put(digitalPin(pin++), false).put(digitalPin(pin++), true) //
 				.put(digitalPin(pin++), false).put(digitalPin(pin++), true) //
 				.build());
-		assertRaw(is(bytes));
 	}
 
 	private void assertMessage(List<FromDeviceMessage> messages, Pin pin, Object value) {
@@ -99,10 +78,6 @@ public class FirmataProtocolTest {
 		FromDeviceMessagePinStateChanged pinStateChanged = (FromDeviceMessagePinStateChanged) messages.get(0);
 		assertThat(pinStateChanged.getPin(), is(pin));
 		assertThat(pinStateChanged.getValue(), is(value));
-	}
-
-	private void assertRaw(Matcher<byte[]> matcher) {
-		assertThat(rawCollector.getBytes(), matcher);
 	}
 
 	private void assertMessage(List<FromDeviceMessage> messages, Map<Pin, Object> expectedStates) {
@@ -124,7 +99,6 @@ public class FirmataProtocolTest {
 		InputStream stream = new ByteArrayInputStream(bytes);
 		ByteStreamProcessor processor = byteStreamProcessor(protocol);
 		processor.addListener(messageCollector);
-		processor.addListener(rawCollector);
 
 		processor.process(read(stream, 2));
 		processor.process(read(stream, stream.available()));

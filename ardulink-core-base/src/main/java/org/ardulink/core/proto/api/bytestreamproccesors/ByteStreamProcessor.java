@@ -15,13 +15,7 @@ public interface ByteStreamProcessor {
 		void handle(FromDeviceMessage fromDevice);
 	}
 
-	public static interface RawListener {
-		void handle(byte[] fromDevice);
-	}
-
 	void addListener(FromDeviceListener listener);
-
-	void addListener(RawListener listener);
 
 	// -- in
 
