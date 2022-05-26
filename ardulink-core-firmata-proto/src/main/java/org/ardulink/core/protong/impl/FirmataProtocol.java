@@ -80,50 +80,55 @@ public class FirmataProtocol implements ProtocolNG {
 			delegate.process(read);
 		}
 
+		@Override
+		public void process(byte read) {
+			delegate.process(read);
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageStartListening startListening) {
+			throw notYetImplemented();
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
+			throw notYetImplemented();
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
+			throw notYetImplemented();
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
+			throw notYetImplemented();
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageTone tone) {
+			throw notYetImplemented();
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageNoTone noTone) {
+			throw notYetImplemented();
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageCustom custom) {
+			throw notYetImplemented();
+		}
+
+		private static UnsupportedOperationException notYetImplemented() {
+			return new UnsupportedOperationException("not yet implemented");
+		}
+
 	}
 
 	@Override
 	public ByteStreamProcessor newByteStreamProcessor() {
 		return new FirmataByteStreamProcessor();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageStartListening startListening) {
-		throw notYetImplemented();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
-		throw notYetImplemented();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
-		throw notYetImplemented();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
-		throw notYetImplemented();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageTone tone) {
-		throw notYetImplemented();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageNoTone noTone) {
-		throw notYetImplemented();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageCustom custom) {
-		throw notYetImplemented();
-	}
-
-	private static UnsupportedOperationException notYetImplemented() {
-		return new UnsupportedOperationException("not yet implemented");
 	}
 
 }

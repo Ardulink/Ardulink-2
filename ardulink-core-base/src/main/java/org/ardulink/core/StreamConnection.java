@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +43,7 @@ public class StreamConnection extends AbstractConnection {
 	private final StreamReader streamReader;
 	private final OutputStream outputStream;
 
+	@Deprecated
 	public StreamConnection(InputStream inputStream, OutputStream outputStream,
 			Protocol protocol) {
 		this.outputStream = outputStream;
@@ -53,6 +55,20 @@ public class StreamConnection extends AbstractConnection {
 		};
 		if (inputStream != null) {
 			streamReader.runReaderThread(protocol.getSeparator());
+		}
+	}
+
+	public StreamConnection(InputStream inputStream, OutputStream outputStream,
+			ByteStreamProcessor byteStreamProcessor) {
+		this.outputStream = outputStream;
+		this.streamReader = new StreamReader(inputStream) {
+			@Override
+			protected void received(byte[] bytes) throws Exception {
+				fireReceived(bytes);
+			}
+		};
+		if (inputStream != null) {
+			streamReader.runReaderThread(byteStreamProcessor);
 		}
 	}
 

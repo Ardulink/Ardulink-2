@@ -68,7 +68,7 @@ import org.slf4j.LoggerFactory;
  * [adsense]
  *
  */
-public class ConnectionBasedLink extends AbstractListenerLink {
+public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(ConnectionBasedLink.class);

@@ -83,10 +83,12 @@ import org.ardulink.util.URIs;
  */
 public class ArdulinkProtocol2 implements Protocol, ProtocolNG {
 
-	private final String name = "ardulink2";
-	private final byte[] separator = "\n".getBytes();
+	private static final String name = "ardulink2";
+	private static final byte[] separator = "\n".getBytes();
 
 	private static final ArdulinkProtocol2 instance = new ArdulinkProtocol2();
+
+	private final ALPByteStreamProcessor delegateUntilRefactored = new ALPByteStreamProcessor();
 
 	public static Protocol instance() {
 		return instance;
@@ -99,73 +101,6 @@ public class ArdulinkProtocol2 implements Protocol, ProtocolNG {
 	@Override
 	public byte[] getSeparator() {
 		return separator;
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageStartListening startListening) {
-		Pin pin = startListening.getPin();
-		if (startListening.getPin().is(ANALOG)) {
-			return toBytes(builder(startListening, START_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
-		}
-		if (startListening.getPin().is(DIGITAL)) {
-			return toBytes(builder(startListening, START_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue());
-		}
-		throw illegalPinType(startListening.getPin());
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
-		Pin pin = stopListening.getPin();
-		if (stopListening.getPin().is(ANALOG)) {
-			return toBytes(builder(stopListening, STOP_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
-		}
-		if (stopListening.getPin().is(DIGITAL)) {
-			return toBytes(builder(stopListening, STOP_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue());
-		}
-		throw illegalPinType(stopListening.getPin());
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
-		if (pinStateChange.getPin().is(ANALOG)) {
-			return toBytes(builder(pinStateChange, POWER_PIN_INTENSITY).forPin(pinStateChange.getPin().pinNum())
-					.withValue((Integer) pinStateChange.getValue()));
-		}
-		if (pinStateChange.getPin().is(DIGITAL)) {
-			return toBytes(builder(pinStateChange, POWER_PIN_SWITCH).forPin(pinStateChange.getPin().pinNum())
-					.withState((Boolean) pinStateChange.getValue()));
-		}
-		throw illegalPinType(pinStateChange.getPin());
-	}
-
-	private ALProtoBuilder builder(Object event, ALPProtocolKey key) {
-		ALProtoBuilder builder = alpProtocolMessage(key);
-		return event instanceof MessageIdHolder ? builder.usingMessageId(((MessageIdHolder) event).getId()) : builder;
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
-		return toBytes(builder(keyPress, CHAR_PRESSED)
-				.withValue(String.format("chr%scod%sloc%smod%smex%s", keyPress.getKeychar(), keyPress.getKeycode(),
-						keyPress.getKeylocation(), keyPress.getKeymodifiers(), keyPress.getKeymodifiersex())));
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageTone tone) {
-		Long duration = tone.getTone().getDurationInMillis();
-		return toBytes(builder(tone, TONE).withValue(tone.getTone().getPin().pinNum() + "/" + tone.getTone().getHertz()
-				+ "/" + (duration == null ? -1 : duration.longValue())));
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageNoTone noTone) {
-		return toBytes(builder(noTone, NOTONE).withValue(noTone.getAnalogPin().pinNum()));
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageCustom custom) {
-		String[] messages = custom.getMessages();
-		return toBytes(builder(custom, CUSTOM_MESSAGE).withValues(messages));
 	}
 
 	@Override
@@ -239,17 +174,6 @@ public class ArdulinkProtocol2 implements Protocol, ProtocolNG {
 
 	private static Boolean toBoolean(Integer value) {
 		return value.intValue() == 1 ? TRUE : FALSE;
-	}
-
-	/**
-	 * Appends the separator to the passed message. This is not done using string
-	 * concatenations but in a byte[] for performance reasons.
-	 * 
-	 * @param message the message to send
-	 * @return byte[] holding the passed message and the protocol's divider
-	 */
-	private byte[] toBytes(String message) {
-		return Bytes.concat(message.getBytes(), separator);
 	}
 
 	private static class ALPByteStreamProcessor extends AbstractByteStreamProcessor {
@@ -436,25 +360,140 @@ public class ArdulinkProtocol2 implements Protocol, ProtocolNG {
 		private AbstractState state;
 
 		@Override
-		public void process(byte[] bytes) {
-			for (byte b : bytes) {
-				if (state == null) {
-					state = new WaitingForAlpPrefix();
-				}
-				state = state.process(b);
-				if (state instanceof CommandParsed) {
-					fireEvent(((CommandParsed) state).message);
-				}
-				if (state instanceof RplyParsed) {
-					fireEvent(((RplyParsed) state).message);
-				}
+		public void process(byte b) {
+			if (state == null) {
+				state = new WaitingForAlpPrefix();
+			}
+			state = state.process(b);
+			if (state instanceof CommandParsed) {
+				fireEvent(((CommandParsed) state).message);
+			}
+			if (state instanceof RplyParsed) {
+				fireEvent(((RplyParsed) state).message);
 			}
 		}
+
+		// -- out
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageStartListening startListening) {
+			Pin pin = startListening.getPin();
+			if (startListening.getPin().is(ANALOG)) {
+				return toBytes(builder(startListening, START_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
+			}
+			if (startListening.getPin().is(DIGITAL)) {
+				return toBytes(builder(startListening, START_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue());
+			}
+			throw illegalPinType(startListening.getPin());
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
+			Pin pin = stopListening.getPin();
+			if (stopListening.getPin().is(ANALOG)) {
+				return toBytes(builder(stopListening, STOP_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
+			}
+			if (stopListening.getPin().is(DIGITAL)) {
+				return toBytes(builder(stopListening, STOP_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue());
+			}
+			throw illegalPinType(stopListening.getPin());
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
+			if (pinStateChange.getPin().is(ANALOG)) {
+				return toBytes(builder(pinStateChange, POWER_PIN_INTENSITY).forPin(pinStateChange.getPin().pinNum())
+						.withValue((Integer) pinStateChange.getValue()));
+			}
+			if (pinStateChange.getPin().is(DIGITAL)) {
+				return toBytes(builder(pinStateChange, POWER_PIN_SWITCH).forPin(pinStateChange.getPin().pinNum())
+						.withState((Boolean) pinStateChange.getValue()));
+			}
+			throw illegalPinType(pinStateChange.getPin());
+		}
+
+		private ALProtoBuilder builder(Object event, ALPProtocolKey key) {
+			ALProtoBuilder builder = alpProtocolMessage(key);
+			return event instanceof MessageIdHolder ? builder.usingMessageId(((MessageIdHolder) event).getId())
+					: builder;
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
+			return toBytes(builder(keyPress, CHAR_PRESSED)
+					.withValue(String.format("chr%scod%sloc%smod%smex%s", keyPress.getKeychar(), keyPress.getKeycode(),
+							keyPress.getKeylocation(), keyPress.getKeymodifiers(), keyPress.getKeymodifiersex())));
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageTone tone) {
+			Long duration = tone.getTone().getDurationInMillis();
+			return toBytes(builder(tone, TONE).withValue(tone.getTone().getPin().pinNum() + "/"
+					+ tone.getTone().getHertz() + "/" + (duration == null ? -1 : duration.longValue())));
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageNoTone noTone) {
+			return toBytes(builder(noTone, NOTONE).withValue(noTone.getAnalogPin().pinNum()));
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageCustom custom) {
+			String[] messages = custom.getMessages();
+			return toBytes(builder(custom, CUSTOM_MESSAGE).withValues(messages));
+		}
+
+		/**
+		 * Appends the separator to the passed message. This is not done using string
+		 * concatenations but in a byte[] for performance reasons.
+		 * 
+		 * @param message the message to send
+		 * @return byte[] holding the passed message and the protocol's divider
+		 */
+		private byte[] toBytes(String message) {
+			return Bytes.concat(message.getBytes(), ArdulinkProtocol2.separator);
+		}
+
 	}
 
 	@Override
 	public ByteStreamProcessor newByteStreamProcessor() {
 		return new ALPByteStreamProcessor();
+	}
+
+	@Override
+	public byte[] toDevice(ToDeviceMessageStartListening startListening) {
+		return delegateUntilRefactored.toDevice(startListening);
+	}
+
+	@Override
+	public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
+		return delegateUntilRefactored.toDevice(stopListening);
+	}
+
+	@Override
+	public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
+		return delegateUntilRefactored.toDevice(pinStateChange);
+	}
+
+	@Override
+	public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
+		return delegateUntilRefactored.toDevice(keyPress);
+	}
+
+	@Override
+	public byte[] toDevice(ToDeviceMessageTone tone) {
+		return delegateUntilRefactored.toDevice(tone);
+	}
+
+	@Override
+	public byte[] toDevice(ToDeviceMessageNoTone noTone) {
+		return delegateUntilRefactored.toDevice(noTone);
+	}
+
+	@Override
+	public byte[] toDevice(ToDeviceMessageCustom custom) {
+		return delegateUntilRefactored.toDevice(custom);
 	}
 
 }

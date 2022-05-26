@@ -17,11 +17,13 @@ limitations under the License.
 package org.ardulink.core;
 
 import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.ardulink.util.anno.LapsedWith.NEXT_ARDULINK_VERSION_REFACTORING_DONE;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.util.anno.LapsedWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +49,8 @@ public abstract class StreamReader implements Closeable {
 		this.inputStream = inputStream;
 	}
 
+	@LapsedWith(value = NEXT_ARDULINK_VERSION_REFACTORING_DONE)
+	@Deprecated
 	public void runReaderThread(final byte[] delimiter) {
 		this.thread = new Thread() {
 
@@ -63,6 +67,24 @@ public abstract class StreamReader implements Closeable {
 		};
 	}
 
+	public void runReaderThread(final ByteStreamProcessor byteStreamProcessor) {
+		this.thread = new Thread() {
+
+			{
+				setDaemon(true);
+				start();
+			}
+
+			@Override
+			public void run() {
+				readUntilClosed(byteStreamProcessor);
+			}
+
+		};
+	}
+
+	@LapsedWith(value = NEXT_ARDULINK_VERSION_REFACTORING_DONE)
+	@Deprecated
 	public void readUntilClosed(byte[] delimiter) {
 		this.scanner = new StreamScanner(this.inputStream, delimiter);
 		try {
@@ -73,6 +95,26 @@ public abstract class StreamReader implements Closeable {
 					logger.debug("Stream read {}", bytes);
 					if (bytes != null) {
 						received(bytes);
+					}
+				} catch (Exception e) {
+					logger.error("Error while retrieving data", e);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Error while Reader Initialization", e);
+		} finally {
+			scanner.close();
+		}
+	}
+
+	public void readUntilClosed(ByteStreamProcessor byteStreamProcessor) {
+		try {
+			int read;
+			while ((read = inputStream.read()) != -1 && !isInterrupted()) {
+				try {
+					byte[] bytes = scanner.next();
+					if (bytes != null) {
+						byteStreamProcessor.process((byte) read);
 					}
 				} catch (Exception e) {
 					logger.error("Error while retrieving data", e);

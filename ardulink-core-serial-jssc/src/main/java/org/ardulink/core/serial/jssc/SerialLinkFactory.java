@@ -24,16 +24,21 @@ import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
 
-import jssc.SerialPort;
-import jssc.SerialPortException;
-
+import org.ardulink.core.AbstractListenerLink;
+import org.ardulink.core.CBL;
 import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.ConnectionBasedLinkNG;
 import org.ardulink.core.Link;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.ProtocolNG;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.qos.QosLink;
+
+import jssc.SerialPort;
+import jssc.SerialPortException;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -56,18 +61,26 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		String portIdentifier = config.getPort();
 		final SerialPort serialPort = serialPort(config, portIdentifier);
 
-		StreamConnection connection = new StreamConnection(
-				new SerialInputStream(serialPort), new SerialOutputStream(
-						serialPort), config.getProto());
-
 		Protocol proto = config.getProto();
-		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(
-				connection, proto);
+		
+		AbstractListenerLink connectionBasedLink;
+		if (proto instanceof ProtocolNG) {
+			ProtocolNG protocolNG = (ProtocolNG) proto;
+			ByteStreamProcessor byteStreamProcessor = protocolNG.newByteStreamProcessor();
+			connectionBasedLink = new ConnectionBasedLinkNG(
+					new StreamConnection(new SerialInputStream(serialPort), new SerialOutputStream(serialPort), byteStreamProcessor),
+					byteStreamProcessor);
+		} else {
+			connectionBasedLink = new ConnectionBasedLink(
+					new StreamConnection(new SerialInputStream(serialPort), new SerialOutputStream(serialPort), proto),
+					proto);
+		}
+
 		@SuppressWarnings("resource")
 		Link link = config.isQos() ? new QosLink(connectionBasedLink)
 				: connectionBasedLink;
 
-		waitForArdulink(config, connectionBasedLink);
+		waitForArdulink(config, (CBL) connectionBasedLink);
 		return new LinkDelegate(link) {
 			@Override
 			public void close() throws IOException {
@@ -82,7 +95,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 	}
 
 	private void waitForArdulink(SerialLinkConfig config,
-			ConnectionBasedLink link) {
+			CBL link) {
 		if (config.isPingprobe()) {
 			checkState(
 					link.waitForArduinoToBoot(config.getWaitsecs(), SECONDS),
