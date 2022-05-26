@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.proto.api;
 
+import static org.ardulink.util.anno.LapsedWith.NEXT_ARDULINK_VERSION_REFACTORING_DONE;
+
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
@@ -24,6 +26,7 @@ import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
+import org.ardulink.util.anno.LapsedWith;
 
 
 /**
@@ -38,6 +41,8 @@ public interface Protocol {
 
 	String getName();
 
+	@Deprecated
+	@LapsedWith(NEXT_ARDULINK_VERSION_REFACTORING_DONE)
 	byte[] getSeparator();
 
 	byte[] toDevice(ToDeviceMessageStartListening startListening);

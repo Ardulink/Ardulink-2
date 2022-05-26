@@ -18,7 +18,11 @@ package org.ardulink.core.proto.impl;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.proto.impl.LuaProtoBuilder.getBuilder;
-import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.*;
+import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.CUSTOM_MESSAGE;
+import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.POWER_PIN_INTENSITY;
+import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.POWER_PIN_SWITCH;
+import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.START_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.STOP_LISTENING_DIGITAL;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceMessage;
@@ -29,8 +33,10 @@ import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
-import org.ardulink.core.messages.impl.DefaultFromDeviceMessageCustom;
 import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.ProtocolNG;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2.ALPByteStreamProcessor;
 import org.ardulink.util.Bytes;
 
 /**
@@ -44,13 +50,12 @@ import org.ardulink.util.Bytes;
  * Start and Stop Analog PINs messages are not supported Key press message is
  * not supported Tone and NoTone messages are not supported
  * 
- * Incoming messages starting with alp:// are computed as Ardulink protocol
- * other incoming messages are all custom messages.
+ * Incoming messages are computed as Ardulink protocol. 
  * 
  * [adsense]
  *
  */
-public class LuaProtocol implements Protocol {
+public class LuaProtocol implements Protocol, ProtocolNG {
 
 	private static final String NAME = "LUA";
 	private static final byte[] SEPARATOR = "\r\n".getBytes();
@@ -75,8 +80,7 @@ public class LuaProtocol implements Protocol {
 	public byte[] toDevice(ToDeviceMessageStartListening startListening) {
 		Pin pin = startListening.getPin();
 		if (pin.is(DIGITAL)) {
-			return toBytes(getBuilder(START_LISTENING_DIGITAL).forPin(
-					pin.pinNum()).build());
+			return toBytes(getBuilder(START_LISTENING_DIGITAL).forPin(pin.pinNum()).build());
 		}
 		if (pin.is(ANALOG)) {
 			throw notSupported("Start Listening");
@@ -88,8 +92,7 @@ public class LuaProtocol implements Protocol {
 	public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
 		Pin pin = stopListening.getPin();
 		if (pin.is(DIGITAL)) {
-			return toBytes(getBuilder(STOP_LISTENING_DIGITAL).forPin(
-					pin.pinNum()).build());
+			return toBytes(getBuilder(STOP_LISTENING_DIGITAL).forPin(pin.pinNum()).build());
 		}
 		if (pin.is(ANALOG)) {
 			throw notSupported("Stop Listening");
@@ -100,78 +103,66 @@ public class LuaProtocol implements Protocol {
 	@Override
 	public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
 		if (pinStateChange.getPin().is(ANALOG)) {
-			return toBytes(getBuilder(POWER_PIN_INTENSITY)
-					.forPin(pinStateChange.getPin().pinNum())
+			return toBytes(getBuilder(POWER_PIN_INTENSITY).forPin(pinStateChange.getPin().pinNum())
 					.withValue((Integer) pinStateChange.getValue()).build());
 		}
 		if (pinStateChange.getPin().is(DIGITAL)) {
-			return toBytes(getBuilder(POWER_PIN_SWITCH)
-					.forPin(pinStateChange.getPin().pinNum())
+			return toBytes(getBuilder(POWER_PIN_SWITCH).forPin(pinStateChange.getPin().pinNum())
 					.withValue((Boolean) pinStateChange.getValue()).build());
 		}
 		throw illegalPinType(pinStateChange.getPin());
 	}
 
-	private UnsupportedOperationException notSupported(String type) {
-		return new UnsupportedOperationException(String.format(type
-				+ " message not supported for " + getName() + " protocol"));
-	}
-
-	private IllegalStateException illegalPinType(Pin pin) {
-		return new IllegalStateException("Illegal type " + pin.getType()
-				+ " of pin " + pin);
-	}
-
 	@Override
 	public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
-		throw new UnsupportedOperationException(String.format(
-				"This message has no sense for %s protocol", getName()));
+		throw noSense();
 	}
 
 	@Override
 	public byte[] toDevice(ToDeviceMessageTone tone) {
-		throw new UnsupportedOperationException(String.format(
-				"This message has no sense for %s protocol", getName()));
+		throw noSense();
 	}
 
 	@Override
 	public byte[] toDevice(ToDeviceMessageNoTone noTone) {
-		throw new UnsupportedOperationException(String.format(
-				"This message has no sense for %s protocol", getName()));
+		throw noSense();
 	}
 
 	@Override
 	public byte[] toDevice(ToDeviceMessageCustom custom) {
-		return toBytes(getBuilder(CUSTOM_MESSAGE).withValues(
-				(Object[]) custom.getMessages()).build());
+		return toBytes(getBuilder(CUSTOM_MESSAGE).withValues((Object[]) custom.getMessages()).build());
 	}
 
 	@Override
 	public FromDeviceMessage fromDevice(byte[] bytes) {
-		String in = new String(bytes);
-		/**
-		 * TODO LZ
-		 * <ul>
-		 * <li>Protocols must not depend on each other.</li>
-		 * <li>LuaProtocol must not know how an alp message looks like! This
-		 * should be handled by the Protocol itself.</li>
-		 * </ul>
-		 */
-		if (in.startsWith("alp://")) {
-			return ArdulinkProtocol2.instance().fromDevice(bytes);
-		}
-		return new DefaultFromDeviceMessageCustom(in);
+		return ArdulinkProtocol2.instance().fromDevice(bytes);
 	}
 
 	/**
-	 * Appends the separator to the passed message. This is not done using
-	 * string concatenations but in a byte[] for performance reasons.
+	 * Appends the separator to the passed message. This is not done using string
+	 * concatenations but in a byte[] for performance reasons.
 	 * 
-	 * @param message
-	 *            the message to send
+	 * @param message the message to send
 	 * @return byte[] holding the passed message and the protocol's divider
 	 */
 	private byte[] toBytes(String message) {
 		return Bytes.concat(message.getBytes(), SEPARATOR);
+	}
+
+	private UnsupportedOperationException notSupported(String type) {
+		return new UnsupportedOperationException(type + " message not supported for " + getName() + " protocol");
+	}
+	
+	private IllegalStateException illegalPinType(Pin pin) {
+		return new IllegalStateException("Illegal type " + pin.getType() + " of pin " + pin);
+	}
+	
+	private UnsupportedOperationException noSense() {
+		return new UnsupportedOperationException("This message has no sense for " + getName() + " protocol");
+	}
+	
+	@Override
+	public ByteStreamProcessor newByteStreamProcessor() {
+		return new ALPByteStreamProcessor();
 	}
 }

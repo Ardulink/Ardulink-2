@@ -176,7 +176,7 @@ public class ArdulinkProtocol2 implements Protocol, ProtocolNG {
 		return value.intValue() == 1 ? TRUE : FALSE;
 	}
 
-	private static class ALPByteStreamProcessor extends AbstractByteStreamProcessor {
+	public static class ALPByteStreamProcessor extends AbstractByteStreamProcessor {
 
 		private static class WaitingForAlpPrefix extends AbstractState {
 
