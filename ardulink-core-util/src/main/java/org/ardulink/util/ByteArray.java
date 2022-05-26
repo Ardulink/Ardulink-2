@@ -18,8 +18,11 @@ package org.ardulink.util;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.anno.LapsedWith.NEXT_ARDULINK_VERSION_REFACTORING_DONE;
 
 import java.util.Arrays;
+
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -59,6 +62,8 @@ public class ByteArray {
 		return Bytes.indexOf(byteArray, delimiter, 0, pointer);
 	}
 
+	@LapsedWith(NEXT_ARDULINK_VERSION_REFACTORING_DONE)
+	@Deprecated // without StreamScanner no more needed
 	public byte[] next(byte[] delimiter) {
 		int delimiterAt = indexOf(delimiter);
 		if (delimiterAt < 0) {

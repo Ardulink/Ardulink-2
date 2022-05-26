@@ -49,7 +49,7 @@ public abstract class StreamReader implements Closeable {
 		this.inputStream = inputStream;
 	}
 
-	@LapsedWith(value = NEXT_ARDULINK_VERSION_REFACTORING_DONE)
+	@LapsedWith(NEXT_ARDULINK_VERSION_REFACTORING_DONE)
 	@Deprecated
 	public void runReaderThread(final byte[] delimiter) {
 		this.thread = new Thread() {
@@ -83,7 +83,7 @@ public abstract class StreamReader implements Closeable {
 		};
 	}
 
-	@LapsedWith(value = NEXT_ARDULINK_VERSION_REFACTORING_DONE)
+	@LapsedWith(NEXT_ARDULINK_VERSION_REFACTORING_DONE)
 	@Deprecated
 	public void readUntilClosed(byte[] delimiter) {
 		this.scanner = new StreamScanner(this.inputStream, delimiter);

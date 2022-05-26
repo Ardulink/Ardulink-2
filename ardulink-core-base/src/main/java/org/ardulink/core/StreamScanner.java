@@ -16,15 +16,19 @@ limitations under the License.
 package org.ardulink.core;
 
 import static org.ardulink.util.Throwables.propagate;
+import static org.ardulink.util.anno.LapsedWith.NEXT_ARDULINK_VERSION_REFACTORING_DONE;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.ardulink.util.ByteArray;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * Scanner for Stream. It returns byte arrays from a stream split by a delimiter.
  */
+@LapsedWith(NEXT_ARDULINK_VERSION_REFACTORING_DONE)
+@Deprecated
 public class StreamScanner {
 
 	private final InputStream inputStream;
