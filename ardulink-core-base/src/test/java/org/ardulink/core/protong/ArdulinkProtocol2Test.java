@@ -21,7 +21,9 @@ import org.ardulink.core.messages.api.FromDeviceMessageReply;
 import org.ardulink.core.proto.api.ProtocolNG;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor.FromDeviceListener;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor.RawListener;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.util.ByteArray;
 import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
 import org.ardulink.util.anno.LapsedWith;
@@ -29,7 +31,7 @@ import org.junit.Test;
 
 public class ArdulinkProtocol2Test {
 
-	private static final class Collector implements FromDeviceListener {
+	private static final class MessageCollector implements FromDeviceListener {
 
 		private final List<FromDeviceMessage> messages = Lists.newArrayList();
 
@@ -43,32 +45,53 @@ public class ArdulinkProtocol2Test {
 		}
 	}
 
+	private static final class RawCollector implements RawListener {
+
+		private final ByteArray bytes = new ByteArray();
+
+		@Override
+		public void handle(byte[] fromDevice) {
+			bytes.append(fromDevice, fromDevice.length);
+		}
+
+		public byte[] getBytes() {
+			return bytes.copy();
+		}
+
+	}
+
+	private final MessageCollector messageCollector = new MessageCollector();
+	private final RawCollector rawCollector = new RawCollector();
+
 	@Test
 	public void canReadAnalogPinViaArdulinkProto() throws IOException {
 		int pin = 42;
 		int value = 21;
-		byte[] bytes = (alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value) + "\n").getBytes();
-		List<FromDeviceMessage> messages = process(new ArdulinkProtocol2(), bytes);
-		assertMessage(messages, analogPin(pin), (Object) value);
+		String message = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value) + "\n";
+		process(new ArdulinkProtocol2(), message);
+		assertMessage(messageCollector.getMessages(), analogPin(pin), (Object) value);
+		assertThat(new String(rawCollector.getBytes()), is(message));
 	}
 
 	@Test
 	public void canReadDigitalPinViaArdulinkProto() throws IOException {
 		int pin = 42;
 		boolean value = true;
-		byte[] bytes = (alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(value) + "\n").getBytes();
-		List<FromDeviceMessage> messages = process(new ArdulinkProtocol2(), bytes);
-		assertMessage(messages, digitalPin(pin), (Object) value);
+		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(value) + "\n";
+		process(new ArdulinkProtocol2(), message);
+		assertMessage(messageCollector.getMessages(), digitalPin(pin), (Object) value);
+		assertThat(new String(rawCollector.getBytes()), is(message));
 	}
 
 	@Test
 	public void canReadRplyViaArdulinkProto() throws IOException {
-		byte[] bytes = "alp://rply/ok?id=1&UniqueID=456-2342-2342&ciao=boo\n".getBytes();
-		List<FromDeviceMessage> messages = process(new ArdulinkProtocol2(), bytes);
-		assertThat(messages.size(), is(1));
-		FromDeviceMessageReply pinStateChanged = (FromDeviceMessageReply) messages.get(0);
+		String message = "alp://rply/ok?id=1&UniqueID=456-2342-2342&ciao=boo" + "\n";
+		process(new ArdulinkProtocol2(), message);
+		assertThat(messageCollector.getMessages().size(), is(1));
+		FromDeviceMessageReply pinStateChanged = (FromDeviceMessageReply) messageCollector.getMessages().get(0);
 		assertThat(pinStateChanged.getParameters(), is((Object) MapBuilder.<String, String>newMapBuilder()
 				.put("UniqueID", "456-2342-2342").put("ciao", "boo").build()));
+		assertThat(new String(rawCollector.getBytes()), is(message));
 	}
 
 	private void assertMessage(List<FromDeviceMessage> messages, Pin pin, Object value) {
@@ -83,16 +106,15 @@ public class ArdulinkProtocol2Test {
 		return (byte) parseInt(string, 2);
 	}
 
-	private List<FromDeviceMessage> process(ProtocolNG protocol, byte[] bytes) throws IOException {
-		InputStream stream = new ByteArrayInputStream(bytes);
-		Collector listener = new Collector();
+	private void process(ProtocolNG protocol, String bytes) throws IOException {
+		InputStream stream = new ByteArrayInputStream(bytes.getBytes());
 		ByteStreamProcessor processor = byteStreamProcessor(protocol);
-		processor.addListener(listener);
+		processor.addListener(messageCollector);
+		processor.addListener(rawCollector);
 
 		processor.process(read(stream, 2));
 		processor.process(read(stream, 5));
 		processor.process(read(stream, stream.available()));
-		return listener.getMessages();
 	}
 
 	private static ByteStreamProcessor byteStreamProcessor(ProtocolNG protocol) {
