@@ -6,6 +6,7 @@ import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -17,6 +18,7 @@ import java.util.List;
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
+import org.ardulink.core.messages.api.FromDeviceMessageReady;
 import org.ardulink.core.messages.api.FromDeviceMessageReply;
 import org.ardulink.core.proto.api.ProtocolNG;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
@@ -68,9 +70,17 @@ public class ArdulinkProtocol2Test {
 		String message = "alp://rply/ok?id=1&UniqueID=456-2342-2342&ciao=boo" + "\n";
 		process(new ArdulinkProtocol2(), message);
 		assertThat(messageCollector.getMessages().size(), is(1));
-		FromDeviceMessageReply pinStateChanged = (FromDeviceMessageReply) messageCollector.getMessages().get(0);
-		assertThat(pinStateChanged.getParameters(), is((Object) MapBuilder.<String, String>newMapBuilder()
+		FromDeviceMessageReply replyMessage = (FromDeviceMessageReply) messageCollector.getMessages().get(0);
+		assertThat(replyMessage.getParameters(), is((Object) MapBuilder.<String, String>newMapBuilder()
 				.put("UniqueID", "456-2342-2342").put("ciao", "boo").build()));
+	}
+	
+	@Test
+	public void canReadReadyViaArdulinkProto() throws IOException {
+		String message = "alp://ready/" + "\n";
+		process(new ArdulinkProtocol2(), message);
+		assertThat(messageCollector.getMessages().size(), is(1));
+		assertThat(messageCollector.getMessages().get(0), instanceOf(FromDeviceMessageReady.class));
 	}
 
 	private void assertMessage(List<FromDeviceMessage> messages, Pin pin, Object value) {

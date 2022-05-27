@@ -203,7 +203,11 @@ public class ArdulinkProtocol2 implements Protocol, ProtocolNG {
 				if (b == '/') {
 					String command = new String(copyOfBuffer());
 					ALPProtocolKey key = ALPProtocolKey.fromString(command).getOrThrow("command %s not known", command);
-					return RPLY.equals(key) ? new WaitingForOkKo() : new WaitingForPin(key);
+					return key.equals(READY) //
+							? new ReadyParsed() //
+							: RPLY.equals(key) //
+									? new WaitingForOkKo() //
+									: new WaitingForPin(key);
 				}
 				bufferAppend(b);
 				return this;
@@ -344,11 +348,22 @@ public class ArdulinkProtocol2 implements Protocol, ProtocolNG {
 
 		private static class CommandParsed extends AbstractState {
 
-			private FromDeviceMessage message;
+			private final FromDeviceMessage message;
 
 			public CommandParsed(FromDeviceMessage message) {
 				this.message = message;
 			}
+
+			@Override
+			public AbstractState process(byte b) {
+				return null;
+			}
+
+		}
+
+		private static class ReadyParsed extends AbstractState {
+
+			public final FromDeviceMessage message = new DefaultFromDeviceMessageReady();
 
 			@Override
 			public AbstractState process(byte b) {
@@ -365,14 +380,15 @@ public class ArdulinkProtocol2 implements Protocol, ProtocolNG {
 				state = new WaitingForAlpPrefix();
 			}
 			state = state.process(b);
-			if (state instanceof CommandParsed) {
+			if (state instanceof ReadyParsed) {
+				fireEvent(((ReadyParsed) state).message);
+			} else if (state instanceof CommandParsed) {
 				fireEvent(((CommandParsed) state).message);
-			}
-			if (state instanceof RplyParsed) {
+			} else if (state instanceof RplyParsed) {
 				fireEvent(((RplyParsed) state).message);
 			}
 		}
-		
+
 		@Override
 		protected void fireEvent(FromDeviceMessage fromDevice) {
 			super.fireEvent(fromDevice);
