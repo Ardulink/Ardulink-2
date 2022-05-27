@@ -25,6 +25,13 @@ import static org.ardulink.core.hamcrest.EventMatchers.eventFor;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
+import static org.ardulink.util.Bytes.concat;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
@@ -34,6 +41,7 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -46,8 +54,11 @@ import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.EventListenerAdapter;
 import org.ardulink.core.events.FilteredEventListenerAdapter;
 import org.ardulink.core.events.PinValueChangedEvent;
-import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.util.Joiner;
+import org.ardulink.util.Lists;
+import org.ardulink.util.anno.LapsedWith;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -67,32 +78,31 @@ public class ConnectionBasedLinkTest {
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
 
-	private static final Protocol proto = ArdulinkProtocol2.instance();
-
 	// TODO PF Migrate to @Rule Arduino
 	private PipedOutputStream arduinosOutputStream;
 	private final ByteArrayOutputStream os = new ByteArrayOutputStream();
 	private Connection connection;
-	private ConnectionBasedLink link;
-	private final AtomicInteger bytesRead = new AtomicInteger();
+	private ConnectionBasedLinkNG link;
+	private final AtomicInteger bytesNotYetRead = new AtomicInteger();
 
 	@Before
 	public void setup() throws IOException {
 		PipedInputStream pis = new PipedInputStream();
 		this.arduinosOutputStream = new PipedOutputStream(pis);
-		this.connection = new StreamConnection(pis, os, proto);
-		this.link = new ConnectionBasedLink(connection, proto) {
+		ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
+		this.connection = new StreamConnection(pis, os, byteStreamProcessor);
+		this.connection.addListener(new ListenerAdapter() {
 			@Override
-			protected void received(byte[] bytes) {
-				super.received(bytes);
-				ConnectionBasedLinkTest.this.bytesRead.addAndGet(bytes.length);
+			public void received(byte[] bytes) throws IOException {
+				ConnectionBasedLinkTest.this.bytesNotYetRead.addAndGet(-bytes.length);
 			}
-		};
+		});
+		this.link = new ConnectionBasedLinkNG(connection, byteStreamProcessor);
 	}
 
 	@After
 	public void tearDown() throws IOException {
-		if(this.link != null) {
+		if (this.link != null) {
 			this.link.close();
 		}
 	}
@@ -102,43 +112,36 @@ public class ConnectionBasedLinkTest {
 		int pin = anyPositive(int.class);
 		int value = anyPositive(int.class);
 		this.link.switchAnalogPin(analogPin(pin), value);
-		assertThat(toArduinoWasSent(), is("alp://ppin/" + pin + "/" + value
-				+ new String(proto.getSeparator())));
+		assertToArduinoWasSent(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(pin).withValue(value));
 	}
 
 	@Test
 	public void canSendDigitalValue() throws IOException {
 		int pin = anyPositive(int.class);
 		this.link.switchDigitalPin(digitalPin(pin), true);
-		assertThat(toArduinoWasSent(), is("alp://ppsw/" + pin + "/1\n"));
+		assertToArduinoWasSent(alpProtocolMessage(POWER_PIN_SWITCH).forPin(pin).withState(true));
 	}
 
 	@Test
-	public void doesSendStartListeningAnalogCommangToArduino()
-			throws IOException {
+	public void doesSendStartListeningAnalogCommangToArduino() throws IOException {
 		int pin = anyPositive(int.class);
-		this.link.addListener(new FilteredEventListenerAdapter(analogPin(pin),
-				null));
-		assertThat(toArduinoWasSent(), is("alp://srla/" + pin
-				+ new String(proto.getSeparator())));
+		this.link.addListener(new FilteredEventListenerAdapter(analogPin(pin), null));
+		assertToArduinoWasSent(alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin).withoutValue());
 	}
 
 	@Test
-	public void doesSendStopListeningAnalogCommangToArduino()
-			throws IOException {
+	public void doesSendStopListeningAnalogCommangToArduino() throws IOException {
 		int pin = anyPositive(int.class);
-		FilteredEventListenerAdapter l1 = new FilteredEventListenerAdapter(
-				analogPin(pin), null);
-		FilteredEventListenerAdapter l2 = new FilteredEventListenerAdapter(
-				analogPin(pin), null);
+		FilteredEventListenerAdapter l1 = new FilteredEventListenerAdapter(analogPin(pin), null);
+		FilteredEventListenerAdapter l2 = new FilteredEventListenerAdapter(analogPin(pin), null);
 		this.link.addListener(l1);
 		this.link.addListener(l2);
-		String m1 = "alp://srla/" + pin + new String(proto.getSeparator());
-		assertThat(toArduinoWasSent(), is(m1 + m1));
+		String m1 = alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin).withoutValue();
+		assertToArduinoWasSent(m1, m1);
 		this.link.removeListener(l1);
 		this.link.removeListener(l2);
-		String m2 = "alp://spla/" + pin + new String(proto.getSeparator());
-		assertThat(toArduinoWasSent(), is(m1 + m1 + m2));
+		String m2 = alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(pin).withoutValue();
+		assertToArduinoWasSent(m1, m1, m2);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -154,22 +157,17 @@ public class ConnectionBasedLinkTest {
 		this.link.addListener(listener);
 		int pin = anyPositive(int.class);
 		int value = anyPositive(int.class);
-		String message = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin)
-				.withValue(value);
-		simulateArdunoSend(message);
-		waitUntilRead(this.bytesRead, message.length());
-		assertThat(analogEvents,
-				hasItems(eventFor(analogPin(pin)).withValue(value)));
+		String message = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value);
+		simulateArduinoSend(message);
+		waitUntilRead();
+		assertThat(analogEvents, hasItems(eventFor(analogPin(pin)).withValue(value)));
 	}
 
 	@Test
-	public void doesSendStartListeningDigitalCommangToArduino()
-			throws IOException {
+	public void doesSendStartListeningDigitalCommangToArduino() throws IOException {
 		int pin = anyPositive(int.class);
-		this.link.addListener(new FilteredEventListenerAdapter(digitalPin(pin),
-				null));
-		assertThat(toArduinoWasSent(), is("alp://srld/" + pin
-				+ new String(proto.getSeparator())));
+		this.link.addListener(new FilteredEventListenerAdapter(digitalPin(pin), null));
+		assertToArduinoWasSent(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(pin).withoutValue());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -184,12 +182,10 @@ public class ConnectionBasedLinkTest {
 		};
 		this.link.addListener(listener);
 		int pin = anyPositive(int.class);
-		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin)
-				.withState(true);
-		simulateArdunoSend(message);
-		waitUntilRead(this.bytesRead, message.length());
-		assertThat(digitalEvents,
-				hasItems(eventFor(digitalPin(pin)).withValue(true)));
+		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
+		simulateArduinoSend(message);
+		waitUntilRead();
+		assertThat(digitalEvents, hasItems(eventFor(digitalPin(pin)).withValue(true)));
 	}
 
 	@Test
@@ -202,12 +198,10 @@ public class ConnectionBasedLinkTest {
 				digitalEvents.add(event);
 			}
 		};
-		this.link.addListener(new FilteredEventListenerAdapter(
-				digitalPin(anyOtherPin(pin)), listener));
-		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin)
-				.withState(true);
-		simulateArdunoSend(message);
-		waitUntilRead(this.bytesRead, message.length());
+		this.link.addListener(new FilteredEventListenerAdapter(digitalPin(anyOtherPin(pin)), listener));
+		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
+		simulateArduinoSend(message);
+		waitUntilRead();
 		List<DigitalPinValueChangedEvent> emptyList = Collections.emptyList();
 		assertThat(digitalEvents, is(emptyList));
 	}
@@ -215,45 +209,43 @@ public class ConnectionBasedLinkTest {
 	@Test
 	public void canSendKbdEvents() throws IOException {
 		this.link.sendKeyPressEvent('#', 1, 2, 3, 4);
-		assertThat(toArduinoWasSent(), is("alp://kprs/chr#cod1loc2mod3mex4\n"));
+		assertToArduinoWasSent("alp://kprs/chr#cod1loc2mod3mex4");
 	}
 
 	@Test
 	public void canSendToneWithDuration() throws IOException {
-		this.link.sendTone(Tone.forPin(analogPin(2)).withHertz(3000)
-				.withDuration(5, SECONDS));
-		assertThat(toArduinoWasSent(), is("alp://tone/2/3000/5000\n"));
+		this.link.sendTone(Tone.forPin(analogPin(2)).withHertz(3000).withDuration(5, SECONDS));
+		assertToArduinoWasSent("alp://tone/2/3000/5000");
 	}
 
 	@Test
 	public void canSendEndlessTone() throws IOException {
 		this.link.sendTone(Tone.forPin(analogPin(2)).withHertz(3000).endless());
-		assertThat(toArduinoWasSent(), is("alp://tone/2/3000/-1\n"));
+		assertToArduinoWasSent("alp://tone/2/3000/-1");
 	}
 
 	@Test
 	public void canSendNoTone() throws IOException {
 		this.link.sendNoTone(analogPin(5));
-		assertThat(toArduinoWasSent(), is("alp://notn/5\n"));
+		assertToArduinoWasSent("alp://notn/5");
 	}
 
 	@Test
 	public void canSendCustomMessageSingleValue() throws IOException {
 		String message = "myMessage";
 		this.link.sendCustomMessage(message);
-		assertThat(toArduinoWasSent(), is("alp://cust/" + message + "\n"));
+		assertToArduinoWasSent("alp://cust/" + message);
 	}
 
 	@Test
 	public void canSendCustomMessageMultiValue() throws IOException {
 		this.link.sendCustomMessage("1", "2", "3");
-		assertThat(toArduinoWasSent(), is("alp://cust/1/2/3\n"));
+		assertToArduinoWasSent("alp://cust/1/2/3");
 	}
 
 	@Test
 	public void canReadRawMessagesRead() throws IOException {
-		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(
-				anyPositive(int.class)).withState(true);
+		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(anyPositive(int.class)).withState(true);
 		final StringBuilder sb = new StringBuilder();
 		this.connection.addListener(new ListenerAdapter() {
 			@Override
@@ -261,9 +253,9 @@ public class ConnectionBasedLinkTest {
 				sb.append(new String(bytes));
 			}
 		});
-		simulateArdunoSend(message);
-		waitUntilRead(this.bytesRead, message.length());
-		assertThat(sb.toString(), is(message));
+		simulateArduinoSend(message);
+		waitUntilRead();
+		assertThat(sb.toString(), is(message + "\n"));
 	}
 
 	@Test
@@ -278,8 +270,7 @@ public class ConnectionBasedLinkTest {
 		int pin = anyPositive(int.class);
 		int value = anyPositive(int.class);
 		this.link.switchAnalogPin(analogPin(pin), value);
-		assertThat(sb.toString(), is("alp://ppin/" + pin + "/" + value
-				+ new String(proto.getSeparator())));
+		assertThat(sb.toString(), is(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(pin).withValue(value) + "\n"));
 	}
 
 	@Test
@@ -295,39 +286,35 @@ public class ConnectionBasedLinkTest {
 				throw new IllegalStateException("Listener tries to inference");
 			}
 		});
-		final StringBuilder sb = new StringBuilder();
+		final List<String> events = Lists.newArrayList();
 		this.link.addListener(new EventListener() {
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
-				sb.append("AnalogPinValueChangedEvent, ");
+				events.add("AnalogPinValueChangedEvent");
 			}
 
 			@Override
 			public void stateChanged(DigitalPinValueChangedEvent event) {
-				sb.append("DigitalPinValueChangedEvent");
+				events.add("DigitalPinValueChangedEvent");
 			}
 		});
 		int pin = anyPositive(int.class);
-		String m1 = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withState(
-				true);
-		String m2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(
-				true);
-		simulateArdunoSend(m1);
-		simulateArdunoSend(m2);
-		waitUntilRead(this.bytesRead, m1.length() + m2.length());
-		assertThat(sb.toString(),
-				is("AnalogPinValueChangedEvent, DigitalPinValueChangedEvent"));
+		String m1 = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(42);
+		String m2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
+		simulateArduinoSend(m1);
+		simulateArduinoSend(m2);
+		waitUntilRead();
+		assertThat(Joiner.on(",").join(events), is("AnalogPinValueChangedEvent,DigitalPinValueChangedEvent"));
 	}
 
 	@Test
 	public void unparseableInput() throws IOException {
 		String m1 = "eXTRaoRdINARy dATa";
-		simulateArdunoSend(m1);
-		String m2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(
-				anyPositive(int.class)).withState(true);
-		simulateArdunoSend(m2);
-		simulateArdunoSend(m2);
-		waitUntilRead(this.bytesRead, 2 * m2.length());
+		simulateArduinoSend(m1);
+		String m2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(anyPositive(int.class)).withState(true);
+		simulateArduinoSend(m2);
+		simulateArduinoSend(m2);
+		waitUntilRead();
 	}
 
 	@Test
@@ -345,8 +332,7 @@ public class ConnectionBasedLinkTest {
 			}
 		});
 		this.link.close();
-		this.link.switchAnalogPin(analogPin(anyPositive(int.class)),
-				anyPositive(int.class));
+		this.link.switchAnalogPin(analogPin(anyPositive(int.class)), anyPositive(int.class));
 		assertThat(sb.toString(), is(""));
 	}
 
@@ -358,17 +344,27 @@ public class ConnectionBasedLinkTest {
 		return pin + 1;
 	}
 
-	private void simulateArdunoSend(String message) throws IOException {
-		this.arduinosOutputStream.write((message).getBytes());
-		this.arduinosOutputStream.write(proto.getSeparator());
+	private void simulateArduinoSend(String message) throws IOException {
+		this.arduinosOutputStream.write(message.getBytes());
+		this.arduinosOutputStream.write('\n');
+		this.bytesNotYetRead.addAndGet(message.getBytes().length + 1);
+	}
+
+	private void assertToArduinoWasSent(String... messages) {
+		assertToArduinoWasSent(Joiner.on("\n").join(Arrays.asList(messages)));
+	}
+
+	private void assertToArduinoWasSent(String message) {
+		assertThat(toArduinoWasSent(), is(message + "\n"));
 	}
 
 	private String toArduinoWasSent() {
 		return this.os.toString();
 	}
 
-	private static void waitUntilRead(AtomicInteger completed, int toRead) {
-		while (completed.get() < toRead) {
+	@LapsedWith(value = JDK8, module = "Awaitility")
+	private void waitUntilRead() {
+		while (bytesNotYetRead.get() > 0) {
 			try {
 				MILLISECONDS.sleep(10);
 			} catch (InterruptedException e) {
