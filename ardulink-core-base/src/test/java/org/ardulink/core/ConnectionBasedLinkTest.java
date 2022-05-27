@@ -16,7 +16,6 @@ limitations under the License.
 
 package org.ardulink.core;
 
-import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
@@ -30,7 +29,6 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_P
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
-import static org.ardulink.util.Bytes.concat;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -44,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.ardulink.core.Connection.ListenerAdapter;
@@ -299,7 +296,7 @@ public class ConnectionBasedLinkTest {
 			}
 		});
 		int pin = anyPositive(int.class);
-		String m1 = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(42);
+		String m1 = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(anyOtherValueThan(pin));
 		String m2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
 		simulateArduinoSend(m1);
 		simulateArduinoSend(m2);
@@ -337,11 +334,15 @@ public class ConnectionBasedLinkTest {
 	}
 
 	private int anyPositive(Class<? extends Number> numClass) {
-		return new Random(System.currentTimeMillis()).nextInt(MAX_VALUE);
+		return 42;
 	}
 
 	private int anyOtherPin(int pin) {
-		return pin + 1;
+		return anyOtherValueThan(pin);
+	}
+
+	private int anyOtherValueThan(int value) {
+		return value + 1;
 	}
 
 	private void simulateArduinoSend(String message) throws IOException {
