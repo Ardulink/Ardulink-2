@@ -372,6 +372,12 @@ public class ArdulinkProtocol2 implements Protocol, ProtocolNG {
 				fireEvent(((RplyParsed) state).message);
 			}
 		}
+		
+		@Override
+		protected void fireEvent(FromDeviceMessage fromDevice) {
+			super.fireEvent(fromDevice);
+			state = null;
+		}
 
 		// -- out
 

@@ -121,8 +121,6 @@ public abstract class StreamReader implements Closeable {
 			}
 		} catch (Exception e) {
 			logger.error("Error while Reader Initialization", e);
-		} finally {
-			scanner.close();
 		}
 	}
 
