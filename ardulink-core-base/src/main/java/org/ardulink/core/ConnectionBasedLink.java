@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.ardulink.core.Connection.Listener;
 import org.ardulink.core.Connection.ListenerAdapter;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
@@ -68,6 +69,7 @@ import org.slf4j.LoggerFactory;
  * [adsense]
  *
  */
+@Deprecated
 public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 
 	private static final Logger logger = LoggerFactory
@@ -89,8 +91,16 @@ public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 		});
 	}
 
+	/**
+	 * @deprecated migrate to addRawListener
+	 */
+	@Deprecated
 	public Connection getConnection() {
 		return this.connection;
+	}
+	
+	public void addRawListener(Listener rawListener) {
+		this.connection.addListener(rawListener);
 	}
 
 	public Protocol getProtocol() {
@@ -318,6 +328,12 @@ public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 		deregisterAllEventListeners();
 		this.connection.close();
 		super.close();
+	}
+
+	@Override
+	public void write(byte[] bytes) throws IOException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

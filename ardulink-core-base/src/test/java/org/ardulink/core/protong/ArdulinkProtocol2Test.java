@@ -51,7 +51,7 @@ public class ArdulinkProtocol2Test {
 	public void canReadAnalogPinViaArdulinkProto() throws IOException {
 		int pin = 42;
 		int value = 21;
-		String message = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value) + "\n";
+		String message = lf(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
 		process(new ArdulinkProtocol2(), message);
 		assertMessage(messageCollector.getMessages(), analogPin(pin), (Object) value);
 	}
@@ -60,14 +60,14 @@ public class ArdulinkProtocol2Test {
 	public void canReadDigitalPinViaArdulinkProto() throws IOException {
 		int pin = 42;
 		boolean value = true;
-		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(value) + "\n";
+		String message = lf(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(value));
 		process(new ArdulinkProtocol2(), message);
 		assertMessage(messageCollector.getMessages(), digitalPin(pin), (Object) value);
 	}
 
 	@Test
 	public void canReadRplyViaArdulinkProto() throws IOException {
-		String message = "alp://rply/ok?id=1&UniqueID=456-2342-2342&ciao=boo" + "\n";
+		String message = lf("alp://rply/ok?id=1&UniqueID=456-2342-2342&ciao=boo");
 		process(new ArdulinkProtocol2(), message);
 		assertThat(messageCollector.getMessages().size(), is(1));
 		FromDeviceMessageReply replyMessage = (FromDeviceMessageReply) messageCollector.getMessages().get(0);
@@ -77,7 +77,15 @@ public class ArdulinkProtocol2Test {
 	
 	@Test
 	public void canReadReadyViaArdulinkProto() throws IOException {
-		String message = "alp://ready/" + "\n";
+		String message = lf("alp://ready/");
+		process(new ArdulinkProtocol2(), message);
+		assertThat(messageCollector.getMessages().size(), is(1));
+		assertThat(messageCollector.getMessages().get(0), instanceOf(FromDeviceMessageReady.class));
+	}
+
+	@Test
+	public void doesRecoverFromMisformedContent() throws IOException {
+		String message = lf("alp://XXXXXreadyXXXXX/") + lf("alp://ready/");
 		process(new ArdulinkProtocol2(), message);
 		assertThat(messageCollector.getMessages().size(), is(1));
 		assertThat(messageCollector.getMessages().get(0), instanceOf(FromDeviceMessageReady.class));
@@ -113,6 +121,10 @@ public class ArdulinkProtocol2Test {
 		byte[] bytes = new byte[length];
 		stream.read(bytes);
 		return bytes;
+	}
+	
+	private static String lf(String string) {
+		return string + "\n";
 	}
 
 }

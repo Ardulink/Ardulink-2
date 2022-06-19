@@ -137,8 +137,8 @@ public class QosLink implements Link {
 
 	private ResponseAwaiter newAwaiter() throws IOException {
 		ResponseAwaiter awaiter = onLink(delegate);
-		return timeout != NO_TIMEOUT && timeUnit != NO_TIMEOUT_UNIT ? awaiter
-				.withTimeout(timeout, timeUnit) : awaiter;
+		return timeout == NO_TIMEOUT || timeUnit == NO_TIMEOUT_UNIT ? awaiter : awaiter
+				.withTimeout(timeout, timeUnit);
 	}
 
 	private long extractId(RplyEvent rplyEvent) {

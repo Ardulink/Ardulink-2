@@ -63,7 +63,7 @@ public class StreamConnection extends AbstractConnection {
 		this.outputStream = outputStream;
 		this.streamReader = new StreamReader(inputStream) {
 			@Override
-			protected void received(byte[] bytes) throws Exception {
+			protected void received(byte[] bytes) throws Exception { 
 				fireReceived(bytes);
 			}
 		};

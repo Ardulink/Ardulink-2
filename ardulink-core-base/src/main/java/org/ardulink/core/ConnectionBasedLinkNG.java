@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.ardulink.core.Connection.Listener;
 import org.ardulink.core.Connection.ListenerAdapter;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
@@ -56,6 +57,7 @@ import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageTone;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor.FromDeviceListener;
 import org.ardulink.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,10 +79,12 @@ public class ConnectionBasedLinkNG extends AbstractListenerLink implements CBL {
 	private long messageId = 0;
 	private boolean readyMsgReceived;
 
+	// TODO change arg0 to StreamConnection, StreamConnection then can offer #getConnection().getByteStreamProcessor() so arg1 here can be purged
+	// Alternative: Split ByteStreamProcessor into Sender/Receiver part
 	public ConnectionBasedLinkNG(Connection connection, ByteStreamProcessor byteStreamProcessor) {
 		this.connection = connection;
 		this.byteStreamProcessor = byteStreamProcessor;
-		this.byteStreamProcessor.addListener(new ByteStreamProcessor.FromDeviceListener() {
+		this.byteStreamProcessor.addListener(new FromDeviceListener() {
 			@Override
 			public void handle(FromDeviceMessage fromDevice) {
 				ConnectionBasedLinkNG.this.received(fromDevice);
@@ -88,8 +92,14 @@ public class ConnectionBasedLinkNG extends AbstractListenerLink implements CBL {
 		});
 	}
 
-	public Connection getConnection() {
-		return this.connection;
+	@Override
+	public void addRawListener(Listener rawListener) {
+		this.connection.addListener(rawListener);
+	}
+
+	@Override
+	public void write(byte[] bytes) throws IOException {
+		this.connection.write(bytes);
 	}
 
 	protected void received(FromDeviceMessage fromDevice) {

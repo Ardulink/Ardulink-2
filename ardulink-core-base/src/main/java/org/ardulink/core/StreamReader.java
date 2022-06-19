@@ -83,6 +83,22 @@ public abstract class StreamReader implements Closeable {
 		};
 	}
 
+	public void runReaderThread() {
+		this.thread = new Thread() {
+			
+			{
+				setDaemon(true);
+				start();
+			}
+			
+			@Override
+			public void run() {
+				readUntilClosed();
+			}
+			
+		};
+	}
+
 	@LapsedWith(NEXT_ARDULINK_VERSION_REFACTORING_DONE)
 	@Deprecated
 	public void readUntilClosed(byte[] delimiter) {
@@ -104,6 +120,21 @@ public abstract class StreamReader implements Closeable {
 			logger.error("Error while Reader Initialization", e);
 		} finally {
 			scanner.close();
+		}
+	}
+
+	public void readUntilClosed() {
+		try {
+			int read;
+			while ((read = inputStream.read()) != -1 && !isInterrupted()) {
+				try {
+					received(new byte[] { (byte) read });
+				} catch (Exception e) {
+					logger.error("Error while retrieving data", e);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Error while Reader Initialization", e);
 		}
 	}
 

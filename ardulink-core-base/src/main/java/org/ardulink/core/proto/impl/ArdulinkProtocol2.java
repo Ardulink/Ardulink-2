@@ -71,6 +71,7 @@ import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 import org.ardulink.util.Bytes;
 import org.ardulink.util.MapBuilder;
+import org.ardulink.util.Optional;
 import org.ardulink.util.URIs;
 
 /**
@@ -202,7 +203,11 @@ public class ArdulinkProtocol2 implements Protocol, ProtocolNG {
 			public AbstractState process(byte b) {
 				if (b == '/') {
 					String command = new String(copyOfBuffer());
-					ALPProtocolKey key = ALPProtocolKey.fromString(command).getOrThrow("command %s not known", command);
+					Optional<ALPProtocolKey> optional = ALPProtocolKey.fromString(command);
+					if (!optional.isPresent()) {
+						return new WaitingForAlpPrefix();
+					}
+					ALPProtocolKey key = optional.get();
 					return key.equals(READY) //
 							? new ReadyParsed() //
 							: RPLY.equals(key) //

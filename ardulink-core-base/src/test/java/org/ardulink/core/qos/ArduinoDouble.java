@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.qos;
 
+import static org.ardulink.util.Bytes.concat;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.io.Closeable;
@@ -28,11 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.ardulink.util.Lists;
 import org.ardulink.core.StreamReader;
-import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.util.Lists;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -43,9 +41,6 @@ import org.ardulink.core.proto.api.Protocol;
  *
  */
 public class ArduinoDouble implements Closeable {
-
-	private final static Logger logger = LoggerFactory
-			.getLogger(ArduinoDouble.class);
 
 	interface ReponseGenerator {
 
@@ -153,46 +148,42 @@ public class ArduinoDouble implements Closeable {
 
 	}
 
-	private final Protocol protocol;
 	private final List<ReponseGenerator> data = Lists.newArrayList();
 	private final PipedInputStream is2;
 	private final PipedOutputStream os1;
 	private StreamReader streamReader;
 	private PipedOutputStream os2;
 
-	public ArduinoDouble(final Protocol protocol) throws IOException {
-		this.protocol = protocol;
+	public ArduinoDouble() throws IOException {
 		PipedInputStream is1 = new PipedInputStream();
 		os1 = new PipedOutputStream(is1);
 		is2 = new PipedInputStream();
 
 		os2 = new PipedOutputStream(is2);
 		streamReader = new StreamReader(is1) {
+			
+			private byte[] bytes = new byte[0];
+			
 			@Override
 			protected void received(byte[] bytes) throws Exception {
-				String received = new String(bytes);
-				logger.info("Received {}", received);
-
+				this.bytes = concat(this.bytes, bytes);
 				for (ReponseGenerator generator : data) {
+					String received = new String(this.bytes);
 					if (generator.matches(received)) {
 						String response = generator.getResponse();
-						logger.info("Responding {}", response);
 						send(response);
 						os2.flush();
-					} else {
-						logger.warn("No responder for {}", received);
 					}
 				}
 
 			}
 
 		};
-		streamReader.runReaderThread(protocol.getSeparator());
+		streamReader.runReaderThread();
 	}
 
 	public void send(String message) throws IOException {
 		os2.write(message.getBytes());
-		os2.write(protocol.getSeparator());
 	}
 
 	public PipedOutputStream getOutputStream() {

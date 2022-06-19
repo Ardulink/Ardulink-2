@@ -1,16 +1,15 @@
 package org.ardulink.connection.proxy;
 
-import static java.lang.Integer.MAX_VALUE;
 import static java.util.Collections.singletonList;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -23,13 +22,15 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.ardulink.connection.proxy.NetworkProxyServer.StartCommand;
 import org.ardulink.core.Connection;
-import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.ConnectionBasedLinkNG;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.proxy.ProxyLinkConfig;
 import org.ardulink.core.proxy.ProxyLinkFactory;
+import org.ardulink.util.anno.LapsedWith;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,9 +43,35 @@ public class NetworkProxyServerTest {
 	@Rule
 	public Timeout timeout = new Timeout(15, SECONDS);
 
-	private final Connection proxySideConnection = mock(Connection.class);
+	private final StringBuilder proxySideReceived = new StringBuilder(); 
+	private final Connection proxySideConnection = new Connection() {
 
-	private ConnectionBasedLink clientSideLink;
+		@Override
+		public void close() throws IOException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void write(byte[] bytes) throws IOException {
+			proxySideReceived.append(new String(bytes));
+		}
+
+		@Override
+		public void addListener(Listener listener) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void removeListener(Listener listener) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	};
+
+	private ConnectionBasedLinkNG clientSideLink;
 
 	@Before
 	public void setup() throws InterruptedException, UnknownHostException, IOException {
@@ -54,22 +81,25 @@ public class NetworkProxyServerTest {
 	}
 
 	@Test
-	public void proxyServerDoesReceiveMessagesSentByClient() throws IOException {
+	public void proxyServerDoesReceiveMessagesSentByClient() throws Exception {
 		int times = 3;
 		for (int i = 0; i < times; i++) {
 			this.clientSideLink.switchAnalogPin(analogPin(1), 2);
 		}
 
-		String expectedMsg = alpProtocolMessage(POWER_PIN_INTENSITY).forPin(1).withValue(2)
-				+ new String(ArdulinkProtocol2.instance().getSeparator());
-		assertReceived(expectedMsg, times);
+		String message = alpProtocolMessage(POWER_PIN_INTENSITY).forPin(1).withValue(2)
+				+ "\n";
+		assertReceived(message+message+message, times);
 	}
 
-	private void assertReceived(String expectedMsg, int times) throws IOException {
-		verify(this.proxySideConnection, timeout(MAX_VALUE).times(times)).write(expectedMsg.getBytes());
+	@LapsedWith(value = JDK8, module = "Awaitility")
+	private void assertReceived(String expectedMsg, int times) throws Exception {
+		while (!proxySideReceived.toString().equals(expectedMsg)) {
+			MILLISECONDS.sleep(50);
+		}
 	}
 
-	private ConnectionBasedLink clientLinkToServer(String hostname, int port) throws UnknownHostException, IOException {
+	private ConnectionBasedLinkNG clientLinkToServer(String hostname, int port) throws UnknownHostException, IOException {
 		// TODO PF use Links?
 		// Links.getLink(URIs.newURI(String.format("ardulink://proxy?tcphost=%s&tcpport=%s&port=%s",
 		// hostname, port, "someNonNullPort")));
@@ -124,8 +154,9 @@ public class NetworkProxyServerTest {
 								when(configurer.newLink()).then(new Answer<Link>() {
 									@Override
 									public Link answer(InvocationOnMock invocation) {
-										return new ConnectionBasedLink(proxySideConnection,
-												ArdulinkProtocol2.instance());
+										ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2()
+												.newByteStreamProcessor();
+										return new ConnectionBasedLinkNG(proxySideConnection, byteStreamProcessor);
 									}
 								});
 								return configurer;

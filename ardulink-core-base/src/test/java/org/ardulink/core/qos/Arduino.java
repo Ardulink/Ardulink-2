@@ -24,12 +24,10 @@ import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.junit.rules.ExternalResource;
-import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.qos.ArduinoDouble.Adder;
 import org.ardulink.core.qos.ArduinoDouble.RegexAdder;
 import org.ardulink.core.qos.ArduinoDouble.WaitThenDoBuilder;
+import org.junit.rules.ExternalResource;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -44,20 +42,16 @@ public class Arduino extends ExternalResource {
 	private final ArduinoDouble arduinoDouble;
 
 	public static Arduino newArduino() {
-		return newArduino(ArdulinkProtocol2.instance());
+		return new Arduino();
 	}
 
-	public static Arduino newArduino(Protocol protocol) {
-		return new Arduino(protocol);
+	public Arduino() {
+		this.arduinoDouble = createArduinoDouble();
 	}
 
-	public Arduino(Protocol protocol) {
-		this.arduinoDouble = createArduinoDouble(protocol);
-	}
-
-	private ArduinoDouble createArduinoDouble(Protocol protocol) {
+	private ArduinoDouble createArduinoDouble() {
 		try {
-			return new ArduinoDouble(protocol);
+			return new ArduinoDouble();
 		} catch (IOException e) {
 			throw propagate(e);
 		}
