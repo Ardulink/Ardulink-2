@@ -22,7 +22,7 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 
 import org.ardulink.core.Connection;
-import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.ConnectionBasedLinkNG;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
@@ -94,10 +94,8 @@ public class DataReceiver {
 			link.startListening(digitalPin(digital));
 		}
 
-		if (verbose && link instanceof ConnectionBasedLink) {
-			Connection connection = ((ConnectionBasedLink) link)
-					.getConnection();
-			connection.addListener(rawDataListener());
+		if (verbose && link instanceof ConnectionBasedLinkNG) {
+			((ConnectionBasedLinkNG) link).addRawListener(rawDataListener());
 		}
 	}
 

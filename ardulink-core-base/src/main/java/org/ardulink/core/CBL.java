@@ -15,6 +15,8 @@ public interface CBL {
 
 	void addRawListener(Listener rawListener);
 
+	void removeRawListener(Listener rawListener);
+
 	void write(byte[] bytes) throws IOException;
 	
 	boolean waitForArduinoToBoot(int waitsecs, TimeUnit timeUnit);

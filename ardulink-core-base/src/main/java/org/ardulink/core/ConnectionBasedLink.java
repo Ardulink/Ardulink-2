@@ -92,7 +92,7 @@ public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 	}
 
 	/**
-	 * @deprecated migrate to addRawListener
+	 * @deprecated migrate to addRawListener/removeRawListener/write
 	 */
 	@Deprecated
 	public Connection getConnection() {
@@ -101,6 +101,10 @@ public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 	
 	public void addRawListener(Listener rawListener) {
 		this.connection.addListener(rawListener);
+	}
+
+	public void removeRawListener(Listener rawListener) {
+		this.connection.removeListener(rawListener);
 	}
 
 	public Protocol getProtocol() {

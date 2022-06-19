@@ -36,10 +36,8 @@ public class DigisparkLinkFactory implements LinkFactory<DigisparkLinkConfig> {
 	public AbstractListenerLink newLink(DigisparkLinkConfig config)
 			throws IOException {
 		Protocol proto = config.getProto();
-		return proto instanceof ProtocolNG
-				? new ConnectionBasedLinkNG(new DigisparkConnection(config),
-						((ProtocolNG) proto).newByteStreamProcessor())
-				: new ConnectionBasedLink(new DigisparkConnection(config), proto);
+		return new ConnectionBasedLinkNG(new DigisparkConnection(config),
+				((ProtocolNG) proto).newByteStreamProcessor());
 	}
 
 	@Override

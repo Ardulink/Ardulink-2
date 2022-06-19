@@ -20,28 +20,15 @@ import static javax.bluetooth.ServiceRecord.NOAUTHENTICATE_NOENCRYPT;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
-import javax.bluetooth.BluetoothStateException;
-import javax.bluetooth.DataElement;
-import javax.bluetooth.DeviceClass;
-import javax.bluetooth.DiscoveryAgent;
-import javax.bluetooth.DiscoveryListener;
-import javax.bluetooth.LocalDevice;
-import javax.bluetooth.RemoteDevice;
 import javax.bluetooth.ServiceRecord;
-import javax.bluetooth.UUID;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnectionNotifier;
 
-import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.ConnectionBasedLinkNG;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
@@ -54,7 +41,6 @@ import org.ardulink.core.proto.impl.ArdulinkProtocol2;
  */
 public class BluetoothLinkFactory implements LinkFactory<BluetoothLinkConfig> {
 
-	private final Protocol proto = ArdulinkProtocol2.instance();
 
 	@Override
 	public String getName() {
@@ -62,16 +48,17 @@ public class BluetoothLinkFactory implements LinkFactory<BluetoothLinkConfig> {
 	}
 
 	@Override
-	public ConnectionBasedLink newLink(BluetoothLinkConfig config)
+	public ConnectionBasedLinkNG newLink(BluetoothLinkConfig config)
 			throws IOException {
 		String url = getURL(config);
 		checkState(url != null,
 				"The connection could not be made. Connection url not found");
 		javax.microedition.io.StreamConnection streamConnection = getStreamConnection(Connector
 				.open(url));
-		return new ConnectionBasedLink(new StreamConnection(
+		ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
+		return new ConnectionBasedLinkNG(new StreamConnection(
 				streamConnection.openInputStream(),
-				streamConnection.openOutputStream(), proto), proto);
+				streamConnection.openOutputStream(), byteStreamProcessor), byteStreamProcessor);
 	}
 
 	public String getURL(BluetoothLinkConfig config) {

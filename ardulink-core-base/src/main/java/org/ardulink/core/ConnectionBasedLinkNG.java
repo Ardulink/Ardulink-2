@@ -96,6 +96,11 @@ public class ConnectionBasedLinkNG extends AbstractListenerLink implements CBL {
 	public void addRawListener(Listener rawListener) {
 		this.connection.addListener(rawListener);
 	}
+	
+	@Override
+	public void removeRawListener(Listener rawListener) {
+		this.connection.removeListener(rawListener);
+	}
 
 	@Override
 	public void write(byte[] bytes) throws IOException {

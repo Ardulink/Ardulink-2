@@ -36,15 +36,12 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
-import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.ConnectionBasedLinkNG;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.gui.connectionpanel.ConnectionPanel;
 import org.ardulink.gui.customcomponents.SignalButton;
-import org.ardulink.gui.facility.LAFUtil;
 import org.ardulink.legacy.Link;
 import org.ardulink.legacy.Link.LegacyLinkAdapter;
 import org.ardulink.util.Lists;
@@ -237,12 +234,12 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 	@Override
 	public void setLink(Link link) {
 		org.ardulink.core.Link delegate = link.getDelegate();
-		if (delegate instanceof ConnectionBasedLink) {
-			((ConnectionBasedLink) delegate).removeConnectionListener(this);
+		if (delegate instanceof ConnectionBasedLinkNG) {
+			((ConnectionBasedLinkNG) delegate).removeConnectionListener(this);
 		}
 		this.link = link;
-		if (delegate instanceof ConnectionBasedLink) {
-			((ConnectionBasedLink) delegate).addConnectionListener(this);
+		if (delegate instanceof ConnectionBasedLinkNG) {
+			((ConnectionBasedLinkNG) delegate).addConnectionListener(this);
 		} else {
 			if(link == null || link == Link.NO_LINK) {
 				connectionLost();
