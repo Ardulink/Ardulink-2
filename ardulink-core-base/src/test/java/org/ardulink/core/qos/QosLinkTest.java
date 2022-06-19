@@ -106,10 +106,9 @@ public class QosLinkTest {
 	}
 
 	@Test
-	@Ignore // TODO PF verify how/why this test passes on main
 	public void secondCallPassesIfFirstOneKeepsUnresponded() throws Exception {
-		arduino.whenReceive(regex(lf("alp:\\/\\/tone\\/1/2/3\\?id\\=(\\d)"))).thenDoNotRespond();
-		arduino.whenReceive(regex(lf("alp:\\/\\/tone\\/4/5/6\\?id\\=(\\d)"))).thenRespond(lf("alp://rply/ok?id=%s"));
+		arduino.whenReceive(regex(lf("alp:\\/\\/tone\\/1\\/2\\/3\\?id\\=(\\d)"))).thenDoNotRespond();
+		arduino.whenReceive(regex(lf("alp:\\/\\/tone\\/4\\/5\\/6\\?id\\=(\\d)"))).thenRespond(lf("alp://rply/ok?id=%s"));
 		qosLink = newQosLink(connectionTo(arduino), 500, MILLISECONDS);
 		try {
 			qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2).withDuration(3, MILLISECONDS));

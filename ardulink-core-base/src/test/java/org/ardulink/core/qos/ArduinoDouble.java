@@ -42,6 +42,8 @@ import org.ardulink.util.Lists;
  */
 public class ArduinoDouble implements Closeable {
 
+	private static final String NO_RESPONSE = null;
+	
 	interface ReponseGenerator {
 
 		boolean matches(String received);
@@ -96,6 +98,11 @@ public class ArduinoDouble implements Closeable {
 			data.add(this);
 		}
 
+		public void thenDoNotRespond() {
+			this.thenRespond = NO_RESPONSE;
+			data.add(this);
+		}
+
 		@Override
 		public boolean matches(String received) {
 			matcher = whenReceived.matcher(received);
@@ -104,7 +111,7 @@ public class ArduinoDouble implements Closeable {
 
 		@Override
 		public String getResponse() {
-			return String.format(thenRespond, collectGroups());
+			return thenRespond == null ? null : String.format(thenRespond, collectGroups());
 		}
 
 		private Object[] collectGroups() {
@@ -114,10 +121,6 @@ public class ArduinoDouble implements Closeable {
 				groups[i] = matcher.group(i + 1);
 			}
 			return groups;
-		}
-
-		public void thenDoNotRespond() {
-			// does nothing
 		}
 
 	}
@@ -171,8 +174,11 @@ public class ArduinoDouble implements Closeable {
 					String received = new String(this.bytes);
 					if (generator.matches(received)) {
 						String response = generator.getResponse();
-						send(response);
-						os2.flush();
+						if (response != NO_RESPONSE) {
+							send(response);
+							os2.flush();
+						}
+						this.bytes = new byte[0];
 					}
 				}
 
