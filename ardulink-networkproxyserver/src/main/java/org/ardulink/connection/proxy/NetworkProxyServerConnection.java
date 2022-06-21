@@ -22,9 +22,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import org.ardulink.core.CBL;
 import org.ardulink.core.Connection;
-import org.ardulink.core.ConnectionBasedLinkNG;
+import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.StreamReader;
 import org.ardulink.core.convenience.LinkDelegate;
@@ -58,11 +57,11 @@ public class NetworkProxyServerConnection implements Runnable {
 			InputStream isRemote = socket.getInputStream();
 
 			Link link = getRoot(handshaker(isRemote, osRemote).doHandshake());
-			checkState(link instanceof CBL, "Only %s links supported for now (got %s)",
-					ConnectionBasedLinkNG.class.getName(), link.getClass());
+			checkState(link instanceof ConnectionBasedLink, "Only %s links supported for now (got %s)",
+					ConnectionBasedLink.class.getName(), link.getClass());
 
-			final CBL cbl = (CBL) link;
-			cbl.addRawListener(new Connection.ListenerAdapter() {
+			final ConnectionBasedLink cbl = (ConnectionBasedLink) link;
+			cbl.getConnection().addListener(new Connection.ListenerAdapter() {
 				@Override
 				public void received(byte[] bytes) throws IOException {
 					osRemote.write(bytes);
@@ -72,7 +71,7 @@ public class NetworkProxyServerConnection implements Runnable {
 			StreamReader streamReader = new StreamReader(isRemote) {
 				@Override
 				protected void received(byte[] bytes) throws Exception {
-					cbl.write(bytes);
+					cbl.getConnection().write(bytes);
 				}
 			};
 			try {

@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.ardulink.core.Connection.Listener;
 import org.ardulink.core.Connection.ListenerAdapter;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
@@ -56,7 +55,8 @@ import org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageTone;
-import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor.FromDeviceListener;
 import org.ardulink.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,50 +69,30 @@ import org.slf4j.LoggerFactory;
  * [adsense]
  *
  */
-@Deprecated
-public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
+public class ConnectionBasedLink extends AbstractListenerLink {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(ConnectionBasedLink.class);
+	private static final Logger logger = LoggerFactory.getLogger(ConnectionBasedLink.class);
 
 	private final Connection connection;
-	private final Protocol protocol;
+	private final ByteStreamProcessor byteStreamProcessor;
 	private long messageId = 0;
 	private boolean readyMsgReceived;
 
-	public ConnectionBasedLink(Connection connection, Protocol protocol) {
+	// TODO change arg0 to StreamConnection, StreamConnection then can offer #getConnection().getByteStreamProcessor() so arg1 here can be purged
+	// Alternative: Split ByteStreamProcessor into Sender/Receiver part
+	public ConnectionBasedLink(Connection connection, ByteStreamProcessor byteStreamProcessor) {
 		this.connection = connection;
-		this.protocol = protocol;
-		this.connection.addListener(new ListenerAdapter() {
+		this.byteStreamProcessor = byteStreamProcessor;
+		this.byteStreamProcessor.addListener(new FromDeviceListener() {
 			@Override
-			public void received(byte[] bytes) throws IOException {
-				ConnectionBasedLink.this.received(bytes);
+			public void handle(FromDeviceMessage fromDevice) {
+				ConnectionBasedLink.this.received(fromDevice);
 			}
 		});
 	}
-
-	/**
-	 * @deprecated migrate to addRawListener/removeRawListener/write
-	 */
-	@Deprecated
-	public Connection getConnection() {
-		return this.connection;
-	}
 	
-	public void addRawListener(Listener rawListener) {
-		this.connection.addListener(rawListener);
-	}
-
-	public void removeRawListener(Listener rawListener) {
-		this.connection.removeListener(rawListener);
-	}
-
-	public Protocol getProtocol() {
-		return protocol;
-	}
-
-	protected void received(byte[] bytes) {
-		received(this.protocol.fromDevice(bytes));
+	public Connection getConnection() {
+		return connection;
 	}
 
 	protected void received(FromDeviceMessage fromDevice) {
@@ -212,8 +192,8 @@ public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 		// (yet). So let's write something that the arduino tries to respond to.
 		try {
 			long messageId = 0;
-			connection.write(
-					this.protocol.toDevice(addMessageId(new DefaultToDeviceMessageNoTone(analogPin(0)), messageId)));
+			connection.write(this.byteStreamProcessor
+					.toDevice(addMessageId(new DefaultToDeviceMessageNoTone(analogPin(0)), messageId)));
 		} catch (IOException e) {
 			// ignore
 		}
@@ -225,7 +205,7 @@ public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 		ToDeviceMessageStartListening msg;
 		synchronized (connection) {
 			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageStartListening(pin));
-			send(this.protocol.toDevice(msg));
+			send(this.byteStreamProcessor.toDevice(msg));
 		}
 		return messageIdOf(msg);
 	}
@@ -235,7 +215,7 @@ public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 		ToDeviceMessageStopListening msg;
 		synchronized (connection) {
 			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageStopListening(pin));
-			send(this.protocol.toDevice(msg));
+			send(this.byteStreamProcessor.toDevice(msg));
 		}
 		logger.info("Stopped listening on pin {}", pin);
 		return messageIdOf(msg);
@@ -258,7 +238,7 @@ public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 		synchronized (connection) {
 			msg = addMessageIdIfNeeded(
 					new DefaultToDeviceMessageKeyPress(keychar, keycode, keylocation, keymodifiers, keymodifiersex));
-			send(this.protocol.toDevice(msg));
+			send(this.byteStreamProcessor.toDevice(msg));
 		}
 		return messageIdOf(msg);
 	}
@@ -268,7 +248,7 @@ public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 		ToDeviceMessageTone msg;
 		synchronized (connection) {
 			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageTone(tone));
-			send(this.protocol.toDevice(msg));
+			send(this.byteStreamProcessor.toDevice(msg));
 		}
 		return messageIdOf(msg);
 	}
@@ -278,7 +258,7 @@ public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 		ToDeviceMessageNoTone msg;
 		synchronized (connection) {
 			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageNoTone(analogPin));
-			send(this.protocol.toDevice(msg));
+			send(this.byteStreamProcessor.toDevice(msg));
 		}
 		return messageIdOf(msg);
 	}
@@ -288,7 +268,7 @@ public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 		ToDeviceMessageCustom msg;
 		synchronized (connection) {
 			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageCustom(messages));
-			send(this.protocol.toDevice(msg));
+			send(this.byteStreamProcessor.toDevice(msg));
 		}
 		return messageIdOf(msg);
 	}
@@ -297,7 +277,7 @@ public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 		ToDeviceMessagePinStateChange msg;
 		synchronized (connection) {
 			msg = addMessageIdIfNeeded(new DefaultToDeviceMessagePinStateChange(pin, value));
-			send(this.protocol.toDevice(msg));
+			send(this.byteStreamProcessor.toDevice(msg));
 		}
 		return messageIdOf(msg);
 	}
@@ -306,7 +286,7 @@ public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 		ToDeviceMessagePinStateChange msg;
 		synchronized (connection) {
 			msg = addMessageIdIfNeeded(new DefaultToDeviceMessagePinStateChange(pin, value));
-			send(this.protocol.toDevice(msg));
+			send(this.byteStreamProcessor.toDevice(msg));
 		}
 		return messageIdOf(msg);
 	}
@@ -332,12 +312,6 @@ public class ConnectionBasedLink extends AbstractListenerLink implements CBL {
 		deregisterAllEventListeners();
 		this.connection.close();
 		super.close();
-	}
-
-	@Override
-	public void write(byte[] bytes) throws IOException {
-		// TODO Auto-generated method stub
-		
 	}
 
 }

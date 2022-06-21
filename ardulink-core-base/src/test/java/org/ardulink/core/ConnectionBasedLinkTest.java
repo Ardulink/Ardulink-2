@@ -79,7 +79,7 @@ public class ConnectionBasedLinkTest {
 	private PipedOutputStream arduinosOutputStream;
 	private final ByteArrayOutputStream os = new ByteArrayOutputStream();
 	private Connection connection;
-	private ConnectionBasedLinkNG link;
+	private ConnectionBasedLink link;
 	private final AtomicInteger bytesNotYetRead = new AtomicInteger();
 
 	@Before
@@ -94,7 +94,7 @@ public class ConnectionBasedLinkTest {
 				ConnectionBasedLinkTest.this.bytesNotYetRead.addAndGet(-bytes.length);
 			}
 		});
-		this.link = new ConnectionBasedLinkNG(connection, byteStreamProcessor);
+		this.link = new ConnectionBasedLink(connection, byteStreamProcessor);
 	}
 
 	@After

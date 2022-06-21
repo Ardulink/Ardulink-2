@@ -18,7 +18,7 @@ package org.ardulink.core;
 
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.ardulink.core.ConnectionBasedLinkNG.Mode.READY_MESSAGE_ONLY;
+import static org.ardulink.core.ConnectionBasedLink.Mode.READY_MESSAGE_ONLY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
@@ -51,7 +51,7 @@ public class WaitForArduinoToBootTest {
 	@Rule
 	public Arduino arduino = Arduino.newArduino();
 
-	private final ConnectionBasedLinkNG link = new ConnectionBasedLinkNG(
+	private final ConnectionBasedLink link = new ConnectionBasedLink(
 			new StreamConnection(arduino.getInputStream(), arduino.getOutputStream(), byteStreamProcessor),
 			byteStreamProcessor);
 

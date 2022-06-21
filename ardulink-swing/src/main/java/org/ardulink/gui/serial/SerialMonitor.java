@@ -33,7 +33,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import org.ardulink.core.Connection.Listener;
-import org.ardulink.core.ConnectionBasedLinkNG;
+import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.qos.QosLink;
 import org.ardulink.gui.Linkable;
@@ -48,7 +48,7 @@ import org.ardulink.gui.Linkable;
 public class SerialMonitor extends JPanel implements Linkable  {
 
 	private static final long serialVersionUID = -3662905914867077959L;
-	private ConnectionBasedLinkNG link;
+	private ConnectionBasedLink link;
 	private JTextArea sentTextArea;
 	private JTextArea receivedTextArea;
 	private JTextField messageTextField;
@@ -86,7 +86,7 @@ public class SerialMonitor extends JPanel implements Linkable  {
 		sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					link.write((messageTextField.getText() + "\n").getBytes());
+					link.getConnection().write((messageTextField.getText() + "\n").getBytes());
 				} catch (IOException e1) {
 					propagate(e1);
 				}
@@ -155,7 +155,7 @@ public class SerialMonitor extends JPanel implements Linkable  {
 	@Override
 	public void setLink(org.ardulink.legacy.Link link) {
 		if (this.link != null) {
-			this.link.removeRawListener(listener);
+			this.link.getConnection().removeListener(listener);
 			this.link = null;
 		}
 		if (link == null) {
@@ -165,9 +165,9 @@ public class SerialMonitor extends JPanel implements Linkable  {
 			if (delegate instanceof QosLink) {
 				delegate = ((QosLink) delegate).getDelegate();
 			}
-			if (delegate instanceof ConnectionBasedLinkNG) {
-				this.link = (ConnectionBasedLinkNG) delegate;
-				this.link.addRawListener(listener);
+			if (delegate instanceof ConnectionBasedLink) {
+				this.link = (ConnectionBasedLink) delegate;
+				this.link.getConnection().addListener(listener);
 			}
 		}
 		sentTextArea.setText("");

@@ -20,10 +20,7 @@ import java.io.IOException;
 
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.ConnectionBasedLink;
-import org.ardulink.core.ConnectionBasedLinkNG;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.api.ProtocolNG;
 
 public class DigisparkLinkFactory implements LinkFactory<DigisparkLinkConfig> {
 
@@ -35,9 +32,8 @@ public class DigisparkLinkFactory implements LinkFactory<DigisparkLinkConfig> {
 	@Override
 	public AbstractListenerLink newLink(DigisparkLinkConfig config)
 			throws IOException {
-		Protocol proto = config.getProto();
-		return new ConnectionBasedLinkNG(new DigisparkConnection(config),
-				((ProtocolNG) proto).newByteStreamProcessor());
+		return new ConnectionBasedLink(new DigisparkConnection(config),
+				config.getProto().newByteStreamProcessor());
 	}
 
 	@Override

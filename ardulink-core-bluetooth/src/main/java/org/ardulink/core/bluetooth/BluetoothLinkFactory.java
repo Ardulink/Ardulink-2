@@ -25,7 +25,7 @@ import javax.bluetooth.ServiceRecord;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnectionNotifier;
 
-import org.ardulink.core.ConnectionBasedLinkNG;
+import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
@@ -48,7 +48,7 @@ public class BluetoothLinkFactory implements LinkFactory<BluetoothLinkConfig> {
 	}
 
 	@Override
-	public ConnectionBasedLinkNG newLink(BluetoothLinkConfig config)
+	public ConnectionBasedLink newLink(BluetoothLinkConfig config)
 			throws IOException {
 		String url = getURL(config);
 		checkState(url != null,
@@ -56,7 +56,7 @@ public class BluetoothLinkFactory implements LinkFactory<BluetoothLinkConfig> {
 		javax.microedition.io.StreamConnection streamConnection = getStreamConnection(Connector
 				.open(url));
 		ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
-		return new ConnectionBasedLinkNG(new StreamConnection(
+		return new ConnectionBasedLink(new StreamConnection(
 				streamConnection.openInputStream(),
 				streamConnection.openOutputStream(), byteStreamProcessor), byteStreamProcessor);
 	}

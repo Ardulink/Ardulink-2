@@ -34,7 +34,7 @@ public class DefaultFromDeviceMessageReply implements FromDeviceMessageReply {
 
 	private final boolean ok;
 	private final long id;
-	private final Map<String, ? extends Object> parameters;
+	private final Map<String, Object> parameters;
 
 	public DefaultFromDeviceMessageReply(boolean ok, long id,
 			Map<String, ? extends Object> parameters) {
@@ -53,7 +53,7 @@ public class DefaultFromDeviceMessageReply implements FromDeviceMessageReply {
 	}
 
 	@Override
-	public Map<String, ? extends Object> getParameters() {
+	public Map<String, Object> getParameters() {
 		return parameters;
 	}
 

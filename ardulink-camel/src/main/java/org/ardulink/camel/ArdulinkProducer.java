@@ -22,6 +22,8 @@ import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.messages.api.FromDeviceChangeListeningState.Mode.START;
 import static org.ardulink.core.messages.api.FromDeviceChangeListeningState.Mode.STOP;
+import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
+import static org.ardulink.util.Iterables.getFirst;
 
 import java.io.IOException;
 
@@ -34,8 +36,7 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceChangeListeningState;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
-import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2.ALPByteStreamProcessor;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -53,7 +54,7 @@ public class ArdulinkProducer extends DefaultProducer {
 	 * This is NOT the protocol of the link but the expected payload of camel's
 	 * {@link Message}.
 	 */
-	private final Protocol protocol = ArdulinkProtocol2.instance();
+	private final ALPByteStreamProcessor byteStreamProcessor = new ALPByteStreamProcessor();
 
 	public ArdulinkProducer(Endpoint endpoint, Link link) {
 		super(endpoint);
@@ -63,7 +64,8 @@ public class ArdulinkProducer extends DefaultProducer {
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		String body = exchange.getIn().getBody(String.class);
-		FromDeviceMessage fromDevice = protocol.fromDevice(body.getBytes());
+		FromDeviceMessage fromDevice = getFirst(parse(byteStreamProcessor, byteStreamProcessor.toBytes(body)))
+				.getOrThrow("Could not extract message from body %s", body);
 		if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
 			handlePinStateChange((FromDeviceMessagePinStateChanged) fromDevice);
 			setResponse(exchange, body, "OK");

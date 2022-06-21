@@ -4,6 +4,7 @@ import static java.lang.Integer.parseInt;
 import static java.lang.Math.pow;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
 import static org.firmata4j.firmata.parser.FirmataToken.ANALOG_MESSAGE;
 import static org.firmata4j.firmata.parser.FirmataToken.DIGITAL_MESSAGE;
 import static org.hamcrest.CoreMatchers.is;
@@ -19,9 +20,8 @@ import java.util.Map;
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
-import org.ardulink.core.proto.api.ProtocolNG;
+import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor.FromDeviceListener;
 import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
 import org.ardulink.util.anno.LapsedWith;
@@ -29,21 +29,8 @@ import org.junit.Test;
 
 public class FirmataProtocolTest {
 
-	private static final class MessageCollector implements FromDeviceListener {
-
-		private final List<FromDeviceMessage> messages = Lists.newArrayList();
-
-		@Override
-		public void handle(FromDeviceMessage message) {
-			messages.add(message);
-		}
-
-		public List<FromDeviceMessage> getMessages() {
-			return messages;
-		}
-	}
-
-	private final MessageCollector messageCollector = new MessageCollector();
+	private byte[] bytes;
+	private List<FromDeviceMessage> messages;
 
 	@Test
 	public void canReadAnalogPinViaFirmataProto() throws IOException {
@@ -51,9 +38,9 @@ public class FirmataProtocolTest {
 		byte pin = 15;
 		byte valueLow = 127;
 		byte valueHigh = 42;
-		byte[] bytes = new byte[] { command |= pin, valueLow, valueHigh };
-		process(new FirmataProtocol(), bytes);
-		assertMessage(messageCollector.getMessages(), analogPin(pin), valueHigh << 7 | valueLow);
+		givenMessage(command |= pin, valueLow, valueHigh);
+		whenMessageIsProcessed();
+		thenMessageIs(analogPin(pin), valueHigh << 7 | valueLow);
 	}
 
 	@Test
@@ -62,10 +49,10 @@ public class FirmataProtocolTest {
 		byte port = 4;
 		byte valueLow = binary("010" + "0101");
 		byte valueHigh = binary("1");
-		byte[] bytes = new byte[] { command |= port, valueLow, valueHigh };
-		process(new FirmataProtocol(), bytes);
+		givenMessage(command |= port, valueLow, valueHigh);
+		whenMessageIsProcessed();
 		byte pin = (byte) pow(2, port + 1);
-		assertMessage(messageCollector.getMessages(), MapBuilder.<Pin, Object>newMapBuilder() //
+		assertMessage(messages, MapBuilder.<Pin, Object>newMapBuilder() //
 				.put(digitalPin(pin++), true).put(digitalPin(pin++), false) //
 				.put(digitalPin(pin++), true).put(digitalPin(pin++), false) //
 				.put(digitalPin(pin++), false).put(digitalPin(pin++), true) //
@@ -73,7 +60,11 @@ public class FirmataProtocolTest {
 				.build());
 	}
 
-	private void assertMessage(List<FromDeviceMessage> messages, Pin pin, Object value) {
+	private void givenMessage(byte... bytes) {
+		this.bytes = bytes;
+	}
+
+	private void thenMessageIs(Pin pin, Object value) {
 		assertThat(messages.size(), is(1));
 		FromDeviceMessagePinStateChanged pinStateChanged = (FromDeviceMessagePinStateChanged) messages.get(0);
 		assertThat(pinStateChanged.getPin(), is(pin));
@@ -95,16 +86,20 @@ public class FirmataProtocolTest {
 		return (byte) parseInt(string, 2);
 	}
 
-	private void process(ProtocolNG protocol, byte[] bytes) throws IOException {
-		InputStream stream = new ByteArrayInputStream(bytes);
-		ByteStreamProcessor processor = byteStreamProcessor(protocol);
-		processor.addListener(messageCollector);
-
-		processor.process(read(stream, 2));
-		processor.process(read(stream, stream.available()));
+	private void whenMessageIsProcessed() throws IOException {
+		process(new FirmataProtocol(), bytes);
 	}
 
-	private static ByteStreamProcessor byteStreamProcessor(ProtocolNG protocol) {
+	private void process(FirmataProtocol protocol, byte[] bytes) throws IOException {
+		ByteStreamProcessor processor = byteStreamProcessor(protocol);
+		// read in "random" (two) junks
+		messages = Lists.newArrayList();
+		InputStream stream = new ByteArrayInputStream(bytes);
+		messages.addAll(parse(processor, read(stream, 2)));
+		messages.addAll(parse(processor, read(stream, stream.available())));
+	}
+
+	private static ByteStreamProcessor byteStreamProcessor(Protocol protocol) {
 		return protocol.newByteStreamProcessor();
 	}
 

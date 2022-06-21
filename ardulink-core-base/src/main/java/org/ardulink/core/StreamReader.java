@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.core;
 
 import static org.ardulink.util.anno.LapsedWith.JDK8;
-import static org.ardulink.util.anno.LapsedWith.NEXT_ARDULINK_VERSION_REFACTORING_DONE;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -41,30 +40,11 @@ public abstract class StreamReader implements Closeable {
 	private static final Logger logger = LoggerFactory.getLogger(StreamReader.class);
 
 	private final InputStream inputStream;
-	private StreamScanner scanner;
 
 	private Thread thread;
 
 	public StreamReader(InputStream inputStream) {
 		this.inputStream = inputStream;
-	}
-
-	@LapsedWith(NEXT_ARDULINK_VERSION_REFACTORING_DONE)
-	@Deprecated
-	public void runReaderThread(final byte[] delimiter) {
-		this.thread = new Thread() {
-
-			{
-				setDaemon(true);
-				start();
-			}
-
-			@Override
-			public void run() {
-				readUntilClosed(delimiter);
-			}
-
-		};
 	}
 
 	public void runReaderThread(final ByteStreamProcessor byteStreamProcessor) {
@@ -97,30 +77,6 @@ public abstract class StreamReader implements Closeable {
 			}
 			
 		};
-	}
-
-	@LapsedWith(NEXT_ARDULINK_VERSION_REFACTORING_DONE)
-	@Deprecated
-	public void readUntilClosed(byte[] delimiter) {
-		this.scanner = new StreamScanner(this.inputStream, delimiter);
-		try {
-			while (scanner.hasNext() && !isInterrupted()) {
-				try {
-					logger.debug("Waiting for data");
-					byte[] bytes = scanner.next();
-					logger.debug("Stream read {}", bytes);
-					if (bytes != null) {
-						received(bytes);
-					}
-				} catch (Exception e) {
-					logger.error("Error while retrieving data", e);
-				}
-			}
-		} catch (Exception e) {
-			logger.error("Error while Reader Initialization", e);
-		} finally {
-			scanner.close();
-		}
 	}
 
 	public void readUntilClosed() {
@@ -163,11 +119,6 @@ public abstract class StreamReader implements Closeable {
 
 	@Override
 	public void close() throws IOException {
-		@LapsedWith(module = JDK8, value = "Optional#ifPresent")
-		StreamScanner locScanner = this.scanner;
-		if (locScanner != null) {
-			locScanner.interrupt();
-		}
 		@LapsedWith(module = JDK8, value = "Optional#ifPresent")
 		Thread locThread = this.thread;
 		if (locThread != null) {

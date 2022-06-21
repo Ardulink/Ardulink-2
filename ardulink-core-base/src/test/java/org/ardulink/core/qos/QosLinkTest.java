@@ -32,14 +32,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.ardulink.core.Connection;
-import org.ardulink.core.ConnectionBasedLinkNG;
+import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.Tone;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.anno.LapsedWith;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
@@ -119,7 +118,7 @@ public class QosLinkTest {
 	}
 
 	private QosLink newQosLink(Connection connection, int timeout, TimeUnit timeUnit) throws IOException {
-		return new QosLink(new ConnectionBasedLinkNG(connection, byteStreamProcessor), timeout, timeUnit);
+		return new QosLink(new ConnectionBasedLink(connection, byteStreamProcessor), timeout, timeUnit);
 	}
 
 	private StreamConnection connectionTo(Arduino arduino) {

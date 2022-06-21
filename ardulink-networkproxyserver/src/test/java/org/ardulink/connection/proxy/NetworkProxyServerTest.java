@@ -22,7 +22,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.ardulink.connection.proxy.NetworkProxyServer.StartCommand;
 import org.ardulink.core.Connection;
-import org.ardulink.core.ConnectionBasedLinkNG;
+import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
@@ -71,7 +71,7 @@ public class NetworkProxyServerTest {
 		
 	};
 
-	private ConnectionBasedLinkNG clientSideLink;
+	private ConnectionBasedLink clientSideLink;
 
 	@Before
 	public void setup() throws InterruptedException, UnknownHostException, IOException {
@@ -99,7 +99,7 @@ public class NetworkProxyServerTest {
 		}
 	}
 
-	private ConnectionBasedLinkNG clientLinkToServer(String hostname, int port) throws UnknownHostException, IOException {
+	private ConnectionBasedLink clientLinkToServer(String hostname, int port) throws UnknownHostException, IOException {
 		// TODO PF use Links?
 		// Links.getLink(URIs.newURI(String.format("ardulink://proxy?tcphost=%s&tcpport=%s&port=%s",
 		// hostname, port, "someNonNullPort")));
@@ -156,7 +156,7 @@ public class NetworkProxyServerTest {
 									public Link answer(InvocationOnMock invocation) {
 										ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2()
 												.newByteStreamProcessor();
-										return new ConnectionBasedLinkNG(proxySideConnection, byteStreamProcessor);
+										return new ConnectionBasedLink(proxySideConnection, byteStreamProcessor);
 									}
 								});
 								return configurer;

@@ -35,7 +35,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
 
 import org.ardulink.core.ConnectionBasedLink;
-import org.ardulink.core.ConnectionBasedLinkNG;
+import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.gui.connectionpanel.ConnectionPanel;
 import org.ardulink.gui.customcomponents.SignalButton;
@@ -204,12 +204,12 @@ public class ButtonQuest extends JFrame implements ConnectionListener, Linkable 
 	@Override
 	public void setLink(Link link) {
 		org.ardulink.core.Link delegate = link.getDelegate();
-		if (delegate instanceof ConnectionBasedLinkNG) {
-			((ConnectionBasedLinkNG) delegate).removeConnectionListener(this);
+		if (delegate instanceof ConnectionBasedLink) {
+			((ConnectionBasedLink) delegate).removeConnectionListener(this);
 		}
 		this.link = link;
-		if (delegate instanceof ConnectionBasedLinkNG) {
-			((ConnectionBasedLinkNG) delegate).addConnectionListener(this);
+		if (delegate instanceof ConnectionBasedLink) {
+			((ConnectionBasedLink) delegate).addConnectionListener(this);
 		} else {
 			if(link == null || link == Link.NO_LINK) {
 				connectionLost();

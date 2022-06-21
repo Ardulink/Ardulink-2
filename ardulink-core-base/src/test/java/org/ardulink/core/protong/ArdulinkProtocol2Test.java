@@ -3,6 +3,7 @@ package org.ardulink.core.protong;
 import static java.lang.Integer.parseInt;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
@@ -14,16 +15,18 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceMessage;
+import org.ardulink.core.messages.api.FromDeviceMessageCustom;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.messages.api.FromDeviceMessageReady;
 import org.ardulink.core.messages.api.FromDeviceMessageReply;
-import org.ardulink.core.proto.api.ProtocolNG;
+import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor.FromDeviceListener;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.util.Joiner;
 import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
 import org.ardulink.util.anno.LapsedWith;
@@ -31,67 +34,87 @@ import org.junit.Test;
 
 public class ArdulinkProtocol2Test {
 
-	private static final class MessageCollector implements FromDeviceListener {
-
-		private final List<FromDeviceMessage> messages = Lists.newArrayList();
-
-		@Override
-		public void handle(FromDeviceMessage message) {
-			messages.add(message);
-		}
-
-		public List<FromDeviceMessage> getMessages() {
-			return messages;
-		}
-	}
-
-	private final MessageCollector messageCollector = new MessageCollector();
+	private List<FromDeviceMessage> messages;
+	private String message;
 
 	@Test
 	public void canReadAnalogPinViaArdulinkProto() throws IOException {
 		int pin = 42;
 		int value = 21;
-		String message = lf(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
-		process(new ArdulinkProtocol2(), message);
-		assertMessage(messageCollector.getMessages(), analogPin(pin), (Object) value);
+		givenMessage(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
+		whenMessageIsProcessed();
+		thenMessageIs(analogPin(pin), value);
 	}
 
 	@Test
 	public void canReadDigitalPinViaArdulinkProto() throws IOException {
 		int pin = 42;
 		boolean value = true;
-		String message = lf(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(value));
-		process(new ArdulinkProtocol2(), message);
-		assertMessage(messageCollector.getMessages(), digitalPin(pin), (Object) value);
+		givenMessage(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(value));
+		whenMessageIsProcessed();
+		thenMessageIs(digitalPin(pin), value);
 	}
 
 	@Test
 	public void canReadRplyViaArdulinkProto() throws IOException {
-		String message = lf("alp://rply/ok?id=1&UniqueID=456-2342-2342&ciao=boo");
-		process(new ArdulinkProtocol2(), message);
-		assertThat(messageCollector.getMessages().size(), is(1));
-		FromDeviceMessageReply replyMessage = (FromDeviceMessageReply) messageCollector.getMessages().get(0);
-		assertThat(replyMessage.getParameters(), is((Object) MapBuilder.<String, String>newMapBuilder()
+		givenMessage("alp://rply/ok?id=1&UniqueID=456-2342-2342&ciao=boo");
+		whenMessageIsProcessed();
+		assertThat(messages.size(), is(1));
+		FromDeviceMessageReply replyMessage = (FromDeviceMessageReply) messages.get(0);
+		assertThat(replyMessage.getParameters(), is(MapBuilder.<String, Object>newMapBuilder()
 				.put("UniqueID", "456-2342-2342").put("ciao", "boo").build()));
 	}
-	
+
 	@Test
 	public void canReadReadyViaArdulinkProto() throws IOException {
-		String message = lf("alp://ready/");
-		process(new ArdulinkProtocol2(), message);
-		assertThat(messageCollector.getMessages().size(), is(1));
-		assertThat(messageCollector.getMessages().get(0), instanceOf(FromDeviceMessageReady.class));
+		givenMessage("alp://ready/");
+		whenMessageIsProcessed();
+		assertThat(messages.size(), is(1));
+		assertThat(messages.get(0), instanceOf(FromDeviceMessageReady.class));
 	}
 
 	@Test
 	public void doesRecoverFromMisformedContent() throws IOException {
-		String message = lf("alp://XXXXXreadyXXXXX/") + lf("alp://ready/");
-		process(new ArdulinkProtocol2(), message);
-		assertThat(messageCollector.getMessages().size(), is(1));
-		assertThat(messageCollector.getMessages().get(0), instanceOf(FromDeviceMessageReady.class));
+		givenMessages("alp://XXXXXreadyXXXXX/", "alp://ready/");
+		whenMessageIsProcessed();
+		assertThat(messages.size(), is(1));
+		assertThat(messages.get(0), instanceOf(FromDeviceMessageReady.class));
 	}
 
-	private void assertMessage(List<FromDeviceMessage> messages, Pin pin, Object value) {
+	@Test
+	public void ardulinkProtocol2ReceiveCustomEvent() throws IOException {
+		givenMessage("alp://cevnt/foo=bar/some=42");
+		whenMessageIsProcessed();
+		assertThat(messages.size(), is(1));
+		assertThat(messages.get(0), instanceOf(FromDeviceMessageCustom.class));
+		FromDeviceMessageCustom customMessage = (FromDeviceMessageCustom) messages.get(0);
+		assertThat(customMessage.getMessage(), is("foo=bar/some=42"));
+	}
+
+	@Test
+	public void ardulinkProtocol2ReceiveRply() throws IOException {
+		long id = 1;
+		Map<String, Object> params = MapBuilder.<String, Object>newMapBuilder().put("UniqueID", "ABC-1234-5678")
+				.put("boo", "ciao").build();
+		givenMessage("alp://rply/ok?id=" + id + "&" + Joiner.on("&").withKeyValueSeparator("=").join(params));
+		whenMessageIsProcessed();
+		assertThat(messages.size(), is(1));
+		assertThat(messages.get(0), instanceOf(FromDeviceMessageReply.class));
+		FromDeviceMessageReply replyMessage = (FromDeviceMessageReply) messages.get(0);
+		assertThat(replyMessage.isOk(), is(true));
+		assertThat(replyMessage.getId(), is(id));
+		assertThat(replyMessage.getParameters(), is(params));
+	}
+
+	private void givenMessage(String in) {
+		this.message = lf(in);
+	}
+
+	private void givenMessages(String in1, String in2) {
+		this.message = lf(in1) + lf(in2);
+	}
+
+	private void thenMessageIs(Pin pin, Object value) {
 		assertThat(messages.size(), is(1));
 		FromDeviceMessagePinStateChanged pinStateChanged = (FromDeviceMessagePinStateChanged) messages.get(0);
 		assertThat(pinStateChanged.getPin(), is(pin));
@@ -103,17 +126,21 @@ public class ArdulinkProtocol2Test {
 		return (byte) parseInt(string, 2);
 	}
 
-	private void process(ProtocolNG protocol, String bytes) throws IOException {
-		InputStream stream = new ByteArrayInputStream(bytes.getBytes());
-		ByteStreamProcessor processor = byteStreamProcessor(protocol);
-		processor.addListener(messageCollector);
-
-		processor.process(read(stream, 2));
-		processor.process(read(stream, 5));
-		processor.process(read(stream, stream.available()));
+	private void whenMessageIsProcessed() throws IOException {
+		whenMessageIsProcessed(new ArdulinkProtocol2());
 	}
 
-	private static ByteStreamProcessor byteStreamProcessor(ProtocolNG protocol) {
+	private void whenMessageIsProcessed(Protocol protocol) throws IOException {
+		ByteStreamProcessor processor = byteStreamProcessor(protocol);
+		// read in "random" (three) junks
+		messages = Lists.newArrayList();
+		InputStream stream = new ByteArrayInputStream(message.getBytes());
+		messages.addAll(parse(processor, read(stream, 2)));
+		messages.addAll(parse(processor, read(stream, 5)));
+		messages.addAll(parse(processor, read(stream, stream.available())));
+	}
+
+	private static ByteStreamProcessor byteStreamProcessor(Protocol protocol) {
 		return protocol.newByteStreamProcessor();
 	}
 
@@ -122,7 +149,7 @@ public class ArdulinkProtocol2Test {
 		stream.read(bytes);
 		return bytes;
 	}
-	
+
 	private static String lf(String string) {
 		return string + "\n";
 	}

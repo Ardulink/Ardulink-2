@@ -2,6 +2,8 @@ package org.ardulink.mqtt.camel;
 
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
+import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
@@ -12,7 +14,9 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2.ALPByteStreamProcessor;
 import org.ardulink.mqtt.Topics;
 
 /**
@@ -21,7 +25,7 @@ import org.ardulink.mqtt.Topics;
  */
 public final class FromArdulinkProtocol implements Processor {
 
-	private final Protocol protocol = ArdulinkProtocol2.instance();
+	private final ALPByteStreamProcessor byteStreamProcessor = new ALPByteStreamProcessor();
 	private final Topics topics;
 	private String headerNameForTopic = "topic";
 
@@ -42,8 +46,9 @@ public final class FromArdulinkProtocol implements Processor {
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		Message in = exchange.getIn();
-		FromDeviceMessage deviceMessage = protocol.fromDevice(in.getBody(
-				String.class).getBytes());
+		FromDeviceMessage deviceMessage = getFirst(
+				parse(byteStreamProcessor, byteStreamProcessor.toBytes(in.getBody(String.class))))
+				.getOrThrow("Cannot handle %s", in);
 		checkState(deviceMessage instanceof FromDeviceMessagePinStateChanged,
 				"Cannot handle %s", in);
 		handle(in, (FromDeviceMessagePinStateChanged) deviceMessage);
@@ -68,7 +73,7 @@ public final class FromArdulinkProtocol implements Processor {
 
 	@Override
 	public String toString() {
-		return "FromArdulinkProtocol [protocol=" + protocol + ", topics=" + topics + ", headerNameForTopic="
+		return "FromArdulinkProtocol [protocol=" + byteStreamProcessor + ", topics=" + topics + ", headerNameForTopic="
 				+ headerNameForTopic + "]";
 	}
 	

@@ -19,7 +19,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
 import org.ardulink.core.messages.impl.DefaultFromDeviceMessagePinStateChanged;
-import org.ardulink.core.proto.api.ProtocolNG;
+import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProcessor;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.firmata4j.Consumer;
@@ -27,7 +27,7 @@ import org.firmata4j.firmata.parser.WaitingForMessageState;
 import org.firmata4j.fsm.Event;
 import org.firmata4j.fsm.FiniteStateMachine;
 
-public class FirmataProtocol implements ProtocolNG {
+public class FirmataProtocol implements Protocol {
 
 	@Override
 	public String getName() {
