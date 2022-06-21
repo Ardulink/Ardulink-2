@@ -22,6 +22,7 @@ import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
+import org.ardulink.core.proto.impl.FirmataProtocol;
 import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
 import org.ardulink.util.anno.LapsedWith;

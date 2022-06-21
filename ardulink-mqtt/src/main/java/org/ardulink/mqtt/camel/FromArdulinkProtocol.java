@@ -13,9 +13,6 @@ import org.apache.camel.Processor;
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
-import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2.ALPByteStreamProcessor;
 import org.ardulink.mqtt.Topics;
 
