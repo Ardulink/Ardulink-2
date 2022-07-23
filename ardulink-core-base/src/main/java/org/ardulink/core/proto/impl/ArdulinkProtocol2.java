@@ -157,16 +157,13 @@ public class ArdulinkProtocol2 implements Protocol {
 	@Override
 	public byte[] toDevice(ToDeviceMessageTone tone) {
 		Long duration = tone.getTone().getDurationInMillis();
-		return toBytes(builder(tone, TONE).withValue(
-				tone.getTone().getPin().pinNum() + "/"
-						+ tone.getTone().getHertz() + "/"
-						+ (duration == null ? -1 : duration.longValue())));
+		return toBytes(builder(tone, TONE).forPin(tone.getTone().getPin().pinNum())
+				.withValue(tone.getTone().getHertz() + "/" + (duration == null ? -1 : duration.longValue())));
 	}
 
 	@Override
 	public byte[] toDevice(ToDeviceMessageNoTone noTone) {
-		return toBytes(builder(noTone, NOTONE).withValue(
-				noTone.getAnalogPin().pinNum()));
+		return toBytes(builder(noTone, NOTONE).forPin(noTone.getAnalogPin().pinNum()).withValue(""));
 	}
 
 	@Override

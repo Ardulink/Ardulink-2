@@ -71,7 +71,7 @@ public class WaitForArduinoToBootTest {
 
 	@Test
 	public void noNeedToWaitIfArduinoResponds() throws IOException {
-		arduino.whenReceive(regex("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))
+		arduino.whenReceive(regex("alp:\\/\\/notn\\/0\\/\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ok?id=%s");
 		assertThat(link.waitForArduinoToBoot(3, DAYS), is(true));
 	}

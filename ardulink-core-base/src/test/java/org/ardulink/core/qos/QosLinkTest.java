@@ -68,7 +68,7 @@ public class QosLinkTest {
 
 	@Test
 	public void canDoGuranteedDelivery() throws Exception {
-		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
+		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\/\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ok?id=%s");
 		qosLink = newQosLink(connectionTo(arduino), 15, MINUTES);
 		qosLink.sendNoTone(analogPin(3));
@@ -77,7 +77,7 @@ public class QosLinkTest {
 	@Test
 	public void doesThrowExceptionIfNotResponseReceivedWithinHalfAsecond()
 			throws Exception {
-		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
+		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\/\\?id\\=(\\d)"))
 				.thenDoNotRespond();
 		qosLink = newQosLink(connectionTo(arduino), 500, MILLISECONDS);
 		@LapsedWith(module = JDK8, value = "Lambda")
@@ -93,7 +93,7 @@ public class QosLinkTest {
 
 	@Test
 	public void doesThrowExceptionIfKoResponse() throws Exception {
-		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))
+		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\/\\?id\\=(\\d)"))
 				.thenRespond("alp://rply/ko?id=%s");
 		Connection connection = connectionTo(arduino);
 		qosLink = newQosLink(connection, 500 + someMillisMore(), MILLISECONDS);

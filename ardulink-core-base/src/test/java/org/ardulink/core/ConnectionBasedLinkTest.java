@@ -234,7 +234,7 @@ public class ConnectionBasedLinkTest {
 	@Test
 	public void canSendNoTone() throws IOException {
 		this.link.sendNoTone(analogPin(5));
-		assertThat(toArduinoWasSent(), is("alp://notn/5\n"));
+		assertThat(toArduinoWasSent(), is("alp://notn/5/\n"));
 	}
 
 	@Test
