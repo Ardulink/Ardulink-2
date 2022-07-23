@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>swagger-ui</artifactId>
-			<version>4.10.3</version>
+			<version>4.11.1</version>
 			<scope>runtime</scope>
 		</dependency>
 		<!-- webjars without version number -->
@@ -83,7 +83,7 @@
 		<dependency>
 			<groupId>io.rest-assured</groupId>
 			<artifactId>rest-assured</artifactId>
-			<version>5.0.1</version>
+			<version>5.1.1</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

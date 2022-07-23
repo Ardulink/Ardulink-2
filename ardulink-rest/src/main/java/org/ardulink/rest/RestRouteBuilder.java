@@ -91,8 +91,8 @@ public class RestRouteBuilder extends RouteBuilder {
 				.patch("/digital/{pin}").to(patchDigital) //
 				.get("/analog/{pin}").to(readAnalog) //
 				.get("/digital/{pin}").to(readDigital) //
-				.post("/analog/{pin}").to(switchAnalog) //
-				.post("/digital/{pin}").to(switchDigital) //
+				.put("/analog/{pin}").to(switchAnalog) //
+				.put("/digital/{pin}").to(switchDigital) //
 		;
 		from(patchAnalog).process(exchange -> patchAnalog(exchange)).to(target);
 		from(patchDigital).process(exchange -> patchDigital(exchange)).to(target);
@@ -106,7 +106,7 @@ public class RestRouteBuilder extends RouteBuilder {
 	private void swagger(String apidocs) {
 		restConfiguration().apiContextPath(apidocs) //
 				.apiProperty("host", "localhost" + ":" + fromPlaceholder(VAR_PORT)) //
-				.apiProperty("base.path", "api-docs") //
+				.apiProperty("base.path", "") //
 				.apiProperty("api.title", "User API") //
 				.apiProperty("api.version", "1.0.0") //
 				.apiProperty("cors", "true") //

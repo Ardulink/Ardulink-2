@@ -73,7 +73,11 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		Link link = config.isQos() ? new QosLink(connectionBasedLink)
 				: connectionBasedLink;
 
-		waitForArdulink(config, connectionBasedLink);
+		if (!waitForArdulink(config, connectionBasedLink)) {
+			connection.close();
+			throw new IllegalStateException(String.format("Waited for arduino to boot but no response received"));
+		}
+
 		return new LinkDelegate(link) {
 			@Override
 			public void close() throws IOException {
@@ -83,19 +87,18 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		};
 	}
 
-	private void waitForArdulink(SerialLinkConfig config,
+	private boolean waitForArdulink(SerialLinkConfig config,
 			ConnectionBasedLink link) {
 		if (config.isPingprobe()) {
-			checkState(
-					link.waitForArduinoToBoot(config.getWaitsecs(), SECONDS),
-					"Waited for arduino to boot but no response received");
-		} else {
-			try {
-				SECONDS.sleep(config.getWaitsecs());
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
+			return link.waitForArduinoToBoot(config.getWaitsecs(), SECONDS);
 		}
+		try {
+			SECONDS.sleep(config.getWaitsecs());
+			return true;
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		return false;
 	}
 
 	private SerialPort serialPort(SerialLinkConfig config,

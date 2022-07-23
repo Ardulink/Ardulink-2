@@ -20,7 +20,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static jssc.SerialPort.DATABITS_8;
 import static jssc.SerialPort.PARITY_NONE;
 import static jssc.SerialPort.STOPBITS_1;
-import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
 
@@ -29,7 +28,6 @@ import org.ardulink.core.Link;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.qos.QosLink;
 
@@ -62,11 +60,14 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 				new StreamConnection(new SerialInputStream(serialPort), new SerialOutputStream(serialPort), byteStreamProcessor),
 				byteStreamProcessor);
 
-		@SuppressWarnings("resource")
 		Link link = config.isQos() ? new QosLink(connectionBasedLink)
 				: connectionBasedLink;
 
-		waitForArdulink(config, connectionBasedLink);
+		if (!waitForArdulink(config, connectionBasedLink)) {
+			connectionBasedLink.close();
+			throw new IllegalStateException(String.format("Waited for arduino to boot but no response received"));
+		}
+
 		return new LinkDelegate(link) {
 			@Override
 			public void close() throws IOException {
@@ -80,19 +81,18 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		};
 	}
 
-	private void waitForArdulink(SerialLinkConfig config,
+	private boolean waitForArdulink(SerialLinkConfig config,
 			ConnectionBasedLink link) {
 		if (config.isPingprobe()) {
-			checkState(
-					link.waitForArduinoToBoot(config.getWaitsecs(), SECONDS),
-					"Waited for arduino to boot but no response received");
-		} else {
-			try {
-				SECONDS.sleep(config.getWaitsecs());
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
+			return link.waitForArduinoToBoot(config.getWaitsecs(), SECONDS);
 		}
+		try {
+			SECONDS.sleep(config.getWaitsecs());
+			return true;
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		return false;
 	}
 
 	private SerialPort serialPort(SerialLinkConfig config, String portIdentifier)

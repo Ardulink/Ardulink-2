@@ -63,7 +63,7 @@ public class ArdulinkRestMainTest {
 		try (RestMain restMain = new RestMain(args); Link mock = getMock(Links.getLink(args.connection))) {
 			int pin = 5;
 			boolean state = true;
-			given().body(state).post("/pin/digital/{pin}", pin).then().statusCode(200);
+			given().body(state).put("/pin/digital/{pin}", pin).then().statusCode(200);
 			verify(mock).switchDigitalPin(digitalPin(pin), state);
 		}
 	}
