@@ -64,9 +64,9 @@
 			<version>1.14</version>
 		</dependency>
                 <dependency>
-                        <groupId>de.fraunhofer.iosb.io.moquette</groupId>
+                        <groupId>io.moquette</groupId>
                         <artifactId>moquette-broker</artifactId>
-                        <version>0.15.1</version>
+                        <version>0.15</version>
                 </dependency>
 		<dependency>
 			<groupId>args4j</groupId>
