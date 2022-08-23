@@ -1,7 +1,7 @@
 package org.ardulink.mqtt.camel;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.camel.builder.AdviceWithRouteBuilder.adviceWith;
+import static org.apache.camel.builder.AdviceWith.adviceWith;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
