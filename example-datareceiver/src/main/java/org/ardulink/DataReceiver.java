@@ -95,9 +95,7 @@ public class DataReceiver {
 		}
 
 		if (verbose && link instanceof ConnectionBasedLink) {
-			Connection connection = ((ConnectionBasedLink) link)
-					.getConnection();
-			connection.addListener(rawDataListener());
+			((ConnectionBasedLink) link).getConnection().addListener(rawDataListener());
 		}
 	}
 

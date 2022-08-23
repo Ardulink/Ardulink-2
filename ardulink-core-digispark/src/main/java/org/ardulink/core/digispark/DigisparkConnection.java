@@ -30,25 +30,20 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.ardulink.core.AbstractConnection;
-import org.ardulink.core.proto.api.Protocol;
 
 import ch.ntb.usb.USBException;
 import ch.ntb.usb.Usb_Device;
 
 public class DigisparkConnection extends AbstractConnection {
 
+	private static final byte[] ZERO_BYTES = new byte[0];
+
 	private final String deviceName;
 	private Usb_Device usbDevice;
 
 	private long usbDevHandle;
-	private int divider;
 
 	public DigisparkConnection(DigisparkLinkConfig config) {
-		Protocol proto = config.getProto();
-		checkState(proto.getSeparator().length == 1,
-				"divider must be of length 1 (was %s)",
-				proto.getSeparator().length);
-		this.divider = proto.getSeparator()[0];
 		this.deviceName = config.getDeviceName();
 		this.usbDevice = getDevices().get(deviceName);
 		checkState(usbDevice != null, "No device with portName %s found",
@@ -118,24 +113,19 @@ public class DigisparkConnection extends AbstractConnection {
 	@Override
 	public void write(byte[] bytes) throws IOException {
 		for (int i = 0; i < bytes.length; i++) {
-
-			int len = usb_control_msg(usbDevHandle, (0x01 << 5), 0x09, 0,
-					bytes[i], new byte[0], 0, 0);
-			if (len < 0) {
-				tryARecover();
-				len = usb_control_msg(usbDevHandle, (0x01 << 5), 0x09, 0,
-						bytes[i], new byte[0], 0, 0);
-				checkState(len >= 0, "controlMsg: %s", usb_strerror());
+			if (send(bytes[i]) < 0) {
+				tryRecover();
+				checkState(send(bytes[i]) >= 0, "controlMsg: %s", usb_strerror());
 			}
 		}
-
-		int len = usb_control_msg(usbDevHandle, (0x01 << 5), 0x09, 0, divider,
-				new byte[0], 0, 0);
-		checkState(len >= 0, "controlMsg: %s", usb_strerror());
 		fireSent(bytes);
 	}
 
-	private void tryARecover() throws USBException {
+	private int send(byte b) {
+		return usb_control_msg(usbDevHandle, (0x01 << 5), 0x09, 0, b, ZERO_BYTES, 0, 0);
+	}
+
+	private void tryRecover() throws USBException {
 		try {
 			MILLISECONDS.sleep(10);
 			Map<String, Usb_Device> deviceMap = getDevices();

@@ -8,6 +8,7 @@ import static java.util.stream.Collectors.joining;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
@@ -16,6 +17,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.util.Integers.tryParse;
+import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
@@ -35,9 +37,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.ardulink.core.Pin.Type;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
-import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2.ALPByteStreamProcessor;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.resource.EmptyResource;
 import org.eclipse.jetty.util.resource.Resource;
@@ -231,10 +232,11 @@ public class RestRouteBuilder extends RouteBuilder {
 	}
 
 	private void writeArduinoMessagesTo(String arduino, BlockingQueue<FromDeviceMessagePinStateChanged> messages) {
-		Protocol proto = ArdulinkProtocol2.instance();
+		ALPByteStreamProcessor byteStreamProcessor = new ALPByteStreamProcessor();
 		from(arduino).process(exchange -> {
 			String body = exchange.getMessage().getBody(String.class);
-			FromDeviceMessage fromDevice = proto.fromDevice(body.getBytes());
+			FromDeviceMessage fromDevice = getFirst(parse(byteStreamProcessor, byteStreamProcessor.toBytes(body)))
+					.getOrThrow("Cannot handle %s", body);
 			if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
 				messages.add((FromDeviceMessagePinStateChanged) fromDevice);
 			}

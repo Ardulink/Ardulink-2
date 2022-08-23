@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.ardulink.core.messages.events.api;
+package org.ardulink.core.proto.api.bytestreamproccesors;
 
-import org.ardulink.core.messages.api.FromDeviceMessage;
+import org.ardulink.util.ByteArray;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -25,8 +25,20 @@ import org.ardulink.core.messages.api.FromDeviceMessage;
  * [adsense]
  *
  */
-public interface FromDeviceMessageEvent {
-	
-	FromDeviceMessage getFromDeviceMessage();
+public abstract class AbstractState implements State {
+
+	private final ByteArray byteArray = new ByteArray(64);
+
+	protected void bufferAppend(byte b) {
+		byteArray.append(b);
+	}
+
+	protected int bufferLength() {
+		return byteArray.length();
+	}
+
+	protected byte[] copyOfBuffer() {
+		return byteArray.copy();
+	}
 
 }

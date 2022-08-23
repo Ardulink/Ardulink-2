@@ -28,6 +28,7 @@ import org.ardulink.core.Link;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.linkmanager.LinkFactory;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.qos.QosLink;
 
 import jssc.SerialPort;
@@ -54,12 +55,11 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		String portIdentifier = config.getPort();
 		final SerialPort serialPort = serialPort(config, portIdentifier);
 
-		StreamConnection connection = new StreamConnection(
-				new SerialInputStream(serialPort), new SerialOutputStream(
-						serialPort), config.getProto());
-
+		ByteStreamProcessor byteStreamProcessor = config.getProto().newByteStreamProcessor();
 		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(
-				connection, config.getProto());
+				new StreamConnection(new SerialInputStream(serialPort), new SerialOutputStream(serialPort), byteStreamProcessor),
+				byteStreamProcessor);
+
 		Link link = config.isQos() ? new QosLink(connectionBasedLink)
 				: connectionBasedLink;
 

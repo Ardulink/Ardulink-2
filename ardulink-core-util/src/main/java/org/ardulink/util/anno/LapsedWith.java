@@ -16,6 +16,8 @@ public @interface LapsedWith {
 
 	String JDK8 = "JDK8";
 	String JDK9 = "JDK9";
+	@Deprecated
+	String NEXT_ARDULINK_VERSION_REFACTORING_DONE = "Next Ardulink version / Refactoring done";
 
 	String value();
 

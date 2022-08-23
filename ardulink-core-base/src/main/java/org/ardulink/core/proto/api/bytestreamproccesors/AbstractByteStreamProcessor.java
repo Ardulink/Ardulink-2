@@ -13,10 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.ardulink.core.messages.events.impl;
+package org.ardulink.core.proto.api.bytestreamproccesors;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.ardulink.core.messages.api.FromDeviceMessage;
-import org.ardulink.core.messages.events.api.FromDeviceMessageEvent;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -26,17 +28,31 @@ import org.ardulink.core.messages.events.api.FromDeviceMessageEvent;
  * [adsense]
  *
  */
-public class DefaultFromDeviceMessageEvent implements FromDeviceMessageEvent {
+public abstract class AbstractByteStreamProcessor implements ByteStreamProcessor {
 
-	private FromDeviceMessage fromDeviceMessage;
-	
-	public DefaultFromDeviceMessageEvent(FromDeviceMessage fromDeviceMessage) {
-		this.fromDeviceMessage = fromDeviceMessage;
+	private final List<FromDeviceListener> listeners = new CopyOnWriteArrayList<FromDeviceListener>();
+
+	@Override
+	public void process(byte[] bytes) {
+		for (byte b : bytes) {
+			process(b);
+		}
 	}
 
 	@Override
-	public FromDeviceMessage getFromDeviceMessage() {
-		return fromDeviceMessage;
+	public void addListener(FromDeviceListener listener) {
+		listeners.add(listener);
+	}
+	
+	@Override
+	public void removeListener(FromDeviceListener listener) {
+		listeners.remove(listener);
+	}
+
+	protected void fireEvent(FromDeviceMessage fromDevice) {
+		for (FromDeviceListener listener : listeners) {
+			listener.handle(fromDevice);
+		}
 	}
 
 }

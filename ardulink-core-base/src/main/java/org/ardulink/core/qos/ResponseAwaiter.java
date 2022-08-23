@@ -61,7 +61,6 @@ public class ResponseAwaiter {
 			}
 		};
 		this.link.addRplyListener(listener);
-
 	}
 
 	/**

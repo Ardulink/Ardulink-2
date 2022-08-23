@@ -39,7 +39,7 @@ public class DummyLinkFactory implements LinkFactory<DummyLinkConfig> {
 
 	@Override
 	public ConnectionBasedLink newLink(DummyLinkConfig config) {
-		return spy(new ConnectionBasedLink(spy(new DummyConnection(config)), config.protocol));
+		return spy(new ConnectionBasedLink(spy(new DummyConnection(config)), config.protocol.newByteStreamProcessor()));
 	}
 
 	@Override

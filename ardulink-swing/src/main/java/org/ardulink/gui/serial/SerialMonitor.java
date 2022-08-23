@@ -86,8 +86,7 @@ public class SerialMonitor extends JPanel implements Linkable  {
 		sendButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					link.getConnection().write(messageTextField.getText().getBytes());
-					link.getConnection().write(link.getProtocol().getSeparator());
+					link.getConnection().write((messageTextField.getText() + "\n").getBytes());
 				} catch (IOException e1) {
 					propagate(e1);
 				}

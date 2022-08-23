@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
-import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
 import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
@@ -19,9 +18,79 @@ import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
 import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.util.MapBuilder;
 
 public class SimpleDigisparkProtocol implements Protocol {
+
+	private static class SimpleDigisparkProtocolByteStreamProcessor implements ByteStreamProcessor {
+
+		private static final byte separator = (byte) 255;
+
+		@Override
+		public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
+			Pin pin = pinStateChange.getPin();
+			Message message = getMappedMessage(pin);
+			return new byte[] { message.protoInt, (byte) pin.pinNum(), message.getValue(pinStateChange), separator };
+		}
+
+		private Message getMappedMessage(Pin pin) {
+			Message message = messages.get(pin.getType());
+			checkState(message != null, "Unsupported type %s of pin %s. Supported types are %s", pin.getType(), pin,
+					messages.keySet());
+			return message;
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageTone tone) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageNoTone noTone) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageCustom custom) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void addListener(FromDeviceListener listener) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public void removeListener(FromDeviceListener listener) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void process(byte[] read) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void process(byte read) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageStartListening startListening) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
+			throw new UnsupportedOperationException();
+		}
+	}
 
 	private enum Message {
 		POWER_PIN_INTENSITY((byte) 11) {
@@ -46,17 +115,11 @@ public class SimpleDigisparkProtocol implements Protocol {
 		public abstract byte getValue(ToDeviceMessagePinStateChange pinStateChange);
 	}
 
-	private final byte separator = (byte) 255;
-
-	private final byte[] separatorArray = new byte[] { separator };
-
 	private static final SimpleDigisparkProtocol instance = new SimpleDigisparkProtocol();
 
 	private static final Map<Type, Message> messages = Collections
-			.unmodifiableMap(new EnumMap<Type, Message>(MapBuilder
-					.<Type, Message> newMapBuilder()
-					.put(ANALOG, Message.POWER_PIN_INTENSITY)
-					.put(DIGITAL, Message.POWER_PIN_SWITCH).build()));
+			.unmodifiableMap(new EnumMap<Type, Message>(MapBuilder.<Type, Message>newMapBuilder()
+					.put(ANALOG, Message.POWER_PIN_INTENSITY).put(DIGITAL, Message.POWER_PIN_SWITCH).build()));
 
 	public static Protocol instance() {
 		return instance;
@@ -68,59 +131,8 @@ public class SimpleDigisparkProtocol implements Protocol {
 	}
 
 	@Override
-	public byte[] getSeparator() {
-		return separatorArray;
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageStartListening startListening) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
-		Pin pin = pinStateChange.getPin();
-		Message message = getMappedMessage(pin);
-		return new byte[] { message.protoInt, (byte) pin.pinNum(),
-				message.getValue(pinStateChange), separator };
-	}
-
-	private Message getMappedMessage(Pin pin) {
-		Message message = messages.get(pin.getType());
-		checkState(message != null,
-				"Unsupported type %s of pin %s. Supported types are %s",
-				pin.getType(), pin, messages.keySet());
-		return message;
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageTone tone) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageNoTone noTone) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageCustom custom) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public FromDeviceMessage fromDevice(byte[] bytes) {
-		throw new UnsupportedOperationException();
+	public ByteStreamProcessor newByteStreamProcessor() {
+		return new SimpleDigisparkProtocolByteStreamProcessor();
 	}
 
 	@Override

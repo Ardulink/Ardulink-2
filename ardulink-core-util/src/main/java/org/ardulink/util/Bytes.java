@@ -38,18 +38,18 @@ public final class Bytes {
 		return newArray;
 	}
 
-	public static int indexOf(byte[] array, byte[] target) {
-		return indexOf(array, target, 0);
+	public static int indexOf(byte[] array, byte[] search) {
+		return indexOf(array, search, 0);
 	}
 
-	public static int indexOf(byte[] array, byte[] target, int startpos) {
-		return indexOf(array, target, startpos, array.length);
+	public static int indexOf(byte[] array, byte[] search, int startpos) {
+		return indexOf(array, search, startpos, array.length);
 	}
 
-	public static int indexOf(byte[] array, byte[] target, int startpos, int endpos) {
-		outer: for (int i = startpos; i < endpos - target.length + 1; i++) {
-			for (int j = 0; j < target.length; j++) {
-				if (array[i + j] != target[j]) {
+	public static int indexOf(byte[] array, byte[] search, int startpos, int endpos) {
+		outer: for (int i = startpos; i < endpos - search.length + 1; i++) {
+			for (int j = 0; j < search.length; j++) {
+				if (array[i + j] != search[j]) {
 					continue outer;
 				}
 			}

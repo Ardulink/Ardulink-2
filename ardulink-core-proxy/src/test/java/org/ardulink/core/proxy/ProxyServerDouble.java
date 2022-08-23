@@ -32,11 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.ardulink.util.Lists;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -47,8 +46,6 @@ import org.ardulink.core.proto.impl.ArdulinkProtocol2;
  *
  */
 public class ProxyServerDouble extends ExternalResource {
-
-	private final Protocol tcpProto = ArdulinkProtocol2.instance();
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(ProxyServerDouble.class);
@@ -63,7 +60,7 @@ public class ProxyServerDouble extends ExternalResource {
 
 	private final Thread thread;
 	private Map<String, List<String>> answers = makeMap(1);
-	private final List<String> received = new ArrayList<String>();
+	private final List<String> received = Lists.newArrayList();
 
 	private ServerSocket serverSocket;
 
@@ -93,7 +90,7 @@ public class ProxyServerDouble extends ExternalResource {
 							for (String response : responses) {
 								logger.info("Responding {}", response);
 								out.print(response);
-								out.print(new String(tcpProto.getSeparator()));
+								out.print("\n");
 								out.flush();
 							}
 						}

@@ -36,15 +36,12 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.border.EmptyBorder;
 
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.gui.connectionpanel.ConnectionPanel;
 import org.ardulink.gui.customcomponents.SignalButton;
-import org.ardulink.gui.facility.LAFUtil;
 import org.ardulink.legacy.Link;
 import org.ardulink.legacy.Link.LegacyLinkAdapter;
 import org.ardulink.util.Lists;

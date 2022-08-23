@@ -12,19 +12,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.core.proto.api;
 
-import org.ardulink.core.messages.api.FromDeviceMessage;
-import org.ardulink.core.messages.api.ToDeviceMessageCustom;
-import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
-import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
-import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
-import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
-import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
-import org.ardulink.core.messages.api.ToDeviceMessageTone;
-
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -38,22 +30,6 @@ public interface Protocol {
 
 	String getName();
 
-	byte[] getSeparator();
-
-	byte[] toDevice(ToDeviceMessageStartListening startListening);
-
-	byte[] toDevice(ToDeviceMessageStopListening stopListening);
-
-	byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange);
-
-	byte[] toDevice(ToDeviceMessageKeyPress keyPress);
-
-	byte[] toDevice(ToDeviceMessageTone tone);
-
-	byte[] toDevice(ToDeviceMessageNoTone noTone);
-
-	byte[] toDevice(ToDeviceMessageCustom custom);
-
-	FromDeviceMessage fromDevice(byte[] bytes);
-
+	ByteStreamProcessor newByteStreamProcessor();
+	
 }

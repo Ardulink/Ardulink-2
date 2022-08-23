@@ -31,5 +31,5 @@ public interface FromDeviceMessageReply extends FromDeviceMessage {
 
 	long getId();
 
-	Map<String, ? extends Object> getParameters();
+	Map<String, Object> getParameters();
 }

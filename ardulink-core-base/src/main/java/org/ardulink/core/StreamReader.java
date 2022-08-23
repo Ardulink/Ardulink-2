@@ -22,6 +22,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.util.anno.LapsedWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,6 @@ public abstract class StreamReader implements Closeable {
 	private static final Logger logger = LoggerFactory.getLogger(StreamReader.class);
 
 	private final InputStream inputStream;
-	private StreamScanner scanner;
 
 	private Thread thread;
 
@@ -47,7 +47,7 @@ public abstract class StreamReader implements Closeable {
 		this.inputStream = inputStream;
 	}
 
-	public void runReaderThread(final byte[] delimiter) {
+	public void runReaderThread(final ByteStreamProcessor byteStreamProcessor) {
 		this.thread = new Thread() {
 
 			{
@@ -57,31 +57,57 @@ public abstract class StreamReader implements Closeable {
 
 			@Override
 			public void run() {
-				readUntilClosed(delimiter);
+				readUntilClosed(byteStreamProcessor);
 			}
 
 		};
 	}
 
-	public void readUntilClosed(byte[] delimiter) {
-		this.scanner = new StreamScanner(this.inputStream, delimiter);
+	public void runReaderThread() {
+		this.thread = new Thread() {
+			
+			{
+				setDaemon(true);
+				start();
+			}
+			
+			@Override
+			public void run() {
+				readUntilClosed();
+			}
+			
+		};
+	}
+
+	public void readUntilClosed() {
 		try {
-			while (scanner.hasNext() && !isInterrupted()) {
+			int read;
+			while ((read = inputStream.read()) != -1 && !isInterrupted()) {
 				try {
-					logger.debug("Waiting for data");
-					byte[] bytes = scanner.next();
-					logger.debug("Stream read {}", bytes);
-					if (bytes != null) {
-						received(bytes);
-					}
+					received(new byte[] { (byte) read });
 				} catch (Exception e) {
 					logger.error("Error while retrieving data", e);
 				}
 			}
 		} catch (Exception e) {
 			logger.error("Error while Reader Initialization", e);
-		} finally {
-			scanner.close();
+		}
+	}
+
+	public void readUntilClosed(ByteStreamProcessor byteStreamProcessor) {
+		try {
+			int read;
+			while ((read = inputStream.read()) != -1 && !isInterrupted()) {
+				try {
+					byte b = (byte) read;
+					received(new byte[] { b });
+					byteStreamProcessor.process(b);
+				} catch (Exception e) {
+					logger.error("Error while retrieving data", e);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Error while Reader Initialization", e);
 		}
 	}
 
@@ -93,11 +119,6 @@ public abstract class StreamReader implements Closeable {
 
 	@Override
 	public void close() throws IOException {
-		@LapsedWith(module = JDK8, value = "Optional#ifPresent")
-		StreamScanner locScanner = this.scanner;
-		if (locScanner != null) {
-			locScanner.interrupt();
-		}
 		@LapsedWith(module = JDK8, value = "Optional#ifPresent")
 		Thread locThread = this.thread;
 		if (locThread != null) {

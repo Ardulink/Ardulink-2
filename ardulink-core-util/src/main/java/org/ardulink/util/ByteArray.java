@@ -18,8 +18,11 @@ package org.ardulink.util;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.anno.LapsedWith.NEXT_ARDULINK_VERSION_REFACTORING_DONE;
 
 import java.util.Arrays;
+
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -28,6 +31,11 @@ import java.util.Arrays;
  * 
  * [adsense]
  *
+ */
+/**
+ * This class is <b>not</b> threadsafe.
+ * 
+ * @author Peter Fichtner
  */
 public class ByteArray {
 
@@ -54,7 +62,9 @@ public class ByteArray {
 		return Bytes.indexOf(byteArray, delimiter, 0, pointer);
 	}
 
-	public synchronized byte[] next(byte[] delimiter) {
+	@LapsedWith(NEXT_ARDULINK_VERSION_REFACTORING_DONE)
+	@Deprecated // without StreamScanner no more needed
+	public byte[] next(byte[] delimiter) {
 		int delimiterAt = indexOf(delimiter);
 		if (delimiterAt < 0) {
 			return null;
@@ -72,10 +82,26 @@ public class ByteArray {
 	 * @param buffer    the data to append
 	 * @param bytesRead length of the data to append from <code>buffer</code>
 	 */
-	public synchronized void append(byte[] buffer, int bytesRead) {
+	public void append(byte[] buffer, int bytesRead) {
 		checkArgument(this.pointer + bytesRead <= this.byteArray.length, "buffer overrun");
 		System.arraycopy(buffer, 0, this.byteArray, this.pointer, bytesRead);
 		this.pointer += bytesRead;
+	}
+
+	public void append(byte b) {
+		append(new byte[] { b }, 1);
+	}
+
+	public int length() {
+		return pointer;
+	}
+
+	public byte[] copy() {
+		return Arrays.copyOf(byteArray, pointer);
+	}
+
+	public void clear() {
+		pointer = 0;
 	}
 
 }

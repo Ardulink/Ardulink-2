@@ -35,6 +35,7 @@ import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.Tone;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.anno.LapsedWith;
 import org.junit.After;
@@ -59,6 +60,7 @@ public class QosLinkTest {
 	@Rule
 	public Arduino arduino = Arduino.newArduino();
 
+	private final ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
 	private QosLink qosLink;
 
 	@After
@@ -68,80 +70,71 @@ public class QosLinkTest {
 
 	@Test
 	public void canDoGuranteedDelivery() throws Exception {
-		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\/\\?id\\=(\\d)"))
-				.thenRespond("alp://rply/ok?id=%s");
+		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).thenRespond(lf("alp://rply/ok?id=%s"));
 		qosLink = newQosLink(connectionTo(arduino), 15, MINUTES);
 		qosLink.sendNoTone(analogPin(3));
 	}
 
 	@Test
-	public void doesThrowExceptionIfNotResponseReceivedWithinHalfAsecond()
-			throws Exception {
-		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\/\\?id\\=(\\d)"))
-				.thenDoNotRespond();
+	public void doesThrowExceptionIfNotResponseReceivedWithinHalfAsecond() throws Exception {
+		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).thenDoNotRespond();
 		qosLink = newQosLink(connectionTo(arduino), 500, MILLISECONDS);
 		@LapsedWith(module = JDK8, value = "Lambda")
 		IllegalStateException exception = assertThrows(IllegalStateException.class, new ThrowingRunnable() {
 			@Override
-			public void run() throws Throwable {
+			public void run() throws IOException {
 				qosLink.sendNoTone(analogPin(3));
 			}
 		});
-		assertThat(exception.getMessage(), is(allOf(containsString("response"),
-				containsString("500 MILLISECONDS"))));
+		assertThat(exception.getMessage(), is(allOf(containsString("response"), containsString("500 MILLISECONDS"))));
 	}
 
 	@Test
 	public void doesThrowExceptionIfKoResponse() throws Exception {
-		arduino.whenReceive(regex("alp:\\/\\/notn\\/3\\/\\?id\\=(\\d)"))
-				.thenRespond("alp://rply/ko?id=%s");
+		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).thenRespond(lf("alp://rply/ko?id=%s"));
 		Connection connection = connectionTo(arduino);
 		qosLink = newQosLink(connection, 500 + someMillisMore(), MILLISECONDS);
 		@LapsedWith(module = JDK8, value = "Lambda")
 		IllegalStateException exception = assertThrows(IllegalStateException.class, new ThrowingRunnable() {
 			@Override
-			public void run() throws Throwable {
+			public void run() throws IOException {
 				qosLink.sendNoTone(analogPin(3));
 			}
 		});
-		assertThat(exception.getMessage(), is(allOf(containsString("status"),
-				containsString("not ok"))));
-	}
-
-	private int someMillisMore() {
-		return 250;
+		assertThat(exception.getMessage(), is(allOf(containsString("status"), containsString("not ok"))));
 	}
 
 	@Test
 	public void secondCallPassesIfFirstOneKeepsUnresponded() throws Exception {
-		arduino.whenReceive(regex("alp:\\/\\/tone\\/1/2/3\\?id\\=(\\d)"))
-				.thenDoNotRespond();
-		arduino.whenReceive(regex("alp:\\/\\/tone\\/4/5/6\\?id\\=(\\d)"))
-				.thenRespond("alp://rply/ok?id=%s");
+		arduino.whenReceive(regex(lf("alp:\\/\\/tone\\/1\\/2\\/3\\?id\\=(\\d)"))).thenDoNotRespond();
+		arduino.whenReceive(regex(lf("alp:\\/\\/tone\\/4\\/5\\/6\\?id\\=(\\d)"))).thenRespond(lf("alp://rply/ok?id=%s"));
 		qosLink = newQosLink(connectionTo(arduino), 500, MILLISECONDS);
 		try {
-			qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2)
-					.withDuration(3, MILLISECONDS));
+			qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2).withDuration(3, MILLISECONDS));
 		} catch (IllegalStateException e) {
 			assertThat(e.getMessage(), containsString("No response"));
 		}
-		qosLink.sendTone(Tone.forPin(analogPin(4)).withHertz(5)
-				.withDuration(6, MILLISECONDS));
+		qosLink.sendTone(Tone.forPin(analogPin(4)).withHertz(5).withDuration(6, MILLISECONDS));
 	}
 
-	private QosLink newQosLink(Connection connection, int timeout,
-			TimeUnit timeUnit) throws IOException {
-		return new QosLink(new ConnectionBasedLink(connection,
-				ArdulinkProtocol2.instance()), timeout, timeUnit);
+	private QosLink newQosLink(Connection connection, int timeout, TimeUnit timeUnit) throws IOException {
+		return new QosLink(new ConnectionBasedLink(connection, byteStreamProcessor), timeout, timeUnit);
 	}
 
 	private StreamConnection connectionTo(Arduino arduino) {
-		return new StreamConnection(arduino.getInputStream(),
-				arduino.getOutputStream(), ArdulinkProtocol2.instance());
+		return new StreamConnection(arduino.getInputStream(), arduino.getOutputStream(), byteStreamProcessor);
 	}
 
 	private Pattern regex(String regex) {
 		return Pattern.compile(regex);
+	}
+
+	private static int someMillisMore() {
+		return 250;
+	}
+
+	private static String lf(String string) {
+		return string + "\n";
 	}
 
 }

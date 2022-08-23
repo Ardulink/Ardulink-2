@@ -16,15 +16,10 @@ limitations under the License.
 
 package org.ardulink.core.proto.impl;
 
-import org.ardulink.core.messages.api.FromDeviceMessage;
-import org.ardulink.core.messages.api.ToDeviceMessageCustom;
-import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
-import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
-import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
-import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
-import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
-import org.ardulink.core.messages.api.ToDeviceMessageTone;
+import static org.mockito.Mockito.mock;
+
 import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -48,48 +43,8 @@ public class DummyProtocol implements Protocol {
 	}
 
 	@Override
-	public byte[] getSeparator() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageStartListening startListening) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageTone tone) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageNoTone noTone) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public byte[] toDevice(ToDeviceMessageCustom custom) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public FromDeviceMessage fromDevice(byte[] bytes) {
-		throw new UnsupportedOperationException();
+	public ByteStreamProcessor newByteStreamProcessor() {
+		return mock(ByteStreamProcessor.class);
 	}
 
 }

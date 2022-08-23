@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.ardulink.core.messages.events.api;
+package org.ardulink.core.proto.api.bytestreamproccesors;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -23,8 +23,6 @@ package org.ardulink.core.messages.events.api;
  * [adsense]
  *
  */
-public interface FromDeviceMessageListener {
-	
-	void fromDeviceMessageReceived(FromDeviceMessageEvent e);
-
+public interface State {
+	AbstractState process(byte b);
 }
