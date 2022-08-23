@@ -29,10 +29,9 @@ public class ResponseAwaiter {
 
 	/**
 	 * Do not reuse instances! After calling {@link #waitForResponse(long)} the
-	 * reply listener is deregistered! So you need to create a new instance.
+	 * reply listener is unregistered! So you need to create a new instance.
 	 * 
-	 * @param link
-	 *            the Link to wait for a reply on
+	 * @param link the Link to wait for a reply on
 	 * @throws IOException
 	 */
 	public static ResponseAwaiter onLink(Link link) throws IOException {
@@ -51,21 +50,19 @@ public class ResponseAwaiter {
 			@Override
 			public void rplyReceived(RplyEvent event) {
 				lock.lock();
-				replies.add(event);
 				try {
+					replies.add(event);
 					condition.signal();
 				} finally {
 					lock.unlock();
 				}
-
 			}
 		};
 		this.link.addRplyListener(listener);
 	}
 
 	/**
-	 * This method blocks until the response for the passed message id is
-	 * received.
+	 * This method blocks until the response for the passed message id is received.
 	 * 
 	 * @param messageId
 	 * @return
@@ -76,20 +73,10 @@ public class ResponseAwaiter {
 			while (true) {
 				lock.lock();
 				try {
-					if (timeout < 0 || timeUnit == null) {
-						condition.await();
-					} else {
-						checkState(condition.await(timeout, timeUnit),
-								"No response received within %s %s ",
-								this.timeout, timeUnit);
-					}
-					Optional<RplyEvent> rply = messageIdReceived(messageId);
-					replies.clear();
+					Optional<RplyEvent> rply = waitForRplyEventWithMsgId(messageId);
 					if (rply.isPresent()) {
 						return rply.get();
 					}
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
 				} finally {
 					lock.unlock();
 				}
@@ -99,18 +86,34 @@ public class ResponseAwaiter {
 		}
 	}
 
-	private Optional<RplyEvent> messageIdReceived(long messageId) {
+	private Optional<RplyEvent> waitForRplyEventWithMsgId(long messageId) {
+		try {
+			if (timeout < 0 || timeUnit == null) {
+				condition.await();
+			} else {
+				checkState(condition.await(timeout, timeUnit), "No response received within %s %s ", this.timeout,
+						timeUnit);
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 		lock.lock();
 		try {
-			for (RplyEvent reply : replies) {
-				if (reply.getId() == messageId) {
-					return Optional.of(reply);
-				}
-			}
-			return Optional.absent();
+			Optional<RplyEvent> messageIdReceived = messageIdReceived(messageId);
+			replies.clear();
+			return messageIdReceived;
 		} finally {
 			lock.unlock();
 		}
+	}
+
+	private Optional<RplyEvent> messageIdReceived(long messageId) {
+		for (RplyEvent reply : replies) {
+			if (reply.getId() == messageId) {
+				return Optional.of(reply);
+			}
+		}
+		return Optional.absent();
 	}
 
 }
