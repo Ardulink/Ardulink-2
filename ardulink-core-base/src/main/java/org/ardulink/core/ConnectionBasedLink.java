@@ -133,7 +133,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	 *         otherwise <code>false</code>
 	 */
 	public boolean waitForArduinoToBoot(int wait, TimeUnit timeUnit) {
-		return waitForArduinoToBoot(wait, timeUnit, Mode.ANY_MESSAGE_RECEIVED);
+		return waitForArduinoToBoot(wait, timeUnit, ANY_MESSAGE_RECEIVED);
 	}
 
 	public enum Mode {
@@ -192,8 +192,11 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		// (yet). So let's write something that the arduino tries to respond to.
 		try {
 			long messageId = 0;
-			connection.write(this.byteStreamProcessor
-					.toDevice(addMessageId(new DefaultToDeviceMessageNoTone(analogPin(0)), messageId)));
+			// TODO Introduce new message type: ToDeviceQueryFirmwareInfo (ArdulinkProtocol
+			// then would send the noTone message or any other message where Ardulink will
+			// respond to)
+			ToDeviceMessageNoTone dummyMessage = new DefaultToDeviceMessageNoTone(analogPin(0));
+			connection.write(this.byteStreamProcessor.toDevice(addMessageId(dummyMessage, messageId)));
 		} catch (IOException e) {
 			// ignore
 		}

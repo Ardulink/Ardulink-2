@@ -18,15 +18,20 @@ package org.ardulink.core.proto.impl;
 
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.util.Integers.tryParse;
 import static org.firmata4j.firmata.parser.FirmataEventType.ANALOG_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.DIGITAL_MESSAGE_RESPONSE;
+import static org.firmata4j.firmata.parser.FirmataEventType.FIRMWARE_MESSAGE;
 import static org.firmata4j.firmata.parser.FirmataEventType.PIN_ID;
 import static org.firmata4j.firmata.parser.FirmataEventType.PIN_VALUE;
+import static org.firmata4j.firmata.parser.FirmataToken.ANALOG_MESSAGE;
+import static org.firmata4j.firmata.parser.FirmataToken.END_SYSEX;
+import static org.firmata4j.firmata.parser.FirmataToken.EXTENDED_ANALOG;
+import static org.firmata4j.firmata.parser.FirmataToken.START_SYSEX;
 
 import org.ardulink.core.Pin;
-import org.ardulink.core.messages.api.FromDeviceMessage;
+import org.ardulink.core.Tone;
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
 import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
@@ -35,6 +40,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
 import org.ardulink.core.messages.impl.DefaultFromDeviceMessagePinStateChanged;
+import org.ardulink.core.messages.impl.DefaultFromDeviceMessageReady;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProcessor;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
@@ -60,41 +66,70 @@ public class FirmataProtocol implements Protocol {
 
 	private static class FirmataByteStreamProcessor extends AbstractByteStreamProcessor {
 
+		private static final byte TONE = (byte) 0x5F;
+		private static final byte TONE_ON = (byte) 0x00;
+		private static final byte TONE_OFF = (byte) 0x01;
+
+		private abstract class PinStateChangedConsumer extends Consumer<Event> {
+
+			@Override
+			public void accept(Event evt) {
+				String pinString = String.valueOf(evt.getBodyItem(PIN_ID));
+				Integer pinInt = tryParse(pinString).getOrThrow("Cannot parse %s", pinString);
+				fireEvent(new DefaultFromDeviceMessagePinStateChanged(createPin(pinInt),
+						convertValue(evt.getBodyItem(PIN_VALUE))));
+			}
+
+			protected abstract Object convertValue(Object value);
+
+			protected abstract Pin createPin(Integer pin);
+		}
+
 		private final FiniteStateMachine delegate = new FiniteStateMachine(WaitingForMessageState.class);
 
 		public FirmataByteStreamProcessor() {
-			Consumer<Event> adapter = adapter();
-			delegate.addHandler(ANALOG_MESSAGE_RESPONSE, adapter);
-			delegate.addHandler(DIGITAL_MESSAGE_RESPONSE, adapter);
+			delegate.addHandler(ANALOG_MESSAGE_RESPONSE, analogPinStateChangedConsumer());
+			delegate.addHandler(DIGITAL_MESSAGE_RESPONSE, digitalPinStateChangedConsumer());
+			delegate.addHandler(FIRMWARE_MESSAGE, firmwareConsumer());
 		}
 
-		private Consumer<Event> adapter() {
-			return new Consumer<Event>() {
+		private PinStateChangedConsumer analogPinStateChangedConsumer() {
+			return new PinStateChangedConsumer() {
 
 				@Override
-				public void accept(Event evt) {
-					fireEvent(convert(evt));
+				protected Object convertValue(Object value) {
+					return value;
 				}
 
-				private FromDeviceMessage convert(Event event) {
-					String pinNumber = String.valueOf(event.getBodyItem(PIN_ID));
-					Pin pin = createPin(event.getType(), tryParse(pinNumber).getOrThrow("Cannot parse %s", pinNumber));
-					Object value = event.getBodyItem(PIN_VALUE);
-					return new DefaultFromDeviceMessagePinStateChanged(pin, convertValue(pin, value));
+				@Override
+				protected Pin createPin(Integer pin) {
+					return analogPin(pin);
 				}
 
-				private Object convertValue(Pin pin, Object value) {
-					return pin.is(DIGITAL) ? value.equals(1) ? true : false : value;
+			};
+		}
+
+		private PinStateChangedConsumer digitalPinStateChangedConsumer() {
+			return new PinStateChangedConsumer() {
+
+				@Override
+				protected Object convertValue(Object value) {
+					return value.equals(1);
 				}
 
-				private Pin createPin(String type, Integer pin) {
-					if (ANALOG_MESSAGE_RESPONSE.equals(type)) {
-						return analogPin(pin);
-					} else if (DIGITAL_MESSAGE_RESPONSE.equals(type)) {
-						return digitalPin(pin);
-					} else {
-						throw new IllegalStateException("Unknown pin type " + type);
-					}
+				@Override
+				protected Pin createPin(Integer pin) {
+					return digitalPin(pin);
+				}
+
+			};
+		}
+
+		private Consumer<Event> firmwareConsumer() {
+			return new Consumer<Event>() {
+				@Override
+				public void accept(Event t) {
+					fireEvent(new DefaultFromDeviceMessageReady());
 				}
 			};
 		}
@@ -121,6 +156,15 @@ public class FirmataProtocol implements Protocol {
 
 		@Override
 		public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
+			if (pinStateChange.getPin().is(ANALOG)) {
+				int pinId = pinStateChange.getPin().pinNum();
+				int value = (Integer) pinStateChange.getValue();
+				if (pinId >= (2 << 5) || value >= (2 << 15)) {
+					return sysex(EXTENDED_ANALOG, (byte) pinId, lsb(value), msb(value), (byte) ((value >>> 14) & 0x7F),
+							(byte) ((value >>> 21) & 0x7F));
+				}
+				return new byte[] { (byte) (ANALOG_MESSAGE | (pinId & 0x0F)), lsb(value), msb(value) };
+			}
 			throw notYetImplemented();
 		}
 
@@ -129,14 +173,28 @@ public class FirmataProtocol implements Protocol {
 			throw notYetImplemented();
 		}
 
+		/**
+		 * <a href=
+		 * "https://github.com/firmata/protocol/blob/master/proposals/tone-proposal.md">Not
+		 * part of Firmata! This is a proposal</a>
+		 */
 		@Override
-		public byte[] toDevice(ToDeviceMessageTone tone) {
-			throw notYetImplemented();
+		public byte[] toDevice(ToDeviceMessageTone toneMessage) {
+			Tone tone = toneMessage.getTone();
+			int frequency = tone.getHertz();
+			Long duration = tone.getDurationInMillis() == null ? 0 : tone.getDurationInMillis();
+			return sysex(TONE, TONE_ON, (byte) tone.getPin().pinNum(), lsb(frequency), msb(frequency), lsb(duration),
+					msb(duration));
 		}
 
+		/**
+		 * <a href=
+		 * "https://github.com/firmata/protocol/blob/master/proposals/tone-proposal.md">Not
+		 * part of Firmata! This is a proposal</a>
+		 */
 		@Override
-		public byte[] toDevice(ToDeviceMessageNoTone noTone) {
-			throw notYetImplemented();
+		public byte[] toDevice(ToDeviceMessageNoTone noToneMessage) {
+			return sysex(TONE, TONE_OFF, (byte) noToneMessage.getAnalogPin().pinNum());
 		}
 
 		@Override
@@ -146,6 +204,22 @@ public class FirmataProtocol implements Protocol {
 
 		private static UnsupportedOperationException notYetImplemented() {
 			return new UnsupportedOperationException("not yet implemented");
+		}
+
+		private byte[] sysex(byte... bytes) {
+			byte[] sysex = new byte[bytes.length + 2];
+			sysex[0] = (byte) 0xF0;
+			System.arraycopy(bytes, 0, sysex, 1, bytes.length);
+			sysex[sysex.length - 1] = (byte) 0xF7;
+			return sysex;
+		}
+
+		private static byte msb(long value) {
+			return (byte) ((value >>> 7) & 0x7F);
+		}
+
+		private static byte lsb(long value) {
+			return (byte) (value & 0x7F);
 		}
 
 	}

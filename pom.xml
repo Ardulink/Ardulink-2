@@ -91,6 +91,7 @@
 		<module>ardulink-console</module>
 		<module>ardulink-mail</module>
 		<module>ardulink-rest</module>
+		<module>ardulink-core-firmata-proto</module>
 		<module>example-datareceiver</module>
 		<module>example-uniqueid</module>
 		<module>example-buttonquest</module>
