@@ -16,18 +16,20 @@ limitations under the License.
 
 package org.ardulink.core.proto.impl;
 
+import static java.lang.Boolean.TRUE;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
+import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.util.Integers.tryParse;
 import static org.firmata4j.firmata.parser.FirmataEventType.ANALOG_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.DIGITAL_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.FIRMWARE_MESSAGE;
 import static org.firmata4j.firmata.parser.FirmataEventType.PIN_ID;
 import static org.firmata4j.firmata.parser.FirmataEventType.PIN_VALUE;
-import static org.firmata4j.firmata.parser.FirmataToken.ANALOG_MESSAGE;
 import static org.firmata4j.firmata.parser.FirmataToken.END_SYSEX;
-import static org.firmata4j.firmata.parser.FirmataToken.EXTENDED_ANALOG;
+import static org.firmata4j.firmata.parser.FirmataToken.REPORT_ANALOG;
+import static org.firmata4j.firmata.parser.FirmataToken.REPORT_DIGITAL;
 import static org.firmata4j.firmata.parser.FirmataToken.START_SYSEX;
 
 import org.ardulink.core.Pin;
@@ -45,6 +47,7 @@ import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProcessor;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.firmata4j.Consumer;
+import org.firmata4j.firmata.FirmataMessageFactory;
 import org.firmata4j.firmata.parser.WaitingForMessageState;
 import org.firmata4j.fsm.Event;
 import org.firmata4j.fsm.FiniteStateMachine;
@@ -146,26 +149,40 @@ public class FirmataProtocol implements Protocol {
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageStartListening startListening) {
-			throw notYetImplemented();
+			return reportingMessage(startListening.getPin(), true);
 		}
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
+			return reportingMessage(stopListening.getPin(), false);
+		}
+
+		private byte[] reportingMessage(Pin pin, boolean on) {
+			byte pinId = firmataPin(pin);
+			byte state = booleanToByte(on);
+			if (pin.is(ANALOG)) {
+				return new byte[] { (byte) (REPORT_ANALOG | pinId), state };
+			} else if (pin.is(DIGITAL)) {
+				return new byte[] { (byte) (REPORT_DIGITAL | pinId), state };
+			}
 			throw notYetImplemented();
 		}
 
 		@Override
 		public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
+			int pinId = firmataPin(pinStateChange.getPin());
 			if (pinStateChange.getPin().is(ANALOG)) {
-				int pinId = pinStateChange.getPin().pinNum();
 				int value = (Integer) pinStateChange.getValue();
-				if (pinId >= (2 << 5) || value >= (2 << 15)) {
-					return sysex(EXTENDED_ANALOG, (byte) pinId, lsb(value), msb(value), (byte) ((value >>> 14) & 0x7F),
-							(byte) ((value >>> 21) & 0x7F));
-				}
-				return new byte[] { (byte) (ANALOG_MESSAGE | (pinId & 0x0F)), lsb(value), msb(value) };
+				return FirmataMessageFactory.setAnalogPinValue((byte) pinId, value);
+			} else if (pinStateChange.getPin().is(DIGITAL)) {
+				return FirmataMessageFactory.setDigitalPinValue((byte) pinId,
+						booleanToByte(TRUE.equals(pinStateChange.getValue())));
 			}
 			throw notYetImplemented();
+		}
+
+		private static byte booleanToByte(boolean state) {
+			return state ? (byte) 1 : (byte) 0;
 		}
 
 		@Override
@@ -206,19 +223,33 @@ public class FirmataProtocol implements Protocol {
 			return new UnsupportedOperationException("not yet implemented");
 		}
 
+		private byte firmataPin(Pin pin) {
+			// TODO do capability query
+			int pinNum = pin.pinNum();
+			return (byte) (pin.is(ANALOG) ? pinNum : pinNum - 2);
+		}
+
 		private byte[] sysex(byte... bytes) {
 			byte[] sysex = new byte[bytes.length + 2];
-			sysex[0] = (byte) 0xF0;
+			sysex[0] = START_SYSEX;
 			System.arraycopy(bytes, 0, sysex, 1, bytes.length);
-			sysex[sysex.length - 1] = (byte) 0xF7;
+			sysex[sysex.length - 1] = END_SYSEX;
 			return sysex;
 		}
 
-		private static byte msb(long value) {
-			return (byte) ((value >>> 7) & 0x7F);
+		private static byte lsb(long value) {
+			return mask(value);
 		}
 
-		private static byte lsb(long value) {
+		private static byte msb(long value) {
+			return mask(shiftBy(value, 1));
+		}
+
+		private static long shiftBy(long value, int shiftBy) {
+			return value >>> (7 * shiftBy);
+		}
+
+		private static byte mask(long value) {
 			return (byte) (value & 0x7F);
 		}
 

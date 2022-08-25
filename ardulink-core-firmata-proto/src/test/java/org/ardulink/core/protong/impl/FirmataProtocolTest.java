@@ -21,16 +21,17 @@ import java.util.Map;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
+import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.Tone;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.messages.api.FromDeviceMessageReady;
 import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
-import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
+import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageTone;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.FirmataProtocol;
@@ -64,7 +65,6 @@ public class FirmataProtocolTest {
 		byte valueHigh = 42;
 
 		AnalogPin pin = analogPin(pinNumber);
-		givenAnalogPinReadingIsEnabledForPin(pin);
 		givenMessage(command |= pinNumber, valueLow, valueHigh);
 		whenMessageIsProcessed();
 		thenMessageIs(pin, valueHigh << 7 | valueLow);
@@ -93,19 +93,20 @@ public class FirmataProtocolTest {
 	// -------------------------------------------------------------------------
 
 	@Test
-	@Ignore
 	public void canSetDigitalPin() {
-		DefaultToDeviceMessagePinStateChange toDeviceMessage = new DefaultToDeviceMessagePinStateChange(digitalPin(42),
-				false);
-		assertThat(messageToSend(toDeviceMessage), is("XXX".getBytes()));
+		DigitalPin pin = digitalPin(12);
+		assertThat(sut.toDevice(new DefaultToDeviceMessagePinStateChange(pin, true)),
+				is(new byte[] { (byte) 0x9A, 1, 0 }));
+		assertThat(sut.toDevice(new DefaultToDeviceMessagePinStateChange(pin, false)),
+				is(new byte[] { (byte) 0x9A, 0, 0 }));
 	}
 
 	@Test
 	public void canSetAnalogPin() {
 		int value = 42;
-		DefaultToDeviceMessagePinStateChange toDeviceMessage = new DefaultToDeviceMessagePinStateChange(analogPin(10),
-				value);
-		assertThat(messageToSend(toDeviceMessage), is(new byte[] { (byte) 0xEA, (byte) value, (byte) 0x00 }));
+		AnalogPin pin = analogPin(10);
+		DefaultToDeviceMessagePinStateChange toDeviceMessage = new DefaultToDeviceMessagePinStateChange(pin, value);
+		assertThat(sut.toDevice(toDeviceMessage), is(new byte[] { (byte) 0xEA, (byte) value, (byte) 0x00 }));
 		// TODO Verify the EXTENDED_ANALOG (for higher pin numbers/values)
 	}
 
@@ -121,7 +122,7 @@ public class FirmataProtocolTest {
 		byte pinNumber = 1;
 		ToDeviceMessageTone toDeviceMessage = new DefaultToDeviceMessageTone(
 				Tone.forPin(analogPin(pinNumber)).withHertz(234).withDuration(5, SECONDS));
-		assertThat(messageToSend(toDeviceMessage), is(new byte[] { (byte) 0xF0, (byte) 0x5F, (byte) 0x00, pinNumber,
+		assertThat(sut.toDevice(toDeviceMessage), is(new byte[] { (byte) 0xF0, (byte) 0x5F, (byte) 0x00, pinNumber,
 				(byte) 0x6A, (byte) 0x01, (byte) 0x08, (byte) 0x27, (byte) 0xF7 }));
 	}
 
@@ -134,15 +135,33 @@ public class FirmataProtocolTest {
 	public void canSendNoTone() {
 		byte pinNumber = 1;
 		ToDeviceMessageNoTone toDeviceMessage = new DefaultToDeviceMessageNoTone(analogPin(pinNumber));
-		assertThat(messageToSend(toDeviceMessage),
+		assertThat(sut.toDevice(toDeviceMessage),
 				is(new byte[] { (byte) 0xF0, (byte) 0x5F, (byte) 0x01, pinNumber, (byte) 0xF7 }));
 	}
 
 	// -------------------------------------------------------------------------
 
-	private void givenAnalogPinReadingIsEnabledForPin(Pin pin) {
-		byte[] a = sut.toDevice(new DefaultToDeviceMessageStartListening(pin));
+	@Test
+	public void canEnableDisableAnalogListening() {
+		byte pinNumber = 2;
+		Pin pin = analogPin(pinNumber);
+		assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin)),
+				is(new byte[] { (byte) 0xC2, (byte) 0x01 }));
+		assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin)),
+				is(new byte[] { (byte) 0xC2, (byte) 0x00 }));
 	}
+
+	@Test
+	public void canEnableDisableDigitalListening() {
+		byte pinNumber = 12;
+		Pin pin = digitalPin(pinNumber);
+		assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin)),
+				is(new byte[] { (byte) 0xDA, (byte) 0x01 }));
+		assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin)),
+				is(new byte[] { (byte) 0xDA, (byte) 0x00 }));
+	}
+
+	// -------------------------------------------------------------------------
 
 	private void givenMessage(byte... bytes) {
 		this.bytes = bytes;
@@ -163,18 +182,6 @@ public class FirmataProtocolTest {
 			assertThat("No expected state for pin " + pinStateChanged.getPin(), object, notNullValue());
 			assertThat("Pin " + pinStateChanged.getPin(), pinStateChanged.getValue(), is(object));
 		}
-	}
-
-	private byte[] messageToSend(ToDeviceMessagePinStateChange toDeviceMessage) {
-		return sut.toDevice(toDeviceMessage);
-	}
-
-	private byte[] messageToSend(ToDeviceMessageTone toDeviceMessage) {
-		return sut.toDevice(toDeviceMessage);
-	}
-
-	private byte[] messageToSend(ToDeviceMessageNoTone toDeviceMessage) {
-		return sut.toDevice(toDeviceMessage);
 	}
 
 	@LapsedWith(module = "JDK7", value = "binary literals")
