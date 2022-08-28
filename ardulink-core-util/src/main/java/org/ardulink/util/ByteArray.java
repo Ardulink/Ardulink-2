@@ -18,11 +18,8 @@ package org.ardulink.util;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
-import static org.ardulink.util.anno.LapsedWith.NEXT_ARDULINK_VERSION_REFACTORING_DONE;
 
 import java.util.Arrays;
-
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -60,20 +57,6 @@ public class ByteArray {
 	private int indexOf(byte[] delimiter) {
 		checkState(checkNotNull(delimiter, "delimiter must not be null").length > 0, "delimiter must not be empty");
 		return Bytes.indexOf(byteArray, delimiter, 0, pointer);
-	}
-
-	@LapsedWith(NEXT_ARDULINK_VERSION_REFACTORING_DONE)
-	@Deprecated // without StreamScanner no more needed
-	public byte[] next(byte[] delimiter) {
-		int delimiterAt = indexOf(delimiter);
-		if (delimiterAt < 0) {
-			return null;
-		}
-		byte[] next = Arrays.copyOfRange(this.byteArray, 0, delimiterAt);
-		int nextTokenAt = delimiterAt + delimiter.length;
-		System.arraycopy(this.byteArray, nextTokenAt, this.byteArray, 0, this.byteArray.length - nextTokenAt);
-		pointer -= nextTokenAt;
-		return next;
 	}
 
 	/**
