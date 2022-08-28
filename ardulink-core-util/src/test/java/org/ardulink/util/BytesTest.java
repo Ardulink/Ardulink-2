@@ -19,7 +19,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Arrays;
-import java.util.Iterator;
 
 import org.junit.Test;
 
@@ -31,22 +30,26 @@ import org.junit.Test;
  * [adsense]
  *
  */
-public class IteratorsTest {
+public class BytesTest {
 
 	@Test
-	public void getFirst() {
-		assertThat(Iterators.getFirst(iteratorOf(1)).get(), is(1));
-		assertThat(Iterators.getFirst(iteratorOf(1, 2)).get(), is(1));
+	public void testIndexOf() {
+		byte[] oneToFive = new byte[] { 1, 2, 3, 4, 5 };
+		assertThat(Bytes.indexOf(oneToFive, new byte[] { 1, 2 }), is(0));
+		assertThat(Bytes.indexOf(oneToFive, new byte[] { 3, 4, 5 }), is(2));
+		assertThat(Bytes.indexOf(oneToFive, new byte[] { 1, 3 }), is(-1));
 	}
 
 	@Test
-	public void getLast() {
-		assertThat(Iterators.getLast(iteratorOf(1)).get(), is(1));
-		assertThat(Iterators.getLast(iteratorOf(1, 2)).get(), is(2));
+	public void testBytesToHexString() {
+		assertThat(Bytes.bytesToHex(new byte[] { 0, 1, 2, (byte) 253, (byte) 254, (byte) 255 }),
+				is(Arrays.asList("00", "01", "02", "FD", "FE", "FF")));
 	}
 
-	private <T> Iterator<T> iteratorOf(T... elements) {
-		return Arrays.asList(elements).iterator();
+	@Test
+	public void hexStringToBytes() {
+		assertThat(Bytes.hexStringToBytes("00" + "01" + "02" + "FD" + "FE" + "FF"),
+				is(new byte[] { 0, 1, 2, (byte) 253, (byte) 254, (byte) 255 }));
 	}
 
 }
