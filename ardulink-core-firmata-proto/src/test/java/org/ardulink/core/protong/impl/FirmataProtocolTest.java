@@ -6,18 +6,32 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
+import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.ANALOG_INPUT;
+import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.DIGITAL_INPUT;
+import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.DIGITAL_OUTPUT;
+import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.I2C;
+import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.INPUT_PULLUP;
+import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.PWM;
+import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.SERVO;
+import static org.ardulink.util.anno.LapsedWith.JDK7;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.firmata4j.firmata.parser.FirmataToken.ANALOG_MESSAGE;
 import static org.firmata4j.firmata.parser.FirmataToken.DIGITAL_MESSAGE;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
@@ -35,6 +49,9 @@ import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageTone;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.FirmataProtocol;
+import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin;
+import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode;
+import org.ardulink.util.Joiner;
 import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
 import org.ardulink.util.anno.LapsedWith;
@@ -54,6 +71,66 @@ public class FirmataProtocolTest {
 		whenMessageIsProcessed();
 		assertThat(messages.size(), is(1));
 		assertThat(messages.get(0), instanceOf(FromDeviceMessageReady.class));
+	}
+
+	@Test
+	public void canReadCapabilities() throws IOException, NoSuchFieldException, SecurityException,
+			IllegalArgumentException, IllegalAccessException {
+
+		byte[] capabilities = hexStringToByteArray((""
+				+ "F0 6C 7F 7F 00 01 0B 01 01 01 04 0E 7F 00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 01 01 04 0E 7F "
+				+ "00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 01 01 04 0E 7F 00 01 "
+				+ "0B 01 01 01 04 0E 7F 00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 "
+				+ "01 01 03 08 04 0E 7F 00 01 0B 01 01 01 04 0E 7F 00 01 0B 01 01 01 04 0E 7F 00 01 0B 01 01 01 02 0A "
+				+ "04 0E 7F 00 01 0B 01 01 01 02 0A 04 0E 7F 00 01 0B 01 01 01 02 0A 04 0E 7F 00 01 0B 01 01 01 02 0A "
+				+ "04 0E 7F 00 01 0B 01 01 01 02 0A 04 0E 06 01 7F 00 01 0B 01 01 01 02 0A 04 0E 06 01 7F F7")
+				.replace(" ", ""));
+
+		givenMessage(capabilities);
+		whenMessageIsProcessed();
+
+		// TODO verify via behavior check
+		Field declaredField = sut.getClass().getDeclaredField("pins");
+		declaredField.setAccessible(true);
+
+		@SuppressWarnings("unchecked")
+		Map<Integer, FirmataPin> pins = (Map<Integer, FirmataPin>) declaredField.get(sut);
+		assertThat(pins.size(), is(20));
+		int cnt = 0;
+
+		assertSupportedModes(cnt++, pins);
+		assertSupportedModes(cnt++, pins);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, SERVO);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, PWM, SERVO);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, SERVO);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, PWM, SERVO);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, PWM, SERVO);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, SERVO);
+
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, SERVO);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, PWM, SERVO);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, PWM, SERVO);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, PWM, SERVO);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, SERVO);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, SERVO);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, ANALOG_INPUT, SERVO);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, ANALOG_INPUT, SERVO);
+
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, ANALOG_INPUT, SERVO);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, ANALOG_INPUT, SERVO);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, ANALOG_INPUT, SERVO, I2C);
+		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, ANALOG_INPUT, SERVO, I2C);
+	}
+
+	@Test
+	@Ignore
+	public void queriesCapabilitiesAfterConnecting() throws Exception {
+		fail();
+	}
+
+	private void assertSupportedModes(int index, Map<Integer, FirmataPin> pins, Mode... expected) {
+		Set<Mode> set = expected.length == 0 ? EnumSet.noneOf(Mode.class) : EnumSet.copyOf(Arrays.asList(expected));
+		assertThat(pins.get(index).getSupportedMode(), is(set));
 	}
 
 	@Test
@@ -95,10 +172,10 @@ public class FirmataProtocolTest {
 	@Test
 	public void canSetDigitalPin() {
 		DigitalPin pin = digitalPin(12);
-		assertThat(sut.toDevice(new DefaultToDeviceMessagePinStateChange(pin, true)),
-				is(new byte[] { (byte) 0x9A, 1, 0 }));
-		assertThat(sut.toDevice(new DefaultToDeviceMessagePinStateChange(pin, false)),
-				is(new byte[] { (byte) 0x9A, 0, 0 }));
+		assertThat(byteArrayToHexString(sut.toDevice(new DefaultToDeviceMessagePinStateChange(pin, true))),
+				is("92 04 00"));
+		assertThat(byteArrayToHexString(sut.toDevice(new DefaultToDeviceMessagePinStateChange(pin, false))),
+				is("92 00 00"));
 	}
 
 	@Test
@@ -106,7 +183,7 @@ public class FirmataProtocolTest {
 		int value = 42;
 		AnalogPin pin = analogPin(10);
 		DefaultToDeviceMessagePinStateChange toDeviceMessage = new DefaultToDeviceMessagePinStateChange(pin, value);
-		assertThat(sut.toDevice(toDeviceMessage), is(new byte[] { (byte) 0xEA, (byte) value, (byte) 0x00 }));
+		assertThat(byteArrayToHexString(sut.toDevice(toDeviceMessage)), is("E2 2A 00"));
 		// TODO Verify the EXTENDED_ANALOG (for higher pin numbers/values)
 	}
 
@@ -145,20 +222,16 @@ public class FirmataProtocolTest {
 	public void canEnableDisableAnalogListening() {
 		byte pinNumber = 2;
 		Pin pin = analogPin(pinNumber);
-		assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin)),
-				is(new byte[] { (byte) 0xC2, (byte) 0x01 }));
-		assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin)),
-				is(new byte[] { (byte) 0xC2, (byte) 0x00 }));
+		assertThat(byteArrayToHexString(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))), is("C0 01"));
+		assertThat(byteArrayToHexString(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))), is("C0 00"));
 	}
 
 	@Test
 	public void canEnableDisableDigitalListening() {
 		byte pinNumber = 12;
 		Pin pin = digitalPin(pinNumber);
-		assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin)),
-				is(new byte[] { (byte) 0xDA, (byte) 0x01 }));
-		assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin)),
-				is(new byte[] { (byte) 0xDA, (byte) 0x00 }));
+		assertThat(byteArrayToHexString(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))), is("D2 01"));
+		assertThat(byteArrayToHexString(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))), is("D2 00"));
 	}
 
 	// -------------------------------------------------------------------------
@@ -184,9 +257,28 @@ public class FirmataProtocolTest {
 		}
 	}
 
-	@LapsedWith(module = "JDK7", value = "binary literals")
+	@LapsedWith(module = JDK7, value = "binary literals")
 	private static byte binary(String string) {
 		return (byte) parseInt(string, 2);
+	}
+
+	@LapsedWith(module = JDK8, value = "Streams")
+	private static byte[] hexStringToByteArray(String hex) {
+		byte[] data = new byte[hex.length() / 2];
+		for (int i = 0; i < data.length; i++) {
+			data[i] = (byte) ((Character.digit(hex.charAt(i * 2), 16) << 4)
+					+ Character.digit(hex.charAt(i * 2 + 1), 16));
+		}
+		return data;
+	}
+
+	@LapsedWith(module = JDK8, value = "Streams")
+	private static String byteArrayToHexString(byte[] bytes) {
+		List<String> hexValues = Lists.newArrayList();
+		for (int i = 0; i < bytes.length; i++) {
+			hexValues.add(String.format("%02X", bytes[i]));
+		}
+		return Joiner.on(" ").join(hexValues);
 	}
 
 	private void whenMessageIsProcessed() throws IOException {

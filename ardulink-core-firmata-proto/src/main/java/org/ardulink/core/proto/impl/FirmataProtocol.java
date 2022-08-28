@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.proto.impl;
 
 import static java.lang.Boolean.TRUE;
+import static java.util.Collections.unmodifiableSet;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -25,12 +26,19 @@ import static org.ardulink.util.Integers.tryParse;
 import static org.firmata4j.firmata.parser.FirmataEventType.ANALOG_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.DIGITAL_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.FIRMWARE_MESSAGE;
+import static org.firmata4j.firmata.parser.FirmataEventType.PIN_CAPABILITIES_MESSAGE;
 import static org.firmata4j.firmata.parser.FirmataEventType.PIN_ID;
+import static org.firmata4j.firmata.parser.FirmataEventType.PIN_SUPPORTED_MODES;
 import static org.firmata4j.firmata.parser.FirmataEventType.PIN_VALUE;
 import static org.firmata4j.firmata.parser.FirmataToken.END_SYSEX;
 import static org.firmata4j.firmata.parser.FirmataToken.REPORT_ANALOG;
 import static org.firmata4j.firmata.parser.FirmataToken.REPORT_DIGITAL;
 import static org.firmata4j.firmata.parser.FirmataToken.START_SYSEX;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Tone;
@@ -46,8 +54,11 @@ import org.ardulink.core.messages.impl.DefaultFromDeviceMessageReady;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProcessor;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
+import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode;
+import org.ardulink.util.anno.LapsedWith;
 import org.firmata4j.Consumer;
 import org.firmata4j.firmata.FirmataMessageFactory;
+import org.firmata4j.firmata.parser.FirmataToken;
 import org.firmata4j.firmata.parser.WaitingForMessageState;
 import org.firmata4j.fsm.Event;
 import org.firmata4j.fsm.FiniteStateMachine;
@@ -61,6 +72,69 @@ import org.firmata4j.fsm.FiniteStateMachine;
  *
  */
 public class FirmataProtocol implements Protocol {
+
+	// TODO visible for testing
+	public static class FirmataPin {
+
+		private int index;
+		private int value;
+		private final Set<Mode> supportedModes = new CopyOnWriteArraySet<Mode>();
+		private final Set<Mode> supportedModes_ = unmodifiableSet(supportedModes);
+		private Mode currentMode;
+
+		// TODO visible for testing
+		public static enum Mode {
+			DIGITAL_INPUT, DIGITAL_OUTPUT, ANALOG_INPUT, PWM, SERVO, SHIFT, I2C, ONEWIRE, STEPPER, ENCODER, SERIAL,
+			INPUT_PULLUP,
+			// Extended modes
+			SPI, SONAR, TONE, DHT;
+
+			public static Mode fromByteValue(byte modeToken) {
+				Mode[] values = values();
+				return modeToken == FirmataToken.PIN_MODE_IGNORE || modeToken >= values.length ? null
+						: values[modeToken];
+			}
+		}
+
+		private FirmataPin(int index) {
+			this.index = index;
+		}
+
+		public int index() {
+			return index;
+		}
+
+		public byte portId() {
+			return (byte) (index / 8);
+		}
+
+		public byte pinId() {
+			return (byte) (index % 8);
+		}
+
+		public static FirmataPin fromIndex(int index) {
+			return new FirmataPin(index);
+		}
+
+		public int getValue() {
+			return value;
+		}
+
+		public void addSupportedMode(Mode mode) {
+			if (mode != null) {
+				this.supportedModes.add(mode);
+			}
+		}
+
+		public Set<Mode> getSupportedMode() {
+			return this.supportedModes_;
+		}
+
+		public boolean modeIs(Mode other) {
+			return currentMode == other;
+		}
+
+	}
 
 	@Override
 	public String getName() {
@@ -94,6 +168,7 @@ public class FirmataProtocol implements Protocol {
 			delegate.addHandler(ANALOG_MESSAGE_RESPONSE, analogPinStateChangedConsumer());
 			delegate.addHandler(DIGITAL_MESSAGE_RESPONSE, digitalPinStateChangedConsumer());
 			delegate.addHandler(FIRMWARE_MESSAGE, firmwareConsumer());
+			delegate.addHandler(PIN_CAPABILITIES_MESSAGE, capabilitiesConsumer());
 		}
 
 		private PinStateChangedConsumer analogPinStateChangedConsumer() {
@@ -137,6 +212,20 @@ public class FirmataProtocol implements Protocol {
 			};
 		}
 
+		private Consumer<Event> capabilitiesConsumer() {
+			return new Consumer<Event>() {
+				@Override
+				public void accept(Event t) {
+					byte pinId = (Byte) t.getBodyItem(PIN_ID);
+					FirmataPin pin = FirmataPin.fromIndex(pinId);
+					for (byte modeByte : (byte[]) t.getBodyItem(PIN_SUPPORTED_MODES)) {
+						pin.addSupportedMode(Mode.fromByteValue(modeByte));
+					}
+					pins.put(pin.index(), pin);
+				}
+			};
+		}
+
 		@Override
 		public void process(byte[] bytes) {
 			delegate.process(bytes);
@@ -158,27 +247,62 @@ public class FirmataProtocol implements Protocol {
 		}
 
 		private byte[] reportingMessage(Pin pin, boolean on) {
-			byte pinId = firmataPin(pin);
+			byte portId = getPin(pin).portId();
 			byte state = booleanToByte(on);
 			if (pin.is(ANALOG)) {
-				return new byte[] { (byte) (REPORT_ANALOG | pinId), state };
+				return new byte[] { (byte) (REPORT_ANALOG | portId), state };
 			} else if (pin.is(DIGITAL)) {
-				return new byte[] { (byte) (REPORT_DIGITAL | pinId), state };
+				return new byte[] { (byte) (REPORT_DIGITAL | portId), state };
 			}
 			throw notYetImplemented();
 		}
 
+		private final Map<Integer, FirmataPin> pins = new ConcurrentHashMap<Integer, FirmataPin>();
+
+		private FirmataPin getPin(int index) {
+			@LapsedWith(module = LapsedWith.JDK8, value = "Map#merge")
+			FirmataPin firmataPin = pins.get(index);
+			if (firmataPin == null) {
+				firmataPin = FirmataPin.fromIndex(index);
+				pins.put(firmataPin.index(), firmataPin);
+			}
+			return firmataPin;
+		}
+
+		private FirmataPin getPin(Pin pin) {
+			return getPin(pin.is(DIGITAL) ? pin.pinNum() + 8 - 2 : pin.pinNum());
+		}
+
 		@Override
 		public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
-			int pinId = firmataPin(pinStateChange.getPin());
+			FirmataPin firmataPin = getPin(pinStateChange.getPin());
 			if (pinStateChange.getPin().is(ANALOG)) {
 				int value = (Integer) pinStateChange.getValue();
-				return FirmataMessageFactory.setAnalogPinValue((byte) pinId, value);
+				return FirmataMessageFactory.setAnalogPinValue(firmataPin.pinId(), value);
 			} else if (pinStateChange.getPin().is(DIGITAL)) {
-				return FirmataMessageFactory.setDigitalPinValue((byte) pinId,
-						booleanToByte(TRUE.equals(pinStateChange.getValue())));
+				return digitalMessage(firmataPin, TRUE.equals(pinStateChange.getValue()));
 			}
 			throw notYetImplemented();
+		}
+
+		private byte[] digitalMessage(FirmataPin pin, boolean value) {
+			// have to calculate the value of whole port (8-pin set) the pin sits in
+			byte portId = pin.portId();
+			byte pinInPort = pin.pinId();
+			byte portValue = 0;
+			for (int i = 0; i < 8; i++) {
+				FirmataPin p = getPin(portId * 8 + i);
+				if (p.modeIs(FirmataPin.Mode.DIGITAL_OUTPUT) && p.getValue() > 0) {
+					portValue |= 1 << i;
+				}
+			}
+			byte bitmask = (byte) (1 << pinInPort);
+			if (value) {
+				portValue |= bitmask;
+			} else {
+				portValue &= ((byte) ~bitmask);
+			}
+			return FirmataMessageFactory.setDigitalPinValue(portId, portValue);
 		}
 
 		private static byte booleanToByte(boolean state) {
@@ -221,12 +345,6 @@ public class FirmataProtocol implements Protocol {
 
 		private static UnsupportedOperationException notYetImplemented() {
 			return new UnsupportedOperationException("not yet implemented");
-		}
-
-		private byte firmataPin(Pin pin) {
-			// TODO do capability query
-			int pinNum = pin.pinNum();
-			return (byte) (pin.is(ANALOG) ? pinNum : pinNum - 2);
 		}
 
 		private byte[] sysex(byte... bytes) {
