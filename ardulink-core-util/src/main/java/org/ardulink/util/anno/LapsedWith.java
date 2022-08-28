@@ -14,10 +14,9 @@ import java.lang.annotation.Retention;
 @Retention(SOURCE)
 public @interface LapsedWith {
 
+	String JDK7 = "JDK7";
 	String JDK8 = "JDK8";
 	String JDK9 = "JDK9";
-	@Deprecated
-	String NEXT_ARDULINK_VERSION_REFACTORING_DONE = "Next Ardulink version / Refactoring done";
 
 	String value();
 
