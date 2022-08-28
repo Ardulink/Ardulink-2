@@ -34,10 +34,13 @@ public class BytesTest {
 
 	@Test
 	public void testIndexOf() {
-		byte[] oneToFive = new byte[] { 1, 2, 3, 4, 5 };
-		assertThat(Bytes.indexOf(oneToFive, new byte[] { 1, 2 }), is(0));
-		assertThat(Bytes.indexOf(oneToFive, new byte[] { 3, 4, 5 }), is(2));
-		assertThat(Bytes.indexOf(oneToFive, new byte[] { 1, 3 }), is(-1));
+		byte[] oneTwoThreeFourFiveTwoThree = new byte[] { 1, 2, 3, 4, 5, 2, 3 };
+		assertThat(Bytes.indexOf(oneTwoThreeFourFiveTwoThree, new byte[] { 2, 3 }), is(1));
+		assertThat(Bytes.indexOf(oneTwoThreeFourFiveTwoThree, new byte[] { 3, 4, 5 }), is(2));
+		assertThat(Bytes.indexOf(oneTwoThreeFourFiveTwoThree, new byte[] { 1, 3 }), is(-1));
+
+		assertThat(Bytes.indexOf(oneTwoThreeFourFiveTwoThree, new byte[] { 2, 3 }, 2), is(5));
+		assertThat(Bytes.indexOf(oneTwoThreeFourFiveTwoThree, new byte[] { 2, 3 }, 2, 6), is(-1));
 	}
 
 	@Test

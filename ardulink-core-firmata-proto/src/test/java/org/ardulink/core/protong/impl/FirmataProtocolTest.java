@@ -124,7 +124,9 @@ public class FirmataProtocolTest {
 	}
 
 	@Test
+	@Ignore("not yet implemented")
 	public void queriesCapabilitiesAfterConnecting() throws Exception {
+//		sut = new FirmataProtocol().newByteStreamProcessor(pushBackQueue);
 		fail();
 	}
 
