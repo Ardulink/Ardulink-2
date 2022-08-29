@@ -43,16 +43,17 @@ public class StreamConnection extends AbstractConnection {
 	private final OutputStream outputStream;
 
 	public StreamConnection(InputStream inputStream, OutputStream outputStream,
-			ByteStreamProcessor byteStreamProcessor) {
+			final ByteStreamProcessor byteStreamProcessor) {
 		this.outputStream = outputStream;
 		this.streamReader = new StreamReader(inputStream) {
 			@Override
-			protected void received(byte[] bytes) throws Exception { 
+			protected void received(byte[] bytes) throws Exception {
+				byteStreamProcessor.process(bytes);
 				fireReceived(bytes);
 			}
 		};
 		if (inputStream != null) {
-			streamReader.runReaderThread(byteStreamProcessor);
+			streamReader.runReaderThread();
 		}
 	}
 

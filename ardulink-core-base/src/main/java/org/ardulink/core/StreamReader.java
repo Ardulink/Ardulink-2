@@ -22,7 +22,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.util.anno.LapsedWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,35 +46,19 @@ public abstract class StreamReader implements Closeable {
 		this.inputStream = inputStream;
 	}
 
-	public void runReaderThread(final ByteStreamProcessor byteStreamProcessor) {
-		this.thread = new Thread() {
-
-			{
-				setDaemon(true);
-				start();
-			}
-
-			@Override
-			public void run() {
-				readUntilClosed(byteStreamProcessor);
-			}
-
-		};
-	}
-
 	public void runReaderThread() {
 		this.thread = new Thread() {
-			
+
 			{
 				setDaemon(true);
 				start();
 			}
-			
+
 			@Override
 			public void run() {
 				readUntilClosed();
 			}
-			
+
 		};
 	}
 
@@ -84,24 +67,8 @@ public abstract class StreamReader implements Closeable {
 			int read;
 			while ((read = inputStream.read()) != -1 && !isInterrupted()) {
 				try {
-					received(new byte[] { (byte) read });
-				} catch (Exception e) {
-					logger.error("Error while retrieving data", e);
-				}
-			}
-		} catch (Exception e) {
-			logger.error("Error while Reader Initialization", e);
-		}
-	}
-
-	public void readUntilClosed(ByteStreamProcessor byteStreamProcessor) {
-		try {
-			int read;
-			while ((read = inputStream.read()) != -1 && !isInterrupted()) {
-				try {
 					byte b = (byte) read;
 					received(new byte[] { b });
-					byteStreamProcessor.process(b);
 				} catch (Exception e) {
 					logger.error("Error while retrieving data", e);
 				}
