@@ -32,13 +32,14 @@ import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
+import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.util.Joiner;
 import org.junit.Test;
 
 public class LuaProtoTest {
 
-	private final ByteStreamProcessor sut = LuaProtocol.instance().newByteStreamProcessor();
+	private final ByteStreamProcessor sut = LuaProtocol.instance().newByteStreamProcessor(Protocol.NULL_OUTPUTSTREAM);
 
 	private final DigitalPin anyDigitalPin = digitalPin(anyPin());
 	private final AnalogPin anyAnalogPin = analogPin(anyPin());

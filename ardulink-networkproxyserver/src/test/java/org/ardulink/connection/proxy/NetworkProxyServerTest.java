@@ -26,6 +26,7 @@ import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.proxy.ProxyLinkConfig;
@@ -155,7 +156,7 @@ public class NetworkProxyServerTest {
 									@Override
 									public Link answer(InvocationOnMock invocation) {
 										ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2()
-												.newByteStreamProcessor();
+												.newByteStreamProcessor(Protocol.NULL_OUTPUTSTREAM);
 										return new ConnectionBasedLink(proxySideConnection, byteStreamProcessor);
 									}
 								});

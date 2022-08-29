@@ -23,6 +23,7 @@ import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.util.Integers.tryParse;
+import static org.ardulink.util.Throwables.propagate;
 import static org.firmata4j.firmata.parser.FirmataEventType.ANALOG_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.DIGITAL_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.FIRMWARE_MESSAGE;
@@ -35,6 +36,8 @@ import static org.firmata4j.firmata.parser.FirmataToken.REPORT_ANALOG;
 import static org.firmata4j.firmata.parser.FirmataToken.REPORT_DIGITAL;
 import static org.firmata4j.firmata.parser.FirmataToken.START_SYSEX;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -143,6 +146,8 @@ public class FirmataProtocol implements Protocol {
 
 	private static class FirmataByteStreamProcessor extends AbstractByteStreamProcessor {
 
+		private static final byte[] CAPABILITIES_QUERY = { (byte) 0xF0, (byte) 0x6B, (byte) 0xF7 };
+
 		private static final byte TONE = (byte) 0x5F;
 		private static final byte TONE_ON = (byte) 0x00;
 		private static final byte TONE_OFF = (byte) 0x01;
@@ -162,9 +167,11 @@ public class FirmataProtocol implements Protocol {
 			protected abstract Pin createPin(Integer pin);
 		}
 
+		private final OutputStream outputStream;
 		private final FiniteStateMachine delegate = new FiniteStateMachine(WaitingForMessageState.class);
 
-		public FirmataByteStreamProcessor() {
+		public FirmataByteStreamProcessor(OutputStream outputStream) {
+			this.outputStream = outputStream;
 			delegate.addHandler(ANALOG_MESSAGE_RESPONSE, analogPinStateChangedConsumer());
 			delegate.addHandler(DIGITAL_MESSAGE_RESPONSE, digitalPinStateChangedConsumer());
 			delegate.addHandler(FIRMWARE_MESSAGE, firmwareConsumer());
@@ -208,6 +215,11 @@ public class FirmataProtocol implements Protocol {
 				@Override
 				public void accept(Event t) {
 					fireEvent(new DefaultFromDeviceMessageReady());
+					try {
+						outputStream.write(CAPABILITIES_QUERY);
+					} catch (IOException e) {
+						propagate(e);
+					}
 				}
 			};
 		}
@@ -374,8 +386,8 @@ public class FirmataProtocol implements Protocol {
 	}
 
 	@Override
-	public ByteStreamProcessor newByteStreamProcessor() {
-		return new FirmataByteStreamProcessor();
+	public ByteStreamProcessor newByteStreamProcessor(OutputStream outputStream) {
+		return new FirmataByteStreamProcessor(outputStream);
 	}
 
 }

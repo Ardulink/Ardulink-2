@@ -23,6 +23,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
@@ -63,9 +64,10 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 				"Port %s is currently in use", config.getPort());
 		final SerialPort serialPort = serialPort(config, portIdentifier);
 
-		ByteStreamProcessor byteStreamProcessor = config.getProto().newByteStreamProcessor();
+		OutputStream outputStream = serialPort.getOutputStream();
+		ByteStreamProcessor byteStreamProcessor = config.getProto().newByteStreamProcessor(outputStream);
 		StreamConnection connection = new StreamConnection(
-				serialPort.getInputStream(), serialPort.getOutputStream(),
+				serialPort.getInputStream(), outputStream,
 				byteStreamProcessor);
 
 		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(

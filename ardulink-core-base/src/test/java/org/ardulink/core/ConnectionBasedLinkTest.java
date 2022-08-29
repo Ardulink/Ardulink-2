@@ -86,7 +86,7 @@ public class ConnectionBasedLinkTest {
 	public void setup() throws IOException {
 		PipedInputStream pis = new PipedInputStream();
 		this.arduinosOutputStream = new PipedOutputStream(pis);
-		ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
+		ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor(os);
 		this.connection = new StreamConnection(pis, os, byteStreamProcessor);
 		this.connection.addListener(new ListenerAdapter() {
 			@Override

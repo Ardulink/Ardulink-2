@@ -18,6 +18,8 @@ package org.ardulink.core.proto.impl;
 
 import static org.mockito.Mockito.mock;
 
+import java.io.OutputStream;
+
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 
@@ -43,7 +45,7 @@ public class DummyProtocol implements Protocol {
 	}
 
 	@Override
-	public ByteStreamProcessor newByteStreamProcessor() {
+	public ByteStreamProcessor newByteStreamProcessor(OutputStream outputStream) {
 		return mock(ByteStreamProcessor.class);
 	}
 

@@ -21,6 +21,7 @@ import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -59,9 +60,10 @@ public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
 		checkState(OK.equals(response),
 				"Did not receive %s from remote, got %s", OK, response);
 		Socket socket = remote.getSocket();
-		ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
+		OutputStream outputStream = socket.getOutputStream();
+		ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor(outputStream);
 		return new ConnectionBasedLink(
-				new StreamConnection(socket.getInputStream(), socket.getOutputStream(), byteStreamProcessor),
+				new StreamConnection(socket.getInputStream(), outputStream, byteStreamProcessor),
 				byteStreamProcessor) {
 			@Override
 			public void close() throws IOException {

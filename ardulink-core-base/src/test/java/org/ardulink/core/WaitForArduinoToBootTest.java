@@ -23,12 +23,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.regex.Pattern;
 
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.qos.Arduino;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -43,17 +45,22 @@ import org.junit.rules.Timeout;
  */
 public class WaitForArduinoToBootTest {
 
-	private static final ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
-
 	@Rule
 	public Timeout timeout = new Timeout(5, SECONDS);
 
 	@Rule
 	public Arduino arduino = Arduino.newArduino();
 
-	private final ConnectionBasedLink link = new ConnectionBasedLink(
-			new StreamConnection(arduino.getInputStream(), arduino.getOutputStream(), byteStreamProcessor),
-			byteStreamProcessor);
+	private ByteStreamProcessor byteStreamProcessor;
+	private ConnectionBasedLink link;
+
+	@Before
+	public void setup() {
+		OutputStream outputStream = arduino.getOutputStream();
+		byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor(outputStream);
+		link = new ConnectionBasedLink(
+				new StreamConnection(arduino.getInputStream(), outputStream, byteStreamProcessor), byteStreamProcessor);
+	}
 
 	@After
 	public void tearDown() throws IOException {

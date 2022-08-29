@@ -11,6 +11,7 @@ import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.linkmanager.LinkFactory;
+import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 
 public class VirtualConnectionLinkFactory implements LinkFactory<VirtualConnectionConfig> {
@@ -42,13 +43,6 @@ public class VirtualConnectionLinkFactory implements LinkFactory<VirtualConnecti
 		}
 	}
 
-	public class NullOutputStream extends OutputStream {
-		@Override
-		public void write(int b) throws IOException {
-			// Nothing to do!
-		}
-	}
-
 	@Override
 	public String getName() {
 		return "virtualConnectionBased";
@@ -56,9 +50,10 @@ public class VirtualConnectionLinkFactory implements LinkFactory<VirtualConnecti
 
 	@Override
 	public Link newLink(VirtualConnectionConfig config) throws Exception {
-		ByteStreamProcessor byteStreamProcessor = config.getProto().newByteStreamProcessor();
+		OutputStream outputStream = Protocol.NULL_OUTPUTSTREAM;
+		ByteStreamProcessor byteStreamProcessor = config.getProto().newByteStreamProcessor(outputStream);
 		return new ConnectionBasedLink(new StreamConnection(new NullInputStream(config.getInput(), 500, MILLISECONDS),
-				new NullOutputStream(), byteStreamProcessor), byteStreamProcessor);
+				outputStream, byteStreamProcessor), byteStreamProcessor);
 	}
 
 	@Override

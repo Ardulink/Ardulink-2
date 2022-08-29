@@ -35,6 +35,7 @@ import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.Tone;
+import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.anno.LapsedWith;
@@ -60,7 +61,8 @@ public class QosLinkTest {
 	@Rule
 	public Arduino arduino = Arduino.newArduino();
 
-	private final ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
+	private final ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2()
+			.newByteStreamProcessor(Protocol.NULL_OUTPUTSTREAM);
 	private QosLink qosLink;
 
 	@After

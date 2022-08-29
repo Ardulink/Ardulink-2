@@ -4,6 +4,7 @@ import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.util.Preconditions.checkState;
 
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
@@ -131,7 +132,7 @@ public class SimpleDigisparkProtocol implements Protocol {
 	}
 
 	@Override
-	public ByteStreamProcessor newByteStreamProcessor() {
+	public ByteStreamProcessor newByteStreamProcessor(OutputStream outputStream) {
 		return new SimpleDigisparkProtocolByteStreamProcessor();
 	}
 

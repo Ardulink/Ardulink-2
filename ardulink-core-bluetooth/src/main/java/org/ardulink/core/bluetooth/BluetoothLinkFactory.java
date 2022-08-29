@@ -20,6 +20,7 @@ import static javax.bluetooth.ServiceRecord.NOAUTHENTICATE_NOENCRYPT;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
+import java.io.OutputStream;
 
 import javax.bluetooth.ServiceRecord;
 import javax.microedition.io.Connector;
@@ -55,10 +56,11 @@ public class BluetoothLinkFactory implements LinkFactory<BluetoothLinkConfig> {
 				"The connection could not be made. Connection url not found");
 		javax.microedition.io.StreamConnection streamConnection = getStreamConnection(Connector
 				.open(url));
-		ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
+		OutputStream outputStream = streamConnection.openOutputStream();
+		ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor(outputStream);
 		return new ConnectionBasedLink(new StreamConnection(
 				streamConnection.openInputStream(),
-				streamConnection.openOutputStream(), byteStreamProcessor), byteStreamProcessor);
+				outputStream, byteStreamProcessor), byteStreamProcessor);
 	}
 
 	public String getURL(BluetoothLinkConfig config) {

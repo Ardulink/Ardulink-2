@@ -15,6 +15,7 @@ limitations under the License.
  */
 package org.ardulink.core.proto.api.bytestreamproccesors;
 
+import static org.ardulink.core.proto.api.Protocol.NULL_OUTPUTSTREAM;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.util.List;
@@ -40,7 +41,7 @@ public final class ByteStreamProcessors {
 	}
 
 	public static List<FromDeviceMessage> parse(Protocol protocol, byte[] bytes) {
-		return parse(protocol.newByteStreamProcessor(), bytes);
+		return parse(protocol.newByteStreamProcessor(NULL_OUTPUTSTREAM), bytes);
 	}
 
 	public static List<FromDeviceMessage> parse(ByteStreamProcessor byteStreamProcessor, byte[] bytes) {

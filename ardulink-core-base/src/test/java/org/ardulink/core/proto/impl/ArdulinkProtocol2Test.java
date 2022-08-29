@@ -1,4 +1,4 @@
-package org.ardulink.core.protong;
+package org.ardulink.core.proto.impl;
 
 import static java.lang.Integer.parseInt;
 import static org.ardulink.core.Pin.analogPin;
@@ -25,7 +25,6 @@ import org.ardulink.core.messages.api.FromDeviceMessageReady;
 import org.ardulink.core.messages.api.FromDeviceMessageReply;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.Joiner;
 import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
@@ -141,7 +140,7 @@ public class ArdulinkProtocol2Test {
 	}
 
 	private static ByteStreamProcessor byteStreamProcessor(Protocol protocol) {
-		return protocol.newByteStreamProcessor();
+		return protocol.newByteStreamProcessor(Protocol.NULL_OUTPUTSTREAM);
 	}
 
 	private static byte[] read(InputStream stream, int length) throws IOException {

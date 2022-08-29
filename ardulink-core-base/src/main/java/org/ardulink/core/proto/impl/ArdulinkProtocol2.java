@@ -43,6 +43,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.TONE;
 import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
+import java.io.OutputStream;
 import java.util.Map;
 
 import org.ardulink.core.Pin;
@@ -465,7 +466,7 @@ public class ArdulinkProtocol2 implements Protocol {
 	}
 
 	@Override
-	public ByteStreamProcessor newByteStreamProcessor() {
+	public ByteStreamProcessor newByteStreamProcessor(OutputStream outputStream) {
 		return new ALPByteStreamProcessor();
 	}
 

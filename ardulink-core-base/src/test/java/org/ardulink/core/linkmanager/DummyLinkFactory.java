@@ -19,6 +19,7 @@ package org.ardulink.core.linkmanager;
 import static org.mockito.Mockito.spy;
 
 import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.proto.api.Protocol;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -39,7 +40,8 @@ public class DummyLinkFactory implements LinkFactory<DummyLinkConfig> {
 
 	@Override
 	public ConnectionBasedLink newLink(DummyLinkConfig config) {
-		return spy(new ConnectionBasedLink(spy(new DummyConnection(config)), config.protocol.newByteStreamProcessor()));
+		return spy(new ConnectionBasedLink(spy(new DummyConnection(config)),
+				config.protocol.newByteStreamProcessor(Protocol.NULL_OUTPUTSTREAM)));
 	}
 
 	@Override

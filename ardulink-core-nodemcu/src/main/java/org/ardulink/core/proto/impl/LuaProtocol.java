@@ -24,6 +24,8 @@ import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.POWER_
 import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.STOP_LISTENING_DIGITAL;
 
+import java.io.OutputStream;
+
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
@@ -70,7 +72,7 @@ public class LuaProtocol implements Protocol {
 	};
 
 	@Override
-	public ByteStreamProcessor newByteStreamProcessor() {
+	public ByteStreamProcessor newByteStreamProcessor(OutputStream outputStream) {
 		return new ALPByteStreamProcessor() {
 			@Override
 			public byte[] toDevice(ToDeviceMessageStartListening startListening) {

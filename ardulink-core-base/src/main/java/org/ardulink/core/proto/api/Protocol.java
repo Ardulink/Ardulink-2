@@ -16,6 +16,9 @@ limitations under the License.
 
 package org.ardulink.core.proto.api;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 
 /**
@@ -28,8 +31,15 @@ import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
  */
 public interface Protocol {
 
+	OutputStream NULL_OUTPUTSTREAM = new OutputStream() {
+		@Override
+		public void write(int b) throws IOException {
+			// noop
+		}
+	};
+
 	String getName();
 
-	ByteStreamProcessor newByteStreamProcessor();
-	
+	ByteStreamProcessor newByteStreamProcessor(OutputStream outputStream);
+
 }

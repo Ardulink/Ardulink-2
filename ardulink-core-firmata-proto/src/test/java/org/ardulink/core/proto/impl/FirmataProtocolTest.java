@@ -1,4 +1,4 @@
-package org.ardulink.core.protong.impl;
+package org.ardulink.core.proto.impl;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.Math.pow;
@@ -21,9 +21,9 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -48,7 +48,6 @@ import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageTone;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.impl.FirmataProtocol;
 import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin;
 import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode;
 import org.ardulink.util.Bytes;
@@ -61,17 +60,20 @@ import org.junit.Test;
 
 public class FirmataProtocolTest {
 
-	private ByteStreamProcessor sut = new FirmataProtocol().newByteStreamProcessor();
+	private final ByteArrayOutputStream pushBackOutputStream = new ByteArrayOutputStream();
+
+	private final ByteStreamProcessor sut = new FirmataProtocol().newByteStreamProcessor(pushBackOutputStream);
 
 	private byte[] bytes;
 	private List<FromDeviceMessage> messages;
 
 	@Test
-	public void canReadFirmwareStartupInfo() throws IOException {
+	public void canReadFirmwareStartupInfoAndRequestsCapabilities() throws IOException {
 		givenMessage((byte) 0xF0, (byte) 0x79, (byte) 0x01, (byte) 0x02, (byte) 0x41, (byte) 0x0, (byte) 0xF7);
 		whenMessageIsProcessed();
 		assertThat(messages.size(), is(1));
 		assertThat(messages.get(0), instanceOf(FromDeviceMessageReady.class));
+		assertThat(bytesToHexString(this.pushBackOutputStream.toByteArray()), is("F0 6B F7"));
 	}
 
 	@Test
@@ -121,13 +123,6 @@ public class FirmataProtocolTest {
 		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, ANALOG_INPUT, SERVO);
 		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, ANALOG_INPUT, SERVO, I2C);
 		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, ANALOG_INPUT, SERVO, I2C);
-	}
-
-	@Test
-	@Ignore("not yet implemented")
-	public void queriesCapabilitiesAfterConnecting() throws Exception {
-//		sut = new FirmataProtocol().newByteStreamProcessor(pushBackQueue);
-		fail();
 	}
 
 	private void assertSupportedModes(int index, Map<Integer, FirmataPin> pins, Mode... expected) {
