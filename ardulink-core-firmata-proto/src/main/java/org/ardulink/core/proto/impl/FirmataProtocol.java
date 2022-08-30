@@ -170,12 +170,14 @@ public class FirmataProtocol implements Protocol {
 		private final OutputStream outputStream;
 		private final FiniteStateMachine delegate = new FiniteStateMachine(WaitingForMessageState.class);
 
+		protected boolean capabilitiesConsumed;
+
 		public FirmataByteStreamProcessor(OutputStream outputStream) {
 			this.outputStream = outputStream;
-			delegate.addHandler(ANALOG_MESSAGE_RESPONSE, analogPinStateChangedConsumer());
-			delegate.addHandler(DIGITAL_MESSAGE_RESPONSE, digitalPinStateChangedConsumer());
 			delegate.addHandler(FIRMWARE_MESSAGE, firmwareConsumer());
 			delegate.addHandler(PIN_CAPABILITIES_MESSAGE, capabilitiesConsumer());
+			delegate.addHandler(ANALOG_MESSAGE_RESPONSE, analogPinStateChangedConsumer());
+			delegate.addHandler(DIGITAL_MESSAGE_RESPONSE, digitalPinStateChangedConsumer());
 		}
 
 		private PinStateChangedConsumer analogPinStateChangedConsumer() {
@@ -215,10 +217,12 @@ public class FirmataProtocol implements Protocol {
 				@Override
 				public void accept(Event t) {
 					fireEvent(new DefaultFromDeviceMessageReady());
-					try {
-						outputStream.write(CAPABILITIES_QUERY);
-					} catch (IOException e) {
-						propagate(e);
+					if (!capabilitiesConsumed) {
+						try {
+							outputStream.write(CAPABILITIES_QUERY);
+						} catch (IOException e) {
+							propagate(e);
+						}
 					}
 				}
 			};
@@ -234,6 +238,7 @@ public class FirmataProtocol implements Protocol {
 						pin.addSupportedMode(Mode.fromByteValue(modeByte));
 					}
 					pins.put(pin.index(), pin);
+					capabilitiesConsumed = true;
 				}
 			};
 		}

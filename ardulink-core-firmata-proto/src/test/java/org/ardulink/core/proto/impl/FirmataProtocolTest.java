@@ -65,10 +65,10 @@ public class FirmataProtocolTest {
 	private final ByteStreamProcessor sut = new FirmataProtocol().newByteStreamProcessor(pushBackOutputStream);
 
 	private byte[] bytes;
-	private List<FromDeviceMessage> messages;
+	private List<FromDeviceMessage> messages = Lists.newArrayList();
 
 	@Test
-	public void canReadFirmwareStartupInfoAndRequestsCapabilities() throws IOException {
+	public void canReadFirmwareStartupResponseAndRequestsCapabilities() throws IOException {
 		givenMessage((byte) 0xF0, (byte) 0x79, (byte) 0x01, (byte) 0x02, (byte) 0x41, (byte) 0x0, (byte) 0xF7);
 		whenMessageIsProcessed();
 		assertThat(messages.size(), is(1));
@@ -77,19 +77,23 @@ public class FirmataProtocolTest {
 	}
 
 	@Test
+	public void doesRequestsCapabilitiesOnlyOnFirstFirmwareStartupResponse() throws IOException {
+		givenMessage((byte) 0xF0, (byte) 0x79, (byte) 0x01, (byte) 0x02, (byte) 0x41, (byte) 0x0, (byte) 0xF7);
+		whenMessageIsProcessed();
+		givenMessage(capabilities());
+		whenMessageIsProcessed();
+		givenMessage((byte) 0xF0, (byte) 0x79, (byte) 0x01, (byte) 0x02, (byte) 0x41, (byte) 0x0, (byte) 0xF7);
+		whenMessageIsProcessed();
+		assertThat(messages.size(), is(2));
+		assertThat(messages.get(0), instanceOf(FromDeviceMessageReady.class));
+		assertThat(messages.get(1), instanceOf(FromDeviceMessageReady.class));
+		assertThat(bytesToHexString(this.pushBackOutputStream.toByteArray()), is("F0 6B F7"));
+	}
+
+	@Test
 	public void canReadCapabilities() throws IOException, NoSuchFieldException, SecurityException,
 			IllegalArgumentException, IllegalAccessException {
-
-		byte[] capabilities = hexStringToBytes((""
-				+ "F0 6C 7F 7F 00 01 0B 01 01 01 04 0E 7F 00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 01 01 04 0E 7F "
-				+ "00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 01 01 04 0E 7F 00 01 "
-				+ "0B 01 01 01 04 0E 7F 00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 "
-				+ "01 01 03 08 04 0E 7F 00 01 0B 01 01 01 04 0E 7F 00 01 0B 01 01 01 04 0E 7F 00 01 0B 01 01 01 02 0A "
-				+ "04 0E 7F 00 01 0B 01 01 01 02 0A 04 0E 7F 00 01 0B 01 01 01 02 0A 04 0E 7F 00 01 0B 01 01 01 02 0A "
-				+ "04 0E 7F 00 01 0B 01 01 01 02 0A 04 0E 06 01 7F 00 01 0B 01 01 01 02 0A 04 0E 06 01 7F F7")
-				.replace(" ", ""));
-
-		givenMessage(capabilities);
+		givenMessage(capabilities());
 		whenMessageIsProcessed();
 
 		// TODO verify via behavior check
@@ -123,6 +127,17 @@ public class FirmataProtocolTest {
 		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, ANALOG_INPUT, SERVO);
 		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, ANALOG_INPUT, SERVO, I2C);
 		assertSupportedModes(cnt++, pins, DIGITAL_INPUT, INPUT_PULLUP, DIGITAL_OUTPUT, ANALOG_INPUT, SERVO, I2C);
+	}
+
+	private byte[] capabilities() {
+		return hexStringToBytes((""
+				+ "F0 6C 7F 7F 00 01 0B 01 01 01 04 0E 7F 00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 01 01 04 0E 7F "
+				+ "00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 01 01 04 0E 7F 00 01 "
+				+ "0B 01 01 01 04 0E 7F 00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 01 01 03 08 04 0E 7F 00 01 0B 01 "
+				+ "01 01 03 08 04 0E 7F 00 01 0B 01 01 01 04 0E 7F 00 01 0B 01 01 01 04 0E 7F 00 01 0B 01 01 01 02 0A "
+				+ "04 0E 7F 00 01 0B 01 01 01 02 0A 04 0E 7F 00 01 0B 01 01 01 02 0A 04 0E 7F 00 01 0B 01 01 01 02 0A "
+				+ "04 0E 7F 00 01 0B 01 01 01 02 0A 04 0E 06 01 7F 00 01 0B 01 01 01 02 0A 04 0E 06 01 7F F7")
+				.replace(" ", ""));
 	}
 
 	private void assertSupportedModes(int index, Map<Integer, FirmataPin> pins, Mode... expected) {
@@ -268,7 +283,6 @@ public class FirmataProtocolTest {
 
 	private void process(byte[] bytes) throws IOException {
 		// read in "random" (two) junks
-		messages = Lists.newArrayList();
 		InputStream stream = new ByteArrayInputStream(bytes);
 		messages.addAll(parse(sut, read(stream, 2)));
 		messages.addAll(parse(sut, read(stream, stream.available())));
