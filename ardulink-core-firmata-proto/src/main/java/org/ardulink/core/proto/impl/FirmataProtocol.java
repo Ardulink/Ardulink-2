@@ -287,7 +287,8 @@ public class FirmataProtocol implements Protocol {
 		}
 
 		private FirmataPin getPin(Pin pin) {
-			return getPin(pin.is(DIGITAL) ? pin.pinNum() + 8 - 2 : pin.pinNum());
+			// TODO return getPin(pin.is(DIGITAL) ? pin.pinNum() : pin.pinNum());
+			return getPin(pin.pinNum());
 		}
 
 		@Override

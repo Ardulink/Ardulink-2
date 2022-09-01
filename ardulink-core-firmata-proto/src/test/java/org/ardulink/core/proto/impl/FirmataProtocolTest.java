@@ -183,10 +183,10 @@ public class FirmataProtocolTest {
 
 	@Test
 	public void canSetDigitalPin() {
-		DigitalPin pin = digitalPin(12);
-		assertThat(bytesToHexString(sut.toDevice(new DefaultToDeviceMessagePinStateChange(pin, true))), is("92 04 00"));
+		DigitalPin pin = digitalPin(13);
+		assertThat(bytesToHexString(sut.toDevice(new DefaultToDeviceMessagePinStateChange(pin, true))), is("91 20 00"));
 		assertThat(bytesToHexString(sut.toDevice(new DefaultToDeviceMessagePinStateChange(pin, false))),
-				is("92 00 00"));
+				is("91 00 00"));
 	}
 
 	@Test
@@ -241,8 +241,8 @@ public class FirmataProtocolTest {
 	public void canEnableDisableDigitalListening() {
 		byte pinNumber = 12;
 		Pin pin = digitalPin(pinNumber);
-		assertThat(bytesToHexString(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))), is("D2 01"));
-		assertThat(bytesToHexString(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))), is("D2 00"));
+		assertThat(bytesToHexString(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))), is("D1 01"));
+		assertThat(bytesToHexString(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))), is("D1 00"));
 	}
 
 	// -------------------------------------------------------------------------
