@@ -578,7 +578,7 @@ public abstract class LinkManager {
 			@Override
 			@LapsedWith(module = JDK8, value = "Streams")
 			public List<URI> listURIs() {
-				List<LinkFactory> factories = getConnectionFactories();
+				List<LinkFactory> factories = getLinkFactories();
 				List<URI> result = new ArrayList<URI>(factories.size());
 				for (LinkFactory<?> factory : factories) {
 					result.add(URIs.newURI(format("%s://%s", SCHEMA,
@@ -588,23 +588,23 @@ public abstract class LinkManager {
 			}
 
 			@LapsedWith(module = JDK8, value = "Streams")
-			private Optional<LinkFactory<?>> getConnectionFactory(String name) {
-				for (LinkFactory<?> connectionFactory : getConnectionFactories()) {
-					if (connectionFactory.getName().equals(name)) {
-						return Optional.<LinkFactory<?>> of(connectionFactory);
+			private Optional<LinkFactory<?>> getLinkFactory(String name) {
+				for (LinkFactory<?> linkFactory : getLinkFactories()) {
+					if (linkFactory.getName().equals(name)) {
+						return Optional.<LinkFactory<?>> of(linkFactory);
 					}
 				}
-				for (LinkFactory<?> connectionFactory : getConnectionFactories()) {
-					Alias alias = connectionFactory.getClass().getAnnotation(LinkFactory.Alias.class);
+				for (LinkFactory<?> linkFactory : getLinkFactories()) {
+					Alias alias = linkFactory.getClass().getAnnotation(LinkFactory.Alias.class);
 					if (alias != null && Arrays.asList(alias.value()).contains(name)) {
-						return Optional.<LinkFactory<?>>of(connectionFactory);
+						return Optional.<LinkFactory<?>>of(linkFactory);
 					}
 				}
 				return Optional.<LinkFactory<?>> absent();
 			}
 			
 			@LapsedWith(module = JDK8, value = "Streams")
-			private List<LinkFactory> getConnectionFactories() {
+			private List<LinkFactory> getLinkFactories() {
 				List<LinkFactory> factories = Lists.newArrayList();
 				for (LinkFactoriesProvider linkFactoriesProvider : services(LinkFactoriesProvider.class,
 						moduleClassloader())) {
@@ -617,12 +617,12 @@ public abstract class LinkManager {
 			public Configurer getConfigurer(URI uri) {
 				String name = checkNotNull(extractNameFromURI(uri), uri
 						+ " not a valid URI: Unable not extract name");
-				LinkFactory connectionFactory = getConnectionFactory(name)
+				LinkFactory linkFactory = getLinkFactory(name)
 						.getOrThrow(
 								IllegalArgumentException.class,
 								"No factory registered for \"%s\", available names are %s",
 								name, listURIs());
-				Configurer configurer = new DefaultConfigurer(connectionFactory);
+				Configurer configurer = new DefaultConfigurer(linkFactory);
 				return uri.getQuery() == null ? configurer : configure(configurer, uri.getQuery().split("\\&"));
 			}
 
@@ -652,6 +652,7 @@ public abstract class LinkManager {
 				}
 			}
 
+			@LapsedWith(module = JDK8, value = "Streams")
 			private Object enumWithName(Class<Enum<?>> targetType, String value) {
 				for (Enum<?> enumConstant : targetType.getEnumConstants()) {
 					if (enumConstant.name().equals(value)) {
