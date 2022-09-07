@@ -63,6 +63,15 @@ public class ByteArray {
 	 * Appends the passed buffer to the internal byte[].
 	 * 
 	 * @param buffer    the data to append
+	 */
+	public void append(byte[] buffer) {
+		append(buffer, buffer.length);
+	}
+
+	/**
+	 * Appends the passed buffer to the internal byte[].
+	 * 
+	 * @param buffer    the data to append
 	 * @param bytesRead length of the data to append from <code>buffer</code>
 	 */
 	public void append(byte[] buffer, int bytesRead) {
