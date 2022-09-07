@@ -190,11 +190,14 @@ public class FirmataProtocolTest {
 	}
 
 	@Test
-	public void canSetAnalogPin() {
+	public void canSetAnalogPin() throws IOException {
+		givenMessage(capabilities());
+		whenMessageIsProcessed();
+
 		int value = 42;
-		AnalogPin pin = analogPin(10);
+		AnalogPin pin = analogPin(9);
 		DefaultToDeviceMessagePinStateChange toDeviceMessage = new DefaultToDeviceMessagePinStateChange(pin, value);
-		assertThat(bytesToHexString(sut.toDevice(toDeviceMessage)), is("E2 2A 00"));
+		assertThat(bytesToHexString(sut.toDevice(toDeviceMessage)), is("F4 01 03" + " " + "E9 2A 00"));
 		// TODO Verify the EXTENDED_ANALOG (for higher pin numbers/values)
 	}
 
@@ -233,8 +236,8 @@ public class FirmataProtocolTest {
 	public void canEnableDisableAnalogListening() {
 		byte pinNumber = 2;
 		Pin pin = analogPin(pinNumber);
-		assertThat(bytesToHexString(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))), is("C0 01"));
-		assertThat(bytesToHexString(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))), is("C0 00"));
+		assertThat(bytesToHexString(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))), is("C2 01"));
+		assertThat(bytesToHexString(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))), is("C2 00"));
 	}
 
 	@Test

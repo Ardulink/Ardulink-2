@@ -22,6 +22,7 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.PWM;
 import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Throwables.propagate;
 import static org.firmata4j.firmata.parser.FirmataEventType.ANALOG_MESSAGE_RESPONSE;
@@ -44,6 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.ardulink.core.Pin;
+import org.ardulink.core.Pin.Type;
 import org.ardulink.core.Tone;
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
@@ -58,6 +60,7 @@ import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProcessor;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode;
+import org.ardulink.util.ByteArray;
 import org.ardulink.util.anno.LapsedWith;
 import org.firmata4j.Consumer;
 import org.firmata4j.firmata.FirmataMessageFactory;
@@ -135,6 +138,12 @@ public class FirmataProtocol implements Protocol {
 
 		public boolean modeIs(Mode other) {
 			return currentMode == other;
+		}
+
+		@Override
+		public String toString() {
+			return "FirmataPin [index=" + index + ", value=" + value + ", supportedModes=" + supportedModes
+					+ ", supportedModes_=" + supportedModes_ + ", currentMode=" + currentMode + "]";
 		}
 
 	}
@@ -232,8 +241,8 @@ public class FirmataProtocol implements Protocol {
 			return new Consumer<Event>() {
 				@Override
 				public void accept(Event t) {
-					byte pinId = (Byte) t.getBodyItem(PIN_ID);
-					FirmataPin pin = FirmataPin.fromIndex(pinId);
+					byte index = (Byte) t.getBodyItem(PIN_ID);
+					FirmataPin pin = FirmataPin.fromIndex(index);
 					for (byte modeByte : (byte[]) t.getBodyItem(PIN_SUPPORTED_MODES)) {
 						pin.addSupportedMode(Mode.fromByteValue(modeByte));
 					}
@@ -287,20 +296,30 @@ public class FirmataProtocol implements Protocol {
 		}
 
 		private FirmataPin getPin(Pin pin) {
-			// TODO return getPin(pin.is(DIGITAL) ? pin.pinNum() : pin.pinNum());
-			return getPin(pin.pinNum());
+			return getPin(pin.is(ANALOG) ? 2 * 8 + pin.pinNum() : pin.pinNum());
 		}
 
 		@Override
 		public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
-			FirmataPin firmataPin = getPin(pinStateChange.getPin());
+			ByteArray message = new ByteArray();
+			FirmataPin firmataPin = getPin(changeType(pinStateChange.getPin(), DIGITAL));
 			if (pinStateChange.getPin().is(ANALOG)) {
+				if (!firmataPin.modeIs(PWM)) {
+					message.append(FirmataMessageFactory.setMode(firmataPin.pinId(), org.firmata4j.Pin.Mode.PWM));
+					firmataPin.currentMode = PWM;
+				}
 				int value = (Integer) pinStateChange.getValue();
-				return FirmataMessageFactory.setAnalogPinValue(firmataPin.pinId(), value);
+				message.append(FirmataMessageFactory.setAnalogPinValue((byte) firmataPin.index(), value));
 			} else if (pinStateChange.getPin().is(DIGITAL)) {
-				return digitalMessage(firmataPin, TRUE.equals(pinStateChange.getValue()));
+				message.append(digitalMessage(firmataPin, TRUE.equals(pinStateChange.getValue())));
+			} else {
+				throw notYetImplemented();
 			}
-			throw notYetImplemented();
+			return message.copy();
+		}
+
+		private static Pin changeType(Pin pin, Type type) {
+			return type == ANALOG ? analogPin(pin.pinNum()) : digitalPin(pin.pinNum());
 		}
 
 		private byte[] digitalMessage(FirmataPin pin, boolean value) {
