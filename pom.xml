@@ -60,7 +60,7 @@
 		<maven.compiler.source>${compilerVersion}</maven.compiler.source>
 		<maven.compiler.target>${compilerVersion}</maven.compiler.target>
 		<args4j.version>2.33</args4j.version>
-		<slf4j.version>2.0.2</slf4j.version>
+		<slf4j.version>2.0.3</slf4j.version>
 		<junit.version>4.13.2</junit.version>
 		<mockito.version>1.10.19</mockito.version>
 		<!-- The next LTS release Camel 3.14, scheduled for December 2021, will be the last release to support Java 8 -->
