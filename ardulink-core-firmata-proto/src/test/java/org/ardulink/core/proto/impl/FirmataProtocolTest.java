@@ -190,7 +190,7 @@ public class FirmataProtocolTest {
 	}
 
 	@Test
-	public void canSetAnalogPin() throws IOException {
+	public void canSetAnalogBetterSaidDigitalPwmPin() throws IOException {
 		givenMessage(capabilities());
 		whenMessageIsProcessed();
 

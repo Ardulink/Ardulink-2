@@ -25,6 +25,7 @@ import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.PWM;
 import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Throwables.propagate;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.firmata4j.firmata.parser.FirmataEventType.ANALOG_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.DIGITAL_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.FIRMWARE_MESSAGE;
@@ -286,7 +287,7 @@ public class FirmataProtocol implements Protocol {
 		private final Map<Integer, FirmataPin> pins = new ConcurrentHashMap<Integer, FirmataPin>();
 
 		private FirmataPin getPin(int index) {
-			@LapsedWith(module = LapsedWith.JDK8, value = "Map#merge")
+			@LapsedWith(module = JDK8, value = "Map#merge")
 			FirmataPin firmataPin = pins.get(index);
 			if (firmataPin == null) {
 				firmataPin = FirmataPin.fromIndex(index);
@@ -302,10 +303,10 @@ public class FirmataProtocol implements Protocol {
 		@Override
 		public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
 			ByteArray message = new ByteArray();
-			FirmataPin firmataPin = getPin(changeType(pinStateChange.getPin(), DIGITAL));
+			FirmataPin firmataPin = getPin(switchPinType(pinStateChange.getPin(), DIGITAL));
 			if (pinStateChange.getPin().is(ANALOG)) {
 				if (!firmataPin.modeIs(PWM)) {
-					message.append(FirmataMessageFactory.setMode(firmataPin.pinId(), org.firmata4j.Pin.Mode.PWM));
+					message.append(FirmataMessageFactory.setMode((byte) firmataPin.pinId(), org.firmata4j.Pin.Mode.PWM));
 					firmataPin.currentMode = PWM;
 				}
 				int value = (Integer) pinStateChange.getValue();
@@ -318,7 +319,7 @@ public class FirmataProtocol implements Protocol {
 			return message.copy();
 		}
 
-		private static Pin changeType(Pin pin, Type type) {
+		private static Pin switchPinType(Pin pin, Type type) {
 			return type == ANALOG ? analogPin(pin.pinNum()) : digitalPin(pin.pinNum());
 		}
 
