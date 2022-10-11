@@ -306,7 +306,7 @@ public class FirmataProtocol implements Protocol {
 			FirmataPin firmataPin = getPin(switchPinType(pinStateChange.getPin(), DIGITAL));
 			if (pinStateChange.getPin().is(ANALOG)) {
 				if (!firmataPin.modeIs(PWM)) {
-					message.append(FirmataMessageFactory.setMode((byte) firmataPin.pinId(), org.firmata4j.Pin.Mode.PWM));
+					message.append(FirmataMessageFactory.setMode((byte) firmataPin.index(), org.firmata4j.Pin.Mode.PWM));
 					firmataPin.currentMode = PWM;
 				}
 				int value = (Integer) pinStateChange.getValue();

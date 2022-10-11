@@ -196,7 +196,7 @@ public class FirmataProtocolTest {
 
 		AnalogPin pin = analogPin(9);
 		DefaultToDeviceMessagePinStateChange msg1 = new DefaultToDeviceMessagePinStateChange(pin, 42);
-		assertThat(bytesToHexString(sut.toDevice(msg1)), is("F4 01 03" + " " + "E9 2A 00"));
+		assertThat(bytesToHexString(sut.toDevice(msg1)), is("F4 09 03" + " " + "E9 2A 00"));
 		DefaultToDeviceMessagePinStateChange msg2 = new DefaultToDeviceMessagePinStateChange(pin, 255);
 		assertThat(bytesToHexString(sut.toDevice(msg2)), is("E9 7F 01"));
 		// TODO Verify the EXTENDED_ANALOG (for higher pin numbers/values)
