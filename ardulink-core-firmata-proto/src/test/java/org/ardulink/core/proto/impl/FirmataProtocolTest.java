@@ -190,7 +190,7 @@ public class FirmataProtocolTest {
 	}
 
 	@Test
-	public void canSetAnalogBetterSaidDigitalPwmPin() throws IOException {
+	public void canSetPwmPin() throws IOException {
 		givenMessage(capabilities());
 		whenMessageIsProcessed();
 
@@ -199,7 +199,22 @@ public class FirmataProtocolTest {
 		assertThat(bytesToHexString(sut.toDevice(msg1)), is("F4 09 03" + " " + "E9 2A 00"));
 		DefaultToDeviceMessagePinStateChange msg2 = new DefaultToDeviceMessagePinStateChange(pin, 255);
 		assertThat(bytesToHexString(sut.toDevice(msg2)), is("E9 7F 01"));
-		// TODO Verify the EXTENDED_ANALOG (for higher pin numbers/values)
+		DefaultToDeviceMessagePinStateChange msg3 = new DefaultToDeviceMessagePinStateChange(pin, 42);
+		assertThat(bytesToHexString(sut.toDevice(msg3)), is("E9 2A 00"));
+	}
+
+	@Test
+	public void canSetPwmPinViaExtendedMessage() throws IOException {
+		givenMessage(capabilities());
+		whenMessageIsProcessed();
+
+		AnalogPin pin = analogPin(9);
+		DefaultToDeviceMessagePinStateChange msg1 = new DefaultToDeviceMessagePinStateChange(pin, 42);
+		assertThat(bytesToHexString(sut.toDevice(msg1)), is("F4 09 03" + " " + "E9 2A 00"));
+		DefaultToDeviceMessagePinStateChange msg2 = new DefaultToDeviceMessagePinStateChange(pin, 16 * 1024 - 1);
+		assertThat(bytesToHexString(sut.toDevice(msg2)), is("E9 7F 7F"));
+		DefaultToDeviceMessagePinStateChange msg3 = new DefaultToDeviceMessagePinStateChange(pin, 16 * 1024);
+		assertThat(bytesToHexString(sut.toDevice(msg3)), is("F0 6F 09 00 00 01 00 F7"));
 	}
 
 	// -------------------------------------------------------------------------
