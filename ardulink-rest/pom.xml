@@ -86,6 +86,11 @@
 			<version>5.2.0</version>
 			<scope>test</scope>
 		</dependency>
+                <dependency>
+                        <groupId>com.microsoft.playwright</groupId>
+                        <artifactId>playwright</artifactId>
+                        <version>1.27.1</version>
+                </dependency>
 	</dependencies>
 
 	<build>
