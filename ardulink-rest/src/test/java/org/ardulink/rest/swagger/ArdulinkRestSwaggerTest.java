@@ -21,10 +21,17 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.port;
 import static io.restassured.http.ContentType.JSON;
 import static java.awt.GraphicsEnvironment.isHeadless;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import org.ardulink.core.Link;
+import org.ardulink.core.convenience.Links;
 import org.ardulink.rest.main.CommandLineArguments;
 import org.ardulink.rest.main.RestMain;
 import org.junit.Before;
@@ -47,6 +54,8 @@ import com.microsoft.playwright.options.AriaRole;
  */
 public class ArdulinkRestSwaggerTest {
 
+	private static final String MOCK_URI = "ardulink://mock";
+
 	@Before
 	public void setup() {
 		port = freePort();
@@ -64,7 +73,7 @@ public class ArdulinkRestSwaggerTest {
 	}
 
 	@Test
-	public void canAccesApiUi() throws Exception {
+	public void canAccesApiUi_GotoApiDocs() throws Exception {
 		try (RestMain main = runRestComponent()) {
 			try (Playwright playwright = Playwright.create()) {
 				Browser browser = playwright.chromium()
@@ -75,20 +84,47 @@ public class ArdulinkRestSwaggerTest {
 
 				page.navigate("http://localhost:" + port + "/api-browser");
 
-				page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("pin")).click();
-				assertThat(page).hasURL("http://localhost:" + port + "/swagger-ui/4.14.0/index.html#/");
-
 				Page page1 = page.waitForPopup(() -> {
 					page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("/api-docs")).click();
 				});
-//				assertThat(page).hasURL("http://localhost:8080/swagger-ui/4.14.0/index.html#/");
+			}
+		}
+	}
+
+	@Test
+	public void canAccesApiUi_ExecPutRequestViaApiBrowser() throws Exception {
+		int pin = 13;
+		int value = 42;
+		try (RestMain main = runRestComponent()) {
+			try (Playwright playwright = Playwright.create()) {
+				Browser browser = playwright.chromium()
+						.launch(new BrowserType.LaunchOptions().setHeadless(isHeadless()));
+				BrowserContext context = browser.newContext();
+
+				Page page = context.newPage();
+
+				page.navigate("http://localhost:" + port + "/api-browser");
+				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("put ​/pin​/analog​/{pin}"))
+						.click();
+
+				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Try it out")).click();
+				page.getByPlaceholder("pin").click();
+				page.getByPlaceholder("pin").fill(String.valueOf(pin));
+				page.locator("textarea:has-text(\"string\")").click();
+				page.locator("textarea:has-text(\"string\")").press("Control+a");
+				page.locator("textarea:has-text(\"string\")").fill(String.valueOf(value));
+				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Execute")).click();
+
+				try (Link mock = getMock(Links.getLink(MOCK_URI))) {
+					verify(mock).switchAnalogPin(analogPin(pin), value);
+				}
 			}
 		}
 	}
 
 	private RestMain runRestComponent() throws Exception {
 		CommandLineArguments args = new CommandLineArguments();
-		args.connection = "direct:noop";
+		args.connection = MOCK_URI;
 		args.port = port;
 		return new RestMain(args);
 	}
