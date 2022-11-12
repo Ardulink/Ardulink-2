@@ -87,12 +87,12 @@ public class RestRouteBuilder extends RouteBuilder {
 
 		rest("/pin") //
 				.consumes("application/octet-stream").produces("application/json") //
-				.patch("/analog/{pin}").to(patchAnalog) //
-				.patch("/digital/{pin}").to(patchDigital) //
+				.patch("/analog/{pin}").consumes("application/text").type(String.class).to(patchAnalog) //
+				.patch("/digital/{pin}").consumes("application/text").type(String.class).to(patchDigital) //
 				.get("/analog/{pin}").to(readAnalog) //
 				.get("/digital/{pin}").to(readDigital) //
-				.put("/analog/{pin}").to(switchAnalog) //
-				.put("/digital/{pin}").to(switchDigital) //
+				.put("/analog/{pin}").consumes("application/text").type(String.class).to(switchAnalog) //
+				.put("/digital/{pin}").consumes("application/text").type(String.class).to(switchDigital) //
 		;
 		from(patchAnalog).process(exchange -> patchAnalog(exchange)).to(target);
 		from(patchDigital).process(exchange -> patchDigital(exchange)).to(target);
