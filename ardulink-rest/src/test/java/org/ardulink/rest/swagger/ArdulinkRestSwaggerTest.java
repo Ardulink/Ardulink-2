@@ -16,19 +16,17 @@ limitations under the License.
 
 package org.ardulink.rest.swagger;
 
-import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.port;
 import static io.restassured.http.ContentType.JSON;
 import static java.awt.GraphicsEnvironment.isHeadless;
 import static org.ardulink.core.Pin.analogPin;
-import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
@@ -116,7 +114,7 @@ public class ArdulinkRestSwaggerTest {
 				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Execute")).click();
 
 				try (Link mock = getMock(Links.getLink(MOCK_URI))) {
-					verify(mock).switchAnalogPin(analogPin(pin), value);
+					verify(mock, timeout(5_000)).switchAnalogPin(analogPin(pin), value);
 				}
 			}
 		}
