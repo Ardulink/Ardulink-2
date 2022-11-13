@@ -1,8 +1,11 @@
 package org.ardulink.util;
 
 import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.util.Iterator;
+
+import org.ardulink.util.anno.LapsedWith;
 
 public final class Throwables {
 
@@ -14,6 +17,7 @@ public final class Throwables {
 		return Iterators.getLast(getCauses(throwable)).or(throwable);
 	}
 
+	@LapsedWith(module = JDK8, value = "Stream#iterate(T,Predicate,UnaryOperator)")
 	public static Iterator<Throwable> getCauses(final Throwable throwable) {
 		return new Iterator<Throwable>() {
 

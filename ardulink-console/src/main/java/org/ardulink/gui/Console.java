@@ -17,6 +17,7 @@ package org.ardulink.gui;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -54,6 +55,7 @@ import org.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.ardulink.gui.serial.SerialMonitor;
 import org.ardulink.legacy.Link;
 import org.ardulink.util.Throwables;
+import org.ardulink.util.anno.LapsedWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,6 +114,7 @@ public class Console extends JFrame implements Linkable {
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
+			@LapsedWith(module = JDK8, value = "Lambda")
 			@Override
 			public void run() {
 				try {
@@ -145,6 +148,7 @@ public class Console extends JFrame implements Linkable {
 				}
 			}
 
+			@LapsedWith(module = JDK8, value = "Stream")
 			private Throwable rootCauseWithMessage(Throwable throwable) {
 				Throwable cause = throwable;
 				for (Iterator<Throwable> causes = Throwables.getCauses(cause); causes
