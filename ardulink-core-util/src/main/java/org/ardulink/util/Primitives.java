@@ -37,49 +37,49 @@ public enum Primitives {
 
 	INT(Integer.TYPE, Integer.class) {
 		@Override
-		public Object parse(String value) {
+		public Integer parse(String value) {
 			return Integer.valueOf(value);
 		}
 	},
 	BYTE(Byte.TYPE, Byte.class) {
 		@Override
-		public Object parse(String value) {
+		public Byte parse(String value) {
 			return Byte.valueOf(value);
 		}
 	},
 	SHORT(Short.TYPE, Short.class) {
 		@Override
-		public Object parse(String value) {
+		public Short parse(String value) {
 			return Short.valueOf(value);
 		}
 	},
 	LONG(Long.TYPE, Long.class) {
 		@Override
-		public Object parse(String value) {
+		public Long parse(String value) {
 			return Long.valueOf(value);
 		}
 	},
 	FLOAT(Float.TYPE, Float.class) {
 		@Override
-		public Object parse(String value) {
+		public Float parse(String value) {
 			return Float.valueOf(value);
 		}
 	},
 	DOUBLE(Double.TYPE, Double.class) {
 		@Override
-		public Object parse(String value) {
+		public Double parse(String value) {
 			return Double.valueOf(value);
 		}
 	},
 	BOOLEAN(Boolean.TYPE, Boolean.class) {
 		@Override
-		public Object parse(String value) {
+		public Boolean parse(String value) {
 			return Boolean.valueOf(value);
 		}
 	},
 	CHAR(Character.TYPE, Character.class) {
 		@Override
-		public Object parse(String value) {
+		public Character parse(String value) {
 			checkArgument(value.length() == 1,
 					"single character expected but got %s", value);
 			return Character.valueOf(value.charAt(0));
