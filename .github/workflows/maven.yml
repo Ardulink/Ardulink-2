@@ -31,5 +31,5 @@ jobs:
       if: (success() || failure()) && github.event_name != 'pull_request'  # run this step even if previous step failed
       with:
         name: Tests Report
-        path: */target/surefire-reports/*.xml
+        path: "*/target/surefire-reports/*.xml"
         reporter: java-junit
