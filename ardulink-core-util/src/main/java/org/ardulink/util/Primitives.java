@@ -94,6 +94,7 @@ public enum Primitives {
 		this.wrapperType = wrapperType;
 	}
 
+	@LapsedWith(module = JDK8, value = "Lambda") // pass Function<String,Object> to constructor
 	public abstract Object parse(String value);
 
 	public Class<?> getWrapperType() {
