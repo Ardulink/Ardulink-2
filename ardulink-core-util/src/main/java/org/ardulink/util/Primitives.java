@@ -109,7 +109,7 @@ public enum Primitives {
 
 	@LapsedWith(value = JDK8, module = "Streams")
 	private static Optional<Primitives> findPrimitiveFor(Class<?> type) {
-		for (Primitives primitive : Primitives.values()) {
+		for (Primitives primitive : values()) {
 			if (type.isAssignableFrom(primitive.getType())) {
 				return Optional.of(primitive);
 			}
