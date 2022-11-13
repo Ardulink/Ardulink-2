@@ -26,7 +26,7 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn -B compile jib:dockerBuild verify --file pom.xml
-    - name: Test Report
+    - name: Test Report JDK ${{ matrix.java-version }}
       uses: dorny/test-reporter@v1
       if: (success() || failure()) && github.event_name != 'pull_request'  # run this step even if previous step failed
       with:
