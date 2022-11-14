@@ -96,7 +96,6 @@
 		<module>example-buttonquest</module>
 		<module>example-joysticksmartcardriver</module>
 		<module>example-simplesmartcardriver</module>
-		<module>deploy-jacoco-aggregate</module>
 		<module>deploy-dist</module>
 	</modules>
 
@@ -111,6 +110,32 @@
 							<descriptor>assembly.xml</descriptor>
 						</descriptors>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>0.8.8</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>prepare-agent</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>report</id>
+							<phase>test</phase>
+							<goals>
+								<goal>report</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>report-aggregate</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>report-aggregate</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -150,25 +175,6 @@
 					<skip>true</skip>
 				</configuration>
 			</plugin>
-                        <plugin>
-                                <groupId>org.jacoco</groupId>
-                                <artifactId>jacoco-maven-plugin</artifactId>
-                                <version>0.8.8</version>
-                                <executions>
-                                        <execution>
-                                                <goals>
-                                                        <goal>prepare-agent</goal>
-                                                </goals>
-                                        </execution>
-                                        <execution>
-                                                <id>report</id>
-                                                <phase>test</phase>
-                                                <goals>
-                                                        <goal>report</goal>
-                                                </goals>
-                                        </execution>
-                                </executions>
-                        </plugin>
 		</plugins>
 	</build>
 
