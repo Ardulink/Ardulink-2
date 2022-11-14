@@ -96,6 +96,7 @@
 		<module>example-buttonquest</module>
 		<module>example-joysticksmartcardriver</module>
 		<module>example-simplesmartcardriver</module>
+		<module>deploy-jacoco-aggregate</module>
 		<module>deploy-dist</module>
 	</modules>
 
@@ -166,13 +167,6 @@
                                                         <goal>report</goal>
                                                 </goals>
                                         </execution>
-					<execution>
-						<id>report-aggregate</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>report-aggregate</goal>
-						</goals>
-					</execution>
                                 </executions>
                         </plugin>
 		</plugins>
