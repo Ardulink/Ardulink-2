@@ -13,6 +13,14 @@
 		<maven.deploy.skip>true</maven.deploy.skip>
 	</properties>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.ardulink</groupId>
+			<artifactId>ardulink-core-base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -21,13 +29,5 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-base</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-	</dependencies>
 
 </project>
