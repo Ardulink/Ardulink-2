@@ -33,7 +33,5 @@ jobs:
         name: Tests Report JDK ${{ matrix.java-version }}
         path: "*/target/surefire-reports/*.xml"
         reporter: java-junit
-    - name: Delete non-aggregate jacoco files
-      run: rm */target/site/jacoco/jacoco.xml
     - name: Codecov
       uses: codecov/codecov-action@v3
