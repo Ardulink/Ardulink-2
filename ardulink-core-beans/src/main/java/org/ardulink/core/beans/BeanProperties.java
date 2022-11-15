@@ -140,7 +140,7 @@ public class BeanProperties {
 	private final Object bean;
 	private final AttributeFinder[] finders;
 
-	private BeanProperties(final Builder builder) {
+	private BeanProperties(Builder builder) {
 		this.bean = builder.bean;
 		this.finders = builder.finders.clone();
 	}
@@ -174,6 +174,7 @@ public class BeanProperties {
 		Optional<Class<?>> readerType = reader.isPresent() ? Optional
 				.<Class<?>> of(reader.get().getType()) : Optional
 				.<Class<?>> absent();
+		@LapsedWith(module = JDK8, value = "Optional#map")
 		Optional<Class<?>> writerType = writer.isPresent() ? Optional
 				.<Class<?>> of(writer.get().getType()) : Optional
 				.<Class<?>> absent();
