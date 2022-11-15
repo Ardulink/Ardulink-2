@@ -266,13 +266,16 @@ public abstract class LinkManager {
 						.using(propertyAnnotated(ChoiceFor.class)).build()
 						.getAttribute(attribute.getName());
 				if (choiceFor == null && attribute.getType().isEnum()) {
-					HardCodedValues reader = new HardCodedValues(
-							attribute.getName(), attribute.getType(), attribute
-									.getType().getEnumConstants());
 					return new DefaultAttribute(attribute.getName(),
-							attribute.getType(), reader, null);
+							attribute.getType(), hardCodedValues(), null);
 				}
 				return choiceFor;
+			}
+
+			private AttributeReader hardCodedValues() {
+				return new HardCodedValues(
+						attribute.getName(), attribute.getType(), attribute
+								.getType().getEnumConstants());
 			}
 
 			private List<ConfigAttribute> resolveDeps(Attribute choiceFor) {
