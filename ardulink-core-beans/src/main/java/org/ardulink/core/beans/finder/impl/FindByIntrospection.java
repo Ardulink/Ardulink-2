@@ -18,6 +18,7 @@ package org.ardulink.core.beans.finder.impl;
 
 import static org.ardulink.core.beans.finder.impl.ReadMethod.isReadMethod;
 import static org.ardulink.core.beans.finder.impl.WriteMethod.isWriteMethod;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static java.beans.Introspector.getBeanInfo;
 
 import java.beans.PropertyDescriptor;
@@ -27,6 +28,7 @@ import java.util.List;
 import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.Attribute.AttributeWriter;
 import org.ardulink.core.beans.finder.api.AttributeFinder;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -49,6 +51,7 @@ public class FindByIntrospection implements AttributeFinder {
 	}
 
 	@Override
+	@LapsedWith(module = JDK8, value = "Streams")
 	public Iterable<? extends AttributeReader> listReaders(Object bean)
 			throws Exception {
 		List<ReadMethod> readers = new ArrayList<ReadMethod>();
@@ -63,6 +66,7 @@ public class FindByIntrospection implements AttributeFinder {
 	}
 
 	@Override
+	@LapsedWith(module = JDK8, value = "Streams")
 	public Iterable<? extends AttributeWriter> listWriters(Object bean)
 			throws Exception {
 		List<WriteMethod> writers = new ArrayList<WriteMethod>();

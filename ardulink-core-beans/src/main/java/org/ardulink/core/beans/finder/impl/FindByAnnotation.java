@@ -21,6 +21,7 @@ import static org.ardulink.core.beans.finder.impl.WriteMethod.isWriteMethod;
 import static java.lang.reflect.Modifier.isPublic;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Throwables.propagate;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -32,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.ardulink.util.Optional;
+import org.ardulink.util.anno.LapsedWith;
 import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.Attribute.AttributeWriter;
 import org.ardulink.core.beans.finder.api.AttributeFinder;
@@ -156,6 +158,7 @@ public class FindByAnnotation implements AttributeFinder {
 	}
 
 	@Override
+	@LapsedWith(module = JDK8, value = "Streams")
 	public Iterable<? extends AttributeReader> listReaders(Object bean)
 			throws Exception {
 		List<AttributeReader> readers = new ArrayList<AttributeReader>();
@@ -185,6 +188,7 @@ public class FindByAnnotation implements AttributeFinder {
 	}
 
 	@Override
+	@LapsedWith(module = JDK8, value = "Streams")
 	public Iterable<AttributeWriter> listWriters(Object bean) throws Exception {
 		List<AttributeWriter> writers = new ArrayList<AttributeWriter>();
 		for (Method method : bean.getClass().getDeclaredMethods()) {
@@ -213,6 +217,7 @@ public class FindByAnnotation implements AttributeFinder {
 		return writers;
 	}
 
+	@LapsedWith(module = JDK8, value = "Streams")
 	private Optional<AttributeReader> readMethodForAttribute(Object bean,
 			final String name) throws Exception {
 		for (AttributeReader reader : FindByIntrospection.beanAttributes()
@@ -225,6 +230,7 @@ public class FindByAnnotation implements AttributeFinder {
 
 	}
 
+	@LapsedWith(module = JDK8, value = "Streams")
 	private Optional<AttributeWriter> writeMethodForAttribute(Object bean,
 			final String name) throws Exception {
 		for (AttributeWriter writer : FindByIntrospection.beanAttributes()

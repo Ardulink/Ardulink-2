@@ -7,10 +7,12 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 
+import org.ardulink.util.anno.LapsedWith;
 import org.junit.Test;
 
 /**
@@ -140,6 +142,7 @@ public class AnnotationsTest {
 						beanProperties), SomeAnno.class, AnotherAnno.class);
 	}
 
+	@LapsedWith(module = JDK8, value = "Streams")
 	private void hasAnnotations(Attribute attribute,
 			final Class<? extends Annotation>... annoClasses) {
 		for (int i = 0; i < annoClasses.length; i++) {
