@@ -165,8 +165,7 @@ public class FindByAnnotation implements AttributeFinder {
 		for (Method method : bean.getClass().getDeclaredMethods()) {
 			if (method.isAnnotationPresent(annotationClass)
 					&& isReadMethod(method)) {
-				readers.add(new ReadMethod(bean, annoValue(method
-						.getAnnotation(annotationClass)), method));
+				readers.add(readMethod(bean, method));
 			}
 		}
 
@@ -179,8 +178,7 @@ public class FindByAnnotation implements AttributeFinder {
 							readMethodForAttribute.get(), annoValue(field
 									.getAnnotation(annotationClass)), field));
 				} else if (isPublic(field.getModifiers())) {
-					readers.add(new FieldAccess(bean, annoValue(field
-							.getAnnotation(annotationClass)), field));
+					readers.add(fieldAccess(bean, field));
 				}
 			}
 		}
@@ -194,8 +192,7 @@ public class FindByAnnotation implements AttributeFinder {
 		for (Method method : bean.getClass().getDeclaredMethods()) {
 			if (method.isAnnotationPresent(annotationClass)
 					&& isWriteMethod(method)) {
-				writers.add(new WriteMethod(bean, annoValue(method
-						.getAnnotation(annotationClass)), method));
+				writers.add(writeMethod(bean, method));
 			}
 		}
 
@@ -208,15 +205,26 @@ public class FindByAnnotation implements AttributeFinder {
 							writeMethodForAttribute.get(), annoValue(field
 									.getAnnotation(annotationClass)), field));
 				} else if (isPublic(field.getModifiers())) {
-					writers.add(new FieldAccess(bean, annoValue(field
-							.getAnnotation(annotationClass)), field));
+					writers.add(fieldAccess(bean, field));
 				}
-
 			}
 		}
 		return writers;
 	}
+	
+	private FieldAccess fieldAccess(Object bean, Field field) throws IllegalAccessException, InvocationTargetException {
+		return new FieldAccess(bean, annoValue(field.getAnnotation(annotationClass)), field);
+	}
+	
+	private ReadMethod readMethod(Object bean, Method method) throws IllegalAccessException, InvocationTargetException {
+		return new ReadMethod(bean, annoValue(method.getAnnotation(annotationClass)), method);
+	}
 
+	private WriteMethod writeMethod(Object bean, Method method)
+			throws IllegalAccessException, InvocationTargetException {
+		return new WriteMethod(bean, annoValue(method.getAnnotation(annotationClass)), method);
+	}
+	
 	@LapsedWith(module = JDK8, value = "Streams")
 	private Optional<AttributeReader> readMethodForAttribute(Object bean,
 			final String name) throws Exception {
@@ -227,7 +235,6 @@ public class FindByAnnotation implements AttributeFinder {
 			}
 		}
 		return Optional.absent();
-
 	}
 
 	@LapsedWith(module = JDK8, value = "Streams")
@@ -240,7 +247,6 @@ public class FindByAnnotation implements AttributeFinder {
 			}
 		}
 		return Optional.absent();
-
 	}
 
 	private String annoValue(Annotation annotation)
