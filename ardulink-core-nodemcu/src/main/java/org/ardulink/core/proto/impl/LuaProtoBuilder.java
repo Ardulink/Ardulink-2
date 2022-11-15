@@ -105,10 +105,8 @@ public class LuaProtoBuilder {
 			public String message(LuaProtoBuilder builder) {
 				checkState(builder.values == null, "value must not specified");
 				checkNotNull(builder.pin, "pin has to be specified");
-				String message = snippet;
-				message = message.replaceAll(TemplateVariables.PIN.quoted,
+				return snippet.replaceAll(TemplateVariables.PIN.quoted,
 						String.valueOf(builder.pin));
-				return message;
 			}
 		}, //
 		STOP_LISTENING_DIGITAL {
@@ -116,7 +114,6 @@ public class LuaProtoBuilder {
 			public String message(LuaProtoBuilder builder) {
 				checkNotNull(builder.pin, "pin has to be specified");
 				checkState(builder.values == null, "value must not specified");
-
 				return String.format("gpio.mode(%s,gpio.OUTPUT)", builder.pin);
 			}
 		}; //
@@ -124,19 +121,14 @@ public class LuaProtoBuilder {
 		public abstract String message(LuaProtoBuilder luaProtoBuilder);
 
 		private static String loadSnippet(String snippet) {
-			try {
-				InputStream is = LuaProtoBuilder.class.getResourceAsStream(snippet);
-				try {
-					// Scripts on more than on line cause random error on NodeMCU
-					// because its echo
-					// We should investigate on ESPlorer code to understand how
-					// improve this code.
-					// Actually we remove CR and LF sending the script on a single
-					// line.
-					return InputStreams.toString(is).replaceAll("\\r", " ").replaceAll("\\n", " ");
-				} finally {
-					is.close();
-				}
+			try (InputStream is = LuaProtoBuilder.class.getResourceAsStream(snippet)) {
+				// Scripts on more than on line cause random error on NodeMCU
+				// because its echo
+				// We should investigate on ESPlorer code to understand how
+				// improve this code.
+				// Actually we remove CR and LF sending the script on a single
+				// line.
+				return InputStreams.toString(is).replaceAll("\\r|\\n", " ");
 			} catch (IOException e) {
 				throw propagate(e);
 			}
