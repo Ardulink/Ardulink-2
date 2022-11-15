@@ -16,8 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
-import static java.lang.Integer.MAX_VALUE;
-import static java.lang.Integer.MIN_VALUE;
+import static java.lang.Long.MAX_VALUE;
+import static java.lang.Long.MIN_VALUE;
 import static java.lang.String.format;
 import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
@@ -30,9 +30,6 @@ import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -60,6 +57,7 @@ import org.ardulink.core.linkmanager.LinkFactory.Alias;
 import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Optional;
+import org.ardulink.util.Optional.Function;
 import org.ardulink.util.Primitives;
 import org.ardulink.util.Throwables;
 import org.ardulink.util.URIs;
@@ -223,11 +221,6 @@ public abstract class LinkManager {
 			private List<Object> cachedChoiceValues;
 			private final ResourceBundle nls;
 
-			private final Min minValueProvider = annotationProxy(Min.class,
-					"value", MIN_VALUE);
-			private final Max maxValueProvider = annotationProxy(Max.class,
-					"value", MAX_VALUE);
-
 			public ConfigAttributeAdapter(T linkConfig,
 					BeanProperties beanProperties, String key) {
 				this.attribute = beanProperties.getAttribute(key);
@@ -380,30 +373,21 @@ public abstract class LinkManager {
 			public ValidationInfo getValidationInfo() {
 				if (Integer.class.isAssignableFrom(Primitives.wrap(getType()))) {
 					Annotation[] annotations = attribute.getAnnotations();
-					return newNumberValidationInfo(find(annotations, Min.class)
-							.or(minValueProvider).value(),
-							find(annotations, Max.class).or(maxValueProvider)
-									.value());
+					return newNumberValidationInfo(find(annotations, Min.class).map(new Function<Min, Long>() {
+						@Override
+						@LapsedWith(module = JDK8, value = "Lambdas")
+						public Long apply(Min min) {
+							return min.value();
+						}
+					}).or(MIN_VALUE), find(annotations, Max.class).map(new Function<Max, Long>() {
+						@Override
+						@LapsedWith(module = JDK8, value = "Lambdas")
+						public Long apply(Max max) {
+							return max.value();
+						}
+					}).or(MAX_VALUE));
 				}
 				return ValidationInfo.NULL;
-			}
-
-			private <S> S annotationProxy(Class<S> clazz,
-					final String methodName, final long value) {
-				return clazz.cast(Proxy.newProxyInstance(getClass()
-						.getClassLoader(), new Class<?>[] { clazz },
-						new InvocationHandler() {
-							@Override
-							@LapsedWith(module = JDK8, value = "Lambda")
-							public Object invoke(Object proxy, Method method,
-									Object[] args) throws Throwable {
-								if (methodName.equals(method.getName())) {
-									return value;
-								}
-								throw new UnsupportedOperationException(
-										"Method " + method + " not supported");
-							}
-						}));
 			}
 
 			@LapsedWith(module = JDK8, value = "Stream")

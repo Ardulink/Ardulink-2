@@ -24,11 +24,11 @@ import java.io.InputStream;
 import org.ardulink.util.anno.LapsedWith;
 
 @LapsedWith(value = JDK8, module = "BufferedReader#lines/Collectors#joining")
-public final class Streams {
+public final class InputStreams {
 
 	private static final int BUFFER_SIZE = 1024;
 
-	private Streams() {
+	private InputStreams() {
 		super();
 	}
 

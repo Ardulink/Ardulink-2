@@ -32,6 +32,7 @@ import org.ardulink.core.beans.Attribute.AttributeWriter;
 import org.ardulink.core.beans.Attribute.TypedAttributeProvider;
 import org.ardulink.core.beans.finder.api.AttributeFinder;
 import org.ardulink.util.Optional;
+import org.ardulink.util.Optional.Function;
 import org.ardulink.util.Throwables;
 import org.ardulink.util.anno.LapsedWith;
 
@@ -153,16 +154,17 @@ public class BeanProperties {
 		return new BeanProperties.Builder(bean);
 	}
 
-	public Attribute getAttribute(String name) {
+	public Attribute getAttribute(final String name) {
 		try {
-			Optional<AttributeReader> reader = findReader(name);
-			Optional<AttributeWriter> writer = findWriter(name);
-			Optional<Class<?>> type = determineType(reader, writer);
-			@LapsedWith(module = JDK8, value = "Optional#map")
-			Attribute attribute = type.isPresent()
-					? new DefaultAttribute(name, type.get(), reader.orNull(), writer.orNull())
-					: null;
-			return attribute;
+			final Optional<AttributeReader> reader = findReader(name);
+			final Optional<AttributeWriter> writer = findWriter(name);
+			return determineType(reader, writer).map(new Function<Class<?>, Attribute>() {
+				@Override
+				@LapsedWith(module = JDK8, value = "Lambdas")
+				public Attribute apply(Class<?> t) {
+					return new DefaultAttribute(name, t, reader.orNull(), writer.orNull());
+				}
+			}).orNull();
 		} catch (Exception e) {
 			throw new RuntimeException(e); 
 		}
@@ -170,14 +172,15 @@ public class BeanProperties {
 
 	private static Optional<Class<?>> determineType(
 			Optional<AttributeReader> reader, Optional<AttributeWriter> writer) {
-		@LapsedWith(module = JDK8, value = "Optional#map")
-		Optional<Class<?>> readerType = reader.isPresent() ? Optional
-				.<Class<?>> of(reader.get().getType()) : Optional
-				.<Class<?>> absent();
-		@LapsedWith(module = JDK8, value = "Optional#map")
-		Optional<Class<?>> writerType = writer.isPresent() ? Optional
-				.<Class<?>> of(writer.get().getType()) : Optional
-				.<Class<?>> absent();
+		@LapsedWith(module = JDK8, value = "Lambdas")
+		Function<TypedAttributeProvider, Class<?>> f = new Function<TypedAttributeProvider, Class<?>>() {
+			@Override
+			public Class<?> apply(TypedAttributeProvider p) {
+				return p.getType();
+			}
+		};
+		Optional<Class<?>> readerType = reader.map(f);
+		Optional<Class<?>> writerType = writer.map(f);
 		if (!readerType.isPresent()) {
 			return writerType;
 		}

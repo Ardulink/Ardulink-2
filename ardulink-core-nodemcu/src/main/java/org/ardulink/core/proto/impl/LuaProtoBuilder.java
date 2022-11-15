@@ -27,7 +27,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 import org.ardulink.util.Joiner;
-import org.ardulink.util.Streams;
+import org.ardulink.util.InputStreams;
 
 public class LuaProtoBuilder {
 
@@ -133,7 +133,7 @@ public class LuaProtoBuilder {
 					// improve this code.
 					// Actually we remove CR and LF sending the script on a single
 					// line.
-					return Streams.toString(is).replaceAll("\\r", " ").replaceAll("\\n", " ");
+					return InputStreams.toString(is).replaceAll("\\r", " ").replaceAll("\\n", " ");
 				} finally {
 					is.close();
 				}

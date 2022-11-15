@@ -36,6 +36,10 @@ import org.ardulink.util.anno.LapsedWith;
 @LapsedWith(value = JDK8)
 public abstract class Optional<T> {
 
+	public interface Function<I, O> {
+		O apply(I i);
+	}
+
 	private static class PresentOptional<T> extends Optional<T> {
 
 		private final T value;
@@ -112,6 +116,12 @@ public abstract class Optional<T> {
 	public abstract boolean isPresent();
 
 	public abstract T get();
+
+    @SuppressWarnings("unchecked")
+	public <U> Optional<U> map(Function<? super T, ? extends U> mapper) {
+        return (Optional<U>) (isPresent() ? Optional.ofNullable(mapper.apply(get())) : absent());
+    }
+
 
 	public abstract T or(T other);
 
