@@ -28,6 +28,8 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
+import java.nio.file.Paths;
+
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.rest.main.CommandLineArguments;
@@ -36,6 +38,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.Browser.NewContextOptions;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
@@ -75,8 +78,8 @@ public class ArdulinkRestSwaggerTest {
 		try (RestMain main = runRestComponent()) {
 			try (Playwright playwright = Playwright.create()) {
 				Browser browser = playwright.chromium()
-						.launch(new BrowserType.LaunchOptions().setHeadless(isHeadless()));
-				BrowserContext context = browser.newContext();
+						.launch(new BrowserType.LaunchOptions().setHeadless(isHeadless() || forcedHeadless()));
+				BrowserContext context = browser.newContext(ctx());
 
 				Page page = context.newPage();
 
@@ -97,7 +100,7 @@ public class ArdulinkRestSwaggerTest {
 			try (Playwright playwright = Playwright.create()) {
 				Browser browser = playwright.chromium()
 						.launch(new BrowserType.LaunchOptions().setHeadless(isHeadless()));
-				BrowserContext context = browser.newContext();
+				BrowserContext context = browser.newContext(ctx());
 
 				Page page = context.newPage();
 
@@ -120,6 +123,20 @@ public class ArdulinkRestSwaggerTest {
 		}
 	}
 
+	private static NewContextOptions ctx() {
+		Browser.NewContextOptions newContextOptions = new Browser.NewContextOptions();
+		return forcedNoVideo() ? newContextOptions
+				: newContextOptions.setRecordVideoDir(Paths.get("videos/")).setRecordVideoSize(1024, 800);
+	}
+
+	private static boolean forcedHeadless() {
+		return Boolean.parseBoolean(System.getProperty("test.playwright.force.headless"));
+	}
+
+	private static boolean forcedNoVideo() {
+		return Boolean.parseBoolean(System.getProperty("test.playwright.force.novideo"));
+	}
+	
 	private RestMain runRestComponent() throws Exception {
 		CommandLineArguments args = new CommandLineArguments();
 		args.connection = MOCK_URI;
@@ -128,3 +145,4 @@ public class ArdulinkRestSwaggerTest {
 	}
 
 }
+
