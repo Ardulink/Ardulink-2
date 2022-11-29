@@ -78,7 +78,7 @@ public class ArdulinkRestSwaggerTest {
 		try (RestMain main = runRestComponent()) {
 			try (Playwright playwright = Playwright.create()) {
 				Browser browser = playwright.chromium()
-						.launch(new BrowserType.LaunchOptions().setHeadless(isHeadless() || forcedHeadless()));
+						.launch(new BrowserType.LaunchOptions().setHeadless(!showBrowser()));
 				BrowserContext context = browser.newContext(ctx());
 
 				Page page = context.newPage();
@@ -125,18 +125,18 @@ public class ArdulinkRestSwaggerTest {
 
 	private static NewContextOptions ctx() {
 		Browser.NewContextOptions newContextOptions = new Browser.NewContextOptions();
-		return forcedNoVideo() ? newContextOptions
-				: newContextOptions.setRecordVideoDir(Paths.get("videos/")).setRecordVideoSize(1024, 800);
+		return doVideo() ? newContextOptions.setRecordVideoDir(Paths.get("videos/")).setRecordVideoSize(1024, 800)
+				: newContextOptions;
 	}
 
-	private static boolean forcedHeadless() {
-		return Boolean.parseBoolean(System.getProperty("test.playwright.force.headless"));
+	private static boolean showBrowser() {
+		return !isHeadless() && Boolean.parseBoolean(System.getProperty("test.playwright.showbrowser"));
 	}
 
-	private static boolean forcedNoVideo() {
-		return Boolean.parseBoolean(System.getProperty("test.playwright.force.novideo"));
+	private static boolean doVideo() {
+		return Boolean.parseBoolean(System.getProperty("test.playwright.video"));
 	}
-	
+
 	private RestMain runRestComponent() throws Exception {
 		CommandLineArguments args = new CommandLineArguments();
 		args.connection = MOCK_URI;
@@ -145,4 +145,3 @@ public class ArdulinkRestSwaggerTest {
 	}
 
 }
-
