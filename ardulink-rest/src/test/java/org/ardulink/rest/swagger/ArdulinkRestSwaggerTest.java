@@ -20,6 +20,8 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.port;
 import static io.restassured.http.ContentType.JSON;
 import static java.awt.GraphicsEnvironment.isHeadless;
+import static java.lang.Boolean.parseBoolean;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.ServerSockets.freePort;
@@ -38,7 +40,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.microsoft.playwright.Browser;
-import com.microsoft.playwright.Browser.NewContextOptions;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
@@ -55,6 +56,8 @@ import com.microsoft.playwright.options.AriaRole;
  */
 public class ArdulinkRestSwaggerTest {
 
+	private static final long TIMEOUT = SECONDS.toMillis(5);
+	private static final String SYS_PROP_PREFIX = "ardulink.test.";
 	private static final String MOCK_URI = "ardulink://mock";
 
 	@Before
@@ -77,9 +80,8 @@ public class ArdulinkRestSwaggerTest {
 	public void canAccesApiUi_GotoApiDocs() throws Exception {
 		try (RestMain main = runRestComponent()) {
 			try (Playwright playwright = Playwright.create()) {
-				Browser browser = playwright.chromium()
-						.launch(new BrowserType.LaunchOptions().setHeadless(!showBrowser()));
-				BrowserContext context = browser.newContext(ctx());
+				Browser browser = browser(playwright.chromium());
+				BrowserContext context = browserContext(browser);
 
 				Page page = context.newPage();
 
@@ -98,9 +100,8 @@ public class ArdulinkRestSwaggerTest {
 		int value = 42;
 		try (RestMain main = runRestComponent()) {
 			try (Playwright playwright = Playwright.create()) {
-				Browser browser = playwright.chromium()
-						.launch(new BrowserType.LaunchOptions().setHeadless(isHeadless()));
-				BrowserContext context = browser.newContext(ctx());
+				Browser browser = browser(playwright.chromium());
+				BrowserContext context = browserContext(browser);
 
 				Page page = context.newPage();
 
@@ -117,24 +118,29 @@ public class ArdulinkRestSwaggerTest {
 				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Execute")).click();
 
 				try (Link mock = getMock(Links.getLink(MOCK_URI))) {
-					verify(mock, timeout(5_000)).switchAnalogPin(analogPin(pin), value);
+					verify(mock, timeout(TIMEOUT)).switchAnalogPin(analogPin(pin), value);
 				}
 			}
 		}
 	}
 
-	private static NewContextOptions ctx() {
-		Browser.NewContextOptions newContextOptions = new Browser.NewContextOptions();
-		return doVideo() ? newContextOptions.setRecordVideoDir(Paths.get("videos/")).setRecordVideoSize(1024, 800)
-				: newContextOptions;
+	private static Browser browser(BrowserType browserType) {
+		return browserType.launch(new BrowserType.LaunchOptions().setHeadless(!showBrowser()));
 	}
 
 	private static boolean showBrowser() {
-		return !isHeadless() && Boolean.parseBoolean(System.getProperty("test.playwright.showbrowser"));
+		return !isHeadless() && parseBoolean(System.getProperty(SYS_PROP_PREFIX + "playwright.showbrowser"));
 	}
 
 	private static boolean doVideo() {
-		return Boolean.parseBoolean(System.getProperty("test.playwright.video"));
+		return parseBoolean(System.getProperty(SYS_PROP_PREFIX + "playwright.video"));
+	}
+
+	private static BrowserContext browserContext(Browser browser) {
+		Browser.NewContextOptions newContextOptions = new Browser.NewContextOptions();
+		return browser.newContext(
+				doVideo() ? newContextOptions.setRecordVideoDir(Paths.get("videos/")).setRecordVideoSize(1024, 800)
+						: newContextOptions);
 	}
 
 	private RestMain runRestComponent() throws Exception {
