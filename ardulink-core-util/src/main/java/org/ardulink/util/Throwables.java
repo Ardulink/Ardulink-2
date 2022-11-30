@@ -14,7 +14,7 @@ public final class Throwables {
 	}
 
 	public static Throwable getRootCause(Throwable throwable) {
-		return Iterators.getLast(getCauses(throwable)).or(throwable);
+		return Iterators.getLast(getCauses(throwable)).orElse(throwable);
 	}
 
 	@LapsedWith(module = JDK8, value = "Stream#iterate(T,Predicate,UnaryOperator)")

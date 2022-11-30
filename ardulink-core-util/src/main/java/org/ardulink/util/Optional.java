@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.util;
 
 import static org.ardulink.util.Preconditions.checkNotNull;
-import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.lang.reflect.Constructor;
@@ -59,8 +58,19 @@ public abstract class Optional<T> {
 		}
 
 		@Override
-		public T or(T other) {
+		public T orElse(T other) {
 			return value;
+		}
+
+		@Override
+		public T getOrThrow(String message, Object... args) {
+			return get();
+		}
+		
+		@SuppressWarnings("unchecked")
+		@Override
+		public <U> Optional<U> map(Function<? super T, ? extends U> mapper) {
+	        return (Optional<U>) ofNullable(mapper.apply(get()));
 		}
 
 		@Override
@@ -83,8 +93,19 @@ public abstract class Optional<T> {
 		}
 
 		@Override
-		public Object or(Object other) {
+		public Object orElse(Object other) {
 			return other;
+		}
+
+		@Override
+		public Object getOrThrow(String message, Object... args) {
+			throw new IllegalStateException(String.format(message, args));
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public <U> Optional<U> map(Function<? super Object, ? extends U> mapper) {
+	        return (Optional<U>) Optional.absent();
 		}
 
 		public String toString() {
@@ -117,16 +138,12 @@ public abstract class Optional<T> {
 
 	public abstract T get();
 
-    @SuppressWarnings("unchecked")
-	public <U> Optional<U> map(Function<? super T, ? extends U> mapper) {
-        return (Optional<U>) (isPresent() ? Optional.ofNullable(mapper.apply(get())) : absent());
-    }
+	public abstract <U> Optional<U> map(Function<? super T, ? extends U> mapper);
 
-
-	public abstract T or(T other);
+	public abstract T orElse(T other);
 
 	public T orNull() {
-		return or(null);
+		return orElse(null);
 	}
 
 	/**
@@ -139,10 +156,7 @@ public abstract class Optional<T> {
 	 *            placeholder values
 	 * @return optional's value
 	 */
-	public T getOrThrow(String message, Object... args) {
-		checkState(isPresent(), message, args);
-		return get();
-	}
+	public abstract T getOrThrow(String message, Object... args);
 
 	/**
 	 * Returns the optional's value if present. Throws a RuntimeException of the

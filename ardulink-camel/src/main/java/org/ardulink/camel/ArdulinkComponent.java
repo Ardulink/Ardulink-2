@@ -49,7 +49,7 @@ public class ArdulinkComponent extends DefaultComponent {
 			Map<String, Object> parameters) throws Exception {
 		EndpointConfig config = new EndpointConfig()
 				.type(remaining)
-				.listenTo(parsePins(getOptional(parameters, "listenTo").or("")))
+				.listenTo(parsePins(getOptional(parameters, "listenTo").orElse("")))
 				.linkParams(parameters);
 		parameters.clear();
 		ArdulinkEndpoint endpoint = new ArdulinkEndpoint(uri, this, config);

@@ -379,13 +379,13 @@ public abstract class LinkManager {
 						public Long apply(Min min) {
 							return min.value();
 						}
-					}).or(MIN_VALUE), find(annotations, Max.class).map(new Function<Max, Long>() {
+					}).orElse(MIN_VALUE), find(annotations, Max.class).map(new Function<Max, Long>() {
 						@Override
 						@LapsedWith(module = JDK8, value = "Lambdas")
 						public Long apply(Max max) {
 							return max.value();
 						}
-					}).or(MAX_VALUE));
+					}).orElse(MAX_VALUE));
 				}
 				return ValidationInfo.NULL;
 			}

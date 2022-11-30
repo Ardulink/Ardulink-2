@@ -86,12 +86,12 @@ public class OptionalTest {
 
 	@Test
 	public void doesReturnExistingValueIfQueryingAlternative() {
-		assertThat(Optional.ofNullable("foo").or("bar"), is("foo"));
+		assertThat(Optional.ofNullable("foo").orElse("bar"), is("foo"));
 	}
 
 	@Test
 	public void doesReturnAlternativeIfQueryingAlternative() {
-		assertThat(Optional.<String> absent().or("bar"), is("bar"));
+		assertThat(Optional.<String> absent().orElse("bar"), is("bar"));
 	}
 
 	@Test

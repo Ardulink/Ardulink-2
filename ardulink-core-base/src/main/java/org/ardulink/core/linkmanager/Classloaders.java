@@ -41,7 +41,7 @@ public final class Classloaders {
 
 	public static ClassLoader moduleClassloader() {
 		ClassLoader parent = Thread.currentThread().getContextClassLoader();
-		return new ModuleClassLoader(parent, systemProperty("ardulink.module.dir").or("."));
+		return new ModuleClassLoader(parent, systemProperty("ardulink.module.dir").orElse("."));
 	}
 
 	private static Optional<String> systemProperty(String propertyName) {

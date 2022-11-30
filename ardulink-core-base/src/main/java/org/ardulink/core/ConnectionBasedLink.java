@@ -304,7 +304,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	}
 
 	private long messageIdOf(Object msg) {
-		return toHolder(msg).or(NO_ID).getId();
+		return toHolder(msg).orElse(NO_ID).getId();
 	}
 
 	@Override
