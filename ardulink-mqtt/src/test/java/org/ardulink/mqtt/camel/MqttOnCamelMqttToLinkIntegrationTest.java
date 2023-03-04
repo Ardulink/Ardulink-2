@@ -86,7 +86,9 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 	@After
 	public void tearDown() throws Exception {
 		mqttClient.close();
-		context.stop();
+		if (context != null) {
+			context.stop();
+		}
 		broker.close();
 	}
 
