@@ -32,7 +32,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.ardulink.core.mqtt.duplicated.Message;
 import org.ardulink.util.Lists;
 import org.ardulink.util.Strings;
-import org.junit.rules.ExternalResource;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 import io.moquette.broker.Server;
 import io.moquette.broker.config.MemoryConfig;
@@ -49,7 +51,7 @@ import io.moquette.interception.messages.InterceptPublishMessage;
  * [adsense]
  *
  */
-public class Broker extends ExternalResource {
+public class Broker implements BeforeEachCallback, AfterEachCallback {
 
 	public static class EnvironmentAuthenticator implements IAuthenticator {
 
@@ -57,8 +59,7 @@ public class Broker extends ExternalResource {
 		public boolean checkValid(String clientId, String username, byte[] password) {
 			String userPass = userPass();
 			String[] split = userPass.split("\\:");
-			return split.length == 2 && split[0].equals(username)
-					&& split[1].equals(new String(password));
+			return split.length == 2 && split[0].equals(username) && split[1].equals(new String(password));
 		}
 
 	}
@@ -78,21 +79,20 @@ public class Broker extends ExternalResource {
 		return new Broker();
 	}
 
-	public static Broker newBroker(
-			Collection<? extends InterceptHandler> listeners) {
+	public static Broker newBroker(Collection<? extends InterceptHandler> listeners) {
 		Broker newBroker = newBroker();
 		newBroker.listeners.addAll(listeners);
 		return newBroker;
 	}
 
 	@Override
-	protected void before() throws IOException, InterruptedException {
+	public void beforeEach(ExtensionContext context) throws IOException {
 		this.mqttServer = new Server();
 		start();
 	}
 
 	@Override
-	protected void after() {
+	public void afterEach(ExtensionContext context) {
 		stop();
 	}
 
@@ -107,10 +107,8 @@ public class Broker extends ExternalResource {
 		properties.put(PORT_PROPERTY_NAME, String.valueOf(port));
 		String property = userPass();
 		if (!Strings.nullOrEmpty(property)) {
-			properties.setProperty(AUTHENTICATOR_CLASS_NAME,
-					EnvironmentAuthenticator.class.getName());
-			properties.setProperty(ALLOW_ANONYMOUS_PROPERTY_NAME,
-					Boolean.FALSE.toString());
+			properties.setProperty(AUTHENTICATOR_CLASS_NAME, EnvironmentAuthenticator.class.getName());
+			properties.setProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, Boolean.FALSE.toString());
 		}
 		properties.put(PERSISTENT_STORE_PROPERTY_NAME, "");
 		properties.put(WEB_SOCKET_PORT_PROPERTY_NAME, "0");
@@ -137,8 +135,7 @@ public class Broker extends ExternalResource {
 	public Broker recordMessages() {
 		listeners.add(new AbstractInterceptHandler() {
 			public void onPublish(InterceptPublishMessage message) {
-				messages.add(new Message(message.getTopicName(), new String(
-						message.getPayload().array())));
+				messages.add(new Message(message.getTopicName(), new String(message.getPayload().array())));
 			}
 
 			@Override

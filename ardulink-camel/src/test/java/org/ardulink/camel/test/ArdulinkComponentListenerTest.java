@@ -1,6 +1,5 @@
 package org.ardulink.camel.test;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
@@ -14,33 +13,30 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
-public class ArdulinkComponentListenerTest {
-
-	@Rule
-	public Timeout timeout = new Timeout(5, SECONDS);
+@Timeout(5)
+class ArdulinkComponentListenerTest {
 
 	private static final String MOCK_URI = "ardulink://mock";
 
 	private Link link;
 
-	@Before
-	public void setup() throws Exception {
+	@BeforeEach
+	void setup() throws Exception {
 		link = Links.getLink(MOCK_URI);
 	}
 
-	@After
-	public void tearDown() throws IOException {
+	@AfterEach
+	void tearDown() throws IOException {
 		link.close();
 	}
 
 	@Test
-	public void startListeningOnPassedPins() throws Exception {
+	void startListeningOnPassedPins() throws Exception {
 		haltCamel(startCamel("listenTo=d1,d2,a1"));
 		Link mock = getMock(link);
 		verify(mock).startListening(digitalPin(1));
@@ -51,7 +47,7 @@ public class ArdulinkComponentListenerTest {
 	}
 
 	@Test
-	public void listeningIsCaseInsensitive() throws Exception {
+	void listeningIsCaseInsensitive() throws Exception {
 		haltCamel(startCamel("listenTo=d1,D2,a3,A4"));
 		Link mock = getMock(link);
 		verify(mock).startListening(digitalPin(1));
@@ -63,7 +59,7 @@ public class ArdulinkComponentListenerTest {
 	}
 
 	@Test
-	public void ignoresMultipleOccurencesOfSamePin() throws Exception {
+	void ignoresMultipleOccurencesOfSamePin() throws Exception {
 		haltCamel(startCamel("listenTo=d1,D1,a2,A2"));
 		Link mock = getMock(link);
 		verify(mock).startListening(digitalPin(1));

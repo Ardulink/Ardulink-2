@@ -2,12 +2,12 @@ package org.ardulink.core.mqtt;
 
 import static org.ardulink.testsupport.i18n.I18NTestSupport.assertAllAttributesHaveDescriptions;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class I18NTest {
+class I18NTest {
 
 	@Test
-	public void allAttributesHaveAdescription() {
+	void allAttributesHaveAdescription() {
 		assertAllAttributesHaveDescriptions("ardulink://mqtt");
 	}
 

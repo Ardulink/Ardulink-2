@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -36,17 +36,17 @@ import org.junit.Test;
  * [adsense]
  *
  */
-public class SetMultiMapTest {
+class SetMultiMapTest {
 
 	@Test
-	public void canPut() {
+	void canPut() {
 		SetMultiMap<Integer, String> s = new SetMultiMap<Integer, String>();
 		assertThat(s.put(1, "foo"), is(TRUE));
 		assertThat(s.asMap(), is(buildMap(1, Collections.singleton("foo"))));
 	}
 
 	@Test
-	public void canPutTwice() {
+	void canPutTwice() {
 		SetMultiMap<Integer, String> s = new SetMultiMap<Integer, String>();
 		assertThat(s.put(1, "foo"), is(TRUE));
 		assertThat(s.put(1, "foo"), is(FALSE));
@@ -54,15 +54,15 @@ public class SetMultiMapTest {
 	}
 
 	@Test
-	public void canRemoveExistingValue() {
+	void canRemoveExistingValue() {
 		SetMultiMap<Integer, String> s = new SetMultiMap<Integer, String>();
 		assertThat(s.put(1, "foo"), is(TRUE));
 		assertThat(s.remove(1, "foo"), is(TRUE));
-		assertThat(s.asMap(), is(Collections.<Integer, Set<String>> emptyMap()));
+		assertThat(s.asMap(), is(Collections.<Integer, Set<String>>emptyMap()));
 	}
 
 	@Test
-	public void canHandleRemovesOfNonExistingValues() {
+	void canHandleRemovesOfNonExistingValues() {
 		SetMultiMap<Integer, String> s = new SetMultiMap<Integer, String>();
 		assertThat(s.put(1, "foo"), is(TRUE));
 		assertThat(s.remove(1, "bar"), is(FALSE));
@@ -70,15 +70,14 @@ public class SetMultiMapTest {
 	}
 
 	@Test
-	public void canHandleRemovesOfNonExistingKeys() {
+	void canHandleRemovesOfNonExistingKeys() {
 		SetMultiMap<Integer, String> s = new SetMultiMap<Integer, String>();
 		assertThat(s.put(1, "foo"), is(TRUE));
 		assertThat(s.remove(2, "foo"), is(FALSE));
 		assertThat(s.asMap(), is(buildMap(1, Collections.singleton("foo"))));
 	}
 
-	private static Map<Integer, Set<String>> buildMap(Integer key,
-			Set<String> value) {
+	private static Map<Integer, Set<String>> buildMap(Integer key, Set<String> value) {
 		Map<Integer, Set<String>> m = new HashMap<Integer, Set<String>>();
 		m.put(key, value);
 		return m;

@@ -19,13 +19,12 @@ package org.ardulink.core.serial.jssc.connectionmanager;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.ardulink.util.Lists.newArrayList;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assumptions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.util.Map;
@@ -40,10 +39,8 @@ import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.util.URIs;
-import org.ardulink.util.anno.LapsedWith;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import jssc.SerialPortList;
 
@@ -55,14 +52,14 @@ import jssc.SerialPortList;
  * [adsense]
  *
  */
-public class SerialLinkFactoryIntegrationTest {
-	
+class SerialLinkFactoryIntegrationTest {
+
 	private Link link;
-	
+
 	@Test
-	public void canConfigureSerialConnectionViaURI() throws Exception {
+	void canConfigureSerialConnectionViaURI() throws Exception {
 		String[] portNames = SerialPortList.getPortNames();
-		assumeThat(portNames.length > 0, is(TRUE));
+		assumeTrue(portNames.length > 0);
 
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(URIs
@@ -73,7 +70,7 @@ public class SerialLinkFactoryIntegrationTest {
 	}
 
 	@Test
-	public void canConfigureSerialConnectionViaConfigurer() {
+	void canConfigureSerialConnectionViaConfigurer() {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(URIs.newURI("ardulink://serial-jssc"));
 
@@ -93,10 +90,11 @@ public class SerialLinkFactoryIntegrationTest {
 		port.setValue("anyString");
 		baudrate.setValue(115200);
 	}
-	
+
 	@Test
-	@Ignore
-	public void connectionListeningTest() throws IOException, InterruptedException {
+	@Disabled
+
+	void connectionListeningTest() throws IOException, InterruptedException {
 		Configurer configurer = LinkManager.getInstance().getConfigurer(URIs.newURI("ardulink://serial-jssc/"));
 
 		ConfigAttribute portAttribute = configurer.getAttribute("port");
@@ -105,23 +103,23 @@ public class SerialLinkFactoryIntegrationTest {
 
 		ConfigAttribute pingprobeAttribute = configurer.getAttribute("pingprobe");
 		pingprobeAttribute.setValue(false);
-		
+
 		link = configurer.newLink();
-		
+
 		link.addRplyListener(new RplyListener() {
-			
+
 			@Override
 			public void rplyReceived(RplyEvent e) {
 				Map<String, Object> parameters = e.getParameters();
 				for (String key : parameters.keySet()) {
 					System.out.println(key + "=" + parameters.get(key));
 				}
-				
+
 			}
 		});
-		
+
 		link.addCustomListener(new CustomListener() {
-			
+
 			@Override
 			public void customEventReceived(CustomEvent e) {
 				System.out.println(e.getMessage());
@@ -129,28 +127,19 @@ public class SerialLinkFactoryIntegrationTest {
 		});
 
 		TimeUnit.SECONDS.sleep(10);
-		
+
 		sendCustom();
-		
+
 		TimeUnit.SECONDS.sleep(10);
-		
+
 		link.close();
 	}
-	
+
 	@Test
-	public void cantConnectWithoutPort() {
+	void cantConnectWithoutPort() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		final Configurer configurer = connectionManager
-				.getConfigurer(URIs.newURI("ardulink://serial-jssc?baudrate=9600"));
-		
-		@LapsedWith(module = JDK8, value = "Lambda")
-		ThrowingRunnable runnable = new ThrowingRunnable() {
-			@Override
-			public void run() throws Throwable {
-				configurer.newLink();
-			}
-		};
-		assertThrows(RuntimeException.class, runnable);
+		Configurer configurer = connectionManager.getConfigurer(URIs.newURI("ardulink://serial-jssc?baudrate=9600"));
+		assertThrows(RuntimeException.class, () -> configurer.newLink());
 	}
 
 	public void sendCustom() throws IOException {

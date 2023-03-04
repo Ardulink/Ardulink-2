@@ -33,7 +33,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultMessage;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -43,7 +43,7 @@ import org.junit.Test;
  * [adsense]
  *
  */
-public class ArdulinkProducerTest {
+class ArdulinkProducerTest {
 
 	private void setup(String validSender, String commandName, List<String> commands) {
 		try {
@@ -82,7 +82,7 @@ public class ArdulinkProducerTest {
 	}
 
 	@Test
-	public void doesNotAcceptMeesagesWithEmptyBody() throws Exception {
+	void doesNotAcceptMeesagesWithEmptyBody() throws Exception {
 		setup("aValidUser", null, emptyList());
 		setFrom("aValidUser");
 
@@ -94,7 +94,7 @@ public class ArdulinkProducerTest {
 	}
 
 	@Test
-	public void doesNotAcceptMessagesWithNullOrEmptyFromAddress() throws Exception {
+	void doesNotAcceptMessagesWithNullOrEmptyFromAddress() throws Exception {
 		setup("anyuser", null, emptyList());
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
@@ -105,7 +105,7 @@ public class ArdulinkProducerTest {
 	}
 
 	@Test
-	public void doesNotAcceptMessagesWhereScenarioNameIsNotKnown() throws Exception {
+	void doesNotAcceptMessagesWhereScenarioNameIsNotKnown() throws Exception {
 		String anyUser = "anyuser";
 		setup(anyUser, null, emptyList());
 
@@ -120,7 +120,7 @@ public class ArdulinkProducerTest {
 	}
 
 	@Test
-	public void doesProcessDigitalPinMessages() throws Exception {
+	void doesProcessDigitalPinMessages() throws Exception {
 		String switchDigital7 = alpProtocolMessage(POWER_PIN_SWITCH).forPin(7).withState(true);
 
 		String anyUser = "anyuser";
@@ -139,7 +139,7 @@ public class ArdulinkProducerTest {
 	}
 
 	@Test
-	public void doesProcessDigitalAndAnalogPinMessages() throws Exception {
+	void doesProcessDigitalAndAnalogPinMessages() throws Exception {
 		String digital7 = alpProtocolMessage(POWER_PIN_SWITCH).forPin(7).withState(true);
 		String analog8 = alpProtocolMessage(POWER_PIN_INTENSITY).forPin(8).withValue(123);
 

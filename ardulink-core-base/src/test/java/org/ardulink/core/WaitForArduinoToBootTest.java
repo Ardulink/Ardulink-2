@@ -28,10 +28,10 @@ import java.util.regex.Pattern;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.qos.Arduino;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -41,51 +41,49 @@ import org.junit.rules.Timeout;
  * [adsense]
  *
  */
-public class WaitForArduinoToBootTest {
+@Timeout(5)
+class WaitForArduinoToBootTest {
 
 	private static final ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
 
-	@Rule
-	public Timeout timeout = new Timeout(5, SECONDS);
+	@RegisterExtension
+	Arduino arduino = Arduino.newArduino();
 
-	@Rule
-	public Arduino arduino = Arduino.newArduino();
-
-	private final ConnectionBasedLink link = new ConnectionBasedLink(
+	ConnectionBasedLink link = new ConnectionBasedLink(
 			new StreamConnection(arduino.getInputStream(), arduino.getOutputStream(), byteStreamProcessor),
 			byteStreamProcessor);
 
-	@After
-	public void tearDown() throws IOException {
+	@AfterEach
+	void tearDown() throws IOException {
 		this.link.close();
 	}
 
 	@Test
-	public void ifNoResponseReceivedWithin1SecondWaitWillReturnFalse() throws IOException {
+	void ifNoResponseReceivedWithin1SecondWaitWillReturnFalse() throws IOException {
 		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))).thenDoNotRespond();
 		assertThat(link.waitForArduinoToBoot(1, SECONDS), is(false));
 	}
 
 	@Test
-	public void noNeedToWaitIfArduinoResponds() throws IOException {
+	void noNeedToWaitIfArduinoResponds() throws IOException {
 		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))).thenRespond(lf("alp://rply/ok?id=%s"));
 		assertThat(link.waitForArduinoToBoot(3, DAYS), is(true));
 	}
 
 	@Test
-	public void canDetectReadyPaket() throws IOException {
+	void canDetectReadyPaket() throws IOException {
 		arduino.after(1, SECONDS).send(lf("alp://ready/"));
 		assertThat(link.waitForArduinoToBoot(3, DAYS, READY_MESSAGE_ONLY), is(true));
 	}
 
 	@Test
-	public void ignoresMisformedReadyPaket() throws IOException {
+	void ignoresMisformedReadyPaket() throws IOException {
 		arduino.after(1, SECONDS).send(lf("alp://XXXXXreadyXXXXX/"));
 		assertThat(link.waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY), is(false));
 	}
 
 	@Test
-	public void detectAlreadySentReadyPaket() throws IOException {
+	void detectAlreadySentReadyPaket() throws IOException {
 		arduino.send(lf("alp://ready/"));
 		assertThat(link.waitForArduinoToBoot(3, DAYS, READY_MESSAGE_ONLY), is(true));
 	}

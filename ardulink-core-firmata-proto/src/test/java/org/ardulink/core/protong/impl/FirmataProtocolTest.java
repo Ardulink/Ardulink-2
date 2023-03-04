@@ -26,15 +26,15 @@ import org.ardulink.core.proto.impl.FirmataProtocol;
 import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
 import org.ardulink.util.anno.LapsedWith;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FirmataProtocolTest {
+class FirmataProtocolTest {
 
 	private byte[] bytes;
 	private List<FromDeviceMessage> messages;
 
 	@Test
-	public void canReadAnalogPinViaFirmataProto() throws IOException {
+	void canReadAnalogPinViaFirmataProto() throws IOException {
 		byte command = ANALOG_MESSAGE;
 		byte pin = 15;
 		byte valueLow = 127;
@@ -45,7 +45,7 @@ public class FirmataProtocolTest {
 	}
 
 	@Test
-	public void canReadDigitalPinViaFirmataProto() throws IOException {
+	void canReadDigitalPinViaFirmataProto() throws IOException {
 		byte command = DIGITAL_MESSAGE;
 		byte port = 4;
 		byte valueLow = binary("010" + "0101");

@@ -26,7 +26,7 @@ import static org.mockito.Mockito.mock;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -36,7 +36,7 @@ import org.junit.Test;
  * [adsense]
  *
  */
-public class LinkConfigWithDependentAttributesLinkFactoryTest {
+class LinkConfigWithDependentAttributesLinkFactoryTest {
 
 	public static class LinkConfigWithDependentAttributes implements LinkConfig {
 
@@ -101,7 +101,7 @@ public class LinkConfigWithDependentAttributesLinkFactoryTest {
 	}
 
 	@Test
-	public void canInstantiateLinkWithDependentAttributes() throws Exception {
+	void canInstantiateLinkWithDependentAttributes() throws Exception {
 		withRegistered(new LinkConfigWithDependentAttributesLinkFactory()).execute(new Statement() {
 			@Override
 			public void execute() {

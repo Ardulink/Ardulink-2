@@ -34,8 +34,8 @@ import static org.ardulink.mail.test.MailSender.mailFrom;
 import static org.ardulink.mail.test.MailSender.send;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.MapBuilder.newMapBuilder;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -63,14 +63,14 @@ import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.util.Joiner;
 import org.ardulink.util.Throwables;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.icegreen.greenmail.imap.ImapServer;
-import com.icegreen.greenmail.junit.GreenMailRule;
+import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.smtp.SmtpServer;
 
 /**
@@ -81,30 +81,28 @@ import com.icegreen.greenmail.smtp.SmtpServer;
  * [adsense]
  *
  */
-public class ArdulinkMailOnCamelIntegrationTest {
+@Timeout(10)
+class ArdulinkMailOnCamelIntegrationTest {
 
 	private static final String mockURI = "ardulink://mock";
 
 	private Link link;
 
-	@Rule
-	public GreenMailRule mailMock = new GreenMailRule(SMTP_IMAP);
+	@RegisterExtension
+	GreenMailExtension mailMock = new GreenMailExtension(SMTP_IMAP);
 
-	@Rule
-	public Timeout timeout = new Timeout(10, SECONDS);
-
-	@Before
-	public void setup() throws URISyntaxException, Exception {
+	@BeforeEach
+	void setup() throws URISyntaxException, Exception {
 		link = Links.getLink(mockURI);
 	}
 
-	@After
-	public void tearDown() throws IOException {
+	@AfterEach
+	void tearDown() throws IOException {
 		link.close();
 	}
 
 	@Test
-	public void readsFromImap_controlsArdulink_sendsResultToEndpoint() throws Exception {
+	void readsFromImap_controlsArdulink_sendsResultToEndpoint() throws Exception {
 		String receiverUser = "receiver";
 		String username = "loginIdReceiver";
 		String password = "secretOfReceiver";
@@ -126,8 +124,8 @@ public class ArdulinkMailOnCamelIntegrationTest {
 
 			Link mockLink = getMock(link);
 			try {
-				verify(mockLink, timeout(5_000)).switchDigitalPin(digitalPin(1), true);
-				verify(mockLink, timeout(5_000)).switchAnalogPin(analogPin(2), 123);
+				verify(mockLink, timeout(SECONDS.toMillis(5))).switchDigitalPin(digitalPin(1), true);
+				verify(mockLink, timeout(SECONDS.toMillis(5))).switchAnalogPin(analogPin(2), 123);
 
 				MockEndpoint mockEndpoint = context.getEndpoint("mock:result", MockEndpoint.class);
 				mockEndpoint.expectedMessageCount(1);
@@ -156,7 +154,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	@Test
-	public void writesResultToSender() throws Exception {
+	void writesResultToSender() throws Exception {
 		String receiverUser = "receiver";
 		String username = "loginIdReceiver";
 		String password = "secretOfReceiver";
@@ -191,7 +189,7 @@ public class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	@Test
-	public void writesResultToSender_ConfiguredViaProperties() throws Exception {
+	void writesResultToSender_ConfiguredViaProperties() throws Exception {
 		String receiver = "receiver@someReceiverDomain.com";
 		String username = "loginIdReceiver";
 		String password = "secretOfReceiver";

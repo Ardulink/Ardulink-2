@@ -36,8 +36,8 @@ import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.rest.main.CommandLineArguments;
 import org.ardulink.rest.main.RestMain;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
@@ -54,19 +54,19 @@ import com.microsoft.playwright.options.AriaRole;
  * [adsense]
  *
  */
-public class ArdulinkRestSwaggerTest {
+class ArdulinkRestSwaggerTest {
 
 	private static final long TIMEOUT = SECONDS.toMillis(5);
 	private static final String SYS_PROP_PREFIX = "ardulink.test.";
 	private static final String MOCK_URI = "ardulink://mock";
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		port = freePort();
 	}
 
 	@Test
-	public void canAccesApiDoc() throws Exception {
+	void canAccesApiDoc() throws Exception {
 		try (RestMain main = runRestComponent()) {
 			given().port(port).get("/api-docs").then().assertThat().statusCode(200).contentType(JSON) //
 					.body("info.title", equalTo("User API")) //
@@ -77,7 +77,7 @@ public class ArdulinkRestSwaggerTest {
 	}
 
 	@Test
-	public void canAccesApiUi_GotoApiDocs() throws Exception {
+	void canAccesApiUi_GotoApiDocs() throws Exception {
 		try (RestMain main = runRestComponent()) {
 			try (Playwright playwright = Playwright.create()) {
 				Browser browser = browser(playwright.chromium());
@@ -95,7 +95,7 @@ public class ArdulinkRestSwaggerTest {
 	}
 
 	@Test
-	public void canAccesApiUi_ExecPutRequestViaApiBrowser() throws Exception {
+	void canAccesApiUi_ExecPutRequestViaApiBrowser() throws Exception {
 		int pin = 13;
 		int value = 42;
 		try (RestMain main = runRestComponent()) {

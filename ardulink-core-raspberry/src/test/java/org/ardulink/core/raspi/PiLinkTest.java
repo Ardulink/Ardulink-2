@@ -16,13 +16,10 @@ limitations under the License.
 
 package org.ardulink.core.raspi;
 
-import static org.ardulink.util.anno.LapsedWith.JDK8;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.ardulink.core.convenience.Links;
-import org.ardulink.util.anno.LapsedWith;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
+import org.junit.jupiter.api.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -32,19 +29,11 @@ import org.junit.function.ThrowingRunnable;
  * [adsense]
  *
  */
-public class PiLinkTest {
+class PiLinkTest {
 
 	@Test
-	// TODO should do a Assume if we are on a raspi or not
-	public void creatingInstanceWillFailOnX86withUnsatisfiedLinkError() {
-		@LapsedWith(module = JDK8, value = "Lambda")
-		ThrowingRunnable runnable = new ThrowingRunnable() {
-			@Override
-			public void run() throws Throwable {
-				Links.getLink("ardulink://raspberry");
-			}
-		};
-		assertThrows(UnsatisfiedLinkError.class, runnable);
+	void creatingInstanceWillFailOnX86withUnsatisfiedLinkError() {
+		assertThrows(UnsatisfiedLinkError.class, () -> Links.getLink("ardulink://raspberry"));
 	}
 
 }

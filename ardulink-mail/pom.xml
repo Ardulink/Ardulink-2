@@ -10,13 +10,6 @@
 		<version>2.1.2-SNAPSHOT</version>
 	</parent>
 
-	<!-- camel3 depends on Java8 so we so -->
-	<properties>
-		<compilerVersion>1.8</compilerVersion>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>
@@ -38,9 +31,14 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.hamcrest</groupId>
+		    <artifactId>hamcrest-library</artifactId>
+		    <scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -50,7 +48,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.icegreen</groupId>
-			<artifactId>greenmail</artifactId>
+			<artifactId>greenmail-junit5</artifactId>
 			<version>1.6.14</version>
 			<scope>test</scope>
 		</dependency>

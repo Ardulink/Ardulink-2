@@ -35,8 +35,8 @@ import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.rest.main.CommandLineArguments;
 import org.ardulink.rest.main.RestMain;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -46,15 +46,15 @@ import org.junit.Test;
  * [adsense]
  *
  */
-public class ArdulinkRestTest {
+class ArdulinkRestTest {
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		port = freePort();
 	}
 
 	@Test
-	public void canSwitchDigitalPin() throws Exception {
+	void canSwitchDigitalPin() throws Exception {
 		try (Link link = Links.getLink("ardulink://mock")) {
 			Link mock = getMock(link);
 			try (RestMain main = runRestComponent("ardulink://mock")) {
@@ -68,7 +68,7 @@ public class ArdulinkRestTest {
 	}
 
 	@Test
-	public void canSwitchAnalogPin() throws Exception {
+	void canSwitchAnalogPin() throws Exception {
 		try (Link link = Links.getLink("ardulink://mock")) {
 			Link mock = getMock(link);
 			try (RestMain main = runRestComponent("ardulink://mock")) {
@@ -82,7 +82,7 @@ public class ArdulinkRestTest {
 	}
 
 	@Test
-	public void canReadDigitalPin() throws Exception {
+	void canReadDigitalPin() throws Exception {
 		int pin = 5;
 		boolean state = true;
 		try (AbstractListenerLink link = createAbstractListenerLink(digitalPinValueChanged(digitalPin(pin), state));
@@ -92,7 +92,7 @@ public class ArdulinkRestTest {
 	}
 
 	@Test
-	public void canReadAnalogPin() throws Exception {
+	void canReadAnalogPin() throws Exception {
 		int pin = 7;
 		int value = 456;
 		try (AbstractListenerLink link = createAbstractListenerLink(analogPinValueChanged(analogPin(pin), value));
@@ -102,7 +102,7 @@ public class ArdulinkRestTest {
 	}
 
 	@Test
-	public void canEnableAndDisableListeningDigitalPin() throws Exception {
+	void canEnableAndDisableListeningDigitalPin() throws Exception {
 		int pin = 5;
 		try (Link link = Links.getLink("ardulink://mock")) {
 			Link mock = getMock(link);
@@ -117,7 +117,7 @@ public class ArdulinkRestTest {
 	}
 
 	@Test
-	public void canEnableAndDisableListeningAnalogPin() throws Exception {
+	void canEnableAndDisableListeningAnalogPin() throws Exception {
 		int pin = 7;
 		try (Link link = Links.getLink("ardulink://mock")) {
 			Link mock = getMock(link);

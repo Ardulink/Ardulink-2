@@ -3,22 +3,22 @@ package org.ardulink.util;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ObjectsTest {
+class ObjectsTest {
 
 	@Test
-	public void equalObjectsResultInTrue() {
+	void equalObjectsResultInTrue() {
 		assertThat(Objects.equals("something", "something"), is(true));
 	}
 
 	@Test
-	public void nullAndNullAreEqual() {
+	void nullAndNullAreEqual() {
 		assertThat(Objects.equals(null, null), is(true));
 	}
 
 	@Test
-	public void twoItemsWhereOneOfThemIsNullResultInFalse() {
+	void twoItemsWhereOneOfThemIsNullResultInFalse() {
 		assertThat(Objects.equals("something", null), is(false));
 		assertThat(Objects.equals(null, "something"), is(false));
 	}

@@ -13,7 +13,7 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 
 import org.ardulink.util.anno.LapsedWith;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -23,7 +23,7 @@ import org.junit.Test;
  * [adsense]
  *
  */
-public class AnnotationsTest {
+class AnnotationsTest {
 
 	@Retention(RUNTIME)
 	@interface AnotherAnno {
@@ -100,54 +100,46 @@ public class AnnotationsTest {
 	}
 
 	@Test
-	public void anotherAnnoOnTheField() throws Exception {
-		assertHasBothAnnotations(BeanProperties
-				.builder(new AnotherAnnoOnTheField())
-				.using(directFieldAccess()).build());
+	void anotherAnnoOnTheField() throws Exception {
+		assertHasBothAnnotations(
+				BeanProperties.builder(new AnotherAnnoOnTheField()).using(directFieldAccess()).build());
 	}
 
 	@Test
-	public void anotherAnnoOnTheFieldWithGetterAndSetter() throws Exception {
+	void anotherAnnoOnTheFieldWithGetterAndSetter() throws Exception {
 		// this will only work if the property was found using propertyAnnotated
 		// since when looking up via findByIntrospection there is no relation
 		// between the reader/setter and the private field!
-		assertHasBothAnnotations(BeanProperties
-				.builder(new AnotherAnnoOnTheFieldWithGetterAndSetter())
+		assertHasBothAnnotations(BeanProperties.builder(new AnotherAnnoOnTheFieldWithGetterAndSetter())
 				.using(propertyAnnotated(SomeAnno.class)).build());
 	}
 
 	@Test
-	public void testAnnoOnGetter() throws Exception {
-		assertHasBothAnnotations(BeanProperties
-				.forBean(new AnotherAnnoOnTheGetter()));
+	void testAnnoOnGetter() throws Exception {
+		assertHasBothAnnotations(BeanProperties.forBean(new AnotherAnnoOnTheGetter()));
 	}
 
 	@Test
-	public void testAnnoOnSetter() throws Exception {
-		assertHasBothAnnotations(BeanProperties
-				.forBean(new AnotherAnnoOnTheSetter()));
+	void testAnnoOnSetter() throws Exception {
+		assertHasBothAnnotations(BeanProperties.forBean(new AnotherAnnoOnTheSetter()));
 	}
 
 	@Test
-	public void testAnnoOnGetterAndSetter() throws Exception {
-		assertHasBothAnnotations(BeanProperties
-				.forBean(new AnotherAnnoOnTheGetterAndSetter()));
+	void testAnnoOnGetterAndSetter() throws Exception {
+		assertHasBothAnnotations(BeanProperties.forBean(new AnotherAnnoOnTheGetterAndSetter()));
 	}
 
 	@SuppressWarnings("unchecked")
 	private void assertHasBothAnnotations(BeanProperties beanProperties) {
-		hasAnnotations(
-				checkNotNull(beanProperties.getAttribute("string"),
-						"no attribute named \"string\" found in %s",
-						beanProperties), SomeAnno.class, AnotherAnno.class);
+		hasAnnotations(checkNotNull(beanProperties.getAttribute("string"), "no attribute named \"string\" found in %s",
+				beanProperties), SomeAnno.class, AnotherAnno.class);
 	}
 
 	@LapsedWith(module = JDK8, value = "Streams")
-	private void hasAnnotations(Attribute attribute,
-			final Class<? extends Annotation>... annoClasses) {
+	private void hasAnnotations(Attribute attribute, final Class<? extends Annotation>... annoClasses) {
 		for (int i = 0; i < annoClasses.length; i++) {
-			assertThat(annoClasses[i].getSimpleName() + " not found",
-					attribute.getAnnotation(annoClasses[i]), is(notNullValue()));
+			assertThat(annoClasses[i].getSimpleName() + " not found", attribute.getAnnotation(annoClasses[i]),
+					is(notNullValue()));
 		}
 	}
 

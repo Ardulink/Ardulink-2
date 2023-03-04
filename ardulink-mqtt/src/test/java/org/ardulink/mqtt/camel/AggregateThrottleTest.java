@@ -15,10 +15,10 @@ import org.ardulink.core.Pin;
 import org.ardulink.mqtt.Topics;
 import org.ardulink.mqtt.MqttCamelRouteBuilder;
 import org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
-public class AggregateThrottleTest {
+class AggregateThrottleTest {
 
 	private static final String TOPIC = "foo/bar/topic/";
 
@@ -27,21 +27,19 @@ public class AggregateThrottleTest {
 
 	private CamelContext context;
 
-	@After
-	public void testDown() throws Exception {
+	@AfterEach
+	void testDown() throws Exception {
 		context.stop();
 	}
 
 	@Test
-	public void doesAggregateAnalogsUsingLastAndKeepsDigitals()
-			throws Exception {
+	void doesAggregateAnalogsUsingLastAndKeepsDigitals() throws Exception {
 		context = camelContext(topics(), USE_LATEST);
 		MockEndpoint out = getMockEndpoint();
 
 		out.expectedBodiesReceived(true, false, 12, 1);
-		out.expectedHeaderValuesReceivedInAnyOrder(PUBLISH_HEADER,
-				"foo/bar/topic/D0", "foo/bar/topic/D0", "foo/bar/topic/A1",
-				"foo/bar/topic/A0");
+		out.expectedHeaderValuesReceivedInAnyOrder(PUBLISH_HEADER, "foo/bar/topic/D0", "foo/bar/topic/D0",
+				"foo/bar/topic/A1", "foo/bar/topic/A0");
 
 		simArduinoSends(alpMessage(analogPin(0), 1));
 		simArduinoSends(alpMessage(analogPin(0), 3));
@@ -55,14 +53,12 @@ public class AggregateThrottleTest {
 	}
 
 	@Test
-	public void agregateAnalogsSeparatlyUsingAverageAndKeepsDigitals()
-			throws Exception {
+	void agregateAnalogsSeparatlyUsingAverageAndKeepsDigitals() throws Exception {
 		context = camelContext(topics(), AVERAGE);
 		MockEndpoint out = getMockEndpoint();
 		out.expectedBodiesReceived(true, false, 5, 500);
-		out.expectedHeaderValuesReceivedInAnyOrder(PUBLISH_HEADER,
-				"foo/bar/topic/D0", "foo/bar/topic/D0", "foo/bar/topic/A1",
-				"foo/bar/topic/A0");
+		out.expectedHeaderValuesReceivedInAnyOrder(PUBLISH_HEADER, "foo/bar/topic/D0", "foo/bar/topic/D0",
+				"foo/bar/topic/A1", "foo/bar/topic/A0");
 
 		simArduinoSends(alpMessage(analogPin(0), 1));
 		simArduinoSends(alpMessage(analogPin(0), 3));
@@ -80,8 +76,7 @@ public class AggregateThrottleTest {
 	}
 
 	private String alpMessage(Pin pin, Object value) {
-		return String.format("alp://%sred/%s/%s", pin.is(ANALOG) ? "a" : "d",
-				pin.pinNum(), alpValue(value));
+		return String.format("alp://%sred/%s/%s", pin.is(ANALOG) ? "a" : "d", pin.pinNum(), alpValue(value));
 	}
 
 	private Integer alpValue(Object value) {
@@ -103,8 +98,7 @@ public class AggregateThrottleTest {
 
 	private CamelContext camelContext(Topics topics, CompactStrategy compactStrategy) throws Exception {
 		CamelContext context = new DefaultCamelContext();
-		new MqttCamelRouteBuilder(context, topics).compact(compactStrategy, 1,
-				SECONDS).fromSomethingToMqtt(IN, OUT);
+		new MqttCamelRouteBuilder(context, topics).compact(compactStrategy, 1, SECONDS).fromSomethingToMqtt(IN, OUT);
 		context.start();
 		return context;
 	}

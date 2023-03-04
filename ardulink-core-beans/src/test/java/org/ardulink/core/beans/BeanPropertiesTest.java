@@ -20,13 +20,12 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static org.ardulink.core.beans.finder.impl.FindByFieldAccess.directFieldAccess;
 import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.annotation.Retention;
 import java.util.ArrayList;
@@ -34,9 +33,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.ardulink.util.anno.LapsedWith;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
+import org.junit.jupiter.api.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -46,7 +43,7 @@ import org.junit.function.ThrowingRunnable;
  * [adsense]
  *
  */
-public class BeanPropertiesTest {
+class BeanPropertiesTest {
 
 	@Retention(RUNTIME)
 	public @interface ThisAnnotationHasNoValueAttribute {
@@ -61,6 +58,7 @@ public class BeanPropertiesTest {
 	@Retention(RUNTIME)
 	public @interface OurOwnTestAnno {
 		String value();
+
 		String someOtherAttribute() default "";
 	}
 
@@ -155,14 +153,14 @@ public class BeanPropertiesTest {
 	}
 
 	@Test
-	public void nonExistingProperty() {
+	void nonExistingProperty() {
 		BeanProperties bp = BeanProperties.forBean(new BeanWithReadMethod());
 		Attribute attribute = bp.getAttribute("aNonExisitingAttribute");
 		assertThat(attribute, is(nullValue()));
 	}
 
 	@Test
-	public void canFindPropertyByReadMethod() {
+	void canFindPropertyByReadMethod() {
 		BeanProperties bp = BeanProperties.forBean(new BeanWithReadMethod());
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName(), is("foo"));
@@ -170,7 +168,7 @@ public class BeanPropertiesTest {
 	}
 
 	@Test
-	public void canFindPropertyByWriteMethod() {
+	void canFindPropertyByWriteMethod() {
 		BeanProperties bp = BeanProperties.forBean(new BeanWithWriteMethod());
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName(), is("foo"));
@@ -178,7 +176,7 @@ public class BeanPropertiesTest {
 	}
 
 	@Test
-	public void canReadValue() throws Exception {
+	void canReadValue() throws Exception {
 		String value = "bar";
 		BeanWithReadAndWriteMethod bean = new BeanWithReadAndWriteMethod();
 		bean.setFoo(value);
@@ -189,10 +187,9 @@ public class BeanPropertiesTest {
 	}
 
 	@Test
-	public void canWriteValue() throws Exception {
+	void canWriteValue() throws Exception {
 		String value = "bar";
-		BeanProperties bp = BeanProperties
-				.forBean(new BeanWithReadAndWriteMethod());
+		BeanProperties bp = BeanProperties.forBean(new BeanWithReadAndWriteMethod());
 		Attribute attribute = bp.getAttribute("foo");
 		attribute.writeValue("bar");
 		assertThat(attribute.getName(), is("foo"));
@@ -200,64 +197,46 @@ public class BeanPropertiesTest {
 	}
 
 	@Test
-	public void canFindPropertyByAnnotatedReadMethod() {
-		BeanProperties bp = BeanProperties
-				.builder(new BeanWithAnnotatedReadMethod())
-				.using(beanAttributes(),
-						propertyAnnotated(OurOwnTestAnno.class)).build();
+	void canFindPropertyByAnnotatedReadMethod() {
+		BeanProperties bp = BeanProperties.builder(new BeanWithAnnotatedReadMethod())
+				.using(beanAttributes(), propertyAnnotated(OurOwnTestAnno.class)).build();
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName(), is("foo"));
 		assertThat(attribute.getType().getName(), is(String.class.getName()));
 	}
 
 	@Test
-	public void canFindPropertyByAnnotatedWriteMethod() {
-		BeanProperties bp = BeanProperties
-				.builder(new BeanWithAnnotatedWriteMethod())
-				.using(beanAttributes(),
-						propertyAnnotated(OurOwnTestAnno.class)).build();
+	void canFindPropertyByAnnotatedWriteMethod() {
+		BeanProperties bp = BeanProperties.builder(new BeanWithAnnotatedWriteMethod())
+				.using(beanAttributes(), propertyAnnotated(OurOwnTestAnno.class)).build();
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName(), is("foo"));
 		assertThat(attribute.getType().getName(), is(String.class.getName()));
 	}
 
 	@Test
-	public void throwsExceptionsIfAnnotationHasNoValueAttribute() {
-		final Class<ThisAnnotationHasNoValueAttribute> clazz = ThisAnnotationHasNoValueAttribute.class;
-		
-		@LapsedWith(module = JDK8, value = "Lambda")
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, new ThrowingRunnable() {
-			@Override
-			public void run() throws Throwable {
-				propertyAnnotated(clazz);
-			}
-		});
-		assertThat(exception.getMessage(), allOf(containsString(clazz.getName()),
-				containsString("has no attribute named value")));
+	void throwsExceptionsIfAnnotationHasNoValueAttribute() {
+		Class<ThisAnnotationHasNoValueAttribute> clazz = ThisAnnotationHasNoValueAttribute.class;
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+				() -> propertyAnnotated(clazz));
+		assertThat(exception.getMessage(),
+				allOf(containsString(clazz.getName()), containsString("has no attribute named value")));
 	}
 
 	@Test
-	public void throwsExceptionsIfAnnotationHasValueAttributeWithWrongType() {
-		final Class<ThisAnnotationHasAnAttributeThatIsNotAstring> clazz = ThisAnnotationHasAnAttributeThatIsNotAstring.class;
-		
-		@LapsedWith(module = JDK8, value = "Lambda")
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, new ThrowingRunnable() {
-			@Override
-			public void run() throws Throwable {
-				propertyAnnotated(clazz);
-			}
-		});
+	void throwsExceptionsIfAnnotationHasValueAttributeWithWrongType() {
+		Class<ThisAnnotationHasAnAttributeThatIsNotAstring> clazz = ThisAnnotationHasAnAttributeThatIsNotAstring.class;
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+				() -> propertyAnnotated(clazz));
 		assertThat(exception.getMessage(), allOf(containsString(clazz.getName()),
-				containsString(String.class.getName()),
-				containsString(boolean.class.getName())));
+				containsString(String.class.getName()), containsString(boolean.class.getName())));
 	}
 
 	@Test
-	public void canDirectlyAccessFields() throws Exception {
+	void canDirectlyAccessFields() throws Exception {
 		String value = "bar";
 		BeanWithPublicField bean = new BeanWithPublicField();
-		BeanProperties bp = BeanProperties.builder(bean)
-				.using(directFieldAccess()).build();
+		BeanProperties bp = BeanProperties.builder(bean).using(directFieldAccess()).build();
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName(), is("foo"));
 		assertThat(attribute.getType().getName(), is(String.class.getName()));
@@ -266,63 +245,51 @@ public class BeanPropertiesTest {
 	}
 
 	@Test
-	public void canMergeDifferentTypes() throws Exception {
-		BeanProperties bp = BeanProperties
-				.builder(new BeanWithDifferentTypes())
+	void canMergeDifferentTypes() throws Exception {
+		BeanProperties bp = BeanProperties.builder(new BeanWithDifferentTypes())
 				.using(propertyAnnotated(OurOwnTestAnno.class)).build();
-		Attribute attribute = bp
-				.getAttribute("weHaveToUseAnnotationsSinceThisWontWorkWithBeans");
-		assertThat(attribute.getType().getName(),
-				is(Collection.class.getName()));
+		Attribute attribute = bp.getAttribute("weHaveToUseAnnotationsSinceThisWontWorkWithBeans");
+		assertThat(attribute.getType().getName(), is(Collection.class.getName()));
 	}
 
 	@Test
-	public void canlistAttributes() {
-		BeanProperties bp = BeanProperties
-				.forBean(new BeanWithMultipleAttributes());
-		assertThat(new ArrayList<String>(bp.attributeNames()),
-				is(Arrays.asList("a", "b")));
+	void canlistAttributes() {
+		BeanProperties bp = BeanProperties.forBean(new BeanWithMultipleAttributes());
+		assertThat(new ArrayList<String>(bp.attributeNames()), is(Arrays.asList("a", "b")));
 	}
 
 	@Test
-	public void canFindPropertyByAnnotatedField() throws Exception {
+	void canFindPropertyByAnnotatedField() throws Exception {
 		BeanWithSettersAndGettersAndAnnoOnPrivateField bean = new BeanWithSettersAndGettersAndAnnoOnPrivateField();
-		BeanProperties bp = BeanProperties.builder(bean)
-				.using(propertyAnnotated(OurOwnTestAnno.class)).build();
+		BeanProperties bp = BeanProperties.builder(bean).using(propertyAnnotated(OurOwnTestAnno.class)).build();
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName(), is("foo"));
 		assertThat(attribute.getType().getName(), is(List.class.getName()));
 		attribute.writeValue(Arrays.asList("1", "2", "3"));
 		assertThat(bean.getValues(), is(Arrays.asList("1", "2", "3")));
 		bean.setValues(Arrays.asList("3", "2", "1"));
-		assertThat(attribute.readValue(),
-				is((Object) Arrays.asList("3", "2", "1")));
+		assertThat(attribute.readValue(), is((Object) Arrays.asList("3", "2", "1")));
 	}
 
 	@Test
-	public void canFindPropertyByAnnotatedPublicField() throws Exception {
+	void canFindPropertyByAnnotatedPublicField() throws Exception {
 		BeanWithAnnoOnPublicField bean = new BeanWithAnnoOnPublicField();
-		BeanProperties bp = BeanProperties
-				.builder(bean)
-				.using(beanAttributes(),
-						propertyAnnotated(OurOwnTestAnno.class)).build();
+		BeanProperties bp = BeanProperties.builder(bean)
+				.using(beanAttributes(), propertyAnnotated(OurOwnTestAnno.class)).build();
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName(), is("foo"));
 		assertThat(attribute.getType().getName(), is(List.class.getName()));
 		attribute.writeValue(Arrays.asList("1", "2", "3"));
 		assertThat(bean.values, is(Arrays.asList("1", "2", "3")));
 		bean.values = Arrays.asList("3", "2", "1");
-		assertThat(attribute.readValue(),
-				is((Object) Arrays.asList("3", "2", "1")));
+		assertThat(attribute.readValue(), is((Object) Arrays.asList("3", "2", "1")));
 	}
 
 	@Test
-	public void canFindPropertyByAnnotatedPublicFieldBitNotUsingValueButSomeOtherAttribute() throws Exception {
+	void canFindPropertyByAnnotatedPublicFieldBitNotUsingValueButSomeOtherAttribute() throws Exception {
 		BeanWithAnnoOnPublicFieldButUsingNotValueButSomeOtherAttribute bean = new BeanWithAnnoOnPublicFieldButUsingNotValueButSomeOtherAttribute();
-		BeanProperties bp = BeanProperties
-				.builder(bean)
-				.using(beanAttributes(),
-						propertyAnnotated(OurOwnTestAnno.class, "someOtherAttribute")).build();
+		BeanProperties bp = BeanProperties.builder(bean)
+				.using(beanAttributes(), propertyAnnotated(OurOwnTestAnno.class, "someOtherAttribute")).build();
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName(), is("foo"));
 		assertThat(attribute.getType().getName(), is(List.class.getName()));

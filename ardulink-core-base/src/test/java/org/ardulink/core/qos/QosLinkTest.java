@@ -18,14 +18,12 @@ package org.ardulink.core.qos;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -37,12 +35,10 @@ import org.ardulink.core.StreamConnection;
 import org.ardulink.core.Tone;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.util.anno.LapsedWith;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -52,62 +48,51 @@ import org.junit.rules.Timeout;
  * [adsense]
  *
  */
-public class QosLinkTest {
+@Timeout(5)
+class QosLinkTest {
 
-	@Rule
-	public Timeout timeout = new Timeout(5, SECONDS);
+	@RegisterExtension
+	Arduino arduino = Arduino.newArduino();
 
-	@Rule
-	public Arduino arduino = Arduino.newArduino();
+	ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
+	QosLink qosLink;
 
-	private final ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
-	private QosLink qosLink;
-
-	@After
-	public void tearDown() throws IOException {
+	@AfterEach
+	void tearDown() throws IOException {
 		qosLink.close();
 	}
 
 	@Test
-	public void canDoGuranteedDelivery() throws Exception {
+	void canDoGuranteedDelivery() throws Exception {
 		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).thenRespond(lf("alp://rply/ok?id=%s"));
 		qosLink = newQosLink(connectionTo(arduino), 15, MINUTES);
 		qosLink.sendNoTone(analogPin(3));
 	}
 
 	@Test
-	public void doesThrowExceptionIfNotResponseReceivedWithinHalfAsecond() throws Exception {
+	void doesThrowExceptionIfNotResponseReceivedWithinHalfAsecond() throws Exception {
 		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).thenDoNotRespond();
 		qosLink = newQosLink(connectionTo(arduino), 500, MILLISECONDS);
-		@LapsedWith(module = JDK8, value = "Lambda")
-		IllegalStateException exception = assertThrows(IllegalStateException.class, new ThrowingRunnable() {
-			@Override
-			public void run() throws IOException {
-				qosLink.sendNoTone(analogPin(3));
-			}
-		});
+		IllegalStateException exception = assertThrows(IllegalStateException.class,
+				() -> qosLink.sendNoTone(analogPin(3)));
 		assertThat(exception.getMessage(), is(allOf(containsString("response"), containsString("500 MILLISECONDS"))));
 	}
 
 	@Test
-	public void doesThrowExceptionIfKoResponse() throws Exception {
+	void doesThrowExceptionIfKoResponse() throws Exception {
 		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).thenRespond(lf("alp://rply/ko?id=%s"));
 		Connection connection = connectionTo(arduino);
 		qosLink = newQosLink(connection, 500 + someMillisMore(), MILLISECONDS);
-		@LapsedWith(module = JDK8, value = "Lambda")
-		IllegalStateException exception = assertThrows(IllegalStateException.class, new ThrowingRunnable() {
-			@Override
-			public void run() throws IOException {
-				qosLink.sendNoTone(analogPin(3));
-			}
-		});
+		IllegalStateException exception = assertThrows(IllegalStateException.class,
+				() -> qosLink.sendNoTone(analogPin(3)));
 		assertThat(exception.getMessage(), is(allOf(containsString("status"), containsString("not ok"))));
 	}
 
 	@Test
-	public void secondCallPassesIfFirstOneKeepsUnresponded() throws Exception {
+	void secondCallPassesIfFirstOneKeepsUnresponded() throws Exception {
 		arduino.whenReceive(regex(lf("alp:\\/\\/tone\\/1\\/2\\/3\\?id\\=(\\d)"))).thenDoNotRespond();
-		arduino.whenReceive(regex(lf("alp:\\/\\/tone\\/4\\/5\\/6\\?id\\=(\\d)"))).thenRespond(lf("alp://rply/ok?id=%s"));
+		arduino.whenReceive(regex(lf("alp:\\/\\/tone\\/4\\/5\\/6\\?id\\=(\\d)")))
+				.thenRespond(lf("alp://rply/ok?id=%s"));
 		qosLink = newQosLink(connectionTo(arduino), 500, MILLISECONDS);
 		try {
 			qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2).withDuration(3, MILLISECONDS));
