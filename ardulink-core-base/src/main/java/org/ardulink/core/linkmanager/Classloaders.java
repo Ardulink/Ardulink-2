@@ -21,9 +21,9 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 
 import org.ardulink.core.classloader.ModuleClassLoader;
-import org.ardulink.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]

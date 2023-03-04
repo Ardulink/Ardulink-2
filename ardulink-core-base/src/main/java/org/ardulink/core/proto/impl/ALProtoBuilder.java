@@ -19,11 +19,12 @@ package org.ardulink.core.proto.impl;
 import static java.util.Collections.addAll;
 import static org.ardulink.util.Preconditions.checkArgument;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.ardulink.util.Joiner;
 import org.ardulink.util.Lists;
-import org.ardulink.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -43,12 +44,10 @@ public class ALProtoBuilder {
 
 	public enum ALPProtocolKey {
 
-		POWER_PIN_SWITCH("ppsw"), POWER_PIN_INTENSITY("ppin"), DIGITAL_PIN_READ(
-				"dred"), ANALOG_PIN_READ("ared"), START_LISTENING_DIGITAL(
-				"srld"), START_LISTENING_ANALOG("srla"), STOP_LISTENING_DIGITAL(
-				"spld"), STOP_LISTENING_ANALOG("spla"), CHAR_PRESSED("kprs"), TONE(
-				"tone"), NOTONE("notn"), CUSTOM_MESSAGE("cust"), RPLY("rply"), READY(
-				"ready"), CUSTOM_EVENT("cevnt");
+		POWER_PIN_SWITCH("ppsw"), POWER_PIN_INTENSITY("ppin"), DIGITAL_PIN_READ("dred"), ANALOG_PIN_READ("ared"),
+		START_LISTENING_DIGITAL("srld"), START_LISTENING_ANALOG("srla"), STOP_LISTENING_DIGITAL("spld"),
+		STOP_LISTENING_ANALOG("spla"), CHAR_PRESSED("kprs"), TONE("tone"), NOTONE("notn"), CUSTOM_MESSAGE("cust"),
+		RPLY("rply"), READY("ready"), CUSTOM_EVENT("cevnt");
 
 		private String proto;
 
@@ -57,12 +56,8 @@ public class ALProtoBuilder {
 		}
 
 		public static Optional<ALPProtocolKey> fromString(String string) {
-			for (ALPProtocolKey alpProtocolKeys : values()) {
-				if (alpProtocolKeys.proto.equals(string)) {
-					return Optional.of(alpProtocolKeys);
-				}
-			}
-			return Optional.absent();
+			return Arrays.stream(values()).filter(k -> k.proto.equals(string)).findFirst();
+
 		}
 	}
 
@@ -87,14 +82,13 @@ public class ALProtoBuilder {
 	}
 
 	public String withValues(String... values) {
-		List<Object> concat = Lists.<Object> newArrayList(command);
+		List<Object> concat = Lists.<Object>newArrayList(command);
 		if (pin != null) {
 			concat.add(pin);
 		}
 		addAll(concat, values);
 		String message = "alp://" + joiner.join(concat);
-		return messageId == null ? message : message + "?id="
-				+ messageId.longValue();
+		return messageId == null ? message : message + "?id=" + messageId.longValue();
 	}
 
 	public String withState(boolean value) {

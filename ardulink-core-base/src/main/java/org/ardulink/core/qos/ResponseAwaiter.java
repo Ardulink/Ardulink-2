@@ -4,6 +4,7 @@ import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -13,7 +14,6 @@ import org.ardulink.core.Link;
 import org.ardulink.core.events.RplyEvent;
 import org.ardulink.core.events.RplyListener;
 import org.ardulink.util.Lists;
-import org.ardulink.util.Optional;
 
 public class ResponseAwaiter {
 
@@ -108,12 +108,7 @@ public class ResponseAwaiter {
 	}
 
 	private Optional<RplyEvent> messageIdReceived(long messageId) {
-		for (RplyEvent reply : replies) {
-			if (reply.getId() == messageId) {
-				return Optional.of(reply);
-			}
-		}
-		return Optional.absent();
+		return replies.stream().filter(r -> r.getId() == messageId).findFirst();
 	}
 
 }

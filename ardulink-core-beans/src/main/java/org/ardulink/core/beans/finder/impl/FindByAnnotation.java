@@ -16,9 +16,9 @@ limitations under the License.
 
 package org.ardulink.core.beans.finder.impl;
 
+import static java.lang.reflect.Modifier.isPublic;
 import static org.ardulink.core.beans.finder.impl.ReadMethod.isReadMethod;
 import static org.ardulink.core.beans.finder.impl.WriteMethod.isWriteMethod;
-import static java.lang.reflect.Modifier.isPublic;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
@@ -31,12 +31,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
-import org.ardulink.util.Optional;
-import org.ardulink.util.anno.LapsedWith;
 import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.Attribute.AttributeWriter;
 import org.ardulink.core.beans.finder.api.AttributeFinder;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -234,7 +234,7 @@ public class FindByAnnotation implements AttributeFinder {
 				return Optional.of(reader);
 			}
 		}
-		return Optional.absent();
+		return Optional.empty();
 	}
 
 	@LapsedWith(module = JDK8, value = "Streams")
@@ -246,7 +246,7 @@ public class FindByAnnotation implements AttributeFinder {
 				return Optional.of(writer);
 			}
 		}
-		return Optional.absent();
+		return Optional.empty();
 	}
 
 	private String annoValue(Annotation annotation)

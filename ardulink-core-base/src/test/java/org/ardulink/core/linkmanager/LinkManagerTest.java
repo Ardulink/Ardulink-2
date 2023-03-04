@@ -20,7 +20,6 @@ import static java.util.Arrays.asList;
 import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.withRegistered;
 import static org.ardulink.util.URIs.newURI;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -42,12 +41,9 @@ import java.util.List;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkFactory.Alias;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.Statement;
 import org.ardulink.core.linkmanager.viaservices.AlLinkWithoutArealLinkFactoryWithConfig;
 import org.ardulink.core.linkmanager.viaservices.AlLinkWithoutArealLinkFactoryWithoutConfig;
-import org.ardulink.util.anno.LapsedWith;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -121,52 +117,36 @@ public class LinkManagerTest {
 
 	@Test
 	void nonExistingNameWitllThrowRTE() throws IOException {
-		@LapsedWith(module = JDK8, value = "Lambda")
-		RuntimeException exception = assertThrows(RuntimeException.class, new Executable() {
-			@Override
-			public void execute() throws Throwable {
-				sut.getConfigurer(newURI("ardulink://XXX-aNameThatIsNotRegistered-XXX"));
-			}
-		});
+		RuntimeException exception = assertThrows(RuntimeException.class,
+				() -> sut.getConfigurer(newURI("ardulink://XXX-aNameThatIsNotRegistered-XXX")));
 		assertThat(exception.getMessage(), is(allOf(containsString("registered"), containsString("factory"))));
 	}
 
 	@Test
-	void canLoadDummyLinkViaAlias() throws Exception {
-		withRegistered(new AliasUsingLinkFactory()).execute(new Statement() {
-			@Override
-			public void execute() {
-				sut.getConfigurer(aliasUri());
-			}
+	void canLoadDummyLinkViaAlias() throws Throwable {
+		withRegistered(new AliasUsingLinkFactory()).execute(() -> sut.getConfigurer(aliasUri()));
+	}
+
+	@Test
+	void aliasNameNotListed() throws Throwable {
+		withRegistered(new AliasUsingLinkFactory()).execute(() -> {
+			List<URI> listURIs = sut.listURIs();
+			assertThat(listURIs, hasItem(aliasUri()));
+			assertThat(listURIs, not(hasItem(newURI("ardulink://aliasLinkAlias"))));
 		});
 	}
 
 	@Test
-	void aliasNameNotListed() throws Exception {
-		withRegistered(new AliasUsingLinkFactory()).execute(new Statement() {
-			@Override
-			public void execute() {
-				List<URI> listURIs = sut.listURIs();
-				assertThat(listURIs, hasItem(aliasUri()));
-				assertThat(listURIs, not(hasItem(newURI("ardulink://aliasLinkAlias"))));
-			}
-		});
-	}
-
-	@Test
-	void nameHasPriorityOverAlias() throws Exception {
+	void nameHasPriorityOverAlias() throws Throwable {
 		AliasUsingLinkFactory factory = new AliasUsingLinkFactory();
 		final String dummyLinkFactoryName = new DummyLinkFactory().getName();
 		assert aliasNames(factory).contains(dummyLinkFactoryName);
 
 		final AliasUsingLinkFactory spy = spy(factory);
-		withRegistered(spy).execute(new Statement() {
-			@Override
-			public void execute() throws IOException {
-				Link link = sut.getConfigurer(newURI("ardulink://" + dummyLinkFactoryName)).newLink();
-				verify(spy, never()).newLink(any(LinkConfig.class));
-				link.close();
-			}
+		withRegistered(spy).execute(() -> {
+			Link link = sut.getConfigurer(newURI("ardulink://" + dummyLinkFactoryName)).newLink();
+			verify(spy, never()).newLink(any(LinkConfig.class));
+			link.close();
 		});
 	}
 

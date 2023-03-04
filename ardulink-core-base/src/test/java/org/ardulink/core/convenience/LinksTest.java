@@ -43,7 +43,6 @@ import org.ardulink.core.linkmanager.DummyLinkFactory;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.linkmanager.LinkManagerTest.AliasUsingLinkFactory;
-import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.Statement;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -64,37 +63,24 @@ class LinksTest {
 	}
 
 	@Test
-	void whenRequestingDefaultLinkSerialHasPriorityOverAllOthers() throws Exception {
+	void whenRequestingDefaultLinkSerialHasPriorityOverAllOthers() throws Throwable {
 		final LinkFactory<LinkConfig> serial = spy(factoryNamed(serial()));
 		withRegistered(factoryNamed(serialDash("a")), factoryNamed("a"), serial, factoryNamed("z"),
-				factoryNamed(serialDash("z"))).execute(new Statement() {
-					@Override
-					public void execute() throws Exception {
-						assertLinkWasCreatedBy(Links.getDefault(), serial);
-					}
-				});
+				factoryNamed(serialDash("z"))).execute(() -> assertLinkWasCreatedBy(Links.getDefault(), serial));
 	}
 
 	@Test
-	void whenRequestingDefaultLinkStartingWithSerialDashHasPriorityOverAllOthers() throws Exception {
+	void whenRequestingDefaultLinkStartingWithSerialDashHasPriorityOverAllOthers() throws Throwable {
 		final LinkFactory<LinkConfig> serialDashAnything = spy(factoryNamed(serialDash("appendix-does-not-matter")));
-		withRegistered(factoryNamed("a"), serialDashAnything, factoryNamed("z")).execute(new Statement() {
-			@Override
-			public void execute() throws Exception {
-				assertLinkWasCreatedBy(Links.getDefault(), serialDashAnything);
-			}
-		});
+		withRegistered(factoryNamed("a"), serialDashAnything, factoryNamed("z"))
+				.execute(() -> assertLinkWasCreatedBy(Links.getDefault(), serialDashAnything));
 	}
 
 	@Test
-	void serialDashDoesHandleSerial() throws Exception {
+	void serialDashDoesHandleSerial() throws Throwable {
 		final LinkFactory<LinkConfig> serialDashAnything = spy(factoryNamed(serialDash("appendix-does-not-matter")));
-		withRegistered(serialDashAnything).execute(new Statement() {
-			@Override
-			public void execute() throws Exception {
-				assertLinkWasCreatedBy(Links.getLink("ardulink://serial"), serialDashAnything);
-			}
-		});
+		withRegistered(serialDashAnything)
+				.execute(() -> assertLinkWasCreatedBy(Links.getLink("ardulink://serial"), serialDashAnything));
 	}
 
 	private static String serialDash(String appendix) {
@@ -114,18 +100,15 @@ class LinksTest {
 	}
 
 	@Test
-	void registeredSpecialNameDefault() throws Exception {
+	void registeredSpecialNameDefault() throws Throwable {
 		final LinkFactory<LinkConfig> serial = spy(factoryNamed(serial()));
 		assert serial.newLinkConfig().equals(NO_ATTRIBUTES)
 				: "ardulink://default would differ if the config has attributes";
-		withRegistered(serial).execute(new Statement() {
-			@Override
-			public void execute() throws Exception {
-				Link link1 = Links.getLink("ardulink://default");
-				Link link2 = Links.getDefault();
-				assertAllSameInstances(link1, link2);
-				close(link1, link2);
-			}
+		withRegistered(serial).execute(() -> {
+			Link link1 = Links.getLink("ardulink://default");
+			Link link2 = Links.getDefault();
+			assertAllSameInstances(link1, link2);
+			close(link1, link2);
 		});
 	}
 
@@ -209,7 +192,7 @@ class LinksTest {
 	}
 
 	@Test
-	void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws Exception {
+	void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws Throwable {
 		final String name1 = new DummyLinkFactory().getName();
 		final String name2 = "DummyLINK";
 		assert name1.equalsIgnoreCase(name2) && !name1.equals(name2);
@@ -220,31 +203,25 @@ class LinksTest {
 			}
 		}
 
-		withRegistered(new DummyLinkFactoryExtension()).execute(new Statement() {
-			@Override
-			public void execute() throws IOException {
-				Link link1 = Links.getLink(makeUri(name1));
-				Link link2 = Links.getLink(makeUri(name2));
-				assertThat(link1, not(sameInstance(link2)));
-				close(link1, link2);
-			}
-
-			private String makeUri(String name) {
-				return String.format("ardulink://%s?a=aVal1&b=4", name);
-			}
+		withRegistered(new DummyLinkFactoryExtension()).execute(() -> {
+			Link link1 = Links.getLink(makeUri(name1));
+			Link link2 = Links.getLink(makeUri(name2));
+			assertThat(link1, not(sameInstance(link2)));
+			close(link1, link2);
 		});
 	}
 
+	private static String makeUri(String name) {
+		return String.format("ardulink://%s?a=aVal1&b=4", name);
+	}
+
 	@Test
-	void aliasLinksAreSharedToo() throws Exception {
-		withRegistered(new AliasUsingLinkFactory()).execute(new Statement() {
-			@Override
-			public void execute() throws IOException {
-				Link link1 = Links.getLink("ardulink://aliasLink");
-				Link link2 = Links.getLink("ardulink://aliasLinkAlias");
-				assertAllSameInstances(link1, link2);
-				close(link1, link2);
-			}
+	void aliasLinksAreSharedToo() throws Throwable {
+		withRegistered(new AliasUsingLinkFactory()).execute(() -> {
+			Link link1 = Links.getLink("ardulink://aliasLink");
+			Link link2 = Links.getLink("ardulink://aliasLinkAlias");
+			assertAllSameInstances(link1, link2);
+			close(link1, link2);
 		});
 	}
 

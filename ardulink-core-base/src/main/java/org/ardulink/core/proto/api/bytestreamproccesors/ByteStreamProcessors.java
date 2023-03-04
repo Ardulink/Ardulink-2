@@ -15,15 +15,12 @@ limitations under the License.
  */
 package org.ardulink.core.proto.api.bytestreamproccesors;
 
-import static org.ardulink.util.anno.LapsedWith.JDK8;
-
 import java.util.List;
 
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor.FromDeviceListener;
 import org.ardulink.util.Lists;
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -55,14 +52,8 @@ public final class ByteStreamProcessors {
 		}
 	}
 
-	@LapsedWith(module = JDK8, value = "Lambda")
 	private static FromDeviceListener fromDeviceListener(final List<FromDeviceMessage> messages) {
-		return new FromDeviceListener() {
-			@Override
-			public void handle(FromDeviceMessage fromDevice) {
-				messages.add(fromDevice);
-			}
-		};
+		return fromDevice -> messages.add(fromDevice);
 	}
 
 }

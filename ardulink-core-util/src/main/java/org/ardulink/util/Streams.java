@@ -12,13 +12,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 
 package org.ardulink.util;
 
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.ardulink.util.anno.LapsedWith.JDK9;
 
+import java.util.Iterator;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.ardulink.util.anno.LapsedWith;
 
@@ -30,14 +35,23 @@ import org.ardulink.util.anno.LapsedWith;
  * [adsense]
  *
  */
-public final class Iterables {
+public final class Streams {
 
-	private Iterables() {
+	private Streams() {
 		super();
 	}
 
-	public static <T> Optional<T> getFirst(Iterable<T> iterable) {
-		return Iterators.getFirst(iterable.iterator());
+	public static <T> Optional<T> getFirst(Stream<T> stream) {
+		return stream.findFirst();
+	}
+
+	public static <T> Optional<T> getLast(Stream<T> stream) {
+		return stream.reduce((first, second) -> second);
+	}
+
+	@LapsedWith(module = JDK9, value = "ServiceLoader#stream")
+	public static <T> Stream<T> stream(Iterator<T> iterator) {
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
 	}
 
 }

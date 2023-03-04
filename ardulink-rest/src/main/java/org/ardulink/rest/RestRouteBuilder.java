@@ -202,7 +202,8 @@ public class RestRouteBuilder extends RouteBuilder {
 		checkState(split.length == 2, "Could not split %s by =", stateRaw);
 		checkState(split[0].equalsIgnoreCase("listen"), "Expected listen=${state} but was %s", stateRaw);
 
-		int pin = tryParse(String.valueOf(pinRaw)).getOrThrow("Pin %s not parseable", pinRaw);
+		int pin = tryParse(String.valueOf(pinRaw))
+				.orElseThrow(() -> new IllegalStateException("Pin " + pinRaw + " not parseable"));
 		boolean state = parseBoolean(split[1]);
 		message.setBody(alpProtocolMessage(state ? startKey : stopKey).forPin(pin).withoutValue());
 	}
@@ -228,7 +229,8 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	private int readPin(Type type, Message message) {
 		Object pinRaw = message.getHeader("pin");
-		return tryParse(String.valueOf(pinRaw)).getOrThrow("Pin %s not parseable", pinRaw);
+		return tryParse(String.valueOf(pinRaw))
+				.orElseThrow(() -> new IllegalStateException("Pin " + pinRaw + " not parseable"));
 	}
 
 	private void writeArduinoMessagesTo(String arduino, BlockingQueue<FromDeviceMessagePinStateChanged> messages) {
@@ -236,7 +238,7 @@ public class RestRouteBuilder extends RouteBuilder {
 		from(arduino).process(exchange -> {
 			String body = exchange.getMessage().getBody(String.class);
 			FromDeviceMessage fromDevice = getFirst(parse(byteStreamProcessor, byteStreamProcessor.toBytes(body)))
-					.getOrThrow("Cannot handle %s", body);
+					.orElseThrow(() -> new IllegalStateException("Cannot handle " + body));
 			if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
 				messages.add((FromDeviceMessagePinStateChanged) fromDevice);
 			}
@@ -247,7 +249,8 @@ public class RestRouteBuilder extends RouteBuilder {
 		Message message = exchange.getMessage();
 		Object pinRaw = message.getHeader("pin");
 		String stateRaw = message.getBody(String.class);
-		int pin = tryParse(String.valueOf(pinRaw)).getOrThrow("Pin %s not parseable", pinRaw);
+		int pin = tryParse(String.valueOf(pinRaw))
+				.orElseThrow(() -> new IllegalStateException("Pin " + pinRaw + " not parseable"));
 		boolean state = parseBoolean(stateRaw);
 		message.setBody(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(state));
 	}
@@ -256,8 +259,10 @@ public class RestRouteBuilder extends RouteBuilder {
 		Message message = exchange.getMessage();
 		Object pinRaw = message.getHeader("pin");
 		String valueRaw = message.getBody(String.class);
-		int pin = tryParse(String.valueOf(pinRaw)).getOrThrow("Pin %s not parseable", pinRaw);
-		int value = tryParse(valueRaw).getOrThrow("Value %s not parseable", valueRaw);
+		int pin = tryParse(String.valueOf(pinRaw))
+				.orElseThrow(() -> new IllegalStateException("Pin " + pinRaw + " not parseable"));
+		int value = tryParse(valueRaw)
+				.orElseThrow(() -> new IllegalStateException("Value " + valueRaw + " not parseable"));
 		message.setBody(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
 	}
 }

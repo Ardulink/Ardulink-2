@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.util;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -34,12 +35,12 @@ public final class Iterators {
 
 	public static <T> Optional<T> getFirst(Iterator<T> iterator) {
 		return iterator.hasNext() ? Optional.<T> of(iterator.next()) : Optional
-				.<T> absent();
+				.<T> empty();
 	}
 
 	public static <T> Optional<T> getLast(Iterator<T> iterator) {
 		if (!iterator.hasNext()) {
-			return Optional.absent();
+			return Optional.empty();
 		}
 		T last;
 		do {

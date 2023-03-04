@@ -16,11 +16,13 @@ limitations under the License.
 
 package org.ardulink.core.convenience;
 
+import static java.util.Arrays.stream;
+import static java.util.Comparator.comparing;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.core.linkmanager.LinkManager.replaceName;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Lists.sortedCopy;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.ardulink.util.Streams.getFirst;
 
 import java.io.IOException;
 import java.net.URI;
@@ -38,10 +40,7 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.util.Integers;
-import org.ardulink.util.Optional;
 import org.ardulink.util.URIs;
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -97,27 +96,18 @@ public final class Links {
 
 	public static Configurer getDefaultConfigurer() {
 		return setChoiceValues(linkManager.getConfigurer(getFirst(sorted(linkManager.listURIs()))
-				.getOrThrow(IllegalStateException.class, "No factory registered")));
+				.orElseThrow(() -> new IllegalStateException("No factory registered"))));
 	}
 
 	private static List<URI> sorted(List<URI> uris) {
 		return sortedCopy(uris, serialsFirst());
 	}
 
-	@LapsedWith(module = JDK8, value = "Comparator")
 	private static Comparator<URI> serialsFirst() {
-		return new Comparator<URI>() {
-			@Override
-			public int compare(URI uri1, URI uri2) {
-				return Integers.compare(valueOf(uri1), valueOf(uri2));
-			}
-
-			private int valueOf(URI uri) {
-				String name = extractNameFromURI(uri);
-				return serialAlias.isAliasName(name) ? -2 : serialAlias.isAliasFor(name) ? -1 : 0;
-			}
-
-		};
+		return comparing(uri -> {
+			String name = extractNameFromURI(uri);
+			return serialAlias.isAliasName(name) ? -2 : serialAlias.isAliasFor(name) ? -1 : 0;
+		});
 	}
 
 	/**
@@ -149,50 +139,24 @@ public final class Links {
 		return getLink(linkManager.getConfigurer(aliasReplacement(uri)));
 	}
 
-	@LapsedWith(module = JDK8, value = "Optional#map")
 	private static URI aliasReplacement(URI uri) {
 		List<URI> availableUris = sorted(linkManager.listURIs());
 		String name = extractNameFromURI(uri);
-		if (!containsName(availableUris, name)) {
-			Optional<Alias> alias = findAlias(name);
-			if (alias.isPresent()) {
-				Optional<URI> replacement = aliasReplacement(availableUris, alias.get());
-				if (replacement.isPresent()) {
-					return replaceName(uri, extractNameFromURI(replacement.get()));
-				}
-			}
-		}
-		return uri;
+		return containsName(availableUris, name) ? uri
+				: findAlias(name).map(a -> isAliasFor(availableUris, a).orElse(null))
+						.map(r -> replaceName(uri, extractNameFromURI(r))).orElse(uri);
 	}
 
-	@LapsedWith(module = JDK8, value = "Stream")
-	private static Optional<URI> aliasReplacement(List<URI> availableUris, Alias alias) {
-		for (URI uri : availableUris) {
-			if (alias.isAliasFor(extractNameFromURI(uri))) {
-				return Optional.of(uri);
-			}
-		}
-		return Optional.absent();
+	private static java.util.Optional<URI> isAliasFor(List<URI> availableUris, Alias alias) {
+		return availableUris.stream().filter(u -> alias.isAliasFor(extractNameFromURI(u))).findFirst();
 	}
 
-	@LapsedWith(module = JDK8, value = "Stream")
-	private static Optional<Alias> findAlias(String name) {
-		for (Alias alias : aliases) {
-			if (alias.isAliasName(name)) {
-				return Optional.of(alias);
-			}
-		}
-		return Optional.<Alias>absent();
+	private static java.util.Optional<Alias> findAlias(String name) {
+		return getFirst(aliases.stream().filter(alias -> alias.isAliasName(name)));
 	}
 
-	@LapsedWith(module = JDK8, value = "Stream")
 	private static boolean containsName(List<URI> uris, String name) {
-		for (URI uri : uris) {
-			if (extractNameFromURI(uri).equals(name)) {
-				return true;
-			}
-		}
-		return false;
+		return uris.stream().anyMatch(uri -> extractNameFromURI(uri).equals(name));
 	}
 
 	public static Link getLink(Configurer configurer) {
@@ -225,42 +189,22 @@ public final class Links {
 			@Override
 			public long startListening(Pin pin) throws IOException {
 				long result = super.startListening(pin);
-				AtomicInteger counter = getCounter(pin);
-				if (counter == null) {
-					@LapsedWith(module = JDK8, value = "Map#merge")
-					AtomicInteger oldValue = listenCounter.putIfAbsent(pin, counter = new AtomicInteger());
-					if (oldValue != null) {
-						counter = oldValue;
-					}
-				}
-				counter.getAndIncrement();
+				listenCounter.merge(pin, new AtomicInteger(1), (i1, i2) -> new AtomicInteger(i1.addAndGet(i2.get())));
 				return result;
 			}
 
 			@Override
 			public long stopListening(Pin pin) throws IOException {
-				AtomicInteger counter = getCounter(pin);
+				AtomicInteger counter = listenCounter.get(pin);
 				return counter != null && counter.decrementAndGet() == 0 ? super.stopListening(pin) : -1;
-			}
-
-			private AtomicInteger getCounter(Pin pin) {
-				return listenCounter.get(pin);
 			}
 		};
 	}
 
-	@LapsedWith(module = JDK8, value = "Stream")
 	public static Configurer setChoiceValues(Configurer configurer) {
-		for (String key : configurer.getAttributes()) {
-			ConfigAttribute attribute = configurer.getAttribute(key);
-			if (attribute.hasChoiceValues() && !isConfigured(attribute)) {
-				@LapsedWith(module = JDK8, value = "Optional")
-				Optional<Object> first = getFirst(Arrays.asList(attribute.getChoiceValues()));
-				if (first.isPresent()) {
-					attribute.setValue(first.get());
-				}
-			}
-		}
+		configurer.getAttributes().stream().map(k -> configurer.getAttribute(k))
+				.filter(a -> a.hasChoiceValues() && !isConfigured(a))
+				.forEach(a -> stream(a.getChoiceValues()).findFirst().ifPresent(a::setValue));
 		return configurer;
 	}
 

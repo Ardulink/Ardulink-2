@@ -19,6 +19,7 @@ import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.ardulink.util.anno.LapsedWith;
 
@@ -44,7 +45,7 @@ public final class Classes {
 				return Optional.of((Constructor<T>) constructor);
 			}
 		}
-		return Optional.absent();
+		return Optional.empty();
 	}
 
 }

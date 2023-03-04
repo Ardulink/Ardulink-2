@@ -65,7 +65,7 @@ public class ArdulinkProducer extends DefaultProducer {
 	public void process(Exchange exchange) throws Exception {
 		String body = exchange.getIn().getBody(String.class);
 		FromDeviceMessage fromDevice = getFirst(parse(byteStreamProcessor, byteStreamProcessor.toBytes(body)))
-				.getOrThrow("Could not extract message from body %s", body);
+				.orElseThrow(() -> new IllegalStateException("Could not extract message from body " + body));
 		if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
 			handlePinStateChange((FromDeviceMessagePinStateChanged) fromDevice);
 			setResponse(exchange, body, "OK");
@@ -79,20 +79,16 @@ public class ArdulinkProducer extends DefaultProducer {
 		exchange.getMessage().setBody(bodyIn + "=" + rc);
 	}
 
-	private void handlePinStateChange(FromDeviceMessagePinStateChanged event)
-			throws IOException {
+	private void handlePinStateChange(FromDeviceMessagePinStateChanged event) throws IOException {
 		Pin pin = event.getPin();
 		if (pin.is(ANALOG)) {
-			link.switchAnalogPin(analogPin(pin.pinNum()),
-					Integer.parseInt(String.valueOf(event.getValue())));
+			link.switchAnalogPin(analogPin(pin.pinNum()), Integer.parseInt(String.valueOf(event.getValue())));
 		} else if (pin.is(DIGITAL)) {
-			link.switchDigitalPin(digitalPin(pin.pinNum()),
-					Boolean.parseBoolean(String.valueOf(event.getValue())));
+			link.switchDigitalPin(digitalPin(pin.pinNum()), Boolean.parseBoolean(String.valueOf(event.getValue())));
 		}
 	}
 
-	private void handleListeningStateChange(FromDeviceChangeListeningState event)
-			throws IOException {
+	private void handleListeningStateChange(FromDeviceChangeListeningState event) throws IOException {
 		Pin pin = event.getPin();
 		if (event.getMode() == START) {
 			link.startListening(pin);

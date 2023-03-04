@@ -188,7 +188,7 @@ class ArdulinkComponentTest {
 	}
 
 	@Test
-	void canSetLinkParameters() throws Exception {
+	void canSetLinkParameters() throws Throwable {
 		String a = "foo";
 		String b = "HOURS";
 		String name = "factoryName-" + randomUUID();

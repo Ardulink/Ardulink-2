@@ -15,34 +15,24 @@ limitations under the License.
  */
 package org.ardulink.util;
 
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static java.util.stream.Collectors.joining;
 
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
-import org.ardulink.util.anno.LapsedWith;
-
-@LapsedWith(value = JDK8, module = "BufferedReader#lines/Collectors#joining")
 public final class InputStreams {
 
-	private static final int BUFFER_SIZE = 1024;
+	private static final String lineSeparator = System.getProperty("line.separator");
 
 	private InputStreams() {
 		super();
 	}
 
 	public static String toString(InputStream inputStream) throws IOException {
-		byte[] buffer = new byte[BUFFER_SIZE];
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream(BUFFER_SIZE);
-		try {
-				int bytesRead;
-				while ((bytesRead = inputStream.read(buffer)) != -1) {
-					outputStream.write(buffer, 0, bytesRead);
-				}
-			return outputStream.toString();
-		} finally {
-			outputStream.close();
+		try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+			return bufferedReader.lines().collect(joining(lineSeparator));
 		}
 	}
 

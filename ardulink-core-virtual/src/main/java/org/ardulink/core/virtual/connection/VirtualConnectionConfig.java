@@ -18,7 +18,7 @@ public class VirtualConnectionConfig implements LinkConfig {
 	private String input = "alp://dred/1/1";
 
 	private Protocol useProtoOrFallback(Protocol prefered) {
-		return isAvailable(prefered) ? prefered : getFirst(Protocols.list()).orNull();
+		return isAvailable(prefered) ? prefered : getFirst(Protocols.list()).orElse(null);
 	}
 
 	private boolean isAvailable(Protocol prefered) {

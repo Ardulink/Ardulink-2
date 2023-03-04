@@ -14,9 +14,9 @@ import java.lang.annotation.Retention;
 @Retention(SOURCE)
 public @interface LapsedWith {
 
-	String JDK7 = "JDK7";
 	String JDK8 = "JDK8";
 	String JDK9 = "JDK9";
+	String JDK11 = "JDK11";
 
 	String value();
 

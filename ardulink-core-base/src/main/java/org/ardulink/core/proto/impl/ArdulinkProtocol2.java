@@ -44,6 +44,7 @@ import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceChangeListeningState.Mode;
@@ -68,7 +69,6 @@ import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 import org.ardulink.util.Bytes;
 import org.ardulink.util.MapBuilder;
-import org.ardulink.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -267,7 +267,8 @@ public class ArdulinkProtocol2 implements Protocol {
 			}
 
 			private Pin pin(String string) {
-				Integer pinNumber = tryParse(string).getOrThrow("Cannot parse %s as pin number", string);
+				Integer pinNumber = tryParse(string)
+						.orElseThrow(() -> new IllegalStateException("Cannot parse " + string + " as pin number"));
 				return isAnalog() ? analogPin(pinNumber) : digitalPin(pinNumber);
 			}
 

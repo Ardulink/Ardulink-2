@@ -1,14 +1,12 @@
 package org.ardulink.core.linkmanager.providers;
 
-import static org.ardulink.util.anno.LapsedWith.JDK8;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.util.Lists;
-import org.ardulink.util.anno.LapsedWith;
+import org.junit.jupiter.api.function.Executable;
 
 public class LinkFactoriesProvider4Test implements LinkFactoriesProvider {
 
@@ -20,8 +18,7 @@ public class LinkFactoriesProvider4Test implements LinkFactoriesProvider {
 			this.factories = Arrays.asList(factories);
 		}
 
-		@LapsedWith(module = JDK8, value = "Lambda")
-		public void execute(LinkFactoriesProvider4Test.Statement statement) throws Exception {
+		public void execute(Executable statement) throws Throwable {
 			factories().addAll(factories);
 			try {
 				statement.execute();
@@ -32,9 +29,7 @@ public class LinkFactoriesProvider4Test implements LinkFactoriesProvider {
 		}
 	}
 
-	public static interface Statement {
-		void execute() throws Exception;
-	}
+	
 
 	private static final ThreadLocal<List<LinkFactory>> factories = new ThreadLocal<List<LinkFactory>>() {
 		@Override

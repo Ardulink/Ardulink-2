@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.beans;
 
+import static java.util.Arrays.stream;
 import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
@@ -25,14 +26,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.Attribute.AttributeWriter;
 import org.ardulink.core.beans.Attribute.TypedAttributeProvider;
 import org.ardulink.core.beans.finder.api.AttributeFinder;
-import org.ardulink.util.Optional;
-import org.ardulink.util.Optional.Function;
 import org.ardulink.util.Throwables;
 import org.ardulink.util.anno.LapsedWith;
 
@@ -73,8 +73,7 @@ public class BeanProperties {
 		private final AttributeReader reader;
 		private final AttributeWriter writer;
 
-		public DefaultAttribute(String name, Class<?> type,
-				AttributeReader reader, AttributeWriter writer) {
+		public DefaultAttribute(String name, Class<?> type, AttributeReader reader, AttributeWriter writer) {
 			this.name = name;
 			this.type = type;
 			this.reader = reader;
@@ -126,14 +125,9 @@ public class BeanProperties {
 		}
 
 		@Override
-		@LapsedWith(module = JDK8, value = "Streams")
 		public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-			for (Annotation annotation : getAnnotations()) {
-				if (annotation.annotationType().equals(annotationClass)) {
-					return annotationClass.cast(annotation);
-				}
-			}
-			return null;
+			return stream(getAnnotations()).filter(a -> a.annotationType().equals(annotationClass)).findFirst()
+					.map(annotationClass::cast).orElse(null);
 		}
 
 	}
@@ -158,29 +152,17 @@ public class BeanProperties {
 		try {
 			final Optional<AttributeReader> reader = findReader(name);
 			final Optional<AttributeWriter> writer = findWriter(name);
-			return determineType(reader, writer).map(new Function<Class<?>, Attribute>() {
-				@Override
-				@LapsedWith(module = JDK8, value = "Lambdas")
-				public Attribute apply(Class<?> t) {
-					return new DefaultAttribute(name, t, reader.orNull(), writer.orNull());
-				}
-			}).orNull();
+			return determineType(reader, writer)
+					.map(t -> new DefaultAttribute(name, t, reader.orElse(null), writer.orElse(null))).orElse(null);
 		} catch (Exception e) {
-			throw new RuntimeException(e); 
+			throw new RuntimeException(e);
 		}
 	}
 
-	private static Optional<Class<?>> determineType(
-			Optional<AttributeReader> reader, Optional<AttributeWriter> writer) {
-		@LapsedWith(module = JDK8, value = "Lambdas")
-		Function<TypedAttributeProvider, Class<?>> f = new Function<TypedAttributeProvider, Class<?>>() {
-			@Override
-			public Class<?> apply(TypedAttributeProvider p) {
-				return p.getType();
-			}
-		};
-		Optional<Class<?>> readerType = reader.map(f);
-		Optional<Class<?>> writerType = writer.map(f);
+	private static Optional<Class<?>> determineType(Optional<AttributeReader> reader,
+			Optional<AttributeWriter> writer) {
+		Optional<Class<?>> readerType = reader.map(TypedAttributeProvider::getType);
+		Optional<Class<?>> writerType = writer.map(TypedAttributeProvider::getType);
 		if (!readerType.isPresent()) {
 			return writerType;
 		}
@@ -193,12 +175,11 @@ public class BeanProperties {
 		if (writerType.get().isAssignableFrom(readerType.get())) {
 			return writerType;
 		}
-		return Optional.absent();
+		return Optional.empty();
 	}
 
 	@LapsedWith(module = JDK8, value = "Streams")
-	private Optional<AttributeReader> findReader(String name)
-			throws Exception {
+	private Optional<AttributeReader> findReader(String name) throws Exception {
 		for (AttributeFinder finder : finders) {
 			for (AttributeReader reader : finder.listReaders(bean)) {
 				if (name.equals(reader.getName())) {
@@ -206,12 +187,11 @@ public class BeanProperties {
 				}
 			}
 		}
-		return Optional.absent();
+		return Optional.empty();
 	}
 
 	@LapsedWith(module = JDK8, value = "Streams")
-	private Optional<AttributeWriter> findWriter(String name)
-			throws Exception {
+	private Optional<AttributeWriter> findWriter(String name) throws Exception {
 		for (AttributeFinder finder : finders) {
 			for (AttributeWriter writer : finder.listWriters(bean)) {
 				if (name.equals(writer.getName())) {
@@ -219,7 +199,7 @@ public class BeanProperties {
 				}
 			}
 		}
-		return Optional.absent();
+		return Optional.empty();
 	}
 
 	public Collection<String> attributeNames() {
@@ -236,8 +216,7 @@ public class BeanProperties {
 	}
 
 	@LapsedWith(module = JDK8, value = "Streams")
-	private Collection<String> namesOf(
-			Iterable<? extends TypedAttributeProvider> readers) {
+	private Collection<String> namesOf(Iterable<? extends TypedAttributeProvider> readers) {
 		List<String> names = new ArrayList<String>();
 		for (TypedAttributeProvider reader : readers) {
 			names.add(reader.getName());

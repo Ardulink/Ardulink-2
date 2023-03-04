@@ -16,11 +16,8 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static org.ardulink.util.anno.LapsedWith.JDK8;
-
 import java.util.Collection;
-
-import org.ardulink.util.anno.LapsedWith;
+import java.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -40,27 +37,16 @@ public final class Integers {
 		try {
 			return Optional.of(Integer.valueOf(string));
 		} catch (NumberFormatException e) {
-			return Optional.absent();
+			return Optional.empty();
 		}
 	}
 	
-	@LapsedWith(value = JDK8, module = "IntStream")
 	public static int average(Collection<Integer> values) {
 		return sum(values) / values.size();
 	}
 
-	@LapsedWith(value = JDK8, module = "IntStream")
-	public static int sum(Iterable<Integer> values) {
-		int sum = 0;
-		for (Integer integer : values) {
-			sum += integer;
-		}
-		return sum;
-	}
-
-	@LapsedWith(module = JDK8, value = "Integer#compare")
-	public static int compare(int x, int y) {
-		return (x < y) ? -1 : ((x == y) ? 0 : 1);
+	public static int sum(Collection<Integer> values) {
+		return values.stream().mapToInt(Integer::intValue).sum();
 	}
 
 }

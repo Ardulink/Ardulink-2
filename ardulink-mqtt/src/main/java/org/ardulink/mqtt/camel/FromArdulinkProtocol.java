@@ -35,8 +35,7 @@ public final class FromArdulinkProtocol implements Processor {
 	}
 
 	public FromArdulinkProtocol headerNameForTopic(String headerNameForTopic) {
-		this.headerNameForTopic = checkNotNull(headerNameForTopic,
-				"headerNameForTopic must not be null");
+		this.headerNameForTopic = checkNotNull(headerNameForTopic, "headerNameForTopic must not be null");
 		return this;
 	}
 
@@ -45,9 +44,8 @@ public final class FromArdulinkProtocol implements Processor {
 		Message in = exchange.getIn();
 		FromDeviceMessage deviceMessage = getFirst(
 				parse(byteStreamProcessor, byteStreamProcessor.toBytes(in.getBody(String.class))))
-				.getOrThrow("Cannot handle %s", in);
-		checkState(deviceMessage instanceof FromDeviceMessagePinStateChanged,
-				"Cannot handle %s", in);
+				.orElseThrow(() -> new IllegalStateException("Cannot handle " + in));
+		checkState(deviceMessage instanceof FromDeviceMessagePinStateChanged, "Cannot handle %s", in);
 		handle(in, (FromDeviceMessagePinStateChanged) deviceMessage);
 	}
 
@@ -73,7 +71,5 @@ public final class FromArdulinkProtocol implements Processor {
 		return "FromArdulinkProtocol [protocol=" + byteStreamProcessor + ", topics=" + topics + ", headerNameForTopic="
 				+ headerNameForTopic + "]";
 	}
-	
-	
 
 }

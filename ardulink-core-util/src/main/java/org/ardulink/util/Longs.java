@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import java.util.Optional;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -34,7 +36,7 @@ public final class Longs {
 		try {
 			return Optional.of(Long.valueOf(string));
 		} catch (NumberFormatException e) {
-			return Optional.absent();
+			return Optional.empty();
 		}
 	}
 

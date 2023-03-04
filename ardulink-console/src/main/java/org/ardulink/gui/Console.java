@@ -17,7 +17,7 @@ package org.ardulink.gui;
 
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.ardulink.util.Throwables.getCauses;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -31,7 +31,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -54,8 +53,8 @@ import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.ardulink.gui.serial.SerialMonitor;
 import org.ardulink.legacy.Link;
+import org.ardulink.util.Streams;
 import org.ardulink.util.Throwables;
-import org.ardulink.util.anno.LapsedWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,20 +112,15 @@ public class Console extends JFrame implements Linkable {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			@LapsedWith(module = JDK8, value = "Lambda")
-			@Override
-			public void run() {
-				try {
-					setLookAndFeel("Nimbus");
-					Console frame = new Console();
-					setupExceptionHandler(frame);
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+		EventQueue.invokeLater(() -> {
+			try {
+				setLookAndFeel("Nimbus");
+				Console frame = new Console();
+				setupExceptionHandler(frame);
+				frame.setVisible(true);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-
 		});
 	}
 
@@ -136,35 +130,23 @@ public class Console extends JFrame implements Linkable {
 				try {
 					t.printStackTrace();
 					Throwable rootCause = rootCauseWithMessage(t);
-					JOptionPane.showMessageDialog(console, rootCause.getClass()
-							.getName() + ": " + rootCause.getMessage(),
-							"Error", ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(console,
+							rootCause.getClass().getName() + ": " + rootCause.getMessage(), "Error", ERROR_MESSAGE);
 				} catch (final Throwable t2) {
 					/*
-					 * don't let the Throwable get thrown out, will cause
-					 * infinite looping!
+					 * don't let the Throwable get thrown out, will cause infinite looping!
 					 */
 					t2.printStackTrace();
 				}
 			}
 
-			@LapsedWith(module = JDK8, value = "Stream")
 			private Throwable rootCauseWithMessage(Throwable throwable) {
-				Throwable cause = throwable;
-				for (Iterator<Throwable> causes = Throwables.getCauses(cause); causes
-						.hasNext();) {
-					Throwable next = causes.next();
-					if (next.getMessage() != null) {
-						cause = next;
-					}
-				}
-				return cause;
+				return Streams.getLast(getCauses(throwable).filter(t -> t.getMessage() != null)).orElse(throwable);
 			}
 
 		};
 		Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
-		System.setProperty(
-				"sun.awt.exception.handler", exceptionHandler.getClass().getName()); //$NON-NLS-1$
+		System.setProperty("sun.awt.exception.handler", exceptionHandler.getClass().getName()); //$NON-NLS-1$
 	}
 
 	/**
@@ -242,8 +224,7 @@ public class Console extends JFrame implements Linkable {
 		joystickPanel.add(simplePositionListener(joy2));
 
 		JPanel sensorDigitalPanel = new JPanel();
-		tabbedPane.addTab("Digital Sensor Panel", null, sensorDigitalPanel,
-				null);
+		tabbedPane.addTab("Digital Sensor Panel", null, sensorDigitalPanel, null);
 		sensorDigitalPanel.setLayout(new GridLayout(4, 3, 0, 0));
 
 		for (int pin = 2; pin <= 12; pin++) {
@@ -362,8 +343,7 @@ public class Console extends JFrame implements Linkable {
 		return pwmController;
 	}
 
-	private SimplePositionListener simplePositionListener(
-			ModifiableJoystick joystick) {
+	private SimplePositionListener simplePositionListener(ModifiableJoystick joystick) {
 		SimplePositionListener positionListener = new SimplePositionListener();
 		joystick.addPositionListener(positionListener);
 		return positionListener;
@@ -422,8 +402,7 @@ public class Console extends JFrame implements Linkable {
 		}
 		if (component != btnConnect && component != btnDisconnect) {
 			if (component instanceof Container) {
-				for (Component subComp : ((Container) component)
-						.getComponents()) {
+				for (Component subComp : ((Container) component).getComponents()) {
 					setEnabled(enabled, subComp);
 				}
 			}
@@ -433,11 +412,9 @@ public class Console extends JFrame implements Linkable {
 
 	private void setEnabled(boolean enabled, Component[] components) {
 		for (int i = 0; i < components.length; i++) {
-			if (components[i] instanceof JPanel
-					&& components[i] != connectionPanel) {
+			if (components[i] instanceof JPanel && components[i] != connectionPanel) {
 				components[i].setEnabled(enabled);
-				for (Component component : ((JPanel) components[i])
-						.getComponents()) {
+				for (Component component : ((JPanel) components[i]).getComponents()) {
 					System.out.println(component);
 					component.setEnabled(enabled);
 				}
