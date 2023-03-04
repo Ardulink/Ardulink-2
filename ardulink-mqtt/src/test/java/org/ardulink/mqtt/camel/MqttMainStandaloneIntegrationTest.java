@@ -16,10 +16,8 @@ limitations under the License.
 
 package org.ardulink.mqtt.camel;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.util.ServerSockets.freePort;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.camel.FailedToStartRouteException;
 import org.ardulink.mqtt.CommandLineArguments;
@@ -27,12 +25,9 @@ import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttMain;
 import org.ardulink.util.Strings;
-import org.ardulink.util.anno.LapsedWith;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -42,7 +37,8 @@ import org.junit.rules.Timeout;
  * [adsense]
  *
  */
-public class MqttMainStandaloneIntegrationTest {
+@Timeout(10)
+class MqttMainStandaloneIntegrationTest {
 
 	private final CommandLineArguments args = args();
 	private String brokerUser;
@@ -97,17 +93,14 @@ public class MqttMainStandaloneIntegrationTest {
 		return !Strings.nullOrEmpty(brokerPassword) && brokerPassword != null;
 	}
 
-	@Rule
-	public Timeout timeout = new Timeout(10, SECONDS);
-
 	@Test
-	public void clientCanConnectToNewlyStartedBroker() throws Exception {
+	void clientCanConnectToNewlyStartedBroker() throws Exception {
 		withBrokerPort(freePort());
 		runMain();
 	}
 
 	@Test
-	public void clientCanConnectUsingCredentialsToNewlyStartedBroker() throws Exception {
+	void clientCanConnectUsingCredentialsToNewlyStartedBroker() throws Exception {
 		String user = "someUser";
 		String password = "someSecret";
 		withBrokerPort(freePort()).withBrokerUser(user).withBrokerPassword(password).withClientUser(user)
@@ -116,20 +109,12 @@ public class MqttMainStandaloneIntegrationTest {
 	}
 
 	@Test
-	public void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker() throws Exception {
+	void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker() throws Exception {
 		String user = "someUser";
 		withBrokerPort(freePort()).withBrokerUser(user).withBrokerPassword("theBrokersPassword").withClientUser(user)
 				.withClientPassword("notTheBrokersPassword");
 //		exceptions.expectMessage("CONNECTION_REFUSED_BAD_USERNAME_OR_PASSWORD");
-		@LapsedWith(module = JDK8, value = "Lambda")
-		ThrowingRunnable runnable = new ThrowingRunnable() {
-			@Override
-			public void run() throws Throwable {
-				runMain();
-			}
-		};
-		assertThrows(FailedToStartRouteException.class, runnable);
-
+		assertThrows(FailedToStartRouteException.class, () -> runMain());
 	}
 
 	private void runMain() throws Exception {
@@ -149,10 +134,11 @@ public class MqttMainStandaloneIntegrationTest {
 	}
 
 	@Test
-	@Ignore
+	@Disabled
+
 	// test fails with io.netty.handler.codec.DecoderException:
-	// javax.net.ssl.SSLHandshakeException: no cipher suites in common
-	public void clientCanConnectUsingCredentialsToNewlyStartedSslBroker() throws Exception {
+
+	void clientCanConnectUsingCredentialsToNewlyStartedSslBroker() throws Exception {
 		String user = "someUser";
 		String password = "someSecret";
 		withSsl().withBrokerPort(freePort()).withBrokerUser(user).withBrokerPassword(password).withClientUser(user)

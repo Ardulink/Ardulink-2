@@ -30,15 +30,15 @@ import org.ardulink.util.Joiner;
 import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
 import org.ardulink.util.anno.LapsedWith;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ArdulinkProtocol2Test {
+class ArdulinkProtocol2Test {
 
 	private List<FromDeviceMessage> messages;
 	private String message;
 
 	@Test
-	public void canReadAnalogPinViaArdulinkProto() throws IOException {
+	void canReadAnalogPinViaArdulinkProto() throws IOException {
 		int pin = 42;
 		int value = 21;
 		givenMessage(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
@@ -47,7 +47,7 @@ public class ArdulinkProtocol2Test {
 	}
 
 	@Test
-	public void canReadDigitalPinViaArdulinkProto() throws IOException {
+	void canReadDigitalPinViaArdulinkProto() throws IOException {
 		int pin = 42;
 		boolean value = true;
 		givenMessage(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(value));
@@ -56,7 +56,7 @@ public class ArdulinkProtocol2Test {
 	}
 
 	@Test
-	public void canReadRplyViaArdulinkProto() throws IOException {
+	void canReadRplyViaArdulinkProto() throws IOException {
 		givenMessage("alp://rply/ok?id=1&UniqueID=456-2342-2342&ciao=boo");
 		whenMessageIsProcessed();
 		assertThat(messages.size(), is(1));
@@ -66,7 +66,7 @@ public class ArdulinkProtocol2Test {
 	}
 
 	@Test
-	public void canReadReadyViaArdulinkProto() throws IOException {
+	void canReadReadyViaArdulinkProto() throws IOException {
 		givenMessage("alp://ready/");
 		whenMessageIsProcessed();
 		assertThat(messages.size(), is(1));
@@ -74,7 +74,7 @@ public class ArdulinkProtocol2Test {
 	}
 
 	@Test
-	public void doesRecoverFromMisformedContent() throws IOException {
+	void doesRecoverFromMisformedContent() throws IOException {
 		givenMessages("alp://XXXXXreadyXXXXX/", "alp://ready/");
 		whenMessageIsProcessed();
 		assertThat(messages.size(), is(1));
@@ -82,7 +82,7 @@ public class ArdulinkProtocol2Test {
 	}
 
 	@Test
-	public void ardulinkProtocol2ReceiveCustomEvent() throws IOException {
+	void ardulinkProtocol2ReceiveCustomEvent() throws IOException {
 		givenMessage("alp://cevnt/foo=bar/some=42");
 		whenMessageIsProcessed();
 		assertThat(messages.size(), is(1));
@@ -92,7 +92,7 @@ public class ArdulinkProtocol2Test {
 	}
 
 	@Test
-	public void ardulinkProtocol2ReceiveRply() throws IOException {
+	void ardulinkProtocol2ReceiveRply() throws IOException {
 		long id = 1;
 		Map<String, Object> params = MapBuilder.<String, Object>newMapBuilder().put("UniqueID", "ABC-1234-5678")
 				.put("boo", "ciao").build();

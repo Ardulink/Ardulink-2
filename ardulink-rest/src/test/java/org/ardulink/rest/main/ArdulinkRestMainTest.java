@@ -29,8 +29,8 @@ import java.io.IOException;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.kohsuke.args4j.CmdLineException;
 
 /**
@@ -41,15 +41,15 @@ import org.kohsuke.args4j.CmdLineException;
  * [adsense]
  *
  */
-public class ArdulinkRestMainTest {
+class ArdulinkRestMainTest {
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		port = freePort();
 	}
 
 	@Test
-	public void canParseArgs() throws IOException, CmdLineException {
+	void canParseArgs() throws IOException, CmdLineException {
 		CommandLineArguments args = RestMain
 				.tryParse("-connection", "ardulink://abc", "-bind", "someHost", "-port", "123").get();
 		assertThat(args.connection, is("ardulink://abc"));
@@ -58,7 +58,7 @@ public class ArdulinkRestMainTest {
 	}
 
 	@Test
-	public void canStartMainWithArgs() throws IOException, CmdLineException {
+	void canStartMainWithArgs() throws IOException, CmdLineException {
 		CommandLineArguments args = args();
 		try (RestMain restMain = new RestMain(args); Link mock = getMock(Links.getLink(args.connection))) {
 			int pin = 5;

@@ -22,7 +22,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -32,17 +32,17 @@ import org.junit.Test;
  * [adsense]
  *
  */
-public class ListMultiMapTest {
+class ListMultiMapTest {
 
 	@Test
-	public void iteratorOnEmpty() {
+	void iteratorOnEmpty() {
 		ListMultiMap<Integer, String> sut = new ListMultiMap<Integer, String>();
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();
 		assertThat(iterator.hasNext(), is(false));
 	}
 
 	@Test
-	public void iteratorOnSingleElement() {
+	void iteratorOnSingleElement() {
 		ListMultiMap<Integer, String> sut = new ListMultiMap<Integer, String>();
 		sut.put(1, "foo");
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();
@@ -54,7 +54,7 @@ public class ListMultiMapTest {
 	}
 
 	@Test
-	public void iteratorOnCollisionElement() {
+	void iteratorOnCollisionElement() {
 		ListMultiMap<Integer, String> sut = new ListMultiMap<Integer, String>();
 		sut.put(1, "foo");
 		sut.put(1, "bar");

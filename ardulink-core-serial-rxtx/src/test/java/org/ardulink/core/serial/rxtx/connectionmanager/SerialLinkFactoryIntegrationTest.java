@@ -19,22 +19,19 @@ package org.ardulink.core.serial.rxtx.connectionmanager;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.ardulink.util.Lists.newArrayList;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.util.URIs;
-import org.ardulink.util.anno.LapsedWith;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -45,11 +42,11 @@ import org.junit.function.ThrowingRunnable;
  *
  */
 // because JNI dependent
-@Ignore
-public class SerialLinkFactoryIntegrationTest {
+@Disabled
+class SerialLinkFactoryIntegrationTest {
 
 	@Test
-	public void canConfigureSerialConnectionViaURI() throws Exception {
+	void canConfigureSerialConnectionViaURI() throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager
 				.getConfigurer(URIs.newURI("ardulink://serial?port=anyString&baudrate=9600"));
@@ -57,7 +54,7 @@ public class SerialLinkFactoryIntegrationTest {
 	}
 
 	@Test
-	public void canConfigureSerialConnectionViaConfigurer() {
+	void canConfigureSerialConnectionViaConfigurer() {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(URIs.newURI("ardulink://serial"));
 
@@ -79,46 +76,31 @@ public class SerialLinkFactoryIntegrationTest {
 		port.setValue("anyString");
 		baudrate.setValue(115200);
 	}
-	
+
 	@Test
-	public void cantConnectWithoutPort() {
+	void cantConnectWithoutPort() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		final Configurer configurer = connectionManager
-				.getConfigurer(URIs.newURI("ardulink://serial?baudrate=9600"));
-		
+		Configurer configurer = connectionManager.getConfigurer(URIs.newURI("ardulink://serial?baudrate=9600"));
+
 		ConfigAttribute searchport = configurer.getAttribute("searchport");
 		assertEquals(searchport.getValue(), FALSE);
 
-		@LapsedWith(module = JDK8, value = "Lambda")
-		ThrowingRunnable runnable = new ThrowingRunnable() {
-			@Override
-			public void run() throws Throwable {
-				configurer.newLink();
-			}
-		};
-		assertThrows(IllegalStateException.class, runnable);
+		assertThrows(IllegalStateException.class, () -> configurer.newLink());
 	}
 
 	@Test
-	public void canConnectWithoutPortButSearchEnabled() {
+	void canConnectWithoutPortButSearchEnabled() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		final Configurer configurer = connectionManager
+		Configurer configurer = connectionManager
 				.getConfigurer(URIs.newURI("ardulink://serial?searchport=true&baudrate=9600&pingprobe=false"));
-		
+
 		ConfigAttribute searchport = configurer.getAttribute("searchport");
 		assertEquals(searchport.getValue(), TRUE);
-		
+
 		// if there aren't devices connected an exception is thrown
 		ConfigAttribute port = configurer.getAttribute("port");
 		if (port.getChoiceValues().length == 0) {
-			@LapsedWith(module = JDK8, value = "Lambda")
-			RuntimeException exception = assertThrows(RuntimeException.class, new ThrowingRunnable() {
-				@Override
-				public void run() throws Throwable {
-					configurer.newLink();
-				}
-			});
-			assertThat(exception.getMessage(), is("no port found"));
+			assertThat(assertThrows(RuntimeException.class, () -> configurer.newLink()).getMessage(), is("no port found"));
 		} else {
 			assertNotNull(configurer.newLink());
 		}

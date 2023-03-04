@@ -14,7 +14,6 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LI
 import static org.ardulink.util.ServerSockets.freePort;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -32,47 +31,55 @@ import org.ardulink.mqtt.MqttCamelRouteBuilder;
 import org.ardulink.mqtt.MqttCamelRouteBuilder.MqttConnectionProperties;
 import org.ardulink.mqtt.Topics;
 import org.ardulink.mqtt.util.AnotherMqttClient;
+import org.ardulink.mqtt.util.AnotherMqttClient.Builder;
 import org.ardulink.util.Throwables;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
-public class MqttOnCamelMqttToLinkIntegrationTest {
+class MqttOnCamelMqttToLinkIntegrationTest {
+
+	private static class TestConfig {
+
+		private final String name;
+		private final Builder mqttClientBuilder;
+		private final Topics topics;
+
+		public TestConfig(String name, Builder mqttClientBuilder, Topics topics) {
+			this.name = name;
+			this.mqttClientBuilder = mqttClientBuilder;
+			this.topics = topics;
+		}
+
+		@Override
+		public String toString() {
+			return name;
+		}
+
+	}
 
 	private static final String MOCK = "mock:result";
 
 	private static final String TOPIC = "any/topic-" + System.currentTimeMillis();
 
-	private final AnotherMqttClient mqttClient;
-
-	private final MqttBroker broker;
-
-	private final Topics topics;
+	private MqttBroker broker;
+	private AnotherMqttClient mqttClient;
+	private Topics topics;
 
 	private CamelContext context;
 
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] { sameTopic(), separateTopics() });
+	private static List<TestConfig> data() {
+		return Arrays.asList(
+				new TestConfig("sameTopic", AnotherMqttClient.builder().topic(TOPIC), Topics.basedOn(TOPIC)), //
+				new TestConfig("separateTopics", AnotherMqttClient.builder().topic(TOPIC).appendValueSet(true),
+						Topics.withSeparateReadWriteTopics(TOPIC)) //
+		);
 	}
 
-	private static Object[] sameTopic() {
-		return new Object[] { "sameTopic", AnotherMqttClient.builder().topic(TOPIC), Topics.basedOn(TOPIC) };
-	}
-
-	private static Object[] separateTopics() {
-		return new Object[] { "separateTopics", AnotherMqttClient.builder().topic(TOPIC).appendValueSet(true),
-				Topics.withSeparateReadWriteTopics(TOPIC) };
-	}
-
-	public MqttOnCamelMqttToLinkIntegrationTest(String description, AnotherMqttClient.Builder mqttClientBuilder,
-			Topics topics) {
+	public void init(TestConfig config) {
 		this.broker = MqttBroker.builder().port(freePort()).startBroker();
-		this.mqttClient = mqttClientBuilder.host(brokerHost()).port(brokerPort()).connect();
-		this.topics = topics;
+		this.mqttClient = config.mqttClientBuilder.host(brokerHost()).port(brokerPort()).connect();
+		this.topics = config.topics;
 	}
 
 	private String brokerHost() {
@@ -83,8 +90,8 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		return this.broker.getPort();
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@AfterEach
+	void tearDown() throws Exception {
 		mqttClient.close();
 		if (context != null) {
 			context.stop();
@@ -92,16 +99,20 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		broker.close();
 	}
 
-	@Test
-	public void canSwitchPins() throws Exception {
+	@ParameterizedTest(name = "{index} {0}")
+	@MethodSource("data")
+	void canSwitchPins(TestConfig config) throws Exception {
+		init(config);
 		testAnalog(analogPin(2), 123);
 		testAnalog(analogPin(2), 245);
 		testDigital(digitalPin(3), false);
 		testDigital(digitalPin(3), true);
 	}
 
-	@Test
-	public void canEnableAnalogListening() throws Exception {
+	@ParameterizedTest(name = "{index} {0}")
+	@MethodSource("data")
+	void canEnableAnalogListening(TestConfig config) throws Exception {
+		init(config);
 		context = camelContext(topics.withControlChannelEnabled());
 		int anyPinNumber = anyPinNumber();
 		mqttClient.startListenig(analogPin(anyPinNumber));
@@ -110,8 +121,10 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		out.assertIsSatisfied();
 	}
 
-	@Test
-	public void canEnableDigitalListening() throws Exception {
+	@ParameterizedTest(name = "{index} {0}")
+	@MethodSource("data")
+	void canEnableDigitalListening(TestConfig config) throws Exception {
+		init(config);
 		context = camelContext(topics.withControlChannelEnabled());
 		int anyPinNumber = anyPinNumber();
 		mqttClient.startListenig(digitalPin(anyPinNumber));
@@ -120,8 +133,10 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		out.assertIsSatisfied();
 	}
 
-	@Test
-	public void canDisableAnalogListening() throws Exception {
+	@ParameterizedTest(name = "{index} {0}")
+	@MethodSource("data")
+	void canDisableAnalogListening(TestConfig config) throws Exception {
+		init(config);
 		context = camelContext(topics.withControlChannelEnabled());
 		int anyPinNumber = anyPinNumber();
 		mqttClient.stopListenig(analogPin(anyPinNumber));
@@ -130,8 +145,10 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		out.assertIsSatisfied();
 	}
 
-	@Test
-	public void canDisableDigitalListening() throws Exception {
+	@ParameterizedTest(name = "{index} {0}")
+	@MethodSource("data")
+	void canDisableDigitalListening(TestConfig config) throws Exception {
+		init(config);
 		context = camelContext(topics.withControlChannelEnabled());
 		int anyPinNumber = anyPinNumber();
 		mqttClient.stopListenig(digitalPin(anyPinNumber));
@@ -140,15 +157,19 @@ public class MqttOnCamelMqttToLinkIntegrationTest {
 		out.assertIsSatisfied();
 	}
 
-	@Test
-	public void doesNotEnableAnalogListening_WhenControlChannelInsNOTenabled() throws Exception {
+	@ParameterizedTest(name = "{index} {0}")
+	@MethodSource("data")
+	void doesNotEnableAnalogListening_WhenControlChannelInsNOTenabled(TestConfig config) throws Exception {
+		init(config);
 		context = camelContext(topics);
 		mqttClient.startListenig(analogPin(anyPinNumber()));
 		assertNoMessage(getMockEndpoint());
 	}
 
-	@Test
-	public void doesNotEnableDigitalListening_WhenControlChannelInsNOTenabled() throws Exception {
+	@ParameterizedTest(name = "{index} {0}")
+	@MethodSource("data")
+	void doesNotEnableDigitalListening_WhenControlChannelInsNOTenabled(TestConfig config) throws Exception {
+		init(config);
 		context = camelContext(topics);
 		mqttClient.startListenig(digitalPin(anyPinNumber()));
 		assertNoMessage(getMockEndpoint());

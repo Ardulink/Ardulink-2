@@ -18,16 +18,13 @@ package org.ardulink.util;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.ardulink.util.anno.LapsedWith;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
+import org.junit.jupiter.api.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -37,109 +34,78 @@ import org.junit.function.ThrowingRunnable;
  * [adsense]
  *
  */
-public class OptionalTest {
+class OptionalTest {
 
 	@Test
-	public void optionalFromNullableWithNullValueIsNotPresent() {
+	void optionalFromNullableWithNullValueIsNotPresent() {
 		assertThat(Optional.ofNullable(null).isPresent(), is(FALSE));
 	}
 
 	@Test
-	public void optionalFromNullableWithNonNullValueIsPresent() {
+	void optionalFromNullableWithNonNullValueIsPresent() {
 		assertThat(Optional.ofNullable("foo").isPresent(), is(TRUE));
 	}
 
 	@Test
-	public void getOnNonPresentOptionalThrowsRTE() {
-		@LapsedWith(module = JDK8, value = "Lambda")
-		ThrowingRunnable runnable = new ThrowingRunnable() {
-			@Override
-			public void run() throws Throwable {
-				Optional.ofNullable(null).get();
-			}
-		};
-		assertThrows(RuntimeException.class, runnable);
+	void getOnNonPresentOptionalThrowsRTE() {
+		assertThrows(RuntimeException.class, () -> Optional.ofNullable(null).get());
 	}
 
 	@Test
-	public void getOnPresentOptionalReturnsObject() {
+	void getOnPresentOptionalReturnsObject() {
 		assertThat(Optional.ofNullable("foo").get(), is("foo"));
 	}
 
 	@Test
-	public void canCreateInstanceWithNonNullValue() {
+	void canCreateInstanceWithNonNullValue() {
 		assertThat(Optional.of("foo").get(), is("foo"));
 	}
 
 	@Test
-	public void callingOfWithNullValueThrowsRTE() {
-		@LapsedWith(module = JDK8, value = "Lambda")
-		ThrowingRunnable runnable = new ThrowingRunnable() {
-			@Override
-			public void run() throws Throwable {
-				Optional.of(null);
-			}
-		};
-		assertThrows(RuntimeException.class, runnable);
-
+	void callingOfWithNullValueThrowsRTE() {
+		assertThrows(RuntimeException.class, () -> Optional.of(null));
 	}
 
 	@Test
-	public void doesReturnExistingValueIfQueryingAlternative() {
+	void doesReturnExistingValueIfQueryingAlternative() {
 		assertThat(Optional.ofNullable("foo").orElse("bar"), is("foo"));
 	}
 
 	@Test
-	public void doesReturnAlternativeIfQueryingAlternative() {
-		assertThat(Optional.<String> absent().orElse("bar"), is("bar"));
+	void doesReturnAlternativeIfQueryingAlternative() {
+		assertThat(Optional.<String>absent().orElse("bar"), is("bar"));
 	}
 
 	@Test
-	public void getOrThrowThrowsIllegalStateExceptionOnAbsentOptionals() {
-		@LapsedWith(module = JDK8, value = "Lambda")
-		IllegalStateException exception = assertThrows(IllegalStateException.class, new ThrowingRunnable() {
-			@Override
-			public void run() throws Throwable {
-				Optional.<String> absent().getOrThrow("exception text");
-			}
-		});
-		assertThat(exception.getMessage(), is("exception text"));
+	void getOrThrowThrowsIllegalStateExceptionOnAbsentOptionals() {
+		String text = "exception text";
+		assertThat(assertThrows(IllegalStateException.class, () -> Optional.<String>absent().getOrThrow(text))
+				.getMessage(), is(text));
 	}
 
 	@Test
-	public void getOrThrowReturnsValueOnPresentOptionals() {
+	void getOrThrowReturnsValueOnPresentOptionals() {
 		assertThat(Optional.of("foo").getOrThrow("exception text"), is("foo"));
 	}
 
 	@Test
-	public void canThrowIndividualExceptions() {
-		@LapsedWith(module = JDK8, value = "Lambda")
-		RuntimeException exception = assertThrows(RuntimeException.class, new ThrowingRunnable() {
-			@Override
-			public void run() throws Throwable {
-				Optional.<String> absent().getOrThrow(IllegalArgumentException.class,
-						"exception text");
-			}
-		});
-		assertThat(exception.getMessage(), is("exception text"));
+	void canThrowIndividualExceptions() {
+		String text = "exception text";
+		assertThat(
+				assertThrows(RuntimeException.class,
+						() -> Optional.<String>absent().getOrThrow(IllegalArgumentException.class, text)).getMessage(),
+				is(text));
 	}
 
 	@Test
-	public void doesBreakWithNiceMessageIfExceptionClassDoesNotHaveAstringConstructor() {
+	void doesBreakWithNiceMessageIfExceptionClassDoesNotHaveAstringConstructor() {
 		class MyRTEWithoutAstringConstructor extends RuntimeException {
 			private static final long serialVersionUID = 1L;
 		}
-		@LapsedWith(module = JDK8, value = "Lambda")
-		RuntimeException exception = assertThrows(RuntimeException.class, new ThrowingRunnable() {
-			@Override
-			public void run() throws Throwable {
-				Optional.<String> absent().getOrThrow(
-						MyRTEWithoutAstringConstructor.class,
-						"no matter what typed here");
-			}
-		});
-		assertThat(exception.getMessage(), is(allOf(
-				containsString(MyRTEWithoutAstringConstructor.class.getName()),
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> Optional.<String>absent()
+				.getOrThrow(MyRTEWithoutAstringConstructor.class, "no matter what typed here"));
+		assertThat(exception.getMessage(), is(allOf(containsString(MyRTEWithoutAstringConstructor.class.getName()),
 				containsString("not"), containsString("String constructor"))));
 	}
+
 }

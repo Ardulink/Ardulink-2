@@ -28,7 +28,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -46,8 +46,8 @@ import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.Statem
 import org.ardulink.core.linkmanager.viaservices.AlLinkWithoutArealLinkFactoryWithConfig;
 import org.ardulink.core.linkmanager.viaservices.AlLinkWithoutArealLinkFactoryWithoutConfig;
 import org.ardulink.util.anno.LapsedWith;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -84,7 +84,7 @@ public class LinkManagerTest {
 	LinkManager sut = LinkManager.getInstance();
 
 	@Test
-	public void onceQueriedChoiceValuesStayValid() throws Exception {
+	void onceQueriedChoiceValuesStayValid() throws Exception {
 		Configurer configurer = sut.getConfigurer(newURI("ardulink://dummyLink"));
 
 		choiceValuesOfDNowAre("x", "y");
@@ -108,23 +108,23 @@ public class LinkManagerTest {
 	}
 
 	@Test
-	public void canLoadViaMetaInfServicesArdulinkLinkfactoryWithoutConfig() {
+	void canLoadViaMetaInfServicesArdulinkLinkfactoryWithoutConfig() {
 		Link link = sut.getConfigurer(newURI("ardulink://aLinkWithoutArealLinkFactoryWithoutConfig")).newLink();
 		assertThat(link, is(instanceOf(AlLinkWithoutArealLinkFactoryWithoutConfig.class)));
 	}
 
 	@Test
-	public void canLoadViaMetaInfServicesArdulinkLinkfactoryWithConfig() {
+	void canLoadViaMetaInfServicesArdulinkLinkfactoryWithConfig() {
 		Link link = sut.getConfigurer(newURI("ardulink://aLinkWithoutArealLinkFactoryWithConfig")).newLink();
 		assertThat(link, is(instanceOf(AlLinkWithoutArealLinkFactoryWithConfig.class)));
 	}
 
 	@Test
-	public void nonExistingNameWitllThrowRTE() throws IOException {
+	void nonExistingNameWitllThrowRTE() throws IOException {
 		@LapsedWith(module = JDK8, value = "Lambda")
-		RuntimeException exception = assertThrows(RuntimeException.class, new ThrowingRunnable() {
+		RuntimeException exception = assertThrows(RuntimeException.class, new Executable() {
 			@Override
-			public void run() throws Throwable {
+			public void execute() throws Throwable {
 				sut.getConfigurer(newURI("ardulink://XXX-aNameThatIsNotRegistered-XXX"));
 			}
 		});
@@ -132,7 +132,7 @@ public class LinkManagerTest {
 	}
 
 	@Test
-	public void canLoadDummyLinkViaAlias() throws Exception {
+	void canLoadDummyLinkViaAlias() throws Exception {
 		withRegistered(new AliasUsingLinkFactory()).execute(new Statement() {
 			@Override
 			public void execute() {
@@ -142,7 +142,7 @@ public class LinkManagerTest {
 	}
 
 	@Test
-	public void aliasNameNotListed() throws Exception {
+	void aliasNameNotListed() throws Exception {
 		withRegistered(new AliasUsingLinkFactory()).execute(new Statement() {
 			@Override
 			public void execute() {
@@ -154,7 +154,7 @@ public class LinkManagerTest {
 	}
 
 	@Test
-	public void nameHasPriorityOverAlias() throws Exception {
+	void nameHasPriorityOverAlias() throws Exception {
 		AliasUsingLinkFactory factory = new AliasUsingLinkFactory();
 		final String dummyLinkFactoryName = new DummyLinkFactory().getName();
 		assert aliasNames(factory).contains(dummyLinkFactoryName);

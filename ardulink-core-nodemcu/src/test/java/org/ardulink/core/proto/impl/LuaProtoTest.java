@@ -34,9 +34,9 @@ import org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.util.Joiner;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class LuaProtoTest {
+class LuaProtoTest {
 
 	private final ByteStreamProcessor sut = LuaProtocol.instance().newByteStreamProcessor();
 
@@ -45,43 +45,35 @@ public class LuaProtoTest {
 	private final int anyValue = anyIntValue();
 
 	@Test
-	public void generatePowerPinSwitchMessageHigh() {
-		ToDeviceMessagePinStateChange msg = new DefaultToDeviceMessagePinStateChange(
-				anyDigitalPin, true);
-		assertThat(stringOf(sut.toDevice(msg)),
-				is(lua(powerPinMessage(anyDigitalPin.pinNum(), "HIGH"))));
+	void generatePowerPinSwitchMessageHigh() {
+		ToDeviceMessagePinStateChange msg = new DefaultToDeviceMessagePinStateChange(anyDigitalPin, true);
+		assertThat(stringOf(sut.toDevice(msg)), is(lua(powerPinMessage(anyDigitalPin.pinNum(), "HIGH"))));
 	}
 
 	@Test
-	public void generatePowerPinSwitchMessageLow() {
-		ToDeviceMessagePinStateChange msg = new DefaultToDeviceMessagePinStateChange(
-				anyDigitalPin, false);
-		assertThat(stringOf(sut.toDevice(msg)),
-				is(lua(powerPinMessage(anyDigitalPin.pinNum(), "LOW"))));
+	void generatePowerPinSwitchMessageLow() {
+		ToDeviceMessagePinStateChange msg = new DefaultToDeviceMessagePinStateChange(anyDigitalPin, false);
+		assertThat(stringOf(sut.toDevice(msg)), is(lua(powerPinMessage(anyDigitalPin.pinNum(), "LOW"))));
 	}
 
 	@Test
-	public void generatePowerPinIntensityMessage() {
-		ToDeviceMessagePinStateChange msg = new DefaultToDeviceMessagePinStateChange(
-				anyAnalogPin, anyValue);
-		assertThat(stringOf(sut.toDevice(msg)),
-				is(lua(pinStateChangeMessage(anyAnalogPin.pinNum(), anyValue))));
+	void generatePowerPinIntensityMessage() {
+		ToDeviceMessagePinStateChange msg = new DefaultToDeviceMessagePinStateChange(anyAnalogPin, anyValue);
+		assertThat(stringOf(sut.toDevice(msg)), is(lua(pinStateChangeMessage(anyAnalogPin.pinNum(), anyValue))));
 	}
 
 	@Test
-	public void generateCustomMessage() {
+	void generateCustomMessage() {
 		String[] values = new String[] { "param1", "somethingelse2", "final3" };
 		ToDeviceMessageCustom msg = new DefaultToDeviceMessageCustom(values);
 		assertThat(stringOf(sut.toDevice(msg)), is(lua(customMessage(values))));
 	}
 
 	@Test
-	public void generateStartListeningDigitalMessage() {
+	void generateStartListeningDigitalMessage() {
 		DigitalPin pin = digitalPin(anyPin());
-		ToDeviceMessageStartListening msg = new DefaultToDeviceMessageStartListening(
-				pin);
-		assertThat(stringOf(sut.toDevice(msg)), containsString("alp://dred/"
-				+ pin.pinNum() + "/%s"));
+		ToDeviceMessageStartListening msg = new DefaultToDeviceMessageStartListening(pin);
+		assertThat(stringOf(sut.toDevice(msg)), containsString("alp://dred/" + pin.pinNum() + "/%s"));
 	}
 
 	private String stringOf(byte[] bytes) {
@@ -93,15 +85,11 @@ public class LuaProtoTest {
 	}
 
 	private static String powerPinMessage(int pin, String state) {
-		return String.format(
-				"gpio.mode(%s,gpio.OUTPUT) gpio.write(%s,gpio.%s)", pin, pin,
-				state);
+		return String.format("gpio.mode(%s,gpio.OUTPUT) gpio.write(%s,gpio.%s)", pin, pin, state);
 	}
 
 	private static String pinStateChangeMessage(int pin, int value) {
-		return String.format(
-				"pwm.setup(%s,1000,1023) pwm.start(%s) pwm.setduty(%s,%s)",
-				pin, pin, pin, value);
+		return String.format("pwm.setup(%s,1000,1023) pwm.start(%s) pwm.setduty(%s,%s)", pin, pin, pin, value);
 	}
 
 	private String customMessage(String[] values) {

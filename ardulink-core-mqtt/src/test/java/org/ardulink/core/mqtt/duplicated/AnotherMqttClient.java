@@ -20,7 +20,6 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
-import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -43,7 +42,9 @@ import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.Topic;
 import org.hamcrest.Matcher;
-import org.junit.rules.ExternalResource;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 // TODO create a Mqtt test package and move AnotherMQttClient, ... to it
 // TODO create a @MqttBroker Rule
@@ -55,7 +56,7 @@ import org.junit.rules.ExternalResource;
  * [adsense]
  *
  */
-public class AnotherMqttClient extends ExternalResource {
+public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback {
 
 	private final MQTT mqttClient;
 	private FutureConnection connection;
@@ -89,14 +90,13 @@ public class AnotherMqttClient extends ExternalResource {
 	protected static MQTT mqttClient(String host, int port) {
 		MQTT client = new MQTT();
 		client.setCleanSession(true);
-		client.setClientId("amc-" + Thread.currentThread().getId() + "-"
-				+ System.currentTimeMillis());
+		client.setClientId("amc-" + Thread.currentThread().getId() + "-" + System.currentTimeMillis());
 		client.setHost(URIs.newURI("tcp://" + host + ":" + port));
 		return client;
 	}
 
 	@Override
-	protected void before() throws Throwable {
+	public void beforeEach(ExtensionContext context) throws IOException {
 		connect();
 	}
 
@@ -108,10 +108,8 @@ public class AnotherMqttClient extends ExternalResource {
 			public void run() {
 				while (true) {
 					try {
-						org.fusesource.mqtt.client.Message message = exec(connection
-								.receive());
-						messages.add(new Message(message.getTopic(),
-								new String(message.getPayload())));
+						org.fusesource.mqtt.client.Message message = exec(connection.receive());
+						messages.add(new Message(message.getTopic(), new String(message.getPayload())));
 						message.ack();
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
@@ -120,8 +118,7 @@ public class AnotherMqttClient extends ExternalResource {
 				}
 			}
 		}.start();
-		exec(connection
-				.subscribe(new Topic[] { new Topic("#", AT_LEAST_ONCE) }));
+		exec(connection.subscribe(new Topic[] { new Topic("#", AT_LEAST_ONCE) }));
 		return this;
 	}
 
@@ -147,8 +144,7 @@ public class AnotherMqttClient extends ExternalResource {
 	}
 
 	public void switchPin(Pin pin, Object value) throws IOException {
-		sendMessage(new Message(append(this.topic + typeMap.get(pin.getType())
-				+ pin.pinNum()), String.valueOf(value)));
+		sendMessage(new Message(append(this.topic + typeMap.get(pin.getType()) + pin.pinNum()), String.valueOf(value)));
 	}
 
 	private String append(String message) {
@@ -156,17 +152,12 @@ public class AnotherMqttClient extends ExternalResource {
 	}
 
 	private void sendMessage(final Message message) throws IOException {
-		exec(connection.publish(message.getTopic(), message.getMessage()
-				.getBytes(), AT_LEAST_ONCE, false));
+		exec(connection.publish(message.getTopic(), message.getMessage().getBytes(), AT_LEAST_ONCE, false));
 	}
 
 	@Override
-	protected void after() {
-		try {
-			close();
-		} catch (IOException e) {
-			throw propagate(e);
-		}
+	public void afterEach(ExtensionContext context) throws IOException {
+		close();
 	}
 
 	public void close() throws IOException {

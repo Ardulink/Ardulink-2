@@ -33,7 +33,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.ardulink.util.Lists;
-import org.junit.rules.ExternalResource;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +47,7 @@ import org.slf4j.LoggerFactory;
  * [adsense]
  *
  */
-public class ProxyServerDouble extends ExternalResource {
+public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback{
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(ProxyServerDouble.class);
@@ -102,13 +104,14 @@ public class ProxyServerDouble extends ExternalResource {
 		};
 	}
 
+	
 	@Override
-	protected void before() {
+	public void beforeEach(ExtensionContext context) {
 		this.thread.start();
 	}
 
 	@Override
-	protected void after() {
+	public void afterEach(ExtensionContext context) {
 		this.thread.interrupt();
 		try {
 			this.serverSocket.close();
@@ -119,7 +122,7 @@ public class ProxyServerDouble extends ExternalResource {
 	
 	public static void main(String[] args) throws InterruptedException {
 		ProxyServerDouble serverDouble = new ProxyServerDouble(newSocket(4478));
-		serverDouble.before();
+		serverDouble.beforeEach(null);
 		serverDouble.thread.join();
 	}
 

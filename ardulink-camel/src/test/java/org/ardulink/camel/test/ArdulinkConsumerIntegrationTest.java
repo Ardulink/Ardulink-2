@@ -16,14 +16,14 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Link;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ArdulinkConsumerIntegrationTest {
+class ArdulinkConsumerIntegrationTest {
 
 	private static final String OUT = "mock:result";
 
 	@Test
-	public void messageIsSentOnAnalogPinChange() throws Exception {
+	void messageIsSentOnAnalogPinChange() throws Exception {
 		int pin = 2;
 		int value = 42;
 		try (Link link = createAbstractListenerLink(analogPinValueChanged(analogPin(pin), value));
@@ -35,7 +35,7 @@ public class ArdulinkConsumerIntegrationTest {
 	}
 
 	@Test
-	public void messageIsSentOnDigitalPinChange() throws Exception {
+	void messageIsSentOnDigitalPinChange() throws Exception {
 		int pin = 3;
 		boolean state = true;
 		try (Link link = createAbstractListenerLink(digitalPinValueChanged(digitalPin(pin), state));

@@ -6,19 +6,19 @@ import static java.lang.Boolean.TRUE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assumptions.*;
 import static org.mockito.Mockito.mock;
 
 import org.ardulink.legacy.Link;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ConsoleTest {
+class ConsoleTest {
 
 	private final Link connectLink = mock(Link.class);
 
 	@Test
-	public void whenStartedConnectIsEnabledAndDisconnnectIsDisabled() {
-		assumeThat(isHeadless(), is(FALSE));
+	void whenStartedConnectIsEnabledAndDisconnnectIsDisabled() {
+		assumeFalse(isHeadless());
 		Console console = newConsole();
 		assertThat(console.getLink(), is(nullValue()));
 		assertThat(console.btnConnect.isEnabled(), is(TRUE));
@@ -26,8 +26,8 @@ public class ConsoleTest {
 	}
 
 	@Test
-	public void whenConnectButtonIsClickedLinkIsExchangedAndPopertyChangeEventsIsFired() {
-		assumeThat(isHeadless(), is(FALSE));
+	void whenConnectButtonIsClickedLinkIsExchangedAndPopertyChangeEventsIsFired() {
+		assumeFalse(isHeadless());
 		Console console = newConsole();
 		console.btnConnect.doClick();
 
@@ -37,8 +37,8 @@ public class ConsoleTest {
 	}
 
 	@Test
-	public void whenDisconnectButtonIsClickedLinkIsExchangedAndPopertyChangeEventsIsFired() {
-		assumeThat(isHeadless(), is(FALSE));
+	void whenDisconnectButtonIsClickedLinkIsExchangedAndPopertyChangeEventsIsFired() {
+		assumeFalse(isHeadless());
 		Console console = newConsole();
 		console.btnConnect.doClick();
 		console.btnDisconnect.doClick();

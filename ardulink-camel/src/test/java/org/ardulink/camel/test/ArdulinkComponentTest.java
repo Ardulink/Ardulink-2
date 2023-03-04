@@ -32,13 +32,13 @@ import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-public class ArdulinkComponentTest {
+class ArdulinkComponentTest {
 
 	private static final String IN = "direct:in";
 
@@ -48,48 +48,48 @@ public class ArdulinkComponentTest {
 
 	private CamelContext context;
 
-	@Before
-	public void setup() throws Exception {
+	@BeforeEach
+	void setup() throws Exception {
 		context = camelContext(IN, MOCK_URI);
 		link = Links.getLink(MOCK_URI);
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@AfterEach
+	void tearDown() throws Exception {
 		link.close();
 		context.stop();
 	}
 
 	@Test
-	public void canSwitchDigitalPin2On() throws Exception {
+	void canSwitchDigitalPin2On() throws Exception {
 		testDigital(digitalPin(2), true);
 	}
 
 	@Test
-	public void canSwitchDigitalPin2Off() throws Exception {
+	void canSwitchDigitalPin2Off() throws Exception {
 		testDigital(digitalPin(2), false);
 	}
 
 	@Test
-	public void canSwitchDigitalPin3() throws Exception {
+	void canSwitchDigitalPin3() throws Exception {
 		testDigital(digitalPin(3), true);
 	}
 
 	@Test
-	public void canSwitchAnalogPin3() throws Exception {
+	void canSwitchAnalogPin3() throws Exception {
 		testAnalog(analogPin(5), 123);
 	}
 
 	@Test
-	@Ignore
-	public void ignoresNegativeValues() {
+	@Disabled
+	void ignoresNegativeValues() {
 		send(alpProtocolMessage(ANALOG_PIN_READ).forPin(analogPin(6).pinNum()).withValue(-1));
 		Link mock = getMock(link);
 		verifyNoMoreInteractions(mock);
 	}
 
 	@Test
-	public void canEnableAnalogListening() throws Exception {
+	void canEnableAnalogListening() throws Exception {
 		send(alpProtocolMessage(START_LISTENING_ANALOG).forPin(analogPin(6).pinNum()).withoutValue());
 		Link mock = getMock(link);
 		verify(mock).startListening(analogPin(6));
@@ -97,7 +97,7 @@ public class ArdulinkComponentTest {
 	}
 
 	@Test
-	public void canEnableDigitalListening() throws Exception {
+	void canEnableDigitalListening() throws Exception {
 		send(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(digitalPin(7).pinNum()).withoutValue());
 		Link mock = getMock(link);
 		verify(mock).startListening(digitalPin(7));
@@ -105,7 +105,7 @@ public class ArdulinkComponentTest {
 	}
 
 	@Test
-	public void canDisableAnalogListening() throws Exception {
+	void canDisableAnalogListening() throws Exception {
 		send(alpProtocolMessage(START_LISTENING_ANALOG).forPin(6).withoutValue());
 		send(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(6).withoutValue());
 		Link mock = getMock(link);
@@ -115,7 +115,7 @@ public class ArdulinkComponentTest {
 	}
 
 	@Test
-	public void canDisableDigitalListening() throws Exception {
+	void canDisableDigitalListening() throws Exception {
 		send(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(7).withoutValue());
 		send(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(7).withoutValue());
 		Link mock = getMock(link);
@@ -188,7 +188,7 @@ public class ArdulinkComponentTest {
 	}
 
 	@Test
-	public void canSetLinkParameters() throws Exception {
+	void canSetLinkParameters() throws Exception {
 		String a = "foo";
 		String b = "HOURS";
 		String name = "factoryName-" + randomUUID();

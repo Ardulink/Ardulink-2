@@ -44,7 +44,7 @@ import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.linkmanager.LinkManagerTest.AliasUsingLinkFactory;
 import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.Statement;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -54,17 +54,17 @@ import org.junit.Test;
  * [adsense]
  *
  */
-public class LinksTest {
+class LinksTest {
 
 	@Test
-	public void whenRequestingDefaultLinkReturnsFirstAvailableConnectionIfSerialNotAvailable() throws IOException {
+	void whenRequestingDefaultLinkReturnsFirstAvailableConnectionIfSerialNotAvailable() throws IOException {
 		Link link = Links.getDefault();
 		assertThat(getConnection(link), instanceOf(DummyConnection.class));
 		close(link);
 	}
 
 	@Test
-	public void whenRequestingDefaultLinkSerialHasPriorityOverAllOthers() throws Exception {
+	void whenRequestingDefaultLinkSerialHasPriorityOverAllOthers() throws Exception {
 		final LinkFactory<LinkConfig> serial = spy(factoryNamed(serial()));
 		withRegistered(factoryNamed(serialDash("a")), factoryNamed("a"), serial, factoryNamed("z"),
 				factoryNamed(serialDash("z"))).execute(new Statement() {
@@ -76,7 +76,7 @@ public class LinksTest {
 	}
 
 	@Test
-	public void whenRequestingDefaultLinkStartingWithSerialDashHasPriorityOverAllOthers() throws Exception {
+	void whenRequestingDefaultLinkStartingWithSerialDashHasPriorityOverAllOthers() throws Exception {
 		final LinkFactory<LinkConfig> serialDashAnything = spy(factoryNamed(serialDash("appendix-does-not-matter")));
 		withRegistered(factoryNamed("a"), serialDashAnything, factoryNamed("z")).execute(new Statement() {
 			@Override
@@ -87,7 +87,7 @@ public class LinksTest {
 	}
 
 	@Test
-	public void serialDashDoesHandleSerial() throws Exception {
+	void serialDashDoesHandleSerial() throws Exception {
 		final LinkFactory<LinkConfig> serialDashAnything = spy(factoryNamed(serialDash("appendix-does-not-matter")));
 		withRegistered(serialDashAnything).execute(new Statement() {
 			@Override
@@ -106,7 +106,7 @@ public class LinksTest {
 	}
 
 	@Test
-	public void isConfiguredForAllChoiceValues() throws IOException {
+	void isConfiguredForAllChoiceValues() throws IOException {
 		Link link = Links.getDefault();
 		DummyLinkConfig config = getConnection(link).getConfig();
 		assertThat(config.getA(), is("aVal1"));
@@ -114,10 +114,10 @@ public class LinksTest {
 	}
 
 	@Test
-	public void registeredSpecialNameDefault() throws Exception {
+	void registeredSpecialNameDefault() throws Exception {
 		final LinkFactory<LinkConfig> serial = spy(factoryNamed(serial()));
-		assert serial.newLinkConfig()
-				.equals(NO_ATTRIBUTES) : "ardulink://default would differ if the config has attributes";
+		assert serial.newLinkConfig().equals(NO_ATTRIBUTES)
+				: "ardulink://default would differ if the config has attributes";
 		withRegistered(serial).execute(new Statement() {
 			@Override
 			public void execute() throws Exception {
@@ -130,7 +130,7 @@ public class LinksTest {
 	}
 
 	@Test
-	public void doesCacheLinks() throws IOException {
+	void doesCacheLinks() throws IOException {
 		String uri = "ardulink://dummyLink";
 		Link link1 = Links.getLink(uri);
 		Link link2 = Links.getLink(uri);
@@ -141,7 +141,7 @@ public class LinksTest {
 	}
 
 	@Test
-	public void doesCacheLinksWhenUsingDefaultValues() throws IOException {
+	void doesCacheLinksWhenUsingDefaultValues() throws IOException {
 		Link link1 = Links.getLink("ardulink://dummyLink");
 		Link link2 = Links.getLink("ardulink://dummyLink?a=&b=42&c=");
 		assertThat(link1, notNullValue());
@@ -151,7 +151,7 @@ public class LinksTest {
 	}
 
 	@Test
-	public void canCloseConnection() throws IOException {
+	void canCloseConnection() throws IOException {
 		Link link = getRandomLink();
 		DummyConnection connection = getConnection(link);
 		verify(connection, times(0)).close();
@@ -160,7 +160,7 @@ public class LinksTest {
 	}
 
 	@Test
-	public void doesNotCloseConnectionIfStillInUse() throws IOException {
+	void doesNotCloseConnectionIfStillInUse() throws IOException {
 		String randomURI = getRandomURI();
 		Link[] links = { createConnectionBasedLink(randomURI), createConnectionBasedLink(randomURI),
 				createConnectionBasedLink(randomURI) };
@@ -174,7 +174,7 @@ public class LinksTest {
 	}
 
 	@Test
-	public void afterClosingWeGetAfreshLink() throws IOException {
+	void afterClosingWeGetAfreshLink() throws IOException {
 		String randomURI = getRandomURI();
 		Link link1 = createConnectionBasedLink(randomURI);
 		Link link2 = createConnectionBasedLink(randomURI);
@@ -187,7 +187,7 @@ public class LinksTest {
 	}
 
 	@Test
-	public void stopsListenigAfterAllCallersLikeToStopListening() throws IOException {
+	void stopsListenigAfterAllCallersLikeToStopListening() throws IOException {
 		String randomURI = getRandomURI();
 		Link link0 = createConnectionBasedLink(randomURI);
 		Link link1 = createConnectionBasedLink(randomURI);
@@ -209,7 +209,7 @@ public class LinksTest {
 	}
 
 	@Test
-	public void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws Exception {
+	void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws Exception {
 		final String name1 = new DummyLinkFactory().getName();
 		final String name2 = "DummyLINK";
 		assert name1.equalsIgnoreCase(name2) && !name1.equals(name2);
@@ -236,7 +236,7 @@ public class LinksTest {
 	}
 
 	@Test
-	public void aliasLinksAreSharedToo() throws Exception {
+	void aliasLinksAreSharedToo() throws Exception {
 		withRegistered(new AliasUsingLinkFactory()).execute(new Statement() {
 			@Override
 			public void execute() throws IOException {

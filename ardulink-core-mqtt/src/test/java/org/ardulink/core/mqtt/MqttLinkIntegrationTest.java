@@ -18,39 +18,32 @@ package org.ardulink.core.mqtt;
 
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.rules.RuleChain.outerRule;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
 import org.ardulink.core.mqtt.duplicated.EventMatchers.PinValueChangedEventMatcher;
-import org.ardulink.util.anno.LapsedWith;
 import org.ardulink.core.mqtt.duplicated.Message;
+import org.ardulink.util.anno.LapsedWith;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsCollectionContaining;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.Timeout;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -60,11 +53,29 @@ import org.junit.runners.Parameterized.Parameters;
  * [adsense]
  *
  */
-@RunWith(Parameterized.class)
-public class MqttLinkIntegrationTest {
+@Timeout(30)
+class MqttLinkIntegrationTest {
 
-	public static class TrackStateConnectionListener implements
-			ConnectionListener {
+	private static class TestConfig {
+
+		private String name;
+		private boolean separateTopics;
+		private String messageFormat;
+
+		public TestConfig(String name, boolean separateTopics, String messageFormat) {
+			this.name = name;
+			this.separateTopics = separateTopics;
+			this.messageFormat = messageFormat;
+		}
+
+		@Override
+		public String toString() {
+			return name;
+		}
+
+	}
+
+	public static class TrackStateConnectionListener implements ConnectionListener {
 
 		private boolean connected = true;
 
@@ -84,46 +95,36 @@ public class MqttLinkIntegrationTest {
 
 	}
 
-	private static final String TOPIC = "myTopic" + System.currentTimeMillis();
+	static final String TOPIC = "myTopic" + System.currentTimeMillis();
 
-	private final Broker broker = Broker.newBroker().port(freePort());
+	@RegisterExtension
+	Broker broker = Broker.newBroker().port(freePort());
 
-	private final AnotherMqttClient mqttClient = AnotherMqttClient.newClient(
-			TOPIC, broker.getPort());
+	@RegisterExtension
+	AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC, broker.getPort());
 
-	private final String messageFormat;
+	String messageFormat;
 
-	private final boolean separateTopics;
+	boolean separateTopics;
 
-	@Rule
-	public Timeout timeout = new Timeout(30, SECONDS);
-
-	@Rule
-	public RuleChain chain = outerRule(broker).around(mqttClient);
-
-	@Parameters(name = "{index}: {0}")
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] { sameTopic(), separateTopics() });
+	private static List<TestConfig> data() {
+		return asList( //
+				new TestConfig("sameTopic", false, TOPIC + "/%s"), //
+				new TestConfig("separateTopics", true, TOPIC + "/%s/value/set") //
+		);
 	}
-
-	private static Object[] sameTopic() {
-		return new Object[] { "sameTopic", false, TOPIC + "/%s" };
+	
+	void init(TestConfig config) {
+		this.mqttClient.appendValueSet(config.separateTopics);
+		this.messageFormat = config.messageFormat;
+		String clientUri = "ardulink://mqtt?host=localhost&port=" + broker.getPort() + "&topic=" + TOPIC
+				+ "&separatedTopics=" + config.separateTopics;
 	}
-
-	private static Object[] separateTopics() {
-		return new Object[] { "separateTopics", true, TOPIC + "/%s/value/set" };
-	}
-
-	public MqttLinkIntegrationTest(String name, boolean separateTopics,
-			String messageFormat) {
-		this.separateTopics = separateTopics;
-		this.mqttClient.appendValueSet(separateTopics);
-		this.messageFormat = messageFormat;
-	}
-
-	@Test
-	public void defaultHostIsLocalhostAndLinkHasCreatedWithoutConfiguring()
-			throws UnknownHostException, IOException {
+	
+	@ParameterizedTest(name = "{index} {0}")
+	@MethodSource("data")
+	void defaultHostIsLocalhostAndLinkHasCreatedWithoutConfiguring(TestConfig testConfig) throws UnknownHostException, IOException {
+		init(testConfig);
 		MqttLinkFactory factory = new MqttLinkFactory();
 		MqttLinkConfig config = makeConfig(factory);
 		String host = config.getHost();
@@ -133,8 +134,10 @@ public class MqttLinkIntegrationTest {
 		link.close();
 	}
 
-	@Test
-	public void canSendToBrokerAfterReconnect() throws Exception {
+	@ParameterizedTest(name = "{index} {0}")
+	@MethodSource("data")
+	void canSendToBrokerAfterReconnect(TestConfig testConfig) throws Exception {
+		init(testConfig);
 		EventCollector eventCollector = new EventCollector();
 		MqttLink link = makeLink(eventCollector);
 		breedReconnectedState(link);
@@ -148,8 +151,10 @@ public class MqttLinkIntegrationTest {
 		return String.format(messageFormat, pin);
 	}
 
-	@Test
-	public void canReceiveFromBrokerAfterReconnect() throws Exception {
+	@ParameterizedTest(name = "{index} {0}")
+	@MethodSource("data")
+	void canReceiveFromBrokerAfterReconnect(TestConfig testConfig) throws Exception {
+		init(testConfig);
 		EventCollector eventCollector = new EventCollector();
 		MqttLink link = makeLink(eventCollector);
 		breedReconnectedState(link);
@@ -159,8 +164,7 @@ public class MqttLinkIntegrationTest {
 		link.close();
 	}
 
-	private void breedReconnectedState(MqttLink link) throws IOException,
-			InterruptedException {
+	private void breedReconnectedState(MqttLink link) throws IOException, InterruptedException {
 		TrackStateConnectionListener connectionListener = new TrackStateConnectionListener();
 		link.addConnectionListener(connectionListener);
 		assertThat(connectionListener.isConnected(), is(true));
@@ -169,8 +173,7 @@ public class MqttLinkIntegrationTest {
 		waitForLinkReconnect(connectionListener);
 	}
 
-	private MqttLink makeLink(EventCollector eventCollector)
-			throws UnknownHostException, IOException {
+	private MqttLink makeLink(EventCollector eventCollector) throws UnknownHostException, IOException {
 		MqttLinkFactory factory = new MqttLinkFactory();
 		MqttLink link = factory.newLink(makeConfig(factory));
 		link.addListener(eventCollector);
@@ -186,9 +189,7 @@ public class MqttLinkIntegrationTest {
 	}
 
 	@LapsedWith(module = JDK8, value = "org.awaitability")
-	public void waitForLinkReconnect(
-			TrackStateConnectionListener connectionListener)
-			throws InterruptedException {
+	public void waitForLinkReconnect(TrackStateConnectionListener connectionListener) throws InterruptedException {
 		while (!connectionListener.isConnected()) {
 			MILLISECONDS.sleep(100);
 		}
@@ -204,8 +205,7 @@ public class MqttLinkIntegrationTest {
 		this.broker.start();
 	}
 
-	private static Matcher<? super List<PinValueChangedEvent>> hasItems(
-			PinValueChangedEventMatcher... matchers) {
+	private static Matcher<? super List<PinValueChangedEvent>> hasItems(PinValueChangedEventMatcher... matchers) {
 		return IsCollectionContaining.hasItems(matchers);
 	}
 

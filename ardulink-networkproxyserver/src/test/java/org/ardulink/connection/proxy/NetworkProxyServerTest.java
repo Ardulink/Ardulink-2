@@ -2,7 +2,6 @@ package org.ardulink.connection.proxy;
 
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
@@ -31,25 +30,21 @@ import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.proxy.ProxyLinkConfig;
 import org.ardulink.core.proxy.ProxyLinkFactory;
 import org.ardulink.util.anno.LapsedWith;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-public class NetworkProxyServerTest {
+@Timeout(15)
+class NetworkProxyServerTest {
 
-	@Rule
-	public Timeout timeout = new Timeout(15, SECONDS);
-
-	private final StringBuilder proxySideReceived = new StringBuilder(); 
+	private final StringBuilder proxySideReceived = new StringBuilder();
 	private final Connection proxySideConnection = new Connection() {
 
 		@Override
 		public void close() throws IOException {
 			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
@@ -60,36 +55,33 @@ public class NetworkProxyServerTest {
 		@Override
 		public void addListener(Listener listener) {
 			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void removeListener(Listener listener) {
 			// TODO Auto-generated method stub
-			
 		}
-		
+
 	};
 
 	private ConnectionBasedLink clientSideLink;
 
-	@Before
-	public void setup() throws InterruptedException, UnknownHostException, IOException {
+	@BeforeEach
+	void setup() throws InterruptedException, UnknownHostException, IOException {
 		int freePort = freePort();
 		startServerInBackground(freePort);
 		this.clientSideLink = clientLinkToServer("localhost", freePort);
 	}
 
 	@Test
-	public void proxyServerDoesReceiveMessagesSentByClient() throws Exception {
+	void proxyServerDoesReceiveMessagesSentByClient() throws Exception {
 		int times = 3;
 		for (int i = 0; i < times; i++) {
 			this.clientSideLink.switchAnalogPin(analogPin(1), 2);
 		}
 
-		String message = alpProtocolMessage(POWER_PIN_INTENSITY).forPin(1).withValue(2)
-				+ "\n";
-		assertReceived(message+message+message, times);
+		String message = alpProtocolMessage(POWER_PIN_INTENSITY).forPin(1).withValue(2) + "\n";
+		assertReceived(message + message + message, times);
 	}
 
 	@LapsedWith(value = JDK8, module = "Awaitility")

@@ -27,7 +27,8 @@ import java.util.regex.Pattern;
 import org.ardulink.core.qos.ArduinoDouble.Adder;
 import org.ardulink.core.qos.ArduinoDouble.RegexAdder;
 import org.ardulink.core.qos.ArduinoDouble.WaitThenDoBuilder;
-import org.junit.rules.ExternalResource;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -37,7 +38,7 @@ import org.junit.rules.ExternalResource;
  * [adsense]
  *
  */
-public class Arduino extends ExternalResource {
+public class Arduino implements AfterEachCallback {
 
 	private final ArduinoDouble arduinoDouble;
 
@@ -56,9 +57,9 @@ public class Arduino extends ExternalResource {
 			throw propagate(e);
 		}
 	}
-
+	
 	@Override
-	protected void after() {
+	public void afterEach(ExtensionContext context) {
 		try {
 			this.arduinoDouble.close();
 		} catch (IOException e) {

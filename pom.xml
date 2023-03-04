@@ -56,12 +56,13 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<compilerVersion>1.6</compilerVersion>
+		<compilerVersion>1.8</compilerVersion>
 		<maven.compiler.source>${compilerVersion}</maven.compiler.source>
 		<maven.compiler.target>${compilerVersion}</maven.compiler.target>
 		<args4j.version>2.33</args4j.version>
 		<slf4j.version>2.0.6</slf4j.version>
-		<junit.version>4.13.2</junit.version>
+		<junit.version>5.9.2</junit.version>
+		<hamcrest.version>2.2</hamcrest.version>
 		<mockito.version>1.10.19</mockito.version>
 		<!-- The next LTS release Camel 3.14, scheduled for December 2021, will be the last release to support Java 8 -->
 		<!-- https://camel.apache.org/blog/2021/09/eol-java8/ -->
@@ -102,6 +103,14 @@
 	<build>
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.1</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>3.0.0-M6</version>
+				</plugin>
 				<plugin>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<version>3.5.0</version>
@@ -170,7 +179,7 @@
 			<plugin>
 				<groupId>com.google.cloud.tools</groupId>
 				<artifactId>jib-maven-plugin</artifactId>
-        		<version>3.3.1</version>
+				<version>3.3.1</version>
 				<configuration>
 					<skip>true</skip>
 				</configuration>
@@ -261,9 +270,16 @@
 				<version>${slf4j.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
+				<groupId>org.junit</groupId>
+				<artifactId>junit-bom</artifactId>
 				<version>${junit.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.hamcrest</groupId>
+				<artifactId>hamcrest-library</artifactId>
+				<version>${hamcrest.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
