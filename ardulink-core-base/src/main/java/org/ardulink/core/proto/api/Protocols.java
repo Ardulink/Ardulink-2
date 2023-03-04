@@ -16,15 +16,14 @@ limitations under the License.
 
 package org.ardulink.core.proto.api;
 
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
+import static org.ardulink.util.Streams.stream;
 
-import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.ServiceLoader;
-
-import org.ardulink.util.Lists;
-import org.ardulink.util.Optional;
-import org.ardulink.util.anno.LapsedWith;
+import java.util.stream.Stream;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -41,36 +40,24 @@ public final class Protocols {
 	}
 
 	public static Protocol getByName(String name) {
-		return tryByName(name).getOrThrow(
-				"No protocol with name %s registered", name);
+		return tryByName(name)
+				.orElseThrow(() -> new IllegalStateException(format("No protocol with name %s registered", name)));
 	}
 
-	@LapsedWith(module = JDK8, value = "Streams")
 	public static Optional<Protocol> tryByName(String name) {
-		for (Iterator<Protocol> it = iterator(); it.hasNext();) {
-			Protocol protocol = it.next();
-			if (protocol.getName().equals(name)) {
-				return Optional.of(protocol);
-			}
-		}
-		return Optional.absent();
+		return protocols().filter(p -> p.getName().equals(name)).findFirst();
 	}
 
 	public static List<Protocol> list() {
-		return Lists.newArrayList(iterator());
+		return protocols().collect(toList());
 	}
 
-	@LapsedWith(module = JDK8, value = "Streams")
 	public static List<String> names() {
-		List<String> names = Lists.newArrayList();
-		for (Iterator<Protocol> it = iterator(); it.hasNext();) {
-			names.add(it.next().getName());
-		}
-		return names;
+		return protocols().map(Protocol::getName).collect(toList());
 	}
 
-	private static Iterator<Protocol> iterator() {
-		return ServiceLoader.load(Protocol.class).iterator();
+	private static Stream<Protocol> protocols() {
+		return stream(ServiceLoader.load(Protocol.class).iterator());
 	}
 
 }

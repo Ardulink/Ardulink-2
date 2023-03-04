@@ -19,6 +19,11 @@ package org.ardulink.core.linkmanager;
 import static java.lang.Long.MAX_VALUE;
 import static java.lang.Long.MIN_VALUE;
 import static java.lang.String.format;
+import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
 import static org.ardulink.util.Preconditions.checkArgument;
@@ -27,12 +32,11 @@ import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.ServiceLoaders.services;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.ardulink.util.URIs.newURI;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import javax.validation.constraints.Max;
@@ -55,13 +60,8 @@ import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.linkmanager.LinkConfig.Named;
 import org.ardulink.core.linkmanager.LinkFactory.Alias;
 import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider;
-import org.ardulink.util.Lists;
-import org.ardulink.util.Optional;
-import org.ardulink.util.Optional.Function;
 import org.ardulink.util.Primitives;
 import org.ardulink.util.Throwables;
-import org.ardulink.util.URIs;
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -91,8 +91,8 @@ public abstract class LinkManager {
 		ConfigAttribute[] EMPTY_ARRAY = new ConfigAttribute[0];
 
 		/**
-		 * Returns the name of this attribute. If there is a localized name
-		 * available the localized named is returned.
+		 * Returns the name of this attribute. If there is a localized name available
+		 * the localized named is returned.
 		 * 
 		 * @return name of this attribute
 		 */
@@ -121,25 +121,23 @@ public abstract class LinkManager {
 		Object getValue();
 
 		/**
-		 * Sets the new value of this attribute. If this attribute
-		 * hasChoiceValues only one of those values can be set!
+		 * Sets the new value of this attribute. If this attribute hasChoiceValues only
+		 * one of those values can be set!
 		 */
 		void setValue(Object value);
 
 		/**
-		 * Returns <code>true</code> if this attribute has predefined choice
-		 * values.
+		 * Returns <code>true</code> if this attribute has predefined choice values.
 		 * 
-		 * @return <code>true</code> if this attribute has predefined choice
-		 *         values
+		 * @return <code>true</code> if this attribute has predefined choice values
 		 * @see #getChoiceValues()
 		 */
 		boolean hasChoiceValues();
 
 		/**
-		 * If the attribute's choice depends on other attribute (the choice can
-		 * not be determined before those attributes are filled) those
-		 * attributes are returned otherwise an empty array.
+		 * If the attribute's choice depends on other attribute (the choice can not be
+		 * determined before those attributes are filled) those attributes are returned
+		 * otherwise an empty array.
 		 * 
 		 * @return dependencies or empty array
 		 */
@@ -166,8 +164,8 @@ public abstract class LinkManager {
 		Link newLink();
 
 		/**
-		 * Creates an object that identifies the Configurer in its current state
-		 * and thus the Link it would create at that moment.
+		 * Creates an object that identifies the Configurer in its current state and
+		 * thus the Link it would create at that moment.
 		 * 
 		 * @return identifier for the Configurer and its state.
 		 */
@@ -209,11 +207,9 @@ public abstract class LinkManager {
 		}
 	}
 
-	private static class DefaultConfigurer<T extends LinkConfig> implements
-			Configurer {
+	private static class DefaultConfigurer<T extends LinkConfig> implements Configurer {
 
-		public class ConfigAttributeAdapter<T extends LinkConfig> implements
-				ConfigAttribute {
+		public class ConfigAttributeAdapter<T extends LinkConfig> implements ConfigAttribute {
 
 			private final Attribute attribute;
 			private final Attribute getChoicesFor;
@@ -221,29 +217,21 @@ public abstract class LinkManager {
 			private List<Object> cachedChoiceValues;
 			private final ResourceBundle nls;
 
-			public ConfigAttributeAdapter(T linkConfig,
-					BeanProperties beanProperties, String key) {
+			public ConfigAttributeAdapter(T linkConfig, BeanProperties beanProperties, String key) {
 				this.attribute = beanProperties.getAttribute(key);
-				checkArgument(
-						attribute != null,
-						"Could not determine attribute %s. Available attributes are %s",
-						key, beanProperties.attributeNames());
+				checkArgument(attribute != null, "Could not determine attribute %s. Available attributes are %s", key,
+						beanProperties.attributeNames());
 				this.getChoicesFor = choicesFor(linkConfig);
-				this.dependsOn = this.getChoicesFor == null ? Collections
-						.<ConfigAttribute> emptyList()
-						: resolveDeps(this.getChoicesFor);
+				this.dependsOn = this.getChoicesFor == null ? emptyList() : resolveDeps(this.getChoicesFor);
 				Class<?> linkConfigClass = linkConfig.getClass();
 				I18n nls = linkConfigClass.getAnnotation(I18n.class);
-				this.nls = nls == null ? null : resourceBundle(linkConfigClass,
-						nls);
+				this.nls = nls == null ? null : resourceBundle(linkConfigClass, nls);
 			}
 
-			private ResourceBundle resourceBundle(Class<?> linkConfigClass,
-					I18n nls) {
+			private ResourceBundle resourceBundle(Class<?> linkConfigClass, I18n nls) {
 				String baseName = nullOrEmpty(nls.value()) ? useClassname(linkConfigClass)
 						: usePackageAndName(linkConfigClass, nls);
-				return ResourceBundle.getBundle(baseName, Locale.getDefault(),
-						linkConfigClass.getClassLoader());
+				return ResourceBundle.getBundle(baseName, Locale.getDefault(), linkConfigClass.getClassLoader());
 			}
 
 			private String useClassname(Class<?> clazz) {
@@ -255,34 +243,23 @@ public abstract class LinkManager {
 			}
 
 			private Attribute choicesFor(T linkConfig) {
-				Attribute choiceFor = BeanProperties.builder(linkConfig)
-						.using(propertyAnnotated(ChoiceFor.class)).build()
-						.getAttribute(attribute.getName());
+				Attribute choiceFor = BeanProperties.builder(linkConfig).using(propertyAnnotated(ChoiceFor.class))
+						.build().getAttribute(attribute.getName());
 				if (choiceFor == null && attribute.getType().isEnum()) {
-					return new DefaultAttribute(attribute.getName(),
-							attribute.getType(), hardCodedValues(), null);
+					return new DefaultAttribute(attribute.getName(), attribute.getType(), hardCodedValues(), null);
 				}
 				return choiceFor;
 			}
 
 			private AttributeReader hardCodedValues() {
-				return new HardCodedValues(
-						attribute.getName(), attribute.getType(), attribute
-								.getType().getEnumConstants());
+				return new HardCodedValues(attribute.getName(), attribute.getType(),
+						attribute.getType().getEnumConstants());
 			}
 
 			private List<ConfigAttribute> resolveDeps(Attribute choiceFor) {
 				ChoiceFor cfa = choiceFor.getAnnotation(ChoiceFor.class);
-				if (cfa == null) {
-					return Collections.emptyList();
-				}
-				@LapsedWith(module = JDK8, value = "Streams")
-				List<ConfigAttribute> deps = new ArrayList<ConfigAttribute>(
-						cfa.dependsOn().length);
-				for (String name : cfa.dependsOn()) {
-					deps.add(getAttribute(name));
-				}
-				return deps;
+				return cfa == null ? emptyList()
+						: Arrays.stream(cfa.dependsOn()).map(name -> getAttribute(name)).collect(toList());
 			}
 
 			@Override
@@ -293,13 +270,11 @@ public abstract class LinkManager {
 
 			@Override
 			public String getDescription() {
-				return getFromBundle(this.attribute.getName() + ".description",
-						null);
+				return getFromBundle(this.attribute.getName() + ".description", null);
 			}
 
 			private String getFromBundle(String bundleKey, String defaultValue) {
-				return nls == null || !nls.containsKey(bundleKey) ? defaultValue
-						: nls.getString(bundleKey);
+				return nls == null || !nls.containsKey(bundleKey) ? defaultValue : nls.getString(bundleKey);
 			}
 
 			@Override
@@ -333,38 +308,33 @@ public abstract class LinkManager {
 
 			@Override
 			public ConfigAttribute[] choiceDependsOn() {
-				return this.dependsOn
-						.toArray(new ConfigAttribute[this.dependsOn.size()]);
+				return this.dependsOn.toArray(new ConfigAttribute[this.dependsOn.size()]);
 			}
 
 			@Override
 			public Object[] getChoiceValues() {
-				checkState(hasChoiceValues(),
-						"attribute does not have choiceValues");
+				checkState(hasChoiceValues(), "attribute does not have choiceValues");
 				try {
 					if (this.cachedChoiceValues == null || changed) {
 						Object[] value = loadChoiceValues();
 						this.cachedChoiceValues = Arrays.asList(value);
 						changed = false;
 					}
-					return this.cachedChoiceValues
-							.toArray(new Object[this.cachedChoiceValues.size()]);
+					return this.cachedChoiceValues.toArray(new Object[this.cachedChoiceValues.size()]);
 				} catch (Exception e) {
 					throw propagate(e);
 				}
 			}
 
 			private Object[] loadChoiceValues() throws Exception {
-				Object value = checkNotNull(
-						this.getChoicesFor.readValue(),
+				Object value = checkNotNull(this.getChoicesFor.readValue(),
 						"returntype for choice of %s was null (should be an empty Object[] or empty Collection)",
 						getName());
 				if (value instanceof Collection<?>) {
 					Collection<?> collection = (Collection<?>) value;
 					value = collection.toArray(new Object[collection.size()]);
 				}
-				checkState(value instanceof Object[],
-						"returntype is not an Object[] but %s",
+				checkState(value instanceof Object[], "returntype is not an Object[] but %s",
 						value == null ? null : value.getClass());
 				return (Object[]) value;
 			}
@@ -373,36 +343,19 @@ public abstract class LinkManager {
 			public ValidationInfo getValidationInfo() {
 				if (Integer.class.isAssignableFrom(Primitives.wrap(getType()))) {
 					Annotation[] annotations = attribute.getAnnotations();
-					return newNumberValidationInfo(find(annotations, Min.class).map(new Function<Min, Long>() {
-						@Override
-						@LapsedWith(module = JDK8, value = "Lambdas")
-						public Long apply(Min min) {
-							return min.value();
-						}
-					}).orElse(MIN_VALUE), find(annotations, Max.class).map(new Function<Max, Long>() {
-						@Override
-						@LapsedWith(module = JDK8, value = "Lambdas")
-						public Long apply(Max max) {
-							return max.value();
-						}
-					}).orElse(MAX_VALUE));
+					return newNumberValidationInfo(
+							find(annotations, Min.class).map(min -> min.value()).orElse(MIN_VALUE),
+							find(annotations, Max.class).map(max -> max.value()).orElse(MAX_VALUE));
 				}
 				return ValidationInfo.NULL;
 			}
 
-			@LapsedWith(module = JDK8, value = "Stream")
-			private <S extends Annotation> Optional<S> find(
-					Annotation[] annotations, Class<S> annoClass) {
-				for (Annotation annotation : annotations) {
-					if (annotation.annotationType().equals(annoClass)) {
-						return Optional.of(annoClass.cast(annotation));
-					}
-				}
-				return Optional.absent();
+			private <S extends Annotation> Optional<S> find(Annotation[] annotations, Class<S> annoClass) {
+				return stream(annotations).filter(a -> a.annotationType().equals(annoClass)).findFirst()
+						.map(annoClass::cast);
 			}
 
-			private NumberValidationInfo newNumberValidationInfo(
-					final long min, final long max) {
+			private NumberValidationInfo newNumberValidationInfo(final long min, final long max) {
 				return new NumberValidationInfo() {
 
 					@Override
@@ -428,8 +381,7 @@ public abstract class LinkManager {
 		public DefaultConfigurer(LinkFactory<T> linkFactory) {
 			this.linkFactory = linkFactory;
 			this.linkConfig = linkFactory.newLinkConfig();
-			this.beanProperties = BeanProperties.builder(linkConfig)
-					.using(propertyAnnotated(Named.class)).build();
+			this.beanProperties = BeanProperties.builder(linkConfig).using(propertyAnnotated(Named.class)).build();
 		}
 
 		class CacheKey {
@@ -440,30 +392,22 @@ public abstract class LinkManager {
 			private final Map<String, Object> values;
 
 			public CacheKey() throws Exception {
-				this.factoryType = DefaultConfigurer.this.linkFactory
-						.getClass();
+				this.factoryType = DefaultConfigurer.this.linkFactory.getClass();
 				this.values = Collections.unmodifiableMap(extractData());
 			}
 
-			@LapsedWith(value = JDK8, module = "Streams")
 			private Map<String, Object> extractData() {
-				Map<String, Object> values = new HashMap<String, Object>();
-				for (String attribute : DefaultConfigurer.this.getAttributes()) {
-					values.put(attribute,
-							DefaultConfigurer.this.getAttribute(attribute)
-									.getValue());
-				}
-				return values;
+				// values can be null, https://bugs.openjdk.java.net/browse/JDK-8148463
+				return DefaultConfigurer.this.getAttributes().stream().collect(HashMap::new,
+						(m, v) -> m.put(v, getAttribute(v).getValue()), HashMap::putAll);
 			}
 
 			@Override
 			public int hashCode() {
 				final int prime = 31;
 				int result = 1;
-				result = prime * result
-						+ ((factoryType == null) ? 0 : factoryType.hashCode());
-				result = prime * result
-						+ ((values == null) ? 0 : values.hashCode());
+				result = prime * result + ((factoryType == null) ? 0 : factoryType.hashCode());
+				result = prime * result + ((values == null) ? 0 : values.hashCode());
 				return result;
 			}
 
@@ -491,8 +435,7 @@ public abstract class LinkManager {
 
 			@Override
 			public String toString() {
-				return "CacheKey [factoryType=" + factoryType + ", values="
-						+ values + "]";
+				return "CacheKey [factoryType=" + factoryType + ", values=" + values + "]";
 			}
 
 		}
@@ -518,9 +461,7 @@ public abstract class LinkManager {
 		public ConfigAttribute getAttribute(String key) {
 			ConfigAttributeAdapter<T> configAttributeAdapter = cache.get(key);
 			if (configAttributeAdapter == null) {
-				cache.put(key,
-						configAttributeAdapter = new ConfigAttributeAdapter<T>(
-								linkConfig, beanProperties, key));
+				cache.put(key, configAttributeAdapter = new ConfigAttributeAdapter<T>(linkConfig, beanProperties, key));
 			}
 			return configAttributeAdapter;
 		}
@@ -547,11 +488,9 @@ public abstract class LinkManager {
 		private void checkIfValid(ConfigAttribute attribute) {
 			Object value = attribute.getValue();
 			if (value != null) {
-				List<Object> validValues = Arrays.asList(attribute
-						.getChoiceValues());
-				checkArgument(validValues.contains(value),
-						"%s is not a valid value for %s, valid values are %s",
-						value, attribute.getName(), validValues);
+				List<Object> validValues = Arrays.asList(attribute.getChoiceValues());
+				checkArgument(validValues.contains(value), "%s is not a valid value for %s, valid values are %s", value,
+						attribute.getName(), validValues);
 			}
 		}
 
@@ -563,52 +502,36 @@ public abstract class LinkManager {
 		return new LinkManager() {
 
 			@Override
-			@LapsedWith(module = JDK8, value = "Streams")
 			public List<URI> listURIs() {
-				List<LinkFactory> factories = getConnectionFactories();
-				List<URI> result = new ArrayList<URI>(factories.size());
-				for (LinkFactory<?> factory : factories) {
-					result.add(URIs.newURI(format("%s://%s", SCHEMA,
-							factory.getName())));
-				}
-				return result;
+				return getConnectionFactories().stream().map(f -> newURI(format("%s://%s", SCHEMA, f.getName())))
+						.collect(toList());
 			}
 
-			@LapsedWith(module = JDK8, value = "Streams")
-			private Optional<LinkFactory<?>> getConnectionFactory(String name) {
-				for (LinkFactory<?> connectionFactory : getConnectionFactories()) {
-					if (connectionFactory.getName().equals(name)) {
-						return Optional.<LinkFactory<?>> of(connectionFactory);
-					}
+			private Optional<LinkFactory> getConnectionFactory(String name) {
+				List<LinkFactory> connectionFactories = getConnectionFactories();
+				Optional<LinkFactory> first = connectionFactories.stream().filter(f -> f.getName().equals(name))
+						.findFirst();
+				if (first.isPresent()) {
+					return first;
 				}
-				for (LinkFactory<?> connectionFactory : getConnectionFactories()) {
-					Alias alias = connectionFactory.getClass().getAnnotation(LinkFactory.Alias.class);
-					if (alias != null && Arrays.asList(alias.value()).contains(name)) {
-						return Optional.<LinkFactory<?>>of(connectionFactory);
-					}
-				}
-				return Optional.<LinkFactory<?>> absent();
+
+				return connectionFactories.stream().filter(f -> {
+					Alias alias = f.getClass().getAnnotation(LinkFactory.Alias.class);
+					return alias != null && Arrays.asList(alias.value()).contains(name);
+				}).findFirst();
 			}
-			
-			@LapsedWith(module = JDK8, value = "Streams")
+
 			private List<LinkFactory> getConnectionFactories() {
-				List<LinkFactory> factories = Lists.newArrayList();
-				for (LinkFactoriesProvider linkFactoriesProvider : services(LinkFactoriesProvider.class,
-						moduleClassloader())) {
-					factories.addAll(linkFactoriesProvider.loadLinkFactories());
-				}
-				return factories;
+				return services(LinkFactoriesProvider.class, moduleClassloader()).stream()
+						.map(LinkFactoriesProvider::loadLinkFactories).flatMap(Collection::stream).collect(toList());
 			}
 
 			@Override
 			public Configurer getConfigurer(URI uri) {
-				String name = checkNotNull(extractNameFromURI(uri), uri
-						+ " not a valid URI: Unable not extract name");
+				String name = checkNotNull(extractNameFromURI(uri), uri + " not a valid URI: Unable not extract name");
 				LinkFactory connectionFactory = getConnectionFactory(name)
-						.getOrThrow(
-								IllegalArgumentException.class,
-								"No factory registered for \"%s\", available names are %s",
-								name, listURIs());
+						.orElseThrow(() -> new IllegalArgumentException(
+								format("No factory registered for \"%s\", available names are %s", name, listURIs())));
 				Configurer configurer = new DefaultConfigurer(connectionFactory);
 				return uri.getQuery() == null ? configurer : configure(configurer, uri.getQuery().split("\\&"));
 			}
@@ -617,17 +540,14 @@ public abstract class LinkManager {
 				for (String param : params) {
 					String[] split = param.split("\\=");
 					if (split.length == 2) {
-						ConfigAttribute attribute = configurer
-								.getAttribute(split[0]);
-						attribute.setValue(convert(split[1],
-								attribute.getType()));
+						ConfigAttribute attribute = configurer.getAttribute(split[0]);
+						attribute.setValue(convert(split[1], attribute.getType()));
 					}
 				}
 				return configurer;
 			}
 
-			private Object convert(String value,
-					Class<? extends Object> targetType) {
+			private Object convert(String value, Class<? extends Object> targetType) {
 				if (targetType.isInstance(value)) {
 					return value;
 				} else if (targetType.isEnum()) {
@@ -654,7 +574,7 @@ public abstract class LinkManager {
 	public static String extractNameFromURI(URI uri) {
 		return checkSchema(uri).getHost();
 	}
-	
+
 	public static URI replaceName(URI uri, String name) {
 		try {
 			return new URI(uri.getScheme(), uri.getUserInfo(), name, uri.getPort(), uri.getPath(), uri.getQuery(),
@@ -665,20 +585,18 @@ public abstract class LinkManager {
 	}
 
 	private static URI checkSchema(URI uri) {
-		checkArgument(SCHEMA.equalsIgnoreCase(uri.getScheme()),
-				"schema not %s (was %s)", SCHEMA, uri.getScheme());
+		checkArgument(SCHEMA.equalsIgnoreCase(uri.getScheme()), "schema not %s (was %s)", SCHEMA, uri.getScheme());
 		return uri;
 	}
 
 	/**
 	 * Returns a newly created {@link Configurer} for the passed {@link URI}.
 	 * Configurers should <b>not</b> be shared amongst threads since there is no
-	 * guarantee that they are threadsafe. Beside that their values are
-	 * retrieved to calculate cache keys for sharing Link instances which should
-	 * not be done in parallel, too.
+	 * guarantee that they are threadsafe. Beside that their values are retrieved to
+	 * calculate cache keys for sharing Link instances which should not be done in
+	 * parallel, too.
 	 * 
-	 * @param uri
-	 *            the URI to create the new Configurer for
+	 * @param uri the URI to create the new Configurer for
 	 * @return newly created Configurer for the passed URI
 	 */
 	public abstract Configurer getConfigurer(URI uri);

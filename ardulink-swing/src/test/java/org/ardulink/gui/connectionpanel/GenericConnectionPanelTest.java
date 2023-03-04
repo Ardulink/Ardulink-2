@@ -24,6 +24,7 @@ import static org.hamcrest.core.Is.is;
 import java.awt.Component;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JComboBox;
@@ -31,7 +32,6 @@ import javax.swing.JPanel;
 
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.gui.DummyLinkConfig;
-import org.ardulink.util.Optional;
 import org.ardulink.util.URIs;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
@@ -60,8 +60,9 @@ class GenericConnectionPanelTest {
 		DummyLinkConfig dlc = new DummyLinkConfig();
 
 		JPanel panel = sut.createPanel(LinkManager.getInstance().getConfigurer(uri));
-		JComboBox comboBox = findFirst(JComboBox.class, componentsOf(panel)).getOrThrow("No %s found on panel %s",
-				JComboBox.class.getName(), panel);
+		JComboBox comboBox = findFirst(JComboBox.class, componentsOf(panel))
+				.orElseThrow(() -> new IllegalStateException(
+						String.format("No %s found on panel %s", JComboBox.class.getName(), panel)));
 		comboBox.setSelectedItem("ardulink://dummy");
 		assertThat(panel, has(row(0).withLabel("1_aIntValue").withValue(dlc.getIntValue())));
 		assertThat(panel, has(row(1).withLabel("2_aBooleanValue").withYesNo().withValue(dlc.getBooleanValue())));
@@ -77,12 +78,7 @@ class GenericConnectionPanelTest {
 	}
 
 	private <T> Optional<T> findFirst(Class<T> clazz, List<? extends Component> components) {
-		for (Component component : components) {
-			if (clazz.isInstance(component)) {
-				return Optional.of(clazz.cast(component));
-			}
-		}
-		return Optional.<T>absent();
+		return components.stream().filter(c -> clazz.isInstance(c)).findFirst().map(c -> clazz.cast(c));
 	}
 
 	private <T> Matcher<T> has(Matcher<T> matcher) {

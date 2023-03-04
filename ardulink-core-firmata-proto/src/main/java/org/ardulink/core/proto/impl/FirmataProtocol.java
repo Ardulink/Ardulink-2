@@ -78,7 +78,8 @@ public class FirmataProtocol implements Protocol {
 
 				private FromDeviceMessage convert(Event event) {
 					String pinNumber = String.valueOf(event.getBodyItem(PIN_ID));
-					Pin pin = createPin(event.getType(), tryParse(pinNumber).getOrThrow("Cannot parse %s", pinNumber));
+					Pin pin = createPin(event.getType(), tryParse(pinNumber)
+							.orElseThrow(() -> new IllegalStateException("Cannot parse " + pinNumber)));
 					Object value = event.getBodyItem(PIN_VALUE);
 					return new DefaultFromDeviceMessagePinStateChanged(pin, convertValue(pin, value));
 				}

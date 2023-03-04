@@ -25,13 +25,13 @@ import static org.ardulink.core.Pin.digitalPin;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.StringTokenizer;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.support.DefaultComponent;
 import org.ardulink.core.Pin;
-import org.ardulink.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -45,12 +45,9 @@ import org.ardulink.util.Optional;
 public class ArdulinkComponent extends DefaultComponent {
 
 	@Override
-	protected Endpoint createEndpoint(String uri, String remaining,
-			Map<String, Object> parameters) throws Exception {
-		EndpointConfig config = new EndpointConfig()
-				.type(remaining)
-				.listenTo(parsePins(getOptional(parameters, "listenTo").orElse("")))
-				.linkParams(parameters);
+	protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
+		EndpointConfig config = new EndpointConfig().type(remaining)
+				.listenTo(parsePins(getOptional(parameters, "listenTo").orElse(""))).linkParams(parameters);
 		parameters.clear();
 		ArdulinkEndpoint endpoint = new ArdulinkEndpoint(uri, this, config);
 		setProperties(endpoint, parameters);
@@ -78,10 +75,8 @@ public class ArdulinkComponent extends DefaultComponent {
 		throw new IllegalStateException("Cannot parse " + pin + " as pin");
 	}
 
-	private Optional<String> getOptional(Map<String, Object> parameters,
-			String key) {
-		return parameters.containsKey(key) ? Optional.of(String
-				.valueOf(parameters.remove(key))) : Optional.<String> absent();
+	private Optional<String> getOptional(Map<String, Object> parameters, String key) {
+		return parameters.containsKey(key) ? Optional.of(String.valueOf(parameters.remove(key))) : Optional.empty();
 	}
 
 }

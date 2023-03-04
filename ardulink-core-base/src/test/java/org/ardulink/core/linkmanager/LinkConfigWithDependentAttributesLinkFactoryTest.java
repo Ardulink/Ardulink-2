@@ -25,7 +25,6 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.Mockito.mock;
 
 import org.ardulink.core.Link;
-import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.Statement;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -101,14 +100,11 @@ class LinkConfigWithDependentAttributesLinkFactoryTest {
 	}
 
 	@Test
-	void canInstantiateLinkWithDependentAttributes() throws Exception {
-		withRegistered(new LinkConfigWithDependentAttributesLinkFactory()).execute(new Statement() {
-			@Override
-			public void execute() {
-				Link link = LinkManager.getInstance()
-						.getConfigurer(newURI("ardulink://dependendAttributes?devicePort=foo&host=h&port=1")).newLink();
-				assertThat(link, is(notNullValue()));
-			}
+	void canInstantiateLinkWithDependentAttributes() throws Throwable {
+		withRegistered(new LinkConfigWithDependentAttributesLinkFactory()).execute(() -> {
+			Link link = LinkManager.getInstance()
+					.getConfigurer(newURI("ardulink://dependendAttributes?devicePort=foo&host=h&port=1")).newLink();
+			assertThat(link, is(notNullValue()));
 		});
 	}
 

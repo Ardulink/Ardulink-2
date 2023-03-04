@@ -23,13 +23,13 @@ import java.util.List;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
-import jssc.SerialPortList;
-
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+
+import jssc.SerialPortList;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -68,7 +68,7 @@ public class SerialLinkConfig implements LinkConfig {
 	}
 
 	private Protocol useProtoOrFallback(Protocol prefered) {
-		return isAvailable(prefered) ? prefered : getFirst(Protocols.list()).orNull();
+		return isAvailable(prefered) ? prefered : getFirst(Protocols.list()).orElse(null);
 	}
 
 	private boolean isAvailable(Protocol prefered) {

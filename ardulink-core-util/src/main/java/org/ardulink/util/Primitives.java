@@ -16,14 +16,14 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static java.util.stream.Collectors.toList;
 import static org.ardulink.util.Preconditions.checkArgument;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.ardulink.util.anno.LapsedWith;
+import java.util.EnumSet;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -35,139 +35,75 @@ import org.ardulink.util.anno.LapsedWith;
  */
 public enum Primitives {
 
-	INT(Integer.TYPE, Integer.class) {
-		@Override
-		public Integer parse(String value) {
-			return Integer.valueOf(value);
-		}
-	},
-	BYTE(Byte.TYPE, Byte.class) {
-		@Override
-		public Byte parse(String value) {
-			return Byte.valueOf(value);
-		}
-	},
-	SHORT(Short.TYPE, Short.class) {
-		@Override
-		public Short parse(String value) {
-			return Short.valueOf(value);
-		}
-	},
-	LONG(Long.TYPE, Long.class) {
-		@Override
-		public Long parse(String value) {
-			return Long.valueOf(value);
-		}
-	},
-	FLOAT(Float.TYPE, Float.class) {
-		@Override
-		public Float parse(String value) {
-			return Float.valueOf(value);
-		}
-	},
-	DOUBLE(Double.TYPE, Double.class) {
-		@Override
-		public Double parse(String value) {
-			return Double.valueOf(value);
-		}
-	},
-	BOOLEAN(Boolean.TYPE, Boolean.class) {
-		@Override
-		public Boolean parse(String value) {
-			return Boolean.valueOf(value);
-		}
-	},
-	CHAR(Character.TYPE, Character.class) {
-		@Override
-		public Character parse(String value) {
-			checkArgument(value.length() == 1,
-					"single character expected but got %s", value);
-			return Character.valueOf(value.charAt(0));
-		}
+	INT(Integer.TYPE, Integer.class, s -> Integer.valueOf(s)), //
+	BYTE(Byte.TYPE, Byte.class, s -> Byte.valueOf(s)), //
+	SHORT(Short.TYPE, Short.class, s -> Short.valueOf(s)), //
+	LONG(Long.TYPE, Long.class, s -> Long.valueOf(s)), //
+	FLOAT(Float.TYPE, Float.class, s -> Float.valueOf(s)), //
+	DOUBLE(Double.TYPE, Double.class, s -> Double.valueOf(s)), //
+	BOOLEAN(Boolean.TYPE, Boolean.class, s -> Boolean.valueOf(s)), //
+	CHAR(Character.TYPE, Character.class, s -> {
+		checkArgument(s.length() == 1, "single character expected but got %s", s);
+		return Character.valueOf(s.charAt(0));
+	}) {
+
 	};
 
 	private final Class<?> type;
 	private final Class<?> wrapperType;
+	private final Function<String, Object> parseFunction;
 
-	private Primitives(Class<?> type, Class<?> wrapperType) {
+	private Primitives(Class<?> type, Class<?> wrapperType, Function<String, Object> parseFunction) {
 		this.type = type;
 		this.wrapperType = wrapperType;
+		this.parseFunction = parseFunction;
 	}
 
-	@LapsedWith(module = JDK8, value = "Lambda") // pass Function<String,Object> to constructor
-	public abstract Object parse(String value);
+	public final Object parse(String value) {
+		return parseFunction.apply(value);
+	}
 
-	public Class<?> getWrapperType() {
+	public final Class<?> getWrapperType() {
 		return wrapperType;
 	}
 
-	@LapsedWith(value = JDK8, module = "Optional#map")
 	public static Object parseAs(Class<?> type, String value) {
-		Optional<Primitives> primitive = findPrimitiveFor(type);
-		return primitive.isPresent() ? primitive.get().parse(value) : null;
+		return findPrimitiveFor(type).map(p -> p.parse(value)).orElse(null);
 	}
 
-	@LapsedWith(value = JDK8, module = "Streams")
-	private static Optional<Primitives> findPrimitiveFor(Class<?> type) {
-		for (Primitives primitive : values()) {
-			if (type.isAssignableFrom(primitive.getType())) {
-				return Optional.of(primitive);
-			}
-		}
-		return Optional.absent();
+	private static java.util.Optional<Primitives> findPrimitiveFor(Class<?> type) {
+		return EnumSet.allOf(Primitives.class).stream().filter(p -> type.isAssignableFrom(p.getType())).findFirst();
 	}
 
-	@LapsedWith(value = JDK8, module = "Streams")
 	public static Primitives forClassName(String name) {
-		for (Primitives primitives : values()) {
-			if (primitives.getType().getName().equals(name)) {
-				return primitives;
-			}
-		}
-		return null;
+		return EnumSet.allOf(Primitives.class).stream().filter(p -> p.getType().getName().equals(name)).findFirst()
+				.orElse(null);
 	}
 
 	public Class<?> getType() {
 		return type;
 	}
 
-	@LapsedWith(value = JDK8, module = "Streams")
 	public static boolean isWrapperType(Class<?> clazz) {
-		for (Primitives primitive : values()) {
-			if (clazz.equals(primitive.getWrapperType())) {
-				return true;
-			}
-		}
-		return false;
+		return EnumSet.allOf(Primitives.class).stream().map(Primitives::getWrapperType).anyMatch(clazz::equals);
 	}
 
-	@LapsedWith(value = JDK8, module = "Streams")
 	public static Collection<Class<?>> allPrimitiveTypes() {
-		Set<Class<?>> primitives = new HashSet<Class<?>>();
-		for (Primitives primitive : values()) {
-			primitives.add(primitive.getType());
-		}
-		return primitives;
+		return EnumSet.allOf(Primitives.class).stream().map(Primitives::getType).collect(toList());
 	}
 
-	@LapsedWith(value = JDK8, module = "Streams")
 	public static Class<?> unwrap(Class<?> clazz) {
-		for (Primitives primitive : values()) {
-			if (clazz.equals(primitive.getWrapperType())) {
-				return primitive.getType();
-			}
-		}
-		return clazz;
+		return findAndMap(clazz, p -> clazz.equals(p.getWrapperType()), Primitives::getType);
 	}
 
-	@LapsedWith(value = JDK8, module = "Streams")
 	public static Class<?> wrap(Class<?> clazz) {
-		for (Primitives primitive : values()) {
-			if (clazz.equals(primitive.getType())) {
-				return primitive.getWrapperType();
-			}
-		}
-		return clazz;
+		return findAndMap(clazz, p -> clazz.equals(p.getType()), Primitives::getWrapperType);
+	}
+
+	private static Class<?> findAndMap(Class<?> clazz, Predicate<? super Primitives> predicate,
+			Function<? super Primitives, ? extends Class<?>> mapper) {
+		Optional<Class<?>> map = EnumSet.allOf(Primitives.class).stream().filter(predicate).findFirst().map(mapper);
+		return map.orElse(clazz);
 	}
 
 }

@@ -16,14 +16,12 @@ limitations under the License.
 
 package org.ardulink.core;
 
-import static org.ardulink.util.anno.LapsedWith.JDK8;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.util.anno.LapsedWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,11 +117,7 @@ public abstract class StreamReader implements Closeable {
 
 	@Override
 	public void close() throws IOException {
-		@LapsedWith(module = JDK8, value = "Optional#ifPresent")
-		Thread locThread = this.thread;
-		if (locThread != null) {
-			locThread.interrupt();
-		}
+		Optional.ofNullable(thread).ifPresent(Thread::interrupt);
 	}
 
 }

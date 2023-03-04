@@ -23,8 +23,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-
-import org.ardulink.util.Optional;
+import java.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -47,8 +46,7 @@ public final class MessageIdHolders {
 		super();
 	}
 
-	public static class MessageIdHolderInvocationHandler implements
-			InvocationHandler {
+	public static class MessageIdHolderInvocationHandler implements InvocationHandler {
 
 		private static final Method messageIdHolderGetIdMethod = getMessageIdHolderGetIdMethod();
 
@@ -61,18 +59,15 @@ public final class MessageIdHolders {
 		}
 
 		@Override
-		public Object invoke(Object proxy, Method method, Object[] args)
-				throws Throwable {
-			return isMessageIdHolderGetIdMethod(method) ? messageId : delegate(
-					method, args);
+		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+			return isMessageIdHolderGetIdMethod(method) ? messageId : delegate(method, args);
 		}
 
 		private boolean isMessageIdHolderGetIdMethod(Method method) {
 			return messageIdHolderGetIdMethod.equals(method);
 		}
 
-		private Object delegate(Method method, Object[] args)
-				throws IllegalAccessException, InvocationTargetException {
+		private Object delegate(Method method, Object[] args) throws IllegalAccessException, InvocationTargetException {
 			return method.invoke(delegate, args);
 		}
 
@@ -89,25 +84,21 @@ public final class MessageIdHolders {
 	}
 
 	/**
-	 * Creates a dynamic proxy that implements MessageIdHolder automatically.
-	 * Calls to {@link MessageIdHolder#getId()} will return the passed
+	 * Creates a dynamic proxy that implements MessageIdHolder automatically. Calls
+	 * to {@link MessageIdHolder#getId()} will return the passed
 	 * <code>messageId</code>. All other calls are forwarded to the passed
 	 * <code>delegateTo</code>.
 	 * 
-	 * @param delegateTo
-	 *            the instance to delegate all calls except
-	 *            {@link MessageIdHolder#getId()}
-	 * @param messageId
-	 *            the messageId to return when {@link MessageIdHolder#getId()}
-	 *            is called
+	 * @param delegateTo the instance to delegate all calls except
+	 *                   {@link MessageIdHolder#getId()}
+	 * @param messageId  the messageId to return when
+	 *                   {@link MessageIdHolder#getId()} is called
 	 * @return dynamic proxy implementing {@link MessageIdHolder}
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T addMessageId(T delegateTo, long messageId) {
-		return (T) Proxy.newProxyInstance(
-				delegateTo.getClass().getClassLoader(),
-				insertInto(Class.class, MessageIdHolder.class, delegateTo
-						.getClass().getInterfaces()),
+		return (T) Proxy.newProxyInstance(delegateTo.getClass().getClassLoader(),
+				insertInto(Class.class, MessageIdHolder.class, delegateTo.getClass().getInterfaces()),
 				new MessageIdHolderInvocationHandler(delegateTo, messageId));
 	}
 
@@ -124,9 +115,7 @@ public final class MessageIdHolders {
 	}
 
 	public static Optional<MessageIdHolder> toHolder(Object msg) {
-		return msg instanceof MessageIdHolder ? Optional
-				.of((MessageIdHolder) msg) : Optional
-				.<MessageIdHolder> absent();
+		return msg instanceof MessageIdHolder ? Optional.of((MessageIdHolder) msg) : Optional.empty();
 	}
 
 }

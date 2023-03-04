@@ -18,12 +18,12 @@ package org.ardulink.gui.hamcrest;
 import static org.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
 
 import java.awt.Component;
+import java.util.Optional;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.hamcrest.Matcher;
-import org.ardulink.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -37,7 +37,7 @@ public class BaseBuilder {
 
 	private static final int ELEMENTS_PER_ROW = 3;
 	private final int row;
-	private Optional<String> label = Optional.<String> absent();
+	private Optional<String> label = Optional.empty();
 
 	public BaseBuilder(int row) {
 		this.row = row;

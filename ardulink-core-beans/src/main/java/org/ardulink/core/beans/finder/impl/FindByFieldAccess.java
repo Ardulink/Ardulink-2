@@ -17,14 +17,10 @@ limitations under the License.
 package org.ardulink.core.beans.finder.impl;
 
 import static java.lang.reflect.Modifier.isPublic;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
 
 import org.ardulink.core.beans.finder.api.AttributeFinder;
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -54,15 +50,9 @@ public class FindByFieldAccess implements AttributeFinder {
 		return find(bean);
 	}
 
-	@LapsedWith(module = JDK8, value = "Streams")
 	private Iterable<FieldAccess> find(Object bean) {
-		List<FieldAccess> accessors = new ArrayList<FieldAccess>();
-		for (Field field : bean.getClass().getDeclaredFields()) {
-			if (isPublic(field.getModifiers())) {
-				accessors.add(new FieldAccess(bean, field.getName(), field));
-			}
-		}
-		return accessors;
+		return stream(bean.getClass().getDeclaredFields()).filter(f -> isPublic(f.getModifiers()))
+				.map(f -> new FieldAccess(bean, f.getName(), f)).collect(toList());
 	}
 
 }
