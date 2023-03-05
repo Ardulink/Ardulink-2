@@ -1,6 +1,7 @@
 package org.ardulink.connection.proxy;
 
 import static java.time.Duration.ofMillis;
+import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
@@ -35,8 +36,10 @@ import org.junit.jupiter.api.Timeout;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-@Timeout(15)
+@Timeout(NetworkProxyServerTest.TIMEOUT)
 class NetworkProxyServerTest {
+
+	static final int TIMEOUT = 5;
 
 	private final StringBuilder proxySideReceived = new StringBuilder();
 	private final Connection proxySideConnection = new Connection() {
@@ -60,7 +63,7 @@ class NetworkProxyServerTest {
 		public void close() throws IOException {
 			// noop
 		}
-		
+
 	};
 
 	private ConnectionBasedLink clientSideLink;
@@ -74,17 +77,21 @@ class NetworkProxyServerTest {
 
 	@Test
 	void proxyServerDoesReceiveMessagesSentByClient() throws Exception {
-		int times = 3;
-		for (int i = 0; i < times; i++) {
+		StringBuilder expected = new StringBuilder();
+		for (int i = 0; i < 3; i++) {
 			this.clientSideLink.switchAnalogPin(analogPin(1), 2);
+			expected.append(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(1).withValue(2) + "\n");
 		}
+		assertReceived(expected);
+	}
 
-		String message = alpProtocolMessage(POWER_PIN_INTENSITY).forPin(1).withValue(2) + "\n";
-		assertReceived(message + message + message);
+	private void assertReceived(StringBuilder expected) {
+		assertReceived(expected.toString());
 	}
 
 	private void assertReceived(String expectedMsg) {
-		await().pollInterval(ofMillis(50)).until(() -> proxySideReceived.toString(), expectedMsg::equals);
+		await().timeout(ofSeconds(TIMEOUT * 2)).pollInterval(ofMillis(50)).until(() -> proxySideReceived.toString(),
+				expectedMsg::equals);
 	}
 
 	private ConnectionBasedLink clientLinkToServer(String hostname, int port) throws UnknownHostException, IOException {
@@ -166,7 +173,7 @@ class NetworkProxyServerTest {
 	private ProxyLinkConfig configure(ProxyLinkConfig linkConfig, String hostname, int tcpPort) {
 		linkConfig.setTcphost(hostname);
 		linkConfig.setTcpport(tcpPort);
-		linkConfig.setPort("anything non null");
+		linkConfig.setPort("anything non-null");
 		return linkConfig;
 	}
 
