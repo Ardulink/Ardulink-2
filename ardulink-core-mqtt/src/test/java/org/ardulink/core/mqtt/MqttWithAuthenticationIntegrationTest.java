@@ -48,7 +48,7 @@ class MqttWithAuthenticationIntegrationTest {
 	static final String TOPIC = "myTopic" + System.currentTimeMillis();
 
 	@RegisterExtension
-	Broker broker = Broker.newBroker().authentication(USER + ":" + PASSWORD);
+	Broker broker = Broker.newBroker().authentication(USER, PASSWORD.getBytes());
 
 	@Test
 	void canNotConnectWithoutUserAndPassword() {

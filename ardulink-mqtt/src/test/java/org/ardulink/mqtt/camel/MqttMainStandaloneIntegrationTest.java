@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.camel.FailedToStartRouteException;
 import org.ardulink.mqtt.CommandLineArguments;
-import org.ardulink.mqtt.MqttBroker;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttMain;
 import org.ardulink.util.Strings;
@@ -130,7 +129,6 @@ class MqttMainStandaloneIntegrationTest {
 		};
 		mqttMain.connectToMqttBroker();
 		mqttMain.close();
-		System.clearProperty(MqttBroker.Builder.propertyName());
 	}
 
 	@Test

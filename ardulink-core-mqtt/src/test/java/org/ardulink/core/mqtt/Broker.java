@@ -17,13 +17,13 @@ limitations under the License.
 package org.ardulink.core.mqtt;
 
 import static io.moquette.BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.AUTHENTICATOR_CLASS_NAME;
 import static io.moquette.BrokerConstants.HOST_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -31,7 +31,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.ardulink.core.mqtt.duplicated.Message;
 import org.ardulink.util.Lists;
-import org.ardulink.util.Strings;
+import org.ardulink.util.Objects;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -53,23 +53,12 @@ import io.moquette.interception.messages.InterceptPublishMessage;
  */
 public class Broker implements BeforeEachCallback, AfterEachCallback {
 
-	public static class EnvironmentAuthenticator implements IAuthenticator {
-
-		@Override
-		public boolean checkValid(String clientId, String username, byte[] password) {
-			String userPass = userPass();
-			String[] split = userPass.split("\\:");
-			return split.length == 2 && split[0].equals(username) && split[1].equals(new String(password));
-		}
-
-	}
-
 	private Server mqttServer;
+	private IAuthenticator authenticator;
 	private String host = "localhost";
 	private int port = MqttLinkConfig.DEFAULT_PORT;
 	private final List<InterceptHandler> listeners = Lists.newArrayList();
 	private final List<Message> messages = new CopyOnWriteArrayList<>();
-	private String env2restore;
 
 	private Broker() {
 		super();
@@ -94,38 +83,23 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 	@Override
 	public void afterEach(ExtensionContext context) {
 		stop();
-		if (this.env2restore == null) {
-			System.clearProperty(propertyName());
-		} else {
-			System.setProperty(propertyName(), this.env2restore);
-		}
 	}
 
 	public void start() throws IOException {
 		MemoryConfig memoryConfig = new MemoryConfig(properties());
-		this.mqttServer.startServer(memoryConfig, listeners);
+		this.mqttServer.startServer(memoryConfig, listeners, null, authenticator, null);
 	}
 
 	private Properties properties() {
 		Properties properties = new Properties();
 		properties.put(HOST_PROPERTY_NAME, host);
 		properties.put(PORT_PROPERTY_NAME, String.valueOf(port));
-		String property = userPass();
-		if (!Strings.nullOrEmpty(property)) {
-			properties.setProperty(AUTHENTICATOR_CLASS_NAME, EnvironmentAuthenticator.class.getName());
+		if (this.authenticator != null) {
 			properties.setProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, Boolean.FALSE.toString());
 		}
 		properties.put(PERSISTENT_STORE_PROPERTY_NAME, "");
 		properties.put(WEB_SOCKET_PORT_PROPERTY_NAME, "0");
 		return properties;
-	}
-
-	private static String userPass() {
-		return System.getProperty(propertyName());
-	}
-
-	private static String propertyName() {
-		return Broker.class.getName() + ".authentication";
 	}
 
 	public void stop() {
@@ -161,8 +135,8 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 		return port;
 	}
 
-	public Broker authentication(String authentication) {
-		this.env2restore = System.setProperty(propertyName(), authentication);
+	public Broker authentication(String username, byte[] password) {
+		this.authenticator = (c, u, p) -> Objects.equals(username, u) && Arrays.equals(password, p);
 		return this;
 	}
 
