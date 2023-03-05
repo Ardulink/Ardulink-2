@@ -20,6 +20,7 @@ import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
 import static org.ardulink.util.Classes.constructor;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Predicates.not;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.Throwables.propagateIfInstanceOf;
 
@@ -36,7 +37,6 @@ import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.Classloaders;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.util.Predicates;
 import org.ardulink.util.Strings;
 
 /**
@@ -129,8 +129,7 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 
 	private List<LinkFactory<LinkConfig>> read(ClassLoader classloader, URL url) {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
-			return reader.lines().filter(Predicates.not(String::isEmpty)).map(l -> processLine(classloader, l))
-					.collect(toList());
+			return reader.lines().filter(not(String::isEmpty)).map(l -> processLine(classloader, l)).collect(toList());
 		} catch (IOException e) {
 			throw propagate(e);
 		}
