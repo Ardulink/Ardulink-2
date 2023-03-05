@@ -3,6 +3,7 @@ package org.ardulink.core.bluetooth;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,9 @@ import javax.bluetooth.ServiceRecord;
 import javax.bluetooth.UUID;
 
 public class BluetoothDiscoveryUtil {
+
+	private static final int SERVICE_NAME = 0x0100;
+	private static final UUID SERIAL_PORT_SERVICE = new UUID(0x1101);
 
 	public static Map<String, ServiceRecord> getDevices() {
 		// TODO should be replaced by Semaphore
@@ -38,8 +42,7 @@ public class BluetoothDiscoveryUtil {
 
 		for (RemoteDevice device : devices) {
 			try {
-				agent.searchServices(serviceName(), serialPortService(),
-						device, listener);
+				agent.searchServices(serviceName(), serialPortService(), device, listener);
 				synchronized (lock) {
 					lock.wait();
 				}
@@ -47,20 +50,17 @@ public class BluetoothDiscoveryUtil {
 				throw propagate(e);
 			}
 		}
-
 		return ports;
-		
 	}
 
-	private static DiscoveryListener listener(List<RemoteDevice> devices,
-                                              Map<String, ServiceRecord> ports, Object lock) {
+	private static DiscoveryListener listener(List<RemoteDevice> devices, Map<String, ServiceRecord> ports,
+			Object lock) {
 		return new DiscoveryListener() {
 
 			private final Map<RemoteDevice, ServiceRecord[]> services = new HashMap<>();
 
 			@Override
-			public void deviceDiscovered(RemoteDevice remoteDevice,
-					DeviceClass deviceClass) {
+			public void deviceDiscovered(RemoteDevice remoteDevice, DeviceClass deviceClass) {
 				devices.add(remoteDevice);
 			}
 
@@ -73,8 +73,7 @@ public class BluetoothDiscoveryUtil {
 
 			@Override
 			public void serviceSearchCompleted(int arg0, int arg1) {
-				for (Entry<RemoteDevice, ServiceRecord[]> entry : services
-						.entrySet()) {
+				for (Entry<RemoteDevice, ServiceRecord[]> entry : services.entrySet()) {
 					ServiceRecord service = findService(entry.getValue());
 					if (service != null) {
 						ports.put(getName(entry.getKey()), service);
@@ -86,8 +85,7 @@ public class BluetoothDiscoveryUtil {
 			}
 
 			public String getName(RemoteDevice remoteDevice) {
-				return getFriendlyName(remoteDevice) + " "
-						+ remoteDevice.getBluetoothAddress();
+				return getFriendlyName(remoteDevice) + " " + remoteDevice.getBluetoothAddress();
 			}
 
 			public String getFriendlyName(RemoteDevice remoteDevice) {
@@ -108,20 +106,16 @@ public class BluetoothDiscoveryUtil {
 				if (serviceRecords.length == 1) {
 					return serviceRecords[0];
 				}
-				for (ServiceRecord serviceRecord : serviceRecords) {
-					DataElement serviceName = serviceRecord
-							.getAttributeValue(0x0100);
-					if (serviceName != null
-							&& "DevB".equals(serviceName.getValue())) {
-						return serviceRecord;
-					}
-				}
-				return null;
+				return Arrays.stream(serviceRecords).filter(r -> isDevB(r)).findFirst().orElse(null);
+			}
+
+			private boolean isDevB(ServiceRecord r) {
+				DataElement serviceName = r.getAttributeValue(SERVICE_NAME);
+				return serviceName != null && "DevB".equals(serviceName.getValue());
 			}
 
 			@Override
-			public void servicesDiscovered(int transID,
-					ServiceRecord[] serviceRecords) {
+			public void servicesDiscovered(int transID, ServiceRecord[] serviceRecords) {
 				for (ServiceRecord serviceRecord : serviceRecords) {
 					services.put(serviceRecord.getHostDevice(), serviceRecords);
 				}
@@ -129,7 +123,7 @@ public class BluetoothDiscoveryUtil {
 
 		};
 	}
-	
+
 	private static LocalDevice getLocalDevice() {
 		try {
 			return LocalDevice.getLocalDevice();
@@ -139,10 +133,11 @@ public class BluetoothDiscoveryUtil {
 	}
 
 	private static int[] serviceName() {
-		return new int[] { 0x0100 };
+		return new int[] { SERVICE_NAME };
 	}
 
 	private static UUID[] serialPortService() {
-		return new UUID[] { new UUID(0x1101) };
+		return new UUID[] { SERIAL_PORT_SERVICE };
 	}
+
 }
