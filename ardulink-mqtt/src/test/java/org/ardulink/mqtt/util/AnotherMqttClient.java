@@ -17,23 +17,22 @@ limitations under the License.
 package org.ardulink.mqtt.util;
 
 import static java.util.Collections.unmodifiableMap;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.mqtt.MqttCamelRouteBuilder.PUBLISH_HEADER;
 import static org.ardulink.mqtt.MqttCamelRouteBuilder.SUBSCRIBE_HEADER;
 import static org.ardulink.util.Throwables.propagate;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Processor;
@@ -43,9 +42,7 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
 import org.ardulink.mqtt.MqttCamelRouteBuilder;
-import org.ardulink.util.StopWatch;
 import org.ardulink.util.Throwables;
-import org.ardulink.util.anno.LapsedWith;
 import org.hamcrest.Matcher;
 
 /**
@@ -167,23 +164,11 @@ public class AnotherMqttClient implements Closeable {
 		};
 	}
 
-	@LapsedWith(module = JDK8, value = "org.awaitability")
 	public void awaitMessages(Matcher<List<Message>> matcher) {
-		StopWatch stopWatch = new StopWatch().start();
-		while (stopWatch.getTime(SECONDS) < 10) {
-			try {
-				assertThat(this.messages, matcher);
-				return;
-			} catch (AssertionError e) {
-				try {
-					TimeUnit.MILLISECONDS.sleep(100);
-				} catch (InterruptedException e1) {
-					Thread.currentThread().interrupt();
-				}
-			}
-		}
+		await().timeout(Duration.ofSeconds(10)).pollInterval(Duration.ofMillis(100))
+				.untilAsserted(() -> assertThat(messages, matcher));
 	}
-	
+
 	public void clear() {
 		this.messages.clear();
 	}

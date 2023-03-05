@@ -16,11 +16,12 @@ limitations under the License.
 
 package org.ardulink.core.mqtt.duplicated;
 
+import static java.time.Duration.ofMillis;
+import static java.time.Duration.ofSeconds;
 import static java.util.Collections.unmodifiableMap;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.awaitility.Awaitility.await;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -30,13 +31,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
-import org.ardulink.util.StopWatch;
 import org.ardulink.util.URIs;
-import org.ardulink.util.anno.LapsedWith;
 import org.fusesource.mqtt.client.Future;
 import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
@@ -47,7 +45,7 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 // TODO create a Mqtt test package and move AnotherMQttClient, ... to it
-// TODO create a @MqttBroker Rule
+// TODO create a @MqttBroker Extension
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -122,21 +120,8 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 		return this;
 	}
 
-	@LapsedWith(module = JDK8, value = "org.awaitability")
 	public void awaitMessages(Matcher<List<Message>> matcher) {
-		StopWatch stopWatch = new StopWatch().start();
-		while (stopWatch.getTime(SECONDS) < 10) {
-			try {
-				assertThat(this.messages, matcher);
-				return;
-			} catch (AssertionError e) {
-				try {
-					TimeUnit.MILLISECONDS.sleep(100);
-				} catch (InterruptedException e1) {
-					Thread.currentThread().interrupt();
-				}
-			}
-		}
+		await().timeout(ofSeconds(10)).pollInterval(ofMillis(100)).untilAsserted(() -> assertThat(messages, matcher));
 	}
 
 	public void clear() {

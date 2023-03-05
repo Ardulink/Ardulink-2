@@ -16,7 +16,7 @@ limitations under the License.
 
 package org.ardulink.core;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.time.Duration.ofMillis;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -29,7 +29,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_P
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
@@ -55,7 +55,6 @@ import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.Joiner;
 import org.ardulink.util.Lists;
-import org.ardulink.util.anno.LapsedWith;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -360,15 +359,8 @@ class ConnectionBasedLinkTest {
 		return this.os.toString();
 	}
 
-	@LapsedWith(value = JDK8, module = "Awaitility")
 	private void waitUntilRead() {
-		while (bytesNotYetRead.get() > 0) {
-			try {
-				MILLISECONDS.sleep(10);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-		}
+		await().pollDelay(ofMillis(10)).until(() -> bytesNotYetRead.get() == 0);
 	}
 
 }
