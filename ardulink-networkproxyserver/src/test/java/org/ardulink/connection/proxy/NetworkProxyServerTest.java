@@ -8,7 +8,6 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -17,6 +16,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -26,15 +26,12 @@ import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.proxy.ProxyLinkConfig;
 import org.ardulink.core.proxy.ProxyLinkFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 @Timeout(NetworkProxyServerTest.TIMEOUT)
 class NetworkProxyServerTest {
@@ -43,27 +40,27 @@ class NetworkProxyServerTest {
 
 	private final StringBuilder proxySideReceived = new StringBuilder();
 	private final Connection proxySideConnection = new Connection() {
-
+	
 		@Override
 		public void write(byte[] bytes) throws IOException {
 			proxySideReceived.append(new String(bytes));
 		}
-
+	
 		@Override
 		public void addListener(Listener listener) {
 			// noop
 		}
-
+	
 		@Override
 		public void removeListener(Listener listener) {
 			// noop
 		}
-
+	
 		@Override
 		public void close() throws IOException {
 			// noop
 		}
-
+	
 	};
 
 	private ConnectionBasedLink clientSideLink;
@@ -132,30 +129,38 @@ class NetworkProxyServerTest {
 							}
 
 							private Configurer configurer() {
-								Configurer configurer = mock(Configurer.class);
-								when(configurer.getAttributes()).thenReturn(singletonList("port"));
-								when(configurer.getAttribute(anyString())).thenAnswer(new Answer<ConfigAttribute>() {
+								return new Configurer() {
+
 									@Override
-									public ConfigAttribute answer(InvocationOnMock invocation) {
-										return configAttributeofName((String) invocation.getArguments()[0]);
+									public Object uniqueIdentifier() {
+										return "";
 									}
 
-									private ConfigAttribute configAttributeofName(String key) {
-										ConfigAttribute attribute = mock(ConfigAttribute.class);
-										when(attribute.getName()).thenReturn(key);
-										return attribute;
-									}
-								});
-								when(configurer.newLink()).then(new Answer<Link>() {
 									@Override
-									public Link answer(InvocationOnMock invocation) {
-										ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2()
-												.newByteStreamProcessor();
-										return new ConnectionBasedLink(proxySideConnection, byteStreamProcessor);
+									public Collection<String> getAttributes() {
+										return singletonList("port");
 									}
-								});
-								return configurer;
+
+									@Override
+									public ConfigAttribute getAttribute(String key) {
+										return configAttributeOfName(key);
+									}
+
+									@Override
+									public Link newLink() {
+										return new ConnectionBasedLink(proxySideConnection,
+												new ArdulinkProtocol2().newByteStreamProcessor());
+									}
+
+								};
 							}
+
+							private ConfigAttribute configAttributeOfName(String key) {
+								ConfigAttribute attribute = mock(ConfigAttribute.class);
+								when(attribute.getName()).thenReturn(key);
+								return attribute;
+							}
+
 						};
 					}
 				}.execute(freePort);
