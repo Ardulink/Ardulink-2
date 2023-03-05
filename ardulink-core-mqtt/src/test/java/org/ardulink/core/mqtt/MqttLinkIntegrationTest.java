@@ -16,14 +16,16 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
+import static java.time.Duration.ofMillis;
+import static java.time.Duration.ofMinutes;
+import static java.time.Duration.ofSeconds;
 import static java.util.Arrays.asList;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
 import static org.ardulink.util.ServerSockets.freePort;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -31,13 +33,13 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
 import org.ardulink.core.mqtt.duplicated.EventMatchers.PinValueChangedEventMatcher;
 import org.ardulink.core.mqtt.duplicated.Message;
-import org.ardulink.util.anno.LapsedWith;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsCollectionContaining;
 import org.junit.jupiter.api.Timeout;
@@ -53,8 +55,10 @@ import org.junit.jupiter.params.provider.MethodSource;
  * [adsense]
  *
  */
-@Timeout(30)
+@Timeout(MqttLinkIntegrationTest.TIMEOUT)
 class MqttLinkIntegrationTest {
+
+	static final int TIMEOUT = 30;
 
 	private static class TestConfig {
 
@@ -77,20 +81,20 @@ class MqttLinkIntegrationTest {
 
 	public static class TrackStateConnectionListener implements ConnectionListener {
 
-		private boolean connected = true;
+		private AtomicBoolean connected = new AtomicBoolean(true);
 
-		public boolean isConnected() {
+		public AtomicBoolean isConnected() {
 			return connected;
 		}
 
 		@Override
 		public void connectionLost() {
-			this.connected = false;
+			this.connected.set(false);
 		}
 
 		@Override
 		public void reconnected() {
-			this.connected = true;
+			this.connected.set(true);
 		}
 
 	}
@@ -113,17 +117,17 @@ class MqttLinkIntegrationTest {
 				new TestConfig("separateTopics", true, TOPIC + "/%s/value/set") //
 		);
 	}
-	
+
 	void init(TestConfig config) {
-		this.mqttClient.appendValueSet(config.separateTopics);
+		this.separateTopics = config.separateTopics;
 		this.messageFormat = config.messageFormat;
-		String clientUri = "ardulink://mqtt?host=localhost&port=" + broker.getPort() + "&topic=" + TOPIC
-				+ "&separatedTopics=" + config.separateTopics;
+		this.mqttClient.appendValueSet(config.separateTopics);
 	}
-	
+
 	@ParameterizedTest(name = "{index} {0}")
 	@MethodSource("data")
-	void defaultHostIsLocalhostAndLinkHasCreatedWithoutConfiguring(TestConfig testConfig) throws UnknownHostException, IOException {
+	void defaultHostIsLocalhostAndLinkHasCreatedWithoutConfiguring(TestConfig testConfig)
+			throws UnknownHostException, IOException {
 		init(testConfig);
 		MqttLinkFactory factory = new MqttLinkFactory();
 		MqttLinkConfig config = makeConfig(factory);
@@ -164,10 +168,10 @@ class MqttLinkIntegrationTest {
 		link.close();
 	}
 
-	private void breedReconnectedState(MqttLink link) throws IOException, InterruptedException {
+	private void breedReconnectedState(MqttLink link) throws IOException {
 		TrackStateConnectionListener connectionListener = new TrackStateConnectionListener();
 		link.addConnectionListener(connectionListener);
-		assertThat(connectionListener.isConnected(), is(true));
+		assertThat(connectionListener.isConnected().get(), is(true));
 
 		restartBroker(connectionListener);
 		waitForLinkReconnect(connectionListener);
@@ -188,21 +192,19 @@ class MqttLinkIntegrationTest {
 		return config;
 	}
 
-	@LapsedWith(module = JDK8, value = "org.awaitability")
-	public void waitForLinkReconnect(TrackStateConnectionListener connectionListener) throws InterruptedException {
-		while (!connectionListener.isConnected()) {
-			MILLISECONDS.sleep(100);
-		}
+	private void waitForLinkReconnect(TrackStateConnectionListener connectionListener) {
+		awaitConnectionIs(connectionListener, is(true));
 	}
 
-	@LapsedWith(module = JDK8, value = "org.awaitability")
-	public void restartBroker(TrackStateConnectionListener connectionListener)
-			throws InterruptedException, IOException {
+	private void restartBroker(TrackStateConnectionListener connectionListener) throws IOException {
 		this.broker.stop();
-		while (connectionListener.isConnected()) {
-			MILLISECONDS.sleep(100);
-		}
+		awaitConnectionIs(connectionListener, is(false));
 		this.broker.start();
+	}
+
+	private void awaitConnectionIs(TrackStateConnectionListener connectionListener, Matcher<Boolean> matcher) {
+		await().timeout(ofSeconds(TIMEOUT * 2)).pollInterval(ofMillis(100))
+				.untilAtomic(connectionListener.isConnected(), matcher);
 	}
 
 	private static Matcher<? super List<PinValueChangedEvent>> hasItems(PinValueChangedEventMatcher... matchers) {

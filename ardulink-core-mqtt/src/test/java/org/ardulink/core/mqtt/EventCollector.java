@@ -16,25 +16,23 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.time.Duration.ofMillis;
+import static java.time.Duration.ofSeconds;
+import static java.util.Collections.emptyList;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import org.ardulink.util.ListMultiMap;
-import org.ardulink.util.StopWatch;
-import org.ardulink.util.anno.LapsedWith;
-import org.hamcrest.Matcher;
 import org.ardulink.core.Pin.Type;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.PinValueChangedEvent;
+import org.ardulink.util.ListMultiMap;
+import org.hamcrest.Matcher;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -58,22 +56,9 @@ public class EventCollector implements EventListener {
 		events.put(DIGITAL, event);
 	}
 
-	@LapsedWith(module = JDK8, value = "org.awaitability")
 	public void awaitEvents(Type type, Matcher<? super List<PinValueChangedEvent>> matcher) {
-		StopWatch stopWatch = new StopWatch().start();
-		while (stopWatch.getTime(SECONDS) < 10) {
-			List<PinValueChangedEvent> list = events.asMap().get(type);
-			try {
-				assertThat(list == null ? Collections.<PinValueChangedEvent>emptyList() : list, matcher);
-				return;
-			} catch (AssertionError e) {
-				try {
-					TimeUnit.MILLISECONDS.sleep(100);
-				} catch (InterruptedException e1) {
-					Thread.currentThread().interrupt();
-				}
-			}
-		}
+		await().pollInterval(ofMillis(100)).timeout(ofSeconds(10))
+				.untilAsserted(() -> assertThat(events.asMap().getOrDefault(type, emptyList()), matcher));
 	}
 
 }

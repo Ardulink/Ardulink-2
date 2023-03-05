@@ -64,6 +64,7 @@
 		<junit.version>5.9.2</junit.version>
 		<hamcrest.version>2.2</hamcrest.version>
 		<mockito.version>1.10.19</mockito.version>
+		<awaitility.version>4.2.0</awaitility.version>
 		<!-- The next LTS release Camel 3.14, scheduled for December 2021, will be the last release to support Java 8 -->
 		<!-- https://camel.apache.org/blog/2021/09/eol-java8/ -->
 		<camel.version>3.14.0</camel.version>
@@ -280,6 +281,16 @@
 				<groupId>org.hamcrest</groupId>
 				<artifactId>hamcrest-library</artifactId>
 				<version>${hamcrest.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-all</artifactId>
+				<version>${mockito.version}</version>
+			</dependency>
+			<dependency>
+			      <groupId>org.awaitility</groupId>
+			      <artifactId>awaitility</artifactId>
+			      <version>${awaitility.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
