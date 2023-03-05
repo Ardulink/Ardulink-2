@@ -44,13 +44,14 @@ public abstract class AbstractListenerLink implements Link {
 	private static final Logger logger = LoggerFactory
 			.getLogger(AbstractListenerLink.class);
 
-	private final List<EventListener> eventListeners = new CopyOnWriteArrayList<EventListener>();
-	private final List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
-	private final List<RplyListener> rplyListeners = new CopyOnWriteArrayList<RplyListener>();
-	private final List<CustomListener> customListeners = new CopyOnWriteArrayList<CustomListener>();
+	private final List<EventListener> eventListeners = new CopyOnWriteArrayList<>();
+	private final List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<>();
+	private final List<RplyListener> rplyListeners = new CopyOnWriteArrayList<>();
+	private final List<CustomListener> customListeners = new CopyOnWriteArrayList<>();
 
 	private boolean closed;
 
+	@Override
 	public Link addListener(EventListener listener) throws IOException {
 		if (!closed && listener instanceof FilteredEventListenerAdapter) {
 			Pin pin = ((FilteredEventListenerAdapter) listener).getPin();
@@ -65,6 +66,7 @@ public abstract class AbstractListenerLink implements Link {
 		return this;
 	}
 
+	@Override
 	public Link removeListener(EventListener listener) throws IOException {
 		this.eventListeners.remove(listener);
 		if (!closed && listener instanceof FilteredEventListenerAdapter) {

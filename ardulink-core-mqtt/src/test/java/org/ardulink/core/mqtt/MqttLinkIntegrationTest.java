@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.core.mqtt;
 
 import static java.time.Duration.ofMillis;
-import static java.time.Duration.ofMinutes;
 import static java.time.Duration.ofSeconds;
 import static java.util.Arrays.asList;
 import static org.ardulink.core.Pin.analogPin;
@@ -32,6 +31,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -127,7 +127,7 @@ class MqttLinkIntegrationTest {
 	@ParameterizedTest(name = "{index} {0}")
 	@MethodSource("data")
 	void defaultHostIsLocalhostAndLinkHasCreatedWithoutConfiguring(TestConfig testConfig)
-			throws UnknownHostException, IOException {
+			throws IOException {
 		init(testConfig);
 		MqttLinkFactory factory = new MqttLinkFactory();
 		MqttLinkConfig config = makeConfig(factory);
@@ -147,7 +147,7 @@ class MqttLinkIntegrationTest {
 		breedReconnectedState(link);
 
 		link.switchAnalogPin(analogPin(8), 9);
-		mqttClient.awaitMessages(is(asList(new Message(topic("A8"), "9"))));
+		mqttClient.awaitMessages(is(Collections.singletonList(new Message(topic("A8"), "9"))));
 		link.close();
 	}
 
@@ -177,7 +177,7 @@ class MqttLinkIntegrationTest {
 		waitForLinkReconnect(connectionListener);
 	}
 
-	private MqttLink makeLink(EventCollector eventCollector) throws UnknownHostException, IOException {
+	private MqttLink makeLink(EventCollector eventCollector) throws IOException {
 		MqttLinkFactory factory = new MqttLinkFactory();
 		MqttLink link = factory.newLink(makeConfig(factory));
 		link.addListener(eventCollector);

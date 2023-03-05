@@ -52,7 +52,7 @@ public final class ByteStreamProcessors {
 		}
 	}
 
-	private static FromDeviceListener fromDeviceListener(final List<FromDeviceMessage> messages) {
+	private static FromDeviceListener fromDeviceListener(List<FromDeviceMessage> messages) {
 		return fromDevice -> messages.add(fromDevice);
 	}
 

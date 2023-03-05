@@ -144,7 +144,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		/**
 		 * only interpret "ready" packets to be ok
 		 */
-		READY_MESSAGE_ONLY;
+		READY_MESSAGE_ONLY
 	}
 
 	/**
@@ -158,8 +158,8 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	 * @return <code>true</code> if the arduino did response within the given time
 	 *         otherwise <code>false</code>
 	 */
-	public boolean waitForArduinoToBoot(int wait, TimeUnit timeUnit, final Mode mode) {
-		final AtomicBoolean deviceIsReady = new AtomicBoolean(false);
+	public boolean waitForArduinoToBoot(int wait, TimeUnit timeUnit, Mode mode) {
+		AtomicBoolean deviceIsReady = new AtomicBoolean(false);
 		ListenerAdapter listener = new ListenerAdapter() {
 			@Override
 			public void received(byte[] bytes) throws IOException {

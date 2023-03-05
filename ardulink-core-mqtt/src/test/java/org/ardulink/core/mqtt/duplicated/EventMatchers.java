@@ -16,11 +16,10 @@ limitations under the License.
 
 package org.ardulink.core.mqtt.duplicated;
 
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
-
 import org.ardulink.core.Pin;
 import org.ardulink.core.events.PinValueChangedEvent;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 
 /**
  * [ardulinktitle] [ardulinkversion]

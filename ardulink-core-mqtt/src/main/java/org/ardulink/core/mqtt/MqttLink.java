@@ -79,7 +79,7 @@ public class MqttLink extends AbstractListenerLink {
 	private final BlockingConnection connection;
 	private final boolean hasAppendix;
 
-	private static final Map<Type, String> typeMap = unmodifiableMap(new EnumMap<Type, String>(
+	private static final Map<Type, String> typeMap = unmodifiableMap(new EnumMap<>(
 			MapBuilder.<Type, String> newMapBuilder().put(Type.ANALOG, ANALOG)
 					.put(Type.DIGITAL, DIGITAL).build()));
 
@@ -139,7 +139,7 @@ public class MqttLink extends AbstractListenerLink {
 						log.error("Error while waiting for new message", e);
 					}
 				}
-			};
+			}
 
 			private Pin pin(String type, Integer pin) {
 				if (pin != null) {
@@ -164,7 +164,7 @@ public class MqttLink extends AbstractListenerLink {
 						.listener(multiplex(listener, connectionListener()));
 			}
 
-			private Listener multiplex(final Listener... listeners) {
+			private Listener multiplex(Listener... listeners) {
 				return new Listener() {
 
 					@Override
@@ -301,7 +301,7 @@ public class MqttLink extends AbstractListenerLink {
 		publish(topic + type + pin.pinNum() + appendixPub(), value);
 	}
 
-	private void publish(final String topic, Object value) throws IOException {
+	private void publish(String topic, Object value) throws IOException {
 		try {
 			connection.publish(topic, String.valueOf(value).getBytes(),
 					AT_MOST_ONCE, false);

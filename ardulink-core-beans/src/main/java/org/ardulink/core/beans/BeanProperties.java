@@ -114,7 +114,7 @@ public class BeanProperties {
 
 		@Override
 		public Annotation[] getAnnotations() {
-			Set<Annotation> annos = new LinkedHashSet<Annotation>();
+			Set<Annotation> annos = new LinkedHashSet<>();
 			if (reader != null) {
 				reader.addAnnotations(annos);
 			}
@@ -148,10 +148,10 @@ public class BeanProperties {
 		return new BeanProperties.Builder(bean);
 	}
 
-	public Attribute getAttribute(final String name) {
+	public Attribute getAttribute(String name) {
 		try {
-			final Optional<AttributeReader> reader = findReader(name);
-			final Optional<AttributeWriter> writer = findWriter(name);
+			Optional<AttributeReader> reader = findReader(name);
+			Optional<AttributeWriter> writer = findWriter(name);
 			return determineType(reader, writer)
 					.map(t -> new DefaultAttribute(name, t, reader.orElse(null), writer.orElse(null))).orElse(null);
 		} catch (Exception e) {
@@ -166,10 +166,7 @@ public class BeanProperties {
 		if (!readerType.isPresent()) {
 			return writerType;
 		}
-		if (!writerType.isPresent()) {
-			return readerType;
-		}
-		if (readerType.get().isAssignableFrom(writerType.get())) {
+		if (!writerType.isPresent() || readerType.get().isAssignableFrom(writerType.get())) {
 			return readerType;
 		}
 		if (writerType.get().isAssignableFrom(readerType.get())) {
@@ -203,7 +200,7 @@ public class BeanProperties {
 	}
 
 	public Collection<String> attributeNames() {
-		Set<String> attributeNames = new LinkedHashSet<String>();
+		Set<String> attributeNames = new LinkedHashSet<>();
 		try {
 			for (AttributeFinder finder : finders) {
 				attributeNames.addAll(namesOf(finder.listReaders(bean)));
@@ -212,12 +209,12 @@ public class BeanProperties {
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
-		return new ArrayList<String>(attributeNames);
+		return new ArrayList<>(attributeNames);
 	}
 
 	@LapsedWith(module = JDK8, value = "Streams")
 	private Collection<String> namesOf(Iterable<? extends TypedAttributeProvider> readers) {
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 		for (TypedAttributeProvider reader : readers) {
 			names.add(reader.getName());
 		}

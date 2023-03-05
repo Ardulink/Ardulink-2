@@ -35,11 +35,11 @@ public class SetMultiMap<K, V> extends AbstractMultiMap<K, V> {
 
 	@Override
 	protected Collection<V> make() {
-		return new HashSet<V>();
+		return new HashSet<>();
 	}
 
 	public Map<K, Set<V>> asMap() {
-		Map<K, Set<V>> map = new HashMap<K, Set<V>>();
+		Map<K, Set<V>> map = new HashMap<>();
 		for (Entry<K, Collection<V>> entry : data.entrySet()) {
 			map.put(entry.getKey(), (Set<V>) entry.getValue());
 		}

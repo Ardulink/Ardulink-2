@@ -38,13 +38,13 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -95,7 +95,7 @@ public class GenericPanelBuilder implements PanelBuilder {
 	}
 
 	private static JButton createDiscoverButton(
-			final ConfigAttribute attribute, final JComboBox comboBox) {
+			ConfigAttribute attribute, JComboBox comboBox) {
 		JButton discoverButton = new JButton(loadIcon());
 		discoverButton.setToolTipText("Discover");
 		discoverButton.addActionListener(new ActionListener() {
@@ -125,8 +125,8 @@ public class GenericPanelBuilder implements PanelBuilder {
 		}
 	}
 
-	private static JComponent createCheckBox(final ConfigAttribute attribute) {
-		final JCheckBox checkBox = new JCheckBox();
+	private static JComponent createCheckBox(ConfigAttribute attribute) {
+		JCheckBox checkBox = new JCheckBox();
 		checkBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -136,15 +136,15 @@ public class GenericPanelBuilder implements PanelBuilder {
 		return setState(checkBox, attribute);
 	}
 
-	private static JComponent createComboxBox(final ConfigAttribute attribute) {
-		final JComboBox jComboBox = new JComboBox(attribute.getChoiceValues());
+	private static JComponent createComboxBox(ConfigAttribute attribute) {
+		JComboBox jComboBox = new JComboBox(attribute.getChoiceValues());
 		jComboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				attribute.setValue(jComboBox.getSelectedItem());
 			}
 		});
-		final boolean nullIsAvalidItem = Arrays.asList(
+		boolean nullIsAvalidItem = Arrays.asList(
 				attribute.getChoiceValues()).contains(null);
 		// raise a selection event on model changes
 		jComboBox.addPropertyChangeListener("model",
@@ -159,10 +159,10 @@ public class GenericPanelBuilder implements PanelBuilder {
 		return jComboBox;
 	}
 
-	private static JComponent createSpinner(final ConfigAttribute attribute) {
-		final JSpinner spinner = new JSpinner(createModel(attribute));
+	private static JComponent createSpinner(ConfigAttribute attribute) {
+		JSpinner spinner = new JSpinner(createModel(attribute));
 		JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner);
-		editor.getTextField().setHorizontalAlignment(JFormattedTextField.LEFT);
+		editor.getTextField().setHorizontalAlignment(SwingConstants.LEFT);
 		editor.getFormat().setGroupingUsed(false);
 		spinner.setEditor(editor);
 		spinner.setValue(attribute.getValue());
@@ -177,9 +177,9 @@ public class GenericPanelBuilder implements PanelBuilder {
 		return spinner;
 	}
 
-	private static JComponent createTextField(final ConfigAttribute attribute) {
+	private static JComponent createTextField(ConfigAttribute attribute) {
 		Object value = attribute.getValue();
-		final JTextField jTextField = new JTextField(value == null ? ""
+		JTextField jTextField = new JTextField(value == null ? ""
 				: String.valueOf(value));
 
 		jTextField.addFocusListener(new FocusAdapter() {
@@ -207,7 +207,7 @@ public class GenericPanelBuilder implements PanelBuilder {
 
 	private static JComponent setState(JCheckBox checkBox,
 			ConfigAttribute attribute) {
-		checkBox.setSelected(Boolean.valueOf((Boolean) attribute.getValue()));
+		checkBox.setSelected((Boolean) attribute.getValue());
 		return checkBox;
 	}
 

@@ -63,7 +63,7 @@ public abstract class AbstractMultiMap<K, V> implements
 		}
 	}
 
-	protected final Map<K, Collection<V>> data = new HashMap<K, Collection<V>>();
+	protected final Map<K, Collection<V>> data = new HashMap<>();
 
 	public boolean isEmpty() {
 		return this.data.isEmpty();
@@ -119,7 +119,7 @@ public abstract class AbstractMultiMap<K, V> implements
 			@Override
 			public Entry<K, V> next() {
 				fetch();
-				return new MapEntry<K, V>(key, cur.next());
+				return new MapEntry<>(key, cur.next());
 			}
 
 			@Override

@@ -26,10 +26,12 @@ package org.ardulink.core.events;
  */
 public class EventListenerAdapter implements EventListener {
 
+	@Override
 	public void stateChanged(AnalogPinValueChangedEvent event) {
 		// do nothing
 	}
 
+	@Override
 	public void stateChanged(DigitalPinValueChangedEvent event) {
 		// do nothing
 	}

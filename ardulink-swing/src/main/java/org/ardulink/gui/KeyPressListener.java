@@ -71,18 +71,17 @@ public class KeyPressListener extends KeyAdapter {
 	}
 
 	private String computeText4GUIInteraction(KeyEvent e) {
-		StringBuilder builder = new StringBuilder("Char: ");
-		builder.append(e.getKeyChar());
-		builder.append(" - Key Code: ");
-		builder.append(e.getKeyCode());
-		builder.append(" - Key Location: ");
-		builder.append(e.getKeyLocation());
-		builder.append(" - Modifiers: ");
-		builder.append(e.getModifiers());
-		builder.append(" - Modifiers Ex: ");
-		builder.append(e.getModifiersEx());
+        String builder = "Char: " + e.getKeyChar() +
+                " - Key Code: " +
+                e.getKeyCode() +
+                " - Key Location: " +
+                e.getKeyLocation() +
+                " - Modifiers: " +
+                e.getModifiers() +
+                " - Modifiers Ex: " +
+                e.getModifiersEx();
 		
-		return builder.toString();
+		return builder;
 	}
 
 	private void keyReleasedGUIInteraction() {

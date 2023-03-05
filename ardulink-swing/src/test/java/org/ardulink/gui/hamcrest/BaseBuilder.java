@@ -57,7 +57,7 @@ public class BaseBuilder {
 	}
 
 	public ChoiceRowBuilder<Object> withChoice(Object... choices) {
-		return new ChoiceRowBuilder<Object>(this, choices);
+		return new ChoiceRowBuilder<>(this, choices);
 	}
 
 	public YesNoRowBuilder withYesNo() {

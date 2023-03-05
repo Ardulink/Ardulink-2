@@ -26,19 +26,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import org.ardulink.util.Joiner;
 import org.ardulink.util.InputStreams;
+import org.ardulink.util.Joiner;
 
 public class LuaProtoBuilder {
 
-	private static enum TemplateVariables {
+	private enum TemplateVariables {
 
 		PIN("${PIN}"), STATE("${STATE}"), INTENSITY("${INTENSITY}"), VALUES(
 				"${VALUES}");
 
 		private final String quoted;
 
-		private TemplateVariables(String nameInTemplate) {
+		TemplateVariables(String nameInTemplate) {
 			this.quoted = quote(nameInTemplate);
 		}
 

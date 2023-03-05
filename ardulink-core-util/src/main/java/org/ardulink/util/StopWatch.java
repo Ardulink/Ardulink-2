@@ -39,6 +39,7 @@ public class StopWatch {
 			throw new IllegalStateException("StopWatch already started");
 		}
 
+		@Override
 		public long getTime() {
 			return System.currentTimeMillis() - started;
 		}

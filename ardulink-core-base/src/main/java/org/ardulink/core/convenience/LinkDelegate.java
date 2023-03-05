@@ -23,8 +23,8 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.Tone;
-import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.CustomListener;
+import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.RplyListener;
 
 /**
@@ -47,10 +47,12 @@ public class LinkDelegate implements Link {
 		return delegate;
 	}
 
+	@Override
 	public Link addListener(EventListener listener) throws IOException {
 		return getDelegate().addListener(listener);
 	}
 
+	@Override
 	public Link removeListener(EventListener listener) throws IOException {
 		return getDelegate().removeListener(listener);
 	}
@@ -65,23 +67,28 @@ public class LinkDelegate implements Link {
 		return getDelegate().removeRplyListener(listener);
 	}
 
+	@Override
 	public long startListening(Pin pin) throws IOException {
 		return getDelegate().startListening(pin);
 	}
 
+	@Override
 	public void close() throws IOException {
 		getDelegate().close();
 	}
 
+	@Override
 	public long stopListening(Pin pin) throws IOException {
 		return getDelegate().stopListening(pin);
 	}
 
+	@Override
 	public long switchAnalogPin(AnalogPin analogPin, int value)
 			throws IOException {
 		return getDelegate().switchAnalogPin(analogPin, value);
 	}
 
+	@Override
 	public long switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException {
 		return getDelegate().switchDigitalPin(digitalPin, value);
@@ -102,15 +109,18 @@ public class LinkDelegate implements Link {
 		return getDelegate().sendCustomMessage(messages);
 	}
 
+	@Override
 	public long sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
 		return getDelegate().sendKeyPressEvent(keychar, keycode, keylocation,
 				keymodifiers, keymodifiersex);
 	}
+	@Override
 	public Link addCustomListener(CustomListener listener) throws IOException {
 		return getDelegate().addCustomListener(listener);
 	}
 
+	@Override
 	public Link removeCustomListener(CustomListener listener) throws IOException {
 		return getDelegate().removeCustomListener(listener);
 	}

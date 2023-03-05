@@ -36,6 +36,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import org.ardulink.core.ConnectionBasedLink;
@@ -97,6 +98,7 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					setLookAndFeel("Nimbus");
@@ -121,7 +123,7 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
 		
-		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane = new JTabbedPane(SwingConstants.TOP);
 		contentPane.add(tabbedPane, BorderLayout.NORTH);
 		
 				JPanel connectionPanel = new JPanel();
@@ -140,6 +142,7 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 																btnDisconnect = new JButton("Disconnect");
 																buttonPanel.add(btnDisconnect);
 																btnDisconnect.addActionListener(new ActionListener() {
+																	@Override
 																	public void actionPerformed(ActionEvent e) {
 																		disconnect();
 																	}
@@ -150,6 +153,7 @@ public class SimpleSmartCarDriver extends JFrame implements ConnectionListener,
 																		buttonPanel.add(connectionStatus);
 																		linkables.add(connectionStatus);
 														btnConnect.addActionListener(new ActionListener() {
+															@Override
 															public void actionPerformed(ActionEvent event) {
 																try {
 																	setLink(genericConnectionPanel.createLink());

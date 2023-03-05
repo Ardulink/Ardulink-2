@@ -135,7 +135,7 @@ public class ArduinoDouble implements Closeable {
 			this.timeUnit = timeUnit;
 		}
 
-		public void send(final String message) {
+		public void send(String message) {
 			Executors.newSingleThreadExecutor().submit(new Runnable() {
 				@Override
 				public void run() {

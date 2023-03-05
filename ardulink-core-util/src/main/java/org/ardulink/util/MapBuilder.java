@@ -35,14 +35,14 @@ import org.ardulink.util.anno.LapsedWith;
 @LapsedWith(value = JDK9, module = "Map#of")
 public class MapBuilder<K, V> {
 
-	private final Map<K, V> data = new HashMap<K, V>();
+	private final Map<K, V> data = new HashMap<>();
 
 	private MapBuilder() {
 		super();
 	}
 
 	public static <K, V> MapBuilder<K, V> newMapBuilder() {
-		return new MapBuilder<K, V>();
+		return new MapBuilder<>();
 	}
 
 	public MapBuilder<K, V> put(K key, V value) {
@@ -56,7 +56,7 @@ public class MapBuilder<K, V> {
 	}
 
 	public Map<K, V> build() {
-		return new HashMap<K, V>(this.data);
+		return new HashMap<>(this.data);
 	}
 
 	public Properties asProperties() {

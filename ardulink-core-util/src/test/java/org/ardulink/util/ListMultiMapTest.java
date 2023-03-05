@@ -16,8 +16,8 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -36,14 +36,14 @@ class ListMultiMapTest {
 
 	@Test
 	void iteratorOnEmpty() {
-		ListMultiMap<Integer, String> sut = new ListMultiMap<Integer, String>();
+		ListMultiMap<Integer, String> sut = new ListMultiMap<>();
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();
 		assertThat(iterator.hasNext(), is(false));
 	}
 
 	@Test
 	void iteratorOnSingleElement() {
-		ListMultiMap<Integer, String> sut = new ListMultiMap<Integer, String>();
+		ListMultiMap<Integer, String> sut = new ListMultiMap<>();
 		sut.put(1, "foo");
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();
 		assertThat(iterator.hasNext(), is(true));
@@ -55,7 +55,7 @@ class ListMultiMapTest {
 
 	@Test
 	void iteratorOnCollisionElement() {
-		ListMultiMap<Integer, String> sut = new ListMultiMap<Integer, String>();
+		ListMultiMap<Integer, String> sut = new ListMultiMap<>();
 		sut.put(1, "foo");
 		sut.put(1, "bar");
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();

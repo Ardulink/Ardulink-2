@@ -66,7 +66,7 @@ class NetworkProxyServerTest {
 	private ConnectionBasedLink clientSideLink;
 
 	@BeforeEach
-	void setup() throws InterruptedException, UnknownHostException, IOException {
+	void setup() throws InterruptedException, IOException {
 		int serverPort = freePort();
 		startServerInBackground(serverPort);
 		this.clientSideLink = clientLinkToServer("localhost", serverPort);
@@ -91,7 +91,7 @@ class NetworkProxyServerTest {
 				expectedMsg::equals);
 	}
 
-	private ConnectionBasedLink clientLinkToServer(String hostname, int port) throws UnknownHostException, IOException {
+	private ConnectionBasedLink clientLinkToServer(String hostname, int port) throws IOException {
 		// TODO PF use Links?
 		// Links.getLink(URIs.newURI(String.format("ardulink://proxy?tcphost=%s&tcpport=%s&port=%s",
 		// hostname, port, "someNonNullPort")));
@@ -100,9 +100,9 @@ class NetworkProxyServerTest {
 		return linkFactory.newLink(configure(linkConfig, hostname, port));
 	}
 
-	private void startServerInBackground(final int freePort) throws InterruptedException {
-		final ReentrantLock lock = new ReentrantLock();
-		final Condition waitUntilServerIsUp = lock.newCondition();
+	private void startServerInBackground(int freePort) throws InterruptedException {
+		ReentrantLock lock = new ReentrantLock();
+		Condition waitUntilServerIsUp = lock.newCondition();
 		new Thread() {
 
 			@Override

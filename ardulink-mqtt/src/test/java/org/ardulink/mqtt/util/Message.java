@@ -56,10 +56,7 @@ public class Message {
 		if (this == obj) {
 			return true;
 		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
+		if ((obj == null) || (getClass() != obj.getClass())) {
 			return false;
 		}
 		Message other = (Message) obj;
@@ -71,13 +68,8 @@ public class Message {
 			return false;
 		}
 		if (topic == null) {
-			if (other.topic != null) {
-				return false;
-			}
-		} else if (!topic.equals(other.topic)) {
-			return false;
-		}
-		return true;
+			return other.topic == null;
+		} else return topic.equals(other.topic);
 	}
 
 	@Override

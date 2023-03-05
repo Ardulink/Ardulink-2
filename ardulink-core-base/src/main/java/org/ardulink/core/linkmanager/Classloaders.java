@@ -49,7 +49,7 @@ public final class Classloaders {
 	}
 
 	public static Collection<URL> getResources(ClassLoader classloader, String name) throws IOException {
-		return new HashSet<URL>(Collections.list(classloader.getResources(name)));
+		return new HashSet<>(Collections.list(classloader.getResources(name)));
 	}
 
 }

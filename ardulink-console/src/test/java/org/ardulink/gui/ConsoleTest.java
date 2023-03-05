@@ -6,7 +6,7 @@ import static java.lang.Boolean.TRUE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assumptions.*;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.Mockito.mock;
 
 import org.ardulink.legacy.Link;
@@ -50,9 +50,10 @@ class ConsoleTest {
 
 	private Console newConsole() {
 		return new Console() {
+			@Override
 			protected Link createLink() {
 				return connectLink;
-			};
+			}
 		};
 	}
 

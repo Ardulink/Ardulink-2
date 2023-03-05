@@ -61,7 +61,7 @@ public class ColorChooserDialog extends JDialog {
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());
 		JPanel contentPanel = new JPanel();
-		final JColorChooser colorChooser = new JColorChooser();
+		JColorChooser colorChooser = new JColorChooser();
 		colorChooser.setColor(color);
 
 		contentPanel.setLayout(new BorderLayout());

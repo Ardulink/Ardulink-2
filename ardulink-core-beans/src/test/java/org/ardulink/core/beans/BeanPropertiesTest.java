@@ -183,7 +183,7 @@ class BeanPropertiesTest {
 		BeanProperties bp = BeanProperties.forBean(bean);
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName(), is("foo"));
-		assertThat(attribute.readValue(), is((Object) value));
+		assertThat(attribute.readValue(), is(value));
 	}
 
 	@Test
@@ -193,7 +193,7 @@ class BeanPropertiesTest {
 		Attribute attribute = bp.getAttribute("foo");
 		attribute.writeValue("bar");
 		assertThat(attribute.getName(), is("foo"));
-		assertThat(attribute.readValue(), is((Object) value));
+		assertThat(attribute.readValue(), is(value));
 	}
 
 	@Test
@@ -255,7 +255,7 @@ class BeanPropertiesTest {
 	@Test
 	void canlistAttributes() {
 		BeanProperties bp = BeanProperties.forBean(new BeanWithMultipleAttributes());
-		assertThat(new ArrayList<String>(bp.attributeNames()), is(Arrays.asList("a", "b")));
+		assertThat(new ArrayList<>(bp.attributeNames()), is(Arrays.asList("a", "b")));
 	}
 
 	@Test
@@ -268,7 +268,7 @@ class BeanPropertiesTest {
 		attribute.writeValue(Arrays.asList("1", "2", "3"));
 		assertThat(bean.getValues(), is(Arrays.asList("1", "2", "3")));
 		bean.setValues(Arrays.asList("3", "2", "1"));
-		assertThat(attribute.readValue(), is((Object) Arrays.asList("3", "2", "1")));
+		assertThat(attribute.readValue(), is(Arrays.asList("3", "2", "1")));
 	}
 
 	@Test
@@ -282,7 +282,7 @@ class BeanPropertiesTest {
 		attribute.writeValue(Arrays.asList("1", "2", "3"));
 		assertThat(bean.values, is(Arrays.asList("1", "2", "3")));
 		bean.values = Arrays.asList("3", "2", "1");
-		assertThat(attribute.readValue(), is((Object) Arrays.asList("3", "2", "1")));
+		assertThat(attribute.readValue(), is(Arrays.asList("3", "2", "1")));
 	}
 
 	@Test

@@ -15,6 +15,7 @@ limitations under the License.
  */
 package org.ardulink.gui;
 
+import static java.awt.EventQueue.invokeLater;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
 import static org.ardulink.util.Throwables.getCauses;
@@ -22,7 +23,6 @@ import static org.ardulink.util.Throwables.getCauses;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -82,7 +82,7 @@ public class Console extends JFrame implements Linkable {
 
 	private Link link;
 
-	private final List<Linkable> linkables = new LinkedList<Linkable>();
+	private final List<Linkable> linkables = new LinkedList<>();
 
 	private ConnectionPanel connectionPanel;
 
@@ -112,7 +112,7 @@ public class Console extends JFrame implements Linkable {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(() -> {
+		invokeLater(() -> {
 			try {
 				setLookAndFeel("Nimbus");
 				Console frame = new Console();
@@ -124,15 +124,16 @@ public class Console extends JFrame implements Linkable {
 		});
 	}
 
-	private static void setupExceptionHandler(final Console console) {
-		final UncaughtExceptionHandler exceptionHandler = new UncaughtExceptionHandler() {
+	private static void setupExceptionHandler(Console console) {
+		UncaughtExceptionHandler exceptionHandler = new UncaughtExceptionHandler() {
+			@Override
 			public void uncaughtException(Thread thread, Throwable t) {
 				try {
 					t.printStackTrace();
 					Throwable rootCause = rootCauseWithMessage(t);
 					JOptionPane.showMessageDialog(console,
 							rootCause.getClass().getName() + ": " + rootCause.getMessage(), "Error", ERROR_MESSAGE);
-				} catch (final Throwable t2) {
+				} catch (Throwable t2) {
 					/*
 					 * don't let the Throwable get thrown out, will cause infinite looping!
 					 */
@@ -407,18 +408,6 @@ public class Console extends JFrame implements Linkable {
 				}
 			}
 			component.setEnabled(enabled);
-		}
-	}
-
-	private void setEnabled(boolean enabled, Component[] components) {
-		for (int i = 0; i < components.length; i++) {
-			if (components[i] instanceof JPanel && components[i] != connectionPanel) {
-				components[i].setEnabled(enabled);
-				for (Component component : ((JPanel) components[i]).getComponents()) {
-					System.out.println(component);
-					component.setEnabled(enabled);
-				}
-			}
 		}
 	}
 

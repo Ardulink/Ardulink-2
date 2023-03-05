@@ -15,9 +15,9 @@ limitations under the License.
 */
 package org.ardulink.gui;
 
-import static org.ardulink.core.Pin.analogPin;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static org.ardulink.core.Pin.analogPin;
 
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -34,13 +34,12 @@ import javax.swing.JProgressBar;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
-import org.ardulink.gui.facility.IntMinMaxModel;
-import org.ardulink.legacy.Link;
-
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.EventListenerAdapter;
 import org.ardulink.core.events.FilteredEventListenerAdapter;
+import org.ardulink.gui.facility.IntMinMaxModel;
+import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -80,7 +79,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 						valueLabel.setText(Integer.toString(value));
 
 						float volt = (((float) value) * 5.0f) / 1023.0f;
-						voltValueLbl.setText(String.valueOf(volt) + "V");
+						voltValueLbl.setText(volt + "V");
 
 						float progress = ((value - getMinValue()) * 100.0f)
 								/ ((float) getMaxValue() - (float) getMinValue());

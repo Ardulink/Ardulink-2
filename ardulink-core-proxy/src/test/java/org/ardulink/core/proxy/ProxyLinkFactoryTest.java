@@ -20,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
@@ -63,8 +64,8 @@ class ProxyLinkFactoryTest {
 		Configurer configurer = connectionManager.getConfigurer(
 				URIs.newURI("ardulink://proxy?tcphost=localhost&tcpport=" + proxyServerDouble.getLocalPort()));
 		ConfigAttribute port = configurer.getAttribute("port");
-		assertThat(port.getChoiceValues(), is((Object[]) new String[] { "myPortNr0" }));
-		assertThat(proxyServerDouble.getReceived(), is(Arrays.asList("ardulink:networkproxyserver:get_port_list")));
+		assertThat(port.getChoiceValues(), is(new String[] { "myPortNr0" }));
+		assertThat(proxyServerDouble.getReceived(), is(Collections.singletonList("ardulink:networkproxyserver:get_port_list")));
 	}
 
 	@Test

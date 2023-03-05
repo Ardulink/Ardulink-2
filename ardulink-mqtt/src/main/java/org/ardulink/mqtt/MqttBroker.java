@@ -172,6 +172,7 @@ public class MqttBroker implements Closeable {
 		return Integer.parseInt(config.getProperty(PORT_PROPERTY_NAME));
 	}
 
+	@Override
 	public void close() {
 		broker.stopServer();
 	}

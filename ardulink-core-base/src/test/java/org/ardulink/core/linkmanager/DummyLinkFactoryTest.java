@@ -95,7 +95,7 @@ class DummyLinkFactoryTest {
 		int bValue = 1;
 		String cValue = "cValue";
 		TimeUnit eValue = TimeUnit.DAYS;
-		Link link = (Link) sut.getConfigurer(URIs.newURI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue + "&c="
+		Link link = sut.getConfigurer(URIs.newURI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue + "&c="
 				+ cValue + "&proto=dummyProto&e=" + eValue.name())).newLink();
 
 		assertThat(link, instanceOf(ConnectionBasedLink.class));
@@ -116,7 +116,7 @@ class DummyLinkFactoryTest {
 		Configurer configurer = sut.getConfigurer(URIs.newURI("ardulink://dummyLink"));
 		ConfigAttribute e = configurer.getAttribute("e");
 		assertThat(e.hasChoiceValues(), is(TRUE));
-		assertThat(e.getChoiceValues(), CoreMatchers.is((Object[]) TimeUnit.values()));
+		assertThat(e.getChoiceValues(), CoreMatchers.is(TimeUnit.values()));
 	}
 
 	@Test
@@ -147,7 +147,7 @@ class DummyLinkFactoryTest {
 
 		ConfigAttribute proto = configurer.getAttribute("proto");
 		assertThat(proto.hasChoiceValues(), is(TRUE));
-		assertThat(Arrays.asList(proto.getChoiceValues()), hasItems((Object) "dummyProto", "ardulink2"));
+		assertThat(Arrays.asList(proto.getChoiceValues()), hasItems("dummyProto", "ardulink2"));
 	}
 
 	@Test

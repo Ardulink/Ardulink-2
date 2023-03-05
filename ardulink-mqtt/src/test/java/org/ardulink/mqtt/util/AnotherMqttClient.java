@@ -104,7 +104,7 @@ public class AnotherMqttClient implements Closeable {
 
 	private final ProducerTemplate producerTemplate;
 
-	private final List<Message> messages = new CopyOnWriteArrayList<Message>();
+	private final List<Message> messages = new CopyOnWriteArrayList<>();
 	private final String topic;
 	private final String controlTopic;
 
@@ -115,7 +115,7 @@ public class AnotherMqttClient implements Closeable {
 	private boolean appendValueSet;
 
 	private static Map<Type, String> typeMap() {
-		Map<Type, String> typeMap = new HashMap<Type, String>();
+		Map<Type, String> typeMap = new HashMap<>();
 		typeMap.put(ANALOG, "A");
 		typeMap.put(DIGITAL, "D");
 		return typeMap;
@@ -208,7 +208,7 @@ public class AnotherMqttClient implements Closeable {
 	}
 
 	public List<Message> hasReceived() {
-		return new ArrayList<Message>(messages);
+		return new ArrayList<>(messages);
 	}
 
 }

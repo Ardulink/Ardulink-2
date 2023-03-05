@@ -67,7 +67,7 @@ public class LuaProtocol implements Protocol {
 	@Override
 	public String getName() {
 		return name;
-	};
+	}
 
 	@Override
 	public ByteStreamProcessor newByteStreamProcessor() {
@@ -100,11 +100,11 @@ public class LuaProtocol implements Protocol {
 			public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
 				if (pinStateChange.getPin().is(ANALOG)) {
 					return toBytes(getBuilder(POWER_PIN_INTENSITY).forPin(pinStateChange.getPin().pinNum())
-							.withValue((Integer) pinStateChange.getValue()).build());
+							.withValue(pinStateChange.getValue()).build());
 				}
 				if (pinStateChange.getPin().is(DIGITAL)) {
 					return toBytes(getBuilder(POWER_PIN_SWITCH).forPin(pinStateChange.getPin().pinNum())
-							.withValue((Boolean) pinStateChange.getValue()).build());
+							.withValue(pinStateChange.getValue()).build());
 				}
 				throw illegalPinType(pinStateChange.getPin());
 			}
@@ -136,6 +136,7 @@ public class LuaProtocol implements Protocol {
 			 * @param message the message to send
 			 * @return byte[] holding the passed message and the protocol's divider
 			 */
+			@Override
 			public byte[] toBytes(String message) {
 				return Bytes.concat(message.getBytes(), separator);
 			}

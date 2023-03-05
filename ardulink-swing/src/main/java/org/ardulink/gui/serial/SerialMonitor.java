@@ -84,6 +84,7 @@ public class SerialMonitor extends JPanel implements Linkable  {
 		
 		JButton sendButton = new JButton("Send");
 		sendButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
 					link.getConnection().write((messageTextField.getText() + "\n").getBytes());
@@ -137,6 +138,7 @@ public class SerialMonitor extends JPanel implements Linkable  {
 		
 		JButton clearSentButton = new JButton("Clear Sent");
 		clearSentButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				sentTextArea.setText("");
 			}
@@ -145,6 +147,7 @@ public class SerialMonitor extends JPanel implements Linkable  {
 		
 		JButton clearReceivedButton = new JButton("Clear Received");
 		clearReceivedButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				receivedTextArea.setText("");
 			}

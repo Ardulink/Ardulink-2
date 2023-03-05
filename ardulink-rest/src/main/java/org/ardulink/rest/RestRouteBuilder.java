@@ -64,7 +64,7 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	@Override
 	public void configure() throws Exception {
-		BlockingQueue<FromDeviceMessagePinStateChanged> messages = new ArrayBlockingQueue<FromDeviceMessagePinStateChanged>(
+		BlockingQueue<FromDeviceMessagePinStateChanged> messages = new ArrayBlockingQueue<>(
 				16);
 		String patchAnalog = "direct:patchAnalog-" + identityHashCode(this);
 		String patchDigital = "direct:patchDigital-" + identityHashCode(this);
@@ -182,7 +182,7 @@ public class RestRouteBuilder extends RouteBuilder {
 	}
 
 	private static boolean pinInMessageIs(Message message, int pinNum) {
-		return Integer.compare(pinNum, ((Integer) message.getHeader(HEADER_PIN))) == 0;
+		return pinNum == ((Integer) message.getHeader(HEADER_PIN));
 	}
 
 	private void patchDigital(Exchange exchange) {

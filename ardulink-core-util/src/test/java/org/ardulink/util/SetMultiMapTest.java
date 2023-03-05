@@ -18,8 +18,8 @@ package org.ardulink.util;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,14 +40,14 @@ class SetMultiMapTest {
 
 	@Test
 	void canPut() {
-		SetMultiMap<Integer, String> s = new SetMultiMap<Integer, String>();
+		SetMultiMap<Integer, String> s = new SetMultiMap<>();
 		assertThat(s.put(1, "foo"), is(TRUE));
 		assertThat(s.asMap(), is(buildMap(1, Collections.singleton("foo"))));
 	}
 
 	@Test
 	void canPutTwice() {
-		SetMultiMap<Integer, String> s = new SetMultiMap<Integer, String>();
+		SetMultiMap<Integer, String> s = new SetMultiMap<>();
 		assertThat(s.put(1, "foo"), is(TRUE));
 		assertThat(s.put(1, "foo"), is(FALSE));
 		assertThat(s.asMap(), is(buildMap(1, Collections.singleton("foo"))));
@@ -55,7 +55,7 @@ class SetMultiMapTest {
 
 	@Test
 	void canRemoveExistingValue() {
-		SetMultiMap<Integer, String> s = new SetMultiMap<Integer, String>();
+		SetMultiMap<Integer, String> s = new SetMultiMap<>();
 		assertThat(s.put(1, "foo"), is(TRUE));
 		assertThat(s.remove(1, "foo"), is(TRUE));
 		assertThat(s.asMap(), is(Collections.<Integer, Set<String>>emptyMap()));
@@ -63,7 +63,7 @@ class SetMultiMapTest {
 
 	@Test
 	void canHandleRemovesOfNonExistingValues() {
-		SetMultiMap<Integer, String> s = new SetMultiMap<Integer, String>();
+		SetMultiMap<Integer, String> s = new SetMultiMap<>();
 		assertThat(s.put(1, "foo"), is(TRUE));
 		assertThat(s.remove(1, "bar"), is(FALSE));
 		assertThat(s.asMap(), is(buildMap(1, Collections.singleton("foo"))));
@@ -71,14 +71,14 @@ class SetMultiMapTest {
 
 	@Test
 	void canHandleRemovesOfNonExistingKeys() {
-		SetMultiMap<Integer, String> s = new SetMultiMap<Integer, String>();
+		SetMultiMap<Integer, String> s = new SetMultiMap<>();
 		assertThat(s.put(1, "foo"), is(TRUE));
 		assertThat(s.remove(2, "foo"), is(FALSE));
 		assertThat(s.asMap(), is(buildMap(1, Collections.singleton("foo"))));
 	}
 
 	private static Map<Integer, Set<String>> buildMap(Integer key, Set<String> value) {
-		Map<Integer, Set<String>> m = new HashMap<Integer, Set<String>>();
+		Map<Integer, Set<String>> m = new HashMap<>();
 		m.put(key, value);
 		return m;
 	}

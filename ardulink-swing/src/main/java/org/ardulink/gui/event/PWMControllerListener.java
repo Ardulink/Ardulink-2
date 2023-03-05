@@ -30,5 +30,5 @@ import org.ardulink.gui.PWMController;
  */
 public interface PWMControllerListener {
 
-	public void pwmChanged(PWMChangeEvent event);
+	void pwmChanged(PWMChangeEvent event);
 }

@@ -112,10 +112,10 @@ public class DigisparkConnection extends AbstractConnection {
 
 	@Override
 	public void write(byte[] bytes) throws IOException {
-		for (int i = 0; i < bytes.length; i++) {
-			if (send(bytes[i]) < 0) {
+		for (byte element : bytes) {
+			if (send(element) < 0) {
 				tryRecover();
-				checkState(send(bytes[i]) >= 0, "controlMsg: %s", usb_strerror());
+				checkState(send(element) >= 0, "controlMsg: %s", usb_strerror());
 			}
 		}
 		fireSent(bytes);

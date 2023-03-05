@@ -92,7 +92,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 	GreenMailExtension mailMock = new GreenMailExtension(SMTP_IMAP);
 
 	@BeforeEach
-	void setup() throws URISyntaxException, Exception {
+	void setup() throws Exception {
 		link = Links.getLink(mockURI);
 	}
 

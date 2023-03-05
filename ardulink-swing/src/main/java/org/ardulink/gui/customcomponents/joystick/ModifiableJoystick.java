@@ -110,7 +110,7 @@ public class ModifiableJoystick extends JPanel implements Linkable, PositionList
 				joy.setJoyOutputRange((Integer)spinner.getValue());
 			}
 		});
-		maxValueSpinner.setModel(new SpinnerNumberModel(new Integer(255), new Integer(1), null, new Integer(1)));
+		maxValueSpinner.setModel(new SpinnerNumberModel(Integer.valueOf(255), Integer.valueOf(1), null, Integer.valueOf(1)));
 		((JSpinner.DefaultEditor)maxValueSpinner.getEditor()).getTextField().setColumns(4);
 		idPanel.add(maxValueSpinner);
 		

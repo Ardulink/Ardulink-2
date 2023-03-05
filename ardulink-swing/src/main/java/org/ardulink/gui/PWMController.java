@@ -191,7 +191,7 @@ public class PWMController extends JPanel implements Linkable {
 			        int powerValue = powerSlider.getValue();
 			        valueComboBoxModel.setSelectedItem(powerValue);
 			        float volt = ((powerValue)*5.0f)/255.0f;
-					voltValueLbl.setText(String.valueOf(volt) + "V");
+					voltValueLbl.setText(volt + "V");
 			        float progress  = ((powerValue - powerSlider.getMinimum())*100.0f)/((float)powerSlider.getMaximum() - (float)powerSlider.getMinimum());
 			        progressBar.setValue((int)progress);
 			        

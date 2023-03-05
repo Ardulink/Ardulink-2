@@ -51,7 +51,7 @@ public class ALProtoBuilder {
 
 		private String proto;
 
-		private ALPProtocolKey(String proto) {
+		ALPProtocolKey(String proto) {
 			this.proto = proto;
 		}
 
@@ -82,7 +82,7 @@ public class ALProtoBuilder {
 	}
 
 	public String withValues(String... values) {
-		List<Object> concat = Lists.<Object>newArrayList(command);
+		List<Object> concat = Lists.newArrayList(command);
 		if (pin != null) {
 			concat.add(pin);
 		}

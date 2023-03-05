@@ -140,7 +140,7 @@ class ConnectionBasedLinkTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	void canReceiveAnalogPinChange() throws IOException {
-		final List<PinValueChangedEvent> analogEvents = new ArrayList<PinValueChangedEvent>();
+		List<PinValueChangedEvent> analogEvents = new ArrayList<>();
 		EventListenerAdapter listener = new EventListenerAdapter() {
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
@@ -166,7 +166,7 @@ class ConnectionBasedLinkTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	void canReceiveDigitalPinChange() throws IOException {
-		final List<PinValueChangedEvent> digitalEvents = new ArrayList<PinValueChangedEvent>();
+		List<PinValueChangedEvent> digitalEvents = new ArrayList<>();
 		EventListenerAdapter listener = new EventListenerAdapter() {
 			@Override
 			public void stateChanged(DigitalPinValueChangedEvent event) {
@@ -184,7 +184,7 @@ class ConnectionBasedLinkTest {
 	@Test
 	void canFilterPins() throws IOException {
 		int pin = anyPositive(int.class);
-		final List<DigitalPinValueChangedEvent> digitalEvents = new ArrayList<DigitalPinValueChangedEvent>();
+		List<DigitalPinValueChangedEvent> digitalEvents = new ArrayList<>();
 		EventListenerAdapter listener = new EventListenerAdapter() {
 			@Override
 			public void stateChanged(DigitalPinValueChangedEvent event) {
@@ -239,7 +239,7 @@ class ConnectionBasedLinkTest {
 	@Test
 	void canReadRawMessagesRead() throws IOException {
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(anyPositive(int.class)).withState(true);
-		final StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 		this.connection.addListener(new ListenerAdapter() {
 			@Override
 			public void received(byte[] bytes) throws IOException {
@@ -253,7 +253,7 @@ class ConnectionBasedLinkTest {
 
 	@Test
 	void canReadRawMessagesSent() throws IOException {
-		final StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 		this.connection.addListener(new ListenerAdapter() {
 			@Override
 			public void sent(byte[] bytes) throws IOException {
@@ -279,7 +279,7 @@ class ConnectionBasedLinkTest {
 				throw new IllegalStateException("Listener tries to inference");
 			}
 		});
-		final List<String> events = Lists.newArrayList();
+		List<String> events = Lists.newArrayList();
 		this.link.addListener(new EventListener() {
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
@@ -312,7 +312,7 @@ class ConnectionBasedLinkTest {
 
 	@Test
 	void doesDeregisterAllListenersBeforeClosing() throws IOException {
-		final StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 		this.link.addListener(new EventListener() {
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {

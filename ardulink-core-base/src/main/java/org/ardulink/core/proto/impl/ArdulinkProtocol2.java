@@ -89,9 +89,10 @@ public class ArdulinkProtocol2 implements Protocol {
 		return instance;
 	}
 
+	@Override
 	public String getName() {
 		return name;
-	};
+	}
 
 	private static IllegalStateException illegalPinType(Pin pin) {
 		return new IllegalStateException("Illegal type " + pin.getType() + " of pin " + pin);
@@ -182,7 +183,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			}
 
 			private static Map<String, String> paramsToMap(String query) {
-				MapBuilder<String, String> builder = MapBuilder.<String, String>newMapBuilder();
+				MapBuilder<String, String> builder = MapBuilder.newMapBuilder();
 				for (String param : checkNotNull(query, "Params can't be null").split("&")) {
 					String[] kv = param.split("=");
 					builder.put(kv[0], kv[1]);
@@ -413,7 +414,7 @@ public class ArdulinkProtocol2 implements Protocol {
 		public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
 			if (pinStateChange.getPin().is(ANALOG)) {
 				return toBytes(builder(pinStateChange, POWER_PIN_INTENSITY).forPin(pinStateChange.getPin().pinNum())
-						.withValue((Integer) pinStateChange.getValue()));
+						.withValue(pinStateChange.getValue()));
 			}
 			if (pinStateChange.getPin().is(DIGITAL)) {
 				return toBytes(builder(pinStateChange, POWER_PIN_SWITCH).forPin(pinStateChange.getPin().pinNum())

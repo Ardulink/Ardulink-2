@@ -16,11 +16,7 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static org.ardulink.util.anno.LapsedWith.JDK8;
-
 import java.util.Optional;
-
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]

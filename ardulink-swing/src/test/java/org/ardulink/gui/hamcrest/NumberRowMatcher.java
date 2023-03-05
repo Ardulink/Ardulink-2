@@ -63,7 +63,7 @@ public class NumberRowMatcher extends TypeSafeMatcher<JPanel> {
 	private boolean valueEq(JPanel jPanel) {
 		Component component = baseBuilder.getComponent(jPanel);
 		return component instanceof JSpinner
-				&& value.equals((Number) ((JSpinner) component).getValue());
+				&& value.equals(((JSpinner) component).getValue());
 	}
 
 	private boolean isNumOnly(JPanel jPanel) {

@@ -27,7 +27,7 @@ package org.ardulink.core;
 public abstract class Pin {
 
 	public enum Type {
-		ANALOG, DIGITAL;
+		ANALOG, DIGITAL
 	}
 
 	private final int num;
@@ -52,16 +52,14 @@ public abstract class Pin {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if ((obj == null) || (getClass() != obj.getClass())) {
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		}
 		Pin other = (Pin) obj;
-		if (num != other.num)
-			return false;
-		return true;
+		return num == other.num;
 	}
 
 	public static class AnalogPin extends Pin {

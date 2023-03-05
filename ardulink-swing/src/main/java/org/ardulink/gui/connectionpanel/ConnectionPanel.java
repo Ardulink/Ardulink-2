@@ -134,7 +134,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 
 	private void replaceSubpanel() {
 		Component windowAncestor = SwingUtilities.getRoot(this);
-		final WaitDialog waitDialog = new WaitDialog(
+		WaitDialog waitDialog = new WaitDialog(
 				windowAncestor instanceof Window ? (Window) windowAncestor
 						: null);
 		UtilityGeometry.setAlignmentCentered(waitDialog);
@@ -184,8 +184,8 @@ public class ConnectionPanel extends JPanel implements Linkable {
 				return createSubpanel();
 			}
 
-			private void displayIn(final WaitDialog waitDialog,
-					final int timeout, final TimeUnit tu) {
+			private void displayIn(WaitDialog waitDialog,
+								   int timeout, TimeUnit tu) {
 				Executors.newCachedThreadPool().execute(new Runnable() {
 					@Override
 					public void run() {

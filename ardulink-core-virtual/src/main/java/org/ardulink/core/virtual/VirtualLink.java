@@ -36,7 +36,7 @@ public class VirtualLink extends AbstractListenerLink {
 		}
 	};
 
-	private final Map<Pin, Object> listeningPins = new ConcurrentHashMap<Pin, Object>();
+	private final Map<Pin, Object> listeningPins = new ConcurrentHashMap<>();
 
 	private VirtualLinkConfig config;
 

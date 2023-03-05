@@ -35,11 +35,11 @@ public class ListMultiMap<K, V> extends AbstractMultiMap<K, V> {
 
 	@Override
 	protected Collection<V> make() {
-		return new ArrayList<V>();
+		return new ArrayList<>();
 	}
 
 	public Map<K, List<V>> asMap() {
-		Map<K, List<V>> map = new HashMap<K, List<V>>();
+		Map<K, List<V>> map = new HashMap<>();
 		for (Entry<K, Collection<V>> entry : data.entrySet()) {
 			map.put(entry.getKey(), (List<V>) entry.getValue());
 		}

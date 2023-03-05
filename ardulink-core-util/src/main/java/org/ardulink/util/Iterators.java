@@ -34,8 +34,8 @@ public final class Iterators {
 	}
 
 	public static <T> Optional<T> getFirst(Iterator<T> iterator) {
-		return iterator.hasNext() ? Optional.<T> of(iterator.next()) : Optional
-				.<T> empty();
+		return iterator.hasNext() ? Optional.of(iterator.next()) : Optional
+				.empty();
 	}
 
 	public static <T> Optional<T> getLast(Iterator<T> iterator) {

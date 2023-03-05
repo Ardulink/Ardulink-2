@@ -58,14 +58,14 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 
 	private final MQTT mqttClient;
 	private FutureConnection connection;
-	private final List<Message> messages = new CopyOnWriteArrayList<Message>();
+	private final List<Message> messages = new CopyOnWriteArrayList<>();
 	private final String topic;
 
 	private static final Map<Type, String> typeMap = unmodifiableMap(typeMap());
 	private boolean appendValueGet;
 
 	private static Map<Type, String> typeMap() {
-		Map<Type, String> typeMap = new HashMap<Type, String>();
+		Map<Type, String> typeMap = new HashMap<>();
 		typeMap.put(ANALOG, "A");
 		typeMap.put(DIGITAL, "D");
 		return typeMap;
@@ -136,7 +136,7 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 		return appendValueGet ? message + "/value/get" : message;
 	}
 
-	private void sendMessage(final Message message) throws IOException {
+	private void sendMessage(Message message) throws IOException {
 		exec(connection.publish(message.getTopic(), message.getMessage().getBytes(), AT_LEAST_ONCE, false));
 	}
 
@@ -147,7 +147,7 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 
 	public void close() throws IOException {
 		if (this.connection.isConnected()) {
-			exec(connection.unsubscribe(new String[] { new String("#") }));
+			exec(connection.unsubscribe(new String[] {"#"}));
 			exec(this.connection.disconnect());
 		}
 	}
@@ -161,7 +161,7 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 	}
 
 	public List<Message> hasReceived() {
-		return new ArrayList<Message>(messages);
+		return new ArrayList<>(messages);
 	}
 
 }

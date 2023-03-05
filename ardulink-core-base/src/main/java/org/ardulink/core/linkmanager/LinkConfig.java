@@ -35,12 +35,12 @@ public interface LinkConfig {
 	};
 
 	@Retention(RUNTIME)
-	public @interface Named {
+    @interface Named {
 		String value();
 	}
 
 	@Retention(RUNTIME)
-	public @interface ChoiceFor {
+    @interface ChoiceFor {
 		/**
 		 * The name of the attribute the values are choices for.
 		 * 
@@ -58,7 +58,7 @@ public interface LinkConfig {
 	}
 
 	@Retention(RUNTIME)
-	public @interface I18n {
+    @interface I18n {
 		/**
 		 * Name of the property file holding the i18n texts. If omitted the name
 		 * has to have the same name like the LinkConfig class. In both cases

@@ -23,8 +23,8 @@ public class BluetoothDiscoveryUtil {
 	public static Map<String, ServiceRecord> getDevices() {
 		// TODO should be replaced by Semaphore
 		Object lock = new Object();
-		List<RemoteDevice> devices = new ArrayList<RemoteDevice>();
-		Map<String, ServiceRecord> ports = new HashMap<String, ServiceRecord>();
+		List<RemoteDevice> devices = new ArrayList<>();
+		Map<String, ServiceRecord> ports = new HashMap<>();
 		DiscoveryListener listener = listener(devices, ports, lock);
 		DiscoveryAgent agent = getLocalDevice().getDiscoveryAgent();
 		try {
@@ -52,11 +52,11 @@ public class BluetoothDiscoveryUtil {
 		
 	}
 
-	private static DiscoveryListener listener(final List<RemoteDevice> devices,
-			final Map<String, ServiceRecord> ports, final Object lock) {
+	private static DiscoveryListener listener(List<RemoteDevice> devices,
+                                              Map<String, ServiceRecord> ports, Object lock) {
 		return new DiscoveryListener() {
 
-			private final Map<RemoteDevice, ServiceRecord[]> services = new HashMap<RemoteDevice, ServiceRecord[]>();
+			private final Map<RemoteDevice, ServiceRecord[]> services = new HashMap<>();
 
 			@Override
 			public void deviceDiscovered(RemoteDevice remoteDevice,

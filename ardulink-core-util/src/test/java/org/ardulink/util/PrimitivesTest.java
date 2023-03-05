@@ -21,9 +21,9 @@ import static java.lang.Boolean.TRUE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -37,17 +37,17 @@ class PrimitivesTest {
 
 	@Test
 	void canParseIntAsInt() {
-		assertThat(Primitives.parseAs(int.class, "123"), is((Object) Integer.valueOf(123)));
+		assertThat(Primitives.parseAs(int.class, "123"), is(Integer.valueOf(123)));
 	}
 
 	@Test
 	void canParseIntAsDouble() {
-		assertThat(Primitives.parseAs(double.class, "123"), is((Object) Double.valueOf(123)));
+		assertThat(Primitives.parseAs(double.class, "123"), is(Double.valueOf(123)));
 	}
 
 	@Test
 	void canParseDoubleAsDouble() {
-		assertThat(Primitives.parseAs(double.class, "123.456"), is((Object) Double.valueOf(123.456)));
+		assertThat(Primitives.parseAs(double.class, "123.456"), is(Double.valueOf(123.456)));
 	}
 
 	@Test

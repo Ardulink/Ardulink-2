@@ -64,21 +64,21 @@ class LinksTest {
 
 	@Test
 	void whenRequestingDefaultLinkSerialHasPriorityOverAllOthers() throws Throwable {
-		final LinkFactory<LinkConfig> serial = spy(factoryNamed(serial()));
+		LinkFactory<LinkConfig> serial = spy(factoryNamed(serial()));
 		withRegistered(factoryNamed(serialDash("a")), factoryNamed("a"), serial, factoryNamed("z"),
 				factoryNamed(serialDash("z"))).execute(() -> assertLinkWasCreatedBy(Links.getDefault(), serial));
 	}
 
 	@Test
 	void whenRequestingDefaultLinkStartingWithSerialDashHasPriorityOverAllOthers() throws Throwable {
-		final LinkFactory<LinkConfig> serialDashAnything = spy(factoryNamed(serialDash("appendix-does-not-matter")));
+		LinkFactory<LinkConfig> serialDashAnything = spy(factoryNamed(serialDash("appendix-does-not-matter")));
 		withRegistered(factoryNamed("a"), serialDashAnything, factoryNamed("z"))
 				.execute(() -> assertLinkWasCreatedBy(Links.getDefault(), serialDashAnything));
 	}
 
 	@Test
 	void serialDashDoesHandleSerial() throws Throwable {
-		final LinkFactory<LinkConfig> serialDashAnything = spy(factoryNamed(serialDash("appendix-does-not-matter")));
+		LinkFactory<LinkConfig> serialDashAnything = spy(factoryNamed(serialDash("appendix-does-not-matter")));
 		withRegistered(serialDashAnything)
 				.execute(() -> assertLinkWasCreatedBy(Links.getLink("ardulink://serial"), serialDashAnything));
 	}
@@ -101,7 +101,7 @@ class LinksTest {
 
 	@Test
 	void registeredSpecialNameDefault() throws Throwable {
-		final LinkFactory<LinkConfig> serial = spy(factoryNamed(serial()));
+		LinkFactory<LinkConfig> serial = spy(factoryNamed(serial()));
 		assert serial.newLinkConfig().equals(NO_ATTRIBUTES)
 				: "ardulink://default would differ if the config has attributes";
 		withRegistered(serial).execute(() -> {
@@ -193,7 +193,7 @@ class LinksTest {
 
 	@Test
 	void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws Throwable {
-		final String name1 = new DummyLinkFactory().getName();
+		String name1 = new DummyLinkFactory().getName();
 		final String name2 = "DummyLINK";
 		assert name1.equalsIgnoreCase(name2) && !name1.equals(name2);
 		class DummyLinkFactoryExtension extends DummyLinkFactory {
@@ -230,7 +230,7 @@ class LinksTest {
 		link.close();
 	}
 
-	private LinkFactory<LinkConfig> factoryNamed(final String name) {
+	private LinkFactory<LinkConfig> factoryNamed(String name) {
 		return new LinkFactory<LinkConfig>() {
 
 			@Override
@@ -281,7 +281,7 @@ class LinksTest {
 	}
 
 	private String getRandomURI() {
-		return "ardulink://dummyLink?a=" + "&b=" + String.valueOf(Thread.currentThread().getId()) + "&c="
+		return "ardulink://dummyLink?a=" + "&b=" + Thread.currentThread().getId() + "&c="
 				+ System.currentTimeMillis();
 	}
 

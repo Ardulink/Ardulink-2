@@ -64,56 +64,68 @@ public class QosLink implements Link {
 		this.timeUnit = timeUnit;
 	}
 
+	@Override
 	public void close() throws IOException {
 		delegate.close();
 	}
 
+	@Override
 	public Link addListener(EventListener listener) throws IOException {
 		return delegate.addListener(listener);
 	}
 
+	@Override
 	public Link removeListener(EventListener listener) throws IOException {
 		return delegate.removeListener(listener);
 	}
 
+	@Override
 	public Link addRplyListener(RplyListener listener) throws IOException {
 		return delegate.addRplyListener(listener);
 	}
 
+	@Override
 	public Link removeRplyListener(RplyListener listener) throws IOException {
 		return delegate.removeRplyListener(listener);
 	}
 
+	@Override
 	public Link addCustomListener(CustomListener listener) throws IOException {
 		return delegate.addCustomListener(listener);
 	}
 
+	@Override
 	public Link removeCustomListener(CustomListener listener) throws IOException {
 		return delegate.removeCustomListener(listener);
 	}
 
+	@Override
 	public long startListening(Pin pin) throws IOException {
 		return extractId(newAwaiter().waitForResponse(
 				delegate.startListening(pin)));
 	}
 
+	@Override
 	public long stopListening(Pin pin) throws IOException {
 		return extractId(newAwaiter().waitForResponse(
 				delegate.stopListening(pin)));
 	}
 
+	@Override
 	public long switchAnalogPin(AnalogPin analogPin, int value)
 			throws IOException {
 		return extractId(newAwaiter().waitForResponse(
 				delegate.switchAnalogPin(analogPin, value)));
 	}
 
+	@Override
 	public long switchDigitalPin(DigitalPin digitalPin, boolean value)
 			throws IOException {
 		return extractId(newAwaiter().waitForResponse(
 				delegate.switchDigitalPin(digitalPin, value)));
 	}
 
+	@Override
 	public long sendKeyPressEvent(char keychar, int keycode, int keylocation,
 			int keymodifiers, int keymodifiersex) throws IOException {
 		return extractId(newAwaiter().waitForResponse(
@@ -121,15 +133,18 @@ public class QosLink implements Link {
 						keymodifiers, keymodifiersex)));
 	}
 
+	@Override
 	public long sendTone(Tone tone) throws IOException {
 		return extractId(newAwaiter().waitForResponse(delegate.sendTone(tone)));
 	}
 
+	@Override
 	public long sendNoTone(AnalogPin analogPin) throws IOException {
 		return extractId(newAwaiter().waitForResponse(
 				delegate.sendNoTone(analogPin)));
 	}
 
+	@Override
 	public long sendCustomMessage(String... messages) throws IOException {
 		return extractId(newAwaiter().waitForResponse(
 				delegate.sendCustomMessage(messages)));

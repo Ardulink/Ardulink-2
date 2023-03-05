@@ -30,7 +30,7 @@ import org.ardulink.core.messages.api.FromDeviceMessage;
  */
 public abstract class AbstractByteStreamProcessor implements ByteStreamProcessor {
 
-	private final List<FromDeviceListener> listeners = new CopyOnWriteArrayList<FromDeviceListener>();
+	private final List<FromDeviceListener> listeners = new CopyOnWriteArrayList<>();
 
 	@Override
 	public void process(byte[] bytes) {

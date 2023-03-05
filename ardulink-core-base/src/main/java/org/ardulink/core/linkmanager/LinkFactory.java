@@ -36,7 +36,7 @@ public interface LinkFactory<T extends LinkConfig> {
 	 * LinkFactories can have beside their primary name additionally alias names. 
 	 */
 	@Retention(RUNTIME)
-	public static @interface Alias {
+    @interface Alias {
 		String[] value();
 	}
 

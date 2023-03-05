@@ -112,7 +112,7 @@ public class ToneController extends JPanel implements Linkable {
 		
 		durationSpinner = new JSpinner();
 		durationSpinner.setPreferredSize(new Dimension(105, 28));
-		durationSpinner.setModel(new SpinnerNumberModel(new Integer(1000), new Integer(1), null, new Integer(1)));
+		durationSpinner.setModel(new SpinnerNumberModel(Integer.valueOf(1000), Integer.valueOf(1), null, Integer.valueOf(1)));
 		durationPanel.add(durationSpinner);
 		
 		durationCheckBox = new JCheckBox("Duration enabled");
@@ -199,7 +199,7 @@ public class ToneController extends JPanel implements Linkable {
 	 * @param t
 	 */
 	public void setFrequency(int frequency) {
-		frequencySpinner.setValue(frequency);;
+		frequencySpinner.setValue(frequency);
 	}
 
 	/**

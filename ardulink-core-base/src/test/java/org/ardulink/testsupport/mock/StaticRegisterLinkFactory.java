@@ -45,7 +45,7 @@ public class StaticRegisterLinkFactory implements LinkFactory<StaticRegisterLink
 		public String identifier;
 	}
 
-	private static final ConcurrentMap<String, Link> links = new ConcurrentHashMap<String, Link>();
+	private static final ConcurrentMap<String, Link> links = new ConcurrentHashMap<>();
 
 	public static String register(Link link) {
 		return register(randomUUID().toString(), link);

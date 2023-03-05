@@ -161,7 +161,7 @@ public class FindByAnnotation implements AttributeFinder {
 	@LapsedWith(module = JDK8, value = "Streams")
 	public Iterable<? extends AttributeReader> listReaders(Object bean)
 			throws Exception {
-		List<AttributeReader> readers = new ArrayList<AttributeReader>();
+		List<AttributeReader> readers = new ArrayList<>();
 		for (Method method : bean.getClass().getDeclaredMethods()) {
 			if (method.isAnnotationPresent(annotationClass)
 					&& isReadMethod(method)) {
@@ -188,7 +188,7 @@ public class FindByAnnotation implements AttributeFinder {
 	@Override
 	@LapsedWith(module = JDK8, value = "Streams")
 	public Iterable<AttributeWriter> listWriters(Object bean) throws Exception {
-		List<AttributeWriter> writers = new ArrayList<AttributeWriter>();
+		List<AttributeWriter> writers = new ArrayList<>();
 		for (Method method : bean.getClass().getDeclaredMethods()) {
 			if (method.isAnnotationPresent(annotationClass)
 					&& isWriteMethod(method)) {
@@ -227,7 +227,7 @@ public class FindByAnnotation implements AttributeFinder {
 	
 	@LapsedWith(module = JDK8, value = "Streams")
 	private Optional<AttributeReader> readMethodForAttribute(Object bean,
-			final String name) throws Exception {
+			String name) throws Exception {
 		for (AttributeReader reader : FindByIntrospection.beanAttributes()
 				.listReaders(bean)) {
 			if (reader.getName().equals(name)) {
@@ -239,7 +239,7 @@ public class FindByAnnotation implements AttributeFinder {
 
 	@LapsedWith(module = JDK8, value = "Streams")
 	private Optional<AttributeWriter> writeMethodForAttribute(Object bean,
-			final String name) throws Exception {
+			String name) throws Exception {
 		for (AttributeWriter writer : FindByIntrospection.beanAttributes()
 				.listWriters(bean)) {
 			if (writer.getName().equals(name)) {

@@ -29,19 +29,19 @@ import java.util.Collection;
  */
 public interface Attribute {
 
-	public interface TypedAttributeProvider {
+	interface TypedAttributeProvider {
 		String getName();
 
 		Class<?> getType();
 	}
 
-	public interface AttributeReader extends TypedAttributeProvider {
+	interface AttributeReader extends TypedAttributeProvider {
 		Object getValue() throws Exception;
 
 		void addAnnotations(Collection<Annotation> annotations);
 	}
 
-	public interface AttributeWriter extends TypedAttributeProvider {
+	interface AttributeWriter extends TypedAttributeProvider {
 		void setValue(Object value) throws Exception;
 
 		void addAnnotations(Collection<Annotation> annotations);

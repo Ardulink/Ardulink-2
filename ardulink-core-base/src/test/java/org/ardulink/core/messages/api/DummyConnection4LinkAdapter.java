@@ -33,7 +33,7 @@ import org.ardulink.core.Connection;
 public class DummyConnection4LinkAdapter implements Connection {
 
 	private final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-	private final List<Listener> listeners = new ArrayList<Listener>();
+	private final List<Listener> listeners = new ArrayList<>();
 
 	@Override
 	public void close() throws IOException {

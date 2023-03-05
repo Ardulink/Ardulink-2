@@ -31,11 +31,11 @@ import org.ardulink.util.anno.LapsedWith;
 
 public final class ToArdulinkProtocol implements Processor {
 
-	private static interface MessageCreator {
+	private interface MessageCreator {
 		Optional<String> createMessage(String topic, String value);
 	}
 
-	private static abstract class AbstractMessageCreator implements MessageCreator {
+	private abstract static class AbstractMessageCreator implements MessageCreator {
 
 		private final Pattern pattern;
 

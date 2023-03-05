@@ -44,7 +44,7 @@ import org.hamcrest.Matcher;
  */
 public class EventCollector implements EventListener {
 
-	private final ListMultiMap<Type, PinValueChangedEvent> events = new ListMultiMap<Type, PinValueChangedEvent>();
+	private final ListMultiMap<Type, PinValueChangedEvent> events = new ListMultiMap<>();
 
 	@Override
 	public void stateChanged(AnalogPinValueChangedEvent event) {

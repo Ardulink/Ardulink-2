@@ -39,8 +39,8 @@ public class MqttLinkConfig implements LinkConfig {
 	public static final int DEFAULT_PORT = 1883;
 
 	public enum Connection {
-		TCP, SSL, TLS;
-	}
+		TCP, SSL, TLS
+    }
 
 	private static final String DEFAULT_HOST = "localhost";
 

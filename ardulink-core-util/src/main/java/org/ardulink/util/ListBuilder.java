@@ -36,14 +36,14 @@ import org.ardulink.util.anno.LapsedWith;
 @LapsedWith(value = JDK9, module = "List#of")
 public class ListBuilder<T> {
 
-	private final List<T> data = new ArrayList<T>();
+	private final List<T> data = new ArrayList<>();
 
 	private ListBuilder() {
 		super();
 	}
 
 	public static <T> ListBuilder<T> newBuilder() {
-		return new ListBuilder<T>();
+		return new ListBuilder<>();
 	}
 
 	public ListBuilder<T> addAll(T... ts) {
@@ -61,7 +61,7 @@ public class ListBuilder<T> {
 	}
 
 	public List<T> build() {
-		return new ArrayList<T>(this.data);
+		return new ArrayList<>(this.data);
 	}
 
 }

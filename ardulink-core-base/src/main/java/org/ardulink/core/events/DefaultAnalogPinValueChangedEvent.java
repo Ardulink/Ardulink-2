@@ -40,10 +40,12 @@ public class DefaultAnalogPinValueChangedEvent implements AnalogPinValueChangedE
 		this.value = value;
 	}
 
+	@Override
 	public AnalogPin getPin() {
 		return this.pin;
 	}
 
+	@Override
 	public Integer getValue() {
 		return this.value;
 	}

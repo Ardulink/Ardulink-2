@@ -66,7 +66,7 @@ public class PiLink extends AbstractListenerLink {
 
 	private final PiLinkConfig config;
 	private final GpioController gpioController = GpioFactory.getInstance();
-	private final ListMultiMap<GpioPin, GpioPinListener> listeners = new ListMultiMap<GpioPin, GpioPinListener>();
+	private final ListMultiMap<GpioPin, GpioPinListener> listeners = new ListMultiMap<>();
 
 	public PiLink(PiLinkConfig config) {
 		this.config = config;

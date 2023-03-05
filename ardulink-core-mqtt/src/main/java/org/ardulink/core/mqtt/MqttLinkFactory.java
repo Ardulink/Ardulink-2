@@ -37,8 +37,8 @@ public class MqttLinkFactory implements LinkFactory<MqttLinkConfig> {
 	}
 
 	@Override
-	public MqttLink newLink(MqttLinkConfig config) throws UnknownHostException,
-			IOException {
+	public MqttLink newLink(MqttLinkConfig config) throws
+            IOException {
 		return new MqttLink(config);
 	}
 

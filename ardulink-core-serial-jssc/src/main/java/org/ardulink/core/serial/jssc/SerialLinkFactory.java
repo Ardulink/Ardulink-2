@@ -53,7 +53,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 	public LinkDelegate newLink(SerialLinkConfig config)
 			throws SerialPortException, IOException {
 		String portIdentifier = config.getPort();
-		final SerialPort serialPort = serialPort(config, portIdentifier);
+		SerialPort serialPort = serialPort(config, portIdentifier);
 
 		ByteStreamProcessor byteStreamProcessor = config.getProto().newByteStreamProcessor();
 		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(
@@ -65,7 +65,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
 		if (!waitForArdulink(config, connectionBasedLink)) {
 			connectionBasedLink.close();
-			throw new IllegalStateException(String.format("Waited for arduino to boot but no response received"));
+			throw new IllegalStateException("Waited for arduino to boot but no response received");
 		}
 
 		return new LinkDelegate(link) {

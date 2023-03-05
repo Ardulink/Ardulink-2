@@ -6,6 +6,7 @@ import java.awt.Window;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
 public class WaitDialog extends JDialog {
@@ -14,7 +15,7 @@ public class WaitDialog extends JDialog {
 
 	public WaitDialog(Window window) {
 		super(window);
-		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		setResizable(false);
 		setTitle("Searching...");
 		setBounds(100, 100, 335, 112);

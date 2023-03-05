@@ -21,9 +21,7 @@ import static java.lang.Long.MIN_VALUE;
 import static java.lang.String.format;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
-import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
 import static org.ardulink.util.Preconditions.checkArgument;
@@ -355,7 +353,7 @@ public abstract class LinkManager {
 						.map(annoClass::cast);
 			}
 
-			private NumberValidationInfo newNumberValidationInfo(final long min, final long max) {
+			private NumberValidationInfo newNumberValidationInfo(long min, long max) {
 				return new NumberValidationInfo() {
 
 					@Override
@@ -375,7 +373,7 @@ public abstract class LinkManager {
 		private final LinkFactory<T> linkFactory;
 		private final T linkConfig;
 		private final BeanProperties beanProperties;
-		private final Map<String, ConfigAttributeAdapter<T>> cache = new HashMap<String, ConfigAttributeAdapter<T>>();
+		private final Map<String, ConfigAttributeAdapter<T>> cache = new HashMap<>();
 		private boolean changed = true;
 
 		public DefaultConfigurer(LinkFactory<T> linkFactory) {
@@ -413,24 +411,23 @@ public abstract class LinkManager {
 
 			@Override
 			public boolean equals(Object obj) {
-				if (this == obj)
+				if (this == obj) {
 					return true;
-				if (obj == null)
+				}
+				if ((obj == null) || (getClass() != obj.getClass())) {
 					return false;
-				if (getClass() != obj.getClass())
-					return false;
+				}
 				CacheKey other = (CacheKey) obj;
 				if (factoryType == null) {
-					if (other.factoryType != null)
+					if (other.factoryType != null) {
 						return false;
-				} else if (!factoryType.equals(other.factoryType))
+					}
+				} else if (!factoryType.equals(other.factoryType)) {
 					return false;
+				}
 				if (values == null) {
-					if (other.values != null)
-						return false;
-				} else if (!values.equals(other.values))
-					return false;
-				return true;
+					return other.values == null;
+				} else return values.equals(other.values);
 			}
 
 			@Override
@@ -458,10 +455,11 @@ public abstract class LinkManager {
 			}
 		}
 
+		@Override
 		public ConfigAttribute getAttribute(String key) {
 			ConfigAttributeAdapter<T> configAttributeAdapter = cache.get(key);
 			if (configAttributeAdapter == null) {
-				cache.put(key, configAttributeAdapter = new ConfigAttributeAdapter<T>(linkConfig, beanProperties, key));
+				cache.put(key, configAttributeAdapter = new ConfigAttributeAdapter<>(linkConfig, beanProperties, key));
 			}
 			return configAttributeAdapter;
 		}

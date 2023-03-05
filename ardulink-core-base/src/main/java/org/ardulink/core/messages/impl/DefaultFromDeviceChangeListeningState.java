@@ -38,10 +38,12 @@ public class DefaultFromDeviceChangeListeningState implements
 		this.mode = mode;
 	}
 
+	@Override
 	public Pin getPin() {
 		return this.pin;
 	}
 
+	@Override
 	public Mode getMode() {
 		return mode;
 	}

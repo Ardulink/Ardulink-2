@@ -40,12 +40,14 @@ public class FilteredEventListenerAdapter extends EventListenerAdapter {
 		return pin;
 	}
 
+	@Override
 	public void stateChanged(AnalogPinValueChangedEvent event) {
 		if (accept(event)) {
 			this.delegate.stateChanged(event);
 		}
 	}
 
+	@Override
 	public void stateChanged(DigitalPinValueChangedEvent event) {
 		if (accept(event)) {
 			this.delegate.stateChanged(event);

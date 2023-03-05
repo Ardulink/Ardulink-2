@@ -44,7 +44,7 @@ public class ResponseAwaiter {
 		return this;
 	}
 
-	private ResponseAwaiter(final Link link) throws IOException {
+	private ResponseAwaiter(Link link) throws IOException {
 		this.link = link;
 		this.listener = new RplyListener() {
 			@Override

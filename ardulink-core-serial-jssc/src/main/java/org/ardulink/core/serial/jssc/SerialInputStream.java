@@ -97,13 +97,15 @@ public class SerialInputStream extends InputStream {
 	@Override
 	public int read(byte[] buf, int offset, int length) throws IOException {
 		
-		if (buf.length < offset + length)
+		if (buf.length < offset + length) {
 			length = buf.length - offset;
+		}
 		
 		int available = this.available();
 		
-		if (available > length)
+		if (available > length) {
 			available = length;
+		}
 		
 		try {
 			byte[] readBuf = serialPort.readBytes(available);
@@ -157,11 +159,13 @@ public class SerialInputStream extends InputStream {
 	 * @throws IOException On error or timeout.
 	 */
 	public int blockingRead(byte[] buf, int offset, int length, int timeout) throws IOException {
-		if (buf.length < offset + length)
+		if (buf.length < offset + length) {
 			throw new IOException("Not enough buffer space for serial data");
+		}
 		
-		if (timeout < 1)
+		if (timeout < 1) {
 			return read(buf, offset, length);
+		}
 		
 		try {
 			byte[] readBuf = serialPort.readBytes(length, timeout);
@@ -177,8 +181,9 @@ public class SerialInputStream extends InputStream {
 		int ret;
 		try {
 			ret = serialPort.getInputBufferBytesCount();
-			if (ret >= 0) 
+			if (ret >= 0) {
 				return ret;
+			}
 			throw new IOException("Error checking available bytes from the serial port.");
 		} catch (Exception e) {
 			throw new IOException("Error checking available bytes from the serial port.");

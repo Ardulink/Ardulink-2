@@ -25,11 +25,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import org.ardulink.util.Lists;
@@ -70,7 +66,7 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback{
 		this(newSocket(0));
 	}
 
-	public ProxyServerDouble(final ServerSocket serverSocket) {
+	public ProxyServerDouble(ServerSocket serverSocket) {
 		this.serverSocket = serverSocket;
 		thread = new Thread() {
 
@@ -100,7 +96,7 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback{
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-			};
+			}
 		};
 	}
 
@@ -131,15 +127,15 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback{
 	}
 
 	private Map<String, List<String>> makeMap(int numberOfPorts) {
-		Map<String, List<String>> answers = new HashMap<String, List<String>>();
+		Map<String, List<String>> answers = new HashMap<>();
 		answers.put("ardulink:networkproxyserver:get_port_list",
 				portList(numberOfPorts));
-		answers.put("ardulink:networkproxyserver:connect", Arrays.asList(OK));
+		answers.put("ardulink:networkproxyserver:connect", Collections.singletonList(OK));
 		return answers;
 	}
 
 	private List<String> portList(int numberOfPorts) {
-		List<String> subAnwser = new ArrayList<String>();
+		List<String> subAnwser = new ArrayList<>();
 		subAnwser.add("NUMBER_OF_PORTS=" + numberOfPorts);
 		for (int i = 0; i < numberOfPorts; i++) {
 			subAnwser.add("myPortNr" + i);

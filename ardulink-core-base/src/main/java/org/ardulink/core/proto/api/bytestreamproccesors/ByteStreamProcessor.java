@@ -34,7 +34,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageTone;
  */
 public interface ByteStreamProcessor {
 
-	public static interface FromDeviceListener {
+	interface FromDeviceListener {
 		void handle(FromDeviceMessage fromDevice);
 	}
 

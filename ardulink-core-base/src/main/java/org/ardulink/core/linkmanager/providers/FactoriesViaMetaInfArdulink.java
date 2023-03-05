@@ -107,7 +107,7 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 		@Override
 		public LinkConfig newLinkConfig() {
 			try {
-				return configClass == null ? LinkConfig.NO_ATTRIBUTES : (LinkConfig) configClass.newInstance();
+				return configClass == null ? LinkConfig.NO_ATTRIBUTES : configClass.newInstance();
 			} catch (InstantiationException e) {
 				throw propagate(e);
 			} catch (IllegalAccessException e) {

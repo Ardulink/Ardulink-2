@@ -29,7 +29,7 @@ import org.ardulink.core.Pin.AnalogPin;
 public interface AnalogPinValueChangedEvent extends PinValueChangedEvent {
 
 	@Override
-	public AnalogPin getPin();
+    AnalogPin getPin();
 
 	@Override
 	Integer getValue();

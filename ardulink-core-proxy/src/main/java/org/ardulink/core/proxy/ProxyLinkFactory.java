@@ -49,8 +49,8 @@ public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
 
 	@Override
 	public ConnectionBasedLink newLink(ProxyLinkConfig config)
-			throws UnknownHostException, IOException {
-		final ProxyConnectionToRemote remote = config.getRemote();
+			throws IOException {
+		ProxyConnectionToRemote remote = config.getRemote();
 
 		remote.send(CONNECT_CMD.getCommand());
 		remote.send(checkNotNull(config.getPort(), "port must not be null"));

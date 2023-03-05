@@ -37,10 +37,12 @@ public class DefaultFromDeviceMessagePinStateChanged implements FromDeviceMessag
 		this.value = value;
 	}
 
+	@Override
 	public Pin getPin() {
 		return this.pin;
 	}
 
+	@Override
 	public Object getValue() {
 		return this.value;
 	}

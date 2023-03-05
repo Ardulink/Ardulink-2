@@ -53,7 +53,7 @@ import org.ardulink.util.URIs;
 public final class Links {
 
 	// TODO use a WeakHashMap and use PhantomReferences to close GCed Links
-	private static final Map<Object, CacheValue> cache = new HashMap<Object, CacheValue>();
+	private static final Map<Object, CacheValue> cache = new HashMap<>();
 	private static final LinkManager linkManager = LinkManager.getInstance();
 
 	private Links() {
@@ -160,7 +160,7 @@ public final class Links {
 	}
 
 	public static Link getLink(Configurer configurer) {
-		final Object cacheKey = configurer.uniqueIdentifier();
+		Object cacheKey = configurer.uniqueIdentifier();
 		synchronized (cache) {
 			CacheValue cacheValue = cache.get(cacheKey);
 			if (cacheValue == null) {
@@ -171,7 +171,7 @@ public final class Links {
 		}
 	}
 
-	private static LinkDelegate newDelegate(final Object cacheKey, Link link) {
+	private static LinkDelegate newDelegate(Object cacheKey, Link link) {
 		return new LinkDelegate(link) {
 			@Override
 			public void close() throws IOException {
@@ -184,7 +184,7 @@ public final class Links {
 				}
 			}
 
-			private final ConcurrentHashMap<Pin, AtomicInteger> listenCounter = new ConcurrentHashMap<Pin, AtomicInteger>();
+			private final ConcurrentHashMap<Pin, AtomicInteger> listenCounter = new ConcurrentHashMap<>();
 
 			@Override
 			public long startListening(Pin pin) throws IOException {

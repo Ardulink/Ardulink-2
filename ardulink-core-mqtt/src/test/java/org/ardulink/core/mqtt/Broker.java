@@ -68,7 +68,7 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 	private String host = "localhost";
 	private int port = MqttLinkConfig.DEFAULT_PORT;
 	private final List<InterceptHandler> listeners = Lists.newArrayList();
-	private final List<Message> messages = new CopyOnWriteArrayList<Message>();
+	private final List<Message> messages = new CopyOnWriteArrayList<>();
 	private String env2restore;
 
 	private Broker() {
@@ -134,6 +134,7 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 
 	public Broker recordMessages() {
 		listeners.add(new AbstractInterceptHandler() {
+			@Override
 			public void onPublish(InterceptPublishMessage message) {
 				messages.add(new Message(message.getTopicName(), new String(message.getPayload().array())));
 			}
@@ -141,7 +142,7 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 			@Override
 			public String getID() {
 				throw new IllegalStateException("not implemented");
-			};
+			}
 		});
 		return this;
 	}

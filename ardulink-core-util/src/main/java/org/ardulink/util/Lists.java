@@ -47,7 +47,7 @@ public final class Lists {
 	}
 
 	public static <T> List<T> newArrayList(Iterator<T> iterator) {
-		List<T> list = new ArrayList<T>();
+		List<T> list = new ArrayList<>();
 		while (iterator.hasNext()) {
 			list.add(iterator.next());
 		}
@@ -55,7 +55,7 @@ public final class Lists {
 	}
 
 	public static <T> List<T> newArrayList(T... values) {
-		List<T> list = new ArrayList<T>();
+		List<T> list = new ArrayList<>();
 		Collections.addAll(list, values);
 		return list;
 	}

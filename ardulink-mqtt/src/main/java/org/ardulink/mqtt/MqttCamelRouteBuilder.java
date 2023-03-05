@@ -32,7 +32,7 @@ public class MqttCamelRouteBuilder {
 	public static final int DEFAULT_SSL_PORT = 8883;
 
 	public enum CompactStrategy {
-		AVERAGE, USE_LATEST;
+		AVERAGE, USE_LATEST
 	}
 
 	public static class MqttConnectionProperties {

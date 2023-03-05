@@ -53,14 +53,14 @@ public class NetworkProxyServerConnection implements Runnable {
 	@Override
 	public void run() {
 		try {
-			final OutputStream osRemote = socket.getOutputStream();
+			OutputStream osRemote = socket.getOutputStream();
 			InputStream isRemote = socket.getInputStream();
 
 			Link link = getRoot(handshaker(isRemote, osRemote).doHandshake());
 			checkState(link instanceof ConnectionBasedLink, "Only %s links supported for now (got %s)",
 					ConnectionBasedLink.class.getName(), link.getClass());
 
-			final ConnectionBasedLink cbl = (ConnectionBasedLink) link;
+			ConnectionBasedLink cbl = (ConnectionBasedLink) link;
 			cbl.getConnection().addListener(new Connection.ListenerAdapter() {
 				@Override
 				public void received(byte[] bytes) throws IOException {
@@ -88,7 +88,7 @@ public class NetworkProxyServerConnection implements Runnable {
 		}
 	}
 
-	protected Handshaker handshaker(InputStream isRemote, final OutputStream osRemote) {
+	protected Handshaker handshaker(InputStream isRemote, OutputStream osRemote) {
 		return new Handshaker(isRemote, osRemote);
 	}
 

@@ -45,7 +45,7 @@ public abstract class StreamReader implements Closeable {
 		this.inputStream = inputStream;
 	}
 
-	public void runReaderThread(final ByteStreamProcessor byteStreamProcessor) {
+	public void runReaderThread(ByteStreamProcessor byteStreamProcessor) {
 		this.thread = new Thread() {
 
 			{

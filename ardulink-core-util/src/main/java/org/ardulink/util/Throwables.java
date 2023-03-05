@@ -16,7 +16,7 @@ public final class Throwables {
 		return getLast(getCauses(throwable)).orElse(throwable);
 	}
 
-	public static Stream<Throwable> getCauses(final Throwable throwable) {
+	public static Stream<Throwable> getCauses(Throwable throwable) {
 		return iterate(throwable, Throwable::getCause).filter(t -> t.getCause() == null);
 	}
 

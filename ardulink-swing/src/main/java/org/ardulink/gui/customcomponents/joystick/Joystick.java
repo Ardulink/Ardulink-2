@@ -76,7 +76,7 @@ public class Joystick extends JPanel implements Linkable {
     	this(255, 128);
     }
 
-    public Joystick(final int joyOutputRange, final int joySize) {
+    public Joystick(int joyOutputRange, int joySize) {
         this.joyOutputRange = joyOutputRange;
         this.position = new Point();
         setJoySize(joySize);
@@ -84,7 +84,7 @@ public class Joystick extends JPanel implements Linkable {
         MouseAdapter mouseAdapter = new MouseAdapter() {
 
             @Override
-            public void mousePressed(final MouseEvent e) {
+            public void mousePressed(MouseEvent e) {
                 leftMouseButton = SwingUtilities.isLeftMouseButton(e);
                 mouseCheck(e);
             }
@@ -133,16 +133,12 @@ public class Joystick extends JPanel implements Linkable {
 		setInternalSize(r.width, r.height);
 	}
 
-	private void mouseCheck(final MouseEvent e) {
+	private void mouseCheck(MouseEvent e) {
         mouseX = e.getX();
         mouseY = e.getY();
         float dx = mouseX - joyCenterX;
         float dy = mouseY - joyCenterY;
-        if (leftMouseButton) {
-            isMouseTracking = true;
-        } else {
-            isMouseTracking = false;
-        }
+		isMouseTracking = leftMouseButton;
         if (isMouseTracking) {
             curJoyAngle = (float) Math.atan2(dy, dx);
             curJoySize = (float) Point2D.distance(mouseX, mouseY,
@@ -199,7 +195,7 @@ public class Joystick extends JPanel implements Linkable {
 	}
 
 	@Override
-    protected void paintComponent(final Graphics g) {
+    protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,

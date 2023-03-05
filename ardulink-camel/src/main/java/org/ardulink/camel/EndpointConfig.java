@@ -1,9 +1,10 @@
 package org.ardulink.camel;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +15,8 @@ import org.ardulink.util.Lists;
 public class EndpointConfig {
 
 	private String type;
-	private Map<String, Object> typeParams = Collections.emptyMap();
-	private List<Pin> pins = Collections.emptyList();
+	private Map<String, Object> typeParams = emptyMap();
+	private List<Pin> pins = emptyList();
 
 	public EndpointConfig type(String type) {
 		this.type = type;
@@ -23,8 +24,7 @@ public class EndpointConfig {
 	}
 
 	public EndpointConfig linkParams(Map<String, Object> parameters) {
-		this.typeParams = unmodifiableMap(new HashMap<String, Object>(
-				parameters));
+		this.typeParams = unmodifiableMap(new HashMap<>(parameters));
 		return this;
 	}
 

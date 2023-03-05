@@ -108,7 +108,7 @@ public class SimpleDigisparkProtocol implements Protocol {
 
 		private final byte protoInt;
 
-		private Message(byte protoInt) {
+		Message(byte protoInt) {
 			this.protoInt = protoInt;
 		}
 
@@ -118,7 +118,7 @@ public class SimpleDigisparkProtocol implements Protocol {
 	private static final SimpleDigisparkProtocol instance = new SimpleDigisparkProtocol();
 
 	private static final Map<Type, Message> messages = Collections
-			.unmodifiableMap(new EnumMap<Type, Message>(MapBuilder.<Type, Message>newMapBuilder()
+			.unmodifiableMap(new EnumMap<>(MapBuilder.<Type, Message>newMapBuilder()
 					.put(ANALOG, Message.POWER_PIN_INTENSITY).put(DIGITAL, Message.POWER_PIN_SWITCH).build()));
 
 	public static Protocol instance() {

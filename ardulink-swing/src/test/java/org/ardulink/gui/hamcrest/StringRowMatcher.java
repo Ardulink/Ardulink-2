@@ -63,7 +63,7 @@ public class StringRowMatcher extends TypeSafeMatcher<JPanel> {
 	private boolean valueEq(JPanel jPanel) {
 		Component component = baseBuilder.getComponent(jPanel);
 		return component instanceof JTextField
-				&& value.equals((String) ((JTextField) component).getText());
+				&& value.equals(((JTextField) component).getText());
 	}
 
 	private boolean isNumOnly(JPanel jPanel) {

@@ -16,10 +16,10 @@ limitations under the License.
 
 package org.ardulink.core.beans.finder.impl;
 
+import static java.beans.Introspector.getBeanInfo;
 import static org.ardulink.core.beans.finder.impl.ReadMethod.isReadMethod;
 import static org.ardulink.core.beans.finder.impl.WriteMethod.isWriteMethod;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
-import static java.beans.Introspector.getBeanInfo;
 
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ public class FindByIntrospection implements AttributeFinder {
 	@LapsedWith(module = JDK8, value = "Streams")
 	public Iterable<? extends AttributeReader> listReaders(Object bean)
 			throws Exception {
-		List<ReadMethod> readers = new ArrayList<ReadMethod>();
+		List<ReadMethod> readers = new ArrayList<>();
 		for (PropertyDescriptor pd : getBeanInfo(bean.getClass())
 				.getPropertyDescriptors()) {
 			if (isReadMethod(pd.getReadMethod())) {
@@ -69,7 +69,7 @@ public class FindByIntrospection implements AttributeFinder {
 	@LapsedWith(module = JDK8, value = "Streams")
 	public Iterable<? extends AttributeWriter> listWriters(Object bean)
 			throws Exception {
-		List<WriteMethod> writers = new ArrayList<WriteMethod>();
+		List<WriteMethod> writers = new ArrayList<>();
 		for (PropertyDescriptor pd : getBeanInfo(bean.getClass())
 				.getPropertyDescriptors()) {
 			if (isWriteMethod(pd.getWriteMethod())) {

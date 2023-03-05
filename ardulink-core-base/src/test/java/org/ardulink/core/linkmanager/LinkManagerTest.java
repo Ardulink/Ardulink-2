@@ -139,10 +139,10 @@ public class LinkManagerTest {
 	@Test
 	void nameHasPriorityOverAlias() throws Throwable {
 		AliasUsingLinkFactory factory = new AliasUsingLinkFactory();
-		final String dummyLinkFactoryName = new DummyLinkFactory().getName();
+		String dummyLinkFactoryName = new DummyLinkFactory().getName();
 		assert aliasNames(factory).contains(dummyLinkFactoryName);
 
-		final AliasUsingLinkFactory spy = spy(factory);
+		AliasUsingLinkFactory spy = spy(factory);
 		withRegistered(spy).execute(() -> {
 			Link link = sut.getConfigurer(newURI("ardulink://" + dummyLinkFactoryName)).newLink();
 			verify(spy, never()).newLink(any(LinkConfig.class));

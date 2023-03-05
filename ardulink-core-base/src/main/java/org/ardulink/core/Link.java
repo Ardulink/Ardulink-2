@@ -21,8 +21,8 @@ import java.io.IOException;
 
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
-import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.CustomListener;
+import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.RplyListener;
 
 /**

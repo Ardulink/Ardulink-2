@@ -53,7 +53,7 @@ public enum Primitives {
 	private final Class<?> wrapperType;
 	private final Function<String, Object> parseFunction;
 
-	private Primitives(Class<?> type, Class<?> wrapperType, Function<String, Object> parseFunction) {
+	Primitives(Class<?> type, Class<?> wrapperType, Function<String, Object> parseFunction) {
 		this.type = type;
 		this.wrapperType = wrapperType;
 		this.parseFunction = parseFunction;

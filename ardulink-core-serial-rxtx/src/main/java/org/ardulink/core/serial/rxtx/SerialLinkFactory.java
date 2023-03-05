@@ -61,7 +61,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 				.getPortIdentifier(config.getPort());
 		checkState(!portIdentifier.isCurrentlyOwned(),
 				"Port %s is currently in use", config.getPort());
-		final SerialPort serialPort = serialPort(config, portIdentifier);
+		SerialPort serialPort = serialPort(config, portIdentifier);
 
 		ByteStreamProcessor byteStreamProcessor = config.getProto().newByteStreamProcessor();
 		StreamConnection connection = new StreamConnection(
@@ -75,7 +75,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
 		if (!waitForArdulink(config, connectionBasedLink)) {
 			connection.close();
-			throw new IllegalStateException(String.format("Waited for arduino to boot but no response received"));
+			throw new IllegalStateException("Waited for arduino to boot but no response received");
 		}
 
 		return new LinkDelegate(link) {
@@ -104,7 +104,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 	private SerialPort serialPort(SerialLinkConfig config,
 			CommPortIdentifier portIdentifier) throws PortInUseException,
 			UnsupportedCommOperationException {
-		SerialPort serialPort = (SerialPort) portIdentifier.open(
+		SerialPort serialPort = portIdentifier.open(
 				"RTBug_network", 2000);
 		serialPort.setSerialPortParams(config.getBaudrate(), DATABITS_8,
 				STOPBITS_1, PARITY_NONE);

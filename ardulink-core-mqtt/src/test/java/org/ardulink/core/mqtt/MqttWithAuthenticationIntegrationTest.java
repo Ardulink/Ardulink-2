@@ -70,7 +70,7 @@ class MqttWithAuthenticationIntegrationTest {
 		createLink(URIs.newURI("ardulink://mqtt?user=" + USER + "&password=" + PASSWORD + "&topic=" + TOPIC));
 	}
 
-	private static RuntimeException createLinkAndCatchRTE(final URI uri) {
+	private static RuntimeException createLinkAndCatchRTE(URI uri) {
 		return assertThrows(RuntimeException.class, () -> createLink(uri));
 	}
 

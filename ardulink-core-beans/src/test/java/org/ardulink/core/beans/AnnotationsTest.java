@@ -1,13 +1,13 @@
 package org.ardulink.core.beans;
 
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static org.ardulink.core.beans.finder.impl.FindByFieldAccess.directFieldAccess;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.notNullValue;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
@@ -136,9 +136,9 @@ class AnnotationsTest {
 	}
 
 	@LapsedWith(module = JDK8, value = "Streams")
-	private void hasAnnotations(Attribute attribute, final Class<? extends Annotation>... annoClasses) {
-		for (int i = 0; i < annoClasses.length; i++) {
-			assertThat(annoClasses[i].getSimpleName() + " not found", attribute.getAnnotation(annoClasses[i]),
+	private void hasAnnotations(Attribute attribute, Class<? extends Annotation>... annoClasses) {
+		for (Class<? extends Annotation> element : annoClasses) {
+			assertThat(element.getSimpleName() + " not found", attribute.getAnnotation(element),
 					is(notNullValue()));
 		}
 	}

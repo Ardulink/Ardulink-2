@@ -11,7 +11,7 @@ public abstract class AbstractConnection implements Connection {
 	private static final Logger logger = LoggerFactory
 			.getLogger(AbstractConnection.class);
 	
-	private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
+	private final List<Listener> listeners = new CopyOnWriteArrayList<>();
 
 	@Override
 	public void addListener(Listener listener) {

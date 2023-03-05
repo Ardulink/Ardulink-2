@@ -42,14 +42,14 @@ public class ProxyConnectionToRemote implements Closeable {
 
 	private static final String PROXY_CONNECTION_SEPARATOR = "\n";
 
-	public static enum Command {
+	public enum Command {
 
 		GET_PORT_LIST_CMD("get_port_list"), CONNECT_CMD("connect");
 
 		private static final String PREFIX = "ardulink:networkproxyserver:";
 		private final String command;
 
-		private Command(String command) {
+		Command(String command) {
 			this.command = PREFIX + command;
 		}
 
@@ -72,7 +72,7 @@ public class ProxyConnectionToRemote implements Closeable {
 	private final PrintWriter printWriter;
 
 
-	public ProxyConnectionToRemote(String host, int port) throws UnknownHostException, IOException {
+	public ProxyConnectionToRemote(String host, int port) throws IOException {
 		this.host = host;
 		socket = new Socket(host, port);
 		this.scanner = new Scanner(socket.getInputStream()).useDelimiter(Pattern.quote(PROXY_CONNECTION_SEPARATOR));
@@ -85,7 +85,7 @@ public class ProxyConnectionToRemote implements Closeable {
 		checkState(numberOfPorts.startsWith(NUMBER_OF_PORTS), "invalid response: did not start with %s",
 				NUMBER_OF_PORTS);
 		int numOfPorts = Integer.parseInt(numberOfPorts.substring(NUMBER_OF_PORTS.length()));
-		List<String> retvalue = new ArrayList<String>(numOfPorts);
+		List<String> retvalue = new ArrayList<>(numOfPorts);
 		for (int i = 0; i < numOfPorts; i++) {
 			retvalue.add(read());
 		}

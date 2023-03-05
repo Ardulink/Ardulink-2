@@ -110,7 +110,7 @@ class MqttIntegrationTest {
 	void canSwitchDigitalPin(TestConfig config) throws IOException {
 		init(config);
 		link.switchDigitalPin(digitalPin(30), true);
-		mqttClient.awaitMessages(is(asList(new Message(topic("D30"), "true"))));
+		mqttClient.awaitMessages(is(Collections.singletonList(new Message(topic("D30"), "true"))));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -118,7 +118,7 @@ class MqttIntegrationTest {
 	void canSwitchAnalogPin(TestConfig config) throws IOException {
 		init(config);
 		link.switchAnalogPin(analogPin(12), 34);
-		mqttClient.awaitMessages(is(asList(new Message(topic("A12"), "34"))));
+		mqttClient.awaitMessages(is(Collections.singletonList(new Message(topic("A12"), "34"))));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -126,7 +126,7 @@ class MqttIntegrationTest {
 	void sendsControlMessageWhenAddingAnalogListener(TestConfig config) throws IOException {
 		init(config);
 		link.addListener(new FilteredEventListenerAdapter(analogPin(1), delegate()));
-		mqttClient.awaitMessages(is(asList(new Message(topic("system/listening/A1"), "true"))));
+		mqttClient.awaitMessages(is(Collections.singletonList(new Message(topic("system/listening/A1"), "true"))));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -134,7 +134,7 @@ class MqttIntegrationTest {
 	void sendsControlMessageWhenAddingDigitalListener(TestConfig config) throws IOException {
 		init(config);
 		link.addListener(new FilteredEventListenerAdapter(digitalPin(2), delegate()));
-		mqttClient.awaitMessages(is(asList(new Message(topic("system/listening/D2"), "true"))));
+		mqttClient.awaitMessages(is(Collections.singletonList(new Message(topic("system/listening/D2"), "true"))));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -149,10 +149,10 @@ class MqttIntegrationTest {
 		mqttClient.awaitMessages(is(asList(m1, m1)));
 		mqttClient.clear();
 		link.removeListener(listener);
-		mqttClient.awaitMessages(is(Collections.<Message>emptyList()));
+		mqttClient.awaitMessages(is(Collections.emptyList()));
 		link.removeListener(listener);
 		Message m2 = new Message(topic("system/listening/A1"), "false");
-		mqttClient.awaitMessages(is(is(asList(m2))));
+		mqttClient.awaitMessages(is(is(Collections.singletonList(m2))));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -167,10 +167,10 @@ class MqttIntegrationTest {
 		mqttClient.awaitMessages(is(asList(m1, m1)));
 		mqttClient.clear();
 		link.removeListener(listener);
-		mqttClient.awaitMessages(is(Collections.<Message>emptyList()));
+		mqttClient.awaitMessages(is(Collections.emptyList()));
 		link.removeListener(listener);
 		Message m2 = new Message(topic("system/listening/D1"), "false");
-		mqttClient.awaitMessages(is(asList(m2)));
+		mqttClient.awaitMessages(is(Collections.singletonList(m2)));
 	}
 
 	private String topic(String pin) {

@@ -27,7 +27,7 @@ import org.ardulink.core.Pin;
  */
 public interface FromDeviceChangeListeningState extends FromDeviceMessage {
 
-	public enum Mode {
+	enum Mode {
 		START, STOP
 	}
 

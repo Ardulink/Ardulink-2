@@ -1,8 +1,8 @@
 package org.ardulink.gui.facility;
 
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.UnsupportedLookAndFeelException;
 
 public final class LAFUtil {
 

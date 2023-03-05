@@ -40,10 +40,12 @@ public class DefaultDigitalPinValueChangedEvent implements DigitalPinValueChange
 		this.value = value;
 	}
 
+	@Override
 	public DigitalPin getPin() {
 		return this.pin;
 	}
 
+	@Override
 	public Boolean getValue() {
 		return this.value;
 	}

@@ -12,9 +12,9 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Pin;
-import org.ardulink.mqtt.Topics;
 import org.ardulink.mqtt.MqttCamelRouteBuilder;
 import org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy;
+import org.ardulink.mqtt.Topics;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
