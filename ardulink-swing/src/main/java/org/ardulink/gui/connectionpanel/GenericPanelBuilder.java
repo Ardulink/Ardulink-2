@@ -16,6 +16,7 @@ limitations under the License.
 package org.ardulink.gui.connectionpanel;
 
 import static java.awt.GridBagConstraints.REMAINDER;
+import static java.util.Arrays.asList;
 import static org.ardulink.gui.connectionpanel.GridBagConstraintsBuilder.constraints;
 import static org.ardulink.util.Primitives.parseAs;
 import static org.ardulink.util.Primitives.unwrap;
@@ -23,14 +24,11 @@ import static org.ardulink.util.Primitives.wrap;
 
 import java.awt.Component;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URI;
-import java.util.Arrays;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -84,8 +82,9 @@ public class GenericPanelBuilder implements PanelBuilder {
 							.gridwidth(isDiscoverable ? 1 : REMAINDER)
 							.fillHorizontal().build());
 
+			@SuppressWarnings("unchecked")
 			Component comp = isDiscoverable ? createDiscoverButton(attribute,
-					(JComboBox) component) : new JPanel();
+					(JComboBox<Object>) component) : new JPanel();
 			panel.add(comp, constraints(row, col++).build());
 			row++;
 		}
@@ -95,16 +94,11 @@ public class GenericPanelBuilder implements PanelBuilder {
 	}
 
 	private static JButton createDiscoverButton(
-			ConfigAttribute attribute, JComboBox comboBox) {
+			ConfigAttribute attribute, JComboBox<Object> comboBox) {
 		JButton discoverButton = new JButton(loadIcon());
 		discoverButton.setToolTipText("Discover");
-		discoverButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				comboBox.setModel(new DefaultComboBoxModel(attribute
-						.getChoiceValues()));
-			}
-		});
+		discoverButton
+				.addActionListener(e -> comboBox.setModel(new DefaultComboBoxModel<>(attribute.getChoiceValues())));
 		return discoverButton;
 	}
 
@@ -127,25 +121,14 @@ public class GenericPanelBuilder implements PanelBuilder {
 
 	private static JComponent createCheckBox(ConfigAttribute attribute) {
 		JCheckBox checkBox = new JCheckBox();
-		checkBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				attribute.setValue(Boolean.valueOf(checkBox.isSelected()));
-			}
-		});
+		checkBox.addActionListener(e -> attribute.setValue(Boolean.valueOf(checkBox.isSelected())));
 		return setState(checkBox, attribute);
 	}
 
 	private static JComponent createComboxBox(ConfigAttribute attribute) {
-		JComboBox jComboBox = new JComboBox(attribute.getChoiceValues());
-		jComboBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				attribute.setValue(jComboBox.getSelectedItem());
-			}
-		});
-		boolean nullIsAvalidItem = Arrays.asList(
-				attribute.getChoiceValues()).contains(null);
+		JComboBox<Object> jComboBox = new JComboBox<>(attribute.getChoiceValues());
+		jComboBox.addActionListener(e -> attribute.setValue(jComboBox.getSelectedItem()));
+		boolean nullIsAvalidItem = asList(attribute.getChoiceValues()).contains(null);
 		// raise a selection event on model changes
 		jComboBox.addPropertyChangeListener("model",
 				new PropertyChangeListener() {
@@ -211,7 +194,7 @@ public class GenericPanelBuilder implements PanelBuilder {
 		return checkBox;
 	}
 
-	private static void setSelection(JComboBox comboBox, Object value,
+	private static void setSelection(JComboBox<Object> comboBox, Object value,
 			boolean nullIsAvalidItem) {
 		if (value == null) {
 			if (nullIsAvalidItem) {
@@ -224,7 +207,7 @@ public class GenericPanelBuilder implements PanelBuilder {
 		}
 	}
 
-	private static void selectFirstValue(JComboBox comboBox) {
+	private static void selectFirstValue(JComboBox<Object> comboBox) {
 		comboBox.setSelectedIndex(comboBox.getModel().getSize() > 0 ? 0 : -1);
 	}
 

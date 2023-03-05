@@ -28,8 +28,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.LinkedList;
 import java.util.List;
@@ -307,14 +305,11 @@ public class Console extends JFrame implements Linkable {
 
 	private JButton connectButton() {
 		JButton button = new JButton("Connect");
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				try {
-					setLink(createLink());
-				} catch (Exception e) {
-					throw Throwables.propagate(e);
-				}
+		button.addActionListener(event -> {
+			try {
+				setLink(createLink());
+			} catch (Exception e) {
+				throw Throwables.propagate(e);
 			}
 		});
 		return button;
@@ -326,13 +321,9 @@ public class Console extends JFrame implements Linkable {
 
 	private JButton disconnectButton() {
 		JButton button = new JButton("Disconnect");
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				logger.info("Connection status: {}", !link.disconnect());
-				setLink(null);
-			}
-
+		button.addActionListener(e -> {
+			logger.info("Connection status: {}", !link.disconnect());
+			setLink(null);
 		});
 		return button;
 	}

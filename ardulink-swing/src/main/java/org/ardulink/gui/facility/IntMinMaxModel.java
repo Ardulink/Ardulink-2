@@ -27,8 +27,8 @@ import javax.swing.ComboBoxModel;
  * [adsense]
  *
  */
-public class IntMinMaxModel extends AbstractListModel implements
-		ComboBoxModel {
+public class IntMinMaxModel extends AbstractListModel<Integer> implements
+		ComboBoxModel<Integer> {
 
 	private static final long serialVersionUID = -6314940179491347446L;
 

@@ -17,6 +17,7 @@ package org.ardulink.gui.connectionpanel;
 
 import static java.awt.Color.RED;
 import static java.awt.event.ItemEvent.SELECTED;
+import static java.util.concurrent.Executors.newCachedThreadPool;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.gui.connectionpanel.GridBagConstraintsBuilder.constraints;
@@ -27,14 +28,9 @@ import static org.ardulink.util.Throwables.propagate;
 import java.awt.Component;
 import java.awt.GridBagLayout;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.net.URI;
 import java.util.ServiceLoader;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.BorderFactory;
@@ -67,7 +63,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = 1290277902714226253L;
 
-	private final JComboBox uris = createURICombo();
+	private final JComboBox<String> uris = createURICombo();
 
 	private final PanelBuilder fallback = new GenericPanelBuilder();
 
@@ -77,8 +73,8 @@ public class ConnectionPanel extends JPanel implements Linkable {
 
 	private JPanel panel;
 
-	private JComboBox createURICombo() {
-		JComboBox uris = new JComboBox();
+	private JComboBox<String> createURICombo() {
+		JComboBox<String> uris = new JComboBox<>();
 		uris.setRenderer(new DefaultListCellRenderer() {
 
 			private static final long serialVersionUID = 2756587449741341859L;
@@ -92,12 +88,9 @@ public class ConnectionPanel extends JPanel implements Linkable {
 						isSelected, cellHasFocus);
 			}
 		});
-		uris.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent event) {
-				if (event.getStateChange() == SELECTED) {
-					replaceSubpanel();
-				}
+		uris.addItemListener(event -> {
+			if (event.getStateChange() == SELECTED) {
+				replaceSubpanel();
 			}
 		});
 		return uris;
@@ -121,12 +114,9 @@ public class ConnectionPanel extends JPanel implements Linkable {
 
 	private Component refreshButton() {
 		JButton refreshButton = new JButton("refresh");
-		refreshButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (uris.getItemCount() > 0) {
-					replaceSubpanel();
-				}
+		refreshButton.addActionListener(e -> {
+			if (uris.getItemCount() > 0) {
+				replaceSubpanel();
 			}
 		});
 		return refreshButton;
@@ -186,9 +176,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 
 			private void displayIn(WaitDialog waitDialog,
 								   int timeout, TimeUnit tu) {
-				Executors.newCachedThreadPool().execute(new Runnable() {
-					@Override
-					public void run() {
+				newCachedThreadPool().execute(()->{
 						try {
 							tu.sleep(timeout);
 							synchronized (this) {
@@ -199,8 +187,6 @@ public class ConnectionPanel extends JPanel implements Linkable {
 						} catch (InterruptedException e) {
 							Thread.currentThread().interrupt();
 						}
-
-					}
 				});
 			}
 

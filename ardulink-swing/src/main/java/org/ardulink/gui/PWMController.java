@@ -60,14 +60,14 @@ public class PWMController extends JPanel implements Linkable {
 	private static final long serialVersionUID = 7927439571760351922L;
 	
 	private JSlider powerSlider;
-	private JComboBox valueComboBox;
+	private JComboBox<Integer> valueComboBox;
 	private IntMinMaxModel valueComboBoxModel;
 	private JLabel voltValueLbl;
 	private JCheckBox chckbxContChange;
 	private JProgressBar progressBar;
 	private IntMinMaxModel maxValueComboBoxModel;
 	private IntMinMaxModel minValueComboBoxModel;
-	private JComboBox pinComboBox;
+	private JComboBox<Integer> pinComboBox;
 	private JLabel lblPowerPinController;
 	
 	private List<PWMControllerListener> pwmControllerListeners = Lists.newArrayList();
@@ -100,18 +100,18 @@ public class PWMController extends JPanel implements Linkable {
 		// TODO define a method to be able to change the set of controllable pins. This way you can work with different boards than an Arduino UNO
 		// pinComboBox.setModel(new DefaultComboBoxModel(new String[] {"3", "5", "6", "9", "10", "11"}));
 		IntMinMaxModel pinComboBoxModel = new IntMinMaxModel(0, 40);
-		pinComboBox = new JComboBox(pinComboBoxModel);
+		pinComboBox = new JComboBox<Integer>(pinComboBoxModel);
 		pinComboBox.setSelectedItem(Integer.valueOf(11));
 		pinComboBox.setBounds(65, 36, 55, 22);
 		add(pinComboBox);
 		
 		maxValueComboBoxModel = new IntMinMaxModel(0, 1023).withSelectedItem(255);
-		JComboBox maxValueComboBox = new JComboBox(maxValueComboBoxModel);
+		JComboBox<Integer> maxValueComboBox = new JComboBox<>(maxValueComboBoxModel);
 		maxValueComboBox.setBounds(65, 65, 55, 22);
 		add(maxValueComboBox);
 
 		minValueComboBoxModel = new IntMinMaxModel(0, 1023).withFirstItemSelected();
-		JComboBox minValueComboBox = new JComboBox(minValueComboBoxModel);
+		JComboBox<Integer> minValueComboBox = new JComboBox<>(minValueComboBoxModel);
 		minValueComboBox.setBounds(65, 217, 55, 22);
 		add(minValueComboBox);
 		
@@ -156,15 +156,12 @@ public class PWMController extends JPanel implements Linkable {
 		add(lblCurrentValue);
 		
 		valueComboBoxModel = new IntMinMaxModel(0, 255).withFirstItemSelected();
-		valueComboBox = new JComboBox(valueComboBoxModel);
-		valueComboBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int comboBoxCurrentValue = valueComboBoxModel.getSelectedItem().intValue();
-				int powerSliderCurrentValue = powerSlider.getValue();
-				if(comboBoxCurrentValue != powerSliderCurrentValue) {
-					powerSlider.setValue(comboBoxCurrentValue);
-				}
+		valueComboBox = new JComboBox<>(valueComboBoxModel);
+		valueComboBox.addActionListener(e -> {
+			int comboBoxCurrentValue = valueComboBoxModel.getSelectedItem().intValue();
+			int powerSliderCurrentValue = powerSlider.getValue();
+			if(comboBoxCurrentValue != powerSliderCurrentValue) {
+				powerSlider.setValue(comboBoxCurrentValue);
 			}
 		});
 		valueComboBox.setBounds(10, 112, 55, 22);
@@ -204,25 +201,22 @@ public class PWMController extends JPanel implements Linkable {
 
 		});
 		
-		minValueComboBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int maximum = maxValueComboBoxModel.getSelectedItem().intValue();
-				int minimum = minValueComboBoxModel.getSelectedItem().intValue();
-				
-				if(minimum > maximum) {
-					minValueComboBoxModel.setSelectedItem(maximum);
-				}
-				
-				valueComboBoxModel = new IntMinMaxModel(minimum, maximum);
-				valueComboBox.setModel(valueComboBoxModel);
-				powerSlider.setPaintLabels(false);
-				powerSlider.setPaintTicks(false);
-				powerSlider.setMajorTickSpacing((maximum - minimum) / 18);
-				powerSlider.setMinimum(minimum);
-				powerSlider.setPaintLabels(true);
-				powerSlider.setPaintTicks(true);
+		minValueComboBox.addActionListener(e -> {
+			int maximum = maxValueComboBoxModel.getSelectedItem().intValue();
+			int minimum = minValueComboBoxModel.getSelectedItem().intValue();
+			
+			if(minimum > maximum) {
+				minValueComboBoxModel.setSelectedItem(maximum);
 			}
+			
+			valueComboBoxModel = new IntMinMaxModel(minimum, maximum);
+			valueComboBox.setModel(valueComboBoxModel);
+			powerSlider.setPaintLabels(false);
+			powerSlider.setPaintTicks(false);
+			powerSlider.setMajorTickSpacing((maximum - minimum) / 18);
+			powerSlider.setMinimum(minimum);
+			powerSlider.setPaintLabels(true);
+			powerSlider.setPaintTicks(true);
 		});
 
 		maxValueComboBox.addActionListener(new ActionListener() {

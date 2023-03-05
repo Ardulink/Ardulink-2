@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.qos;
 
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.ardulink.util.Bytes.concat;
 import static org.ardulink.util.Throwables.propagate;
 
@@ -24,7 +25,6 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -136,15 +136,12 @@ public class ArduinoDouble implements Closeable {
 		}
 
 		public void send(String message) {
-			Executors.newSingleThreadExecutor().submit(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						timeUnit.sleep(i);
-						ArduinoDouble.this.send(message);
-					} catch (Exception e) {
-						throw propagate(e);
-					}
+			newSingleThreadExecutor().submit(() -> {
+				try {
+					timeUnit.sleep(i);
+					ArduinoDouble.this.send(message);
+				} catch (Exception e) {
+					throw propagate(e);
 				}
 			});
 		}

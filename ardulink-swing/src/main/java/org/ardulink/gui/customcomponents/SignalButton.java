@@ -20,8 +20,6 @@ package org.ardulink.gui.customcomponents;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -57,12 +55,7 @@ public class SignalButton extends JPanel implements Linkable {
 		setLayout(new BorderLayout(0, 0));
 		
 		signalButton = new JButton("Send");
-		signalButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				link.sendCustomMessage(getId(), getValue());
-			}
-		});
+		signalButton.addActionListener(e -> link.sendCustomMessage(getId(), getValue()));
 		add(signalButton);
 		
 		valuePanel = new JPanel();

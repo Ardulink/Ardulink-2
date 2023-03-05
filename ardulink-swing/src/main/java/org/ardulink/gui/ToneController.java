@@ -23,8 +23,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
@@ -117,17 +115,9 @@ public class ToneController extends JPanel implements Linkable {
 		
 		durationCheckBox = new JCheckBox("Duration enabled");
 		durationCheckBox.setSelected(true);
-		durationCheckBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if(durationCheckBox.isSelected()) {
-					durationLabel.setEnabled(true);
-					durationSpinner.setEnabled(true);
-				} else {
-					durationLabel.setEnabled(false);
-					durationSpinner.setEnabled(false);
-				}
-			}
+		durationCheckBox.addActionListener(e -> {
+			durationLabel.setEnabled(durationCheckBox.isSelected());
+			durationSpinner.setEnabled(durationCheckBox.isSelected());
 		});
 		durationPanel.add(durationCheckBox);
 		

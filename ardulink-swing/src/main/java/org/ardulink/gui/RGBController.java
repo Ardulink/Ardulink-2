@@ -23,8 +23,6 @@ import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -165,19 +163,6 @@ public class RGBController extends JPanel implements Linkable {
 		southPanel = new JPanel();
 		add(southPanel, BorderLayout.SOUTH);
 
-		chckbxInverted = new JCheckBox("Inverted");
-		chckbxInverted.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Color newColor = invert(coloredPanel.getBackground());
-				coloredPanel.setBackground(newColor);
-				colorTextField.setText(UtilityColor.toString(newColor));
-			}
-
-		});
-		southPanel.add(chckbxInverted);
-
 		coloredPanel = new JPanel();
 		coloredPanel.setToolTipText("click to open color dialog");
 		coloredPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null,
@@ -193,6 +178,15 @@ public class RGBController extends JPanel implements Linkable {
 				setColor(dialog.getColor());
 			}
 		});
+		
+		chckbxInverted = new JCheckBox("Inverted");
+		chckbxInverted.addActionListener(e -> {
+			Color newColor = invert(coloredPanel.getBackground());
+			coloredPanel.setBackground(newColor);
+			colorTextField.setText(UtilityColor.toString(newColor));
+		});
+		southPanel.add(chckbxInverted);
+
 		southPanel.add(coloredPanel);
 		coloredPanel.setBackground(new Color(redController.getValue(),
 				greenController.getValue(), blueController.getValue()));

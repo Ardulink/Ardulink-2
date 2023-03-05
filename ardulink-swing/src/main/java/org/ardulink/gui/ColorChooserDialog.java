@@ -21,8 +21,6 @@ package org.ardulink.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
@@ -73,25 +71,19 @@ public class ColorChooserDialog extends JDialog {
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
 				JButton okButton = new JButton("OK");
-				okButton.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						ColorChooserDialog.this.color = colorChooser.getColor();
-						setVisible(false);
-						dispose();
-					}
+				okButton.addActionListener(e -> {
+					ColorChooserDialog.this.color = colorChooser.getColor();
+					setVisible(false);
+					dispose();
 				});
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
 			}
 			{
 				JButton cancelButton = new JButton("Cancel");
-				cancelButton.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						setVisible(false);
-						dispose();
-					}
+				cancelButton.addActionListener(e -> {
+					setVisible(false);
+					dispose();
 				});
 				buttonPane.add(cancelButton);
 			}
