@@ -94,6 +94,11 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 	@Override
 	public void afterEach(ExtensionContext context) {
 		stop();
+		if (this.env2restore == null) {
+			System.clearProperty(propertyName());
+		} else {
+			System.setProperty(propertyName(), this.env2restore);
+		}
 	}
 
 	public void start() throws IOException {
@@ -125,11 +130,6 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 
 	public void stop() {
 		this.mqttServer.stopServer();
-		if (this.env2restore == null) {
-			System.clearProperty(propertyName());
-		} else {
-			System.setProperty(propertyName(), this.env2restore);
-		}
 	}
 
 	public Broker recordMessages() {
