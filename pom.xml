@@ -93,11 +93,6 @@
 		<module>ardulink-console</module>
 		<module>ardulink-mail</module>
 		<module>ardulink-rest</module>
-		<module>example-datareceiver</module>
-		<module>example-uniqueid</module>
-		<module>example-buttonquest</module>
-		<module>example-joysticksmartcardriver</module>
-		<module>example-simplesmartcardriver</module>
 		<module>deploy-dist</module>
 	</modules>
 
