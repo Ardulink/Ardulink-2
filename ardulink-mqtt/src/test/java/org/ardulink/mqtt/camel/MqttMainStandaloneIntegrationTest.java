@@ -17,6 +17,9 @@ limitations under the License.
 package org.ardulink.mqtt.camel;
 
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.ardulink.util.Throwables.getCauses;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.camel.FailedToStartRouteException;
@@ -24,6 +27,7 @@ import org.ardulink.mqtt.CommandLineArguments;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttMain;
 import org.ardulink.util.Strings;
+import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -38,6 +42,9 @@ import org.junit.jupiter.api.Timeout;
  */
 @Timeout(10)
 class MqttMainStandaloneIntegrationTest {
+
+	String someUser = "someUser";
+	String somePassword = "somePassword";
 
 	private final CommandLineArguments args = args();
 	private String brokerUser;
@@ -100,20 +107,25 @@ class MqttMainStandaloneIntegrationTest {
 
 	@Test
 	void clientCanConnectUsingCredentialsToNewlyStartedBroker() throws Exception {
-		String user = "someUser";
-		String password = "someSecret";
-		withBrokerPort(freePort()).withBrokerUser(user).withBrokerPassword(password).withClientUser(user)
-				.withClientPassword(password);
+		withBrokerPort(freePort()).withBrokerUser(someUser).withBrokerPassword(somePassword).withClientUser(someUser)
+				.withClientPassword(somePassword);
 		runMain();
 	}
 
 	@Test
 	void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker() throws Exception {
-		String user = "someUser";
-		withBrokerPort(freePort()).withBrokerUser(user).withBrokerPassword("theBrokersPassword").withClientUser(user)
-				.withClientPassword("notTheBrokersPassword");
-//		exceptions.expectMessage("CONNECTION_REFUSED_BAD_USERNAME_OR_PASSWORD");
-		assertThrows(FailedToStartRouteException.class, () -> runMain());
+		withBrokerPort(freePort()).withBrokerUser(someUser).withBrokerPassword(somePassword).withClientUser(someUser)
+				.withClientPassword(not(somePassword));
+		Exception exception = assertThrows(FailedToStartRouteException.class, () -> runMain());
+		assertThat(getCauses(exception).anyMatch(MqttSecurityException.class::isInstance), is(true));
+	}
+
+	@Test
+	@Disabled("test fails with Caused by: javax.net.ssl.SSLHandshakeException: Received fatal alert: handshake_failure")
+	void clientCanConnectUsingCredentialsToNewlyStartedSslBroker() throws Exception {
+		withSsl().withBrokerPort(freePort()).withBrokerUser(someUser).withBrokerPassword(somePassword)
+				.withClientUser(someUser).withClientPassword(somePassword);
+		runMain();
 	}
 
 	private void runMain() throws Exception {
@@ -121,27 +133,15 @@ class MqttMainStandaloneIntegrationTest {
 			@Override
 			protected Builder createBroker() {
 				Builder builder = super.createBroker();
-				if (hasAuthentication()) {
-					return builder.addAuthenication(brokerUser, brokerPassword.getBytes());
-				}
-				return builder;
+				return hasAuthentication() ? builder.addAuthenication(brokerUser, brokerPassword.getBytes()) : builder;
 			}
 		};
 		mqttMain.connectToMqttBroker();
 		mqttMain.close();
 	}
 
-	@Test
-	@Disabled
-
-	// test fails with io.netty.handler.codec.DecoderException:
-
-	void clientCanConnectUsingCredentialsToNewlyStartedSslBroker() throws Exception {
-		String user = "someUser";
-		String password = "someSecret";
-		withSsl().withBrokerPort(freePort()).withBrokerUser(user).withBrokerPassword(password).withClientUser(user)
-				.withClientPassword(password);
-		runMain();
+	private static String not(String value) {
+		return "not" + value;
 	}
 
 }
