@@ -50,7 +50,7 @@ public final class TestSupport {
 	}
 
 	private static boolean isMock(Link link) {
-		return new MockUtil().isMock(link);
+		return MockUtil.isMock(link);
 	}
 
 	public static Link extractDelegated(Link link) {
