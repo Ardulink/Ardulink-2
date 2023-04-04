@@ -19,10 +19,12 @@ package org.ardulink.core.mqtt;
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
+import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,12 +32,13 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.ConnectionListener;
+import org.ardulink.core.Link;
+import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
 import org.ardulink.core.mqtt.duplicated.EventMatchers.PinValueChangedEventMatcher;
@@ -109,7 +112,7 @@ class MqttLinkIntegrationTest {
 
 	String messageFormat;
 
-	boolean separateTopics;
+	boolean separatedTopics;
 
 	private static List<TestConfig> data() {
 		return asList( //
@@ -118,78 +121,59 @@ class MqttLinkIntegrationTest {
 		);
 	}
 
-	void init(TestConfig config) {
-		this.separateTopics = config.separateTopics;
-		this.messageFormat = config.messageFormat;
-		this.mqttClient.appendValueSet(config.separateTopics);
-	}
-
 	@ParameterizedTest(name = "{index} {0}")
 	@MethodSource("data")
-	void defaultHostIsLocalhostAndLinkHasCreatedWithoutConfiguring(TestConfig testConfig)
-			throws IOException {
-		init(testConfig);
-		MqttLinkFactory factory = new MqttLinkFactory();
-		MqttLinkConfig config = makeConfig(factory);
-		String host = config.getHost();
-		assertThat(host, is("localhost"));
-		MqttLink link = factory.newLink(config);
-		assertThat(link, notNullValue());
-		link.close();
+	void defaultHostIsLocalhostAndLinkHasCreatedWithoutConfiguring(TestConfig testConfig) throws IOException {
+		try (Link link = makeLink(testConfig)) {
+			assertThat(link, notNullValue());
+		}
 	}
+
+	EventCollector eventCollector = new EventCollector();
 
 	@ParameterizedTest(name = "{index} {0}")
 	@MethodSource("data")
 	void canSendToBrokerAfterReconnect(TestConfig testConfig) throws Exception {
-		init(testConfig);
-		EventCollector eventCollector = new EventCollector();
-		MqttLink link = makeLink(eventCollector);
-		breedReconnectedState(link);
+		try (Link link = makeLink(testConfig)) {
+			breedReconnectedState(link);
 
-		link.switchAnalogPin(analogPin(8), 9);
-		mqttClient.awaitMessages(is(Collections.singletonList(new Message(topic("A8"), "9"))));
-		link.close();
+			link.switchAnalogPin(analogPin(8), 9);
+			mqttClient.awaitMessages(is(singletonList(new Message(topic("A8"), "9"))));
+		}
 	}
 
-	private String topic(String pin) {
+	String topic(String pin) {
 		return String.format(messageFormat, pin);
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
 	@MethodSource("data")
 	void canReceiveFromBrokerAfterReconnect(TestConfig testConfig) throws Exception {
-		init(testConfig);
-		EventCollector eventCollector = new EventCollector();
-		MqttLink link = makeLink(eventCollector);
-		breedReconnectedState(link);
+		try (Link link = makeLink(testConfig)) {
+			breedReconnectedState(link);
 
-		mqttClient.switchPin(digitalPin(2), true);
-		eventCollector.awaitEvents(DIGITAL, hasItems(eventFor(digitalPin(2)).withValue(true)));
-		link.close();
+			mqttClient.switchPin(digitalPin(2), true);
+			eventCollector.awaitEvents(DIGITAL, hasItems(eventFor(digitalPin(2)).withValue(true)));
+		}
 	}
 
-	private void breedReconnectedState(MqttLink link) throws IOException {
+	private void breedReconnectedState(Link link) throws IOException {
 		TrackStateConnectionListener connectionListener = new TrackStateConnectionListener();
-		link.addConnectionListener(connectionListener);
+		((AbstractListenerLink) extractDelegated(link)).addConnectionListener(connectionListener);
 		assertThat(connectionListener.isConnected().get(), is(true));
 
 		restartBroker(connectionListener);
 		waitForLinkReconnect(connectionListener);
 	}
 
-	private MqttLink makeLink(EventCollector eventCollector) throws IOException {
-		MqttLinkFactory factory = new MqttLinkFactory();
-		MqttLink link = factory.newLink(makeConfig(factory));
+	private Link makeLink(TestConfig config) throws IOException {
+		this.separatedTopics = config.separateTopics;
+		this.messageFormat = config.messageFormat;
+		this.mqttClient.appendValueSet(config.separateTopics);
+		Link link = Links.getLink(
+				"ardulink://mqtt?port=" + broker.getPort() + "&topic=" + TOPIC + "&separatedTopics=" + separatedTopics);
 		link.addListener(eventCollector);
 		return link;
-	}
-
-	private MqttLinkConfig makeConfig(MqttLinkFactory factory) {
-		MqttLinkConfig config = factory.newLinkConfig();
-		config.setTopic(TOPIC);
-		config.port = broker.getPort();
-		config.separateTopics = separateTopics;
-		return config;
 	}
 
 	private void waitForLinkReconnect(TrackStateConnectionListener connectionListener) {
