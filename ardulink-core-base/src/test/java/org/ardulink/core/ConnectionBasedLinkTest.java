@@ -17,10 +17,11 @@ limitations under the License.
 package org.ardulink.core;
 
 import static java.time.Duration.ofMillis;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.nullsFirst;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static org.ardulink.core.hamcrest.EventMatchers.comparator;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
@@ -39,6 +40,7 @@ import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -362,6 +364,12 @@ class ConnectionBasedLinkTest {
 
 	private void waitUntilRead() {
 		await().pollDelay(ofMillis(10)).until(() -> bytesNotYetRead.get() == 0);
+	}
+
+	private static Comparator<PinValueChangedEvent> comparator() {
+		Comparator<PinValueChangedEvent> byType = nullsFirst(comparing(p -> p.getPin().getType()));
+		Comparator<PinValueChangedEvent> byPinNum = comparing(p -> p.getPin().pinNum());
+		return byType.thenComparing(byPinNum);
 	}
 
 }
