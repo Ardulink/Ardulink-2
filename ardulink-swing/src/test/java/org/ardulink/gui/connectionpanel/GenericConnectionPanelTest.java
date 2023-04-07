@@ -16,9 +16,7 @@ limitations under the License.
 
 package org.ardulink.gui.connectionpanel;
 
-import static org.ardulink.gui.assertj.RowMatcherBuilder.row;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.ardulink.gui.assertj.PanelAssert.assertThat;
 
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +26,7 @@ import javax.swing.JPanel;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.gui.DummyLinkConfig;
 import org.ardulink.util.URIs;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -45,23 +44,22 @@ class GenericConnectionPanelTest {
 
 	@Test
 	void canHandle() {
-		assertThat(sut.canHandle(uri), is(true));
+		Assertions.assertThat(sut.canHandle(uri)).isTrue();
 	}
 
 	@Test
 	void hasSubPanelWithConnectionIndividualComponents() {
-		DummyLinkConfig dlc = new DummyLinkConfig();
-
+		DummyLinkConfig config = new DummyLinkConfig();
 		JPanel panel = sut.createPanel(LinkManager.getInstance().getConfigurer(uri));
 
-		row(0).hasLabel("1_aIntValue").hasValue(dlc.getIntValue()).verify(panel);
-		row(1).hasLabel("2_aBooleanValue").withYesNo().hasValue(dlc.getBooleanValue()).verify(panel);
-		row(2).hasLabel("3_aStringValue").hasValue("").verify(panel);
-		Object[] choices1 = dlc.someValuesForChoiceWithoutNull().toArray(new String[0]);
-		row(3).hasLabel("4_aStringValueWithChoices").hasChoice(choices1).hasValue(choices1[0]).verify(panel);
-		Object[] choices2 = dlc.someValuesForChoiceWithNull().toArray(new String[0]);
-		row(4).hasLabel("5_aStringValueWithChoicesIncludingNull").hasChoice(choices2).hasValue(null).verify(panel);
-		row(5).hasLabel("6_aEnumValue").hasChoice(TimeUnit.values()).hasValue(dlc.getEnumValue()).verify(panel);
+		assertThat(panel).hasRow(0).labeled("1_aIntValue").havingValue(config.getIntValue());
+		assertThat(panel).hasRow(1).labeled("2_aBooleanValue").havingYesNoValue(config.getBooleanValue());
+		assertThat(panel).hasRow(2).labeled("3_aStringValue").havingValue("");
+		Object[] choicesRow3 = config.someValuesForChoiceWithoutNull().toArray(new String[0]);
+		assertThat(panel).hasRow(3).labeled("4_aStringValueWithChoices").havingChoice(choicesRow3, choicesRow3[0]);
+		Object[] choicesRow4 = config.someValuesForChoiceWithNull().toArray(new String[0]);
+		assertThat(panel).hasRow(4).labeled("5_aStringValueWithChoicesIncludingNull").havingChoice(choicesRow4, null);
+		assertThat(panel).hasRow(5).labeled("6_aEnumValue").havingChoice(TimeUnit.values(), config.getEnumValue());
 	}
 
 }
