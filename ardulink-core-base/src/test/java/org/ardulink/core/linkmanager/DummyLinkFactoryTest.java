@@ -18,20 +18,15 @@ package org.ardulink.core.linkmanager;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static java.util.Locale.CHINESE;
-import static java.util.Locale.ENGLISH;
-import static java.util.Locale.GERMAN;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.stream.Collectors.toList;
-import static org.ardulink.util.anno.LapsedWith.JUNIT_PIONEER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.ConnectionBasedLink;
@@ -41,9 +36,9 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import org.ardulink.core.proto.impl.DummyProtocol;
 import org.ardulink.util.URIs;
-import org.ardulink.util.anno.LapsedWith;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.junitpioneer.jupiter.DefaultLocale;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -147,8 +142,8 @@ class DummyLinkFactoryTest {
 	}
 
 	@Test
+	@DefaultLocale(language = "en")
 	void cannotSetChoiceValuesThatDoNotExist_WithPreviousQuery() {
-		Locale.setDefault(ENGLISH);
 		Configurer configurer = sut.getConfigurer(URIs.newURI("ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
 		assertThat(a.getChoiceValues()).isEqualTo(new Object[] { "aVal1", "aVal2" });
@@ -160,8 +155,8 @@ class DummyLinkFactoryTest {
 	}
 
 	@Test
+	@DefaultLocale(language = "en")
 	void cannotSetChoiceValuesThatDoNotExist_WithoutPreviousQuery() {
-		Locale.setDefault(ENGLISH);
 		Configurer configurer = sut.getConfigurer(URIs.newURI("ardulink://dummyLink"));
 		ConfigAttribute a = configurer.getAttribute("a");
 		String invalidValue = "aVal3IsNotAvalidValue";
@@ -197,33 +192,29 @@ class DummyLinkFactoryTest {
 	}
 
 	@Test
-	@LapsedWith(module = JUNIT_PIONEER, value = "@DefaultLocale")
+	@DefaultLocale(language = "en")
 	void i18n_english() {
-		Locale.setDefault(ENGLISH);
 		assertThat(getName("a")).isEqualTo("A is meant just to be an example attribute");
 		assertThat(getDescription("a")).isEqualTo("The description of attribute A");
 	}
 
 	@Test
-	@LapsedWith(module = JUNIT_PIONEER, value = "@DefaultLocale")
+	@DefaultLocale(language = "de")
 	void i18n_german() {
-		Locale.setDefault(GERMAN);
 		assertThat(getName("a")).isEqualTo("A ist einfach ein Beispielattribut");
 		assertThat(getDescription("a")).isEqualTo("Die Beschreibung für Attribut A");
 	}
 
 	@Test
-	@LapsedWith(module = JUNIT_PIONEER, value = "@DefaultLocale")
+	@DefaultLocale(language = "ch")
 	void i18n_localeWithoutMessageFileWillFallbackToEnglish() {
-		Locale.setDefault(CHINESE);
 		assertThat(getName("a")).isEqualTo("A is meant just to be an example attribute");
 		assertThat(getDescription("a")).isEqualTo("The description of attribute A");
 	}
 
 	@Test
-	@LapsedWith(module = JUNIT_PIONEER, value = "@DefaultLocale")
+	@DefaultLocale(language = "en")
 	void i18n_english_untagged_attribute_returns_the_attributes_name() {
-		Locale.setDefault(ENGLISH);
 		assertThat(getName("b")).isEqualTo("b");
 	}
 

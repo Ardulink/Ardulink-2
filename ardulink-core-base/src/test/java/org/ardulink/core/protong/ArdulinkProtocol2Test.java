@@ -1,6 +1,5 @@
 package org.ardulink.core.protong;
 
-import static java.lang.Integer.parseInt;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
@@ -27,7 +26,6 @@ import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.Joiner;
 import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
-import org.ardulink.util.anno.LapsedWith;
 import org.junit.jupiter.api.Test;
 
 class ArdulinkProtocol2Test {
@@ -111,11 +109,6 @@ class ArdulinkProtocol2Test {
 			assertThat(m.getPin()).isEqualTo(pin);
 			assertThat(m.getValue()).isEqualTo(value);
 		});
-	}
-
-	@LapsedWith(module = "JDK7", value = "binary literals")
-	private static byte binary(String string) {
-		return (byte) parseInt(string, 2);
 	}
 
 	private void whenMessageIsProcessed() throws IOException {

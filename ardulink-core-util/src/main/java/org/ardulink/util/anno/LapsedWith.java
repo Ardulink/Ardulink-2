@@ -17,7 +17,6 @@ public @interface LapsedWith {
 	String JDK8 = "JDK8";
 	String JDK9 = "JDK9";
 	String JDK11 = "JDK11";
-	String JUNIT_PIONEER = "https://github.com/junit-pioneer/junit-pioneer";
 
 	String value();
 
