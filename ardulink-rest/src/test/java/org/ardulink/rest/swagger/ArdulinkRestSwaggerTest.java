@@ -120,7 +120,10 @@ class ArdulinkRestSwaggerTest {
 				try (Link mock = getMock(Links.getLink(MOCK_URI))) {
 					verify(mock, timeout(TIMEOUT)).switchAnalogPin(analogPin(pin), value);
 				}
+
+				page.close();
 				context.close();
+				browser.close();
 			}
 		}
 	}
