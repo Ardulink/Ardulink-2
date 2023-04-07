@@ -26,8 +26,6 @@ import java.awt.Component;
 import java.awt.GridBagLayout;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.URI;
 
 import javax.swing.DefaultComboBoxModel;
@@ -131,13 +129,7 @@ public class GenericPanelBuilder implements PanelBuilder {
 		boolean nullIsAvalidItem = asList(attribute.getChoiceValues()).contains(null);
 		// raise a selection event on model changes
 		jComboBox.addPropertyChangeListener("model",
-				new PropertyChangeListener() {
-					@Override
-					public void propertyChange(PropertyChangeEvent pce) {
-						setSelection(jComboBox, attribute.getValue(),
-								nullIsAvalidItem);
-					}
-				});
+				pce -> setSelection(jComboBox, attribute.getValue(), nullIsAvalidItem));
 		setSelection(jComboBox, attribute.getValue(), nullIsAvalidItem);
 		return jComboBox;
 	}

@@ -19,9 +19,7 @@ package org.ardulink.core.serial.jssc.connectionmanager;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.ardulink.util.Lists.newArrayList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNull.notNullValue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -74,18 +72,17 @@ class SerialLinkFactoryIntegrationTest {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(URIs.newURI("ardulink://serial-jssc"));
 
-		assertThat(newArrayList(configurer.getAttributes()),
-				is(newArrayList("port", "baudrate", "proto", "qos", "waitsecs", "pingprobe")));
+		assertThat(newArrayList(configurer.getAttributes())).isEqualTo(newArrayList("port", "baudrate", "proto", "qos", "waitsecs", "pingprobe"));
 
 		ConfigAttribute port = configurer.getAttribute("port");
 		ConfigAttribute proto = configurer.getAttribute("proto");
 		ConfigAttribute baudrate = configurer.getAttribute("baudrate");
 
-		assertThat(port.hasChoiceValues(), is(TRUE));
-		assertThat(proto.hasChoiceValues(), is(TRUE));
-		assertThat(baudrate.hasChoiceValues(), is(FALSE));
+		assertThat(port.hasChoiceValues()).isEqualTo(TRUE);
+		assertThat(proto.hasChoiceValues()).isEqualTo(TRUE);
+		assertThat(baudrate.hasChoiceValues()).isEqualTo(FALSE);
 
-		assertThat(port.getChoiceValues(), is(notNullValue()));
+		assertThat(port.getChoiceValues()).isNotNull();
 
 		port.setValue("anyString");
 		baudrate.setValue(115200);

@@ -18,9 +18,7 @@ package org.ardulink.util;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
@@ -61,12 +59,12 @@ class ThrowablesTest {
 
 	@Test
 	void testGetCauses() {
-		assertThat(Throwables.getCauses(a).collect(toList()), is(asList(a, b, c)));
+		assertThat(Throwables.getCauses(a).collect(toList())).isEqualTo(asList(a, b, c));
 	}
 
 	@Test
 	void testGetRootCause() {
-		assertThat(Throwables.getRootCause(a), is(sameInstance(c)));
+		assertThat(Throwables.getRootCause(a)).isSameAs(c);
 	}
 
 }

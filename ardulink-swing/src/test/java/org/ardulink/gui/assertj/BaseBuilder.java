@@ -13,17 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.ardulink.gui.hamcrest;
+package org.ardulink.gui.assertj;
 
-import static org.ardulink.gui.hamcrest.RowMatcherBuilder.componentsOf;
+import static org.ardulink.gui.assertj.RowMatcherBuilder.componentsOf;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.awt.Component;
 import java.util.Optional;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
-import org.hamcrest.Matcher;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -43,20 +42,20 @@ public class BaseBuilder {
 		this.row = row;
 	}
 
-	public BaseBuilder withLabel(String label) {
+	public BaseBuilder hasLabel(String label) {
 		this.label = Optional.of(label);
 		return this;
 	}
 
-	public Matcher<JPanel> withValue(String value) {
+	public StringRowMatcher hasValue(String value) {
 		return new StringRowMatcher(this, value);
 	}
 
-	public Matcher<JPanel> withValue(Number number) {
+	public NumberRowMatcher hasValue(Number number) {
 		return new NumberRowMatcher(this, number);
 	}
 
-	public ChoiceRowBuilder<Object> withChoice(Object... choices) {
+	public ChoiceRowBuilder<Object> hasChoice(Object[] choices) {
 		return new ChoiceRowBuilder<>(this, choices);
 	}
 
@@ -76,8 +75,8 @@ public class BaseBuilder {
 		return row * ELEMENTS_PER_ROW;
 	}
 
-	public boolean labelMatch(JPanel jPanel) {
-		return label.get().equals(getLabel(jPanel).getText());
+	public void assertLabelMatch(JPanel jPanel) {
+		assertThat(getLabel()).isEqualTo(getLabel(jPanel).getText());
 	}
 
 	public String getLabel() {

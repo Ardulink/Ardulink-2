@@ -13,11 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package org.ardulink.gui.hamcrest;
+package org.ardulink.gui.assertj;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.awt.Component;
 
 import javax.swing.JPanel;
-
-import org.hamcrest.Matcher;
+import javax.swing.JTextField;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -27,18 +30,29 @@ import org.hamcrest.Matcher;
  * [adsense]
  *
  */
-public class ChoiceRowBuilder<T> {
+public class StringRowMatcher {
 
-	private final T[] choices;
+	private final String value;
 	private final BaseBuilder baseBuilder;
 
-	public ChoiceRowBuilder(BaseBuilder baseBuilder, T... choices) {
+	public StringRowMatcher(BaseBuilder baseBuilder, String value) {
 		this.baseBuilder = baseBuilder;
-		this.choices = choices;
+		this.value = value;
 	}
 
-	public Matcher<JPanel> withValue(T value) {
-		return new ChoiceRowMatcher(baseBuilder, choices, value);
+	public void verify(JPanel jPanel) {
+		baseBuilder.assertLabelMatch(jPanel);
+		assertValueEq(jPanel);
+		assertIsNumOnly(jPanel);
 	}
 
+	private void assertValueEq(JPanel jPanel) {
+		assertIsNumOnly(jPanel);
+		assertThat(((JTextField) baseBuilder.getComponent(jPanel)).getText()).isEqualTo(value);
+	}
+
+	private boolean assertIsNumOnly(JPanel jPanel) {
+		Component component = baseBuilder.getComponent(jPanel);
+		return component instanceof JTextField;
+	}
 }

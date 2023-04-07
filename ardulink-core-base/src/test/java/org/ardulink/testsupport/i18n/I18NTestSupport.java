@@ -1,8 +1,7 @@
 package org.ardulink.testsupport.i18n;
 
 import static java.util.stream.Collectors.toList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.util.List;
@@ -27,8 +26,8 @@ public final class I18NTestSupport {
 
 	public static void assertAllAttributesHaveDescriptions(Configurer configurer) {
 		List<String> attributesWithoutDescription = attributesWithoutDescription(configurer);
-		assertThat(attributesWithoutDescription + " has no descriptions", attributesWithoutDescription.size(),
-				equalTo(0));
+		assertThat(attributesWithoutDescription)
+				.withFailMessage(() -> attributesWithoutDescription + " has no descriptions").isEmpty();
 	}
 
 	private static List<String> attributesWithoutDescription(Configurer configurer) {

@@ -1,7 +1,6 @@
 package org.ardulink.util;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
@@ -9,18 +8,18 @@ class ObjectsTest {
 
 	@Test
 	void equalObjectsResultInTrue() {
-		assertThat(Objects.equals("something", "something"), is(true));
+		assertThat(Objects.equals("something", "something")).isTrue();
 	}
 
 	@Test
 	void nullAndNullAreEqual() {
-		assertThat(Objects.equals(null, null), is(true));
+		assertThat(Objects.equals(null, null)).isTrue();
 	}
 
 	@Test
 	void twoItemsWhereOneOfThemIsNullResultInFalse() {
-		assertThat(Objects.equals("something", null), is(false));
-		assertThat(Objects.equals(null, "something"), is(false));
+		assertThat(Objects.equals("something", null)).isFalse();
+		assertThat(Objects.equals(null, "something")).isFalse();
 	}
 
 }

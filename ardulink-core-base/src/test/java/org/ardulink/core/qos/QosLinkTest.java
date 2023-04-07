@@ -19,10 +19,7 @@ package org.ardulink.core.qos;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.ardulink.core.Pin.analogPin;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.AllOf.allOf;
-import static org.hamcrest.core.StringContains.containsString;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -75,7 +72,7 @@ class QosLinkTest {
 		qosLink = newQosLink(connectionTo(arduino), 500, MILLISECONDS);
 		IllegalStateException exception = assertThrows(IllegalStateException.class,
 				() -> qosLink.sendNoTone(analogPin(3)));
-		assertThat(exception.getMessage(), is(allOf(containsString("response"), containsString("500 MILLISECONDS"))));
+		assertThat(exception.getMessage()).contains("response").contains("500 MILLISECONDS");
 	}
 
 	@Test
@@ -85,7 +82,7 @@ class QosLinkTest {
 		qosLink = newQosLink(connection, 500 + someMillisMore(), MILLISECONDS);
 		IllegalStateException exception = assertThrows(IllegalStateException.class,
 				() -> qosLink.sendNoTone(analogPin(3)));
-		assertThat(exception.getMessage(), is(allOf(containsString("status"), containsString("not ok"))));
+		assertThat(exception.getMessage()).contains("status").contains("not ok");
 	}
 
 	@Test
@@ -97,7 +94,7 @@ class QosLinkTest {
 		try {
 			qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2).withDuration(3, MILLISECONDS));
 		} catch (IllegalStateException e) {
-			assertThat(e.getMessage(), containsString("No response"));
+			assertThat(e.getMessage()).contains("No response");
 		}
 		qosLink.sendTone(Tone.forPin(analogPin(4)).withHertz(5).withDuration(6, MILLISECONDS));
 	}

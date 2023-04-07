@@ -13,15 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+package org.ardulink.gui.assertj;
 
-package org.ardulink.core.hamcrest;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.nullsFirst;
+import javax.swing.JPanel;
 
-import java.util.Comparator;
-
-import org.ardulink.core.events.PinValueChangedEvent;
+import org.hamcrest.Matcher;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -31,16 +30,16 @@ import org.ardulink.core.events.PinValueChangedEvent;
  * [adsense]
  *
  */
-public final class EventMatchers {
-	
-	private EventMatchers() {
-		super();
+public class YesNoRowBuilder {
+
+	private BaseBuilder baseBuilder;
+
+	public YesNoRowBuilder(BaseBuilder baseBuilder) {
+		this.baseBuilder = baseBuilder;
 	}
 
-	public static Comparator<PinValueChangedEvent> comparator() {
-		Comparator<PinValueChangedEvent> c1 = nullsFirst(comparing(p -> p.getPin().getType()));
-		Comparator<PinValueChangedEvent> c2 = comparing(p -> p.getPin().pinNum());
-		return c1.thenComparing(c2);
+	public ChoiceRowMatcher hasValue(boolean value) {
+		return new ChoiceRowMatcher(baseBuilder, new Object[] { TRUE, FALSE }, Boolean.valueOf(value));
 	}
 
 }

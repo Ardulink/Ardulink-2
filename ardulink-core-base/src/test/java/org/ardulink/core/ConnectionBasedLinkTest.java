@@ -20,7 +20,7 @@ import static java.time.Duration.ofMillis;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static org.ardulink.core.hamcrest.EventMatchers.eventFor;
+import static org.ardulink.core.hamcrest.EventMatchers.comparator;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
@@ -29,10 +29,8 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_P
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsCollectionContaining.hasItems;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -46,6 +44,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.ardulink.core.Connection.ListenerAdapter;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
+import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
+import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.EventListenerAdapter;
@@ -137,7 +137,6 @@ class ConnectionBasedLinkTest {
 		assertToArduinoWasSent(m1, m1, m2);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	void canReceiveAnalogPinChange() throws IOException {
 		List<PinValueChangedEvent> analogEvents = new ArrayList<>();
@@ -153,7 +152,8 @@ class ConnectionBasedLinkTest {
 		String message = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value);
 		simulateArduinoSend(message);
 		waitUntilRead();
-		assertThat(analogEvents, hasItems(eventFor(analogPin(pin)).withValue(value)));
+		assertThat(analogEvents).usingElementComparator(comparator())
+				.contains(new DefaultAnalogPinValueChangedEvent(analogPin(pin), value));
 	}
 
 	@Test
@@ -163,7 +163,6 @@ class ConnectionBasedLinkTest {
 		assertToArduinoWasSent(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(pin).withoutValue());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
 	void canReceiveDigitalPinChange() throws IOException {
 		List<PinValueChangedEvent> digitalEvents = new ArrayList<>();
@@ -178,7 +177,8 @@ class ConnectionBasedLinkTest {
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
 		simulateArduinoSend(message);
 		waitUntilRead();
-		assertThat(digitalEvents, hasItems(eventFor(digitalPin(pin)).withValue(true)));
+		assertThat(digitalEvents).usingElementComparator(comparator())
+				.contains(new DefaultDigitalPinValueChangedEvent(digitalPin(pin), true));
 	}
 
 	@Test
@@ -196,7 +196,7 @@ class ConnectionBasedLinkTest {
 		simulateArduinoSend(message);
 		waitUntilRead();
 		List<DigitalPinValueChangedEvent> emptyList = Collections.emptyList();
-		assertThat(digitalEvents, is(emptyList));
+		assertThat(digitalEvents).isEqualTo(emptyList);
 	}
 
 	@Test
@@ -248,7 +248,7 @@ class ConnectionBasedLinkTest {
 		});
 		simulateArduinoSend(message);
 		waitUntilRead();
-		assertThat(sb.toString(), is(message + "\n"));
+		assertThat(sb.toString()).isEqualTo(message + "\n");
 	}
 
 	@Test
@@ -263,7 +263,8 @@ class ConnectionBasedLinkTest {
 		int pin = anyPositive(int.class);
 		int value = anyPositive(int.class);
 		this.link.switchAnalogPin(analogPin(pin), value);
-		assertThat(sb.toString(), is(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(pin).withValue(value) + "\n"));
+		assertThat(sb.toString())
+				.isEqualTo(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(pin).withValue(value) + "\n");
 	}
 
 	@Test
@@ -297,7 +298,7 @@ class ConnectionBasedLinkTest {
 		simulateArduinoSend(m1);
 		simulateArduinoSend(m2);
 		waitUntilRead();
-		assertThat(Joiner.on(",").join(events), is("AnalogPinValueChangedEvent,DigitalPinValueChangedEvent"));
+		assertThat(Joiner.on(",").join(events)).isEqualTo("AnalogPinValueChangedEvent,DigitalPinValueChangedEvent");
 	}
 
 	@Test
@@ -326,7 +327,7 @@ class ConnectionBasedLinkTest {
 		});
 		this.link.close();
 		this.link.switchAnalogPin(analogPin(anyPositive(int.class)), anyPositive(int.class));
-		assertThat(sb.toString(), is(""));
+		assertThat(sb.toString()).isEmpty();
 	}
 
 	private int anyPositive(Class<? extends Number> numClass) {
@@ -352,7 +353,7 @@ class ConnectionBasedLinkTest {
 	}
 
 	private void assertToArduinoWasSent(String message) {
-		assertThat(toArduinoWasSent(), is(message + "\n"));
+		assertThat(toArduinoWasSent()).isEqualTo(message + "\n");
 	}
 
 	private String toArduinoWasSent() {

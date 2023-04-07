@@ -1,7 +1,6 @@
 package org.ardulink.util;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -38,14 +37,14 @@ class URIsTest {
 	@Test
 	void simpleURI() throws URISyntaxException {
 		URI uri = new URLBuilder("ardulink://serial-jssc").param("port", "COM3").build();
-		assertThat(uri, is(new URI("ardulink://serial-jssc?port=COM3")));
+		assertThat(uri).isEqualTo(new URI("ardulink://serial-jssc?port=COM3"));
 	}
 
 	@Test
 	void queryURIWithSpaceChar() throws URISyntaxException {
 		String base = "http://serial-jssc";
 		URI uri = new URLBuilder(base).param("port", "COM3").param("name with spaces", "value with spaces").build();
-		assertThat(uri, is(new URI(base + "?port=COM3&name+with+spaces=value+with+spaces")));
+		assertThat(uri).isEqualTo(new URI(base + "?port=COM3&name+with+spaces=value+with+spaces"));
 	}
 
 }

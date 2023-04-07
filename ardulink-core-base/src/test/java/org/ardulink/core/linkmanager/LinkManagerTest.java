@@ -20,15 +20,9 @@ import static java.util.Arrays.asList;
 import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.withRegistered;
 import static org.ardulink.util.URIs.newURI;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -86,7 +80,7 @@ public class LinkManagerTest {
 		choiceValuesOfDNowAre("x", "y");
 
 		// let's query the possible values
-		assertThat(configurer.getAttribute("d").getChoiceValues(), is(new Object[] { "x", "y" }));
+		assertThat(configurer.getAttribute("d").getChoiceValues()).isEqualTo(new Object[] { "x", "y" });
 
 		// now the possible values change from x and y to 1 and 2
 		choiceValuesOfDNowAre("1", "2");
@@ -96,7 +90,7 @@ public class LinkManagerTest {
 		configurer.getAttribute("d").setValue("y");
 
 		// but when querying the choice values again the changes are reflected
-		assertThat(configurer.getAttribute("d").getChoiceValues(), is(new Object[] { "1", "2" }));
+		assertThat(configurer.getAttribute("d").getChoiceValues()).isEqualTo(new Object[] { "1", "2" });
 	}
 
 	private void choiceValuesOfDNowAre(String... values) {
@@ -106,20 +100,20 @@ public class LinkManagerTest {
 	@Test
 	void canLoadViaMetaInfServicesArdulinkLinkfactoryWithoutConfig() {
 		Link link = sut.getConfigurer(newURI("ardulink://aLinkWithoutArealLinkFactoryWithoutConfig")).newLink();
-		assertThat(link, is(instanceOf(AlLinkWithoutArealLinkFactoryWithoutConfig.class)));
+		assertThat(link).isInstanceOf(AlLinkWithoutArealLinkFactoryWithoutConfig.class);
 	}
 
 	@Test
 	void canLoadViaMetaInfServicesArdulinkLinkfactoryWithConfig() {
 		Link link = sut.getConfigurer(newURI("ardulink://aLinkWithoutArealLinkFactoryWithConfig")).newLink();
-		assertThat(link, is(instanceOf(AlLinkWithoutArealLinkFactoryWithConfig.class)));
+		assertThat(link).isInstanceOf(AlLinkWithoutArealLinkFactoryWithConfig.class);
 	}
 
 	@Test
 	void nonExistingNameWitllThrowRTE() throws IOException {
 		RuntimeException exception = assertThrows(RuntimeException.class,
 				() -> sut.getConfigurer(newURI("ardulink://XXX-aNameThatIsNotRegistered-XXX")));
-		assertThat(exception.getMessage(), is(allOf(containsString("registered"), containsString("factory"))));
+		assertThat(exception.getMessage()).contains("registered").contains("factory");
 	}
 
 	@Test
@@ -131,8 +125,8 @@ public class LinkManagerTest {
 	void aliasNameNotListed() throws Throwable {
 		withRegistered(new AliasUsingLinkFactory()).execute(() -> {
 			List<URI> listURIs = sut.listURIs();
-			assertThat(listURIs, hasItem(aliasUri()));
-			assertThat(listURIs, not(hasItem(newURI("ardulink://aliasLinkAlias"))));
+			assertThat(listURIs).contains(aliasUri());
+			assertThat(listURIs).doesNotContain(newURI("ardulink://aliasLinkAlias"));
 		});
 	}
 

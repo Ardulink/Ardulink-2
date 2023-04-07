@@ -19,9 +19,7 @@ package org.ardulink.core.linkmanager;
 import static org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.withRegistered;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.URIs.newURI;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNull.notNullValue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import org.ardulink.core.Link;
@@ -104,7 +102,7 @@ class LinkConfigWithDependentAttributesLinkFactoryTest {
 		withRegistered(new LinkConfigWithDependentAttributesLinkFactory()).execute(() -> {
 			Link link = LinkManager.getInstance()
 					.getConfigurer(newURI("ardulink://dependendAttributes?devicePort=foo&host=h&port=1")).newLink();
-			assertThat(link, is(notNullValue()));
+			assertThat(link).isNotNull();
 		});
 	}
 

@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
 import static java.util.Arrays.asList;
@@ -125,7 +127,7 @@ class MqttLinkIntegrationTest {
 	@MethodSource("data")
 	void defaultHostIsLocalhostAndLinkHasCreatedWithoutConfiguring(TestConfig testConfig) throws IOException {
 		try (Link link = makeLink(testConfig)) {
-			assertThat(link, notNullValue());
+			assertThat(link).isNotNull();
 		}
 	}
 
@@ -160,7 +162,7 @@ class MqttLinkIntegrationTest {
 	private void breedReconnectedState(Link link) throws IOException {
 		TrackStateConnectionListener connectionListener = new TrackStateConnectionListener();
 		((AbstractListenerLink) extractDelegated(link)).addConnectionListener(connectionListener);
-		assertThat(connectionListener.isConnected().get(), is(true));
+		assertThat(connectionListener.isConnected().get()).isTrue();
 
 		restartBroker(connectionListener);
 		waitForLinkReconnect(connectionListener);

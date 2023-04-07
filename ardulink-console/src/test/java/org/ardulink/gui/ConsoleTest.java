@@ -3,9 +3,7 @@ package org.ardulink.gui;
 import static java.awt.GraphicsEnvironment.isHeadless;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.Mockito.mock;
 
@@ -20,9 +18,9 @@ class ConsoleTest {
 	void whenStartedConnectIsEnabledAndDisconnnectIsDisabled() {
 		assumeFalse(isHeadless());
 		Console console = newConsole();
-		assertThat(console.getLink(), is(nullValue()));
-		assertThat(console.btnConnect.isEnabled(), is(TRUE));
-		assertThat(console.btnDisconnect.isEnabled(), is(FALSE));
+		assertThat(console.getLink()).isNull();
+		assertThat(console.btnConnect.isEnabled()).isEqualTo(TRUE);
+		assertThat(console.btnDisconnect.isEnabled()).isEqualTo(FALSE);
 	}
 
 	@Test
@@ -31,9 +29,9 @@ class ConsoleTest {
 		Console console = newConsole();
 		console.btnConnect.doClick();
 
-		assertThat(console.getLink(), is(connectLink));
-		assertThat(console.btnConnect.isEnabled(), is(FALSE));
-		assertThat(console.btnDisconnect.isEnabled(), is(TRUE));
+		assertThat(console.getLink()).isEqualTo(connectLink);
+		assertThat(console.btnConnect.isEnabled()).isEqualTo(FALSE);
+		assertThat(console.btnDisconnect.isEnabled()).isEqualTo(TRUE);
 	}
 
 	@Test
@@ -43,9 +41,9 @@ class ConsoleTest {
 		console.btnConnect.doClick();
 		console.btnDisconnect.doClick();
 
-		assertThat(console.getLink(), is(nullValue()));
-		assertThat(console.btnConnect.isEnabled(), is(TRUE));
-		assertThat(console.btnDisconnect.isEnabled(), is(FALSE));
+		assertThat(console.getLink()).isNull();
+		assertThat(console.btnConnect.isEnabled()).isEqualTo(TRUE);
+		assertThat(console.btnDisconnect.isEnabled()).isEqualTo(FALSE);
 	}
 
 	private Console newConsole() {

@@ -20,13 +20,8 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.withRegistered;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.core.IsSame.sameInstance;
-import static org.mockito.Mockito.any;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -58,7 +53,7 @@ class LinksTest {
 	@Test
 	void whenRequestingDefaultLinkReturnsFirstAvailableConnectionIfSerialNotAvailable() throws IOException {
 		Link link = Links.getDefault();
-		assertThat(getConnection(link), instanceOf(DummyConnection.class));
+		assertThat(getConnection(link)).isInstanceOf(DummyConnection.class);
 		close(link);
 	}
 
@@ -95,7 +90,7 @@ class LinksTest {
 	void isConfiguredForAllChoiceValues() throws IOException {
 		Link link = Links.getDefault();
 		DummyLinkConfig config = getConnection(link).getConfig();
-		assertThat(config.getA(), is("aVal1"));
+		assertThat(config.getA()).isEqualTo("aVal1");
 		close(link);
 	}
 
@@ -117,8 +112,8 @@ class LinksTest {
 		String uri = "ardulink://dummyLink";
 		Link link1 = Links.getLink(uri);
 		Link link2 = Links.getLink(uri);
-		assertThat(link1, notNullValue());
-		assertThat(link2, notNullValue());
+		assertThat(link1).isNotNull();
+		assertThat(link2).isNotNull();
 		assertAllSameInstances(link1, link2);
 		close(link1, link2);
 	}
@@ -127,8 +122,8 @@ class LinksTest {
 	void doesCacheLinksWhenUsingDefaultValues() throws IOException {
 		Link link1 = Links.getLink("ardulink://dummyLink");
 		Link link2 = Links.getLink("ardulink://dummyLink?a=&b=42&c=");
-		assertThat(link1, notNullValue());
-		assertThat(link2, notNullValue());
+		assertThat(link1).isNotNull();
+		assertThat(link2).isNotNull();
 		assertAllSameInstances(link1, link2);
 		close(link1, link2);
 	}
@@ -164,8 +159,8 @@ class LinksTest {
 		assertAllSameInstances(link1, link2);
 		close(link1, link2);
 		Link link3 = createConnectionBasedLink(randomURI);
-		assertThat(link3, not(sameInstance(link1)));
-		assertThat(link3, not(sameInstance(link2)));
+		assertThat(link3).isNotSameAs(link1);
+		assertThat(link3).isNotSameAs(link2);
 		close(link3);
 	}
 
@@ -206,7 +201,7 @@ class LinksTest {
 		withRegistered(new DummyLinkFactoryExtension()).execute(() -> {
 			Link link1 = Links.getLink(makeUri(name1));
 			Link link2 = Links.getLink(makeUri(name2));
-			assertThat(link1, not(sameInstance(link2)));
+			assertThat(link1).isNotSameAs(link2);
 			close(link1, link2);
 		});
 	}
@@ -253,7 +248,7 @@ class LinksTest {
 
 	private static <T> T[] assertAllSameInstances(T... objects) {
 		for (int i = 0; i < objects.length - 1; i++) {
-			assertThat(objects[i], sameInstance(objects[i + 1]));
+			assertThat(objects[i]).isSameAs(objects[i + 1]);
 		}
 		return objects;
 	}

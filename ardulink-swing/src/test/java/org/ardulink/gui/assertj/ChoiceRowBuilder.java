@@ -13,10 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package org.ardulink.gui.hamcrest;
-
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
+package org.ardulink.gui.assertj;
 
 import javax.swing.JPanel;
 
@@ -30,17 +27,18 @@ import org.hamcrest.Matcher;
  * [adsense]
  *
  */
-public class YesNoRowBuilder {
+public class ChoiceRowBuilder<T> {
 
-	private BaseBuilder baseBuilder;
+	private final T[] choices;
+	private final BaseBuilder baseBuilder;
 
-	public YesNoRowBuilder(BaseBuilder baseBuilder) {
+	public ChoiceRowBuilder(BaseBuilder baseBuilder, T... choices) {
 		this.baseBuilder = baseBuilder;
+		this.choices = choices;
 	}
 
-	public Matcher<JPanel> withValue(boolean value) {
-		return new ChoiceRowMatcher(baseBuilder, new Object[] { TRUE, FALSE },
-				Boolean.valueOf(value));
+	public ChoiceRowMatcher hasValue(T value) {
+		return new ChoiceRowMatcher(baseBuilder, choices, value);
 	}
 
 }

@@ -62,7 +62,7 @@
 		<args4j.version>2.33</args4j.version>
 		<slf4j.version>2.0.7</slf4j.version>
 		<junit.version>5.9.2</junit.version>
-		<hamcrest.version>2.2</hamcrest.version>
+		<assertj.version>3.24.2</assertj.version>
 		<mockito.version>4.11.0</mockito.version>
 		<awaitility.version>4.2.0</awaitility.version>
 		<!-- The next LTS release Camel 3.14, scheduled for December 2021, will be the last release to support Java 8 -->
@@ -278,9 +278,9 @@
 				<scope>import</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.hamcrest</groupId>
-				<artifactId>hamcrest-library</artifactId>
-				<version>${hamcrest.version}</version>
+			    <groupId>org.assertj</groupId>
+			    <artifactId>assertj-core</artifactId>
+			    <version>${assertj.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>

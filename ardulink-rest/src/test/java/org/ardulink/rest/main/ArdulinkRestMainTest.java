@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.rest.main;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.port;
 import static org.ardulink.core.Pin.digitalPin;
@@ -52,9 +54,9 @@ class ArdulinkRestMainTest {
 	void canParseArgs() throws IOException, CmdLineException {
 		CommandLineArguments args = RestMain
 				.tryParse("-connection", "ardulink://abc", "-bind", "someHost", "-port", "123").get();
-		assertThat(args.connection, is("ardulink://abc"));
-		assertThat(args.bind, is("someHost"));
-		assertThat(args.port, is(123));
+		assertThat(args.connection).isEqualTo("ardulink://abc");
+		assertThat(args.bind).isEqualTo("someHost");
+		assertThat(args.port).isEqualTo(123);
 	}
 
 	@Test

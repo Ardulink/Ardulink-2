@@ -13,8 +13,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -198,8 +197,8 @@ class ArdulinkComponentTest {
 		});
 
 		TestLinkConfig value = getConfig(linkFactorySpy);
-		assertThat(value.a, is(a));
-		assertThat(value.b, is(TimeUnit.valueOf(b)));
+		assertThat(value.a).isEqualTo(a);
+		assertThat(value.b).isEqualTo(TimeUnit.valueOf(b));
 	}
 
 	private static TestLinkConfig getConfig(LinkFactory<TestLinkConfig> linkFactorySpy) throws Exception {

@@ -18,9 +18,7 @@ package org.ardulink.core.proto.impl;
 import static java.util.Arrays.asList;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Random;
 
@@ -47,33 +45,33 @@ class LuaProtoTest {
 	@Test
 	void generatePowerPinSwitchMessageHigh() {
 		ToDeviceMessagePinStateChange msg = new DefaultToDeviceMessagePinStateChange(anyDigitalPin, true);
-		assertThat(stringOf(sut.toDevice(msg)), is(lua(powerPinMessage(anyDigitalPin.pinNum(), "HIGH"))));
+		assertThat(stringOf(sut.toDevice(msg))).isEqualTo(lua(powerPinMessage(anyDigitalPin.pinNum(), "HIGH")));
 	}
 
 	@Test
 	void generatePowerPinSwitchMessageLow() {
 		ToDeviceMessagePinStateChange msg = new DefaultToDeviceMessagePinStateChange(anyDigitalPin, false);
-		assertThat(stringOf(sut.toDevice(msg)), is(lua(powerPinMessage(anyDigitalPin.pinNum(), "LOW"))));
+		assertThat(stringOf(sut.toDevice(msg))).isEqualTo(lua(powerPinMessage(anyDigitalPin.pinNum(), "LOW")));
 	}
 
 	@Test
 	void generatePowerPinIntensityMessage() {
 		ToDeviceMessagePinStateChange msg = new DefaultToDeviceMessagePinStateChange(anyAnalogPin, anyValue);
-		assertThat(stringOf(sut.toDevice(msg)), is(lua(pinStateChangeMessage(anyAnalogPin.pinNum(), anyValue))));
+		assertThat(stringOf(sut.toDevice(msg))).isEqualTo(lua(pinStateChangeMessage(anyAnalogPin.pinNum(), anyValue)));
 	}
 
 	@Test
 	void generateCustomMessage() {
 		String[] values = new String[] { "param1", "somethingelse2", "final3" };
 		ToDeviceMessageCustom msg = new DefaultToDeviceMessageCustom(values);
-		assertThat(stringOf(sut.toDevice(msg)), is(lua(customMessage(values))));
+		assertThat(stringOf(sut.toDevice(msg))).isEqualTo(lua(customMessage(values)));
 	}
 
 	@Test
 	void generateStartListeningDigitalMessage() {
 		DigitalPin pin = digitalPin(anyPin());
 		ToDeviceMessageStartListening msg = new DefaultToDeviceMessageStartListening(pin);
-		assertThat(stringOf(sut.toDevice(msg)), containsString("alp://dred/" + pin.pinNum() + "/%s"));
+		assertThat(stringOf(sut.toDevice(msg))).contains("alp://dred/" + pin.pinNum() + "/%s");
 	}
 
 	private String stringOf(byte[] bytes) {

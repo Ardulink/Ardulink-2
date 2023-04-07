@@ -18,8 +18,7 @@ package org.ardulink.util;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,40 +40,40 @@ class SetMultiMapTest {
 	@Test
 	void canPut() {
 		SetMultiMap<Integer, String> s = new SetMultiMap<>();
-		assertThat(s.put(1, "foo"), is(TRUE));
-		assertThat(s.asMap(), is(buildMap(1, Collections.singleton("foo"))));
+		assertThat(s.put(1, "foo")).isEqualTo(TRUE);
+		assertThat(s.asMap()).isEqualTo(buildMap(1, Collections.singleton("foo")));
 	}
 
 	@Test
 	void canPutTwice() {
 		SetMultiMap<Integer, String> s = new SetMultiMap<>();
-		assertThat(s.put(1, "foo"), is(TRUE));
-		assertThat(s.put(1, "foo"), is(FALSE));
-		assertThat(s.asMap(), is(buildMap(1, Collections.singleton("foo"))));
+		assertThat(s.put(1, "foo")).isEqualTo(TRUE);
+		assertThat(s.put(1, "foo")).isEqualTo(FALSE);
+		assertThat(s.asMap()).isEqualTo(buildMap(1, Collections.singleton("foo")));
 	}
 
 	@Test
 	void canRemoveExistingValue() {
 		SetMultiMap<Integer, String> s = new SetMultiMap<>();
-		assertThat(s.put(1, "foo"), is(TRUE));
-		assertThat(s.remove(1, "foo"), is(TRUE));
-		assertThat(s.asMap(), is(Collections.<Integer, Set<String>>emptyMap()));
+		assertThat(s.put(1, "foo")).isEqualTo(TRUE);
+		assertThat(s.remove(1, "foo")).isEqualTo(TRUE);
+		assertThat(s.asMap()).isEqualTo(Collections.<Integer, Set<String>>emptyMap());
 	}
 
 	@Test
 	void canHandleRemovesOfNonExistingValues() {
 		SetMultiMap<Integer, String> s = new SetMultiMap<>();
-		assertThat(s.put(1, "foo"), is(TRUE));
-		assertThat(s.remove(1, "bar"), is(FALSE));
-		assertThat(s.asMap(), is(buildMap(1, Collections.singleton("foo"))));
+		assertThat(s.put(1, "foo")).isEqualTo(TRUE);
+		assertThat(s.remove(1, "bar")).isEqualTo(FALSE);
+		assertThat(s.asMap()).isEqualTo(buildMap(1, Collections.singleton("foo")));
 	}
 
 	@Test
 	void canHandleRemovesOfNonExistingKeys() {
 		SetMultiMap<Integer, String> s = new SetMultiMap<>();
-		assertThat(s.put(1, "foo"), is(TRUE));
-		assertThat(s.remove(2, "foo"), is(FALSE));
-		assertThat(s.asMap(), is(buildMap(1, Collections.singleton("foo"))));
+		assertThat(s.put(1, "foo")).isEqualTo(TRUE);
+		assertThat(s.remove(2, "foo")).isEqualTo(FALSE);
+		assertThat(s.asMap()).isEqualTo(buildMap(1, Collections.singleton("foo")));
 	}
 
 	private static Map<Integer, Set<String>> buildMap(Integer key, Set<String> value) {

@@ -34,14 +34,12 @@ import static org.ardulink.mail.test.MailSender.mailFrom;
 import static org.ardulink.mail.test.MailSender.send;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.MapBuilder.newMapBuilder;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -179,8 +177,8 @@ class ArdulinkMailOnCamelIntegrationTest {
 			context.start();
 
 			try {
-				assertThat(((String) fetchMail("loginIdSender", "secretOfSender").getContent()),
-						is(switchDigitalPin + "=OK\r\n" + switchAnalogPin + "=OK"));
+				assertThat(fetchMail("loginIdSender", "secretOfSender").getContent())
+						.isEqualTo(switchDigitalPin + "=OK\r\n" + switchAnalogPin + "=OK");
 			} finally {
 				context.stop();
 			}
@@ -218,8 +216,8 @@ class ArdulinkMailOnCamelIntegrationTest {
 		runInBackground(main);
 
 		try {
-			assertThat(((String) fetchMail("loginIdSender", "secretOfSender").getContent()),
-					is(command1 + "=OK\r\n" + command2 + "=OK"));
+			assertThat(fetchMail("loginIdSender", "secretOfSender").getContent())
+					.isEqualTo(command1 + "=OK\r\n" + command2 + "=OK");
 		} finally {
 			main.stop();
 		}

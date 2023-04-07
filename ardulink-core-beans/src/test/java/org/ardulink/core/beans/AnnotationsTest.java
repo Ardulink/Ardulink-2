@@ -5,9 +5,7 @@ import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnot
 import static org.ardulink.core.beans.finder.impl.FindByFieldAccess.directFieldAccess;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNull.notNullValue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
@@ -138,8 +136,8 @@ class AnnotationsTest {
 	@LapsedWith(module = JDK8, value = "Streams")
 	private void hasAnnotations(Attribute attribute, Class<? extends Annotation>... annoClasses) {
 		for (Class<? extends Annotation> element : annoClasses) {
-			assertThat(element.getSimpleName() + " not found", attribute.getAnnotation(element),
-					is(notNullValue()));
+			assertThat(attribute.getAnnotation(element)).isNotNull()
+					.withFailMessage(element.getSimpleName() + " not found");
 		}
 	}
 

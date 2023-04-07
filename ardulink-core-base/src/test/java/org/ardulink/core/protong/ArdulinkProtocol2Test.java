@@ -7,9 +7,7 @@ import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcess
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -59,36 +57,36 @@ class ArdulinkProtocol2Test {
 	void canReadRplyViaArdulinkProto() throws IOException {
 		givenMessage("alp://rply/ok?id=1&UniqueID=456-2342-2342&ciao=boo");
 		whenMessageIsProcessed();
-		assertThat(messages.size(), is(1));
+		assertThat(messages).hasSize(1);
 		FromDeviceMessageReply replyMessage = (FromDeviceMessageReply) messages.get(0);
-		assertThat(replyMessage.getParameters(), is(MapBuilder.<String, Object>newMapBuilder()
-				.put("UniqueID", "456-2342-2342").put("ciao", "boo").build()));
+		assertThat(replyMessage.getParameters()).isEqualTo(MapBuilder.<String, Object>newMapBuilder()
+				.put("UniqueID", "456-2342-2342").put("ciao", "boo").build());
 	}
 
 	@Test
 	void canReadReadyViaArdulinkProto() throws IOException {
 		givenMessage("alp://ready/");
 		whenMessageIsProcessed();
-		assertThat(messages.size(), is(1));
-		assertThat(messages.get(0), instanceOf(FromDeviceMessageReady.class));
+		assertThat(messages).hasSize(1);
+		assertThat(messages.get(0)).isInstanceOf(FromDeviceMessageReady.class);
 	}
 
 	@Test
 	void doesRecoverFromMisformedContent() throws IOException {
 		givenMessages("alp://XXXXXreadyXXXXX/", "alp://ready/");
 		whenMessageIsProcessed();
-		assertThat(messages.size(), is(1));
-		assertThat(messages.get(0), instanceOf(FromDeviceMessageReady.class));
+		assertThat(messages).hasSize(1);
+		assertThat(messages.get(0)).isInstanceOf(FromDeviceMessageReady.class);
 	}
 
 	@Test
 	void ardulinkProtocol2ReceiveCustomEvent() throws IOException {
 		givenMessage("alp://cevnt/foo=bar/some=42");
 		whenMessageIsProcessed();
-		assertThat(messages.size(), is(1));
-		assertThat(messages.get(0), instanceOf(FromDeviceMessageCustom.class));
+		assertThat(messages).hasSize(1);
+		assertThat(messages.get(0)).isInstanceOf(FromDeviceMessageCustom.class);
 		FromDeviceMessageCustom customMessage = (FromDeviceMessageCustom) messages.get(0);
-		assertThat(customMessage.getMessage(), is("foo=bar/some=42"));
+		assertThat(customMessage.getMessage()).isEqualTo("foo=bar/some=42");
 	}
 
 	@Test
@@ -98,12 +96,12 @@ class ArdulinkProtocol2Test {
 				.put("boo", "ciao").build();
 		givenMessage("alp://rply/ok?id=" + id + "&" + Joiner.on("&").withKeyValueSeparator("=").join(params));
 		whenMessageIsProcessed();
-		assertThat(messages.size(), is(1));
-		assertThat(messages.get(0), instanceOf(FromDeviceMessageReply.class));
+		assertThat(messages).hasSize(1);
+		assertThat(messages.get(0)).isInstanceOf(FromDeviceMessageReply.class);
 		FromDeviceMessageReply replyMessage = (FromDeviceMessageReply) messages.get(0);
-		assertThat(replyMessage.isOk(), is(true));
-		assertThat(replyMessage.getId(), is(id));
-		assertThat(replyMessage.getParameters(), is(params));
+		assertThat(replyMessage.isOk()).isTrue();
+		assertThat(replyMessage.getId()).isEqualTo(id);
+		assertThat(replyMessage.getParameters()).isEqualTo(params);
 	}
 
 	private void givenMessage(String in) {
@@ -115,10 +113,10 @@ class ArdulinkProtocol2Test {
 	}
 
 	private void thenMessageIs(Pin pin, Object value) {
-		assertThat(messages.size(), is(1));
+		assertThat(messages).hasSize(1);
 		FromDeviceMessagePinStateChanged pinStateChanged = (FromDeviceMessagePinStateChanged) messages.get(0);
-		assertThat(pinStateChanged.getPin(), is(pin));
-		assertThat(pinStateChanged.getValue(), is(value));
+		assertThat(pinStateChanged.getPin()).isEqualTo(pin);
+		assertThat(pinStateChanged.getValue()).isEqualTo(value);
 	}
 
 	@LapsedWith(module = "JDK7", value = "binary literals")

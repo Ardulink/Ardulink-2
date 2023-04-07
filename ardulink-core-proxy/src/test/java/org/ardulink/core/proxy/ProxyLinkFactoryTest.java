@@ -16,8 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.proxy;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,7 +54,7 @@ class ProxyLinkFactoryTest {
 		Configurer configurer = connectionManager.getConfigurer(
 				URIs.newURI("ardulink://proxy?tcphost=localhost&tcpport=" + proxyServerDouble.getLocalPort()));
 		ConfigAttribute port = configurer.getAttribute("port");
-		assertThat(port.getChoiceValues(), is(emptyArray));
+		assertThat(port.getChoiceValues()).isEqualTo(emptyArray);
 	}
 
 	@Test
@@ -64,8 +63,8 @@ class ProxyLinkFactoryTest {
 		Configurer configurer = connectionManager.getConfigurer(
 				URIs.newURI("ardulink://proxy?tcphost=localhost&tcpport=" + proxyServerDouble.getLocalPort()));
 		ConfigAttribute port = configurer.getAttribute("port");
-		assertThat(port.getChoiceValues(), is(new String[] { "myPortNr0" }));
-		assertThat(proxyServerDouble.getReceived(), is(Collections.singletonList("ardulink:networkproxyserver:get_port_list")));
+		assertThat(port.getChoiceValues()).isEqualTo(new String[] { "myPortNr0" });
+		assertThat(proxyServerDouble.getReceived()).isEqualTo(Collections.singletonList("ardulink:networkproxyserver:get_port_list"));
 	}
 
 	@Test
@@ -75,14 +74,13 @@ class ProxyLinkFactoryTest {
 				URIs.newURI("ardulink://proxy?tcphost=localhost&tcpport=" + proxyServerDouble.getLocalPort()));
 		ConfigAttribute port = configurer.getAttribute("port");
 		Object[] values = new String[] { "myPortNr0" };
-		assertThat(port.getChoiceValues(), is(values));
+		assertThat(port.getChoiceValues()).isEqualTo(values);
 		port.setValue(values[0]);
 
 		configurer.newLink().close();
-		assertThat(proxyServerDouble.getReceived(),
-				is(Arrays.asList("ardulink:networkproxyserver:get_port_list",
+		assertThat(proxyServerDouble.getReceived()).isEqualTo(Arrays.asList("ardulink:networkproxyserver:get_port_list",
 						"ardulink:networkproxyserver:get_port_list", "ardulink:networkproxyserver:connect", "myPortNr0",
-						"115200")));
+						"115200"));
 	}
 
 	@Test
@@ -96,8 +94,8 @@ class ProxyLinkFactoryTest {
 
 		// sends message to double
 		newLink.switchAnalogPin(Pin.analogPin(1), 123);
-		assertThat(proxyServerDouble.getReceived(), is(Arrays.asList("ardulink:networkproxyserver:get_port_list",
-				"ardulink:networkproxyserver:connect", "myPortNr0", "115200", "alp://ppin/1/123")));
+		assertThat(proxyServerDouble.getReceived()).isEqualTo(Arrays.asList("ardulink:networkproxyserver:get_port_list",
+				"ardulink:networkproxyserver:connect", "myPortNr0", "115200", "alp://ppin/1/123"));
 
 		newLink.close();
 	}

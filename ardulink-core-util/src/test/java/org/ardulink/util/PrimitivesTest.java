@@ -18,9 +18,7 @@ package org.ardulink.util;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
@@ -37,17 +35,17 @@ class PrimitivesTest {
 
 	@Test
 	void canParseIntAsInt() {
-		assertThat(Primitives.parseAs(int.class, "123"), is(Integer.valueOf(123)));
+		assertThat(Primitives.parseAs(int.class, "123")).isEqualTo(Integer.valueOf(123));
 	}
 
 	@Test
 	void canParseIntAsDouble() {
-		assertThat(Primitives.parseAs(double.class, "123"), is(Double.valueOf(123)));
+		assertThat(Primitives.parseAs(double.class, "123")).isEqualTo(Double.valueOf(123));
 	}
 
 	@Test
 	void canParseDoubleAsDouble() {
-		assertThat(Primitives.parseAs(double.class, "123.456"), is(Double.valueOf(123.456)));
+		assertThat(Primitives.parseAs(double.class, "123.456")).isEqualTo(Double.valueOf(123.456));
 	}
 
 	@Test
@@ -59,44 +57,44 @@ class PrimitivesTest {
 
 	@Test
 	void testForClassName() {
-		assertThat(Primitives.forClassName("int"), is(Primitives.INT));
-		assertThat(Primitives.forClassName("double"), is(Primitives.DOUBLE));
-		assertThat(Primitives.forClassName(String.class.getName()), is(nullValue()));
+		assertThat(Primitives.forClassName("int")).isEqualTo(Primitives.INT);
+		assertThat(Primitives.forClassName("double")).isEqualTo(Primitives.DOUBLE);
+		assertThat(Primitives.forClassName(String.class.getName())).isNull();
 	}
 
 	@Test
 	void isWrapperTypeForNonWrapperReturnsFalse() {
-		assertThat(Primitives.isWrapperType(int.class), is(FALSE));
+		assertThat(Primitives.isWrapperType(int.class)).isEqualTo(FALSE);
 	}
 
 	@Test
 	void isWrapperTypeForWrapperReturnsTrue() {
-		assertThat(Primitives.isWrapperType(Integer.class), is(TRUE));
+		assertThat(Primitives.isWrapperType(Integer.class)).isEqualTo(TRUE);
 	}
 
 	@Test
 	void allPrimitiveTypesContainsInt() {
-		assertThat(Primitives.allPrimitiveTypes().contains(int.class), is(TRUE));
+		assertThat(Primitives.allPrimitiveTypes().contains(int.class)).isEqualTo(TRUE);
 	}
 
 	@Test
 	void unwrapOnNonWrapperTypeReturnsArgument() {
-		assertThat(Primitives.unwrap(String.class).getName(), is(String.class.getName()));
+		assertThat(Primitives.unwrap(String.class).getName()).isEqualTo(String.class.getName());
 	}
 
 	@Test
 	void unwrapOnWrapperTypeReturnsWrappedPrimitive() {
-		assertThat(Primitives.unwrap(Integer.class).getName(), is(int.class.getName()));
+		assertThat(Primitives.unwrap(Integer.class).getName()).isEqualTo(int.class.getName());
 	}
 
 	@Test
 	void wrapOnNonPrimitiveTypeReturnsArgument() {
-		assertThat(Primitives.wrap(String.class).getName(), is(String.class.getName()));
+		assertThat(Primitives.wrap(String.class).getName()).isEqualTo(String.class.getName());
 	}
 
 	@Test
 	void wrapOnPrimitiveTypeReturnsWrappedType() {
-		assertThat(Primitives.wrap(int.class).getName(), is(Integer.class.getName()));
+		assertThat(Primitives.wrap(int.class).getName()).isEqualTo(Integer.class.getName());
 	}
 
 }

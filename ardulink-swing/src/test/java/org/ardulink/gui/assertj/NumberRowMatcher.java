@@ -13,16 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package org.ardulink.gui.hamcrest;
+package org.ardulink.gui.assertj;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.awt.Component;
-import java.util.Arrays;
 
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
-
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -32,7 +30,7 @@ import org.hamcrest.TypeSafeMatcher;
  * [adsense]
  *
  */
-public class NumberRowMatcher extends TypeSafeMatcher<JPanel> {
+public class NumberRowMatcher {
 
 	private final Number value;
 	private final BaseBuilder baseBuilder;
@@ -42,32 +40,20 @@ public class NumberRowMatcher extends TypeSafeMatcher<JPanel> {
 		this.value = number;
 	}
 
-	@Override
-	public void describeTo(Description description) {
-		description.appendText("Label ").appendText(baseBuilder.getLabel())
-				.appendText(", value ").appendText(String.valueOf(value));
+	public void verify(JPanel jPanel) {
+		baseBuilder.assertLabelMatch(jPanel);
+		assertValueEq(jPanel);
+		assertIsNumOnly(jPanel);
 	}
 
-	@Override
-	protected void describeMismatchSafely(JPanel item,
-			Description mismatchDescription) {
-		mismatchDescription.appendText(Arrays.toString(item.getComponents()));
+	private void assertValueEq(JPanel jPanel) {
+		assertIsNumOnly(jPanel);
+		assertThat(((JSpinner) baseBuilder.getComponent(jPanel)).getValue()).isEqualTo(value);
 	}
 
-	@Override
-	protected boolean matchesSafely(JPanel jPanel) {
-		return baseBuilder.labelMatch(jPanel) && valueEq(jPanel)
-				&& isNumOnly(jPanel);
-	}
-
-	private boolean valueEq(JPanel jPanel) {
+	private void assertIsNumOnly(JPanel jPanel) {
 		Component component = baseBuilder.getComponent(jPanel);
-		return component instanceof JSpinner
-				&& value.equals(((JSpinner) component).getValue());
+		assertThat(component).isInstanceOf(JSpinner.class);
 	}
 
-	private boolean isNumOnly(JPanel jPanel) {
-		Component component = baseBuilder.getComponent(jPanel);
-		return component instanceof JSpinner;
-	}
 }

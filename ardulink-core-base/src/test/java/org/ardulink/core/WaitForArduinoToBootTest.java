@@ -19,8 +19,7 @@ package org.ardulink.core;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.ConnectionBasedLink.Mode.READY_MESSAGE_ONLY;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -61,31 +60,31 @@ class WaitForArduinoToBootTest {
 	@Test
 	void ifNoResponseReceivedWithin1SecondWaitWillReturnFalse() throws IOException {
 		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))).thenDoNotRespond();
-		assertThat(link.waitForArduinoToBoot(1, SECONDS), is(false));
+		assertThat(link.waitForArduinoToBoot(1, SECONDS)).isFalse();
 	}
 
 	@Test
 	void noNeedToWaitIfArduinoResponds() throws IOException {
 		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))).thenRespond(lf("alp://rply/ok?id=%s"));
-		assertThat(link.waitForArduinoToBoot(3, DAYS), is(true));
+		assertThat(link.waitForArduinoToBoot(3, DAYS)).isTrue();
 	}
 
 	@Test
 	void canDetectReadyPaket() throws IOException {
 		arduino.after(1, SECONDS).send(lf("alp://ready/"));
-		assertThat(link.waitForArduinoToBoot(3, DAYS, READY_MESSAGE_ONLY), is(true));
+		assertThat(link.waitForArduinoToBoot(3, DAYS, READY_MESSAGE_ONLY)).isTrue();
 	}
 
 	@Test
 	void ignoresMisformedReadyPaket() throws IOException {
 		arduino.after(1, SECONDS).send(lf("alp://XXXXXreadyXXXXX/"));
-		assertThat(link.waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY), is(false));
+		assertThat(link.waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY)).isFalse();
 	}
 
 	@Test
 	void detectAlreadySentReadyPaket() throws IOException {
 		arduino.send(lf("alp://ready/"));
-		assertThat(link.waitForArduinoToBoot(3, DAYS, READY_MESSAGE_ONLY), is(true));
+		assertThat(link.waitForArduinoToBoot(3, DAYS, READY_MESSAGE_ONLY)).isTrue();
 	}
 
 	private Pattern regex(String regex) {

@@ -5,11 +5,9 @@ import static java.lang.Math.pow;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.firmata4j.firmata.parser.FirmataToken.ANALOG_MESSAGE;
 import static org.firmata4j.firmata.parser.FirmataToken.DIGITAL_MESSAGE;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -66,19 +64,19 @@ class FirmataProtocolTest {
 	}
 
 	private void thenMessageIs(Pin pin, Object value) {
-		assertThat(messages.size(), is(1));
+		assertThat(messages).hasSize(1);
 		FromDeviceMessagePinStateChanged pinStateChanged = (FromDeviceMessagePinStateChanged) messages.get(0);
-		assertThat(pinStateChanged.getPin(), is(pin));
-		assertThat(pinStateChanged.getValue(), is(value));
+		assertThat(pinStateChanged.getPin()).isEqualTo(pin);
+		assertThat(pinStateChanged.getValue()).isEqualTo(value);
 	}
 
 	private void assertMessage(List<FromDeviceMessage> messages, Map<Pin, Object> expectedStates) {
-		assertThat(messages.size(), is(expectedStates.size()));
+		assertThat(messages).hasSize(expectedStates.size());
 		for (FromDeviceMessage message : messages) {
 			FromDeviceMessagePinStateChanged pinStateChanged = (FromDeviceMessagePinStateChanged) message;
 			Object object = expectedStates.get(pinStateChanged.getPin());
-			assertThat("No expected state for pin " + pinStateChanged.getPin(), object, notNullValue());
-			assertThat("Pin " + pinStateChanged.getPin(), pinStateChanged.getValue(), is(object));
+			assertThat(object).isNotNull().withFailMessage("No expected state for pin " + pinStateChanged.getPin());
+			assertThat(pinStateChanged.getValue()).isEqualTo(object).withFailMessage("Pin " + pinStateChanged.getPin());
 		}
 	}
 

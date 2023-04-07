@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.mqtt.camel;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.Throwables.getCauses;
 import static org.hamcrest.CoreMatchers.is;
@@ -117,7 +119,7 @@ class MqttMainStandaloneIntegrationTest {
 		withBrokerPort(freePort()).withBrokerUser(someUser).withBrokerPassword(somePassword).withClientUser(someUser)
 				.withClientPassword(not(somePassword));
 		Exception exception = assertThrows(FailedToStartRouteException.class, () -> runMain());
-		assertThat(getCauses(exception).anyMatch(MqttSecurityException.class::isInstance), is(true));
+		assertThat(getCauses(exception).anyMatch(MqttSecurityException.class::isInstance)).isTrue();
 	}
 
 	@Test
