@@ -25,14 +25,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.Link;
-import org.ardulink.core.events.CustomEvent;
-import org.ardulink.core.events.CustomListener;
-import org.ardulink.core.events.RplyEvent;
-import org.ardulink.core.events.RplyListener;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
@@ -62,9 +58,9 @@ class SerialLinkFactoryIntegrationTest {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(URIs
 				.newURI("ardulink://serial-jssc?port=" + portNames[0] + "&baudrate=9600&pingprobe=false&waitsecs=1"));
-		Link link = configurer.newLink();
-		assertNotNull(link);
-		link.close();
+		try (Link link = configurer.newLink()) {
+			assertNotNull(link);
+		}
 	}
 
 	@Test
@@ -72,7 +68,8 @@ class SerialLinkFactoryIntegrationTest {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(URIs.newURI("ardulink://serial-jssc"));
 
-		assertThat(newArrayList(configurer.getAttributes())).isEqualTo(newArrayList("port", "baudrate", "proto", "qos", "waitsecs", "pingprobe"));
+		assertThat(newArrayList(configurer.getAttributes()))
+				.isEqualTo(newArrayList("port", "baudrate", "proto", "qos", "waitsecs", "pingprobe"));
 
 		ConfigAttribute port = configurer.getAttribute("port");
 		ConfigAttribute proto = configurer.getAttribute("proto");
@@ -102,33 +99,16 @@ class SerialLinkFactoryIntegrationTest {
 		pingprobeAttribute.setValue(false);
 
 		link = configurer.newLink();
-
-		link.addRplyListener(new RplyListener() {
-
-			@Override
-			public void rplyReceived(RplyEvent e) {
-				Map<String, Object> parameters = e.getParameters();
-				for (String key : parameters.keySet()) {
-					System.out.println(key + "=" + parameters.get(key));
-				}
-
+		link.addRplyListener(e -> {
+			for (Entry<String, Object> entry : e.getParameters().entrySet()) {
+				System.out.println(entry.getKey() + "=" + entry.getValue());
 			}
 		});
 
-		link.addCustomListener(new CustomListener() {
-
-			@Override
-			public void customEventReceived(CustomEvent e) {
-				System.out.println(e.getMessage());
-			}
-		});
-
+		link.addCustomListener(e -> System.out.println(e.getMessage()));
 		TimeUnit.SECONDS.sleep(10);
-
 		sendCustom();
-
 		TimeUnit.SECONDS.sleep(10);
-
 		link.close();
 	}
 

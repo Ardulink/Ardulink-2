@@ -98,15 +98,17 @@ public class LinkManagerTest {
 	}
 
 	@Test
-	void canLoadViaMetaInfServicesArdulinkLinkfactoryWithoutConfig() {
-		Link link = sut.getConfigurer(newURI("ardulink://aLinkWithoutArealLinkFactoryWithoutConfig")).newLink();
-		assertThat(link).isInstanceOf(AlLinkWithoutArealLinkFactoryWithoutConfig.class);
+	void canLoadViaMetaInfServicesArdulinkLinkfactoryWithoutConfig() throws IOException {
+		try (Link link = sut.getConfigurer(newURI("ardulink://aLinkWithoutArealLinkFactoryWithoutConfig")).newLink()) {
+			assertThat(link).isInstanceOf(AlLinkWithoutArealLinkFactoryWithoutConfig.class);
+		}
 	}
 
 	@Test
-	void canLoadViaMetaInfServicesArdulinkLinkfactoryWithConfig() {
-		Link link = sut.getConfigurer(newURI("ardulink://aLinkWithoutArealLinkFactoryWithConfig")).newLink();
-		assertThat(link).isInstanceOf(AlLinkWithoutArealLinkFactoryWithConfig.class);
+	void canLoadViaMetaInfServicesArdulinkLinkfactoryWithConfig() throws IOException {
+		try (Link link = sut.getConfigurer(newURI("ardulink://aLinkWithoutArealLinkFactoryWithConfig")).newLink()) {
+			assertThat(link).isInstanceOf(AlLinkWithoutArealLinkFactoryWithConfig.class);
+		}
 	}
 
 	@Test
@@ -124,9 +126,7 @@ public class LinkManagerTest {
 	@Test
 	void aliasNameNotListed() throws Throwable {
 		withRegistered(new AliasUsingLinkFactory()).execute(() -> {
-			List<URI> listURIs = sut.listURIs();
-			assertThat(listURIs).contains(aliasUri());
-			assertThat(listURIs).doesNotContain(newURI("ardulink://aliasLinkAlias"));
+			assertThat(sut.listURIs()).contains(aliasUri()).doesNotContain(newURI("ardulink://aliasLinkAlias"));
 		});
 	}
 
@@ -138,9 +138,9 @@ public class LinkManagerTest {
 
 		AliasUsingLinkFactory spy = spy(factory);
 		withRegistered(spy).execute(() -> {
-			Link link = sut.getConfigurer(newURI("ardulink://" + dummyLinkFactoryName)).newLink();
-			verify(spy, never()).newLink(any(LinkConfig.class));
-			link.close();
+			try (Link link = sut.getConfigurer(newURI("ardulink://" + dummyLinkFactoryName)).newLink()) {
+				verify(spy, never()).newLink(any(LinkConfig.class));
+			}
 		});
 	}
 

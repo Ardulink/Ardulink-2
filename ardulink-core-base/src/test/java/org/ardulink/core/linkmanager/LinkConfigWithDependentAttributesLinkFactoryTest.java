@@ -100,9 +100,10 @@ class LinkConfigWithDependentAttributesLinkFactoryTest {
 	@Test
 	void canInstantiateLinkWithDependentAttributes() throws Throwable {
 		withRegistered(new LinkConfigWithDependentAttributesLinkFactory()).execute(() -> {
-			Link link = LinkManager.getInstance()
-					.getConfigurer(newURI("ardulink://dependendAttributes?devicePort=foo&host=h&port=1")).newLink();
-			assertThat(link).isNotNull();
+			try (Link link = LinkManager.getInstance()
+					.getConfigurer(newURI("ardulink://dependendAttributes?devicePort=foo&host=h&port=1")).newLink()) {
+				assertThat(link).isNotNull();
+			}
 		});
 	}
 

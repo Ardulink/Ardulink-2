@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.Link;
-import org.ardulink.core.events.CustomEvent;
-import org.ardulink.core.events.CustomListener;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
@@ -35,15 +33,7 @@ class RealConnectionListenTest {
 
 	@Test
 	void listen() throws IOException, InterruptedException {
-
-		link.addCustomListener(new CustomListener() {
-
-			@Override
-			public void customEventReceived(CustomEvent e) {
-				System.out.println(e.getMessage());
-			}
-		});
-
+		link.addCustomListener(e -> System.out.println(e.getMessage()));
 		TimeUnit.SECONDS.sleep(60);
 	}
 

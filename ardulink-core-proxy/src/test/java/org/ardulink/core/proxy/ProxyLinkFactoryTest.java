@@ -64,7 +64,8 @@ class ProxyLinkFactoryTest {
 				URIs.newURI("ardulink://proxy?tcphost=localhost&tcpport=" + proxyServerDouble.getLocalPort()));
 		ConfigAttribute port = configurer.getAttribute("port");
 		assertThat(port.getChoiceValues()).isEqualTo(new String[] { "myPortNr0" });
-		assertThat(proxyServerDouble.getReceived()).isEqualTo(Collections.singletonList("ardulink:networkproxyserver:get_port_list"));
+		assertThat(proxyServerDouble.getReceived())
+				.isEqualTo(Collections.singletonList("ardulink:networkproxyserver:get_port_list"));
 	}
 
 	@Test
@@ -78,9 +79,9 @@ class ProxyLinkFactoryTest {
 		port.setValue(values[0]);
 
 		configurer.newLink().close();
-		assertThat(proxyServerDouble.getReceived()).isEqualTo(Arrays.asList("ardulink:networkproxyserver:get_port_list",
-						"ardulink:networkproxyserver:get_port_list", "ardulink:networkproxyserver:connect", "myPortNr0",
-						"115200"));
+		assertThat(proxyServerDouble.getReceived()).isEqualTo(
+				Arrays.asList("ardulink:networkproxyserver:get_port_list", "ardulink:networkproxyserver:get_port_list",
+						"ardulink:networkproxyserver:connect", "myPortNr0", "115200"));
 	}
 
 	@Test
@@ -90,14 +91,13 @@ class ProxyLinkFactoryTest {
 				URIs.newURI("ardulink://proxy?tcphost=localhost&tcpport=" + proxyServerDouble.getLocalPort()));
 		Object[] values = new String[] { "myPortNr0" };
 		configurer.getAttribute("port").setValue(values[0]);
-		Link newLink = configurer.newLink();
-
-		// sends message to double
-		newLink.switchAnalogPin(Pin.analogPin(1), 123);
-		assertThat(proxyServerDouble.getReceived()).isEqualTo(Arrays.asList("ardulink:networkproxyserver:get_port_list",
-				"ardulink:networkproxyserver:connect", "myPortNr0", "115200", "alp://ppin/1/123"));
-
-		newLink.close();
+		try (Link newLink = configurer.newLink()) {
+			// sends message to double
+			newLink.switchAnalogPin(Pin.analogPin(1), 123);
+			assertThat(proxyServerDouble.getReceived())
+					.isEqualTo(Arrays.asList("ardulink:networkproxyserver:get_port_list",
+							"ardulink:networkproxyserver:connect", "myPortNr0", "115200", "alp://ppin/1/123"));
+		}
 	}
 
 }

@@ -46,16 +46,13 @@ public class ResponseAwaiter {
 
 	private ResponseAwaiter(Link link) throws IOException {
 		this.link = link;
-		this.listener = new RplyListener() {
-			@Override
-			public void rplyReceived(RplyEvent event) {
-				lock.lock();
-				try {
-					replies.add(event);
-					condition.signal();
-				} finally {
-					lock.unlock();
-				}
+		this.listener = e -> {
+			lock.lock();
+			try {
+				replies.add(e);
+				condition.signal();
+			} finally {
+				lock.unlock();
 			}
 		};
 		this.link.addRplyListener(listener);

@@ -24,6 +24,7 @@ import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
@@ -75,29 +76,30 @@ class DummyLinkFactoryTest {
 	}
 
 	@Test
-	void canCreateDummyConnection() {
-		Link link = sut.getConfigurer(URIs.newURI("ardulink://dummyLink")).newLink();
-		assertThat(link).isNotNull();
+	void canCreateDummyConnection() throws IOException {
+		try (Link link = sut.getConfigurer(URIs.newURI("ardulink://dummyLink")).newLink()) {
+			assertThat(link).isNotNull();
+		}
 	}
 
 	@Test
-	void canConfigureDummyConnection() {
+	void canConfigureDummyConnection() throws IOException {
 		String aValue = "aVal1";
 		int bValue = 1;
 		String cValue = "cValue";
 		TimeUnit eValue = TimeUnit.DAYS;
-		Link link = sut.getConfigurer(URIs.newURI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue + "&c=" + cValue
-				+ "&proto=dummyProto&e=" + eValue.name())).newLink();
-
-		assertThat(link).isInstanceOf(ConnectionBasedLink.class);
-		DummyConnection connection = (DummyConnection) ((ConnectionBasedLink) link).getConnection();
-		DummyLinkConfig config = connection.getConfig();
-		assertThat(config.a).isEqualTo(aValue);
-		assertThat(config.b).isEqualTo(bValue);
-		assertThat(config.c).isEqualTo(cValue);
-		assertThat(config.protocol.getClass().getName()).isEqualTo(DummyProtocol.getInstance().getClass().getName());
-		assertThat(config.e).isEqualTo(eValue);
-
+		try (Link link = sut.getConfigurer(URIs.newURI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue + "&c="
+				+ cValue + "&proto=dummyProto&e=" + eValue.name())).newLink()) {
+			assertThat(link).isInstanceOf(ConnectionBasedLink.class);
+			DummyConnection connection = (DummyConnection) ((ConnectionBasedLink) link).getConnection();
+			DummyLinkConfig config = connection.getConfig();
+			assertThat(config.a).isEqualTo(aValue);
+			assertThat(config.b).isEqualTo(bValue);
+			assertThat(config.c).isEqualTo(cValue);
+			assertThat(config.protocol.getClass().getName())
+					.isEqualTo(DummyProtocol.getInstance().getClass().getName());
+			assertThat(config.e).isEqualTo(eValue);
+		}
 	}
 
 	@Test
