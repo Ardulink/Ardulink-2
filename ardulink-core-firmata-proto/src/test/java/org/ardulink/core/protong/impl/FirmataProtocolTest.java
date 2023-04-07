@@ -1,6 +1,5 @@
 package org.ardulink.core.protong.impl;
 
-import static java.lang.Integer.parseInt;
 import static java.lang.Math.pow;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -23,7 +22,6 @@ import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.FirmataProtocol;
 import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
-import org.ardulink.util.anno.LapsedWith;
 import org.junit.jupiter.api.Test;
 
 class FirmataProtocolTest {
@@ -46,8 +44,8 @@ class FirmataProtocolTest {
 	void canReadDigitalPinViaFirmataProto() throws IOException {
 		byte command = DIGITAL_MESSAGE;
 		byte port = 4;
-		byte valueLow = binary("010" + "0101");
-		byte valueHigh = binary("1");
+		byte valueLow = 0b0100101;
+		byte valueHigh = 0b1;
 		givenMessage(command |= port, valueLow, valueHigh);
 		whenMessageIsProcessed();
 		byte pin = (byte) pow(2, port + 1);
@@ -64,25 +62,20 @@ class FirmataProtocolTest {
 	}
 
 	private void thenMessageIs(Pin pin, Object value) {
-		assertThat(messages).hasSize(1);
-		FromDeviceMessagePinStateChanged pinStateChanged = (FromDeviceMessagePinStateChanged) messages.get(0);
-		assertThat(pinStateChanged.getPin()).isEqualTo(pin);
-		assertThat(pinStateChanged.getValue()).isEqualTo(value);
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessagePinStateChanged.class, m -> {
+			assertThat(m.getPin()).isEqualTo(pin);
+			assertThat(m.getValue()).isEqualTo(value);
+		});
 	}
 
 	private void assertMessage(List<FromDeviceMessage> messages, Map<Pin, Object> expectedStates) {
-		assertThat(messages).hasSize(expectedStates.size());
-		for (FromDeviceMessage message : messages) {
-			FromDeviceMessagePinStateChanged pinStateChanged = (FromDeviceMessagePinStateChanged) message;
-			Object object = expectedStates.get(pinStateChanged.getPin());
-			assertThat(object).isNotNull().withFailMessage("No expected state for pin " + pinStateChanged.getPin());
-			assertThat(pinStateChanged.getValue()).isEqualTo(object).withFailMessage("Pin " + pinStateChanged.getPin());
-		}
-	}
-
-	@LapsedWith(module = "JDK7", value = "binary literals")
-	private static byte binary(String string) {
-		return (byte) parseInt(string, 2);
+		assertThat(messages).hasSize(expectedStates.size()).allSatisfy(m -> {
+			assertThat(m).isInstanceOfSatisfying(FromDeviceMessagePinStateChanged.class, f -> {
+				Object object = expectedStates.get(f.getPin());
+				assertThat(object).isNotNull().withFailMessage("No expected state for pin " + f.getPin());
+				assertThat(f.getValue()).isEqualTo(object).withFailMessage("Pin " + f.getPin());
+			});
+		});
 	}
 
 	private void whenMessageIsProcessed() throws IOException {

@@ -56,7 +56,8 @@ class SerialLinkFactoryIntegrationTest {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(URIs.newURI("ardulink://serial"));
 
-		assertThat(newArrayList(configurer.getAttributes())).isEqualTo(newArrayList("port", "baudrate", "proto", "qos", "waitsecs", "pingprobe", "searchport"));
+		assertThat(newArrayList(configurer.getAttributes()))
+				.isEqualTo(newArrayList("port", "baudrate", "proto", "qos", "waitsecs", "pingprobe", "searchport"));
 
 		ConfigAttribute port = configurer.getAttribute("port");
 		ConfigAttribute proto = configurer.getAttribute("proto");
@@ -97,9 +98,9 @@ class SerialLinkFactoryIntegrationTest {
 		// if there aren't devices connected an exception is thrown
 		ConfigAttribute port = configurer.getAttribute("port");
 		if (port.getChoiceValues().length == 0) {
-			assertThat(assertThrows(RuntimeException.class, () -> configurer.newLink()).getMessage()).isEqualTo("no port found");
+			assertThat(assertThrows(RuntimeException.class, () -> configurer.newLink())).hasMessage("no port found");
 		} else {
-			assertNotNull(configurer.newLink());
+			assertThat(configurer.newLink()).isNotNull();
 		}
 	}
 }

@@ -57,36 +57,31 @@ class ArdulinkProtocol2Test {
 	void canReadRplyViaArdulinkProto() throws IOException {
 		givenMessage("alp://rply/ok?id=1&UniqueID=456-2342-2342&ciao=boo");
 		whenMessageIsProcessed();
-		assertThat(messages).hasSize(1);
-		FromDeviceMessageReply replyMessage = (FromDeviceMessageReply) messages.get(0);
-		assertThat(replyMessage.getParameters()).isEqualTo(MapBuilder.<String, Object>newMapBuilder()
-				.put("UniqueID", "456-2342-2342").put("ciao", "boo").build());
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class,
+				m -> assertThat(m.getParameters()).isEqualTo(MapBuilder.<String, Object>newMapBuilder()
+						.put("UniqueID", "456-2342-2342").put("ciao", "boo").build()));
 	}
 
 	@Test
 	void canReadReadyViaArdulinkProto() throws IOException {
 		givenMessage("alp://ready/");
 		whenMessageIsProcessed();
-		assertThat(messages).hasSize(1);
-		assertThat(messages.get(0)).isInstanceOf(FromDeviceMessageReady.class);
+		assertThat(messages).singleElement().isInstanceOf(FromDeviceMessageReady.class);
 	}
 
 	@Test
 	void doesRecoverFromMisformedContent() throws IOException {
 		givenMessages("alp://XXXXXreadyXXXXX/", "alp://ready/");
 		whenMessageIsProcessed();
-		assertThat(messages).hasSize(1);
-		assertThat(messages.get(0)).isInstanceOf(FromDeviceMessageReady.class);
+		assertThat(messages).singleElement().isInstanceOf(FromDeviceMessageReady.class);
 	}
 
 	@Test
 	void ardulinkProtocol2ReceiveCustomEvent() throws IOException {
 		givenMessage("alp://cevnt/foo=bar/some=42");
 		whenMessageIsProcessed();
-		assertThat(messages).hasSize(1);
-		assertThat(messages.get(0)).isInstanceOf(FromDeviceMessageCustom.class);
-		FromDeviceMessageCustom customMessage = (FromDeviceMessageCustom) messages.get(0);
-		assertThat(customMessage.getMessage()).isEqualTo("foo=bar/some=42");
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageCustom.class,
+				m -> assertThat(m.getMessage()).isEqualTo("foo=bar/some=42"));
 	}
 
 	@Test
@@ -96,12 +91,11 @@ class ArdulinkProtocol2Test {
 				.put("boo", "ciao").build();
 		givenMessage("alp://rply/ok?id=" + id + "&" + Joiner.on("&").withKeyValueSeparator("=").join(params));
 		whenMessageIsProcessed();
-		assertThat(messages).hasSize(1);
-		assertThat(messages.get(0)).isInstanceOf(FromDeviceMessageReply.class);
-		FromDeviceMessageReply replyMessage = (FromDeviceMessageReply) messages.get(0);
-		assertThat(replyMessage.isOk()).isTrue();
-		assertThat(replyMessage.getId()).isEqualTo(id);
-		assertThat(replyMessage.getParameters()).isEqualTo(params);
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class, m -> {
+			assertThat(m.isOk()).isTrue();
+			assertThat(m.getId()).isEqualTo(id);
+			assertThat(m.getParameters()).isEqualTo(params);
+		});
 	}
 
 	private void givenMessage(String in) {
@@ -113,10 +107,10 @@ class ArdulinkProtocol2Test {
 	}
 
 	private void thenMessageIs(Pin pin, Object value) {
-		assertThat(messages).hasSize(1);
-		FromDeviceMessagePinStateChanged pinStateChanged = (FromDeviceMessagePinStateChanged) messages.get(0);
-		assertThat(pinStateChanged.getPin()).isEqualTo(pin);
-		assertThat(pinStateChanged.getValue()).isEqualTo(value);
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessagePinStateChanged.class, m -> {
+			assertThat(m.getPin()).isEqualTo(pin);
+			assertThat(m.getValue()).isEqualTo(value);
+		});
 	}
 
 	@LapsedWith(module = "JDK7", value = "binary literals")

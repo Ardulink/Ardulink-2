@@ -57,6 +57,7 @@ import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.Joiner;
 import org.ardulink.util.Lists;
+import org.assertj.core.api.ListAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -154,8 +155,7 @@ class ConnectionBasedLinkTest {
 		String message = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value);
 		simulateArduinoSend(message);
 		waitUntilRead();
-		assertThat(analogEvents).usingElementComparator(comparator())
-				.contains(new DefaultAnalogPinValueChangedEvent(analogPin(pin), value));
+		assertThatEvents(analogEvents).contains(new DefaultAnalogPinValueChangedEvent(analogPin(pin), value));
 	}
 
 	@Test
@@ -179,8 +179,7 @@ class ConnectionBasedLinkTest {
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
 		simulateArduinoSend(message);
 		waitUntilRead();
-		assertThat(digitalEvents).usingElementComparator(comparator())
-				.contains(new DefaultDigitalPinValueChangedEvent(digitalPin(pin), true));
+		assertThatEvents(digitalEvents).contains(new DefaultDigitalPinValueChangedEvent(digitalPin(pin), true));
 	}
 
 	@Test
@@ -332,6 +331,10 @@ class ConnectionBasedLinkTest {
 		assertThat(sb.toString()).isEmpty();
 	}
 
+	private ListAssert<PinValueChangedEvent> assertThatEvents(List<PinValueChangedEvent> events) {
+		return assertThat(events).usingElementComparator(comparator());
+	}
+	
 	private int anyPositive(Class<? extends Number> numClass) {
 		return 42;
 	}

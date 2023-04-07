@@ -16,10 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
@@ -53,16 +50,16 @@ class MqttWithAuthenticationIntegrationTest {
 	@Test
 	void canNotConnectWithoutUserAndPassword() {
 		Exception exception = createLinkAndCatchRTE(URIs.newURI("ardulink://mqtt?topic=" + TOPIC));
-		assertThat(exception.getMessage(), is(allOf(containsString("BAD"), containsString("USERNAME"),
-				containsString("OR"), containsString("PASSWORD"))));
+		assertThat(exception).hasMessageContaining("BAD").hasMessageContaining("USERNAME").hasMessageContaining("OR")
+				.hasMessageContaining("PASSWORD");
 	}
 
 	@Test
 	void canNotConnectWithWrongPassword() {
 		Exception exception = createLinkAndCatchRTE(
 				URIs.newURI("ardulink://mqtt?user=" + USER + "&password=" + "anyWrongPassword" + "&topic=" + TOPIC));
-		assertThat(exception.getMessage(), is(allOf(containsString("BAD"), containsString("USERNAME"),
-				containsString("OR"), containsString("PASSWORD"))));
+		assertThat(exception).hasMessageContaining("BAD").hasMessageContaining("USERNAME").hasMessageContaining("OR")
+				.hasMessageContaining("PASSWORD");
 	}
 
 	@Test

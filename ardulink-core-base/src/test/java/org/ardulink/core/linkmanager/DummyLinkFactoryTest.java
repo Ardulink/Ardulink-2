@@ -24,6 +24,7 @@ import static java.util.Locale.GERMAN;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.stream.Collectors.toList;
+import static org.ardulink.util.anno.LapsedWith.JUNIT_PIONEER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -40,6 +41,7 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import org.ardulink.core.proto.impl.DummyProtocol;
 import org.ardulink.util.URIs;
+import org.ardulink.util.anno.LapsedWith;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
@@ -67,14 +69,14 @@ class DummyLinkFactoryTest {
 		String name = "non.existing.name";
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
 				() -> sut.getConfigurer(URIs.newURI("ardulink://" + name + "")));
-		assertThat(exception.getMessage()).contains("No factory registered for \"" + name + "\"");
+		assertThat(exception).hasMessageContaining("No factory registered for \"" + name + "\"");
 	}
 
 	@Test
 	void schemaHasToBeArdulink() {
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
 				new ExecutableImplementation());
-		assertThat(exception.getMessage()).contains("schema not ardulink");
+		assertThat(exception).hasMessageContaining("schema not ardulink");
 	}
 
 	@Test
@@ -89,8 +91,8 @@ class DummyLinkFactoryTest {
 		int bValue = 1;
 		String cValue = "cValue";
 		TimeUnit eValue = TimeUnit.DAYS;
-		Link link = sut.getConfigurer(URIs.newURI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue + "&c="
-				+ cValue + "&proto=dummyProto&e=" + eValue.name())).newLink();
+		Link link = sut.getConfigurer(URIs.newURI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue + "&c=" + cValue
+				+ "&proto=dummyProto&e=" + eValue.name())).newLink();
 
 		assertThat(link).isInstanceOf(ConnectionBasedLink.class);
 		DummyConnection connection = (DummyConnection) ((ConnectionBasedLink) link).getConnection();
@@ -118,7 +120,7 @@ class DummyLinkFactoryTest {
 		Configurer configurer = sut.getConfigurer(URIs.newURI("ardulink://dummyLink"));
 		ConfigAttribute f = configurer.getAttribute("f");
 		assertThat(f.hasChoiceValues()).isEqualTo(TRUE);
-		assertThat(Arrays.asList(f.getChoiceValues())).isEqualTo(Arrays.<Object>asList(NANOSECONDS, DAYS));
+		assertThat(f.getChoiceValues()).containsExactly(NANOSECONDS, DAYS);
 	}
 
 	@Test
@@ -126,7 +128,7 @@ class DummyLinkFactoryTest {
 		String nonExistingKey = "nonExistingKey";
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
 				() -> sut.getConfigurer(URIs.newURI("ardulink://dummyLink?" + nonExistingKey + "=someValue")));
-		assertThat(exception.getMessage()).contains("Could not determine attribute " + nonExistingKey);
+		assertThat(exception).hasMessageContaining("Could not determine attribute " + nonExistingKey);
 	}
 
 	@Test
@@ -141,7 +143,7 @@ class DummyLinkFactoryTest {
 
 		ConfigAttribute proto = configurer.getAttribute("proto");
 		assertThat(proto.hasChoiceValues()).isEqualTo(TRUE);
-		assertThat(Arrays.asList(proto.getChoiceValues())).contains("dummyProto", "ardulink2");
+		assertThat(proto.getChoiceValues()).contains("dummyProto", "ardulink2");
 	}
 
 	@Test
@@ -153,7 +155,7 @@ class DummyLinkFactoryTest {
 		String invalidValue = "aVal3IsNotAvalidValue";
 		a.setValue(invalidValue);
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> configurer.newLink());
-		assertThat(exception.getMessage()).isEqualTo(invalidValue + " is not a valid value for "
+		assertThat(exception).hasMessage(invalidValue + " is not a valid value for "
 				+ "A is meant just to be an example attribute" + ", valid values are [aVal1, aVal2]");
 	}
 
@@ -165,7 +167,7 @@ class DummyLinkFactoryTest {
 		String invalidValue = "aVal3IsNotAvalidValue";
 		a.setValue(invalidValue);
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> configurer.newLink());
-		assertThat(exception.getMessage()).isEqualTo(invalidValue + " is not a valid value for "
+		assertThat(exception).hasMessage(invalidValue + " is not a valid value for "
 				+ "A is meant just to be an example attribute" + ", valid values are [aVal1, aVal2]");
 	}
 
@@ -176,7 +178,7 @@ class DummyLinkFactoryTest {
 		assertThat(configAttribute.hasChoiceValues()).isFalse();
 		IllegalStateException exception = assertThrows(IllegalStateException.class,
 				() -> configAttribute.getChoiceValues());
-		assertThat(exception.getMessage()).isEqualTo("attribute does not have choiceValues");
+		assertThat(exception).hasMessage("attribute does not have choiceValues");
 	}
 
 	@Test
@@ -195,6 +197,7 @@ class DummyLinkFactoryTest {
 	}
 
 	@Test
+	@LapsedWith(module = JUNIT_PIONEER, value = "@DefaultLocale")
 	void i18n_english() {
 		Locale.setDefault(ENGLISH);
 		assertThat(getName("a")).isEqualTo("A is meant just to be an example attribute");
@@ -202,6 +205,7 @@ class DummyLinkFactoryTest {
 	}
 
 	@Test
+	@LapsedWith(module = JUNIT_PIONEER, value = "@DefaultLocale")
 	void i18n_german() {
 		Locale.setDefault(GERMAN);
 		assertThat(getName("a")).isEqualTo("A ist einfach ein Beispielattribut");
@@ -209,6 +213,7 @@ class DummyLinkFactoryTest {
 	}
 
 	@Test
+	@LapsedWith(module = JUNIT_PIONEER, value = "@DefaultLocale")
 	void i18n_localeWithoutMessageFileWillFallbackToEnglish() {
 		Locale.setDefault(CHINESE);
 		assertThat(getName("a")).isEqualTo("A is meant just to be an example attribute");
@@ -216,6 +221,7 @@ class DummyLinkFactoryTest {
 	}
 
 	@Test
+	@LapsedWith(module = JUNIT_PIONEER, value = "@DefaultLocale")
 	void i18n_english_untagged_attribute_returns_the_attributes_name() {
 		Locale.setDefault(ENGLISH);
 		assertThat(getName("b")).isEqualTo("b");

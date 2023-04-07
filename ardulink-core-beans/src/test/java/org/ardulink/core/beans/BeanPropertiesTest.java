@@ -215,7 +215,8 @@ class BeanPropertiesTest {
 		Class<ThisAnnotationHasNoValueAttribute> clazz = ThisAnnotationHasNoValueAttribute.class;
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
 				() -> propertyAnnotated(clazz));
-		assertThat(exception.getMessage()).contains(clazz.getName()).contains("has no attribute named value");
+		assertThat(exception).hasMessageContaining(clazz.getName())
+				.hasMessageContaining("has no attribute named value");
 	}
 
 	@Test
@@ -223,8 +224,8 @@ class BeanPropertiesTest {
 		Class<ThisAnnotationHasAnAttributeThatIsNotAstring> clazz = ThisAnnotationHasAnAttributeThatIsNotAstring.class;
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
 				() -> propertyAnnotated(clazz));
-		assertThat(exception.getMessage()).contains(clazz.getName()).contains(String.class.getName())
-				.contains(boolean.class.getName());
+		assertThat(exception).hasMessageContaining(clazz.getName()).hasMessageContaining(String.class.getName())
+				.hasMessageContaining(boolean.class.getName());
 	}
 
 	@Test

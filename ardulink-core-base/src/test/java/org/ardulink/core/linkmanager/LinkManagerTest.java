@@ -80,7 +80,7 @@ public class LinkManagerTest {
 		choiceValuesOfDNowAre("x", "y");
 
 		// let's query the possible values
-		assertThat(configurer.getAttribute("d").getChoiceValues()).isEqualTo(new Object[] { "x", "y" });
+		assertThat(configurer.getAttribute("d").getChoiceValues()).containsExactly("x", "y");
 
 		// now the possible values change from x and y to 1 and 2
 		choiceValuesOfDNowAre("1", "2");
@@ -90,7 +90,7 @@ public class LinkManagerTest {
 		configurer.getAttribute("d").setValue("y");
 
 		// but when querying the choice values again the changes are reflected
-		assertThat(configurer.getAttribute("d").getChoiceValues()).isEqualTo(new Object[] { "1", "2" });
+		assertThat(configurer.getAttribute("d").getChoiceValues()).containsExactly("1", "2");
 	}
 
 	private void choiceValuesOfDNowAre(String... values) {
@@ -113,7 +113,7 @@ public class LinkManagerTest {
 	void nonExistingNameWitllThrowRTE() throws IOException {
 		RuntimeException exception = assertThrows(RuntimeException.class,
 				() -> sut.getConfigurer(newURI("ardulink://XXX-aNameThatIsNotRegistered-XXX")));
-		assertThat(exception.getMessage()).contains("registered").contains("factory");
+		assertThat(exception).hasMessageContaining("registered").hasMessageContaining("factory");
 	}
 
 	@Test
