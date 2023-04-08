@@ -22,8 +22,7 @@ public class ArdulinkConsumer extends DefaultConsumer {
 	private final EventListener listener = listener();
 	private final Link link;
 
-	public ArdulinkConsumer(Endpoint endpoint, Processor processor, Link link)
-			throws IOException {
+	public ArdulinkConsumer(Endpoint endpoint, Processor processor, Link link) throws IOException {
 		super(endpoint, processor);
 		this.link = link;
 	}
@@ -53,18 +52,14 @@ public class ArdulinkConsumer extends DefaultConsumer {
 
 			@Override
 			public void stateChanged(DigitalPinValueChangedEvent event) {
-				String body = ALProtoBuilder
-						.alpProtocolMessage(DIGITAL_PIN_READ)
-						.forPin(event.getPin().pinNum())
+				String body = ALProtoBuilder.alpProtocolMessage(DIGITAL_PIN_READ).forPin(event.getPin().pinNum())
 						.withState(event.getValue().booleanValue());
 				process(exchangeWithBody(body));
 			}
 
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
-				String body = ALProtoBuilder
-						.alpProtocolMessage(ANALOG_PIN_READ)
-						.forPin(event.getPin().pinNum())
+				String body = ALProtoBuilder.alpProtocolMessage(ANALOG_PIN_READ).forPin(event.getPin().pinNum())
 						.withValue(event.getValue());
 				process(exchangeWithBody(body));
 			}
@@ -81,9 +76,7 @@ public class ArdulinkConsumer extends DefaultConsumer {
 				try {
 					getAsyncProcessor().process(exchange);
 				} catch (Exception e) {
-					e.printStackTrace();
-					getExceptionHandler().handleException(
-							"Failed to process notification", e);
+					getExceptionHandler().handleException("Failed to process notification", e);
 				}
 			}
 

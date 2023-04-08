@@ -33,6 +33,8 @@ import java.util.regex.Pattern;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -44,6 +46,7 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
  */
 public class Handshaker {
 
+	private static final Logger logger = LoggerFactory.getLogger(Handshaker.class);
 	public static final String PROXY_CONNECTION_SEPARATOR = "\n";
 
 	private final Scanner scanner;
@@ -91,7 +94,7 @@ public class Handshaker {
 					write(OK);
 					return link;
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error("Error during connecting", e);
 					write(KO);
 				}
 			}

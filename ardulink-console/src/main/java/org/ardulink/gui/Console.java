@@ -118,7 +118,7 @@ public class Console extends JFrame implements Linkable {
 				setupExceptionHandler(frame);
 				frame.setVisible(true);
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error while processing main method", e);
 			}
 		});
 	}
@@ -128,7 +128,7 @@ public class Console extends JFrame implements Linkable {
 			@Override
 			public void uncaughtException(Thread thread, Throwable t) {
 				try {
-					t.printStackTrace();
+					logger.error("Uncaught Exception", t);
 					Throwable rootCause = rootCauseWithMessage(t);
 					JOptionPane.showMessageDialog(console,
 							rootCause.getClass().getName() + ": " + rootCause.getMessage(), "Error", ERROR_MESSAGE);
@@ -136,7 +136,7 @@ public class Console extends JFrame implements Linkable {
 					/*
 					 * don't let the Throwable get thrown out, will cause infinite looping!
 					 */
-					t2.printStackTrace();
+					logger.error("Exception in ExceptionHandler", t2);
 				}
 			}
 
