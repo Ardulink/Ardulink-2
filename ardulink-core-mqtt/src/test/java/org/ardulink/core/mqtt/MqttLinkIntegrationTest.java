@@ -19,8 +19,6 @@ package org.ardulink.core.mqtt;
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static java.util.function.Predicate.isEqual;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.DIGITAL;
@@ -135,7 +133,7 @@ class MqttLinkIntegrationTest {
 			breedReconnectedState(link);
 
 			link.switchAnalogPin(analogPin(8), 9);
-			mqttClient.awaitMessages(isEqual(singletonList(new Message(topic("A8"), "9"))));
+			mqttClient.awaitMessages(m -> assertThat(m).singleElement().isEqualTo(new Message(topic("A8"), "9")));
 		}
 	}
 

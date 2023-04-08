@@ -21,7 +21,6 @@ import static java.time.Duration.ofSeconds;
 import static java.util.Collections.unmodifiableMap;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 
@@ -31,11 +30,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Predicate;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
 import org.ardulink.util.URIs;
+import org.assertj.core.api.ThrowingConsumer;
 import org.fusesource.mqtt.client.Future;
 import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
@@ -120,9 +119,9 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 		return this;
 	}
 
-	public void awaitMessages(Predicate<? super List<? extends Message>> predicate) {
+	public void awaitMessages(ThrowingConsumer<List<Message>> throwingConsumer) {
 		await().timeout(ofSeconds(10)).pollInterval(ofMillis(100))
-				.untilAsserted(() -> assertThat(messages).matches(predicate));
+				.untilAsserted(() -> throwingConsumer.accept(messages));
 	}
 
 	public void clear() {

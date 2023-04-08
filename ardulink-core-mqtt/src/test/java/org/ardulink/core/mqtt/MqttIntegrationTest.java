@@ -17,9 +17,6 @@ limitations under the License.
 package org.ardulink.core.mqtt;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static java.util.function.Predicate.isEqual;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -27,6 +24,7 @@ import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.List;
@@ -61,12 +59,12 @@ class MqttIntegrationTest {
 	private static class TestConfig {
 
 		private final String name;
-		private final boolean separateTopics;
+		private final boolean separatedTopics;
 		private final String messageFormat;
 
 		public TestConfig(String name, boolean separateTopics, String messageFormat) {
 			this.name = name;
-			this.separateTopics = separateTopics;
+			this.separatedTopics = separateTopics;
 			this.messageFormat = messageFormat;
 		}
 
@@ -102,10 +100,10 @@ class MqttIntegrationTest {
 	}
 
 	void init(TestConfig config) {
-		this.mqttClient.appendValueSet(config.separateTopics);
+		this.mqttClient.appendValueSet(config.separatedTopics);
 		this.messageFormat = config.messageFormat;
 		String clientUri = "ardulink://mqtt?host=localhost&port=" + broker.getPort() + "&topic=" + TOPIC
-				+ "&separatedTopics=" + config.separateTopics;
+				+ "&separatedTopics=" + config.separatedTopics;
 		this.link = Links.getLink(clientUri);
 	}
 
@@ -114,7 +112,7 @@ class MqttIntegrationTest {
 	void canSwitchDigitalPin(TestConfig config) throws IOException {
 		init(config);
 		link.switchDigitalPin(digitalPin(30), true);
-		mqttClient.awaitMessages(isEqual(singletonList(new Message(topic("D30"), "true"))));
+		mqttClient.awaitMessages(m -> assertThat(m).singleElement().isEqualTo(new Message(topic("D30"), "true")));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -122,7 +120,7 @@ class MqttIntegrationTest {
 	void canSwitchAnalogPin(TestConfig config) throws IOException {
 		init(config);
 		link.switchAnalogPin(analogPin(12), 34);
-		mqttClient.awaitMessages(isEqual(singletonList(new Message(topic("A12"), "34"))));
+		mqttClient.awaitMessages(m -> assertThat(m).singleElement().isEqualTo(new Message(topic("A12"), "34")));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -130,7 +128,8 @@ class MqttIntegrationTest {
 	void sendsControlMessageWhenAddingAnalogListener(TestConfig config) throws IOException {
 		init(config);
 		link.addListener(new FilteredEventListenerAdapter(analogPin(1), delegate()));
-		mqttClient.awaitMessages(isEqual(singletonList(new Message(topic("system/listening/A1"), "true"))));
+		mqttClient.awaitMessages(
+				m -> assertThat(m).singleElement().isEqualTo(new Message(topic("system/listening/A1"), "true")));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -138,7 +137,8 @@ class MqttIntegrationTest {
 	void sendsControlMessageWhenAddingDigitalListener(TestConfig config) throws IOException {
 		init(config);
 		link.addListener(new FilteredEventListenerAdapter(digitalPin(2), delegate()));
-		mqttClient.awaitMessages(isEqual(singletonList(new Message(topic("system/listening/D2"), "true"))));
+		mqttClient.awaitMessages(
+				m -> assertThat(m).singleElement().isEqualTo(new Message(topic("system/listening/D2"), "true")));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -150,13 +150,13 @@ class MqttIntegrationTest {
 		link.addListener(listener);
 		Message m1 = new Message(topic("system/listening/A1"), "true");
 		// at the moment this is sent twice (see AbstractListenerLink)
-		mqttClient.awaitMessages(isEqual(asList(m1, m1)));
+		mqttClient.awaitMessages(m -> assertThat(m).containsExactly(m1, m1));
 		mqttClient.clear();
 		link.removeListener(listener);
-		mqttClient.awaitMessages(isEqual(emptyList()));
+		mqttClient.awaitMessages(m -> assertThat(m).isEmpty());
 		link.removeListener(listener);
 		Message m2 = new Message(topic("system/listening/A1"), "false");
-		mqttClient.awaitMessages(isEqual(singletonList(m2)));
+		mqttClient.awaitMessages(m -> assertThat(m).singleElement().isEqualTo(m2));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -168,13 +168,13 @@ class MqttIntegrationTest {
 		link.addListener(listener);
 		Message m1 = new Message(topic("system/listening/D1"), "true");
 		// at the moment this is sent twice (see AbstractListenerLink)
-		mqttClient.awaitMessages(isEqual(asList(m1, m1)));
+		mqttClient.awaitMessages(m -> assertThat(m).containsExactly(m1, m1));
 		mqttClient.clear();
 		link.removeListener(listener);
-		mqttClient.awaitMessages(isEqual(emptyList()));
+		mqttClient.awaitMessages(m -> assertThat(m).isEmpty());
 		link.removeListener(listener);
 		Message m2 = new Message(topic("system/listening/D1"), "false");
-		mqttClient.awaitMessages(isEqual(singletonList(m2)));
+		mqttClient.awaitMessages(m -> assertThat(m).singleElement().isEqualTo(m2));
 	}
 
 	private String topic(String pin) {
