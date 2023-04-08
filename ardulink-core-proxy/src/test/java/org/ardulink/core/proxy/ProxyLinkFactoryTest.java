@@ -50,8 +50,7 @@ class ProxyLinkFactoryTest {
 		proxyServerDouble.setNumberOfPorts(0);
 		Configurer configurer = linkManager.getConfigurer(
 				newURI("ardulink://proxy?tcphost=localhost&tcpport=" + proxyServerDouble.getLocalPort()));
-		ConfigAttribute port = configurer.getAttribute("port");
-		assertThat(port.getChoiceValues()).isEmpty();
+		assertThat(configurer.getAttribute("port").getChoiceValues()).isEmpty();
 	}
 
 	@Test
@@ -67,17 +66,17 @@ class ProxyLinkFactoryTest {
 
 	@Test
 	void canConnect() throws Exception {
-		proxyServerDouble.setNumberOfPorts(1);
+		proxyServerDouble.setNumberOfPorts(3);
 		Configurer configurer = linkManager.getConfigurer(
 				newURI("ardulink://proxy?tcphost=localhost&tcpport=" + proxyServerDouble.getLocalPort()));
 		ConfigAttribute port = configurer.getAttribute("port");
-		assertThat(port.getChoiceValues()).containsExactly(portName(0));
-		port.setValue(portName(0));
+		assertThat(port.getChoiceValues()).containsExactly(portName(0), portName(1), portName(2));
+		port.setValue(portName(2));
 
 		try (Link newLink = configurer.newLink()) {
 			await().untilAsserted(() -> assertThat(proxyServerDouble.received()).containsExactly(
 					"ardulink:networkproxyserver:get_port_list", "ardulink:networkproxyserver:get_port_list",
-					"ardulink:networkproxyserver:connect", portName(0), "115200"));
+					"ardulink:networkproxyserver:connect", portName(2), "115200"));
 		}
 	}
 
