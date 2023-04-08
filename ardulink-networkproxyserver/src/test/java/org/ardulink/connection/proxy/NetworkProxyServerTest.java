@@ -7,6 +7,7 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.ardulink.util.Throwables.propagate;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -15,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
-import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -107,63 +107,67 @@ class NetworkProxyServerTest {
 
 			@Override
 			public void run() {
-				new StartCommand() {
+				try {
+					new StartCommand() {
 
-					@Override
-					protected void serverIsUp(int portNumber) {
-						super.serverIsUp(portNumber);
-						lock.lock();
-						try {
-							waitUntilServerIsUp.signal();
-						} finally {
-							lock.unlock();
+						@Override
+						protected void serverIsUp(int portNumber) {
+							super.serverIsUp(portNumber);
+							lock.lock();
+							try {
+								waitUntilServerIsUp.signal();
+							} finally {
+								lock.unlock();
+							}
 						}
-					}
 
-					@Override
-					protected NetworkProxyServerConnection newConnection(ServerSocket serverSocket) throws IOException {
-						return new NetworkProxyServerConnection(serverSocket.accept()) {
-							@Override
-							protected Handshaker handshaker(InputStream isRemote, OutputStream osRemote) {
-								return new Handshaker(isRemote, osRemote, configurer());
-							}
+						@Override
+						protected NetworkProxyServerConnection newConnection(ServerSocket serverSocket) throws IOException {
+							return new NetworkProxyServerConnection(serverSocket.accept()) {
+								@Override
+								protected Handshaker handshaker(InputStream isRemote, OutputStream osRemote) {
+									return new Handshaker(isRemote, osRemote, configurer());
+								}
 
-							private Configurer configurer() {
-								return new Configurer() {
+								private Configurer configurer() {
+									return new Configurer() {
 
-									@Override
-									public Object uniqueIdentifier() {
-										return "";
-									}
+										@Override
+										public Object uniqueIdentifier() {
+											return "";
+										}
 
-									@Override
-									public Collection<String> getAttributes() {
-										return singletonList("port");
-									}
+										@Override
+										public Collection<String> getAttributes() {
+											return singletonList("port");
+										}
 
-									@Override
-									public ConfigAttribute getAttribute(String key) {
-										return configAttributeOfName(key);
-									}
+										@Override
+										public ConfigAttribute getAttribute(String key) {
+											return configAttributeOfName(key);
+										}
 
-									@Override
-									public Link newLink() {
-										return new ConnectionBasedLink(proxySideConnection,
-												new ArdulinkProtocol2().newByteStreamProcessor());
-									}
+										@Override
+										public Link newLink() {
+											return new ConnectionBasedLink(proxySideConnection,
+													new ArdulinkProtocol2().newByteStreamProcessor());
+										}
 
-								};
-							}
+									};
+								}
 
-							private ConfigAttribute configAttributeOfName(String key) {
-								ConfigAttribute attribute = mock(ConfigAttribute.class);
-								when(attribute.getName()).thenReturn(key);
-								return attribute;
-							}
+								private ConfigAttribute configAttributeOfName(String key) {
+									ConfigAttribute attribute = mock(ConfigAttribute.class);
+									when(attribute.getName()).thenReturn(key);
+									return attribute;
+								}
 
-						};
-					}
-				}.execute(freePort);
+							};
+						}
+					}.execute(freePort);
+				} catch (IOException e) {
+					propagate(e);
+				}
 			}
 		}.start();
 
