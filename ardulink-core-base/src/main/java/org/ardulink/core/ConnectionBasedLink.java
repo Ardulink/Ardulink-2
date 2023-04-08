@@ -25,7 +25,6 @@ import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digita
 import static org.ardulink.core.proto.api.MessageIdHolders.NO_ID;
 import static org.ardulink.core.proto.api.MessageIdHolders.addMessageId;
 import static org.ardulink.core.proto.api.MessageIdHolders.toHolder;
-import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -180,7 +179,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 				}
 			} while (stopWatch.getTime(timeUnit) < wait);
 		} catch (InterruptedException e) {
-			throw propagate(e);
+			Thread.currentThread().interrupt();
 		} finally {
 			this.connection.removeListener(listener);
 		}

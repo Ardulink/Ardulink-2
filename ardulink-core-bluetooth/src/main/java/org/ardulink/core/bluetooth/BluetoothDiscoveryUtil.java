@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Semaphore;
 
 import javax.bluetooth.BluetoothStateException;
 import javax.bluetooth.DataElement;
@@ -25,17 +26,14 @@ public class BluetoothDiscoveryUtil {
 	private static final UUID SERIAL_PORT_SERVICE = new UUID(0x1101);
 
 	public static Map<String, ServiceRecord> getDevices() {
-		// TODO should be replaced by Semaphore
-		Object lock = new Object();
+		Semaphore semaphore = new Semaphore(0);
 		List<RemoteDevice> devices = new ArrayList<>();
 		Map<String, ServiceRecord> ports = new HashMap<>();
-		DiscoveryListener listener = listener(devices, ports, lock);
+		DiscoveryListener listener = listener(devices, ports, semaphore);
 		DiscoveryAgent agent = getLocalDevice().getDiscoveryAgent();
 		try {
 			agent.startInquiry(DiscoveryAgent.GIAC, listener);
-			synchronized (lock) {
-				lock.wait();
-			}
+			semaphore.acquire();
 		} catch (Exception e) {
 			throw propagate(e);
 		}
@@ -43,9 +41,7 @@ public class BluetoothDiscoveryUtil {
 		for (RemoteDevice device : devices) {
 			try {
 				agent.searchServices(serviceName(), serialPortService(), device, listener);
-				synchronized (lock) {
-					lock.wait();
-				}
+				semaphore.acquire();
 			} catch (Exception e) {
 				throw propagate(e);
 			}
@@ -54,7 +50,7 @@ public class BluetoothDiscoveryUtil {
 	}
 
 	private static DiscoveryListener listener(List<RemoteDevice> devices, Map<String, ServiceRecord> ports,
-			Object lock) {
+			Semaphore semaphore) {
 		return new DiscoveryListener() {
 
 			private final Map<RemoteDevice, ServiceRecord[]> services = new HashMap<>();
@@ -66,9 +62,7 @@ public class BluetoothDiscoveryUtil {
 
 			@Override
 			public void inquiryCompleted(int arg0) {
-				synchronized (lock) {
-					lock.notify();
-				}
+				semaphore.release();
 			}
 
 			@Override
@@ -79,9 +73,7 @@ public class BluetoothDiscoveryUtil {
 						ports.put(getName(entry.getKey()), service);
 					}
 				}
-				synchronized (lock) {
-					lock.notify();
-				}
+				semaphore.release();
 			}
 
 			public String getName(RemoteDevice remoteDevice) {
