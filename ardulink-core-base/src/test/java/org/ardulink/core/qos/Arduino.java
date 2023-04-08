@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 import org.ardulink.core.qos.ArduinoDouble.Adder;
 import org.ardulink.core.qos.ArduinoDouble.RegexAdder;
-import org.ardulink.core.qos.ArduinoDouble.WaitThenDoBuilder;
+import org.ardulink.core.qos.ArduinoDouble.ExecRunnableThenDoBuilder;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
@@ -75,7 +75,7 @@ public class Arduino implements AfterEachCallback {
 		return arduinoDouble.whenReceive(pattern);
 	}
 
-	public WaitThenDoBuilder after(int i, TimeUnit timeUnit) {
+	public ExecRunnableThenDoBuilder after(int i, TimeUnit timeUnit) {
 		return arduinoDouble.after(i, timeUnit);
 	}
 

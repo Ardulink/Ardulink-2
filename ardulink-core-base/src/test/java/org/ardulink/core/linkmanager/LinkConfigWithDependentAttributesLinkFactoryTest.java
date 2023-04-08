@@ -16,7 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
-import static org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.withRegistered;
+import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.URIs.newURI;
 import static org.assertj.core.api.Assertions.assertThat;

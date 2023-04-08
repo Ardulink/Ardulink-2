@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.ardulink.util.Lists;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -153,11 +152,6 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback{
 	}
 
 	public List<String> getReceived() {
-		try {
-			TimeUnit.MILLISECONDS.sleep(50);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
 		return received;
 	}
 

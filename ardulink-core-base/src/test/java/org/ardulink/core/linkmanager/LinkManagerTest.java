@@ -17,13 +17,11 @@ limitations under the License.
 package org.ardulink.core.linkmanager;
 
 import static java.util.Arrays.asList;
-import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
-import static org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.withRegistered;
+import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.ardulink.util.URIs.newURI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -47,29 +45,7 @@ import org.junit.jupiter.api.Test;
  * [adsense]
  *
  */
-public class LinkManagerTest {
-
-	@Alias({ "aliasLinkAlias", AliasUsingLinkFactory.ALREADY_TAKEN_NAME })
-	public static class AliasUsingLinkFactory implements LinkFactory<LinkConfig> {
-
-		protected static final String ALREADY_TAKEN_NAME = DummyLinkFactory.DUMMY_LINK_NAME;
-
-		@Override
-		public String getName() {
-			return "aliasLink";
-		}
-
-		@Override
-		public Link newLink(LinkConfig config) {
-			return mock(Link.class);
-		}
-
-		@Override
-		public LinkConfig newLinkConfig() {
-			return NO_ATTRIBUTES;
-		}
-
-	}
+class LinkManagerTest {
 
 	LinkManager sut = LinkManager.getInstance();
 
@@ -120,7 +96,8 @@ public class LinkManagerTest {
 
 	@Test
 	void canLoadDummyLinkViaAlias() throws Throwable {
-		withRegistered(new AliasUsingLinkFactory()).execute(() -> sut.getConfigurer(aliasUri()));
+		withRegistered(new AliasUsingLinkFactory())
+				.execute(() -> assertThat(sut.getConfigurer(aliasUri())).isNotNull());
 	}
 
 	@Test

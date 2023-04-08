@@ -8,7 +8,7 @@ import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.util.Lists;
 import org.junit.jupiter.api.function.Executable;
 
-public class LinkFactoriesProvider4Test implements LinkFactoriesProvider {
+public class DynamicLinkFactoriesProvider implements LinkFactoriesProvider {
 
 	public static class Executor {
 
@@ -28,8 +28,6 @@ public class LinkFactoriesProvider4Test implements LinkFactoriesProvider {
 		}
 
 	}
-
-	
 
 	private static final ThreadLocal<List<LinkFactory>> factories = new ThreadLocal<List<LinkFactory>>() {
 		@Override

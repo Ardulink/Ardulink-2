@@ -43,7 +43,7 @@ import org.ardulink.util.Lists;
 public class ArduinoDouble implements Closeable {
 
 	private static final String NO_RESPONSE = null;
-	
+
 	interface ReponseGenerator {
 
 		boolean matches(String received);
@@ -125,20 +125,18 @@ public class ArduinoDouble implements Closeable {
 
 	}
 
-	public class WaitThenDoBuilder {
+	public class ExecRunnableThenDoBuilder {
 
-		private int i;
-		private TimeUnit timeUnit;
+		private final Runnable runnable;
 
-		public WaitThenDoBuilder(int i, TimeUnit timeUnit) {
-			this.i = i;
-			this.timeUnit = timeUnit;
+		public ExecRunnableThenDoBuilder(Runnable runnable) {
+			this.runnable = runnable;
 		}
 
 		public void send(String message) {
 			newSingleThreadExecutor().submit(() -> {
 				try {
-					timeUnit.sleep(i);
+					runnable.run();
 					ArduinoDouble.this.send(message);
 				} catch (Exception e) {
 					throw propagate(e);
@@ -161,9 +159,9 @@ public class ArduinoDouble implements Closeable {
 
 		os2 = new PipedOutputStream(is2);
 		streamReader = new StreamReader(is1) {
-			
+
 			private byte[] bytes = new byte[0];
-			
+
 			@Override
 			protected void received(byte[] bytes) throws Exception {
 				this.bytes = concat(this.bytes, bytes);
@@ -205,8 +203,14 @@ public class ArduinoDouble implements Closeable {
 		return new RegexAdder(pattern);
 	}
 
-	public WaitThenDoBuilder after(int i, TimeUnit timeUnit) {
-		return new WaitThenDoBuilder(i, timeUnit);
+	public ExecRunnableThenDoBuilder after(int amount, TimeUnit timeUnit) {
+		return new ExecRunnableThenDoBuilder(() -> {
+			try {
+				timeUnit.sleep(amount);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		});
 	}
 
 	@Override

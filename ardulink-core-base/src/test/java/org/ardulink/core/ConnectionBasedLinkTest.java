@@ -249,7 +249,7 @@ class ConnectionBasedLinkTest {
 		});
 		simulateArduinoSend(message);
 		waitUntilRead();
-		assertThat(sb.toString()).isEqualTo(message + "\n");
+		assertThat(sb).hasToString(message + "\n");
 	}
 
 	@Test
@@ -264,8 +264,7 @@ class ConnectionBasedLinkTest {
 		int pin = anyPositive(int.class);
 		int value = anyPositive(int.class);
 		this.link.switchAnalogPin(analogPin(pin), value);
-		assertThat(sb.toString())
-				.isEqualTo(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(pin).withValue(value) + "\n");
+		assertThat(sb).hasToString(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(pin).withValue(value) + "\n");
 	}
 
 	@Test
@@ -328,13 +327,13 @@ class ConnectionBasedLinkTest {
 		});
 		this.link.close();
 		this.link.switchAnalogPin(analogPin(anyPositive(int.class)), anyPositive(int.class));
-		assertThat(sb.toString()).isEmpty();
+		assertThat(sb).isEmpty();
 	}
 
 	private ListAssert<PinValueChangedEvent> assertThatEvents(List<PinValueChangedEvent> events) {
 		return assertThat(events).usingElementComparator(comparator());
 	}
-	
+
 	private int anyPositive(Class<? extends Number> numClass) {
 		return 42;
 	}

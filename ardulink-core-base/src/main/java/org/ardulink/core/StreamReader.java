@@ -41,54 +41,49 @@ public abstract class StreamReader implements Closeable {
 
 	private Thread thread;
 
-	public StreamReader(InputStream inputStream) {
+	protected StreamReader(InputStream inputStream) {
 		this.inputStream = inputStream;
 	}
 
 	public void runReaderThread(ByteStreamProcessor byteStreamProcessor) {
 		this.thread = new Thread() {
-
-			{
-				setDaemon(true);
-				start();
-			}
-
 			@Override
 			public void run() {
 				readUntilClosed(byteStreamProcessor);
 			}
-
 		};
+		this.thread.setDaemon(true);
+		this.thread.start();
 	}
 
 	public void runReaderThread() {
 		this.thread = new Thread() {
-			
-			{
-				setDaemon(true);
-				start();
-			}
-			
 			@Override
 			public void run() {
 				readUntilClosed();
 			}
-			
+
 		};
+		this.thread.setDaemon(true);
+		this.thread.start();
 	}
 
 	public void readUntilClosed() {
 		try {
 			int read;
 			while ((read = inputStream.read()) != -1 && !isInterrupted()) {
-				try {
-					received(new byte[] { (byte) read });
-				} catch (Exception e) {
-					logger.error("Error while retrieving data", e);
-				}
+				received(read);
 			}
 		} catch (Exception e) {
 			logger.error("Error while Reader Initialization", e);
+		}
+	}
+
+	private void received(int read) {
+		try {
+			received(new byte[] { (byte) read });
+		} catch (Exception e) {
+			logger.error("Error while retrieving data", e);
 		}
 	}
 
