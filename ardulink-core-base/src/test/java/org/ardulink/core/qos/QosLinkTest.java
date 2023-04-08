@@ -56,14 +56,18 @@ class QosLinkTest {
 
 	@AfterEach
 	void tearDown() throws IOException {
-		qosLink.close();
+		if (qosLink != null) {
+			qosLink.close();
+		}
 	}
 
 	@Test
 	void canDoGuranteedDelivery() throws Exception {
 		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).thenRespond(lf("alp://rply/ok?id=%s"));
 		qosLink = newQosLink(connectionTo(arduino), 15, MINUTES);
-		qosLink.sendNoTone(analogPin(3));
+		assertThat(qosLink.sendNoTone(analogPin(3))).isEqualTo(1);
+		assertThat(qosLink.sendNoTone(analogPin(3))).isEqualTo(2);
+		assertThat(qosLink.sendNoTone(analogPin(3))).isEqualTo(3);
 	}
 
 	@Test
@@ -91,11 +95,9 @@ class QosLinkTest {
 		arduino.whenReceive(regex(lf("alp:\\/\\/tone\\/4\\/5\\/6\\?id\\=(\\d)")))
 				.thenRespond(lf("alp://rply/ok?id=%s"));
 		qosLink = newQosLink(connectionTo(arduino), 500, MILLISECONDS);
-		try {
-			qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2).withDuration(3, MILLISECONDS));
-		} catch (IllegalStateException e) {
-			assertThat(e).hasMessageContaining("No response");
-		}
+		IllegalStateException exception = assertThrows(IllegalStateException.class,
+				() -> qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2).withDuration(3, MILLISECONDS)));
+		assertThat(exception).hasMessageContaining("No response");
 		qosLink.sendTone(Tone.forPin(analogPin(4)).withHertz(5).withDuration(6, MILLISECONDS));
 	}
 

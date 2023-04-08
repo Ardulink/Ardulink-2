@@ -17,24 +17,28 @@ limitations under the License.
 package org.ardulink.core.mqtt;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.function.Predicate.isEqual;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
-import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
+import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
+import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
 import static org.ardulink.util.ServerSockets.freePort;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsCollectionContaining.hasItems;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.ardulink.core.Link;
-import org.ardulink.core.Pin;
+import org.ardulink.core.Pin.AnalogPin;
+import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.EventListenerAdapter;
 import org.ardulink.core.events.FilteredEventListenerAdapter;
+import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
 import org.ardulink.core.mqtt.duplicated.Message;
 import org.junit.jupiter.api.AfterEach;
@@ -110,7 +114,7 @@ class MqttIntegrationTest {
 	void canSwitchDigitalPin(TestConfig config) throws IOException {
 		init(config);
 		link.switchDigitalPin(digitalPin(30), true);
-		mqttClient.awaitMessages(is(Collections.singletonList(new Message(topic("D30"), "true"))));
+		mqttClient.awaitMessages(isEqual(singletonList(new Message(topic("D30"), "true"))));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -118,7 +122,7 @@ class MqttIntegrationTest {
 	void canSwitchAnalogPin(TestConfig config) throws IOException {
 		init(config);
 		link.switchAnalogPin(analogPin(12), 34);
-		mqttClient.awaitMessages(is(Collections.singletonList(new Message(topic("A12"), "34"))));
+		mqttClient.awaitMessages(isEqual(singletonList(new Message(topic("A12"), "34"))));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -126,7 +130,7 @@ class MqttIntegrationTest {
 	void sendsControlMessageWhenAddingAnalogListener(TestConfig config) throws IOException {
 		init(config);
 		link.addListener(new FilteredEventListenerAdapter(analogPin(1), delegate()));
-		mqttClient.awaitMessages(is(Collections.singletonList(new Message(topic("system/listening/A1"), "true"))));
+		mqttClient.awaitMessages(isEqual(singletonList(new Message(topic("system/listening/A1"), "true"))));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -134,7 +138,7 @@ class MqttIntegrationTest {
 	void sendsControlMessageWhenAddingDigitalListener(TestConfig config) throws IOException {
 		init(config);
 		link.addListener(new FilteredEventListenerAdapter(digitalPin(2), delegate()));
-		mqttClient.awaitMessages(is(Collections.singletonList(new Message(topic("system/listening/D2"), "true"))));
+		mqttClient.awaitMessages(isEqual(singletonList(new Message(topic("system/listening/D2"), "true"))));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -146,13 +150,13 @@ class MqttIntegrationTest {
 		link.addListener(listener);
 		Message m1 = new Message(topic("system/listening/A1"), "true");
 		// at the moment this is sent twice (see AbstractListenerLink)
-		mqttClient.awaitMessages(is(asList(m1, m1)));
+		mqttClient.awaitMessages(isEqual(asList(m1, m1)));
 		mqttClient.clear();
 		link.removeListener(listener);
-		mqttClient.awaitMessages(is(Collections.emptyList()));
+		mqttClient.awaitMessages(isEqual(emptyList()));
 		link.removeListener(listener);
 		Message m2 = new Message(topic("system/listening/A1"), "false");
-		mqttClient.awaitMessages(is(is(Collections.singletonList(m2))));
+		mqttClient.awaitMessages(isEqual(singletonList(m2)));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -164,13 +168,13 @@ class MqttIntegrationTest {
 		link.addListener(listener);
 		Message m1 = new Message(topic("system/listening/D1"), "true");
 		// at the moment this is sent twice (see AbstractListenerLink)
-		mqttClient.awaitMessages(is(asList(m1, m1)));
+		mqttClient.awaitMessages(isEqual(asList(m1, m1)));
 		mqttClient.clear();
 		link.removeListener(listener);
-		mqttClient.awaitMessages(is(Collections.emptyList()));
+		mqttClient.awaitMessages(isEqual(emptyList()));
 		link.removeListener(listener);
 		Message m2 = new Message(topic("system/listening/D1"), "false");
-		mqttClient.awaitMessages(is(Collections.singletonList(m2)));
+		mqttClient.awaitMessages(isEqual(singletonList(m2)));
 	}
 
 	private String topic(String pin) {
@@ -179,30 +183,32 @@ class MqttIntegrationTest {
 
 	// ---------------------------------------------------------------------------
 
-	@SuppressWarnings("unchecked")
 	@ParameterizedTest(name = "{index} {0}")
 	@MethodSource("data")
 	void canSwitchDigitalPinViaBroker(TestConfig config) throws Exception {
 		init(config);
-		Pin pin = digitalPin(1);
+		DigitalPin pin = digitalPin(1);
 		boolean value = true;
 		EventCollector eventCollector = new EventCollector();
 		link.addListener(eventCollector);
 		mqttClient.switchPin(pin, value);
-		eventCollector.awaitEvents(DIGITAL, hasItems(eventFor(pin).withValue(value)));
+		eventCollector.awaitEvents(DIGITAL, contains(digitalPinValueChanged(pin, value)));
 	}
 
-	@SuppressWarnings("unchecked")
 	@ParameterizedTest(name = "{index} {0}")
 	@MethodSource("data")
 	void canSwitchAnalogPinViaBroker(TestConfig config) throws Exception {
 		init(config);
-		Pin pin = analogPin(2);
+		AnalogPin pin = analogPin(2);
 		int value = 123;
 		EventCollector eventCollector = new EventCollector();
 		link.addListener(eventCollector);
 		mqttClient.switchPin(pin, value);
-		eventCollector.awaitEvents(ANALOG, hasItems(eventFor(pin).withValue(value)));
+		eventCollector.awaitEvents(ANALOG, contains(analogPinValueChanged(pin, value)));
+	}
+
+	private Predicate<? super List<? extends PinValueChangedEvent>> contains(PinValueChangedEvent event) {
+		return l -> l.contains(event);
 	}
 
 	private EventListenerAdapter delegate() {

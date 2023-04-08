@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.events;
 
+import java.util.Objects;
+
 import org.ardulink.core.Pin.DigitalPin;
 
 /**
@@ -48,6 +50,23 @@ public class DefaultDigitalPinValueChangedEvent implements DigitalPinValueChange
 	@Override
 	public Boolean getValue() {
 		return this.value;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(pin, value);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DefaultDigitalPinValueChangedEvent other = (DefaultDigitalPinValueChangedEvent) obj;
+		return Objects.equals(pin, other.pin) && Objects.equals(value, other.value);
 	}
 
 	@Override

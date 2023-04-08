@@ -1,4 +1,4 @@
-package org.ardulink.core.protong;
+package org.ardulink.core.proto;
 
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;

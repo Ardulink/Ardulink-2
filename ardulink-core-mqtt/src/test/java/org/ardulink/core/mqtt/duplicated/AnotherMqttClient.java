@@ -21,9 +21,9 @@ import static java.time.Duration.ofSeconds;
 import static java.util.Collections.unmodifiableMap;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Predicate;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
@@ -39,7 +40,6 @@ import org.fusesource.mqtt.client.Future;
 import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.Topic;
-import org.hamcrest.Matcher;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -120,8 +120,9 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 		return this;
 	}
 
-	public void awaitMessages(Matcher<List<Message>> matcher) {
-		await().timeout(ofSeconds(10)).pollInterval(ofMillis(100)).untilAsserted(() -> assertThat(messages, matcher));
+	public void awaitMessages(Predicate<? super List<? extends Message>> predicate) {
+		await().timeout(ofSeconds(10)).pollInterval(ofMillis(100))
+				.untilAsserted(() -> assertThat(messages).matches(predicate));
 	}
 
 	public void clear() {
@@ -147,7 +148,7 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 
 	public void close() throws IOException {
 		if (this.connection.isConnected()) {
-			exec(connection.unsubscribe(new String[] {"#"}));
+			exec(connection.unsubscribe(new String[] { "#" }));
 			exec(this.connection.disconnect());
 		}
 	}

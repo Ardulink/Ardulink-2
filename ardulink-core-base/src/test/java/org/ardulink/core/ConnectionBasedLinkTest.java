@@ -17,11 +17,11 @@ limitations under the License.
 package org.ardulink.core;
 
 import static java.time.Duration.ofMillis;
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.nullsFirst;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
+import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
@@ -40,14 +40,11 @@ import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.ardulink.core.Connection.ListenerAdapter;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
-import org.ardulink.core.events.DefaultAnalogPinValueChangedEvent;
-import org.ardulink.core.events.DefaultDigitalPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.EventListenerAdapter;
@@ -57,7 +54,6 @@ import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.Joiner;
 import org.ardulink.util.Lists;
-import org.assertj.core.api.ListAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -155,7 +151,7 @@ class ConnectionBasedLinkTest {
 		String message = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value);
 		simulateArduinoSend(message);
 		waitUntilRead();
-		assertThatEvents(analogEvents).contains(new DefaultAnalogPinValueChangedEvent(analogPin(pin), value));
+		assertThat(analogEvents).contains(analogPinValueChanged(analogPin(pin), value));
 	}
 
 	@Test
@@ -179,7 +175,7 @@ class ConnectionBasedLinkTest {
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
 		simulateArduinoSend(message);
 		waitUntilRead();
-		assertThatEvents(digitalEvents).contains(new DefaultDigitalPinValueChangedEvent(digitalPin(pin), true));
+		assertThat(digitalEvents).contains(digitalPinValueChanged(digitalPin(pin), true));
 	}
 
 	@Test
@@ -330,10 +326,6 @@ class ConnectionBasedLinkTest {
 		assertThat(sb).isEmpty();
 	}
 
-	private ListAssert<PinValueChangedEvent> assertThatEvents(List<PinValueChangedEvent> events) {
-		return assertThat(events).usingElementComparator(comparator());
-	}
-
 	private int anyPositive(Class<? extends Number> numClass) {
 		return 42;
 	}
@@ -366,12 +358,6 @@ class ConnectionBasedLinkTest {
 
 	private void waitUntilRead() {
 		await().pollDelay(ofMillis(10)).until(() -> bytesNotYetRead.get() == 0);
-	}
-
-	private static Comparator<PinValueChangedEvent> comparator() {
-		Comparator<PinValueChangedEvent> byType = nullsFirst(comparing(p -> p.getPin().getType()));
-		Comparator<PinValueChangedEvent> byPinNum = comparing(p -> p.getPin().pinNum());
-		return byType.thenComparing(byPinNum);
 	}
 
 }

@@ -16,26 +16,24 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.function.Predicate.isEqual;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.DIGITAL;
-import static org.ardulink.core.mqtt.duplicated.EventMatchers.eventFor;
+import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
 import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNull.notNullValue;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.ConnectionListener;
@@ -43,10 +41,7 @@ import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
-import org.ardulink.core.mqtt.duplicated.EventMatchers.PinValueChangedEventMatcher;
 import org.ardulink.core.mqtt.duplicated.Message;
-import org.hamcrest.Matcher;
-import org.hamcrest.core.IsCollectionContaining;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -140,7 +135,7 @@ class MqttLinkIntegrationTest {
 			breedReconnectedState(link);
 
 			link.switchAnalogPin(analogPin(8), 9);
-			mqttClient.awaitMessages(is(singletonList(new Message(topic("A8"), "9"))));
+			mqttClient.awaitMessages(isEqual(singletonList(new Message(topic("A8"), "9"))));
 		}
 	}
 
@@ -155,14 +150,14 @@ class MqttLinkIntegrationTest {
 			breedReconnectedState(link);
 
 			mqttClient.switchPin(digitalPin(2), true);
-			eventCollector.awaitEvents(DIGITAL, hasItems(eventFor(digitalPin(2)).withValue(true)));
+			eventCollector.awaitEvents(DIGITAL, contains(digitalPinValueChanged(digitalPin(2), true)));
 		}
 	}
 
 	private void breedReconnectedState(Link link) throws IOException {
 		TrackStateConnectionListener connectionListener = new TrackStateConnectionListener();
 		((AbstractListenerLink) extractDelegated(link)).addConnectionListener(connectionListener);
-		assertThat(connectionListener.isConnected().get()).isTrue();
+		assertThat(connectionListener.isConnected()).isTrue();
 
 		restartBroker(connectionListener);
 		waitForLinkReconnect(connectionListener);
@@ -179,22 +174,22 @@ class MqttLinkIntegrationTest {
 	}
 
 	private void waitForLinkReconnect(TrackStateConnectionListener connectionListener) {
-		awaitConnectionIs(connectionListener, is(true));
+		awaitConnectionIs(connectionListener, true);
 	}
 
 	private void restartBroker(TrackStateConnectionListener connectionListener) throws IOException {
 		this.broker.stop();
-		awaitConnectionIs(connectionListener, is(false));
+		awaitConnectionIs(connectionListener, false);
 		this.broker.start();
 	}
 
-	private void awaitConnectionIs(TrackStateConnectionListener connectionListener, Matcher<Boolean> matcher) {
+	private void awaitConnectionIs(TrackStateConnectionListener connectionListener, boolean connected) {
 		await().timeout(ofSeconds(TIMEOUT * 2)).pollInterval(ofMillis(100))
-				.untilAtomic(connectionListener.isConnected(), matcher);
+				.until(() -> connectionListener.isConnected().get(), t -> t == connected);
 	}
 
-	private static Matcher<? super List<PinValueChangedEvent>> hasItems(PinValueChangedEventMatcher... matchers) {
-		return IsCollectionContaining.hasItems(matchers);
+	private Predicate<? super List<? extends PinValueChangedEvent>> contains(PinValueChangedEvent event) {
+		return l -> l.contains(event);
 	}
 
 }

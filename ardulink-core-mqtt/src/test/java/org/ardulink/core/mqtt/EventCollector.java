@@ -21,10 +21,11 @@ import static java.time.Duration.ofSeconds;
 import static java.util.Collections.emptyList;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.ardulink.core.Pin.Type;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
@@ -32,7 +33,6 @@ import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.util.ListMultiMap;
-import org.hamcrest.Matcher;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -56,9 +56,9 @@ public class EventCollector implements EventListener {
 		events.put(DIGITAL, event);
 	}
 
-	public void awaitEvents(Type type, Matcher<? super List<PinValueChangedEvent>> matcher) {
+	public void awaitEvents(Type type, Predicate<? super List<? extends PinValueChangedEvent>> predicate) {
 		await().pollInterval(ofMillis(100)).timeout(ofSeconds(10))
-				.untilAsserted(() -> assertThat(events.asMap().getOrDefault(type, emptyList()), matcher));
+				.untilAsserted(() -> assertThat(events.asMap().getOrDefault(type, emptyList())).matches(predicate));
 	}
 
 }
