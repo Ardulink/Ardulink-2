@@ -82,13 +82,12 @@ public class NetworkProxyServer {
 		@Override
 		public void execute(int portNumber) throws IOException {
 			InetAddress localHost = InetAddress.getLocalHost();
-			Socket socket = new Socket("127.0.0.1", portNumber);
-			socket.setSoTimeout((int) SECONDS.toMillis(5));
-			PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-			writer.println(STOP_SERVER_CMD);
-			writer.close();
-			socket.close();
-			System.out.println();
+			try (Socket socket = new Socket("127.0.0.1", portNumber)) {
+				socket.setSoTimeout((int) SECONDS.toMillis(5));
+				try (PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
+					writer.println(STOP_SERVER_CMD);
+				}
+			}
 			logger.info(NAME + NAME + " stop requested");
 		}
 
