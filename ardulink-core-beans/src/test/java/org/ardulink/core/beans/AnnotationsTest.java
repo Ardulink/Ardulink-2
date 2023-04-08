@@ -136,8 +136,8 @@ class AnnotationsTest {
 	@LapsedWith(module = JDK8, value = "Streams")
 	private void hasAnnotations(Attribute attribute, Class<? extends Annotation>... annoClasses) {
 		for (Class<? extends Annotation> element : annoClasses) {
-			assertThat(attribute.getAnnotation(element)).isNotNull()
-					.withFailMessage(element.getSimpleName() + " not found");
+			assertThat(attribute.getAnnotation(element)).withFailMessage(() -> element.getSimpleName() + " not found")
+					.isNotNull();
 		}
 	}
 

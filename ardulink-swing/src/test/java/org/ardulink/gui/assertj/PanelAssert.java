@@ -15,7 +15,6 @@ import javax.swing.JTextField;
 
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.TestFactory;
 
 public class PanelAssert extends AbstractAssert<PanelAssert, Component> {
 
@@ -75,7 +74,6 @@ public class PanelAssert extends AbstractAssert<PanelAssert, Component> {
 
 	private static final int COMPONENTS_PER_ROW = 3;
 
-	@TestFactory
 	public static PanelAssert assertThat(JPanel panel) {
 		return new PanelAssert(panel);
 	}
@@ -91,8 +89,8 @@ public class PanelAssert extends AbstractAssert<PanelAssert, Component> {
 		int from = index * COMPONENTS_PER_ROW;
 		List<Component> components = Arrays.asList(panel.getComponents());
 		int rowCount = components.size() / COMPONENTS_PER_ROW;
-		Assertions.assertThat(index).isLessThan(rowCount)
-				.withFailMessage(() -> components + " has " + rowCount + " rows");
+		Assertions.assertThat(index).withFailMessage(() -> components + " has " + rowCount + " rows")
+				.isLessThan(rowCount);
 		return new RowAssert(components.subList(from, from + COMPONENTS_PER_ROW - 1));
 	}
 

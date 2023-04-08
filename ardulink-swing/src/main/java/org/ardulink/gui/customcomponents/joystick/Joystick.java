@@ -116,7 +116,7 @@ public class Joystick extends JPanel implements Linkable {
     	joyWidth = Math.min(width, height) - BORDER_SIZE;
         joyHeight = joyWidth;
 
-        joyCenterX = width / 2;
+        joyCenterX = ((float) width) / 2;
         joyCenterY = height;
         setJoySize(joyWidth);		
     }
@@ -261,8 +261,8 @@ public class Joystick extends JPanel implements Linkable {
         joyHeight = joyWidth;
         setPreferredSize(new Dimension((int) joyWidth + BORDER_SIZE,
                 (int) joyHeight + BORDER_SIZE));
-        joyCenterX = getSize().width / 2;
-        joyCenterY = getSize().height / 2;
+        joyCenterX = ((float) getSize().width) / 2;
+        joyCenterY = ((float) getSize().height) / 2;
         this.joySize = joyWidth / 2;
 	}
 
