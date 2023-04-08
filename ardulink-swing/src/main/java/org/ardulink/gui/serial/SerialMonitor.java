@@ -15,6 +15,7 @@ limitations under the License.
 */
 package org.ardulink.gui.serial;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.awt.BorderLayout;
@@ -48,20 +49,20 @@ import org.ardulink.gui.Linkable;
 public class SerialMonitor extends JPanel implements Linkable  {
 
 	private static final long serialVersionUID = -3662905914867077959L;
-	private ConnectionBasedLink link;
 	private JTextArea sentTextArea;
 	private JTextArea receivedTextArea;
 	private JTextField messageTextField;
-	private final Listener listener = new Listener() {
+	private transient ConnectionBasedLink link;
+	private final transient Listener listener = new Listener() {
 
 		@Override
 		public void received(byte[] bytes) throws IOException {
-			receivedTextArea.append("\n" + new String(bytes));
+			receivedTextArea.append("\n" + new String(bytes, UTF_8));
 		}
 
 		@Override
 		public void sent(byte[] bytes) throws IOException {
-			sentTextArea.append(new String(bytes));
+			sentTextArea.append(new String(bytes, UTF_8));
 		}
 
 	};

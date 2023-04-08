@@ -53,9 +53,9 @@ public class ConnectionStatus extends JPanel implements Linkable {
 				+ iconName));
 	}
 
-	private Link link = Link.NO_LINK;
+	private transient Link link = Link.NO_LINK;
 
-	private final ConnectionListener connectionListener = new ConnectionListener() {
+	private final transient ConnectionListener connectionListener = new ConnectionListener() {
 
 		@Override
 		public void connectionLost() {

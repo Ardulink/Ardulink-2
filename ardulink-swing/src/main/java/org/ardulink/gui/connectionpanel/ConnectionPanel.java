@@ -65,11 +65,11 @@ public class ConnectionPanel extends JPanel implements Linkable {
 
 	private final JComboBox<String> uris = createURICombo();
 
-	private final PanelBuilder fallback = new GenericPanelBuilder();
+	private final transient PanelBuilder fallback = new GenericPanelBuilder();
 
-	private Link link;
+	private transient Link link;
 
-	private Configurer configurer;
+	private transient Configurer configurer;
 
 	private JPanel panel;
 

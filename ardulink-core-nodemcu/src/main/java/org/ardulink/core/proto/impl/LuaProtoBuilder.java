@@ -17,6 +17,7 @@ package org.ardulink.core.proto.impl;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.regex.Pattern.quote;
+import static java.util.stream.Collectors.joining;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
@@ -27,7 +28,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 import org.ardulink.util.InputStreams;
-import org.ardulink.util.Joiner;
 
 public class LuaProtoBuilder {
 
@@ -85,16 +85,13 @@ public class LuaProtoBuilder {
 			}
 		}, //
 		CUSTOM_MESSAGE {
-			private final Joiner joiner = Joiner.on(" ");
-
 			@Override
 			public String message(LuaProtoBuilder builder) {
 				checkState(builder.pin == null, "pin must not specified");
 				checkNotNull(builder.values, "value has to be specified");
 				checkArgument(builder.values.length > 0,
 						"value contains no data");
-				return joiner.join(Arrays.asList(builder.values));
-
+				return Arrays.stream(builder.values).map(String::valueOf).collect(joining(" "));
 			}
 		}, //
 		START_LISTENING_DIGITAL {

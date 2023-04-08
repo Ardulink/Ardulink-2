@@ -49,7 +49,7 @@ import org.ardulink.legacy.Link;
  */
 public class RGBController extends JPanel implements Linkable {
 
-	private final DocumentListener colorTextFieldDocumentListener = new DocumentListener() {
+	private final transient DocumentListener colorTextFieldDocumentListener = new DocumentListener() {
 
 		@Override
 		public void removeUpdate(DocumentEvent e) {
@@ -105,7 +105,7 @@ public class RGBController extends JPanel implements Linkable {
 	private JTextField colorTextField;
 	private JCheckBox chckbxInverted;
 
-	private final PWMControllerListener redListener = new AbstractPWMControllerListener() {
+	private final transient PWMControllerListener redListener = new AbstractPWMControllerListener() {
 
 		@Override
 		protected Color makeColor(Color color, int value) {
@@ -114,7 +114,7 @@ public class RGBController extends JPanel implements Linkable {
 
 	};
 
-	private final AbstractPWMControllerListener greenListener = new AbstractPWMControllerListener() {
+	private final transient AbstractPWMControllerListener greenListener = new AbstractPWMControllerListener() {
 
 		@Override
 		protected Color makeColor(Color color, int value) {
@@ -123,7 +123,7 @@ public class RGBController extends JPanel implements Linkable {
 
 	};
 
-	private final AbstractPWMControllerListener blueListener = new AbstractPWMControllerListener() {
+	private final transient AbstractPWMControllerListener blueListener = new AbstractPWMControllerListener() {
 
 		@Override
 		protected Color makeColor(Color color, int value) {

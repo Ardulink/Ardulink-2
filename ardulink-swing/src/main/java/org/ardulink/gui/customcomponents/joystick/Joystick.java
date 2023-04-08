@@ -49,7 +49,7 @@ import org.ardulink.util.Lists;
  */
 public class Joystick extends JPanel implements Linkable {
 
-	private Link link;
+	private transient Link link;
 	
 	private final List<PositionListener> positionListeners = Lists.newArrayList();
 	private String id = "none";
@@ -69,7 +69,7 @@ public class Joystick extends JPanel implements Linkable {
     private boolean isMouseTracking;
     private boolean leftMouseButton;
     private int mouseX, mouseY;
-    private Stroke lineStroke = new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+    private transient Stroke lineStroke = new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
     private final Point position;
     
     public Joystick() {

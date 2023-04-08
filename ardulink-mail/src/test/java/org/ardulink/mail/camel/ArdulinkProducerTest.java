@@ -33,6 +33,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultMessage;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -47,8 +49,6 @@ class ArdulinkProducerTest {
 
 	private void setup(String validSender, String commandName, List<String> commands) {
 		try {
-			CamelContext context = new DefaultCamelContext();
-			context.setTracing(true);
 			context.addRoutes(new RouteBuilder() {
 				@Override
 				public void configure() {
@@ -64,7 +64,6 @@ class ArdulinkProducerTest {
 
 			});
 			context.start();
-			ArdulinkProducerTest.this.context = context;
 			ArdulinkProducerTest.this.message = new DefaultMessage(context);
 		} catch (Exception e) {
 			throw propagate(e);
@@ -74,9 +73,15 @@ class ArdulinkProducerTest {
 	private static final String IN = "direct:in";
 	private static final String OUT = "mock:result";
 
+	private CamelContext context = new DefaultCamelContext();
 	private Message message;
-	private CamelContext context;
 
+	@BeforeEach
+	public void sezup() {
+		context.setTracing(true);
+	}
+
+	@AfterEach
 	public void tearDown() throws Exception {
 		context.stop();
 	}

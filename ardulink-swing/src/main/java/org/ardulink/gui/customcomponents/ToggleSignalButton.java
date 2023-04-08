@@ -46,7 +46,7 @@ public class ToggleSignalButton extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = -5162326079507604871L;
 
-	private Link link;
+	private transient Link link;
 
 	private JTextField textFieldOn;
 	private JToggleButton signalButton;

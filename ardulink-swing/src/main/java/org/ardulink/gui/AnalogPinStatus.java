@@ -55,26 +55,24 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	private JLabel valueLabel;
 	private JLabel voltValueLbl;
 	private JProgressBar progressBar;
-	private JComboBox minValueComboBox;
+	private JComboBox<Integer> minValueComboBox;
 	private IntMinMaxModel minValueComboBoxModel;
-	private JComboBox maxValueComboBox;
+	private JComboBox<Integer> maxValueComboBox;
 	private IntMinMaxModel maxValueComboBoxModel;
-	private JComboBox pinComboBox;
+	private JComboBox<Integer> pinComboBox;
 	private IntMinMaxModel pinComboBoxModel;
 	private JLabel lblPowerPinController;
 	private JToggleButton tglbtnSensor;
 	
-	private EventListener listener;
+	private transient EventListener listener;
 
 	private FilteredEventListenerAdapter listener() {
-		return new FilteredEventListenerAdapter(
-				analogPin(pinComboBoxModel.getSelectedItem().intValue()),
+		return new FilteredEventListenerAdapter(analogPin(pinComboBoxModel.getSelectedItem().intValue()),
 				new EventListenerAdapter() {
 					@Override
-					public void stateChanged(
-							AnalogPinValueChangedEvent event) {
+					public void stateChanged(AnalogPinValueChangedEvent event) {
 						Integer value = event.getValue();
-						valueLabel.setText(Integer.toString(value));
+						valueLabel.setText(String.valueOf(value));
 
 						float volt = (((float) value) * 5.0f) / 1023.0f;
 						voltValueLbl.setText(volt + "V");
@@ -86,7 +84,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 				});
 	}
 
-	private Link link;
+	private transient Link link;
 
 	/**
 	 * Create the panel.
@@ -100,21 +98,21 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		lblPowerPin.setBounds(10, 40, 59, 14);
 		add(lblPowerPin);
 	
-                // TODO define a method to be able to change the set of controllable pins. This way you can work with different boards than an Arduino UNO
+		// TODO define a method to be able to change the set of controllable pins. This way you can work with different boards than an Arduino UNO
 		// pinComboBox.setModel(new DefaultComboBoxModel(new String[] {"3", "5", "6", "9", "10", "11"}));
 		pinComboBoxModel = new IntMinMaxModel(0, 40);
-		pinComboBox = new JComboBox(pinComboBoxModel);
+		pinComboBox = new JComboBox<>(pinComboBoxModel);
 		pinComboBox.setSelectedItem(Integer.valueOf(0));
 		pinComboBox.setBounds(65, 36, 62, 22);
 		add(pinComboBox);
 		
 		maxValueComboBoxModel = new IntMinMaxModel(0, 1023).withLastItemSelected();
-		maxValueComboBox = new JComboBox(maxValueComboBoxModel);
+		maxValueComboBox = new JComboBox<>(maxValueComboBoxModel);
 		maxValueComboBox.setBounds(65, 65, 62, 22);
 		add(maxValueComboBox);
 
 		minValueComboBoxModel = new IntMinMaxModel(0, 1023).withFirstItemSelected();
-		minValueComboBox = new JComboBox(minValueComboBoxModel);
+		minValueComboBox = new JComboBox<>(minValueComboBoxModel);
 		minValueComboBox.setBounds(65, 217, 62, 22);
 		add(minValueComboBox);
 		

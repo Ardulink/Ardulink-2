@@ -39,6 +39,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -78,7 +79,7 @@ public class Console extends JFrame implements Linkable {
 	private KeyPressController keyControlPanel;
 	private ConnectionStatus connectionStatus;
 
-	private Link link;
+	private transient Link link;
 
 	private final List<Linkable> linkables = new LinkedList<>();
 
@@ -86,7 +87,7 @@ public class Console extends JFrame implements Linkable {
 
 	protected JButton btnConnect, btnDisconnect;
 
-	private final ConnectionListener connectionListener = new ConnectionListener() {
+	private transient final ConnectionListener connectionListener = new ConnectionListener() {
 
 		@Override
 		public void connectionLost() {
@@ -154,7 +155,7 @@ public class Console extends JFrame implements Linkable {
 	public Console() {
 		setIconImage(loadImage(Console.class, "icons/logo_icon.png").getImage());
 		setTitle("Ardulink Console");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setBounds(100, 100, 730, 620);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));

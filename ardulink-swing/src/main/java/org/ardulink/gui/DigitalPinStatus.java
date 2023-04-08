@@ -53,11 +53,11 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 
 	private JLabel lblStatelabel;
 	private JToggleButton tglbtnSensor;
-	private JComboBox pinComboBox;
+	private JComboBox<Integer> pinComboBox;
 	private IntMinMaxModel pinComboBoxModel;
 	private JLabel lblPin;
 
-	private Link link;
+	private transient Link link;
 
 	private static final String HIGH = "High";
 	private static final String LOW = "Low";
@@ -71,7 +71,7 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 			DigitalPinStatus.class.getResource(LOW_ICON_NAME));
 	private JPanel comboPanel;
 
-	private EventListener listener;
+	private transient EventListener listener;
 
 	private FilteredEventListenerAdapter listener() {
 		return new FilteredEventListenerAdapter(digitalPin(pinComboBoxModel
@@ -104,7 +104,7 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 		comboPanel.add(lblPin);
 
 		pinComboBoxModel = new IntMinMaxModel(2, 40);
-		pinComboBox = new JComboBox(pinComboBoxModel);
+		pinComboBox = new JComboBox<>(pinComboBoxModel);
 		comboPanel.add(pinComboBox);
 
 		tglbtnSensor = new JToggleButton("Sensor off");

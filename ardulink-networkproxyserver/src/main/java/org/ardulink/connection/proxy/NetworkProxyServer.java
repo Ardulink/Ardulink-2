@@ -45,28 +45,23 @@ public class NetworkProxyServer {
 	public static final String NAME = "Ardulink Network Proxy Server";
 
 	private interface Command {
-		void execute(int portNumber);
+		void execute(int portNumber) throws Exception;
 	}
 
 	public static class StartCommand implements Command {
 
 		@Override
-		public void execute(int portNumber) {
+		public void execute(int portNumber) throws IOException {
+			ServerSocket serverSocket = new ServerSocket(portNumber);
 			try {
-				ServerSocket serverSocket = new ServerSocket(portNumber);
-				try {
-					serverIsUp(portNumber);
-					while (true) {
-						new Thread(newConnection(serverSocket)).start();
-					}
-				} finally {
-					serverSocket.close();
+				serverIsUp(portNumber);
+				while (true) {
+					new Thread(newConnection(serverSocket)).start();
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.exit(-1);
+			} finally {
+				System.out.println(NAME + " stops.");
+				serverSocket.close();
 			}
-			System.out.println(NAME + " stops.");
 		}
 
 		protected void serverIsUp(int portNumber) {
@@ -82,19 +77,15 @@ public class NetworkProxyServer {
 	public static class StopCommand implements Command {
 
 		@Override
-		public void execute(int portNumber) {
-			try {
-				InetAddress localHost = InetAddress.getLocalHost();
-				Socket socket = new Socket("127.0.0.1", portNumber);
-				socket.setSoTimeout((int) SECONDS.toMillis(5));
-				PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-				writer.println(STOP_SERVER_CMD);
-				writer.close();
-				socket.close();
-				System.out.println(NAME + " stop requested.");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		public void execute(int portNumber) throws IOException {
+			InetAddress localHost = InetAddress.getLocalHost();
+			Socket socket = new Socket("127.0.0.1", portNumber);
+			socket.setSoTimeout((int) SECONDS.toMillis(5));
+			PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+			writer.println(STOP_SERVER_CMD);
+			writer.close();
+			socket.close();
+			System.out.println(NAME + " stop requested.");
 		}
 
 	}
@@ -109,11 +100,11 @@ public class NetworkProxyServer {
 	@Option(name = "-p", aliases = "--port", usage = "Local port to bind to")
 	private int portNumber = DEFAULT_LISTENING_PORT;
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		new NetworkProxyServer().doMain(args);
 	}
 
-	private void doMain(String[] args) {
+	private void doMain(String[] args) throws Exception {
 		CmdLineParser cmdLineParser = new CmdLineParser(this);
 		try {
 			cmdLineParser.parseArgument(args);

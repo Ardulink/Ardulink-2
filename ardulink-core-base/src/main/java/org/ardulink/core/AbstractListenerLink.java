@@ -41,8 +41,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractListenerLink implements Link {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(AbstractListenerLink.class);
+	private static final Logger logger = LoggerFactory.getLogger(AbstractListenerLink.class);
 
 	private final List<EventListener> eventListeners = new CopyOnWriteArrayList<>();
 	private final List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<>();
@@ -89,7 +88,7 @@ public abstract class AbstractListenerLink implements Link {
 		this.rplyListeners.remove(listener);
 		return this;
 	}
-	
+
 	public boolean hasRplyListeners() {
 		return !rplyListeners.isEmpty();
 	}
@@ -111,7 +110,7 @@ public abstract class AbstractListenerLink implements Link {
 			try {
 				eventListener.stateChanged(event);
 			} catch (Exception e) {
-				logger.error("EventListener {} failure", eventListener, e);
+				logError(event, "analog change", e);
 			}
 		}
 	}
@@ -121,7 +120,7 @@ public abstract class AbstractListenerLink implements Link {
 			try {
 				eventListener.stateChanged(event);
 			} catch (Exception e) {
-				logger.error("EventListener {} failure", eventListener, e);
+				logError(event, "digital change", e);
 			}
 		}
 	}
@@ -131,7 +130,7 @@ public abstract class AbstractListenerLink implements Link {
 			try {
 				rplyListener.rplyReceived(event);
 			} catch (Exception e) {
-				logger.error("EventListener {} failure", rplyListener, e);
+				logError(event, "reply", e);
 			}
 		}
 	}
@@ -141,7 +140,7 @@ public abstract class AbstractListenerLink implements Link {
 			try {
 				customListener.customEventReceived(event);
 			} catch (Exception e) {
-				logger.error("EventListener {} failure", customListener, e);
+				logError(event, "custom", e);
 			}
 		}
 	}
@@ -151,8 +150,7 @@ public abstract class AbstractListenerLink implements Link {
 			try {
 				connectionListener.connectionLost();
 			} catch (Exception e) {
-				logger.error("ConnectionListener {} failure",
-						connectionListener, e);
+				logger.error("Error while publishing connectionLost event", e);
 			}
 		}
 	}
@@ -162,8 +160,7 @@ public abstract class AbstractListenerLink implements Link {
 			try {
 				connectionListener.reconnected();
 			} catch (Exception e) {
-				logger.error("ConnectionListener {} failure",
-						connectionListener, e);
+				logger.error("Error while publishing reconnected event", e);
 			}
 		}
 	}
@@ -171,12 +168,15 @@ public abstract class AbstractListenerLink implements Link {
 	private boolean hasListenerForPin(Pin pin) {
 		for (EventListener listener : this.eventListeners) {
 			if (listener instanceof FilteredEventListenerAdapter
-					&& pin.equals(((FilteredEventListenerAdapter) listener)
-							.getPin())) {
+					&& pin.equals(((FilteredEventListenerAdapter) listener).getPin())) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	private void logError(Object event, String eventType, Exception e) {
+		logger.error("Error while publishing " + eventType + " event {}", event, e);
 	}
 
 	// TODO make this part of an interface, e.g. ConnectionStateObservable

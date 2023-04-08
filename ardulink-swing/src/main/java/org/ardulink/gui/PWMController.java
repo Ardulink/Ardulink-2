@@ -72,7 +72,7 @@ public class PWMController extends JPanel implements Linkable {
 	
 	private List<PWMControllerListener> pwmControllerListeners = Lists.newArrayList();
 	
-	private Link link;
+	private transient Link link;
 
 	/**
 	 * Create the panel.
