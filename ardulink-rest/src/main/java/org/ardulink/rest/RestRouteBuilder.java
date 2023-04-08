@@ -176,8 +176,8 @@ public class RestRouteBuilder extends RouteBuilder {
 		Message message = exchange.getMessage();
 		if (pinInMessageIs(message, polled.getPin().pinNum())) {
 			message.setBody(polled.getValue(), String.class);
-		} else {
-			messages.offer(polled);
+		} else if (!messages.offer(polled)) {
+			throw new IllegalStateException("Could not offer " + polled + " to queue");
 		}
 	}
 

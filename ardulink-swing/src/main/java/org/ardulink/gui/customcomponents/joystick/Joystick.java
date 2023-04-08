@@ -111,12 +111,12 @@ public class Joystick extends JPanel implements Linkable {
 		setInternalSize(width, height);
 	}
     
-    public void setInternalSize(int width, int height) {
+    public void setInternalSize(float width, float height) {
     	
     	joyWidth = Math.min(width, height) - BORDER_SIZE;
         joyHeight = joyWidth;
 
-        joyCenterX = ((float) width) / 2;
+        joyCenterX = width / 2;
         joyCenterY = height;
         setJoySize(joyWidth);		
     }

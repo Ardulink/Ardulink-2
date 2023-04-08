@@ -65,7 +65,7 @@ public class ArdulinkConsumer extends DefaultConsumer {
 				String body = ALProtoBuilder
 						.alpProtocolMessage(ANALOG_PIN_READ)
 						.forPin(event.getPin().pinNum())
-						.withValue(event.getValue().intValue());
+						.withValue(event.getValue());
 				process(exchangeWithBody(body));
 			}
 

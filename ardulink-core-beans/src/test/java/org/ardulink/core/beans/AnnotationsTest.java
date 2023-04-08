@@ -4,13 +4,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static org.ardulink.core.beans.finder.impl.FindByFieldAccess.directFieldAccess;
 import static org.ardulink.util.Preconditions.checkNotNull;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 
-import org.ardulink.util.anno.LapsedWith;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -133,12 +131,9 @@ class AnnotationsTest {
 				beanProperties), SomeAnno.class, AnotherAnno.class);
 	}
 
-	@LapsedWith(module = JDK8, value = "Streams")
 	private void hasAnnotations(Attribute attribute, Class<? extends Annotation>... annoClasses) {
-		for (Class<? extends Annotation> element : annoClasses) {
-			assertThat(attribute.getAnnotation(element)).withFailMessage(() -> element.getSimpleName() + " not found")
-					.isNotNull();
-		}
+		assertThat(annoClasses).allSatisfy(e -> assertThat(attribute.getAnnotation(e))
+				.withFailMessage(() -> e.getSimpleName() + " not found").isNotNull());
 	}
 
 }
