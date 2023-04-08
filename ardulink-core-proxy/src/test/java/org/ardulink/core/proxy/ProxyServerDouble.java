@@ -16,6 +16,10 @@ limitations under the License.
 
 package org.ardulink.core.proxy;
 
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.IntStream.range;
+import static java.util.stream.Stream.concat;
 import static org.ardulink.core.proxy.ProxyLinkFactory.OK;
 import static org.ardulink.util.Throwables.propagate;
 
@@ -25,13 +29,12 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.ardulink.util.Lists;
+import org.ardulink.util.MapBuilder;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -46,10 +49,9 @@ import org.slf4j.LoggerFactory;
  * [adsense]
  *
  */
-public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback{
+public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(ProxyServerDouble.class);
+	private static final Logger logger = LoggerFactory.getLogger(ProxyServerDouble.class);
 
 	public static ServerSocket newSocket(int port) {
 		try {
@@ -77,10 +79,8 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback{
 			public void run() {
 				try {
 					Socket clientSocket = serverSocket.accept();
-					PrintWriter out = new PrintWriter(
-							clientSocket.getOutputStream(), false);
-					BufferedReader in = new BufferedReader(
-							new InputStreamReader(clientSocket.getInputStream()));
+					PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), false);
+					BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
 					String line;
 					while ((line = in.readLine()) != null) {
@@ -103,7 +103,6 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback{
 		};
 	}
 
-	
 	@Override
 	public void beforeEach(ExtensionContext context) {
 		this.thread.start();
@@ -118,7 +117,7 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback{
 			throw propagate(e);
 		}
 	}
-	
+
 	public static void main(String[] args) throws InterruptedException {
 		ProxyServerDouble serverDouble = new ProxyServerDouble(newSocket(4478));
 		serverDouble.beforeEach(null);
@@ -130,20 +129,14 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback{
 	}
 
 	private Map<String, List<String>> makeMap(int numberOfPorts) {
-		Map<String, List<String>> answers = new HashMap<>();
-		answers.put("ardulink:networkproxyserver:get_port_list",
-				portList(numberOfPorts));
-		answers.put("ardulink:networkproxyserver:connect", Collections.singletonList(OK));
-		return answers;
+		return MapBuilder.<String, List<String>>newMapBuilder()
+				.put("ardulink:networkproxyserver:get_port_list", portList(numberOfPorts))
+				.put("ardulink:networkproxyserver:connect", singletonList(OK)).build();
 	}
 
 	private List<String> portList(int numberOfPorts) {
-		List<String> subAnwser = new ArrayList<>();
-		subAnwser.add("NUMBER_OF_PORTS=" + numberOfPorts);
-		for (int i = 0; i < numberOfPorts; i++) {
-			subAnwser.add("myPortNr" + i);
-		}
-		return subAnwser;
+		return concat(Stream.of("NUMBER_OF_PORTS=" + numberOfPorts),
+				range(0, numberOfPorts).mapToObj(i -> "myPortNr" + i)).collect(toList());
 	}
 
 	public ProxyServerDouble setNumberOfPorts(int numberOfPorts) {
