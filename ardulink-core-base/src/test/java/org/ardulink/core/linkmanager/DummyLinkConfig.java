@@ -130,6 +130,10 @@ public class DummyLinkConfig implements LinkConfig {
 	public void setD(String d) {
 		this.d = d;
 	}
+	
+	public TimeUnit getF() {
+		return f;
+	}
 
 	@ChoiceFor("d")
 	public static String[] choiceValuesCanBeSetViaThreadLocalForTesting() {

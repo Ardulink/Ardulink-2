@@ -25,8 +25,8 @@ public class LinkFactoriesProvider4Test implements LinkFactoriesProvider {
 			} finally {
 				factories().removeAll(factories);
 			}
-
 		}
+
 	}
 
 	

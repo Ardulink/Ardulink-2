@@ -16,10 +16,12 @@ limitations under the License.
 
 package org.ardulink.core.convenience;
 
+import static java.util.Arrays.asList;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.core.linkmanager.providers.LinkFactoriesProvider4Test.withRegistered;
+import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -28,6 +30,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
@@ -38,6 +42,8 @@ import org.ardulink.core.linkmanager.DummyLinkFactory;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.linkmanager.LinkManagerTest.AliasUsingLinkFactory;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.util.Throwables;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -52,30 +58,40 @@ class LinksTest {
 
 	@Test
 	void whenRequestingDefaultLinkReturnsFirstAvailableConnectionIfSerialNotAvailable() throws IOException {
-		Link link = Links.getDefault();
-		assertThat(getConnection(link)).isInstanceOf(DummyConnection.class);
-		close(link);
+		try (Link link = Links.getDefault()) {
+			assertThat(getConnection(link)).isInstanceOf(DummyConnection.class);
+		}
 	}
 
 	@Test
 	void whenRequestingDefaultLinkSerialHasPriorityOverAllOthers() throws Throwable {
-		LinkFactory<LinkConfig> serial = spy(factoryNamed(serial()));
-		withRegistered(factoryNamed(serialDash("a")), factoryNamed("a"), serial, factoryNamed("z"),
-				factoryNamed(serialDash("z"))).execute(() -> assertLinkWasCreatedBy(Links.getDefault(), serial));
+		LinkFactory<LinkConfig> factory = spy(factoryNamed(serial()));
+		withRegistered(factoryNamed(serialDash("a")), factoryNamed("a"), factory, factoryNamed("z"),
+				factoryNamed(serialDash("z"))).execute(() -> {
+					try (Link link = Links.getDefault()) {
+						assertLinkFactoryCreatedOneLink(factory);
+					}
+				});
 	}
 
 	@Test
 	void whenRequestingDefaultLinkStartingWithSerialDashHasPriorityOverAllOthers() throws Throwable {
-		LinkFactory<LinkConfig> serialDashAnything = spy(factoryNamed(serialDash("appendix-does-not-matter")));
-		withRegistered(factoryNamed("a"), serialDashAnything, factoryNamed("z"))
-				.execute(() -> assertLinkWasCreatedBy(Links.getDefault(), serialDashAnything));
+		LinkFactory<LinkConfig> factory = spy(factoryNamed(serialDash("appendix-does-not-matter")));
+		withRegistered(factoryNamed("a"), factory, factoryNamed("z")).execute(() -> {
+			try (Link link = Links.getDefault()) {
+				assertLinkFactoryCreatedOneLink(factory);
+			}
+		});
 	}
 
 	@Test
 	void serialDashDoesHandleSerial() throws Throwable {
-		LinkFactory<LinkConfig> serialDashAnything = spy(factoryNamed(serialDash("appendix-does-not-matter")));
-		withRegistered(serialDashAnything)
-				.execute(() -> assertLinkWasCreatedBy(Links.getLink("ardulink://serial"), serialDashAnything));
+		LinkFactory<LinkConfig> factory = spy(factoryNamed(serialDash("appendix-does-not-matter")));
+		withRegistered(factory).execute(() -> {
+			try (Link link = Links.getLink("ardulink://serial")) {
+				assertLinkFactoryCreatedOneLink(factory);
+			}
+		});
 	}
 
 	private static String serialDash(String appendix) {
@@ -88,10 +104,15 @@ class LinksTest {
 
 	@Test
 	void isConfiguredForAllChoiceValues() throws IOException {
-		Link link = Links.getDefault();
-		DummyLinkConfig config = getConnection(link).getConfig();
-		assertThat(config.getA()).isEqualTo("aVal1");
-		close(link);
+		String dVal1 = "dVal1";
+		DummyLinkConfig.choiceValuesOfD.set(new String[] { dVal1, "dVal2" });
+		try (Link link = Links.getDefault()) {
+			DummyLinkConfig config = getConnection(link).getConfig();
+			assertThat(config.getProto()).isInstanceOf(ArdulinkProtocol2.class);
+			assertThat(config.getA()).isEqualTo("aVal1");
+			assertThat(config.getD()).isEqualTo(dVal1);
+			assertThat(config.getF()).isEqualTo(TimeUnit.NANOSECONDS);
+		}
 	}
 
 	@Test
@@ -100,41 +121,38 @@ class LinksTest {
 		assert serial.newLinkConfig().equals(NO_ATTRIBUTES)
 				: "ardulink://default would differ if the config has attributes";
 		withRegistered(serial).execute(() -> {
-			Link link1 = Links.getLink("ardulink://default");
-			Link link2 = Links.getDefault();
-			assertAllSameInstances(link1, link2);
-			close(link1, link2);
+			try (Link link1 = Links.getLink("ardulink://default"); Link link2 = Links.getDefault()) {
+				assertThat(link1).isSameAs(link2);
+			}
 		});
 	}
 
 	@Test
 	void doesCacheLinks() throws IOException {
 		String uri = "ardulink://dummyLink";
-		Link link1 = Links.getLink(uri);
-		Link link2 = Links.getLink(uri);
-		assertThat(link1).isNotNull();
-		assertThat(link2).isNotNull();
-		assertAllSameInstances(link1, link2);
-		close(link1, link2);
+		try (Link link1 = Links.getLink(uri); Link link2 = Links.getLink(uri)) {
+			assertThat(asList(link1, link2)).doesNotContainNull();
+			assertThat(link1).isSameAs(link2);
+		}
 	}
 
 	@Test
 	void doesCacheLinksWhenUsingDefaultValues() throws IOException {
-		Link link1 = Links.getLink("ardulink://dummyLink");
-		Link link2 = Links.getLink("ardulink://dummyLink?a=&b=42&c=");
-		assertThat(link1).isNotNull();
-		assertThat(link2).isNotNull();
-		assertAllSameInstances(link1, link2);
-		close(link1, link2);
+		try (Link link1 = Links.getLink("ardulink://dummyLink");
+				Link link2 = Links.getLink("ardulink://dummyLink?a=&b=42&c=")) {
+			assertThat(asList(link1, link2)).doesNotContainNull();
+			assertThat(link1).isSameAs(link2);
+		}
 	}
 
 	@Test
 	void canCloseConnection() throws IOException {
-		Link link = getRandomLink();
-		DummyConnection connection = getConnection(link);
-		verify(connection, times(0)).close();
-		close(link);
-		verify(connection, times(1)).close();
+		try (Link link = getRandomLink()) {
+			DummyConnection connection = getConnection(link);
+			verify(connection, times(0)).close();
+			close(link);
+			verify(connection, times(1)).close();
+		}
 	}
 
 	@Test
@@ -142,48 +160,51 @@ class LinksTest {
 		String randomURI = getRandomURI();
 		Link[] links = { createConnectionBasedLink(randomURI), createConnectionBasedLink(randomURI),
 				createConnectionBasedLink(randomURI) };
+		assertThat(links).allSatisfy(l -> assertThat(l).isSameAs(links[0]));
 		// all links point to the same instance, so choose one of them
-		Link link = assertAllSameInstances(links)[0];
-		link.close();
-		link.close();
-		verify(getConnection(link), times(0)).close();
-		link.close();
-		verify(getConnection(link), times(1)).close();
+		try (Link link = links[0]) {
+			for (int i = 0; i < links.length - 1; i++) {
+				link.close();
+			}
+			verify(getConnection(link), times(0)).close();
+			link.close();
+			verify(getConnection(link), times(1)).close();
+		}
 	}
 
 	@Test
 	void afterClosingWeGetAfreshLink() throws IOException {
 		String randomURI = getRandomURI();
-		Link link1 = createConnectionBasedLink(randomURI);
-		Link link2 = createConnectionBasedLink(randomURI);
-		assertAllSameInstances(link1, link2);
-		close(link1, link2);
-		Link link3 = createConnectionBasedLink(randomURI);
-		assertThat(link3).isNotSameAs(link1);
-		assertThat(link3).isNotSameAs(link2);
-		close(link3);
+		try (Link link1 = createConnectionBasedLink(randomURI); Link link2 = createConnectionBasedLink(randomURI)) {
+			assertThat(link1).isSameAs(link2);
+			close(link1, link2);
+			try (Link link3 = createConnectionBasedLink(randomURI)) {
+				assertThat(link3).isNotSameAs(link1).isNotSameAs(link2);
+			}
+		}
 	}
 
 	@Test
 	void stopsListenigAfterAllCallersLikeToStopListening() throws IOException {
 		String randomURI = getRandomURI();
-		Link link0 = createConnectionBasedLink(randomURI);
-		Link link1 = createConnectionBasedLink(randomURI);
-		ConnectionBasedLink delegate = assertAllSameInstances(getDelegate(link0), getDelegate(link1))[0];
-		Pin anyPin = digitalPin(3);
-		link0.startListening(anyPin);
-		link1.startListening(anyPin);
+		try (Link link1 = createConnectionBasedLink(randomURI); Link link2 = createConnectionBasedLink(randomURI)) {
+			ConnectionBasedLink delegate1 = getDelegate(link1);
+			ConnectionBasedLink delegate2 = getDelegate(link2);
+			assertThat(delegate1).isSameAs(delegate2);
+			Pin anyPin = digitalPin(3);
+			link1.startListening(anyPin);
+			link2.startListening(anyPin);
 
-		link0.stopListening(anyPin);
-		// stop on others (not listening-started) pins
-		link0.stopListening(analogPin(anyPin.pinNum()));
-		link0.stopListening(analogPin(anyPin.pinNum() + 1));
-		link0.stopListening(digitalPin(anyPin.pinNum() + 1));
-		verify(delegate, times(0)).stopListening(anyPin);
+			link1.stopListening(anyPin);
+			// stop on others (not listening-started) pins
+			link1.stopListening(analogPin(anyPin.pinNum()));
+			link1.stopListening(analogPin(anyPin.pinNum() + 1));
+			link1.stopListening(digitalPin(anyPin.pinNum() + 1));
+			verify(delegate1, times(0)).stopListening(anyPin);
 
-		link1.stopListening(anyPin);
-		verify(delegate, times(1)).stopListening(anyPin);
-		close(link0, link1);
+			link2.stopListening(anyPin);
+			verify(delegate1, times(1)).stopListening(anyPin);
+		}
 	}
 
 	@Test
@@ -199,10 +220,9 @@ class LinksTest {
 		}
 
 		withRegistered(new DummyLinkFactoryExtension()).execute(() -> {
-			Link link1 = Links.getLink(makeUri(name1));
-			Link link2 = Links.getLink(makeUri(name2));
-			assertThat(link1).isNotSameAs(link2);
-			close(link1, link2);
+			try (Link link1 = Links.getLink(makeUri(name1)); Link link2 = Links.getLink(makeUri(name2))) {
+				assertThat(link1).isNotSameAs(link2);
+			}
 		});
 	}
 
@@ -213,16 +233,15 @@ class LinksTest {
 	@Test
 	void aliasLinksAreSharedToo() throws Throwable {
 		withRegistered(new AliasUsingLinkFactory()).execute(() -> {
-			Link link1 = Links.getLink("ardulink://aliasLink");
-			Link link2 = Links.getLink("ardulink://aliasLinkAlias");
-			assertAllSameInstances(link1, link2);
-			close(link1, link2);
+			try (Link link1 = Links.getLink("ardulink://aliasLink");
+					Link link2 = Links.getLink("ardulink://aliasLinkAlias")) {
+				assertThat(link1).isSameAs(link2);
+			}
 		});
 	}
 
-	private void assertLinkWasCreatedBy(Link link, LinkFactory<LinkConfig> serial) throws Exception {
-		verify(serial, times(1)).newLink(any(LinkConfig.class));
-		link.close();
+	private void assertLinkFactoryCreatedOneLink(LinkFactory<LinkConfig> factory) throws Exception {
+		verify(factory, times(1)).newLink(any(LinkConfig.class));
 	}
 
 	private LinkFactory<LinkConfig> factoryNamed(String name) {
@@ -246,16 +265,15 @@ class LinksTest {
 		};
 	}
 
-	private static <T> T[] assertAllSameInstances(T... objects) {
-		for (int i = 0; i < objects.length - 1; i++) {
-			assertThat(objects[i]).isSameAs(objects[i + 1]);
-		}
-		return objects;
+	private void close(Link... links) {
+		Arrays.stream(links).forEach(this::closeQuietly);
 	}
 
-	private void close(Link... links) throws IOException {
-		for (Link link : links) {
+	private void closeQuietly(Link link) {
+		try {
 			link.close();
+		} catch (IOException e) {
+			Throwables.propagate(e);
 		}
 	}
 
@@ -272,12 +290,11 @@ class LinksTest {
 	}
 
 	private ConnectionBasedLink getDelegate(Link link) {
-		return (ConnectionBasedLink) ((LinkDelegate) link).getDelegate();
+		return (ConnectionBasedLink) extractDelegated(link);
 	}
 
 	private String getRandomURI() {
-		return "ardulink://dummyLink?a=" + "&b=" + Thread.currentThread().getId() + "&c="
-				+ System.currentTimeMillis();
+		return "ardulink://dummyLink?a=" + "&b=" + Thread.currentThread().getId() + "&c=" + System.currentTimeMillis();
 	}
 
 }

@@ -14,12 +14,13 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LI
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentCaptor.forClass;
+import static org.assertj.core.util.Lists.newArrayList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
@@ -35,7 +36,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 class ArdulinkComponentTest {
 
@@ -153,12 +153,14 @@ class ArdulinkComponentTest {
 		context.createProducerTemplate().sendBody(MOCK_URI, message);
 	}
 
-	public static class TestLinkFactory implements LinkFactory<TestLinkConfig> {
+	private static class TestLinkFactory implements LinkFactory<TestLinkConfig> {
 
 		private final String name;
+		private final Iterator<TestLinkConfig> configProvider;
 
-		public TestLinkFactory(String name) {
+		public TestLinkFactory(String name, Iterator<TestLinkConfig> configProvider) {
 			this.name = name;
+			this.configProvider = configProvider;
 		}
 
 		@Override
@@ -173,7 +175,7 @@ class ArdulinkComponentTest {
 
 		@Override
 		public TestLinkConfig newLinkConfig() {
-			return new TestLinkConfig();
+			return configProvider.next();
 		}
 
 	}
@@ -191,20 +193,14 @@ class ArdulinkComponentTest {
 		String a = "foo";
 		String b = "HOURS";
 		String name = "factoryName-" + randomUUID();
-		LinkFactory<TestLinkConfig> linkFactorySpy = spy(new TestLinkFactory(name));
-		withRegistered(linkFactorySpy).execute(() -> {
-			context = camelContext("ardulink://" + name + "?a=" + a + "&b=" + b, MOCK_URI);
-		});
 
-		TestLinkConfig value = getConfig(linkFactorySpy);
-		assertThat(value.a).isEqualTo(a);
-		assertThat(value.b).isEqualTo(TimeUnit.valueOf(b));
-	}
+		TestLinkConfig config = new TestLinkConfig();
+		LinkFactory<TestLinkConfig> linkFactorySpy = spy(new TestLinkFactory(name, newArrayList(config).iterator()));
+		withRegistered(linkFactorySpy)
+				.execute(() -> context = camelContext("ardulink://" + name + "?a=" + a + "&b=" + b, MOCK_URI));
 
-	private static TestLinkConfig getConfig(LinkFactory<TestLinkConfig> linkFactorySpy) throws Exception {
-		ArgumentCaptor<TestLinkConfig> captor = forClass(TestLinkConfig.class);
-		verify(linkFactorySpy).newLink(captor.capture());
-		return captor.getValue();
+		assertThat(config.a).isEqualTo(a);
+		assertThat(config.b).isEqualTo(TimeUnit.valueOf(b));
 	}
 
 }
