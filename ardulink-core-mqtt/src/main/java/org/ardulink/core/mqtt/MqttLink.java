@@ -18,7 +18,9 @@ package org.ardulink.core.mqtt;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.unmodifiableMap;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -80,8 +82,7 @@ public class MqttLink extends AbstractListenerLink {
 	private final boolean hasAppendix;
 
 	private static final Map<Type, String> typeMap = unmodifiableMap(new EnumMap<>(
-			MapBuilder.<Type, String> newMapBuilder().put(Type.ANALOG, ANALOG)
-					.put(Type.DIGITAL, DIGITAL).build()));
+			MapBuilder.<Type, String>newMapBuilder().put(Type.ANALOG, ANALOG).put(Type.DIGITAL, DIGITAL).build()));
 
 	public MqttLink(MqttLinkConfig config) throws IOException {
 		checkArgument(config.getHost() != null, "host must not be null");
@@ -89,12 +90,11 @@ public class MqttLink extends AbstractListenerLink {
 		checkArgument(config.getTopic() != null, "topic must not be null");
 		this.hasAppendix = config.separateTopics;
 		this.topic = config.getTopic();
-		this.mqttReceivePattern = Pattern.compile(MqttLink.this.topic
-				+ "([aAdD])(\\d+)" + Pattern.quote(appendixSub()));
+		this.mqttReceivePattern = Pattern
+				.compile(MqttLink.this.topic + "([aAdD])(\\d+)" + Pattern.quote(appendixSub()));
 		this.mqttClient = newClient(config);
 		this.mqttClient.setConnectAttemptsMax(1);
-		this.connection = new BlockingConnection(new FutureConnection(
-				newCallbackConnection()));
+		this.connection = new BlockingConnection(new FutureConnection(newCallbackConnection()));
 		newReceivedThread().start();
 		try {
 			connection.connect();
@@ -119,18 +119,16 @@ public class MqttLink extends AbstractListenerLink {
 				while (true) {
 					try {
 						Message message = connection.receive();
-						Matcher matcher = mqttReceivePattern.matcher(message
-								.getTopic());
+						Matcher matcher = mqttReceivePattern.matcher(message.getTopic());
 						if (matcher.matches() && matcher.groupCount() == 2) {
-							Pin pin = pin(matcher.group(1),
-									parseInt(matcher.group(2)));
+							Pin pin = pin(matcher.group(1), parseInt(matcher.group(2)));
 							if (pin != null) {
 								if (pin.is(Type.DIGITAL)) {
-									fireStateChanged(digitalPinValueChanged((DigitalPin) pin,
-											Boolean.parseBoolean(new String(message.getPayload()))));
+									fireStateChanged(
+											digitalPinValueChanged((DigitalPin) pin, parseBoolean(payload(message))));
 								} else if (pin.is(Type.ANALOG)) {
-									fireStateChanged(analogPinValueChanged((AnalogPin) pin,
-											Integer.parseInt(new String(message.getPayload()))));
+									fireStateChanged(
+											analogPinValueChanged((AnalogPin) pin, parseInt(payload(message))));
 								}
 							}
 						}
@@ -139,6 +137,10 @@ public class MqttLink extends AbstractListenerLink {
 						log.error("Error while waiting for new message", e);
 					}
 				}
+			}
+
+			private String payload(Message message) {
+				return new String(message.getPayload(), UTF_8);
 			}
 
 			private Pin pin(String type, Integer pin) {
@@ -160,16 +162,14 @@ public class MqttLink extends AbstractListenerLink {
 
 			@Override
 			public CallbackConnection listener(Listener listener) {
-				return super
-						.listener(multiplex(listener, connectionListener()));
+				return super.listener(multiplex(listener, connectionListener()));
 			}
 
 			private Listener multiplex(Listener... listeners) {
 				return new Listener() {
 
 					@Override
-					public void onPublish(UTF8Buffer topic, Buffer body,
-							Runnable ack) {
+					public void onPublish(UTF8Buffer topic, Buffer body, Runnable ack) {
 						for (Listener listener : listeners) {
 							listener.onPublish(topic, body, ack);
 						}
@@ -228,8 +228,7 @@ public class MqttLink extends AbstractListenerLink {
 	private MQTT newClient(MqttLinkConfig config) {
 		MQTT client = new MQTT();
 		client.setClientId(config.getClientId());
-		client.setHost(URIs.newURI(connectionPrefix(config) + "://"
-				+ config.getHost() + ":" + config.port));
+		client.setHost(URIs.newURI(connectionPrefix(config) + "://" + config.getHost() + ":" + config.port));
 		String user = config.user;
 		if (!Strings.nullOrEmpty(user)) {
 			client.setUserName(user);
@@ -256,8 +255,7 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	private void subscribe() throws Exception {
-		connection
-				.subscribe(new Topic[] { new Topic(topic + "#", AT_MOST_ONCE) });
+		connection.subscribe(new Topic[] { new Topic(topic + "#", AT_MOST_ONCE) });
 	}
 
 	@Override
@@ -273,46 +271,40 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	private String controlTopic(Pin pin) {
-		return topic + "system/listening/" + getType(pin) + pin.pinNum()
-				+ appendixPub();
+		return topic + "system/listening/" + getType(pin) + pin.pinNum() + appendixPub();
 	}
 
 	private String getType(Pin pin) {
-		return checkNotNull(typeMap.get(pin.getType()), "Cannot handle pin %s",
-				pin);
+		return checkNotNull(typeMap.get(pin.getType()), "Cannot handle pin %s", pin);
 	}
 
 	@Override
-	public long switchAnalogPin(AnalogPin analogPin, int value)
-			throws IOException {
+	public long switchAnalogPin(AnalogPin analogPin, int value) throws IOException {
 		switchPin(ANALOG, analogPin, value);
 		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public long switchDigitalPin(DigitalPin digitalPin, boolean value)
-			throws IOException {
+	public long switchDigitalPin(DigitalPin digitalPin, boolean value) throws IOException {
 		switchPin(DIGITAL, digitalPin, value);
 		return MessageIdHolders.NO_ID.getId();
 	}
 
-	private void switchPin(String type, Pin pin, Object value)
-			throws IOException {
+	private void switchPin(String type, Pin pin, Object value) throws IOException {
 		publish(topic + type + pin.pinNum() + appendixPub(), value);
 	}
 
 	private void publish(String topic, Object value) throws IOException {
 		try {
-			connection.publish(topic, String.valueOf(value).getBytes(),
-					AT_MOST_ONCE, false);
+			connection.publish(topic, String.valueOf(value).getBytes(), AT_MOST_ONCE, false);
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
 	}
 
 	@Override
-	public long sendKeyPressEvent(char keychar, int keycode, int keylocation,
-			int keymodifiers, int keymodifiersex) throws IOException {
+	public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers, int keymodifiersex)
+			throws IOException {
 		throw new UnsupportedOperationException();
 	}
 

@@ -25,33 +25,35 @@ import java.awt.Point;
 import javax.swing.SwingUtilities;
 
 /**
- * [ardulinktitle] [ardulinkversion]
- * This class has utility methods for GUI components
- * project Ardulink http://www.ardulink.org/
+ * [ardulinktitle] [ardulinkversion] This class has utility methods for GUI
+ * components project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *
  */
-public class UtilityGeometry {
+public final class UtilityGeometry {
+
+	private UtilityGeometry() {
+		super();
+	}
 
 	public static void setAlignmentCentered(Component component, Component referredComponent) {
-		if(referredComponent == null) {
+		if (referredComponent == null) {
 			referredComponent = SwingUtilities.getRoot(component);
 		}
 		Point rootLocation = referredComponent.getLocation();
 		Dimension rootDimension = referredComponent.getSize();
 		Dimension componentDimension = component.getSize();
-		
+
 		Point componentLocation = new Point(rootLocation);
 		int dx = (rootDimension.width - componentDimension.width) / 2;
 		int dy = (rootDimension.height - componentDimension.height) / 2;
 		componentLocation.translate(dx, dy);
-		
 		component.setLocation(componentLocation);
-		
 	}
+
 	public static void setAlignmentCentered(Component component) {
 		setAlignmentCentered(component, null);
 	}
-	
+
 }

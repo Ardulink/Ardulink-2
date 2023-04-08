@@ -47,11 +47,11 @@ import org.kohsuke.args4j.CmdLineParser;
 public class MqttMain {
 
 	private final CommandLineArguments args;
-	
+
 	private CamelContext context;
 
 	private MqttBroker standaloneServer;
-	
+
 	private CamelContext createCamelContext(Topics topics) throws Exception {
 		return addRoutes(topics, new DefaultCamelContext());
 	}
@@ -64,15 +64,18 @@ public class MqttMain {
 		String ardulink = appendListenTo(args.connection);
 		MqttConnectionProperties mqtt = appendAuth(
 				new MqttConnectionProperties().name("mqttMain").brokerHost(args.brokerHost).ssl(args.ssl))
-						.brokerPort(args.brokerPort);
+				.brokerPort(args.brokerPort);
 		rb.fromSomethingToMqtt(ardulink, mqtt).andReverse();
 		return context;
 	}
 
 	private String appendListenTo(String connection) {
 		String listenTo = listenTo();
-		return listenTo.isEmpty() ? connection
-				: connection + (connection.contains("?") ? "&" : "?") + "listenTo=" + listenTo;
+		return listenTo.isEmpty() ? connection : connection + separator(connection) + "listenTo=" + listenTo;
+	}
+
+	private String separator(String connection) {
+		return connection.contains("?") ? "&" : "?";
 	}
 
 	private MqttConnectionProperties appendAuth(MqttConnectionProperties properties) {

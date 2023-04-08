@@ -38,7 +38,7 @@ public class ByteArray {
 
 	private static final int MAX_BUFFER_LEN = 2048;
 
-	private final byte[] byteArray;
+	private final byte[] data;
 
 	private int pointer;
 
@@ -47,7 +47,7 @@ public class ByteArray {
 	}
 
 	public ByteArray(int maxLength) {
-		byteArray = new byte[maxLength];
+		data = new byte[maxLength];
 	}
 
 	public boolean contains(byte[] delimiter) {
@@ -56,7 +56,7 @@ public class ByteArray {
 
 	private int indexOf(byte[] delimiter) {
 		checkState(checkNotNull(delimiter, "delimiter must not be null").length > 0, "delimiter must not be empty");
-		return Bytes.indexOf(byteArray, delimiter, 0, pointer);
+		return Bytes.indexOf(data, delimiter, 0, pointer);
 	}
 
 	/**
@@ -66,8 +66,8 @@ public class ByteArray {
 	 * @param bytesRead length of the data to append from <code>buffer</code>
 	 */
 	public void append(byte[] buffer, int bytesRead) {
-		checkArgument(this.pointer + bytesRead <= this.byteArray.length, "buffer overrun");
-		System.arraycopy(buffer, 0, this.byteArray, this.pointer, bytesRead);
+		checkArgument(this.pointer + bytesRead <= this.data.length, "buffer overrun");
+		System.arraycopy(buffer, 0, this.data, this.pointer, bytesRead);
 		this.pointer += bytesRead;
 	}
 
@@ -80,7 +80,7 @@ public class ByteArray {
 	}
 
 	public byte[] copy() {
-		return Arrays.copyOf(byteArray, pointer);
+		return Arrays.copyOf(data, pointer);
 	}
 
 	public void clear() {

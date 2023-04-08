@@ -18,7 +18,10 @@ limitations under the License.
 
 package org.ardulink.gui.customcomponents;
 
+import static org.ardulink.util.Integers.tryParse;
+
 import java.awt.BorderLayout;
+import java.util.Optional;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -26,8 +29,6 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -37,7 +38,7 @@ import org.ardulink.legacy.Link;
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
-* project Ardulink http://www.ardulink.org/
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *
@@ -59,43 +60,34 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 	 */
 	public ModifiableToggleSignalButton() {
 		setLayout(new BorderLayout(0, 0));
-		
+
 		JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.TOP);
 		add(tabbedPane);
-		
+
 		tabbedPane.addTab("Play", null, signalButton, null);
-		
+
 		JPanel configPanel = new JPanel();
 		tabbedPane.addTab("Configure", null, configPanel, null);
 		configPanel.setLayout(null);
-		
+
 		chckbxValueOnFieldIs = new JCheckBox("Value field ON is visible");
-		chckbxValueOnFieldIs.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				signalButton.setValueOnVisible(chckbxValueOnFieldIs.isSelected());
-			}
-		});
+		chckbxValueOnFieldIs.addChangeListener(e -> signalButton.setValueOnVisible(chckbxValueOnFieldIs.isSelected()));
 		chckbxValueOnFieldIs.setSelected(true);
 		chckbxValueOnFieldIs.setBounds(6, 8, 164, 18);
 		configPanel.add(chckbxValueOnFieldIs);
 
 		chckbxValueOffFieldIs = new JCheckBox("Value field OFF is visible");
-		chckbxValueOffFieldIs.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				signalButton.setValueOffVisible(chckbxValueOffFieldIs.isSelected());
-			}
-		});
+		chckbxValueOffFieldIs
+				.addChangeListener(e -> signalButton.setValueOffVisible(chckbxValueOffFieldIs.isSelected()));
 		chckbxValueOffFieldIs.setSelected(true);
 		chckbxValueOffFieldIs.setBounds(6, 34, 164, 18);
 		configPanel.add(chckbxValueOffFieldIs);
-		
+
 		JLabel lblColumns = new JLabel("Columns:");
 		lblColumns.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblColumns.setBounds(6, 66, 80, 16);
 		configPanel.add(lblColumns);
-		
+
 		columnsTextField = new JTextField();
 		columnsTextField.setText("10");
 		columnsTextField.setBounds(90, 60, 80, 28);
@@ -106,37 +98,35 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 			public void removeUpdate(DocumentEvent e) {
 				updateColumns();
 			}
-			
+
 			@Override
 			public void insertUpdate(DocumentEvent e) {
 				updateColumns();
 			}
-			
+
 			@Override
 			public void changedUpdate(DocumentEvent e) {
 				updateColumns();
 			}
-			
+
 			private void updateColumns() {
-				try {
-					int columns = Integer.parseInt(columnsTextField.getText());
-					signalButton.setValueOnColumns(columns);
-					signalButton.setValueOffColumns(columns);
-				}
-				catch(NumberFormatException e) {}
+				tryParse(columnsTextField.getText()).ifPresent(v -> {
+					signalButton.setValueOnColumns(v);
+					signalButton.setValueOffColumns(v);
+				});
 			}
 		});
-		
+
 		JLabel lblBtnOnText = new JLabel("Btn. ON Text:");
 		lblBtnOnText.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblBtnOnText.setBounds(6, 102, 80, 16);
 		configPanel.add(lblBtnOnText);
-		
+
 		JLabel lblBtnOffText = new JLabel("Btn. OFF Text:");
 		lblBtnOffText.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblBtnOffText.setBounds(6, 138, 80, 16);
 		configPanel.add(lblBtnOffText);
-		
+
 		buttonOnTextField = new JTextField();
 		buttonOnTextField.setText("Send");
 		buttonOnTextField.setColumns(10);
@@ -147,22 +137,22 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 			public void removeUpdate(DocumentEvent e) {
 				updateButtonLabel();
 			}
-			
+
 			@Override
 			public void insertUpdate(DocumentEvent e) {
 				updateButtonLabel();
 			}
-			
+
 			@Override
 			public void changedUpdate(DocumentEvent e) {
 				updateButtonLabel();
 			}
-			
+
 			private void updateButtonLabel() {
 				signalButton.setButtonTextOn(buttonOnTextField.getText());
 			}
 		});
-		
+
 		buttonOffTextField = new JTextField();
 		buttonOffTextField.setText("Send");
 		buttonOffTextField.setColumns(10);
@@ -173,17 +163,17 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 			public void removeUpdate(DocumentEvent e) {
 				updateButtonLabel();
 			}
-			
+
 			@Override
 			public void insertUpdate(DocumentEvent e) {
 				updateButtonLabel();
 			}
-			
+
 			@Override
 			public void changedUpdate(DocumentEvent e) {
 				updateButtonLabel();
 			}
-			
+
 			private void updateButtonLabel() {
 				signalButton.setButtonTextOff(buttonOffTextField.getText());
 			}
@@ -193,7 +183,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 		lblId.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblId.setBounds(6, 174, 80, 16);
 		configPanel.add(lblId);
-		
+
 		idTextField = new JTextField();
 		idTextField.setText("ID");
 		idTextField.setColumns(10);
@@ -204,22 +194,22 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 			public void removeUpdate(DocumentEvent e) {
 				updateId();
 			}
-			
+
 			@Override
 			public void insertUpdate(DocumentEvent e) {
 				updateId();
 			}
-			
+
 			@Override
 			public void changedUpdate(DocumentEvent e) {
 				updateId();
 			}
-			
+
 			private void updateId() {
 				signalButton.setId(idTextField.getText());
 			}
 		});
-		
+
 		signalButton.setValueOnColumns(Integer.parseInt(columnsTextField.getText()));
 		signalButton.setButtonTextOn(buttonOnTextField.getText());
 		signalButton.setButtonTextOff(buttonOffTextField.getText());
@@ -235,9 +225,10 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 	public ToggleSignalButton getSignalButton() {
 		return signalButton;
 	}
-	
+
 	/**
 	 * Set the value ON to be sent
+	 * 
 	 * @param t
 	 */
 	public void setValueOn(String t) {
@@ -246,6 +237,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 
 	/**
 	 * Set the value OFF to be sent
+	 * 
 	 * @param t
 	 */
 	public void setValueOff(String t) {
@@ -265,7 +257,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 	public String getValueOff() {
 		return signalButton.getValueOff();
 	}
-	
+
 	/**
 	 * @return value ON text field visibility
 	 */
@@ -282,6 +274,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 
 	/**
 	 * Set value text field visibility
+	 * 
 	 * @param aFlag
 	 */
 	public void setValueOnVisible(boolean aFlag) {
@@ -290,6 +283,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 
 	/**
 	 * Set value text field visibility
+	 * 
 	 * @param aFlag
 	 */
 	public void setValueOffVisible(boolean aFlag) {
@@ -298,6 +292,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 
 	/**
 	 * Set value text field columns size
+	 * 
 	 * @param columns
 	 */
 	public void setValueColumns(int columns) {
@@ -306,6 +301,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 
 	/**
 	 * Set button's text
+	 * 
 	 * @param text
 	 */
 	public void setButtonOnText(String text) {
@@ -314,6 +310,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 
 	/**
 	 * Set button's text
+	 * 
 	 * @param text
 	 */
 	public void setButtonOffText(String text) {
@@ -329,10 +326,11 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 
 	/**
 	 * Set an id for this component, used in composing custom message for Arduino
+	 * 
 	 * @param id
 	 */
 	public void setId(String id) {
 		idTextField.setText(id);
 	}
-	
+
 }

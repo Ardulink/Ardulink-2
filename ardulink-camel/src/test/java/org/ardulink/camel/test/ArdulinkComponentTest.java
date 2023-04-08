@@ -80,7 +80,7 @@ class ArdulinkComponentTest {
 	}
 
 	@Test
-	@Disabled
+	@Disabled("clarify who should filter it")
 	void ignoresNegativeValues() {
 		send(alpProtocolMessage(ANALOG_PIN_READ).forPin(analogPin(6).pinNum()).withValue(-1));
 		Link mock = getMock(link);

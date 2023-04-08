@@ -18,6 +18,7 @@ package org.ardulink.mail.camel;
 
 import static com.icegreen.greenmail.util.ServerSetupTest.SMTP_IMAP;
 import static java.lang.System.identityHashCode;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -35,12 +36,13 @@ import static org.ardulink.mail.test.MailSender.send;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.MapBuilder.newMapBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -117,7 +119,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 			String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
 
 			context.addRoutes(ardulinkProcessing(imapUri(username, password), swapUpperLower(validSender), commandName,
-					Arrays.asList(switchDigitalPin, switchAnalogPin), makeURI(mockURI, emptyMap()), "mock:result"));
+					asList(switchDigitalPin, switchAnalogPin), makeURI(mockURI, emptyMap()), "mock:result"));
 			context.start();
 
 			Link mockLink = getMock(link);
@@ -173,12 +175,14 @@ class ArdulinkMailOnCamelIntegrationTest {
 			String smtpName = "direct:routeLink-" + UUID.randomUUID();
 			context.addRoutes(setToAndFromHeaderAndSendTo(smtpName, smtpUri(username, password)));
 			context.addRoutes(ardulinkProcessing(imapUri(username, password), validSender, commandName,
-					Arrays.asList(switchDigitalPin, switchAnalogPin), ardulink, smtpName));
+					asList(switchDigitalPin, switchAnalogPin), ardulink, smtpName));
 			context.start();
 
 			try {
-				assertThat(fetchMail("loginIdSender", "secretOfSender").getContent())
-						.isEqualTo(switchDigitalPin + "=OK\r\n" + switchAnalogPin + "=OK");
+				assertThat(fetchMails("loginIdSender", "secretOfSender")).singleElement()
+						.satisfies(m -> assertThat(m.getContent())
+								.isEqualTo(switchDigitalPin + "=OK\r\n" + switchAnalogPin + "=OK"));
+
 			} finally {
 				context.stop();
 			}
@@ -212,12 +216,12 @@ class ArdulinkMailOnCamelIntegrationTest {
 		String smtpRouteStart = "direct:smtp-" + UUID.randomUUID();
 		main.configure().addRoutesBuilder(setToAndFromHeaderAndSendTo(smtpRouteStart, "{{to}}"));
 		main.configure().addRoutesBuilder(ardulinkProcessing("{{from}}", validSender, commandName,
-				Arrays.asList(command.split("\\,")), makeURI(mockURI, emptyMap()), smtpRouteStart));
+				asList(command.split("\\,")), makeURI(mockURI, emptyMap()), smtpRouteStart));
 		runInBackground(main);
 
 		try {
-			assertThat(fetchMail("loginIdSender", "secretOfSender").getContent())
-					.isEqualTo(command1 + "=OK\r\n" + command2 + "=OK");
+			assertThat(fetchMails("loginIdSender", "secretOfSender")).singleElement()
+					.satisfies(m -> assertThat(m.getContent()).isEqualTo(command1 + "=OK\r\n" + command2 + "=OK"));
 		} finally {
 			main.stop();
 		}
@@ -287,16 +291,16 @@ class ArdulinkMailOnCamelIntegrationTest {
 		mailMock.setUser(email, login, password);
 	}
 
-	private Message fetchMail(String loginId, String password) throws MessagingException, InterruptedException {
+	private List<Message> fetchMails(String loginId, String password) throws MessagingException, InterruptedException {
 		ImapServer imapd = mailMock.getImap();
-		Message msg = null;
-		while ((msg = retrieveViaImap(imapd.getBindTo(), imapd.getPort(), loginId, password)) == null) {
-			MILLISECONDS.sleep(100);
-		}
-		return msg;
+		List<Message> messages = new ArrayList<>();
+		await().pollInterval(100, MILLISECONDS)
+				.until(() -> messages.addAll(retrieveViaImap(imapd.getBindTo(), imapd.getPort(), loginId, password)));
+		return messages;
 	}
 
-	private Message retrieveViaImap(String host, int port, String user, String password) throws MessagingException {
+	private List<Message> retrieveViaImap(String host, int port, String user, String password)
+			throws MessagingException {
 		Properties props = new Properties();
 		props.setProperty("mail.store.protocol", "imap");
 		props.setProperty("mail.imap.port", String.valueOf(port));
@@ -305,8 +309,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 		store.connect(host, user, password);
 		Folder inbox = store.getFolder("INBOX");
 		inbox.open(Folder.READ_ONLY);
-		int messageCount = inbox.getMessageCount();
-		return messageCount == 0 ? null : inbox.getMessage(1);
+		return asList(inbox.getMessages());
 	}
 
 	private String makeURI(String uri, Map<? extends Object, ? extends Object> kv) {

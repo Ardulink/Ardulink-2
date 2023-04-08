@@ -61,14 +61,17 @@ public class Joystick extends JPanel implements Linkable {
 	//Maximum value for full horiz or vert position where centered is 0:
     private int joyOutputRange;
     private float joySize;     //joystick icon size
-    private float joyWidth, joyHeight;
-    private float joyCenterX, joyCenterY;  //Joystick displayed Center
+    private float joyWidth;
+    private float joyHeight;
+    private float joyCenterX;  //Joystick displayed Center
+    private float joyCenterY;  //Joystick displayed Center
 
     private float curJoyAngle;    //Current joystick angle
     private float curJoySize;     //Current joystick size
     private boolean isMouseTracking;
     private boolean leftMouseButton;
-    private int mouseX, mouseY;
+    private int mouseX;
+    private int mouseY;
     private transient Stroke lineStroke = new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
     private final Point position;
     
@@ -91,8 +94,7 @@ public class Joystick extends JPanel implements Linkable {
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				leftMouseButton = SwingUtilities.isLeftMouseButton(e);
-                mouseCheck(e);
+				mousePressed(e);
 			}
 
 			@Override

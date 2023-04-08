@@ -101,8 +101,8 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 			FromDeviceMessageReply reply = (FromDeviceMessageReply) fromDevice;
 			fireReplyReceived(new DefaultRplyEvent(reply.isOk(), reply.getId(), reply.getParameters()));
 		} else if (fromDevice instanceof FromDeviceMessageCustom) {
-			FromDeviceMessageCustom custom_event = (FromDeviceMessageCustom) fromDevice;
-			fireCustomReceived(new DefaultCustomEvent(custom_event.getMessage()));
+			FromDeviceMessageCustom customEvent = (FromDeviceMessageCustom) fromDevice;
+			fireCustomReceived(new DefaultCustomEvent(customEvent.getMessage()));
 		} else if (fromDevice instanceof FromDeviceMessageReady) {
 			this.readyMsgReceived = true;
 		} else {
@@ -123,7 +123,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	}
 
 	/**
-	 * Will wait for the arduino to received the "ready" paket or the arduino to
+	 * Will wait for the arduino to received the "ready" packet or the arduino to
 	 * respond to our messages sent.
 	 * 
 	 * @param wait     the maximum time to wait

@@ -65,32 +65,38 @@ public class ColorChooserDialog extends JDialog {
 		contentPanel.setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
-		{
-			JPanel buttonPane = new JPanel();
-			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
-			getContentPane().add(buttonPane, BorderLayout.SOUTH);
-			{
-				JButton okButton = new JButton("OK");
-				okButton.addActionListener(e -> {
-					ColorChooserDialog.this.color = colorChooser.getColor();
-					setVisible(false);
-					dispose();
-				});
-				buttonPane.add(okButton);
-				getRootPane().setDefaultButton(okButton);
-			}
-			{
-				JButton cancelButton = new JButton("Cancel");
-				cancelButton.addActionListener(e -> {
-					setVisible(false);
-					dispose();
-				});
-				buttonPane.add(cancelButton);
-			}
-		}
-
+		buttons(colorChooser);
 		contentPanel.add(colorChooser, BorderLayout.CENTER);
 		pack();
+	}
+
+	private void buttons(JColorChooser colorChooser) {
+		JPanel buttonPane = new JPanel();
+		buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		getContentPane().add(buttonPane, BorderLayout.SOUTH);
+		JButton okButton = okButton(colorChooser);
+		buttonPane.add(okButton);
+		getRootPane().setDefaultButton(okButton);
+		buttonPane.add(cancelButton());
+	}
+
+	private JButton cancelButton() {
+		JButton cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener(e -> {
+			setVisible(false);
+			dispose();
+		});
+		return cancelButton;
+	}
+
+	private JButton okButton(JColorChooser colorChooser) {
+		JButton okButton = new JButton("OK");
+		okButton.addActionListener(e -> {
+			ColorChooserDialog.this.color = colorChooser.getColor();
+			setVisible(false);
+			dispose();
+		});
+		return okButton;
 	}
 
 }

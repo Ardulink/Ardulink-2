@@ -101,7 +101,7 @@ public enum Primitives {
 	}
 
 	private static Class<?> findAndMap(Class<?> clazz, Predicate<? super Primitives> predicate,
-			Function<? super Primitives, ? extends Class<?>> mapper) {
+			Function<? super Primitives, Class<?>> mapper) {
 		Optional<Class<?>> map = EnumSet.allOf(Primitives.class).stream().filter(predicate).findFirst().map(mapper);
 		return map.orElse(clazz);
 	}

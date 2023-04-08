@@ -49,6 +49,8 @@ import org.ardulink.legacy.Link;
  */
 public class DigitalPinStatus extends JPanel implements Linkable {
 
+	private static final String SENSOR_OFF = "Sensor off";
+
 	private static final long serialVersionUID = -7773514191770737230L;
 
 	private JLabel lblStatelabel;
@@ -107,7 +109,7 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 		pinComboBox = new JComboBox<>(pinComboBoxModel);
 		comboPanel.add(pinComboBox);
 
-		tglbtnSensor = new JToggleButton("Sensor off");
+		tglbtnSensor = new JToggleButton(SENSOR_OFF);
 		tglbtnSensor.addItemListener(new ItemListener() {
 
 			@Override
@@ -123,7 +125,7 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 				} else if (e.getStateChange() == ItemEvent.DESELECTED) {
 					link.removeDigitalReadChangeListener(listener);
 
-					tglbtnSensor.setText("Sensor off");
+					tglbtnSensor.setText(SENSOR_OFF);
 					pinComboBox.setEnabled(true);
 
 					lblStatelabel.setEnabled(false);
@@ -142,7 +144,7 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 		if (this.link != null && listener != null) {
 			this.link.removeDigitalReadChangeListener(listener);
 		}
-		tglbtnSensor.setText("Sensor off");
+		tglbtnSensor.setText(SENSOR_OFF);
 		pinComboBox.setEnabled(true);
 
 		lblStatelabel.setEnabled(false);

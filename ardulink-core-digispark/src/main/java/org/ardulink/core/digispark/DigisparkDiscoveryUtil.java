@@ -9,7 +9,11 @@ import ch.ntb.usb.Usb_Bus;
 import ch.ntb.usb.Usb_Device;
 import ch.ntb.usb.Usb_Device_Descriptor;
 
-public class DigisparkDiscoveryUtil {
+public final class DigisparkDiscoveryUtil {
+	
+	private DigisparkDiscoveryUtil() {
+		super();
+	}
 
 	public static Map<String, Usb_Device> getDevices() throws USBException {
 		Map<String, Usb_Device> deviceMap = new LinkedHashMap<>();

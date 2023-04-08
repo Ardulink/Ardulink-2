@@ -26,18 +26,17 @@ import javax.swing.JLabel;
 import org.ardulink.legacy.Link;
 
 /**
- * [ardulinktitle] [ardulinkversion]
- * Class used by KeyPressController class to capture key press events.
-* project Ardulink http://www.ardulink.org/
- * @see KeyPressController
- * [adsense]
+ * [ardulinktitle] [ardulinkversion] Class used by KeyPressController class to
+ * capture key press events. project Ardulink http://www.ardulink.org/
+ * 
+ * @see KeyPressController [adsense]
  *
  */
 public class KeyPressListener extends KeyAdapter {
 
 	private JLabel guiInteractionLabel;
-	private transient Link link;
-	
+	private Link link;
+
 	public JLabel getGuiInteractionLabel() {
 		return guiInteractionLabel;
 	}
@@ -50,42 +49,33 @@ public class KeyPressListener extends KeyAdapter {
 		this.guiInteractionLabel = null;
 	}
 
-
 	@Override
 	public void keyPressed(KeyEvent e) {
 		keyPressedGUIInteraction(e);
-		
-		link.sendKeyPressEvent(e.getKeyChar(), e.getKeyCode(), e.getKeyLocation(), e.getModifiers(), e.getModifiersEx());
+
+		link.sendKeyPressEvent(e.getKeyChar(), e.getKeyCode(), e.getKeyLocation(), e.getModifiers(),
+				e.getModifiersEx());
 	}
-	
+
 	@Override
 	public void keyReleased(KeyEvent e) {
 		keyReleasedGUIInteraction();
 	}
 
 	private void keyPressedGUIInteraction(KeyEvent e) {
-		if(guiInteractionLabel != null) {
+		if (guiInteractionLabel != null) {
 			String text = computeText4GUIInteraction(e);
 			guiInteractionLabel.setText(text);
 		}
 	}
 
 	private String computeText4GUIInteraction(KeyEvent e) {
-        String builder = "Char: " + e.getKeyChar() +
-                " - Key Code: " +
-                e.getKeyCode() +
-                " - Key Location: " +
-                e.getKeyLocation() +
-                " - Modifiers: " +
-                e.getModifiers() +
-                " - Modifiers Ex: " +
-                e.getModifiersEx();
-		
-		return builder;
+		return String.format("Char: %c - Key Code: %d - Key Location: %d - Modifiers: %d - Modifiers Ex: %d",
+				e.getKeyChar(), e.getKeyCode(), e.getKeyLocation(), e.getModifiers(), e.getModifiersEx());
 	}
 
 	private void keyReleasedGUIInteraction() {
-		if(guiInteractionLabel != null) {
+		if (guiInteractionLabel != null) {
 			guiInteractionLabel.setText("");
 		}
 	}

@@ -85,7 +85,7 @@ public class FirmataProtocol implements Protocol {
 				}
 
 				private Object convertValue(Pin pin, Object value) {
-					return pin.is(DIGITAL) ? value.equals(1) ? true : false : value;
+					return pin.is(DIGITAL) ? value.equals(1) : value;
 				}
 
 				private Pin createPin(String type, Integer pin) {

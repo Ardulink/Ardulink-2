@@ -24,6 +24,10 @@ package org.ardulink.connection.proxy;
  *
  */
 public final class NetworkProxyMessages {
+	
+	private NetworkProxyMessages() {
+		super();
+	}
 
 	public static final String NUMBER_OF_PORTS = "NUMBER_OF_PORTS=";
 	public static final String OK = "OK";

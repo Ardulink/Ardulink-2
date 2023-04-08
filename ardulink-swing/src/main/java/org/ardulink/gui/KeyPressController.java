@@ -38,7 +38,7 @@ import org.ardulink.legacy.Link;
 public class KeyPressController extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = -1842577141033747612L;
-	private KeyPressListener keyPressListener;
+	private final transient KeyPressListener keyPressListener;
 
 	/**
 	 * Create the panel.

@@ -75,7 +75,11 @@ public class MqttCamelRouteBuilder {
 		}
 
 		public int getBrokerPort() {
-			return brokerPort == null ? (ssl ? DEFAULT_SSL_PORT : DEFAULT_PORT) : brokerPort.intValue();
+			return brokerPort == null ? defaulPort() : brokerPort.intValue();
+		}
+
+		private int defaulPort() {
+			return ssl ? DEFAULT_SSL_PORT : DEFAULT_PORT;
 		}
 
 		public MqttConnectionProperties auth(String user, byte[] pass) {
@@ -144,10 +148,6 @@ public class MqttCamelRouteBuilder {
 		this.compactStrategy = checkNotNull(strategy, "strategy must not be null");
 		checkArgument(duration > 0, "duration must not be zero or negative but was %s", duration);
 		this.compactMillis = checkNotNull(timeUnit, "timeUnit must not be null").toMillis(duration);
-		return this;
-	}
-
-	public MqttCamelRouteBuilder to(String to) {
 		return this;
 	}
 

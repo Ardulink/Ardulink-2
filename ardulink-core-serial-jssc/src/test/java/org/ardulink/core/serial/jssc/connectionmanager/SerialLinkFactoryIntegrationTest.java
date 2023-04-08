@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
@@ -48,8 +49,6 @@ import jssc.SerialPortList;
  */
 class SerialLinkFactoryIntegrationTest {
 
-	private Link link;
-
 	@Test
 	void canConfigureSerialConnectionViaURI() throws Exception {
 		String[] portNames = SerialPortList.getPortNames();
@@ -68,59 +67,28 @@ class SerialLinkFactoryIntegrationTest {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(URIs.newURI("ardulink://serial-jssc"));
 
-		assertThat(newArrayList(configurer.getAttributes()))
-				.isEqualTo(newArrayList("port", "baudrate", "proto", "qos", "waitsecs", "pingprobe"));
+		assertThat(configurer.getAttributes()).containsExactly("port", "baudrate", "proto", "qos", "waitsecs",
+				"pingprobe");
 
 		ConfigAttribute port = configurer.getAttribute("port");
 		ConfigAttribute proto = configurer.getAttribute("proto");
 		ConfigAttribute baudrate = configurer.getAttribute("baudrate");
 
 		assertThat(port.hasChoiceValues()).isEqualTo(TRUE);
+		assertThat(port.getChoiceValues()).isNotNull();
 		assertThat(proto.hasChoiceValues()).isEqualTo(TRUE);
 		assertThat(baudrate.hasChoiceValues()).isEqualTo(FALSE);
-
-		assertThat(port.getChoiceValues()).isNotNull();
 
 		port.setValue("anyString");
 		baudrate.setValue(115200);
 	}
 
 	@Test
-	@Disabled
-
-	void connectionListeningTest() throws IOException, InterruptedException {
-		Configurer configurer = LinkManager.getInstance().getConfigurer(URIs.newURI("ardulink://serial-jssc/"));
-
-		ConfigAttribute portAttribute = configurer.getAttribute("port");
-		System.out.println(portAttribute.getChoiceValues()[0]);
-		portAttribute.setValue(portAttribute.getChoiceValues()[0]);
-
-		ConfigAttribute pingprobeAttribute = configurer.getAttribute("pingprobe");
-		pingprobeAttribute.setValue(false);
-
-		link = configurer.newLink();
-		link.addRplyListener(e -> {
-			for (Entry<String, Object> entry : e.getParameters().entrySet()) {
-				System.out.println(entry.getKey() + "=" + entry.getValue());
-			}
-		});
-
-		link.addCustomListener(e -> System.out.println(e.getMessage()));
-		TimeUnit.SECONDS.sleep(10);
-		sendCustom();
-		TimeUnit.SECONDS.sleep(10);
-		link.close();
-	}
-
-	@Test
 	void cantConnectWithoutPort() {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(URIs.newURI("ardulink://serial-jssc?baudrate=9600"));
-		assertThrows(RuntimeException.class, () -> configurer.newLink());
-	}
-
-	public void sendCustom() throws IOException {
-		link.sendCustomMessage("getUniqueID", "XXX");
+		assertThat(assertThrows(RuntimeException.class, () -> configurer.newLink()))
+				.hasMessageContaining("Port name - null");
 	}
 
 }

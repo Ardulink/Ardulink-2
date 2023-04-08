@@ -46,6 +46,10 @@ import org.webjars.WebJarAssetLocator;
 
 public class RestRouteBuilder extends RouteBuilder {
 
+	private static final String ANALOG_PIN = "/analog/{pin}";
+	private static final String DIGITAL_PIN = "/digital/{pin}";
+	private static final String APPLICATION_TEXT = "application/text";
+
 	private static final String META_INF_RESOURCES_WEBJARS = "META-INF/resources/webjars";
 
 	public static final String VAR_TARGET = "to.uri";
@@ -58,14 +62,13 @@ public class RestRouteBuilder extends RouteBuilder {
 	private static final String HEADER_PIN = "Pin";
 	private static final String HEADER_TYPE = "Type";
 
-	private static String fromPlaceholder(String var) {
-		return "{{" + var + "}}";
+	private static String fromPlaceholder(String varName) {
+		return "{{" + varName + "}}";
 	}
 
 	@Override
 	public void configure() throws Exception {
-		BlockingQueue<FromDeviceMessagePinStateChanged> messages = new ArrayBlockingQueue<>(
-				16);
+		BlockingQueue<FromDeviceMessagePinStateChanged> messages = new ArrayBlockingQueue<>(16);
 		String patchAnalog = "direct:patchAnalog-" + identityHashCode(this);
 		String patchDigital = "direct:patchDigital-" + identityHashCode(this);
 		String readAnalog = "direct:readAnalog-" + identityHashCode(this);
@@ -87,12 +90,12 @@ public class RestRouteBuilder extends RouteBuilder {
 
 		rest("/pin") //
 				.consumes("application/octet-stream").produces("application/json") //
-				.patch("/analog/{pin}").consumes("application/text").type(String.class).to(patchAnalog) //
-				.patch("/digital/{pin}").consumes("application/text").type(String.class).to(patchDigital) //
-				.get("/analog/{pin}").to(readAnalog) //
-				.get("/digital/{pin}").to(readDigital) //
-				.put("/analog/{pin}").consumes("application/text").type(String.class).to(switchAnalog) //
-				.put("/digital/{pin}").consumes("application/text").type(String.class).to(switchDigital) //
+				.patch(ANALOG_PIN).consumes(APPLICATION_TEXT).type(String.class).to(patchAnalog) //
+				.patch(DIGITAL_PIN).consumes(APPLICATION_TEXT).type(String.class).to(patchDigital) //
+				.get(ANALOG_PIN).to(readAnalog) //
+				.get(DIGITAL_PIN).to(readDigital) //
+				.put(ANALOG_PIN).consumes(APPLICATION_TEXT).type(String.class).to(switchAnalog) //
+				.put(DIGITAL_PIN).consumes(APPLICATION_TEXT).type(String.class).to(switchDigital) //
 		;
 		from(patchAnalog).process(exchange -> patchAnalog(exchange)).to(target);
 		from(patchDigital).process(exchange -> patchDigital(exchange)).to(target);
@@ -125,12 +128,12 @@ public class RestRouteBuilder extends RouteBuilder {
 		registerResourceHandler(swaggerUiHandler, webJarsURI(), initializer);
 		restConfiguration().endpointProperty("handlers", swaggerUiHandler);
 		from("jetty:http://" + fromPlaceholder(VAR_BIND) + ":" + fromPlaceholder(VAR_PORT) + initializer)
-				.filter(isGet(initializer)).setBody().simple(patch(webJarsURI(), initializer, apidocs));
+				.filter(isGet(initializer)).setBody().simple(patch(initializer, apidocs));
 		from("jetty:http://" + fromPlaceholder(VAR_BIND) + ":" + fromPlaceholder(VAR_PORT) + "/api-browser")
 				.process(exchange -> redirect(exchange.getMessage(), "/swagger-ui/" + version));
 	}
 
-	private String patch(URI webJarsURI, String initializer, String apidocs) {
+	private String patch(String initializer, String apidocs) {
 		return content(META_INF_RESOURCES_WEBJARS + initializer)
 				.replaceAll(Matcher.quoteReplacement("https://petstore.swagger.io/v2/swagger.json"), apidocs);
 	}
@@ -202,8 +205,7 @@ public class RestRouteBuilder extends RouteBuilder {
 		checkState(split.length == 2, "Could not split %s by =", stateRaw);
 		checkState(split[0].equalsIgnoreCase("listen"), "Expected listen=${state} but was %s", stateRaw);
 
-		int pin = tryParse(String.valueOf(pinRaw))
-				.orElseThrow(() -> new IllegalStateException("Pin " + pinRaw + " not parseable"));
+		int pin = tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
 		boolean state = parseBoolean(split[1]);
 		message.setBody(alpProtocolMessage(state ? startKey : stopKey).forPin(pin).withoutValue());
 	}
@@ -229,8 +231,7 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	private int readPin(Type type, Message message) {
 		Object pinRaw = message.getHeader("pin");
-		return tryParse(String.valueOf(pinRaw))
-				.orElseThrow(() -> new IllegalStateException("Pin " + pinRaw + " not parseable"));
+		return tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
 	}
 
 	private void writeArduinoMessagesTo(String arduino, BlockingQueue<FromDeviceMessagePinStateChanged> messages) {
@@ -249,8 +250,7 @@ public class RestRouteBuilder extends RouteBuilder {
 		Message message = exchange.getMessage();
 		Object pinRaw = message.getHeader("pin");
 		String stateRaw = message.getBody(String.class);
-		int pin = tryParse(String.valueOf(pinRaw))
-				.orElseThrow(() -> new IllegalStateException("Pin " + pinRaw + " not parseable"));
+		int pin = tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
 		boolean state = parseBoolean(stateRaw);
 		message.setBody(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(state));
 	}
@@ -259,10 +259,13 @@ public class RestRouteBuilder extends RouteBuilder {
 		Message message = exchange.getMessage();
 		Object pinRaw = message.getHeader("pin");
 		String valueRaw = message.getBody(String.class);
-		int pin = tryParse(String.valueOf(pinRaw))
-				.orElseThrow(() -> new IllegalStateException("Pin " + pinRaw + " not parseable"));
-		int value = tryParse(valueRaw)
-				.orElseThrow(() -> new IllegalStateException("Value " + valueRaw + " not parseable"));
+		int pin = tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
+		int value = tryParse(valueRaw).orElseThrow(() -> parseError("Value", valueRaw));
 		message.setBody(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
 	}
+
+	private IllegalStateException parseError(String type, Object value) {
+		return new IllegalStateException(String.format("%s %s not parseable", type, value));
+	}
+
 }

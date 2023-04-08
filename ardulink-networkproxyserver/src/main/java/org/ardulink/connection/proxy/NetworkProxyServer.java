@@ -31,6 +31,8 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.spi.SubCommand;
 import org.kohsuke.args4j.spi.SubCommandHandler;
 import org.kohsuke.args4j.spi.SubCommands;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -43,6 +45,7 @@ import org.kohsuke.args4j.spi.SubCommands;
 public class NetworkProxyServer {
 
 	public static final String NAME = "Ardulink Network Proxy Server";
+	private static final Logger logger = LoggerFactory.getLogger(NetworkProxyServer.class);
 
 	private interface Command {
 		void execute(int portNumber) throws Exception;
@@ -59,13 +62,13 @@ public class NetworkProxyServer {
 					new Thread(newConnection(serverSocket)).start();
 				}
 			} finally {
-				System.out.println(NAME + " stops.");
+				logger.info(NAME + " stops");
 				serverSocket.close();
 			}
 		}
 
 		protected void serverIsUp(int portNumber) {
-			System.out.println(NAME + " listening on port " + portNumber);
+			logger.info(NAME + " listening on port {}", portNumber);
 		}
 
 		protected NetworkProxyServerConnection newConnection(ServerSocket serverSocket) throws IOException {
@@ -85,7 +88,8 @@ public class NetworkProxyServer {
 			writer.println(STOP_SERVER_CMD);
 			writer.close();
 			socket.close();
-			System.out.println(NAME + " stop requested.");
+			System.out.println();
+			logger.info(NAME + NAME + " stop requested");
 		}
 
 	}

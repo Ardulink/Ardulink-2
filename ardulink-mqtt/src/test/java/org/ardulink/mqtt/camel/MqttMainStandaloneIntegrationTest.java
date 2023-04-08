@@ -16,12 +16,10 @@ limitations under the License.
 
 package org.ardulink.mqtt.camel;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.Throwables.getCauses;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.camel.FailedToStartRouteException;
@@ -104,14 +102,14 @@ class MqttMainStandaloneIntegrationTest {
 	@Test
 	void clientCanConnectToNewlyStartedBroker() throws Exception {
 		withBrokerPort(freePort());
-		runMain();
+		assertDoesNotThrow(this::runMain);
 	}
 
 	@Test
 	void clientCanConnectUsingCredentialsToNewlyStartedBroker() throws Exception {
 		withBrokerPort(freePort()).withBrokerUser(someUser).withBrokerPassword(somePassword).withClientUser(someUser)
 				.withClientPassword(somePassword);
-		runMain();
+		assertDoesNotThrow(this::runMain);
 	}
 
 	@Test
@@ -127,7 +125,7 @@ class MqttMainStandaloneIntegrationTest {
 	void clientCanConnectUsingCredentialsToNewlyStartedSslBroker() throws Exception {
 		withSsl().withBrokerPort(freePort()).withBrokerUser(someUser).withBrokerPassword(somePassword)
 				.withClientUser(someUser).withClientPassword(somePassword);
-		runMain();
+		assertDoesNotThrow(this::runMain);
 	}
 
 	private void runMain() throws Exception {

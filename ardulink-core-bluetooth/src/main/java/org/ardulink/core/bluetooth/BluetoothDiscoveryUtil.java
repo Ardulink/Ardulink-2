@@ -20,10 +20,14 @@ import javax.bluetooth.RemoteDevice;
 import javax.bluetooth.ServiceRecord;
 import javax.bluetooth.UUID;
 
-public class BluetoothDiscoveryUtil {
+public final class BluetoothDiscoveryUtil {
 
 	private static final int SERVICE_NAME = 0x0100;
 	private static final UUID SERIAL_PORT_SERVICE = new UUID(0x1101);
+	
+	private BluetoothDiscoveryUtil() {
+		super();
+	}
 
 	public static Map<String, ServiceRecord> getDevices() {
 		Semaphore semaphore = new Semaphore(0);

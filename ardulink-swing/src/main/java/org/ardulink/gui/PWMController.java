@@ -57,6 +57,9 @@ import org.ardulink.util.Lists;
  */
 public class PWMController extends JPanel implements Linkable {
 
+	private static final Font FONT_11 = new Font("SansSerif", Font.PLAIN, 11);
+	private static final Font FONT_12 = new Font("SansSerif", Font.PLAIN, 12);
+
 	private static final long serialVersionUID = 7927439571760351922L;
 	
 	private JSlider powerSlider;
@@ -82,7 +85,7 @@ public class PWMController extends JPanel implements Linkable {
 		setLayout(null);
 		
 		powerSlider = new JSlider();
-		powerSlider.setFont(new Font("SansSerif", Font.PLAIN, 11));
+		powerSlider.setFont(FONT_11);
 		powerSlider.setMajorTickSpacing(15);
 		powerSlider.setPaintLabels(true);
 		powerSlider.setPaintTicks(true);
@@ -93,7 +96,7 @@ public class PWMController extends JPanel implements Linkable {
 		add(powerSlider);
 		
 		JLabel lblPowerPin = new JLabel("Power Pin:");
-		lblPowerPin.setFont(new Font("SansSerif", Font.PLAIN, 11));
+		lblPowerPin.setFont(FONT_11);
 		lblPowerPin.setBounds(10, 40, 59, 14);
 		add(lblPowerPin);
 		
@@ -116,17 +119,17 @@ public class PWMController extends JPanel implements Linkable {
 		add(minValueComboBox);
 		
 		JLabel lblMaxValue = new JLabel("Max Value:");
-		lblMaxValue.setFont(new Font("SansSerif", Font.PLAIN, 11));
+		lblMaxValue.setFont(FONT_11);
 		lblMaxValue.setBounds(10, 69, 59, 14);
 		add(lblMaxValue);
 		
 		JLabel lblMinValue = new JLabel("Min Value:");
-		lblMinValue.setFont(new Font("SansSerif", Font.PLAIN, 11));
+		lblMinValue.setFont(FONT_11);
 		lblMinValue.setBounds(10, 221, 59, 14);
 		add(lblMinValue);
 		
 		progressBar = new JProgressBar();
-		progressBar.setFont(new Font("SansSerif", Font.PLAIN, 11));
+		progressBar.setFont(FONT_11);
 		progressBar.setStringPainted(true);
 		progressBar.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		progressBar.setOrientation(SwingConstants.VERTICAL);
@@ -134,24 +137,24 @@ public class PWMController extends JPanel implements Linkable {
 		add(progressBar);
 		
 		lblPowerPinController = new JLabel("Power Pin Controller");
-		lblPowerPinController.setFont(new Font("SansSerif", Font.PLAIN, 12));
+		lblPowerPinController.setFont(FONT_12);
 		lblPowerPinController.setToolTipText("Power With Modulation");
 		lblPowerPinController.setHorizontalAlignment(SwingConstants.CENTER);
 		lblPowerPinController.setBounds(10, 11, 175, 14);
 		add(lblPowerPinController);
 		
 		JLabel lblVoltOutput = new JLabel("Volt Output:");
-		lblVoltOutput.setFont(new Font("SansSerif", Font.PLAIN, 11));
+		lblVoltOutput.setFont(FONT_11);
 		lblVoltOutput.setBounds(10, 143, 59, 14);
 		add(lblVoltOutput);
 		
 		voltValueLbl = new JLabel("0V");
-		voltValueLbl.setFont(new Font("SansSerif", Font.PLAIN, 11));
+		voltValueLbl.setFont(FONT_11);
 		voltValueLbl.setBounds(10, 157, 76, 14);
 		add(voltValueLbl);
 		
 		JLabel lblCurrentValue = new JLabel("Current Value:");
-		lblCurrentValue.setFont(new Font("SansSerif", Font.PLAIN, 11));
+		lblCurrentValue.setFont(FONT_11);
 		lblCurrentValue.setBounds(10, 98, 76, 14);
 		add(lblCurrentValue);
 		
@@ -168,7 +171,7 @@ public class PWMController extends JPanel implements Linkable {
 		add(valueComboBox);
 		
 		JLabel lblContinuousChange = new JLabel("Cont. Change:");
-		lblContinuousChange.setFont(new Font("SansSerif", Font.PLAIN, 11));
+		lblContinuousChange.setFont(FONT_11);
 		lblContinuousChange.setToolTipText("Continuous Change");
 		lblContinuousChange.setBounds(10, 176, 73, 14);
 		add(lblContinuousChange);
@@ -268,7 +271,7 @@ public class PWMController extends JPanel implements Linkable {
 	}
 
 	private void notifyListeners(int powerValue) {
-		PWMChangeEvent event = new PWMChangeEvent(this, powerValue);
+		PWMChangeEvent event = new PWMChangeEvent(powerValue);
 		for (PWMControllerListener pwmControllerListener : pwmControllerListeners) {
 			pwmControllerListener.pwmChanged(event);
 		}

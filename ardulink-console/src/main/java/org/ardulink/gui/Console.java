@@ -85,9 +85,10 @@ public class Console extends JFrame implements Linkable {
 
 	private ConnectionPanel connectionPanel;
 
-	protected JButton btnConnect, btnDisconnect;
+	protected JButton btnConnect = connectButton();
+	protected JButton btnDisconnect = disconnectButton();
 
-	private transient final ConnectionListener connectionListener = new ConnectionListener() {
+	private final transient ConnectionListener connectionListener = new ConnectionListener() {
 
 		@Override
 		public void connectionLost() {
@@ -170,8 +171,8 @@ public class Console extends JFrame implements Linkable {
 		configurationPanel.setLayout(new BorderLayout(0, 0));
 
 		JPanel connectPanel = new JPanel();
-		connectPanel.add(btnConnect = connectButton());
-		connectPanel.add(btnDisconnect = disconnectButton());
+		connectPanel.add(btnConnect);
+		connectPanel.add(btnDisconnect);
 		configurationPanel.add(connectPanel, BorderLayout.SOUTH);
 
 		JPanel allConnectionsPanel = new JPanel();
@@ -181,15 +182,15 @@ public class Console extends JFrame implements Linkable {
 
 		connectionPanel = new ConnectionPanel();
 		connectionPanel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
-		GridBagConstraints gbc_genericConnectionPanel = new GridBagConstraints();
-		gbc_genericConnectionPanel.insets = new Insets(0, 0, 0, 10);
-		gbc_genericConnectionPanel.anchor = GridBagConstraints.NORTH;
-		gbc_genericConnectionPanel.fill = GridBagConstraints.BOTH;
-		gbc_genericConnectionPanel.gridx = 0;
-		gbc_genericConnectionPanel.gridy = 1;
-		gbc_genericConnectionPanel.weightx = 1;
-		gbc_genericConnectionPanel.weighty = 1;
-		allConnectionsPanel.add(connectionPanel, gbc_genericConnectionPanel);
+		GridBagConstraints gbcGenericConnectionPanel = new GridBagConstraints();
+		gbcGenericConnectionPanel.insets = new Insets(0, 0, 0, 10);
+		gbcGenericConnectionPanel.anchor = GridBagConstraints.NORTH;
+		gbcGenericConnectionPanel.fill = GridBagConstraints.BOTH;
+		gbcGenericConnectionPanel.gridx = 0;
+		gbcGenericConnectionPanel.gridy = 1;
+		gbcGenericConnectionPanel.weightx = 1;
+		gbcGenericConnectionPanel.weighty = 1;
+		allConnectionsPanel.add(connectionPanel, gbcGenericConnectionPanel);
 
 		keyControlPanel = new KeyPressController();
 		linkables.add(keyControlPanel);
@@ -274,16 +275,16 @@ public class Console extends JFrame implements Linkable {
 		monitorPanel.add(serialMonitor, BorderLayout.CENTER);
 
 		JPanel stateBar = new JPanel();
-		FlowLayout flowLayout_1 = (FlowLayout) stateBar.getLayout();
-		flowLayout_1.setVgap(0);
-		flowLayout_1.setAlignment(FlowLayout.LEFT);
+		FlowLayout flowLayout1 = (FlowLayout) stateBar.getLayout();
+		flowLayout1.setVgap(0);
+		flowLayout1.setAlignment(FlowLayout.LEFT);
 		contentPane.add(stateBar, BorderLayout.SOUTH);
 
 		connectionStatus = new ConnectionStatus();
 		linkables.add(connectionStatus);
-		FlowLayout flowLayout = (FlowLayout) connectionStatus.getLayout();
-		flowLayout.setVgap(0);
-		flowLayout.setAlignment(FlowLayout.LEFT);
+		FlowLayout flowLayout2 = (FlowLayout) connectionStatus.getLayout();
+		flowLayout2.setVgap(0);
+		flowLayout2.setAlignment(FlowLayout.LEFT);
 		stateBar.add(connectionStatus, BorderLayout.SOUTH);
 
 		tabbedPane.addChangeListener(new ChangeListener() {
@@ -343,10 +344,10 @@ public class Console extends JFrame implements Linkable {
 	}
 
 	private ModifiableJoystick modifiableJoystick(String id) {
-		ModifiableJoystick joy1 = new ModifiableJoystick();
-		joy1.setId(id);
-		linkables.add(joy1);
-		return joy1;
+		ModifiableJoystick joystick = new ModifiableJoystick();
+		joystick.setId(id);
+		linkables.add(joystick);
+		return joystick;
 	}
 
 	private ModifiableToggleSignalButton modifiableToggleSignalButton() {

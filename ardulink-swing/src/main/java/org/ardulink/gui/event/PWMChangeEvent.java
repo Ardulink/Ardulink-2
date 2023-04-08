@@ -31,11 +31,9 @@ import org.ardulink.gui.PWMController;
  */
 public class PWMChangeEvent {
 
-	private final Object source;
 	private final int pwmValue;
 
-	public PWMChangeEvent(Object source, int pwmValue) {
-		this.source = source;
+	public PWMChangeEvent(int pwmValue) {
 		this.pwmValue = pwmValue;
 	}
 
@@ -43,8 +41,4 @@ public class PWMChangeEvent {
 		return pwmValue;
 	}
 
-	@Deprecated
-	public Object getSource() {
-		return source;
-	}
 }
