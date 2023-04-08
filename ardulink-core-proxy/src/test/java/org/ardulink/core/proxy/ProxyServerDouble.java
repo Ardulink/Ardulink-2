@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.proxy;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
@@ -86,15 +87,12 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 					while ((line = in.readLine()) != null) {
 						logger.info("Read {}", line);
 						received.add(line);
-						List<String> responses = answers.get(line);
-						if (responses != null) {
-							for (String response : responses) {
-								logger.info("Responding {}", response);
-								out.print(response);
-								out.print("\n");
-								out.flush();
-							}
-						}
+						answers.getOrDefault(line, emptyList()).stream().peek(m -> logger.info("Responding {}", m))
+								.forEach(m -> {
+									out.print(m);
+									out.print("\n");
+								});
+						out.flush();
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -118,25 +116,27 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 		}
 	}
 
-	public static void main(String[] args) throws InterruptedException {
-		ProxyServerDouble serverDouble = new ProxyServerDouble(newSocket(4478));
-		serverDouble.beforeEach(null);
-		serverDouble.thread.join();
-	}
-
 	public int getLocalPort() {
 		return serverSocket.getLocalPort();
 	}
 
 	private Map<String, List<String>> makeMap(int numberOfPorts) {
 		return MapBuilder.<String, List<String>>newMapBuilder()
-				.put("ardulink:networkproxyserver:get_port_list", portList(numberOfPorts))
-				.put("ardulink:networkproxyserver:connect", singletonList(OK)).build();
+				.put(proxyMessage("get_port_list"), portList(numberOfPorts))
+				.put(proxyMessage("connect"), singletonList(OK)).build();
+	}
+
+	private static String proxyMessage(String string) {
+		return String.format("ardulink:networkproxyserver:%s", string);
 	}
 
 	private List<String> portList(int numberOfPorts) {
 		return concat(Stream.of("NUMBER_OF_PORTS=" + numberOfPorts),
-				range(0, numberOfPorts).mapToObj(i -> "myPortNr" + i)).collect(toList());
+				range(0, numberOfPorts).mapToObj(ProxyServerDouble::portName)).collect(toList());
+	}
+
+	public static String portName(int i) {
+		return "myPortNr" + i;
 	}
 
 	public ProxyServerDouble setNumberOfPorts(int numberOfPorts) {
@@ -144,7 +144,7 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 		return this;
 	}
 
-	public List<String> getReceived() {
+	public List<String> received() {
 		return received;
 	}
 
