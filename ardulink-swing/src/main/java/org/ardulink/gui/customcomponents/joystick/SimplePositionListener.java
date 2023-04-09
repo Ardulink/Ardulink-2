@@ -40,7 +40,7 @@ public class SimplePositionListener extends JPanel implements PositionListener {
 
 	private static final long serialVersionUID = -315437517373209646L;
 	private Point position;
-	private int maxSize = 1;
+	private int internalMaxSize = 1;
 	
 	private static final int POINT_DIM = 15;
 
@@ -56,17 +56,16 @@ public class SimplePositionListener extends JPanel implements PositionListener {
         Dimension dimension = getSize();
         int dim = Math.min(dimension.width, dimension.height) / 2;
         if(position != null) {
-        	x = position.x * dim / maxSize;
-        	y = position.y * dim / maxSize;
+        	x = position.x * dim / internalMaxSize;
+        	y = position.y * dim / internalMaxSize;
         }
         g2.fillOval((dimension.width / 2) + x - (POINT_DIM / 2), (dimension.height / 2) - y - (POINT_DIM / 2), POINT_DIM, POINT_DIM);
-        // g2.drawRect(0, 0, dimension.width - 1, dimension.height - 1);
     }
 
 	@Override
 	public void positionChanged(PositionEvent e) {
 		position = e.getPosition();
-		maxSize = e.getMaxSize();
+		internalMaxSize = e.getMaxSize();
 		repaint();
 	}
 }
