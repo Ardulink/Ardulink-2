@@ -16,8 +16,6 @@ limitations under the License.
 
 package org.ardulink.core.proto.impl;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
 import static org.ardulink.core.Pin.analogPin;
@@ -40,6 +38,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.TONE;
+import static org.ardulink.util.Booleans.toBoolean;
 import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
@@ -323,10 +322,6 @@ public class ArdulinkProtocol2 implements Protocol {
 					return toBoolean(value);
 				}
 				throw new IllegalStateException(command + " " + this);
-			}
-
-			private static Boolean toBoolean(Integer value) {
-				return value.intValue() == 1 ? TRUE : FALSE;
 			}
 
 		}
