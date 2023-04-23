@@ -66,6 +66,7 @@ import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProcessor;
 import org.ardulink.core.proto.api.bytestreamproccesors.AbstractState;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
+import org.ardulink.core.proto.api.bytestreamproccesors.State;
 import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 import org.ardulink.util.Bytes;
 import org.ardulink.util.MapBuilder;
@@ -105,7 +106,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			private static final byte[] alp = "alp://".getBytes();
 
 			@Override
-			public AbstractState process(byte b) {
+			public State process(byte b) {
 				int l = bufferLength();
 				if (l <= alp.length && b != alp[l]) {
 					return null;
@@ -121,7 +122,7 @@ public class ArdulinkProtocol2 implements Protocol {
 
 		private static class WaitingForCommand extends AbstractState {
 			@Override
-			public AbstractState process(byte b) {
+			public State process(byte b) {
 				if (b == '/') {
 					String command = new String(copyOfBuffer());
 					Optional<ALPProtocolKey> optional = ALPProtocolKey.fromString(command);
@@ -148,7 +149,7 @@ public class ArdulinkProtocol2 implements Protocol {
 		private static class WaitingForOkKo extends AbstractState {
 
 			@Override
-			public AbstractState process(byte b) {
+			public State process(byte b) {
 				if (b == '?') {
 					String string = new String(copyOfBuffer());
 					if ("ok".equals(string)) {
@@ -174,7 +175,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			}
 
 			@Override
-			public AbstractState process(byte b) {
+			public State process(byte b) {
 				if (b == '\n') {
 					return new RplyParsed(ok, paramsToMap(new String(copyOfBuffer())));
 				}
@@ -196,7 +197,7 @@ public class ArdulinkProtocol2 implements Protocol {
 		private static class WaitingForCustomMessage extends AbstractState {
 
 			@Override
-			public AbstractState process(byte b) {
+			public State process(byte b) {
 				if (b == '\n') {
 					return new CustomMessageParsed(new String(copyOfBuffer()));
 				}
@@ -217,7 +218,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			}
 
 			@Override
-			public AbstractState process(byte b) {
+			public State process(byte b) {
 				return null;
 			}
 
@@ -232,7 +233,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			}
 
 			@Override
-			public AbstractState process(byte b) {
+			public State process(byte b) {
 				return null;
 			}
 
@@ -251,7 +252,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			}
 
 			@Override
-			public AbstractState process(byte b) {
+			public State process(byte b) {
 				if (b == '\n' && !hasValue) {
 					return new CommandParsed(
 							new DefaultFromDeviceChangeListeningState(pin(new String(copyOfBuffer())), mode()));
@@ -299,7 +300,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			}
 
 			@Override
-			public AbstractState process(byte b) {
+			public State process(byte b) {
 				if (b == '\n') {
 					return new CommandParsed(
 							new DefaultFromDeviceMessagePinStateChanged(pin, getValue(new String(copyOfBuffer()))));
@@ -342,7 +343,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			}
 
 			@Override
-			public AbstractState process(byte b) {
+			public State process(byte b) {
 				return null;
 			}
 
@@ -353,13 +354,13 @@ public class ArdulinkProtocol2 implements Protocol {
 			public final FromDeviceMessage message = new DefaultFromDeviceMessageReady();
 
 			@Override
-			public AbstractState process(byte b) {
+			public State process(byte b) {
 				return null;
 			}
 
 		}
 
-		private AbstractState state;
+		private State state;
 
 		@Override
 		public void process(byte b) {
