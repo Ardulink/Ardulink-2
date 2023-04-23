@@ -58,4 +58,16 @@ public final class Bytes {
 		return -1;
 	}
 
+	public static boolean equals(byte[] bytes1, byte[] bytes2, int endPos) {
+		if (bytes1.length < endPos || bytes2.length < endPos) {
+			return false;
+		}
+		for (int i = 0; i < endPos; i++) {
+			if (bytes1[i] != bytes2[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 }

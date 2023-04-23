@@ -53,17 +53,9 @@ public class ByteArray {
 	}
 
 	public boolean contentIs(byte[] bytes) {
-		if (bytes.length != endPointer) {
-			return false;
-		}
-		for (int i = 0; i < bytes.length; i++) {
-			if (bytes[i] != data[i]) {
-				return false;
-			}
-		}
-		return true;
+		return Bytes.equals(data, bytes, endPointer);
 	}
-	
+
 	private int indexOf(byte[] delimiter) {
 		checkState(checkNotNull(delimiter, "delimiter must not be null").length > 0, "delimiter must not be empty");
 		return Bytes.indexOf(data, delimiter, 0, endPointer);
