@@ -28,8 +28,6 @@ import java.util.Arrays;
  * 
  * [adsense]
  *
- */
-/**
  * This class is <b>not</b> threadsafe.
  * 
  * @author Peter Fichtner
@@ -40,7 +38,7 @@ public class ByteArray {
 
 	private final byte[] data;
 
-	private int pointer;
+	private int endPointer;
 
 	public ByteArray() {
 		this(MAX_BUFFER_LEN);
@@ -54,9 +52,21 @@ public class ByteArray {
 		return indexOf(delimiter) >= 0;
 	}
 
+	public boolean contentIs(byte[] bytes) {
+		if (bytes.length != endPointer) {
+			return false;
+		}
+		for (int i = 0; i < bytes.length; i++) {
+			if (bytes[i] != data[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	private int indexOf(byte[] delimiter) {
 		checkState(checkNotNull(delimiter, "delimiter must not be null").length > 0, "delimiter must not be empty");
-		return Bytes.indexOf(data, delimiter, 0, pointer);
+		return Bytes.indexOf(data, delimiter, 0, endPointer);
 	}
 
 	/**
@@ -66,9 +76,9 @@ public class ByteArray {
 	 * @param bytesRead length of the data to append from <code>buffer</code>
 	 */
 	public void append(byte[] buffer, int bytesRead) {
-		checkArgument(this.pointer + bytesRead <= this.data.length, "buffer overrun");
-		System.arraycopy(buffer, 0, this.data, this.pointer, bytesRead);
-		this.pointer += bytesRead;
+		checkArgument(this.endPointer + bytesRead <= this.data.length, "buffer overrun");
+		System.arraycopy(buffer, 0, this.data, this.endPointer, bytesRead);
+		this.endPointer += bytesRead;
 	}
 
 	public void append(byte b) {
@@ -76,15 +86,15 @@ public class ByteArray {
 	}
 
 	public int length() {
-		return pointer;
+		return endPointer;
 	}
 
 	public byte[] copy() {
-		return Arrays.copyOf(data, pointer);
+		return Arrays.copyOf(data, endPointer);
 	}
 
 	public void clear() {
-		pointer = 0;
+		endPointer = 0;
 	}
 
 }

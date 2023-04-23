@@ -37,8 +37,20 @@ public abstract class AbstractState implements State {
 		return byteArray.length();
 	}
 
+	protected String bufferAsString() {
+		return new String(copyOfBuffer());
+	}
+
 	protected byte[] copyOfBuffer() {
 		return byteArray.copy();
+	}
+
+	protected boolean bufferHasContent(String string) {
+		return bufferHasContent(string.getBytes());
+	}
+
+	protected boolean bufferHasContent(byte[] bytes) {
+		return byteArray.contentIs(bytes);
 	}
 
 }

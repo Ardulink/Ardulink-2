@@ -107,11 +107,11 @@ public class ArdulinkProtocol2 implements Protocol {
 
 			@Override
 			public State process(byte b) {
-				int l = bufferLength();
-				if (l <= alp.length && b != alp[l]) {
+				int len = bufferLength();
+				if (len <= alp.length && b != alp[len]) {
 					return null;
 				}
-				if (l + 1 == alp.length) {
+				if (len + 1 == alp.length) {
 					return new WaitingForCommand();
 				}
 				bufferAppend(b);
@@ -124,8 +124,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			@Override
 			public State process(byte b) {
 				if (b == '/') {
-					String command = new String(copyOfBuffer());
-					Optional<ALPProtocolKey> optional = ALPProtocolKey.fromString(command);
+					Optional<ALPProtocolKey> optional = ALPProtocolKey.fromString(bufferAsString());
 					if (!optional.isPresent()) {
 						return new WaitingForAlpPrefix();
 					}
@@ -151,10 +150,9 @@ public class ArdulinkProtocol2 implements Protocol {
 			@Override
 			public State process(byte b) {
 				if (b == '?') {
-					String string = new String(copyOfBuffer());
-					if ("ok".equals(string)) {
+					if (bufferHasContent("ok")) {
 						return new WaitForRplyParams(true);
-					} else if ("ko".equals(string)) {
+					} else if (bufferHasContent("ko")) {
 						return new WaitForRplyParams(false);
 					} else {
 						return new WaitingForAlpPrefix();
@@ -177,7 +175,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			@Override
 			public State process(byte b) {
 				if (b == '\n') {
-					return new RplyParsed(ok, paramsToMap(new String(copyOfBuffer())));
+					return new RplyParsed(ok, paramsToMap(bufferAsString()));
 				}
 				bufferAppend(b);
 				return this;
@@ -199,7 +197,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			@Override
 			public State process(byte b) {
 				if (b == '\n') {
-					return new CustomMessageParsed(new String(copyOfBuffer()));
+					return new CustomMessageParsed(bufferAsString());
 				}
 				bufferAppend(b);
 				return this;
@@ -255,10 +253,10 @@ public class ArdulinkProtocol2 implements Protocol {
 			public State process(byte b) {
 				if (b == '\n' && !hasValue) {
 					return new CommandParsed(
-							new DefaultFromDeviceChangeListeningState(pin(new String(copyOfBuffer())), mode()));
+							new DefaultFromDeviceChangeListeningState(pin(bufferAsString()), mode()));
 				}
 				if (b == '/') {
-					return new WaitingForValue(protocolKey, new String(copyOfBuffer()));
+					return new WaitingForValue(protocolKey, bufferAsString());
 				}
 				bufferAppend(b);
 				return this;
@@ -303,7 +301,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			public State process(byte b) {
 				if (b == '\n') {
 					return new CommandParsed(
-							new DefaultFromDeviceMessagePinStateChanged(pin, getValue(new String(copyOfBuffer()))));
+							new DefaultFromDeviceMessagePinStateChanged(pin, getValue(bufferAsString())));
 				}
 				bufferAppend(b);
 				return this;
