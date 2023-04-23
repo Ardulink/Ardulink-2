@@ -2,6 +2,7 @@ package org.ardulink.mqtt.camel;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
+import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
@@ -16,7 +17,6 @@ import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.anno.LapsedWith.JDK9;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -26,7 +26,6 @@ import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.ValueBuilder;
 import org.apache.camel.model.language.HeaderExpression;
-import org.ardulink.core.proto.impl.ALProtoBuilder;
 import org.ardulink.mqtt.Topics;
 import org.ardulink.util.anno.LapsedWith;
 
@@ -117,9 +116,8 @@ public final class ToArdulinkProtocol implements Processor {
 
 		@Override
 		protected String createMessage(int pin, String message) {
-			ALProtoBuilder builder = parseBoolean(message) ? ALProtoBuilder.alpProtocolMessage(START_LISTENING_ANALOG)
-					: ALProtoBuilder.alpProtocolMessage(STOP_LISTENING_ANALOG);
-			return builder.forPin(pin).withoutValue();
+			return (parseBoolean(message) ? alpProtocolMessage(START_LISTENING_ANALOG)
+					: alpProtocolMessage(STOP_LISTENING_ANALOG)).forPin(pin).withoutValue();
 		}
 	}
 
@@ -153,9 +151,8 @@ public final class ToArdulinkProtocol implements Processor {
 
 		@Override
 		protected String createMessage(int pin, String message) {
-			ALProtoBuilder builder = parseBoolean(message) ? ALProtoBuilder.alpProtocolMessage(START_LISTENING_DIGITAL)
-					: ALProtoBuilder.alpProtocolMessage(STOP_LISTENING_DIGITAL);
-			return builder.forPin(pin).withoutValue();
+			return (parseBoolean(message) ? alpProtocolMessage(START_LISTENING_DIGITAL)
+					: alpProtocolMessage(STOP_LISTENING_DIGITAL)).forPin(pin).withoutValue();
 		}
 
 	}
@@ -206,7 +203,7 @@ public final class ToArdulinkProtocol implements Processor {
 
 	private static List<MessageCreator> creators(Topics topics) {
 		List<MessageCreator> creators = new ArrayList<>(
-				Arrays.asList(new DigitalMessageCreator(topics), new AnalogMessageCreator(topics)));
+				asList(new DigitalMessageCreator(topics), new AnalogMessageCreator(topics)));
 		ControlHandlerAnalog.Builder ab = new ControlHandlerAnalog.Builder(topics);
 		if (ab.patternIsValid()) {
 			creators.add(ab.build());
