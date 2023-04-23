@@ -15,6 +15,8 @@ import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.anno.LapsedWith.JDK9;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -26,7 +28,6 @@ import org.apache.camel.builder.ValueBuilder;
 import org.apache.camel.model.language.HeaderExpression;
 import org.ardulink.core.proto.impl.ALProtoBuilder;
 import org.ardulink.mqtt.Topics;
-import org.ardulink.util.ListBuilder;
 import org.ardulink.util.anno.LapsedWith;
 
 public final class ToArdulinkProtocol implements Processor {
@@ -204,17 +205,17 @@ public final class ToArdulinkProtocol implements Processor {
 	}
 
 	private static List<MessageCreator> creators(Topics topics) {
-		ListBuilder<MessageCreator> b = ListBuilder.<MessageCreator>newBuilder()
-				.addAll(new DigitalMessageCreator(topics), new AnalogMessageCreator(topics));
+		List<MessageCreator> creators = new ArrayList<>(
+				Arrays.asList(new DigitalMessageCreator(topics), new AnalogMessageCreator(topics)));
 		ControlHandlerAnalog.Builder ab = new ControlHandlerAnalog.Builder(topics);
 		if (ab.patternIsValid()) {
-			b = b.add(ab.build());
+			creators.add(ab.build());
 		}
 		ControlHandlerDigital.Builder db = new ControlHandlerDigital.Builder(topics);
 		if (db.patternIsValid()) {
-			b = b.add(db.build());
+			creators.add(db.build());
 		}
-		return b.build();
+		return creators;
 	}
 
 }
