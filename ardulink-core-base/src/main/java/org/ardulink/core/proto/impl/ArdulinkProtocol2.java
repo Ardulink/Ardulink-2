@@ -44,7 +44,6 @@ import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.util.Map;
-import java.util.Optional;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceChangeListeningState.Mode;
@@ -124,23 +123,23 @@ public class ArdulinkProtocol2 implements Protocol {
 			@Override
 			public State process(byte b) {
 				if (b == '/') {
-					Optional<ALPProtocolKey> optional = ALPProtocolKey.fromString(bufferAsString());
-					if (!optional.isPresent()) {
-						return new WaitingForAlpPrefix();
-					}
-					ALPProtocolKey key = optional.get();
-					if (key.equals(READY)) {
-						return new ReadyParsed();
-					} else if (RPLY.equals(key)) {
-						return new WaitingForOkKo();
-					} else if (CUSTOM_EVENT.equals(key)) {
-						return new WaitingForCustomMessage();
-					} else {
-						return new WaitingForPin(key);
-					}
+					return ALPProtocolKey.fromString(bufferAsString()).map(this::toCommand)
+							.orElseGet(() -> new WaitingForAlpPrefix());
 				}
 				bufferAppend(b);
 				return this;
+			}
+
+			private AbstractState toCommand(ALPProtocolKey key) {
+				if (key.equals(READY)) {
+					return new ReadyParsed();
+				} else if (RPLY.equals(key)) {
+					return new WaitingForOkKo();
+				} else if (CUSTOM_EVENT.equals(key)) {
+					return new WaitingForCustomMessage();
+				} else {
+					return new WaitingForPin(key);
+				}
 			}
 
 		}
