@@ -41,12 +41,12 @@ public class FindByFieldAccess implements AttributeFinder {
 	}
 
 	@Override
-	public Iterable<FieldAccess> listReaders(Object bean) throws Exception {
+	public Iterable<FieldAccess> listReaders(Object bean) {
 		return find(bean);
 	}
 
 	@Override
-	public Iterable<FieldAccess> listWriters(Object bean) throws Exception {
+	public Iterable<FieldAccess> listWriters(Object bean) {
 		return find(bean);
 	}
 

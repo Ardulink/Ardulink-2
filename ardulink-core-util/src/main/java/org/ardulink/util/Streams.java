@@ -54,4 +54,8 @@ public final class Streams {
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
 	}
 
+	public static <T> Stream<T> stream(Iterable<T> iterable) {
+		return stream(iterable.iterator());
+	}
+
 }

@@ -17,18 +17,19 @@ limitations under the License.
 package org.ardulink.core.beans.finder.impl;
 
 import static java.beans.Introspector.getBeanInfo;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.beans.finder.impl.ReadMethod.isReadMethod;
 import static org.ardulink.core.beans.finder.impl.WriteMethod.isWriteMethod;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.ardulink.util.Throwables.propagate;
 
+import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.Attribute.AttributeWriter;
 import org.ardulink.core.beans.finder.api.AttributeFinder;
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -51,33 +52,27 @@ public class FindByIntrospection implements AttributeFinder {
 	}
 
 	@Override
-	@LapsedWith(module = JDK8, value = "Streams")
-	public Iterable<? extends AttributeReader> listReaders(Object bean)
-			throws Exception {
-		List<ReadMethod> readers = new ArrayList<>();
-		for (PropertyDescriptor pd : getBeanInfo(bean.getClass())
-				.getPropertyDescriptors()) {
-			if (isReadMethod(pd.getReadMethod())) {
-				readers.add(new ReadMethod(bean, pd.getName(), pd
-						.getReadMethod()));
-			}
+	public Iterable<? extends AttributeReader> listReaders(Object bean) {
+		try {
+			return propertyDescriptors(bean).filter(pd -> isReadMethod(pd.getReadMethod()))
+					.map(pd -> new ReadMethod(bean, pd.getName(), pd.getReadMethod())).collect(toList());
+		} catch (IntrospectionException e) {
+			throw propagate(e);
 		}
-		return readers;
 	}
 
 	@Override
-	@LapsedWith(module = JDK8, value = "Streams")
-	public Iterable<? extends AttributeWriter> listWriters(Object bean)
-			throws Exception {
-		List<WriteMethod> writers = new ArrayList<>();
-		for (PropertyDescriptor pd : getBeanInfo(bean.getClass())
-				.getPropertyDescriptors()) {
-			if (isWriteMethod(pd.getWriteMethod())) {
-				writers.add(new WriteMethod(bean, pd.getName(), pd
-						.getWriteMethod()));
-			}
+	public Iterable<? extends AttributeWriter> listWriters(Object bean) {
+		try {
+			return propertyDescriptors(bean).filter(pd -> isWriteMethod(pd.getWriteMethod()))
+					.map(pd -> new WriteMethod(bean, pd.getName(), pd.getWriteMethod())).collect(toList());
+		} catch (IntrospectionException e) {
+			throw propagate(e);
 		}
-		return writers;
+	}
+
+	private Stream<PropertyDescriptor> propertyDescriptors(Object bean) throws IntrospectionException {
+		return stream(getBeanInfo(bean.getClass()).getPropertyDescriptors());
 	}
 
 }

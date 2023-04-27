@@ -17,24 +17,24 @@ limitations under the License.
 package org.ardulink.core.beans;
 
 import static java.util.Arrays.stream;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Stream.concat;
 import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
 import static org.ardulink.util.Preconditions.checkState;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static org.ardulink.util.Streams.stream;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.Attribute.AttributeWriter;
 import org.ardulink.core.beans.Attribute.TypedAttributeProvider;
 import org.ardulink.core.beans.finder.api.AttributeFinder;
-import org.ardulink.util.Throwables;
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -175,50 +175,25 @@ public class BeanProperties {
 		return Optional.empty();
 	}
 
-	@LapsedWith(module = JDK8, value = "Streams")
 	private Optional<AttributeReader> findReader(String name) throws Exception {
-		for (AttributeFinder finder : finders) {
-			for (AttributeReader reader : finder.listReaders(bean)) {
-				if (name.equals(reader.getName())) {
-					return Optional.of(reader);
-				}
-			}
-		}
-		return Optional.empty();
+		return firstWithName(name, stream(finders).map(a -> stream(a.listReaders(bean))).flatMap(identity()));
 	}
 
-	@LapsedWith(module = JDK8, value = "Streams")
 	private Optional<AttributeWriter> findWriter(String name) throws Exception {
-		for (AttributeFinder finder : finders) {
-			for (AttributeWriter writer : finder.listWriters(bean)) {
-				if (name.equals(writer.getName())) {
-					return Optional.of(writer);
-				}
-			}
-		}
-		return Optional.empty();
+		return firstWithName(name, stream(finders).map(a -> stream(a.listWriters(bean))).flatMap(identity()));
+	}
+
+	private <T extends TypedAttributeProvider> Optional<T> firstWithName(String name, Stream<T> writers) {
+		return writers.filter(r -> name.equals(r.getName())).findFirst();
 	}
 
 	public Collection<String> attributeNames() {
-		Set<String> attributeNames = new LinkedHashSet<>();
-		try {
-			for (AttributeFinder finder : finders) {
-				attributeNames.addAll(namesOf(finder.listReaders(bean)));
-				attributeNames.addAll(namesOf(finder.listWriters(bean)));
-			}
-		} catch (Exception e) {
-			throw Throwables.propagate(e);
-		}
-		return new ArrayList<>(attributeNames);
+		return stream(finders).map(f -> concat(namesOf(f.listReaders(bean)), namesOf(f.listWriters(bean))))
+				.flatMap(identity()).collect(toCollection(LinkedHashSet::new));
 	}
 
-	@LapsedWith(module = JDK8, value = "Streams")
-	private Collection<String> namesOf(Iterable<? extends TypedAttributeProvider> readers) {
-		List<String> names = new ArrayList<>();
-		for (TypedAttributeProvider reader : readers) {
-			names.add(reader.getName());
-		}
-		return names;
+	private Stream<String> namesOf(Iterable<? extends TypedAttributeProvider> readers) {
+		return stream(readers).map(TypedAttributeProvider::getName);
 	}
 
 	@Override

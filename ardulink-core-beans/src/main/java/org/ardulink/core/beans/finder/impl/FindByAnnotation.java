@@ -36,6 +36,7 @@ import java.util.Optional;
 import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.Attribute.AttributeWriter;
 import org.ardulink.core.beans.finder.api.AttributeFinder;
+import org.ardulink.util.Streams;
 import org.ardulink.util.anno.LapsedWith;
 
 /**
@@ -48,14 +49,13 @@ import org.ardulink.util.anno.LapsedWith;
  */
 public class FindByAnnotation implements AttributeFinder {
 
-	public static class AttributeReaderDelegate implements AttributeReader {
+	private static class AttributeReaderDelegate implements AttributeReader {
 
 		private final AttributeReader delegate;
 		private final String name;
 		private final Field annoFoundOn;
 
-		public AttributeReaderDelegate(AttributeReader delegate, String name,
-				Field annoFoundOn) {
+		public AttributeReaderDelegate(AttributeReader delegate, String name, Field annoFoundOn) {
 			this.delegate = delegate;
 			this.name = name;
 			this.annoFoundOn = annoFoundOn;
@@ -89,8 +89,7 @@ public class FindByAnnotation implements AttributeFinder {
 		private final String name;
 		private final Field annoFoundOn;
 
-		public AttributeWriterDelegate(AttributeWriter delegate, String name,
-				Field annoFoundOn) {
+		public AttributeWriterDelegate(AttributeWriter delegate, String name, Field annoFoundOn) {
 			this.delegate = delegate;
 			this.name = name;
 			this.annoFoundOn = annoFoundOn;
@@ -121,101 +120,96 @@ public class FindByAnnotation implements AttributeFinder {
 	private final Class<? extends Annotation> annotationClass;
 	private final Method getAnnotationsAttributeReadMethod;
 
-	private FindByAnnotation(Class<? extends Annotation> annotationClass,
-			String annotationAttribute) {
+	private FindByAnnotation(Class<? extends Annotation> annotationClass, String annotationAttribute) {
 		this.annotationClass = annotationClass;
-		this.getAnnotationsAttributeReadMethod = getAttribMethod(
-				annotationClass, annotationAttribute);
-		Class<?> returnType = this.getAnnotationsAttributeReadMethod
-				.getReturnType();
-		checkArgument(returnType.equals(String.class),
-				"The returntype of %s's %s has to be %s but was %s",
-				annotationClass.getName(), annotationAttribute, String.class,
-				returnType);
+		this.getAnnotationsAttributeReadMethod = getAttribMethod(annotationClass, annotationAttribute);
+		Class<?> returnType = this.getAnnotationsAttributeReadMethod.getReturnType();
+		checkArgument(returnType.equals(String.class), "The returntype of %s's %s has to be %s but was %s",
+				annotationClass.getName(), annotationAttribute, String.class, returnType);
 	}
 
-	private Method getAttribMethod(Class<? extends Annotation> annotationClass,
-			String annotationAttribute) {
+	private Method getAttribMethod(Class<? extends Annotation> annotationClass, String annotationAttribute) {
 		try {
 			return annotationClass.getMethod(annotationAttribute);
 		} catch (SecurityException e) {
 			throw propagate(e);
 		} catch (NoSuchMethodException e) {
-			throw new IllegalArgumentException(annotationClass.getName()
-					+ " has no attribute named " + annotationAttribute);
+			throw new IllegalArgumentException(
+					annotationClass.getName() + " has no attribute named " + annotationAttribute);
 		}
 	}
 
-	public static AttributeFinder propertyAnnotated(
-			Class<? extends Annotation> annotationClass) {
+	public static AttributeFinder propertyAnnotated(Class<? extends Annotation> annotationClass) {
 		return propertyAnnotated(annotationClass, "value");
 	}
 
-	public static AttributeFinder propertyAnnotated(
-			Class<? extends Annotation> annotationClass,
+	public static AttributeFinder propertyAnnotated(Class<? extends Annotation> annotationClass,
 			String annotationAttribute) {
 		return new FindByAnnotation(annotationClass, annotationAttribute);
 	}
 
 	@Override
 	@LapsedWith(module = JDK8, value = "Streams")
-	public Iterable<? extends AttributeReader> listReaders(Object bean)
-			throws Exception {
-		List<AttributeReader> readers = new ArrayList<>();
-		for (Method method : bean.getClass().getDeclaredMethods()) {
-			if (method.isAnnotationPresent(annotationClass)
-					&& isReadMethod(method)) {
-				readers.add(readMethod(bean, method));
-			}
-		}
-
-		for (Field field : bean.getClass().getDeclaredFields()) {
-			if (field.isAnnotationPresent(annotationClass)) {
-				Optional<AttributeReader> readMethodForAttribute = readMethodForAttribute(
-						bean, field.getName());
-				if (readMethodForAttribute.isPresent()) {
-					readers.add(new AttributeReaderDelegate(
-							readMethodForAttribute.get(), annoValue(field
-									.getAnnotation(annotationClass)), field));
-				} else if (isPublic(field.getModifiers())) {
-					readers.add(fieldAccess(bean, field));
+	public Iterable<? extends AttributeReader> listReaders(Object bean) {
+		try {
+			List<AttributeReader> readers = new ArrayList<>();
+			for (Method method : bean.getClass().getDeclaredMethods()) {
+				if (method.isAnnotationPresent(annotationClass) && isReadMethod(method)) {
+					readers.add(readMethod(bean, method));
 				}
 			}
+
+			for (Field field : bean.getClass().getDeclaredFields()) {
+				if (field.isAnnotationPresent(annotationClass)) {
+					Optional<? extends AttributeReader> readMethodForAttribute = readMethodForAttribute(bean,
+							field.getName());
+					if (readMethodForAttribute.isPresent()) {
+						readers.add(new AttributeReaderDelegate(readMethodForAttribute.get(),
+								annoValue(field.getAnnotation(annotationClass)), field));
+					} else if (isPublic(field.getModifiers())) {
+						readers.add(fieldAccess(bean, field));
+					}
+				}
+			}
+			return readers;
+		} catch (Exception e) {
+			throw propagate(e);
 		}
-		return readers;
 	}
 
 	@Override
 	@LapsedWith(module = JDK8, value = "Streams")
-	public Iterable<AttributeWriter> listWriters(Object bean) throws Exception {
-		List<AttributeWriter> writers = new ArrayList<>();
-		for (Method method : bean.getClass().getDeclaredMethods()) {
-			if (method.isAnnotationPresent(annotationClass)
-					&& isWriteMethod(method)) {
-				writers.add(writeMethod(bean, method));
-			}
-		}
-
-		for (Field field : bean.getClass().getDeclaredFields()) {
-			if (field.isAnnotationPresent(annotationClass)) {
-				Optional<AttributeWriter> writeMethodForAttribute = writeMethodForAttribute(
-						bean, field.getName());
-				if (writeMethodForAttribute.isPresent()) {
-					writers.add(new AttributeWriterDelegate(
-							writeMethodForAttribute.get(), annoValue(field
-									.getAnnotation(annotationClass)), field));
-				} else if (isPublic(field.getModifiers())) {
-					writers.add(fieldAccess(bean, field));
+	public Iterable<AttributeWriter> listWriters(Object bean) {
+		try {
+			List<AttributeWriter> writers = new ArrayList<>();
+			for (Method method : bean.getClass().getDeclaredMethods()) {
+				if (method.isAnnotationPresent(annotationClass) && isWriteMethod(method)) {
+					writers.add(writeMethod(bean, method));
 				}
 			}
+
+			for (Field field : bean.getClass().getDeclaredFields()) {
+				if (field.isAnnotationPresent(annotationClass)) {
+					Optional<? extends AttributeWriter> writeMethodForAttribute = writeMethodForAttribute(bean,
+							field.getName());
+					if (writeMethodForAttribute.isPresent()) {
+						writers.add(new AttributeWriterDelegate(writeMethodForAttribute.get(),
+								annoValue(field.getAnnotation(annotationClass)), field));
+					} else if (isPublic(field.getModifiers())) {
+						writers.add(fieldAccess(bean, field));
+					}
+				}
+			}
+			return writers;
+		} catch (Exception e) {
+			throw propagate(e);
 		}
-		return writers;
 	}
-	
+
 	private FieldAccess fieldAccess(Object bean, Field field) throws IllegalAccessException, InvocationTargetException {
 		return new FieldAccess(bean, annoValue(field.getAnnotation(annotationClass)), field);
 	}
-	
+
 	private ReadMethod readMethod(Object bean, Method method) throws IllegalAccessException, InvocationTargetException {
 		return new ReadMethod(bean, annoValue(method.getAnnotation(annotationClass)), method);
 	}
@@ -224,33 +218,18 @@ public class FindByAnnotation implements AttributeFinder {
 			throws IllegalAccessException, InvocationTargetException {
 		return new WriteMethod(bean, annoValue(method.getAnnotation(annotationClass)), method);
 	}
-	
-	@LapsedWith(module = JDK8, value = "Streams")
-	private Optional<AttributeReader> readMethodForAttribute(Object bean,
-			String name) throws Exception {
-		for (AttributeReader reader : FindByIntrospection.beanAttributes()
-				.listReaders(bean)) {
-			if (reader.getName().equals(name)) {
-				return Optional.of(reader);
-			}
-		}
-		return Optional.empty();
+
+	private Optional<? extends AttributeReader> readMethodForAttribute(Object bean, String name) throws Exception {
+		return Streams.stream(FindByIntrospection.beanAttributes().listReaders(bean))
+				.filter(r -> r.getName().equals(name)).findFirst();
 	}
 
-	@LapsedWith(module = JDK8, value = "Streams")
-	private Optional<AttributeWriter> writeMethodForAttribute(Object bean,
-			String name) throws Exception {
-		for (AttributeWriter writer : FindByIntrospection.beanAttributes()
-				.listWriters(bean)) {
-			if (writer.getName().equals(name)) {
-				return Optional.of(writer);
-			}
-		}
-		return Optional.empty();
+	private Optional<? extends AttributeWriter> writeMethodForAttribute(Object bean, String name) throws Exception {
+		return Streams.stream(FindByIntrospection.beanAttributes().listWriters(bean))
+				.filter(r -> r.getName().equals(name)).findFirst();
 	}
 
-	private String annoValue(Annotation annotation)
-			throws IllegalAccessException, InvocationTargetException {
+	private String annoValue(Annotation annotation) throws IllegalAccessException, InvocationTargetException {
 		return (String) getAnnotationsAttributeReadMethod.invoke(annotation);
 	}
 
