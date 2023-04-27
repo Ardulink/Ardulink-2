@@ -23,6 +23,7 @@ import static java.util.stream.Stream.concat;
 import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Streams.stream;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -155,7 +156,7 @@ public class BeanProperties {
 			return determineType(reader, writer)
 					.map(t -> new DefaultAttribute(name, t, reader.orElse(null), writer.orElse(null))).orElse(null);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw propagate(e);
 		}
 	}
 
