@@ -17,14 +17,15 @@ limitations under the License.
 package org.ardulink.core.mqtt;
 
 import static java.time.Duration.ofMillis;
-import static java.time.Duration.ofSeconds;
 import static java.util.Collections.emptyList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import org.ardulink.core.Pin.Type;
@@ -46,6 +47,15 @@ public class EventCollector implements EventListener {
 
 	private final ListMultiMap<Type, PinValueChangedEvent> events = new ListMultiMap<>();
 
+	private int timeout = 10;
+	private TimeUnit timeUnit = SECONDS;
+
+	public EventCollector withTimeout(int timeout, TimeUnit timeUnit) {
+		this.timeout = timeout;
+		this.timeUnit = timeUnit;
+		return this;
+	}
+
 	@Override
 	public void stateChanged(AnalogPinValueChangedEvent event) {
 		events.put(ANALOG, event);
@@ -57,7 +67,7 @@ public class EventCollector implements EventListener {
 	}
 
 	public void awaitEvents(Type type, Predicate<? super List<? extends PinValueChangedEvent>> predicate) {
-		await().pollInterval(ofMillis(100)).timeout(ofSeconds(10))
+		await().pollInterval(ofMillis(100)).timeout(timeout, timeUnit)
 				.untilAsserted(() -> assertThat(events.asMap().getOrDefault(type, emptyList())).matches(predicate));
 	}
 

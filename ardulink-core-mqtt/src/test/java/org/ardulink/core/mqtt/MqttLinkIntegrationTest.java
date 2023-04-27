@@ -19,6 +19,7 @@ package org.ardulink.core.mqtt;
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
 import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.DIGITAL;
@@ -31,13 +32,12 @@ import static org.awaitility.Awaitility.await;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
 
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.Link;
+import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.convenience.Links;
-import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
 import org.ardulink.core.mqtt.duplicated.Message;
 import org.junit.jupiter.api.Timeout;
@@ -124,7 +124,7 @@ class MqttLinkIntegrationTest {
 		}
 	}
 
-	EventCollector eventCollector = new EventCollector();
+	EventCollector eventCollector = new EventCollector().withTimeout(TIMEOUT, SECONDS);
 
 	@ParameterizedTest(name = "{index} {0}")
 	@MethodSource("data")
@@ -147,8 +147,10 @@ class MqttLinkIntegrationTest {
 		try (Link link = makeLink(testConfig)) {
 			breedReconnectedState(link);
 
-			mqttClient.switchPin(digitalPin(2), true);
-			eventCollector.awaitEvents(DIGITAL, contains(digitalPinValueChanged(digitalPin(2), true)));
+			DigitalPin pin = digitalPin(2);
+			boolean value = true;
+			mqttClient.switchPin(pin, value);
+			eventCollector.awaitEvents(DIGITAL, l -> l.contains(digitalPinValueChanged(pin, value)));
 		}
 	}
 
@@ -184,10 +186,6 @@ class MqttLinkIntegrationTest {
 	private void awaitConnectionIs(TrackStateConnectionListener connectionListener, boolean connected) {
 		await().timeout(ofSeconds(TIMEOUT * 2)).pollInterval(ofMillis(100))
 				.until(() -> connectionListener.isConnected().get(), t -> t == connected);
-	}
-
-	private Predicate<? super List<? extends PinValueChangedEvent>> contains(PinValueChangedEvent event) {
-		return l -> l.contains(event);
 	}
 
 }

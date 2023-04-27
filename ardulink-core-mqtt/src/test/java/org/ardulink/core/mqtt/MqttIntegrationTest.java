@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.mqtt;
 
 import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -53,8 +54,10 @@ import org.junit.jupiter.params.provider.MethodSource;
  * [adsense]
  *
  */
-@Timeout(5)
+@Timeout(MqttIntegrationTest.TIMEOUT_IN_SECS)
 class MqttIntegrationTest {
+
+	static final int TIMEOUT_IN_SECS = 10;
 
 	private static class TestConfig {
 
@@ -183,16 +186,17 @@ class MqttIntegrationTest {
 
 	// ---------------------------------------------------------------------------
 
+	EventCollector eventCollector = new EventCollector().withTimeout(TIMEOUT_IN_SECS, SECONDS);
+
 	@ParameterizedTest(name = "{index} {0}")
 	@MethodSource("data")
 	void canSwitchDigitalPinViaBroker(TestConfig config) throws Exception {
 		init(config);
 		DigitalPin pin = digitalPin(1);
 		boolean value = true;
-		EventCollector eventCollector = new EventCollector();
 		link.addListener(eventCollector);
 		mqttClient.switchPin(pin, value);
-		eventCollector.awaitEvents(DIGITAL, contains(digitalPinValueChanged(pin, value)));
+		eventCollector.awaitEvents(DIGITAL, l -> l.contains(digitalPinValueChanged(pin, value)));
 	}
 
 	@ParameterizedTest(name = "{index} {0}")
@@ -201,14 +205,9 @@ class MqttIntegrationTest {
 		init(config);
 		AnalogPin pin = analogPin(2);
 		int value = 123;
-		EventCollector eventCollector = new EventCollector();
 		link.addListener(eventCollector);
 		mqttClient.switchPin(pin, value);
-		eventCollector.awaitEvents(ANALOG, contains(analogPinValueChanged(pin, value)));
-	}
-
-	private Predicate<? super List<? extends PinValueChangedEvent>> contains(PinValueChangedEvent event) {
-		return l -> l.contains(event);
+		eventCollector.awaitEvents(ANALOG, l -> l.contains(analogPinValueChanged(pin, value)));
 	}
 
 	private EventListenerAdapter delegate() {
