@@ -17,6 +17,8 @@ limitations under the License.
 package org.ardulink.core.beans.finder.impl;
 
 import static java.lang.reflect.Modifier.isPublic;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.beans.finder.impl.ReadMethod.isReadMethod;
 import static org.ardulink.core.beans.finder.impl.WriteMethod.isWriteMethod;
 import static org.ardulink.util.Preconditions.checkArgument;
@@ -27,7 +29,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -152,12 +153,9 @@ public class FindByAnnotation implements AttributeFinder {
 	@LapsedWith(module = JDK8, value = "Streams")
 	public Iterable<? extends AttributeReader> listReaders(Object bean) {
 		try {
-			List<AttributeReader> readers = new ArrayList<>();
-			for (Method method : bean.getClass().getDeclaredMethods()) {
-				if (method.isAnnotationPresent(annotationClass) && isReadMethod(method)) {
-					readers.add(readMethod(bean, method));
-				}
-			}
+			List<AttributeReader> readers = stream(bean.getClass().getDeclaredMethods())
+					.filter(m -> m.isAnnotationPresent(annotationClass) && isReadMethod(m))
+					.map(m -> readMethod(bean, m)).collect(toList());
 
 			for (Field field : bean.getClass().getDeclaredFields()) {
 				if (field.isAnnotationPresent(annotationClass)) {
@@ -181,12 +179,9 @@ public class FindByAnnotation implements AttributeFinder {
 	@LapsedWith(module = JDK8, value = "Streams")
 	public Iterable<AttributeWriter> listWriters(Object bean) {
 		try {
-			List<AttributeWriter> writers = new ArrayList<>();
-			for (Method method : bean.getClass().getDeclaredMethods()) {
-				if (method.isAnnotationPresent(annotationClass) && isWriteMethod(method)) {
-					writers.add(writeMethod(bean, method));
-				}
-			}
+			List<AttributeWriter> writers = stream(bean.getClass().getDeclaredMethods())
+					.filter(m -> m.isAnnotationPresent(annotationClass) && isWriteMethod(m))
+					.map(m -> writeMethod(bean, m)).collect(toList());
 
 			for (Field field : bean.getClass().getDeclaredFields()) {
 				if (field.isAnnotationPresent(annotationClass)) {
@@ -206,20 +201,19 @@ public class FindByAnnotation implements AttributeFinder {
 		}
 	}
 
-	private FieldAccess fieldAccess(Object bean, Field field) throws IllegalAccessException, InvocationTargetException {
+	private FieldAccess fieldAccess(Object bean, Field field) {
 		return new FieldAccess(bean, annoValue(field.getAnnotation(annotationClass)), field);
 	}
 
-	private ReadMethod readMethod(Object bean, Method method) throws IllegalAccessException, InvocationTargetException {
+	private ReadMethod readMethod(Object bean, Method method) {
 		return new ReadMethod(bean, annoValue(method.getAnnotation(annotationClass)), method);
 	}
 
-	private WriteMethod writeMethod(Object bean, Method method)
-			throws IllegalAccessException, InvocationTargetException {
+	private WriteMethod writeMethod(Object bean, Method method) {
 		return new WriteMethod(bean, annoValue(method.getAnnotation(annotationClass)), method);
 	}
 
-	private Optional<? extends AttributeReader> readMethodForAttribute(Object bean, String name) throws Exception {
+	private Optional<? extends AttributeReader> readMethodForAttribute(Object bean, String name) {
 		return Streams.stream(FindByIntrospection.beanAttributes().listReaders(bean))
 				.filter(r -> r.getName().equals(name)).findFirst();
 	}
@@ -229,8 +223,12 @@ public class FindByAnnotation implements AttributeFinder {
 				.filter(r -> r.getName().equals(name)).findFirst();
 	}
 
-	private String annoValue(Annotation annotation) throws IllegalAccessException, InvocationTargetException {
-		return (String) getAnnotationsAttributeReadMethod.invoke(annotation);
+	private String annoValue(Annotation annotation) {
+		try {
+			return (String) getAnnotationsAttributeReadMethod.invoke(annotation);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw propagate(e);
+		}
 	}
 
 }

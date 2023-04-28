@@ -33,18 +33,17 @@ public interface Attribute {
 		String getName();
 
 		Class<?> getType();
+
+		default void addAnnotations(Collection<Annotation> annotations) {
+		}
 	}
 
 	interface AttributeReader extends TypedAttributeProvider {
 		Object getValue() throws Exception;
-
-		void addAnnotations(Collection<Annotation> annotations);
 	}
 
 	interface AttributeWriter extends TypedAttributeProvider {
 		void setValue(Object value) throws Exception;
-
-		void addAnnotations(Collection<Annotation> annotations);
 	}
 
 	String getName();

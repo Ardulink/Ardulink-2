@@ -28,6 +28,7 @@ import static org.ardulink.util.Throwables.propagate;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -116,12 +117,7 @@ public class BeanProperties {
 		@Override
 		public Annotation[] getAnnotations() {
 			Set<Annotation> annos = new LinkedHashSet<>();
-			if (reader != null) {
-				reader.addAnnotations(annos);
-			}
-			if (writer != null) {
-				writer.addAnnotations(annos);
-			}
+			Stream.of(reader, writer).filter(Objects::nonNull).forEach(p -> p.addAnnotations(annos));
 			return annos.toArray(new Annotation[annos.size()]);
 		}
 
