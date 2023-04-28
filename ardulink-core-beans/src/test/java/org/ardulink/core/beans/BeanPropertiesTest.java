@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.beans;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static java.util.Arrays.asList;
 import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static org.ardulink.core.beans.finder.impl.FindByFieldAccess.directFieldAccess;
 import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
@@ -25,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.annotation.Retention;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -160,7 +160,7 @@ class BeanPropertiesTest {
 		BeanProperties bp = BeanProperties.forBean(new BeanWithReadMethod());
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName()).isEqualTo("foo");
-		assertThat(attribute.getType().getName()).isEqualTo(String.class.getName());
+		assertThat(attribute.getType()).isEqualTo(String.class);
 	}
 
 	@Test
@@ -168,7 +168,7 @@ class BeanPropertiesTest {
 		BeanProperties bp = BeanProperties.forBean(new BeanWithWriteMethod());
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName()).isEqualTo("foo");
-		assertThat(attribute.getType().getName()).isEqualTo(String.class.getName());
+		assertThat(attribute.getType()).isEqualTo(String.class);
 	}
 
 	@Test
@@ -187,7 +187,7 @@ class BeanPropertiesTest {
 		String value = "bar";
 		BeanProperties bp = BeanProperties.forBean(new BeanWithReadAndWriteMethod());
 		Attribute attribute = bp.getAttribute("foo");
-		attribute.writeValue("bar");
+		attribute.writeValue(value);
 		assertThat(attribute.getName()).isEqualTo("foo");
 		assertThat(attribute.readValue()).isEqualTo(value);
 	}
@@ -198,7 +198,7 @@ class BeanPropertiesTest {
 				.using(beanAttributes(), propertyAnnotated(OurOwnTestAnno.class)).build();
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName()).isEqualTo("foo");
-		assertThat(attribute.getType().getName()).isEqualTo(String.class.getName());
+		assertThat(attribute.getType()).isEqualTo(String.class);
 	}
 
 	@Test
@@ -207,7 +207,7 @@ class BeanPropertiesTest {
 				.using(beanAttributes(), propertyAnnotated(OurOwnTestAnno.class)).build();
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName()).isEqualTo("foo");
-		assertThat(attribute.getType().getName()).isEqualTo(String.class.getName());
+		assertThat(attribute.getType()).isEqualTo(String.class);
 	}
 
 	@Test
@@ -235,7 +235,7 @@ class BeanPropertiesTest {
 		BeanProperties bp = BeanProperties.builder(bean).using(directFieldAccess()).build();
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName()).isEqualTo("foo");
-		assertThat(attribute.getType().getName()).isEqualTo(String.class.getName());
+		assertThat(attribute.getType()).isEqualTo(String.class);
 		attribute.writeValue(value);
 		assertThat(bean.foo).isEqualTo((Object) value);
 	}
@@ -245,13 +245,13 @@ class BeanPropertiesTest {
 		BeanProperties bp = BeanProperties.builder(new BeanWithDifferentTypes())
 				.using(propertyAnnotated(OurOwnTestAnno.class)).build();
 		Attribute attribute = bp.getAttribute("weHaveToUseAnnotationsSinceThisWontWorkWithBeans");
-		assertThat(attribute.getType().getName()).isEqualTo(Collection.class.getName());
+		assertThat(attribute.getType()).isEqualTo(Collection.class);
 	}
 
 	@Test
 	void canlistAttributes() {
 		BeanProperties bp = BeanProperties.forBean(new BeanWithMultipleAttributes());
-		assertThat(new ArrayList<>(bp.attributeNames())).isEqualTo(Arrays.asList("a", "b"));
+		assertThat(new ArrayList<>(bp.attributeNames())).containsExactly("a", "b");
 	}
 
 	@Test
@@ -260,11 +260,13 @@ class BeanPropertiesTest {
 		BeanProperties bp = BeanProperties.builder(bean).using(propertyAnnotated(OurOwnTestAnno.class)).build();
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName()).isEqualTo("foo");
-		assertThat(attribute.getType().getName()).isEqualTo(List.class.getName());
-		attribute.writeValue(Arrays.asList("1", "2", "3"));
-		assertThat(bean.getValues()).isEqualTo(Arrays.asList("1", "2", "3"));
-		bean.setValues(Arrays.asList("3", "2", "1"));
-		assertThat(attribute.readValue()).isEqualTo(Arrays.asList("3", "2", "1"));
+		assertThat(attribute.getType()).isEqualTo(List.class);
+		List<String> values1 = asList("1", "2", "3");
+		attribute.writeValue(values1);
+		assertThat(bean.getValues()).isEqualTo(values1);
+		List<String> values2 = asList("3", "2", "1");
+		bean.setValues(values2);
+		assertThat(attribute.readValue()).isEqualTo(values2);
 	}
 
 	@Test
@@ -274,11 +276,13 @@ class BeanPropertiesTest {
 				.using(beanAttributes(), propertyAnnotated(OurOwnTestAnno.class)).build();
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName()).isEqualTo("foo");
-		assertThat(attribute.getType().getName()).isEqualTo(List.class.getName());
-		attribute.writeValue(Arrays.asList("1", "2", "3"));
-		assertThat(bean.values).isEqualTo(Arrays.asList("1", "2", "3"));
-		bean.values = Arrays.asList("3", "2", "1");
-		assertThat(attribute.readValue()).isEqualTo(Arrays.asList("3", "2", "1"));
+		assertThat(attribute.getType()).isEqualTo(List.class);
+		List<String> values1 = asList("1", "2", "3");
+		attribute.writeValue(values1);
+		assertThat(bean.values).isEqualTo(values1);
+		List<String> values2 = asList("3", "2", "1");
+		bean.values = values2;
+		assertThat(attribute.readValue()).isEqualTo(values2);
 	}
 
 	@Test
@@ -288,7 +292,7 @@ class BeanPropertiesTest {
 				.using(beanAttributes(), propertyAnnotated(OurOwnTestAnno.class, "someOtherAttribute")).build();
 		Attribute attribute = bp.getAttribute("foo");
 		assertThat(attribute.getName()).isEqualTo("foo");
-		assertThat(attribute.getType().getName()).isEqualTo(List.class.getName());
+		assertThat(attribute.getType()).isEqualTo(List.class);
 		// rest remains
 	}
 
