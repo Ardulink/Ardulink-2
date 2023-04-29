@@ -36,7 +36,6 @@ import static org.ardulink.util.URIs.newURI;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -247,10 +246,9 @@ public abstract class LinkManager {
 			private Attribute choicesFor(C linkConfig) {
 				Attribute choiceFor = BeanProperties.builder(linkConfig).using(propertyAnnotated(ChoiceFor.class))
 						.build().getAttribute(attribute.getName());
-				if (choiceFor == null && attribute.getType().isEnum()) {
-					return new DefaultAttribute(attribute.getName(), attribute.getType(), hardCodedValues(), null);
-				}
-				return choiceFor;
+				return choiceFor == null && attribute.getType().isEnum()
+						? new DefaultAttribute(attribute.getName(), attribute.getType(), hardCodedValues(), null)
+						: choiceFor;
 			}
 
 			private AttributeReader hardCodedValues() {
@@ -261,7 +259,7 @@ public abstract class LinkManager {
 			private List<ConfigAttribute> resolveDeps(Attribute choiceFor) {
 				ChoiceFor cfa = choiceFor.getAnnotation(ChoiceFor.class);
 				return cfa == null ? emptyList()
-						: Arrays.stream(cfa.dependsOn()).map(name -> getAttribute(name)).collect(toList());
+						: stream(cfa.dependsOn()).map(name -> getAttribute(name)).collect(toList());
 			}
 
 			@Override
