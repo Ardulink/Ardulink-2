@@ -89,8 +89,6 @@ public abstract class LinkManager {
 
 	public interface ConfigAttribute {
 
-		ConfigAttribute[] EMPTY_ARRAY = new ConfigAttribute[0];
-
 		/**
 		 * Returns the name of this attribute. If there is a localized name available
 		 * the localized named is returned.
@@ -344,8 +342,8 @@ public abstract class LinkManager {
 				if (Integer.class.isAssignableFrom(Primitives.wrap(getType()))) {
 					Annotation[] annotations = attribute.getAnnotations();
 					return newNumberValidationInfo(
-							find(annotations, Min.class).map(min -> min.value()).orElse(MIN_VALUE),
-							find(annotations, Max.class).map(max -> max.value()).orElse(MAX_VALUE));
+							find(annotations, Min.class).map(Min::value).orElse(MIN_VALUE),
+							find(annotations, Max.class).map(Max::value).orElse(MAX_VALUE));
 				}
 				return ValidationInfo.NULL;
 			}

@@ -69,8 +69,9 @@ class PrimitivesTest {
 	}
 
 	@Test
-	void allPrimitiveTypesContainsInt() {
-		assertThat(Primitives.allPrimitiveTypes()).contains(int.class);
+	void allPrimitiveTypesContainsAllPrimitiveTypes() {
+		assertThat(Primitives.allPrimitiveTypes()).containsExactlyInAnyOrder(boolean.class, byte.class, int.class,
+				long.class, short.class, double.class, float.class, char.class);
 	}
 
 	@Test
