@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.qos;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
+import static java.util.stream.IntStream.rangeClosed;
 import static org.ardulink.util.Bytes.concat;
 import static org.ardulink.util.Throwables.propagate;
 
@@ -93,12 +94,12 @@ public class ArduinoDouble implements Closeable {
 			this.whenReceived = whenReceived;
 		}
 
-		public void thenRespond(String thenRespond) {
+		public void respondWith(String thenRespond) {
 			this.thenRespond = thenRespond;
 			data.add(this);
 		}
 
-		public void thenDoNotRespond() {
+		public void doNotRespond() {
 			this.thenRespond = NO_RESPONSE;
 			data.add(this);
 		}
@@ -115,12 +116,7 @@ public class ArduinoDouble implements Closeable {
 		}
 
 		private Object[] collectGroups() {
-			int groupCount = matcher.groupCount();
-			Object[] groups = new Object[groupCount];
-			for (int i = 0; i < groupCount; i++) {
-				groups[i] = matcher.group(i + 1);
-			}
-			return groups;
+			return rangeClosed(1, matcher.groupCount()).mapToObj(matcher::group).toArray(Object[]::new);
 		}
 
 	}

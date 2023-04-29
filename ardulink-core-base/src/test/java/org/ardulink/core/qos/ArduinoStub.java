@@ -38,15 +38,15 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  * [adsense]
  *
  */
-public class Arduino implements AfterEachCallback {
+public class ArduinoStub implements AfterEachCallback {
 
 	private final ArduinoDouble arduinoDouble;
 
-	public static Arduino newArduino() {
-		return new Arduino();
+	public static ArduinoStub newArduinoStub() {
+		return new ArduinoStub();
 	}
 
-	public Arduino() {
+	public ArduinoStub() {
 		this.arduinoDouble = createArduinoDouble();
 	}
 
@@ -71,7 +71,7 @@ public class Arduino implements AfterEachCallback {
 		return arduinoDouble.whenReceive(string);
 	}
 
-	public RegexAdder whenReceive(Pattern pattern) {
+	public RegexAdder onReceive(Pattern pattern) {
 		return arduinoDouble.whenReceive(pattern);
 	}
 

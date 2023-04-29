@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.qos;
 
+import static java.lang.Integer.MAX_VALUE;
+import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.ardulink.core.Pin.analogPin;
@@ -49,7 +51,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class QosLinkTest {
 
 	@RegisterExtension
-	Arduino arduino = Arduino.newArduino();
+	ArduinoStub arduinoStub = ArduinoStub.newArduinoStub();
 
 	ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
 	QosLink qosLink;
@@ -63,8 +65,8 @@ class QosLinkTest {
 
 	@Test
 	void canDoGuranteedDelivery() throws Exception {
-		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).thenRespond(lf("alp://rply/ok?id=%s"));
-		qosLink = newQosLink(connectionTo(arduino), 15, MINUTES);
+		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ok?id=%s"));
+		qosLink = newQosLink(connectionTo(arduinoStub), MAX_VALUE, DAYS);
 		assertThat(qosLink.sendNoTone(analogPin(3))).isEqualTo(1);
 		assertThat(qosLink.sendNoTone(analogPin(3))).isEqualTo(2);
 		assertThat(qosLink.sendNoTone(analogPin(3))).isEqualTo(3);
@@ -72,8 +74,8 @@ class QosLinkTest {
 
 	@Test
 	void doesThrowExceptionIfNotResponseReceivedWithinHalfAsecond() throws Exception {
-		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).thenDoNotRespond();
-		qosLink = newQosLink(connectionTo(arduino), 500, MILLISECONDS);
+		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).doNotRespond();
+		qosLink = newQosLink(connectionTo(arduinoStub), 500, MILLISECONDS);
 		IllegalStateException exception = assertThrows(IllegalStateException.class,
 				() -> qosLink.sendNoTone(analogPin(3)));
 		assertThat(exception).hasMessageContaining("response").hasMessageContaining("500 MILLISECONDS");
@@ -81,8 +83,8 @@ class QosLinkTest {
 
 	@Test
 	void doesThrowExceptionIfKoResponse() throws Exception {
-		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).thenRespond(lf("alp://rply/ko?id=%s"));
-		Connection connection = connectionTo(arduino);
+		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ko?id=%s"));
+		Connection connection = connectionTo(arduinoStub);
 		qosLink = newQosLink(connection, 500 + someMillisMore(), MILLISECONDS);
 		IllegalStateException exception = assertThrows(IllegalStateException.class,
 				() -> qosLink.sendNoTone(analogPin(3)));
@@ -91,10 +93,10 @@ class QosLinkTest {
 
 	@Test
 	void secondCallPassesIfFirstOneKeepsUnresponded() throws Exception {
-		arduino.whenReceive(regex(lf("alp:\\/\\/tone\\/1\\/2\\/3\\?id\\=(\\d)"))).thenDoNotRespond();
-		arduino.whenReceive(regex(lf("alp:\\/\\/tone\\/4\\/5\\/6\\?id\\=(\\d)")))
-				.thenRespond(lf("alp://rply/ok?id=%s"));
-		qosLink = newQosLink(connectionTo(arduino), 500, MILLISECONDS);
+		arduinoStub.onReceive(regex(lf("alp:\\/\\/tone\\/1\\/2\\/3\\?id\\=(\\d)"))).doNotRespond();
+		arduinoStub.onReceive(regex(lf("alp:\\/\\/tone\\/4\\/5\\/6\\?id\\=(\\d)")))
+				.respondWith(lf("alp://rply/ok?id=%s"));
+		qosLink = newQosLink(connectionTo(arduinoStub), 500, MILLISECONDS);
 		IllegalStateException exception = assertThrows(IllegalStateException.class,
 				() -> qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2).withDuration(3, MILLISECONDS)));
 		assertThat(exception).hasMessageContaining("No response");
@@ -105,7 +107,7 @@ class QosLinkTest {
 		return new QosLink(new ConnectionBasedLink(connection, byteStreamProcessor), timeout, timeUnit);
 	}
 
-	private StreamConnection connectionTo(Arduino arduino) {
+	private StreamConnection connectionTo(ArduinoStub arduino) {
 		return new StreamConnection(arduino.getInputStream(), arduino.getOutputStream(), byteStreamProcessor);
 	}
 

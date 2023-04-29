@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core;
 
+import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.ConnectionBasedLink.Mode.READY_MESSAGE_ONLY;
@@ -26,7 +27,7 @@ import java.util.regex.Pattern;
 
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.core.qos.Arduino;
+import org.ardulink.core.qos.ArduinoStub;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -46,10 +47,10 @@ class WaitForArduinoToBootTest {
 	private static final ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
 
 	@RegisterExtension
-	Arduino arduino = Arduino.newArduino();
+	ArduinoStub arduinoStub = ArduinoStub.newArduinoStub();
 
 	ConnectionBasedLink link = new ConnectionBasedLink(
-			new StreamConnection(arduino.getInputStream(), arduino.getOutputStream(), byteStreamProcessor),
+			new StreamConnection(arduinoStub.getInputStream(), arduinoStub.getOutputStream(), byteStreamProcessor),
 			byteStreamProcessor);
 
 	@AfterEach
@@ -59,32 +60,32 @@ class WaitForArduinoToBootTest {
 
 	@Test
 	void ifNoResponseReceivedWithin1SecondWaitWillReturnFalse() throws IOException {
-		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))).thenDoNotRespond();
+		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))).doNotRespond();
 		assertThat(link.waitForArduinoToBoot(1, SECONDS)).isFalse();
 	}
 
 	@Test
-	void noNeedToWaitIfArduinoResponds() throws IOException {
-		arduino.whenReceive(regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))).thenRespond(lf("alp://rply/ok?id=%s"));
-		assertThat(link.waitForArduinoToBoot(3, DAYS)).isTrue();
+	void noNeedToWaitIfArduinoDoesRespond() throws IOException {
+		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ok?id=%s"));
+		assertThat(link.waitForArduinoToBoot(MAX_VALUE, DAYS)).isTrue();
 	}
 
 	@Test
 	void canDetectReadyPaket() throws IOException {
-		arduino.after(1, SECONDS).send(lf("alp://ready/"));
-		assertThat(link.waitForArduinoToBoot(3, DAYS, READY_MESSAGE_ONLY)).isTrue();
+		arduinoStub.after(1, SECONDS).send(lf("alp://ready/"));
+		assertThat(link.waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY)).isTrue();
 	}
 
 	@Test
 	void ignoresMisformedReadyPaket() throws IOException {
-		arduino.after(1, SECONDS).send(lf("alp://XXXXXreadyXXXXX/"));
+		arduinoStub.after(1, SECONDS).send(lf("alp://XXXXXreadyXXXXX/"));
 		assertThat(link.waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY)).isFalse();
 	}
 
 	@Test
 	void detectAlreadySentReadyPaket() throws IOException {
-		arduino.send(lf("alp://ready/"));
-		assertThat(link.waitForArduinoToBoot(3, DAYS, READY_MESSAGE_ONLY)).isTrue();
+		arduinoStub.send(lf("alp://ready/"));
+		assertThat(link.waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY)).isTrue();
 	}
 
 	private Pattern regex(String regex) {
