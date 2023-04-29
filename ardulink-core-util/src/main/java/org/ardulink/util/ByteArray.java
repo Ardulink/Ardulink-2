@@ -61,6 +61,19 @@ public class ByteArray {
 		return Bytes.indexOf(data, delimiter, 0, endPointer);
 	}
 
+	public void append(byte b) {
+		append(new byte[] { b });
+	}
+
+	/**
+	 * Appends the passed buffer to the internal byte[].
+	 * 
+	 * @param buffer the data to append
+	 */
+	public void append(byte[] bytes) {
+		append(bytes, bytes.length);
+	}
+
 	/**
 	 * Appends the passed buffer to the internal byte[].
 	 * 
@@ -71,10 +84,6 @@ public class ByteArray {
 		checkArgument(this.endPointer + bytesRead <= this.data.length, "buffer overrun");
 		System.arraycopy(buffer, 0, this.data, this.endPointer, bytesRead);
 		this.endPointer += bytesRead;
-	}
-
-	public void append(byte b) {
-		append(new byte[] { b }, 1);
 	}
 
 	public int length() {

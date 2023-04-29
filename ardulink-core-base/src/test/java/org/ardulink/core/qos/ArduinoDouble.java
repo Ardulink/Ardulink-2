@@ -18,7 +18,6 @@ package org.ardulink.core.qos;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.stream.IntStream.rangeClosed;
-import static org.ardulink.util.Bytes.concat;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.io.Closeable;
@@ -31,6 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.ardulink.core.StreamReader;
+import org.ardulink.util.ByteArray;
 import org.ardulink.util.Lists;
 
 /**
@@ -112,10 +112,10 @@ public class ArduinoDouble implements Closeable {
 
 		@Override
 		public String getResponse() {
-			return thenRespond == null ? null : String.format(thenRespond, collectGroups());
+			return thenRespond == null ? null : String.format(thenRespond, groupValues());
 		}
 
-		private Object[] collectGroups() {
+		private Object[] groupValues() {
 			return rangeClosed(1, matcher.groupCount()).mapToObj(matcher::group).toArray(Object[]::new);
 		}
 
@@ -156,20 +156,19 @@ public class ArduinoDouble implements Closeable {
 		os2 = new PipedOutputStream(is2);
 		streamReader = new StreamReader(is1) {
 
-			private byte[] bytes = new byte[0];
+			private final ByteArray bytes = new ByteArray();
 
 			@Override
 			protected void received(byte[] bytes) throws Exception {
-				this.bytes = concat(this.bytes, bytes);
+				this.bytes.append(bytes);
 				for (ReponseGenerator generator : data) {
-					String received = new String(this.bytes);
-					if (generator.matches(received)) {
+					if (generator.matches(new String(this.bytes.copy()))) {
 						String response = generator.getResponse();
 						if (response != NO_RESPONSE) {
 							send(response);
 							os2.flush();
 						}
-						this.bytes = new byte[0];
+						this.bytes.clear();
 					}
 				}
 
