@@ -19,6 +19,7 @@ package org.ardulink.core.linkmanager;
 import static java.lang.Long.MAX_VALUE;
 import static java.lang.Long.MIN_VALUE;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -44,6 +45,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.function.BiFunction;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -69,6 +72,7 @@ import org.ardulink.util.Throwables;
  * [adsense]
  *
  */
+@SuppressWarnings("rawtypes")
 public abstract class LinkManager {
 
 	public interface NumberValidationInfo extends ValidationInfo {
@@ -200,14 +204,14 @@ public abstract class LinkManager {
 
 		@Override
 		public void addAnnotations(Collection<Annotation> annotations) {
-			// since this class has no reference to a method or field there are
-			// no annos to add
+			// since this class has no reference to a method or field there are no
+			// annotations to add
 		}
 	}
 
 	private static class DefaultConfigurer<T extends LinkConfig> implements Configurer {
 
-		public class ConfigAttributeAdapter<T extends LinkConfig> implements ConfigAttribute {
+		private class ConfigAttributeAdapter<C extends LinkConfig> implements ConfigAttribute {
 
 			private final Attribute attribute;
 			private final Attribute getChoicesFor;
@@ -215,7 +219,7 @@ public abstract class LinkManager {
 			private List<Object> cachedChoiceValues;
 			private final ResourceBundle nls;
 
-			public ConfigAttributeAdapter(T linkConfig, BeanProperties beanProperties, String key) {
+			public ConfigAttributeAdapter(C linkConfig, BeanProperties beanProperties, String key) {
 				this.attribute = beanProperties.getAttribute(key);
 				checkArgument(attribute != null, "Could not determine attribute %s. Available attributes are %s", key,
 						beanProperties.attributeNames());
@@ -240,7 +244,7 @@ public abstract class LinkManager {
 				return clazz.getPackage().getName() + "." + nls.value();
 			}
 
-			private Attribute choicesFor(T linkConfig) {
+			private Attribute choicesFor(C linkConfig) {
 				Attribute choiceFor = BeanProperties.builder(linkConfig).using(propertyAnnotated(ChoiceFor.class))
 						.build().getAttribute(attribute.getName());
 				if (choiceFor == null && attribute.getType().isEnum()) {
@@ -315,7 +319,7 @@ public abstract class LinkManager {
 				try {
 					if (this.cachedChoiceValues == null || changed) {
 						Object[] value = loadChoiceValues();
-						this.cachedChoiceValues = Arrays.asList(value);
+						this.cachedChoiceValues = asList(value);
 						changed = false;
 					}
 					return this.cachedChoiceValues.toArray(new Object[this.cachedChoiceValues.size()]);
@@ -384,7 +388,6 @@ public abstract class LinkManager {
 
 		class CacheKey {
 
-			@SuppressWarnings("rawtypes")
 			private final Class<? extends LinkFactory> factoryType;
 
 			private final Map<String, Object> values;
@@ -417,6 +420,7 @@ public abstract class LinkManager {
 				if ((obj == null) || (getClass() != obj.getClass())) {
 					return false;
 				}
+				@SuppressWarnings("unchecked")
 				CacheKey other = (CacheKey) obj;
 				if (factoryType == null) {
 					if (other.factoryType != null) {
@@ -427,7 +431,8 @@ public abstract class LinkManager {
 				}
 				if (values == null) {
 					return other.values == null;
-				} else return values.equals(other.values);
+				} else
+					return values.equals(other.values);
 			}
 
 			@Override
@@ -448,11 +453,7 @@ public abstract class LinkManager {
 
 		@Override
 		public Collection<String> getAttributes() {
-			try {
-				return beanProperties.attributeNames();
-			} catch (Exception e) {
-				throw propagate(e);
-			}
+			return beanProperties.attributeNames();
 		}
 
 		@Override
@@ -486,7 +487,7 @@ public abstract class LinkManager {
 		private void checkIfValid(ConfigAttribute attribute) {
 			Object value = attribute.getValue();
 			if (value != null) {
-				List<Object> validValues = Arrays.asList(attribute.getChoiceValues());
+				List<Object> validValues = asList(attribute.getChoiceValues());
 				checkArgument(validValues.contains(value), "%s is not a valid value for %s, valid values are %s", value,
 						attribute.getName(), validValues);
 			}
@@ -507,16 +508,23 @@ public abstract class LinkManager {
 
 			private Optional<LinkFactory> getConnectionFactory(String name) {
 				List<LinkFactory> connectionFactories = getConnectionFactories();
-				Optional<LinkFactory> first = connectionFactories.stream().filter(f -> f.getName().equals(name))
-						.findFirst();
-				if (first.isPresent()) {
-					return first;
-				}
+				BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function1 = (t, u) -> getByName(t, u);
+				BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function2 = (t, u) -> getByAlias(t, u);
+				return Stream.of(function1, function2).map(f -> f.apply(name, connectionFactories))
+						.filter(Optional::isPresent).map(Optional::get).findFirst();
+			}
 
-				return connectionFactories.stream().filter(f -> {
-					Alias alias = f.getClass().getAnnotation(LinkFactory.Alias.class);
-					return alias != null && Arrays.asList(alias.value()).contains(name);
-				}).findFirst();
+			private Optional<LinkFactory> getByName(String name, List<LinkFactory> connectionFactories) {
+				return connectionFactories.stream().filter(f -> f.getName().equals(name)).findFirst();
+			}
+
+			private Optional<LinkFactory> getByAlias(String name, List<LinkFactory> connectionFactories) {
+				return connectionFactories.stream().filter(f -> hasAliasNamed(name, f)).findFirst();
+			}
+
+			private boolean hasAliasNamed(String name, LinkFactory factory) {
+				Alias alias = factory.getClass().getAnnotation(LinkFactory.Alias.class);
+				return (alias == null ? emptyList() : asList(alias.value())).contains(name);
 			}
 
 			private List<LinkFactory> getConnectionFactories() {
@@ -530,6 +538,7 @@ public abstract class LinkManager {
 				LinkFactory connectionFactory = getConnectionFactory(name)
 						.orElseThrow(() -> new IllegalArgumentException(
 								format("No factory registered for \"%s\", available names are %s", name, listURIs())));
+				@SuppressWarnings("unchecked")
 				Configurer configurer = new DefaultConfigurer(connectionFactory);
 				return uri.getQuery() == null ? configurer : configure(configurer, uri.getQuery().split("\\&"));
 			}

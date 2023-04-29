@@ -19,9 +19,11 @@ package org.ardulink.core.beans.finder.impl;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
+import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
 import static org.ardulink.core.beans.finder.impl.ReadMethod.isReadMethod;
 import static org.ardulink.core.beans.finder.impl.WriteMethod.isWriteMethod;
 import static org.ardulink.util.Preconditions.checkArgument;
+import static org.ardulink.util.Streams.stream;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
 
@@ -33,11 +35,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.Attribute.AttributeWriter;
+import org.ardulink.core.beans.Attribute.TypedAttributeProvider;
 import org.ardulink.core.beans.finder.api.AttributeFinder;
-import org.ardulink.util.Streams;
 import org.ardulink.util.anno.LapsedWith;
 
 /**
@@ -214,13 +218,19 @@ public class FindByAnnotation implements AttributeFinder {
 	}
 
 	private Optional<? extends AttributeReader> readMethodForAttribute(Object bean, String name) {
-		return Streams.stream(FindByIntrospection.beanAttributes().listReaders(bean))
-				.filter(r -> r.getName().equals(name)).findFirst();
+		return findWithName(name, stream(beanAttributes().listReaders(bean)));
 	}
 
-	private Optional<? extends AttributeWriter> writeMethodForAttribute(Object bean, String name) throws Exception {
-		return Streams.stream(FindByIntrospection.beanAttributes().listWriters(bean))
-				.filter(r -> r.getName().equals(name)).findFirst();
+	private Optional<? extends AttributeWriter> writeMethodForAttribute(Object bean, String name) {
+		return findWithName(name, stream(beanAttributes().listWriters(bean)));
+	}
+
+	private <T extends TypedAttributeProvider> Optional<T> findWithName(String name, Stream<T> stream) {
+		return stream.filter(hasName(name)).findFirst();
+	}
+
+	private Predicate<TypedAttributeProvider> hasName(String name) {
+		return p -> p.getName().equals(name);
 	}
 
 	private String annoValue(Annotation annotation) {
