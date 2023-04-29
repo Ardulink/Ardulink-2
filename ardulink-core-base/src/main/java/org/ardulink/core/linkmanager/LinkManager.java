@@ -314,8 +314,7 @@ public abstract class LinkManager {
 				checkState(hasChoiceValues(), "attribute does not have choiceValues");
 				try {
 					if (this.cachedChoiceValues == null || changed) {
-						Object[] value = loadChoiceValues();
-						this.cachedChoiceValues = asList(value);
+						this.cachedChoiceValues = asList(loadChoiceValues());
 						changed = false;
 					}
 					return this.cachedChoiceValues.toArray(new Object[this.cachedChoiceValues.size()]);
@@ -339,13 +338,17 @@ public abstract class LinkManager {
 
 			@Override
 			public ValidationInfo getValidationInfo() {
-				if (Integer.class.isAssignableFrom(Primitives.wrap(getType()))) {
-					Annotation[] annotations = attribute.getAnnotations();
-					return newNumberValidationInfo(
-							find(annotations, Min.class).map(Min::value).orElse(MIN_VALUE),
-							find(annotations, Max.class).map(Max::value).orElse(MAX_VALUE));
-				}
-				return ValidationInfo.NULL;
+				return Integer.class.isAssignableFrom(Primitives.wrap(getType())) //
+						? newNumberValidationInfo() //
+						: ValidationInfo.NULL;
+			}
+
+			private ValidationInfo newNumberValidationInfo() {
+				Annotation[] annotations = attribute.getAnnotations();
+				return newNumberValidationInfo( //
+						find(annotations, Min.class).map(Min::value).orElse(MIN_VALUE), //
+						find(annotations, Max.class).map(Max::value).orElse(MAX_VALUE) //
+				);
 			}
 
 			private <S extends Annotation> Optional<S> find(Annotation[] annotations, Class<S> annoClass) {

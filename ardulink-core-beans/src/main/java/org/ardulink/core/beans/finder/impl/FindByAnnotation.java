@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -123,24 +124,48 @@ public class FindByAnnotation implements AttributeFinder {
 	}
 
 	private final Class<? extends Annotation> annotationClass;
-	private final Method getAnnotationsAttributeReadMethod;
+	private final Function<Annotation, String> getAnnotationsAttributeReadFunction;
 
 	private FindByAnnotation(Class<? extends Annotation> annotationClass, String annotationAttribute) {
-		this.annotationClass = annotationClass;
-		this.getAnnotationsAttributeReadMethod = getAttribMethod(annotationClass, annotationAttribute);
-		Class<?> returnType = this.getAnnotationsAttributeReadMethod.getReturnType();
-		checkArgument(returnType.equals(String.class), "The returntype of %s's %s has to be %s but was %s",
-				annotationClass.getName(), annotationAttribute, String.class, returnType);
+		this(annotationClass, toMethod(annotationClass, annotationAttribute));
 	}
 
-	private Method getAttribMethod(Class<? extends Annotation> annotationClass, String annotationAttribute) {
+	private FindByAnnotation(Class<? extends Annotation> annotationClass, Method method) {
+		this.annotationClass = annotationClass;
+		this.getAnnotationsAttributeReadFunction = toFunction(method);
+	}
+
+	private FindByAnnotation(Class<Annotation> annotationClass, Function<Annotation, String> function) {
+		this.annotationClass = annotationClass;
+		this.getAnnotationsAttributeReadFunction = function;
+	}
+
+	private static Method toMethod(Class<? extends Annotation> annotationClass, String annotationAttribute) {
+		Method getAnnotationsAttributeReadMethod = getAttribMethod(annotationClass, annotationAttribute);
+		Class<?> returnType = getAnnotationsAttributeReadMethod.getReturnType();
+		checkArgument(returnType.equals(String.class), "The returntype of %s's %s has to be %s but was %s",
+				annotationClass.getName(), annotationAttribute, String.class, returnType);
+		return getAnnotationsAttributeReadMethod;
+	}
+
+	private static Function<Annotation, String> toFunction(Method method) {
+		return a -> {
+			try {
+				return (String) method.invoke(a);
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				throw propagate(e);
+			}
+		};
+	}
+
+	private static Method getAttribMethod(Class<? extends Annotation> annotationClass, String annotationAttribute) {
 		try {
 			return annotationClass.getMethod(annotationAttribute);
 		} catch (SecurityException e) {
 			throw propagate(e);
 		} catch (NoSuchMethodException e) {
 			throw new IllegalArgumentException(
-					annotationClass.getName() + " has no attribute named " + annotationAttribute);
+					String.format("%s has no attribute named %s", annotationClass.getName(), annotationAttribute));
 		}
 	}
 
@@ -234,11 +259,7 @@ public class FindByAnnotation implements AttributeFinder {
 	}
 
 	private String annoValue(Annotation annotation) {
-		try {
-			return (String) getAnnotationsAttributeReadMethod.invoke(annotation);
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			throw propagate(e);
-		}
+		return getAnnotationsAttributeReadFunction.apply(annotation);
 	}
 
 }
