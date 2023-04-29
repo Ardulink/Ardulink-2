@@ -24,6 +24,7 @@ import java.util.EnumSet;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -35,19 +36,19 @@ import java.util.function.Predicate;
  */
 public enum Primitives {
 
-	INT(Integer.TYPE, Integer.class, s -> Integer.valueOf(s)), //
-	BYTE(Byte.TYPE, Byte.class, s -> Byte.valueOf(s)), //
-	SHORT(Short.TYPE, Short.class, s -> Short.valueOf(s)), //
-	LONG(Long.TYPE, Long.class, s -> Long.valueOf(s)), //
-	FLOAT(Float.TYPE, Float.class, s -> Float.valueOf(s)), //
-	DOUBLE(Double.TYPE, Double.class, s -> Double.valueOf(s)), //
-	BOOLEAN(Boolean.TYPE, Boolean.class, s -> Boolean.valueOf(s)), //
-	CHAR(Character.TYPE, Character.class, s -> {
-		checkArgument(s.length() == 1, "single character expected but got %s", s);
-		return Character.valueOf(s.charAt(0));
-	}) {
+	INT(Integer.TYPE, Integer.class, Integer::valueOf), //
+	BYTE(Byte.TYPE, Byte.class, Byte::valueOf), //
+	SHORT(Short.TYPE, Short.class, Short::valueOf), //
+	LONG(Long.TYPE, Long.class, Long::valueOf), //
+	FLOAT(Float.TYPE, Float.class, Float::valueOf), //
+	DOUBLE(Double.TYPE, Double.class, Double::valueOf), //
+	BOOLEAN(Boolean.TYPE, Boolean.class, Boolean::valueOf), //
+	CHAR(Character.TYPE, Character.class, Primitives::charValueOfHelper);
 
-	};
+	private static char charValueOfHelper(String string) {
+		checkArgument(string.length() == 1, "single character expected but got %s", string);
+		return Character.valueOf(string.charAt(0));
+	}
 
 	private final Class<?> type;
 	private final Class<?> wrapperType;
@@ -71,13 +72,27 @@ public enum Primitives {
 		return findPrimitiveFor(type).map(p -> p.parse(value)).orElse(null);
 	}
 
-	private static java.util.Optional<Primitives> findPrimitiveFor(Class<?> type) {
-		return EnumSet.allOf(Primitives.class).stream().filter(p -> type.isAssignableFrom(p.getType())).findFirst();
+	private static Optional<Primitives> findPrimitiveFor(Class<?> type) {
+		return primitiveMatching(p -> type.isAssignableFrom(p.getType()));
 	}
 
+	/**
+	 * Returns the primitive for the passed primitive class name. If the passed in
+	 * class name isn't a primitive class <code>null</code> is returned.
+	 * 
+	 * @param name class name to find the primitive for
+	 * @return primitive matching or null if not a primitive
+	 */
 	public static Primitives forClassName(String name) {
-		return EnumSet.allOf(Primitives.class).stream().filter(p -> p.getType().getName().equals(name)).findFirst()
-				.orElse(null);
+		return primitiveMatching(p -> p.getType().getName().equals(name)).orElse(null);
+	}
+
+	private static Optional<Primitives> primitiveMatching(Predicate<? super Primitives> predicate) {
+		return streamOfAll().filter(predicate).findFirst();
+	}
+
+	private static Stream<Primitives> streamOfAll() {
+		return EnumSet.allOf(Primitives.class).stream();
 	}
 
 	public Class<?> getType() {
@@ -85,25 +100,38 @@ public enum Primitives {
 	}
 
 	public static boolean isWrapperType(Class<?> clazz) {
-		return EnumSet.allOf(Primitives.class).stream().map(Primitives::getWrapperType).anyMatch(clazz::equals);
+		return streamOfAll().map(Primitives::getWrapperType).anyMatch(clazz::equals);
 	}
 
 	public static Collection<Class<?>> allPrimitiveTypes() {
-		return EnumSet.allOf(Primitives.class).stream().map(Primitives::getType).collect(toList());
+		return streamOfAll().map(Primitives::getType).collect(toList());
 	}
 
+	/**
+	 * Returns the corresponding primitive for the passed wrapper. If the passed in
+	 * class isn't a wrapper type the passed in class is returned.
+	 * 
+	 * @param clazz wrapper class
+	 * @return primitive type
+	 */
 	public static Class<?> unwrap(Class<?> clazz) {
 		return findAndMap(clazz, p -> clazz.equals(p.getWrapperType()), Primitives::getType);
 	}
 
+	/**
+	 * Returns the corresponding wrapper for the passed primitive. If the passed in
+	 * class isn't a primitive type the passed in class is returned.
+	 * 
+	 * @param clazz primitive class
+	 * @return wrapper type
+	 */
 	public static Class<?> wrap(Class<?> clazz) {
 		return findAndMap(clazz, p -> clazz.equals(p.getType()), Primitives::getWrapperType);
 	}
 
 	private static Class<?> findAndMap(Class<?> clazz, Predicate<? super Primitives> predicate,
 			Function<? super Primitives, Class<?>> mapper) {
-		Optional<Class<?>> map = EnumSet.allOf(Primitives.class).stream().filter(predicate).findFirst().map(mapper);
-		return map.orElse(clazz);
+		return primitiveMatching(predicate).map(mapper).orElse(clazz);
 	}
 
 }

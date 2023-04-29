@@ -64,37 +64,37 @@ class PrimitivesTest {
 
 	@Test
 	void isWrapperTypeForNonWrapperReturnsFalse() {
-		assertThat(Primitives.isWrapperType(int.class)).isEqualTo(FALSE);
+		assertThat(Primitives.isWrapperType(int.class)).isFalse();
 	}
 
 	@Test
 	void isWrapperTypeForWrapperReturnsTrue() {
-		assertThat(Primitives.isWrapperType(Integer.class)).isEqualTo(TRUE);
+		assertThat(Primitives.isWrapperType(Integer.class)).isTrue();
 	}
 
 	@Test
 	void allPrimitiveTypesContainsInt() {
-		assertThat(Primitives.allPrimitiveTypes().contains(int.class)).isEqualTo(TRUE);
+		assertThat(Primitives.allPrimitiveTypes()).contains(int.class);
 	}
 
 	@Test
 	void unwrapOnNonWrapperTypeReturnsArgument() {
-		assertThat(Primitives.unwrap(String.class).getName()).isEqualTo(String.class.getName());
+		assertThat(Primitives.unwrap(String.class)).isEqualTo(String.class);
 	}
 
 	@Test
 	void unwrapOnWrapperTypeReturnsWrappedPrimitive() {
-		assertThat(Primitives.unwrap(Integer.class).getName()).isEqualTo(int.class.getName());
+		assertThat(Primitives.unwrap(Integer.class)).isEqualTo(int.class);
 	}
 
 	@Test
 	void wrapOnNonPrimitiveTypeReturnsArgument() {
-		assertThat(Primitives.wrap(String.class).getName()).isEqualTo(String.class.getName());
+		assertThat(Primitives.wrap(String.class)).isEqualTo(String.class);
 	}
 
 	@Test
 	void wrapOnPrimitiveTypeReturnsWrappedType() {
-		assertThat(Primitives.wrap(int.class).getName()).isEqualTo(Integer.class.getName());
+		assertThat(Primitives.wrap(int.class)).isEqualTo(Integer.class);
 	}
 
 }

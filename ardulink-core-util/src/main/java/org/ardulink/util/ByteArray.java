@@ -61,28 +61,34 @@ public class ByteArray {
 		return Bytes.indexOf(data, delimiter, 0, endPointer);
 	}
 
+	/**
+	 * Appends the passed byte to the internal byte[].
+	 * 
+	 * @param b the data to append
+	 */
 	public void append(byte b) {
-		append(new byte[] { b });
+		checkArgument(this.endPointer + 1 <= this.data.length, "buffer overrun");
+		this.data[this.endPointer++] = b;
 	}
 
 	/**
-	 * Appends the passed buffer to the internal byte[].
+	 * Appends the passed bytes to the internal byte[].
 	 * 
-	 * @param buffer the data to append
+	 * @param bytes the data to append
 	 */
 	public void append(byte[] bytes) {
 		append(bytes, bytes.length);
 	}
 
 	/**
-	 * Appends the passed buffer to the internal byte[].
+	 * Appends the passed bytes to the internal byte[].
 	 * 
-	 * @param buffer    the data to append
+	 * @param bytes     the data to append
 	 * @param bytesRead length of the data to append from <code>buffer</code>
 	 */
-	public void append(byte[] buffer, int bytesRead) {
+	public void append(byte[] bytes, int bytesRead) {
 		checkArgument(this.endPointer + bytesRead <= this.data.length, "buffer overrun");
-		System.arraycopy(buffer, 0, this.data, this.endPointer, bytesRead);
+		System.arraycopy(bytes, 0, this.data, this.endPointer, bytesRead);
 		this.endPointer += bytesRead;
 	}
 
