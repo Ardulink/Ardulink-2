@@ -35,12 +35,7 @@ import java.util.Optional;
  */
 public final class MessageIdHolders {
 
-	public static final MessageIdHolder NO_ID = new MessageIdHolder() {
-		@Override
-		public long getId() {
-			return -1;
-		}
-	};
+	public static final MessageIdHolder NO_ID = () -> -1;
 
 	private MessageIdHolders() {
 		super();
@@ -76,9 +71,7 @@ public final class MessageIdHolders {
 	private static Method getMessageIdHolderGetIdMethod() {
 		try {
 			return MessageIdHolder.class.getMethod("getId");
-		} catch (SecurityException e) {
-			throw propagate(e);
-		} catch (NoSuchMethodException e) {
+		} catch (SecurityException | NoSuchMethodException e) {
 			throw propagate(e);
 		}
 	}
