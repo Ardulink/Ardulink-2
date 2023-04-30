@@ -26,9 +26,8 @@ import static io.moquette.BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME;
 
 import java.io.Closeable;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Properties;
-
-import org.ardulink.util.Objects;
 
 import io.moquette.broker.Server;
 import io.moquette.broker.config.IConfig;
