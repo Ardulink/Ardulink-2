@@ -431,9 +431,8 @@ public class ArdulinkProtocol2 implements Protocol {
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageTone tone) {
-			String value = String.format("%d/%d/%d", tone.getTone().getPin().pinNum(), tone.getTone().getHertz(),
-					tone.getTone().getDuration(MILLISECONDS).orElse(-1L));
-			return toBytes(builder(tone, TONE).withValue(value));
+			return toBytes(builder(tone, TONE).withValue(String.format("%d/%d/%d", tone.getTone().getPin().pinNum(),
+					tone.getTone().getHertz(), tone.getTone().getDuration(MILLISECONDS).orElse(-1L))));
 		}
 
 		@Override
