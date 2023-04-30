@@ -16,6 +16,9 @@ limitations under the License.
 
 package org.ardulink.core;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.Pin.AnalogPin;
@@ -62,12 +65,12 @@ public class Tone {
 
 	private final int hertz;
 	private final AnalogPin analogPin;
-	private final Long duration;
+	private final Long durationInMillis;
 
 	public Tone(Builder builder) {
 		this.analogPin = builder.analogPin;
 		this.hertz = builder.hertz;
-		this.duration = builder.durationInMillis;
+		this.durationInMillis = builder.durationInMillis;
 	}
 
 	public AnalogPin getPin() {
@@ -78,8 +81,8 @@ public class Tone {
 		return hertz;
 	}
 
-	public Long getDurationInMillis() {
-		return duration;
+	public Optional<Long> getDuration(TimeUnit timeUnit) {
+		return Optional.ofNullable(durationInMillis == null ? null : timeUnit.convert(durationInMillis, MILLISECONDS));
 	}
 
 }

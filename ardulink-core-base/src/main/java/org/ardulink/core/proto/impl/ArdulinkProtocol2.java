@@ -18,6 +18,7 @@ package org.ardulink.core.proto.impl;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -250,8 +251,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			@Override
 			public State process(byte b) {
 				if (b == '\n' && !hasValue) {
-					return new CommandParsed(
-							new DefaultFromDeviceChangeListeningState(pin(bufferAsString()), mode()));
+					return new CommandParsed(new DefaultFromDeviceChangeListeningState(pin(bufferAsString()), mode()));
 				}
 				if (b == '/') {
 					return new WaitingForValue(protocolKey, bufferAsString());
@@ -431,9 +431,9 @@ public class ArdulinkProtocol2 implements Protocol {
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageTone tone) {
-			Long duration = tone.getTone().getDurationInMillis();
-			return toBytes(builder(tone, TONE).withValue(tone.getTone().getPin().pinNum() + "/"
-					+ tone.getTone().getHertz() + "/" + (duration == null ? -1 : duration.longValue())));
+			String value = String.format("%d/%d/%d", tone.getTone().getPin().pinNum(), tone.getTone().getHertz(),
+					tone.getTone().getDuration(MILLISECONDS).orElse(-1L));
+			return toBytes(builder(tone, TONE).withValue(value));
 		}
 
 		@Override

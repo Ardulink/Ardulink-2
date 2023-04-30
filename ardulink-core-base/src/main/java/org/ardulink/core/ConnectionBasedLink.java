@@ -147,7 +147,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	}
 
 	/**
-	 * Will wait for the arduino to received the "ready" paket or the arduino to
+	 * Will wait for the arduino to received the "ready" packet or the arduino to
 	 * respond to our messages sent.
 	 * 
 	 * @param wait     the maximum time to wait
