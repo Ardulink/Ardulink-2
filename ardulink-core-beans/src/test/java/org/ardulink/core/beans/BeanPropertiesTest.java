@@ -28,6 +28,7 @@ import java.lang.annotation.Retention;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +49,7 @@ class BeanPropertiesTest {
 
 	@Retention(RUNTIME)
 	public @interface ThisAnnotationHasAnAttributeThatIsNotAstring {
-		boolean value();
+		Class<?> value();
 	}
 
 	@Retention(RUNTIME)
@@ -143,8 +144,29 @@ class BeanPropertiesTest {
 		public List<String> values;
 	}
 
+	public static class BeanThatUsesEnumWithNonStringReturnType {
+		@ThisAnnotationHasAnAttributeThatIsNotAstring(AtomicInteger.class)
+		public List<String> values;
+	}
+
 	public static class BeanWithAnnoOnPublicFieldButUsingNotValueButSomeOtherAttribute {
 		@OurOwnTestAnno(value = "notFoo", someOtherAttribute = "foo")
+		public List<String> values;
+	}
+
+	public static enum MyEnum {
+		A, B, C;
+	}
+
+	@Retention(RUNTIME)
+	public @interface OurOwnTestAnnoWithEnumType {
+		MyEnum value();
+
+		MyEnum someOtherAttribute() default MyEnum.A;
+	}
+
+	public static class BeanWithAnnoOnPublicFieldButUsingNotValueButSomeOtherAttributeThatIsNotStringType {
+		@OurOwnTestAnnoWithEnumType(value = MyEnum.B, someOtherAttribute = MyEnum.C)
 		public List<String> values;
 	}
 
@@ -220,12 +242,12 @@ class BeanPropertiesTest {
 	}
 
 	@Test
-	void throwsExceptionsIfAnnotationHasValueAttributeWithWrongType() {
-		Class<ThisAnnotationHasAnAttributeThatIsNotAstring> clazz = ThisAnnotationHasAnAttributeThatIsNotAstring.class;
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-				() -> propertyAnnotated(clazz));
-		assertThat(exception).hasMessageContaining(clazz.getName()).hasMessageContaining(String.class.getName())
-				.hasMessageContaining(boolean.class.getName());
+	void worksWithAnnotationsThatAreNonStrings() {
+		BeanProperties bp = BeanProperties.builder(new BeanThatUsesEnumWithNonStringReturnType())
+				.using(beanAttributes(), propertyAnnotated(ThisAnnotationHasAnAttributeThatIsNotAstring.class)).build();
+		Attribute attribute = bp.getAttribute(AtomicInteger.class);
+		assertThat(attribute.getName()).isEqualTo(AtomicInteger.class.toString());
+		assertThat(attribute.getType()).isEqualTo(List.class);
 	}
 
 	@Test
@@ -294,6 +316,24 @@ class BeanPropertiesTest {
 		assertThat(attribute.getName()).isEqualTo("foo");
 		assertThat(attribute.getType()).isEqualTo(List.class);
 		// rest remains
+	}
+
+	@Test
+	void canFindPropertyByAnnotatedPublicFieldBitNotUsingValueButSomeOtherAttributeThatIsNotStringType()
+			throws Exception {
+		BeanWithAnnoOnPublicFieldButUsingNotValueButSomeOtherAttributeThatIsNotStringType bean = new BeanWithAnnoOnPublicFieldButUsingNotValueButSomeOtherAttributeThatIsNotStringType();
+		BeanProperties bp = BeanProperties.builder(bean)
+				.using(beanAttributes(), propertyAnnotated(OurOwnTestAnnoWithEnumType.class, "someOtherAttribute"))
+				.build();
+		Attribute attribute = bp.getAttribute("C");
+		assertThat(attribute.getName()).isEqualTo("C");
+		assertThat(attribute.getType()).isEqualTo(List.class);
+		List<String> values1 = asList("1", "2", "3");
+		attribute.writeValue(values1);
+		assertThat(bean.values).isEqualTo(values1);
+		List<String> values2 = asList("3", "2", "1");
+		bean.values = values2;
+		assertThat(attribute.readValue()).isEqualTo(values2);
 	}
 
 }

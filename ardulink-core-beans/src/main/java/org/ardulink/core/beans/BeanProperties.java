@@ -145,6 +145,10 @@ public class BeanProperties {
 		return new BeanProperties.Builder(bean);
 	}
 
+	public Attribute getAttribute(Object name) {
+		return getAttribute(name == null ? null : String.valueOf(name));
+	}
+
 	public Attribute getAttribute(String name) {
 		try {
 			Optional<AttributeReader> reader = findReader(name);

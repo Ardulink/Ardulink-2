@@ -20,7 +20,6 @@ import static java.lang.reflect.Modifier.isPublic;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
-import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Streams.stream;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
@@ -140,17 +139,14 @@ public class FindByAnnotation implements AttributeFinder {
 	}
 
 	private static Method toMethod(Class<? extends Annotation> annotationClass, String annotationAttribute) {
-		Method getAnnotationsAttributeReadMethod = getAttribMethod(annotationClass, annotationAttribute);
-		Class<?> returnType = getAnnotationsAttributeReadMethod.getReturnType();
-		checkArgument(returnType.equals(String.class), "The returntype of %s's %s has to be %s but was %s",
-				annotationClass.getName(), annotationAttribute, String.class, returnType);
-		return getAnnotationsAttributeReadMethod;
+		return getAttribMethod(annotationClass, annotationAttribute);
 	}
 
 	private static Function<Annotation, String> toFunction(Method method) {
 		return a -> {
 			try {
-				return (String) method.invoke(a);
+				Object result = method.invoke(a);
+				return result == null ? null : String.valueOf(result);
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 				throw propagate(e);
 			}
