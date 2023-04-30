@@ -20,14 +20,13 @@ import static java.lang.reflect.Modifier.isPublic;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
-import static org.ardulink.core.beans.finder.impl.ReadMethod.isReadMethod;
-import static org.ardulink.core.beans.finder.impl.WriteMethod.isWriteMethod;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Streams.stream;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -61,7 +60,7 @@ public class FindByAnnotation implements AttributeFinder {
 		private final String name;
 		private final Field annoFoundOn;
 
-		public AttributeReaderDelegate(AttributeReader delegate, String name, Field annoFoundOn) {
+		private AttributeReaderDelegate(AttributeReader delegate, String name, Field annoFoundOn) {
 			this.delegate = delegate;
 			this.name = name;
 			this.annoFoundOn = annoFoundOn;
@@ -89,13 +88,13 @@ public class FindByAnnotation implements AttributeFinder {
 
 	}
 
-	public static class AttributeWriterDelegate implements AttributeWriter {
+	private static class AttributeWriterDelegate implements AttributeWriter {
 
 		private final AttributeWriter delegate;
 		private final String name;
 		private final Field annoFoundOn;
 
-		public AttributeWriterDelegate(AttributeWriter delegate, String name, Field annoFoundOn) {
+		private AttributeWriterDelegate(AttributeWriter delegate, String name, Field annoFoundOn) {
 			this.delegate = delegate;
 			this.name = name;
 			this.annoFoundOn = annoFoundOn;
@@ -183,7 +182,7 @@ public class FindByAnnotation implements AttributeFinder {
 	public Iterable<? extends AttributeReader> listReaders(Object bean) {
 		try {
 			List<AttributeReader> readers = stream(bean.getClass().getDeclaredMethods())
-					.filter(m -> m.isAnnotationPresent(annotationClass) && isReadMethod(m))
+					.filter(m -> m.isAnnotationPresent(annotationClass)).filter(ReadMethod::isReadMethod)
 					.map(m -> readMethod(bean, m)).collect(toList());
 
 			for (Field field : bean.getClass().getDeclaredFields()) {
@@ -191,8 +190,7 @@ public class FindByAnnotation implements AttributeFinder {
 					Optional<? extends AttributeReader> readMethodForAttribute = readMethodForAttribute(bean,
 							field.getName());
 					if (readMethodForAttribute.isPresent()) {
-						readers.add(new AttributeReaderDelegate(readMethodForAttribute.get(),
-								annoValue(field.getAnnotation(annotationClass)), field));
+						readers.add(new AttributeReaderDelegate(readMethodForAttribute.get(), annoValue(field), field));
 					} else if (isPublic(field.getModifiers())) {
 						readers.add(fieldAccess(bean, field));
 					}
@@ -209,7 +207,7 @@ public class FindByAnnotation implements AttributeFinder {
 	public Iterable<AttributeWriter> listWriters(Object bean) {
 		try {
 			List<AttributeWriter> writers = stream(bean.getClass().getDeclaredMethods())
-					.filter(m -> m.isAnnotationPresent(annotationClass) && isWriteMethod(m))
+					.filter(m -> m.isAnnotationPresent(annotationClass)).filter(WriteMethod::isWriteMethod)
 					.map(m -> writeMethod(bean, m)).collect(toList());
 
 			for (Field field : bean.getClass().getDeclaredFields()) {
@@ -217,8 +215,8 @@ public class FindByAnnotation implements AttributeFinder {
 					Optional<? extends AttributeWriter> writeMethodForAttribute = writeMethodForAttribute(bean,
 							field.getName());
 					if (writeMethodForAttribute.isPresent()) {
-						writers.add(new AttributeWriterDelegate(writeMethodForAttribute.get(),
-								annoValue(field.getAnnotation(annotationClass)), field));
+						writers.add(
+								new AttributeWriterDelegate(writeMethodForAttribute.get(), annoValue(field), field));
 					} else if (isPublic(field.getModifiers())) {
 						writers.add(fieldAccess(bean, field));
 					}
@@ -231,15 +229,23 @@ public class FindByAnnotation implements AttributeFinder {
 	}
 
 	private FieldAccess fieldAccess(Object bean, Field field) {
-		return new FieldAccess(bean, annoValue(field.getAnnotation(annotationClass)), field);
+		return new FieldAccess(bean, annoValue(field), field);
 	}
 
 	private ReadMethod readMethod(Object bean, Method method) {
-		return new ReadMethod(bean, annoValue(method.getAnnotation(annotationClass)), method);
+		return new ReadMethod(bean, annoValue(method), method);
 	}
 
 	private WriteMethod writeMethod(Object bean, Method method) {
-		return new WriteMethod(bean, annoValue(method.getAnnotation(annotationClass)), method);
+		return new WriteMethod(bean, annoValue(method), method);
+	}
+
+	private String annoValue(AnnotatedElement annotatedElement) {
+		return annoValue(annotatedElement.getAnnotation(annotationClass));
+	}
+
+	private String annoValue(Annotation annotation) {
+		return getAnnotationsAttributeReadFunction.apply(annotation);
 	}
 
 	private Optional<? extends AttributeReader> readMethodForAttribute(Object bean, String name) {
@@ -256,10 +262,6 @@ public class FindByAnnotation implements AttributeFinder {
 
 	private Predicate<TypedAttributeProvider> hasName(String name) {
 		return p -> p.getName().equals(name);
-	}
-
-	private String annoValue(Annotation annotation) {
-		return getAnnotationsAttributeReadFunction.apply(annotation);
 	}
 
 }
