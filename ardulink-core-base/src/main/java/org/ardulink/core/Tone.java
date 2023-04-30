@@ -81,8 +81,10 @@ public class Tone {
 		return hertz;
 	}
 
-	public Optional<Long> getDuration(TimeUnit timeUnit) {
-		return Optional.ofNullable(durationInMillis == null ? null : timeUnit.convert(durationInMillis, MILLISECONDS));
+	public Optional<Long> getDuration(TimeUnit target) {
+		return durationInMillis == null //
+				? Optional.empty() //
+				: Optional.of(target.convert(durationInMillis, MILLISECONDS));
 	}
 
 }
