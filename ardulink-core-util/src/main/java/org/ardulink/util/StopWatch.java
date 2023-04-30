@@ -28,11 +28,34 @@ import java.util.concurrent.TimeUnit;
  * [adsense]
  *
  */
-public class StopWatch {
+public abstract class StopWatch {
+
+	private static class StoppedStopWatch extends StopWatch {
+
+		@Override
+		public StopWatch start() {
+			return new StartedStopWatch();
+		}
+
+		@Override
+		public boolean isStarted() {
+			return false;
+		}
+
+		@Override
+		public long getTime() {
+			return 0;
+		}
+
+	}
 
 	private static class StartedStopWatch extends StopWatch {
 
-		private final long started = System.currentTimeMillis();
+		private final long startedAt = now();
+
+		private long now() {
+			return System.currentTimeMillis();
+		}
 
 		@Override
 		public StopWatch start() {
@@ -40,18 +63,29 @@ public class StopWatch {
 		}
 
 		@Override
+		public boolean isStarted() {
+			return true;
+		}
+
+		@Override
 		public long getTime() {
-			return System.currentTimeMillis() - started;
+			return now() - startedAt;
 		}
 	}
 
-	public StopWatch start() {
-		return new StartedStopWatch();
+	public static StopWatch createStarted() {
+		return createUnstarted().start();
 	}
 
-	public long getTime() {
-		return 0;
+	private static StopWatch createUnstarted() {
+		return new StoppedStopWatch();
 	}
+
+	public abstract StopWatch start();
+
+	public abstract boolean isStarted();
+
+	public abstract long getTime();
 
 	public long getTime(TimeUnit timeUnit) {
 		return timeUnit.convert(getTime(), MILLISECONDS);

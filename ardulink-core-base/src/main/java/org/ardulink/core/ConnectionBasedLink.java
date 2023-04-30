@@ -170,7 +170,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		this.connection.addListener(listener);
 
 		try {
-			StopWatch stopWatch = new StopWatch().start();
+			StopWatch stopWatch = StopWatch.createStarted();
 			do {
 				ping();
 				TimeUnit.MILLISECONDS.sleep(100);
