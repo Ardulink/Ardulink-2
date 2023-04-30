@@ -16,10 +16,6 @@ limitations under the License.
  */
 package org.ardulink.util;
 
-import static org.ardulink.util.anno.LapsedWith.JDK8;
-
-import org.ardulink.util.anno.LapsedWith;
-
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -34,10 +30,14 @@ public final class Preconditions {
 		super();
 	}
 
-	@LapsedWith(value = JDK8, module = "Objects#requireNonNull")
 	public static <T> T checkNotNull(T t, String message, Object... args) {
+		// could be replaced by
+		// return Objects.requireNonNull(t, () -> String.format(message, args));
+		// but due this method is useful because it provides a nicer API with
+		// format-string and args we will keep it (also we don't need to create lambdas
+		// that way).
 		if (t == null) {
-			throw new IllegalStateException(String.format(message, args));
+			throw new NullPointerException(String.format(message, args));
 		}
 		return t;
 	}
