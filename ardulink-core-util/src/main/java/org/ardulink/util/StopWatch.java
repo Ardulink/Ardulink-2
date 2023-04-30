@@ -91,4 +91,8 @@ public abstract class StopWatch {
 		return timeUnit.convert(getTime(), MILLISECONDS);
 	}
 
+	public boolean elapsed(int compareTo, TimeUnit timeUnit) {
+		return getTime(timeUnit) >= compareTo;
+	}
+
 }

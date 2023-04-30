@@ -177,7 +177,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 				if (deviceIsReady.get()) {
 					return true;
 				}
-			} while (stopWatch.getTime(timeUnit) < wait);
+			} while (!stopWatch.elapsed(wait, timeUnit));
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		} finally {
