@@ -33,7 +33,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -59,7 +58,7 @@ public class FindByAnnotation implements AttributeFinder {
 		private final String name;
 		private final Field annoFoundOn;
 
-		private AttributeReaderDelegate(AttributeReader delegate, String name, Field annoFoundOn) {
+		AttributeReaderDelegate(AttributeReader delegate, String name, Field annoFoundOn) {
 			this.delegate = delegate;
 			this.name = name;
 			this.annoFoundOn = annoFoundOn;
@@ -122,35 +121,16 @@ public class FindByAnnotation implements AttributeFinder {
 	}
 
 	private final Class<? extends Annotation> annotationClass;
-	private final Function<Annotation, String> getAnnotationsAttributeReadFunction;
+	private final Method getAnnotationsAttributeReadMethod;
 
-	private FindByAnnotation(Class<? extends Annotation> annotationClass, String annotationAttribute) {
-		this(annotationClass, toMethod(annotationClass, annotationAttribute));
-	}
-
-	private FindByAnnotation(Class<? extends Annotation> annotationClass, Method method) {
+	private <T extends Annotation> FindByAnnotation(Class<T> annotationClass,
+			Method getAnnotationsAttributeReadMethod) {
 		this.annotationClass = annotationClass;
-		this.getAnnotationsAttributeReadFunction = toFunction(method);
-	}
-
-	private FindByAnnotation(Class<Annotation> annotationClass, Function<Annotation, String> function) {
-		this.annotationClass = annotationClass;
-		this.getAnnotationsAttributeReadFunction = function;
+		this.getAnnotationsAttributeReadMethod = getAnnotationsAttributeReadMethod;
 	}
 
 	private static Method toMethod(Class<? extends Annotation> annotationClass, String annotationAttribute) {
 		return getAttribMethod(annotationClass, annotationAttribute);
-	}
-
-	private static Function<Annotation, String> toFunction(Method method) {
-		return a -> {
-			try {
-				Object result = method.invoke(a);
-				return result == null ? null : String.valueOf(result);
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-				throw propagate(e);
-			}
-		};
 	}
 
 	private static Method getAttribMethod(Class<? extends Annotation> annotationClass, String annotationAttribute) {
@@ -170,7 +150,11 @@ public class FindByAnnotation implements AttributeFinder {
 
 	public static AttributeFinder propertyAnnotated(Class<? extends Annotation> annotationClass,
 			String annotationAttribute) {
-		return new FindByAnnotation(annotationClass, annotationAttribute);
+		return propertyAnnotated(annotationClass, toMethod(annotationClass, annotationAttribute));
+	}
+
+	public static <T extends Annotation> AttributeFinder propertyAnnotated(Class<T> annotationClass, Method method) {
+		return new FindByAnnotation(annotationClass, method);
 	}
 
 	@Override
@@ -241,7 +225,12 @@ public class FindByAnnotation implements AttributeFinder {
 	}
 
 	private String annoValue(Annotation annotation) {
-		return getAnnotationsAttributeReadFunction.apply(annotation);
+		try {
+			Object result = getAnnotationsAttributeReadMethod.invoke(annotation);
+			return result == null ? null : String.valueOf(result);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			throw propagate(e);
+		}
 	}
 
 	private Optional<? extends AttributeReader> readMethodForAttribute(Object bean, String name) {
