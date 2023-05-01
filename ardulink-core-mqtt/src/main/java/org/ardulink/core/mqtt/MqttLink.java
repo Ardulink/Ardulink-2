@@ -26,9 +26,13 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
+import static org.ardulink.core.mqtt.MqttLinkConfig.Connection.SSL;
+import static org.ardulink.core.mqtt.MqttLinkConfig.Connection.TCP;
+import static org.ardulink.core.mqtt.MqttLinkConfig.Connection.TLS;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Throwables.propagate;
+import static org.ardulink.util.anno.LapsedWith.JDK9;
 import static org.fusesource.mqtt.client.QoS.AT_MOST_ONCE;
 
 import java.io.IOException;
@@ -48,6 +52,7 @@ import org.ardulink.core.proto.api.MessageIdHolders;
 import org.ardulink.util.MapBuilder;
 import org.ardulink.util.Strings;
 import org.ardulink.util.URIs;
+import org.ardulink.util.anno.LapsedWith;
 import org.fusesource.hawtbuf.Buffer;
 import org.fusesource.hawtbuf.UTF8Buffer;
 import org.fusesource.mqtt.client.BlockingConnection;
@@ -118,23 +123,24 @@ public class MqttLink extends AbstractListenerLink {
 			public void run() {
 				while (true) {
 					try {
-						Message message = connection.receive();
-						Matcher matcher = mqttReceivePattern.matcher(message.getTopic());
-						if (matcher.matches() && matcher.groupCount() == 2) {
-							Pin pin = pin(matcher.group(1), parseInt(matcher.group(2)));
-							if (pin != null) {
-								if (pin.is(Type.DIGITAL)) {
-									fireStateChanged(
-											digitalPinValueChanged((DigitalPin) pin, parseBoolean(payload(message))));
-								} else if (pin.is(Type.ANALOG)) {
-									fireStateChanged(
-											analogPinValueChanged((AnalogPin) pin, parseInt(payload(message))));
-								}
-							}
-						}
-						message.ack();
+						messageReceived(connection.receive());
+						connection.receive().ack();
 					} catch (Exception e) {
 						log.error("Error while waiting for new message", e);
+					}
+				}
+			}
+
+			private void messageReceived(Message message) {
+				Matcher matcher = mqttReceivePattern.matcher(message.getTopic());
+				if (matcher.matches() && matcher.groupCount() == 2) {
+					Pin pin = pin(matcher.group(1), parseInt(matcher.group(2)));
+					if (pin != null) {
+						if (pin.is(Type.DIGITAL)) {
+							fireStateChanged(digitalPinValueChanged((DigitalPin) pin, parseBoolean(payload(message))));
+						} else if (pin.is(Type.ANALOG)) {
+							fireStateChanged(analogPinValueChanged((AnalogPin) pin, parseInt(payload(message))));
+						}
 					}
 				}
 			}
@@ -243,15 +249,16 @@ public class MqttLink extends AbstractListenerLink {
 
 	private static String connectionPrefix(MqttLinkConfig config) {
 		Connection connection = config.getConnection();
-		switch (connection) {
-		case TCP:
-			return "tcp";
-		case SSL:
-			return "ssl";
-		case TLS:
-			return "tls";
-		}
-		throw new IllegalStateException("Could not resolve " + connection);
+		return checkNotNull(prefixes().get(connection), "Could not resolve %s to prefix", connection);
+	}
+
+	@LapsedWith(value = JDK9, module = "List#of")
+	private static Map<Connection, String> prefixes() {
+		return MapBuilder.<Connection, String>newMapBuilder() //
+				.put(TCP, "tcp") //
+				.put(SSL, "ssl") //
+				.put(TLS, "tls") //
+				.build();
 	}
 
 	private void subscribe() throws Exception {
