@@ -165,10 +165,11 @@ public class MqttCamelRouteBuilder {
 				RouteDefinition routeDef = from(something)
 						.process(fromArdulinkProtocol(topics).headerNameForTopic(PUBLISH_HEADER));
 				if (compactStrategy != null) {
-					ChoiceDefinition pre = routeDef.choice().when(simple("${in.body} is 'java.lang.Number'"));
-					useStrategy(pre, compactStrategy).to("direct:endOfAnalogAggregation").endChoice().otherwise()
-							.to("direct:endOfAnalogAggregation");
-					routeDef = from("direct:endOfAnalogAggregation");
+					ChoiceDefinition pre = routeDef.choice()
+							.when(simple("${in.body} is '" + Number.class.getName() + "'"));
+					String endOfAggregation = "direct:endOfAnalogAggregation";
+					useStrategy(pre, compactStrategy).to(endOfAggregation).endChoice().otherwise().to(endOfAggregation);
+					routeDef = from(endOfAggregation);
 				}
 				routeDef.transform(body().convertToString()).to(mqtt);
 			}
