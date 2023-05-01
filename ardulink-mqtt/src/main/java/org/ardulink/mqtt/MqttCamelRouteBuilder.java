@@ -37,16 +37,17 @@ public class MqttCamelRouteBuilder {
 
 	public static class MqttConnectionProperties {
 
-		private String name = "ardulink-mqtt";
+		private static final String DEFAULT_NAME = "ardulink-mqtt";
+
+		private String name = DEFAULT_NAME;
 		private String brokerHost = "localhost";
 		private Integer brokerPort;
 		private boolean ssl;
-		private String clientId;
 		private String user;
 		private byte[] pass;
 
 		public MqttConnectionProperties name(String name) {
-			this.name = name;
+			this.name = name == null ? DEFAULT_NAME : name;
 			return this;
 		}
 
@@ -66,11 +67,6 @@ public class MqttCamelRouteBuilder {
 
 		public MqttConnectionProperties ssl(boolean ssl) {
 			this.ssl = ssl;
-			return this;
-		}
-
-		public MqttConnectionProperties clientId(String clientId) {
-			this.clientId = clientId;
 			return this;
 		}
 
@@ -95,20 +91,15 @@ public class MqttCamelRouteBuilder {
 			sb = sb.append(String.format("paho:%s#?brokerUrl=%s://%s:%s", topics.getTopic(), (ssl ? "ssl" : "tcp"),
 					brokerHost, getBrokerPort()));
 			sb = hasAuth() ? sb.append(String.format("&userName=%s&password=%s", user, new String(pass))) : sb;
-			sb = hasClientId() ? sb.append(String.format("&clientId=%s", clientId)) : sb;
 			sb = sb.append("&automaticReconnect=false");
 			sb = sb.append("&maxInflight=65535");
-			sb = sb.append("&clientId=").append(name);
+			sb = sb.append(String.format("&clientId=%s", name));
 			sb = sb.append("&qos=0");
 			return sb.toString();
 		}
 
 		private boolean hasAuth() {
 			return user != null && pass != null;
-		}
-
-		private boolean hasClientId() {
-			return clientId != null;
 		}
 
 	}
