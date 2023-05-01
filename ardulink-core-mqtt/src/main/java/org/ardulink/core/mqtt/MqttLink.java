@@ -41,7 +41,6 @@ import static org.fusesource.mqtt.client.QoS.AT_MOST_ONCE;
 import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
