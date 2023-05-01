@@ -543,13 +543,10 @@ public abstract class LinkManager {
 			}
 
 			private Configurer configure(Configurer configurer, String[] params) {
-				for (String param : params) {
-					String[] split = param.split("\\=");
-					if (split.length == 2) {
-						ConfigAttribute attribute = configurer.getAttribute(split[0]);
-						attribute.setValue(convert(split[1], attribute.getType()));
-					}
-				}
+				stream(params).map(p -> p.split("\\=")).filter(s -> s.length == 2).forEach(s -> {
+					ConfigAttribute attribute = configurer.getAttribute(s[0]);
+					attribute.setValue(convert(s[1], attribute.getType()));
+				});
 				return configurer;
 			}
 
@@ -566,12 +563,8 @@ public abstract class LinkManager {
 			}
 
 			private Object enumWithName(Class<Enum<?>> targetType, String value) {
-				for (Enum<?> enumConstant : targetType.getEnumConstants()) {
-					if (enumConstant.name().equals(value)) {
-						return enumConstant;
-					}
-				}
-				return null;
+				return stream(targetType.getEnumConstants()).filter(e -> e.name().equals(value)).findFirst()
+						.orElse(null);
 			}
 
 		};
