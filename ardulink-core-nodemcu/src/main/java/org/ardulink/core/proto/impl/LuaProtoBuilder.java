@@ -16,6 +16,7 @@ limitations under the License.
 package org.ardulink.core.proto.impl;
 
 import static java.lang.Boolean.TRUE;
+import static java.util.Arrays.stream;
 import static java.util.regex.Pattern.quote;
 import static java.util.stream.Collectors.joining;
 import static org.ardulink.util.Preconditions.checkArgument;
@@ -25,7 +26,6 @@ import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
 import org.ardulink.util.InputStreams;
 
@@ -33,8 +33,7 @@ public class LuaProtoBuilder {
 
 	private enum TemplateVariables {
 
-		PIN("${PIN}"), STATE("${STATE}"), INTENSITY("${INTENSITY}"), VALUES(
-				"${VALUES}");
+		PIN("${PIN}"), STATE("${STATE}"), INTENSITY("${INTENSITY}"), VALUES("${VALUES}");
 
 		private final String quoted;
 
@@ -44,54 +43,37 @@ public class LuaProtoBuilder {
 
 	}
 
+	private static final String PIN_HAS_TO_BE_SPECIFIED = "pin has to be specified";
+	private static final String PIN_MUST_NOT_SPECIFIED = "pin must not specified";
+	private static final String VALUE_HAS_TO_BE_SPECIFIED = "value has to be specified";
+	private static final String VALUE_MUST_NOT_SPECIFIED = "value must not specified";
+
 	public enum LuaProtocolKey {
+
 		POWER_PIN_SWITCH {
 			@Override
 			public String message(LuaProtoBuilder builder) {
-				checkNotNull(builder.pin, "pin has to be specified");
-				checkNotNull(builder.values, "value has to be specified");
-				checkArgument(builder.values.length == 1,
-						"Exactly one value expected but found %s",
-						builder.values.length);
-				Object value = builder.values[0];
-				checkArgument(value instanceof Boolean,
-						"value not a Boolean but %s", value.getClass()
-								.getName());
-
-				String state = TRUE.equals(value) ? "HIGH" : "LOW";
-				return String.format(
-						"gpio.mode(%s,gpio.OUTPUT) gpio.write(%s,gpio.%s)",
-						builder.pin, builder.pin, state);
+				Integer pinNumber = checkNotNull(builder.pin, PIN_HAS_TO_BE_SPECIFIED);
+				return String.format("gpio.mode(%s,gpio.OUTPUT) gpio.write(%s,gpio.%s)", pinNumber, pinNumber,
+						TRUE.equals(firstValue(builder.values, Boolean.class)) ? "HIGH" : "LOW");
 
 			}
 		}, //
 		POWER_PIN_INTENSITY {
 			@Override
 			public String message(LuaProtoBuilder builder) {
-				checkNotNull(builder.pin, "pin has to be specified");
-				checkNotNull(builder.values, "value has to be specified");
-				checkArgument(builder.values.length == 1,
-						"Exactly one value expected but found %s",
-						builder.values.length);
-				Object value = builder.values[0];
-				checkArgument(value instanceof Integer,
-						"value not an Integer but %s", value.getClass()
-								.getName());
-				String intensity = String.valueOf(value);
-				return String
-						.format("pwm.setup(%s,1000,1023) pwm.start(%s) pwm.setduty(%s,%s)",
-								builder.pin, builder.pin, builder.pin,
-								intensity);
+				Integer pinNumber = checkNotNull(builder.pin, PIN_HAS_TO_BE_SPECIFIED);
+				return String.format("pwm.setup(%s,1000,1023) pwm.start(%s) pwm.setduty(%s,%s)", pinNumber, pinNumber,
+						pinNumber, firstValue(builder.values, Integer.class));
 			}
 		}, //
 		CUSTOM_MESSAGE {
 			@Override
 			public String message(LuaProtoBuilder builder) {
-				checkState(builder.pin == null, "pin must not specified");
-				checkNotNull(builder.values, "value has to be specified");
-				checkArgument(builder.values.length > 0,
+				checkState(builder.pin == null, PIN_MUST_NOT_SPECIFIED);
+				checkArgument(checkNotNull(builder.values, VALUE_HAS_TO_BE_SPECIFIED).length > 0,
 						"value contains no data");
-				return Arrays.stream(builder.values).map(String::valueOf).collect(joining(" "));
+				return stream(builder.values).map(String::valueOf).collect(joining(" "));
 			}
 		}, //
 		START_LISTENING_DIGITAL {
@@ -100,18 +82,17 @@ public class LuaProtoBuilder {
 
 			@Override
 			public String message(LuaProtoBuilder builder) {
-				checkState(builder.values == null, "value must not specified");
-				checkNotNull(builder.pin, "pin has to be specified");
-				return snippet.replaceAll(TemplateVariables.PIN.quoted,
-						String.valueOf(builder.pin));
+				checkState(builder.values == null, VALUE_MUST_NOT_SPECIFIED);
+				Integer pinNumber = checkNotNull(builder.pin, PIN_HAS_TO_BE_SPECIFIED);
+				return snippet.replaceAll(TemplateVariables.PIN.quoted, String.valueOf(pinNumber));
 			}
 		}, //
 		STOP_LISTENING_DIGITAL {
 			@Override
 			public String message(LuaProtoBuilder builder) {
-				checkNotNull(builder.pin, "pin has to be specified");
-				checkState(builder.values == null, "value must not specified");
-				return String.format("gpio.mode(%s,gpio.OUTPUT)", builder.pin);
+				Integer pinNumber = checkNotNull(builder.pin, PIN_HAS_TO_BE_SPECIFIED);
+				checkState(builder.values == null, VALUE_MUST_NOT_SPECIFIED);
+				return String.format("gpio.mode(%s,gpio.OUTPUT)", pinNumber);
 			}
 		}; //
 
@@ -130,6 +111,21 @@ public class LuaProtoBuilder {
 				throw propagate(e);
 			}
 		}
+	}
+
+	private static <T> T firstValue(Object[] values, Class<T> type) {
+		return verifyType(firstValue(values), type);
+	}
+
+	private static Object firstValue(Object[] values) {
+		checkArgument(checkNotNull(values, VALUE_HAS_TO_BE_SPECIFIED).length == 1,
+				"Exactly one value expected but %s contains %s", values, values.length);
+		return values[0];
+	}
+
+	private static <T> T verifyType(Object value, Class<T> clazz) {
+		checkArgument(clazz.isInstance(value), "value not a %s but %s", clazz.getName(), value.getClass().getName());
+		return clazz.cast(value);
 	}
 
 	public static LuaProtoBuilder getBuilder(LuaProtocolKey key) {
