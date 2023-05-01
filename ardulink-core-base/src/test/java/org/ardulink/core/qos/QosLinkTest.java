@@ -27,8 +27,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.Tone;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
@@ -65,26 +65,25 @@ class QosLinkTest {
 	@Test
 	void canDoGuranteedDelivery() throws Exception {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ok?id=%s"));
-		qosLink = newQosLink(connectionTo(arduinoStub), MAX_VALUE, DAYS);
-		assertThat(qosLink.sendNoTone(analogPin(3))).isEqualTo(1);
-		assertThat(qosLink.sendNoTone(analogPin(3))).isEqualTo(2);
-		assertThat(qosLink.sendNoTone(analogPin(3))).isEqualTo(3);
+		qosLink = newQosLink(MAX_VALUE, DAYS);
+		AnalogPin pin = analogPin(3);
+		assertThat(qosLink.sendNoTone(pin)).isEqualTo(1);
+		assertThat(qosLink.sendNoTone(pin)).isEqualTo(2);
+		assertThat(qosLink.sendNoTone(pin)).isEqualTo(3);
 	}
 
 	@Test
 	void doesThrowExceptionIfNotResponseReceivedWithinHalfAsecond() throws Exception {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).doNotRespond();
-		qosLink = newQosLink(connectionTo(arduinoStub), 1500, MILLISECONDS);
-		IllegalStateException exception = assertThrows(IllegalStateException.class,
-				() -> qosLink.sendNoTone(analogPin(3)));
-		assertThat(exception).hasMessageContaining("response").hasMessageContaining("1500 MILLISECONDS");
+		qosLink = newQosLink(1500, MILLISECONDS);
+		assertThat(assertThrows(IllegalStateException.class, () -> qosLink.sendNoTone(analogPin(3))))
+				.hasMessageContaining("response").hasMessageContaining("1500 MILLISECONDS");
 	}
 
 	@Test
 	void doesThrowExceptionIfKoResponse() throws Exception {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ko?id=%s"));
-		Connection connection = connectionTo(arduinoStub);
-		qosLink = newQosLink(connection, 1500 + someMillisMore(), MILLISECONDS);
+		qosLink = newQosLink(1500 + someMillisMore(), MILLISECONDS);
 		IllegalStateException exception = assertThrows(IllegalStateException.class,
 				() -> qosLink.sendNoTone(analogPin(3)));
 		assertThat(exception).hasMessageContaining("status").hasMessageContaining("not ok");
@@ -95,15 +94,15 @@ class QosLinkTest {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/tone\\/1\\/2\\/3\\?id\\=(\\d)"))).doNotRespond();
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/tone\\/4\\/5\\/6\\?id\\=(\\d)")))
 				.respondWith(lf("alp://rply/ok?id=%s"));
-		qosLink = newQosLink(connectionTo(arduinoStub), 1500, MILLISECONDS);
-		IllegalStateException exception = assertThrows(IllegalStateException.class,
-				() -> qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2).withDuration(3, MILLISECONDS)));
-		assertThat(exception).hasMessageContaining("No response");
+		qosLink = newQosLink(1500, MILLISECONDS);
+		assertThat(assertThrows(IllegalStateException.class,
+				() -> qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2).withDuration(3, MILLISECONDS))))
+				.hasMessageContaining("No response");
 		qosLink.sendTone(Tone.forPin(analogPin(4)).withHertz(5).withDuration(6, MILLISECONDS));
 	}
 
-	private QosLink newQosLink(Connection connection, int timeout, TimeUnit timeUnit) throws IOException {
-		return new QosLink(new ConnectionBasedLink(connection, byteStreamProcessor), timeout, timeUnit);
+	private QosLink newQosLink(long timeout, TimeUnit timeUnit) throws IOException {
+		return new QosLink(new ConnectionBasedLink(connectionTo(arduinoStub), byteStreamProcessor), timeout, timeUnit);
 	}
 
 	private StreamConnection connectionTo(ArduinoStub arduino) {
