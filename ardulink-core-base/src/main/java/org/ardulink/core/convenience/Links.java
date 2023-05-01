@@ -18,10 +18,10 @@ package org.ardulink.core.convenience;
 
 import static java.util.Arrays.stream;
 import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.core.linkmanager.LinkManager.replaceName;
 import static org.ardulink.util.Iterables.getFirst;
-import static org.ardulink.util.Lists.sortedCopy;
 import static org.ardulink.util.Streams.getFirst;
 
 import java.io.IOException;
@@ -100,13 +100,17 @@ public final class Links {
 	}
 
 	private static List<URI> sorted(List<URI> uris) {
-		return sortedCopy(uris, serialsFirst());
+		return uris.stream().sorted(serialsFirst()).collect(toList());
 	}
 
 	private static Comparator<URI> serialsFirst() {
 		return comparing(uri -> {
 			String name = extractNameFromURI(uri);
-			return serialAlias.isAliasName(name) ? -2 : serialAlias.isAliasFor(name) ? -1 : 0;
+			return serialAlias.isAliasName(name) //
+					? -2 //
+					: serialAlias.isAliasFor(name) //
+							? -1 //
+							: 0;
 		});
 	}
 
