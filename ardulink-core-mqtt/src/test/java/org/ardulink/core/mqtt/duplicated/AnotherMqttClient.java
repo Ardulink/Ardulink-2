@@ -33,6 +33,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
+import org.ardulink.util.MapBuilder;
 import org.ardulink.util.URIs;
 import org.assertj.core.api.ThrowingConsumer;
 import org.fusesource.mqtt.client.Future;
@@ -60,15 +61,12 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 	private final List<Message> messages = new CopyOnWriteArrayList<>();
 	private final String topic;
 
-	private static final Map<Type, String> typeMap = unmodifiableMap(typeMap());
-	private boolean appendValueGet;
+	private static final Map<Type, String> typeMap = unmodifiableMap(MapBuilder.<Type, String>newMapBuilder() //
+			.put(ANALOG, "A") //
+			.put(DIGITAL, "D") //
+			.build());
 
-	private static Map<Type, String> typeMap() {
-		Map<Type, String> typeMap = new HashMap<>();
-		typeMap.put(ANALOG, "A");
-		typeMap.put(DIGITAL, "D");
-		return typeMap;
-	}
+	private boolean appendValueGet;
 
 	public static AnotherMqttClient newClient(String topic, int port) {
 		return new AnotherMqttClient(topic, port);
@@ -120,12 +118,10 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 	}
 
 	public void awaitMessages(ThrowingConsumer<List<Message>> throwingConsumer) {
-		await().timeout(ofSeconds(10)).pollInterval(ofMillis(100))
-				.untilAsserted(() -> throwingConsumer.accept(messages));
-	}
-
-	public void clear() {
-		this.messages.clear();
+		await().timeout(ofSeconds(10)).pollInterval(ofMillis(100)).untilAsserted(() -> {
+			throwingConsumer.accept(messages);
+			messages.clear();
+		});
 	}
 
 	public void switchPin(Pin pin, Object value) throws IOException {

@@ -29,7 +29,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.function.Predicate;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin.AnalogPin;
@@ -37,7 +36,6 @@ import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.EventListenerAdapter;
 import org.ardulink.core.events.FilteredEventListenerAdapter;
-import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
 import org.ardulink.core.mqtt.duplicated.Message;
 import org.junit.jupiter.api.AfterEach;
@@ -154,7 +152,6 @@ class MqttIntegrationTest {
 		Message m1 = new Message(topic("system/listening/A1"), "true");
 		// at the moment this is sent twice (see AbstractListenerLink)
 		mqttClient.awaitMessages(m -> assertThat(m).containsExactly(m1, m1));
-		mqttClient.clear();
 		link.removeListener(listener);
 		mqttClient.awaitMessages(m -> assertThat(m).isEmpty());
 		link.removeListener(listener);
@@ -172,7 +169,6 @@ class MqttIntegrationTest {
 		Message m1 = new Message(topic("system/listening/D1"), "true");
 		// at the moment this is sent twice (see AbstractListenerLink)
 		mqttClient.awaitMessages(m -> assertThat(m).containsExactly(m1, m1));
-		mqttClient.clear();
 		link.removeListener(listener);
 		mqttClient.awaitMessages(m -> assertThat(m).isEmpty());
 		link.removeListener(listener);
