@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.anno.LapsedWith.JDK9;
 
 import java.util.ArrayList;
@@ -56,6 +57,15 @@ public final class Lists {
 		List<T> list = new ArrayList<>();
 		Collections.addAll(list, values);
 		return list;
+	}
+
+	public static <T> T rangeCheckedGet(List<T> list, int index) {
+		return rangeCheckedGet(list, index, "index");
+	}
+
+	public static <T> T rangeCheckedGet(List<T> list, int index, String name) {
+		checkArgument(index >= 0 && index < list.size(), "%s out of range %d >= %d < %d", name, 0, index, list.size());
+		return list.get(index);
 	}
 
 }

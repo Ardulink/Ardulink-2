@@ -21,6 +21,8 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.regex.Pattern.compile;
 import static java.util.regex.Pattern.quote;
@@ -31,15 +33,19 @@ import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digita
 import static org.ardulink.core.mqtt.MqttLinkConfig.Connection.SSL;
 import static org.ardulink.core.mqtt.MqttLinkConfig.Connection.TCP;
 import static org.ardulink.core.mqtt.MqttLinkConfig.Connection.TLS;
+import static org.ardulink.util.Lists.rangeCheckedGet;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK9;
+import static org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE;
 import static org.fusesource.mqtt.client.QoS.AT_MOST_ONCE;
+import static org.fusesource.mqtt.client.QoS.EXACTLY_ONCE;
 
 import java.io.IOException;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -78,21 +84,13 @@ import org.slf4j.LoggerFactory;
  */
 public class MqttLink extends AbstractListenerLink {
 
-	private static final QoS PUBLISH_QOS = AT_MOST_ONCE;
-
 	private static final Logger log = LoggerFactory.getLogger(MqttLink.class);
 
 	private static final String ANALOG = "A";
 	private static final String DIGITAL = "D";
 
-	private final String topic;
-	private final Pattern mqttReceivePattern;
-	private final MQTT mqttClient;
-	private final BlockingConnection connection;
-	private final boolean hasAppendix;
-
 	@LapsedWith(value = JDK9, module = "List#of")
-	private static Map<Connection, String> prefixes = unmodifiableMap(
+	private static final Map<Connection, String> prefixes = unmodifiableMap(
 			new EnumMap<>(MapBuilder.<Connection, String>newMapBuilder() //
 					.put(TCP, "tcp") //
 					.put(SSL, "ssl") //
@@ -106,10 +104,22 @@ public class MqttLink extends AbstractListenerLink {
 					.put(Type.DIGITAL, DIGITAL) //
 					.build()));
 
+	// We do not want to depend on the ordinal of a third-party enum class, so
+	// (re-)define it here
+	private static final List<QoS> qosLevels = unmodifiableList(asList(AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE));
+
+	private final QoS qos;
+	private final String topic;
+	private final Pattern mqttReceivePattern;
+	private final MQTT mqttClient;
+	private final BlockingConnection connection;
+	private final boolean hasAppendix;
+
 	public MqttLink(MqttLinkConfig config) throws IOException {
 		checkArgument(config.getHost() != null, "host must not be null");
 		checkArgument(config.getClientId() != null, "clientId must not be null");
 		checkArgument(config.getTopic() != null, "topic must not be null");
+		this.qos = rangeCheckedGet(qosLevels, config.qos, "qos level");
 		this.hasAppendix = config.separateTopics;
 		this.topic = config.getTopic();
 		this.mqttReceivePattern = compile(MqttLink.this.topic + "([aAdD])(\\d+)" + quote(appendixSub()));
@@ -259,7 +269,7 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	private void subscribe() throws Exception {
-		connection.subscribe(new Topic[] { new Topic(topic + "#", PUBLISH_QOS) });
+		connection.subscribe(new Topic[] { new Topic(topic + "#", qos) });
 	}
 
 	@Override
@@ -300,7 +310,7 @@ public class MqttLink extends AbstractListenerLink {
 
 	private void publish(String topic, Object value) throws IOException {
 		try {
-			connection.publish(topic, String.valueOf(value).getBytes(), PUBLISH_QOS, false);
+			connection.publish(topic, String.valueOf(value).getBytes(), qos, false);
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
