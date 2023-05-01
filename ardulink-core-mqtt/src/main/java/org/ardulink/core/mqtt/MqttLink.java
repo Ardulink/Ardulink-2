@@ -22,6 +22,8 @@ import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.unmodifiableMap;
+import static java.util.regex.Pattern.compile;
+import static java.util.regex.Pattern.quote;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
@@ -31,6 +33,7 @@ import static org.ardulink.core.mqtt.MqttLinkConfig.Connection.TCP;
 import static org.ardulink.core.mqtt.MqttLinkConfig.Connection.TLS;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK9;
 import static org.fusesource.mqtt.client.QoS.AT_MOST_ONCE;
@@ -38,6 +41,7 @@ import static org.fusesource.mqtt.client.QoS.AT_MOST_ONCE;
 import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,7 +54,6 @@ import org.ardulink.core.Tone;
 import org.ardulink.core.mqtt.MqttLinkConfig.Connection;
 import org.ardulink.core.proto.api.MessageIdHolders;
 import org.ardulink.util.MapBuilder;
-import org.ardulink.util.Strings;
 import org.ardulink.util.URIs;
 import org.ardulink.util.anno.LapsedWith;
 import org.fusesource.hawtbuf.Buffer;
@@ -61,6 +64,7 @@ import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.Listener;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.Message;
+import org.fusesource.mqtt.client.QoS;
 import org.fusesource.mqtt.client.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +79,8 @@ import org.slf4j.LoggerFactory;
  */
 public class MqttLink extends AbstractListenerLink {
 
+	private static final QoS PUBLISH_QOS = AT_MOST_ONCE;
+
 	private static final Logger log = LoggerFactory.getLogger(MqttLink.class);
 
 	private static final String ANALOG = "A";
@@ -86,8 +92,20 @@ public class MqttLink extends AbstractListenerLink {
 	private final BlockingConnection connection;
 	private final boolean hasAppendix;
 
-	private static final Map<Type, String> typeMap = unmodifiableMap(new EnumMap<>(
-			MapBuilder.<Type, String>newMapBuilder().put(Type.ANALOG, ANALOG).put(Type.DIGITAL, DIGITAL).build()));
+	@LapsedWith(value = JDK9, module = "List#of")
+	private static Map<Connection, String> prefixes = unmodifiableMap(
+			new EnumMap<>(MapBuilder.<Connection, String>newMapBuilder() //
+					.put(TCP, "tcp") //
+					.put(SSL, "ssl") //
+					.put(TLS, "tls") //
+					.build()));
+
+	@LapsedWith(value = JDK9, module = "List#of")
+	private static final Map<Type, String> typeMap = unmodifiableMap(
+			new EnumMap<>(MapBuilder.<Type, String>newMapBuilder() //
+					.put(Type.ANALOG, ANALOG) //
+					.put(Type.DIGITAL, DIGITAL) //
+					.build()));
 
 	public MqttLink(MqttLinkConfig config) throws IOException {
 		checkArgument(config.getHost() != null, "host must not be null");
@@ -95,8 +113,7 @@ public class MqttLink extends AbstractListenerLink {
 		checkArgument(config.getTopic() != null, "topic must not be null");
 		this.hasAppendix = config.separateTopics;
 		this.topic = config.getTopic();
-		this.mqttReceivePattern = Pattern
-				.compile(MqttLink.this.topic + "([aAdD])(\\d+)" + Pattern.quote(appendixSub()));
+		this.mqttReceivePattern = compile(MqttLink.this.topic + "([aAdD])(\\d+)" + quote(appendixSub()));
 		this.mqttClient = newClient(config);
 		this.mqttClient.setConnectAttemptsMax(1);
 		this.connection = new BlockingConnection(new FutureConnection(newCallbackConnection()));
@@ -134,30 +151,19 @@ public class MqttLink extends AbstractListenerLink {
 			private void messageReceived(Message message) {
 				Matcher matcher = mqttReceivePattern.matcher(message.getTopic());
 				if (matcher.matches() && matcher.groupCount() == 2) {
-					Pin pin = pin(matcher.group(1), parseInt(matcher.group(2)));
-					if (pin != null) {
-						if (pin.is(Type.DIGITAL)) {
-							fireStateChanged(digitalPinValueChanged((DigitalPin) pin, parseBoolean(payload(message))));
-						} else if (pin.is(Type.ANALOG)) {
-							fireStateChanged(analogPinValueChanged((AnalogPin) pin, parseInt(payload(message))));
-						}
+					String pinType = matcher.group(1);
+					int pinNumber = parseInt(matcher.group(2));
+					String payload = payload(message);
+					if (DIGITAL.equalsIgnoreCase(pinType)) {
+						fireStateChanged(digitalPinValueChanged(digitalPin(pinNumber), parseBoolean(payload)));
+					} else if (ANALOG.equalsIgnoreCase(pinType)) {
+						fireStateChanged(analogPinValueChanged(analogPin(pinNumber), parseInt(payload)));
 					}
 				}
 			}
 
 			private String payload(Message message) {
 				return new String(message.getPayload(), UTF_8);
-			}
-
-			private Pin pin(String type, Integer pin) {
-				if (pin != null) {
-					if (DIGITAL.equalsIgnoreCase(type)) {
-						return digitalPin(pin.intValue());
-					} else if (ANALOG.equalsIgnoreCase(type)) {
-						return analogPin(pin.intValue());
-					}
-				}
-				return null;
 			}
 
 		};
@@ -236,11 +242,11 @@ public class MqttLink extends AbstractListenerLink {
 		client.setClientId(config.getClientId());
 		client.setHost(URIs.newURI(connectionPrefix(config) + "://" + config.getHost() + ":" + config.port));
 		String user = config.user;
-		if (!Strings.nullOrEmpty(user)) {
+		if (!nullOrEmpty(user)) {
 			client.setUserName(user);
 		}
 		String password = config.password;
-		if (!Strings.nullOrEmpty(password)) {
+		if (!nullOrEmpty(password)) {
 			client.setPassword(password);
 		}
 		return client;
@@ -248,21 +254,13 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	private static String connectionPrefix(MqttLinkConfig config) {
-		Connection connection = config.getConnection();
-		return checkNotNull(prefixes().get(connection), "Could not resolve %s to prefix", connection);
-	}
-
-	@LapsedWith(value = JDK9, module = "List#of")
-	private static Map<Connection, String> prefixes() {
-		return MapBuilder.<Connection, String>newMapBuilder() //
-				.put(TCP, "tcp") //
-				.put(SSL, "ssl") //
-				.put(TLS, "tls") //
-				.build();
+		return prefixes.computeIfAbsent(config.getConnection(), c -> {
+			throw new IllegalStateException(String.format("Could not resolve %s to prefix", c));
+		});
 	}
 
 	private void subscribe() throws Exception {
-		connection.subscribe(new Topic[] { new Topic(topic + "#", AT_MOST_ONCE) });
+		connection.subscribe(new Topic[] { new Topic(topic + "#", PUBLISH_QOS) });
 	}
 
 	@Override
@@ -303,7 +301,7 @@ public class MqttLink extends AbstractListenerLink {
 
 	private void publish(String topic, Object value) throws IOException {
 		try {
-			connection.publish(topic, String.valueOf(value).getBytes(), AT_MOST_ONCE, false);
+			connection.publish(topic, String.valueOf(value).getBytes(), PUBLISH_QOS, false);
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
