@@ -1,6 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.ardulink</groupId>
 	<artifactId>parent</artifactId>
@@ -113,6 +111,7 @@
 					<version>3.0.0</version>
 				</plugin>
 				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<version>3.5.0</version>
 					<configuration>
@@ -153,7 +152,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0</version>
 				<configuration>
 					<excludes>
 						<exclude>**/*IntegrationTest.java</exclude>
@@ -278,9 +276,9 @@
 				<scope>import</scope>
 			</dependency>
 			<dependency>
-			    <groupId>org.assertj</groupId>
-			    <artifactId>assertj-core</artifactId>
-			    <version>${assertj.version}</version>
+				<groupId>org.assertj</groupId>
+				<artifactId>assertj-core</artifactId>
+				<version>${assertj.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>
@@ -288,9 +286,9 @@
 				<version>${mockito.version}</version>
 			</dependency>
 			<dependency>
-			      <groupId>org.awaitility</groupId>
-			      <artifactId>awaitility</artifactId>
-			      <version>${awaitility.version}</version>
+				<groupId>org.awaitility</groupId>
+				<artifactId>awaitility</artifactId>
+				<version>${awaitility.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
