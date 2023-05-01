@@ -263,9 +263,8 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	private static String connectionPrefix(MqttLinkConfig config) {
-		return prefixes.computeIfAbsent(config.getConnection(), c -> {
-			throw new IllegalStateException(String.format("Could not resolve %s to prefix", c));
-		});
+		Connection connection = config.getConnection();
+		return checkNotNull(prefixes.get(connection), "Could not resolve %s to prefix", connection);
 	}
 
 	private void subscribe() throws Exception {
