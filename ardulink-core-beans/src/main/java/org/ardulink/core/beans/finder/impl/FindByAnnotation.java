@@ -130,18 +130,9 @@ public class FindByAnnotation implements AttributeFinder {
 	}
 
 	private static Method toMethod(Class<? extends Annotation> annotationClass, String annotationAttribute) {
-		return getAttribMethod(annotationClass, annotationAttribute);
-	}
-
-	private static Method getAttribMethod(Class<? extends Annotation> annotationClass, String annotationAttribute) {
-		try {
-			return annotationClass.getMethod(annotationAttribute);
-		} catch (SecurityException e) {
-			throw propagate(e);
-		} catch (NoSuchMethodException e) {
-			throw new IllegalArgumentException(
-					String.format("%s has no attribute named %s", annotationClass.getName(), annotationAttribute));
-		}
+		return stream(annotationClass.getMethods()).filter(m -> m.getName().equals(annotationAttribute)).findFirst()
+				.orElseThrow(() -> new IllegalArgumentException(
+						String.format("%s has no attribute named %s", annotationClass.getName(), annotationAttribute)));
 	}
 
 	public static AttributeFinder propertyAnnotated(Class<? extends Annotation> annotationClass) {
