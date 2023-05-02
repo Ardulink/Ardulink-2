@@ -37,6 +37,7 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import org.ardulink.core.proto.impl.DummyProtocol;
 import org.ardulink.util.URIs;
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junitpioneer.jupiter.DefaultLocale;
@@ -223,10 +224,47 @@ class DummyLinkFactoryTest {
 	@Test
 	void hasMinValue() {
 		Configurer configurer = sut.getConfigurer(URIs.newURI("ardulink://dummyLink"));
-		ConfigAttribute a = configurer.getAttribute("b");
-		NumberValidationInfo vi = (NumberValidationInfo) a.getValidationInfo();
-		assertThat(((int) vi.min())).isEqualTo(3);
-		assertThat(((int) vi.max())).isEqualTo(12);
+		hasMinMax(configurer.getAttribute("b"), 3, 12);
+	}
+
+	@Test
+	void minMaxValuesOfDatatypes() {
+		Configurer configurer = sut.getConfigurer(URIs.newURI("ardulink://dummyLink"));
+		hasMinMax(configurer.getAttribute("intNoMinMax"), Integer.MIN_VALUE, Integer.MAX_VALUE);
+		hasMinMax(configurer.getAttribute("intMinMax"), -1, +2);
+
+		hasMinMax(configurer.getAttribute("longNoMinMax"), Long.MIN_VALUE, Long.MAX_VALUE);
+		hasMinMax(configurer.getAttribute("longMinMax"), -1, +2);
+
+		isNan(configurer.getAttribute("doubleNoMinMax"));
+		hasMinMax(configurer.getAttribute("doubleMinMax"), -1, +2);
+
+		isNan(configurer.getAttribute("floatNoMinMax"));
+		hasMinMax(configurer.getAttribute("floatMinMax"), -1, +2);
+
+		hasMinMax(configurer.getAttribute("byteNoMinMax"), Byte.MIN_VALUE, Byte.MAX_VALUE);
+		hasMinMax(configurer.getAttribute("byteMinMax"), -1, +2);
+
+		hasMinMax(configurer.getAttribute("charNoMinMax"), Character.MIN_VALUE, Character.MAX_VALUE);
+		hasMinMax(configurer.getAttribute("charMinMax"), -1, +2);
+	}
+
+	private void hasMinMax(ConfigAttribute attribute, long min, long max) {
+		assertThat(attribute.getValidationInfo()).isInstanceOfSatisfying(NumberValidationInfo.class, nvi -> {
+			try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+				softly.assertThat(nvi.min()).isEqualTo(min);
+				softly.assertThat(nvi.max()).isEqualTo(max);
+			}
+		});
+	}
+
+	private void isNan(ConfigAttribute attribute) {
+		assertThat(attribute.getValidationInfo()).isInstanceOfSatisfying(NumberValidationInfo.class, nvi -> {
+			try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+				softly.assertThat(nvi.min()).isNaN();
+				softly.assertThat(nvi.max()).isNaN();
+			}
+		});
 	}
 
 	private String getName(String name) {

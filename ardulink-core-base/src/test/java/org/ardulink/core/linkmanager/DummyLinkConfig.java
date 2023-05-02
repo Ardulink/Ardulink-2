@@ -60,6 +60,54 @@ public class DummyLinkConfig implements LinkConfig {
 	@Named("f")
 	public TimeUnit f;
 
+	@Named("intNoMinMax")
+	public int g1;
+
+	@Named("intMinMax")
+	@Min(-1)
+	@Max(+2)
+	public int g2;
+
+	@Named("longNoMinMax")
+	public long g3;
+
+	@Named("longMinMax")
+	@Min(-1)
+	@Max(+2)
+	public long g4;
+
+	@Named("doubleNoMinMax")
+	public double g5;
+
+	@Min(-1)
+	@Max(+2)
+	@Named("doubleMinMax")
+	public double g6;
+
+	@Named("floatNoMinMax")
+	public float g7;
+
+	@Min(-1)
+	@Max(+2)
+	@Named("floatMinMax")
+	public float g8;
+
+	@Named("charNoMinMax")
+	public char g9;
+
+	@Min(-1)
+	@Max(+2)
+	@Named("charMinMax")
+	public char g10;
+
+	@Named("byteNoMinMax")
+	public byte g11;
+
+	@Min(-1)
+	@Max(+2)
+	@Named("byteMinMax")
+	public byte g12;
+
 	public static final ThreadLocal<String[]> choiceValuesOfD = new ThreadLocal<String[]>() {
 		@Override
 		protected String[] initialValue() {
@@ -130,7 +178,7 @@ public class DummyLinkConfig implements LinkConfig {
 	public void setD(String d) {
 		this.d = d;
 	}
-	
+
 	public TimeUnit getF() {
 		return f;
 	}

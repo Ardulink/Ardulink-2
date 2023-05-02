@@ -16,8 +16,6 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
-import static java.lang.Long.MAX_VALUE;
-import static java.lang.Long.MIN_VALUE;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -199,11 +197,6 @@ public abstract class LinkManager {
 			return value;
 		}
 
-		@Override
-		public void addAnnotations(Collection<Annotation> annotations) {
-			// since this class has no reference to a method or field there are no
-			// annotations to add
-		}
 	}
 
 	private static class DefaultConfigurer<T extends LinkConfig> implements Configurer {
@@ -338,17 +331,31 @@ public abstract class LinkManager {
 
 			@Override
 			public ValidationInfo getValidationInfo() {
-				return Integer.class.isAssignableFrom(Primitives.wrap(getType())) //
-						? newNumberValidationInfo() //
-						: ValidationInfo.NULL;
-			}
-
-			private ValidationInfo newNumberValidationInfo() {
+				Class<?> wrappedType = Primitives.wrap(getType());
 				Annotation[] annotations = attribute.getAnnotations();
-				return newNumberValidationInfo( //
-						find(annotations, Min.class).map(Min::value).orElse(MIN_VALUE), //
-						find(annotations, Max.class).map(Max::value).orElse(MAX_VALUE) //
-				);
+				Optional<Long> min = find(annotations, Min.class).map(Min::value);
+				Optional<Long> max = find(annotations, Max.class).map(Max::value);
+				// TODO we could add min/max to Primitives but what to define as min/max for
+				// fps? MAX_VALUE/-MAX_VALUE?
+				if (Long.class.isAssignableFrom(wrappedType)) {
+					return newNumberValidationInfo(min.orElse(Long.MIN_VALUE), max.orElse(Long.MAX_VALUE));
+				} else if (Integer.class.isAssignableFrom(wrappedType)) {
+					return newNumberValidationInfo(min.orElse((long) Integer.MIN_VALUE),
+							max.orElse((long) Integer.MAX_VALUE));
+				} else if (Byte.class.isAssignableFrom(wrappedType)) {
+					return newNumberValidationInfo(min.orElse((long) Byte.MIN_VALUE),
+							max.orElse((long) Byte.MAX_VALUE));
+				} else if (Character.class.isAssignableFrom(wrappedType)) {
+					return newNumberValidationInfo(min.orElse((long) Character.MIN_VALUE),
+							max.orElse((long) Character.MAX_VALUE));
+				} else if (Double.class.isAssignableFrom(wrappedType)) {
+					return newNumberValidationInfo(min.map(Number::doubleValue).orElse(Double.NaN),
+							max.map(Number::doubleValue).orElse(Double.NaN));
+				} else if (Float.class.isAssignableFrom(wrappedType)) {
+					return newNumberValidationInfo(min.map(Number::floatValue).orElse(Float.NaN),
+							max.map(Number::floatValue).orElse(Float.NaN));
+				}
+				return ValidationInfo.NULL;
 			}
 
 			private <S extends Annotation> Optional<S> find(Annotation[] annotations, Class<S> annoClass) {
@@ -356,7 +363,7 @@ public abstract class LinkManager {
 						.map(annoClass::cast);
 			}
 
-			private NumberValidationInfo newNumberValidationInfo(long min, long max) {
+			private NumberValidationInfo newNumberValidationInfo(double min, double max) {
 				return new NumberValidationInfo() {
 
 					@Override
