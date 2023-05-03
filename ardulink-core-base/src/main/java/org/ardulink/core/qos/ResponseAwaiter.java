@@ -3,8 +3,8 @@ package org.ardulink.core.qos;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -13,12 +13,11 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.ardulink.core.Link;
 import org.ardulink.core.events.RplyEvent;
 import org.ardulink.core.events.RplyListener;
-import org.ardulink.util.Lists;
 
 public class ResponseAwaiter {
 
 	private final Link link;
-	private final List<RplyEvent> replies = Lists.newArrayList();
+	private final Queue<RplyEvent> replies = new ConcurrentLinkedDeque<>();
 
 	private final Lock lock = new ReentrantLock(false);
 	private final Condition condition = lock.newCondition();
@@ -70,9 +69,9 @@ public class ResponseAwaiter {
 			while (true) {
 				lock.lock();
 				try {
-					Optional<RplyEvent> rply = waitForRplyEventWithMsgId(messageId);
-					if (rply.isPresent()) {
-						return rply.get();
+					RplyEvent rply = waitForRplyEventWithMsgId(messageId);
+					if (rply != null) {
+						return rply;
 					}
 				} finally {
 					lock.unlock();
@@ -83,7 +82,7 @@ public class ResponseAwaiter {
 		}
 	}
 
-	private Optional<RplyEvent> waitForRplyEventWithMsgId(long messageId) {
+	private RplyEvent waitForRplyEventWithMsgId(long messageId) {
 		try {
 			if (timeout < 0 || timeUnit == null) {
 				condition.await();
@@ -96,16 +95,20 @@ public class ResponseAwaiter {
 		}
 		lock.lock();
 		try {
-			Optional<RplyEvent> messageIdReceived = messageIdReceived(messageId);
-			replies.clear();
-			return messageIdReceived;
+			return messageIdReceived(messageId);
 		} finally {
 			lock.unlock();
 		}
 	}
 
-	private Optional<RplyEvent> messageIdReceived(long messageId) {
-		return replies.stream().filter(r -> r.getId() == messageId).findFirst();
+	private RplyEvent messageIdReceived(long messageId) {
+		RplyEvent polled;
+		while ((polled = replies.poll()) != null) {
+			if (polled.getId() == messageId) {
+				return polled;
+			}
+		}
+		return null;
 	}
 
 }
