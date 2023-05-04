@@ -67,8 +67,14 @@ public class EventCollector implements EventListener {
 	}
 
 	public void awaitEvents(Type type, Predicate<? super List<? extends PinValueChangedEvent>> predicate) {
-		await().pollInterval(ofMillis(100)).timeout(timeout, timeUnit)
-				.untilAsserted(() -> assertThat(events.asMap().getOrDefault(type, emptyList())).matches(predicate));
+		await().pollInterval(ofMillis(100)).timeout(timeout, timeUnit).untilAsserted(() -> {
+			List<PinValueChangedEvent> eventsOfType = eventsOfType(type);
+			assertThat(eventsOfType).matches(predicate).describedAs("Received events: %s", eventsOfType);
+		});
+	}
+
+	private List<PinValueChangedEvent> eventsOfType(Type type) {
+		return events.asMap().getOrDefault(type, emptyList());
 	}
 
 }
