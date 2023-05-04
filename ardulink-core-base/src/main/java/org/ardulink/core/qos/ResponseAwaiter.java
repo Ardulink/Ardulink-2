@@ -5,10 +5,8 @@ import static org.ardulink.util.Preconditions.checkState;
 import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.events.RplyEvent;
@@ -18,9 +16,7 @@ public class ResponseAwaiter {
 
 	private final Link link;
 	private final Queue<RplyEvent> replies = new ConcurrentLinkedDeque<>();
-
-	private final Lock lock = new ReentrantLock(false);
-	private final Condition condition = lock.newCondition();
+	private final Semaphore semaphore = new Semaphore(0);
 
 	private final RplyListener listener;
 	private long timeout = -1;
@@ -46,13 +42,8 @@ public class ResponseAwaiter {
 	private ResponseAwaiter(Link link) throws IOException {
 		this.link = link;
 		this.listener = e -> {
-			lock.lock();
-			try {
-				replies.add(e);
-				condition.signal();
-			} finally {
-				lock.unlock();
-			}
+			replies.add(e);
+			semaphore.release();
 		};
 		this.link.addRplyListener(listener);
 	}
@@ -67,14 +58,9 @@ public class ResponseAwaiter {
 	public RplyEvent waitForResponse(long messageId) throws IOException {
 		try {
 			while (true) {
-				lock.lock();
-				try {
-					RplyEvent rply = waitForRplyEventWithMsgId(messageId);
-					if (rply != null) {
-						return rply;
-					}
-				} finally {
-					lock.unlock();
+				RplyEvent rply = waitForRplyEventWithMsgId(messageId);
+				if (rply != null) {
+					return rply;
 				}
 			}
 		} finally {
@@ -85,20 +71,15 @@ public class ResponseAwaiter {
 	private RplyEvent waitForRplyEventWithMsgId(long messageId) {
 		try {
 			if (timeout < 0 || timeUnit == null) {
-				condition.await();
+				semaphore.acquire();
 			} else {
-				checkState(condition.await(timeout, timeUnit), "No response received within %s %s ", this.timeout,
+				checkState(semaphore.tryAcquire(timeout, timeUnit), "No response received within %s %s ", this.timeout,
 						timeUnit);
 			}
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
-		lock.lock();
-		try {
-			return messageIdReceived(messageId);
-		} finally {
-			lock.unlock();
-		}
+		return messageIdReceived(messageId);
 	}
 
 	private RplyEvent messageIdReceived(long messageId) {
