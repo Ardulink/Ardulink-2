@@ -17,9 +17,8 @@ limitations under the License.
 package org.ardulink.core.mqtt;
 
 import static java.time.Duration.ofMillis;
-import static java.time.Duration.ofSeconds;
 import static java.util.Arrays.asList;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.DIGITAL;
@@ -53,10 +52,8 @@ import org.junit.jupiter.params.provider.MethodSource;
  * [adsense]
  *
  */
-@Timeout(MqttLinkIntegrationTest.TIMEOUT)
+@Timeout(value = 1, unit = MINUTES)
 class MqttLinkIntegrationTest {
-
-	static final int TIMEOUT = 30;
 
 	private static class TestConfig {
 
@@ -124,7 +121,7 @@ class MqttLinkIntegrationTest {
 		}
 	}
 
-	EventCollector eventCollector = new EventCollector().withTimeout(TIMEOUT, SECONDS);
+	EventCollector eventCollector = new EventCollector();
 
 	@ParameterizedTest(name = "{index} {0}")
 	@MethodSource("data")
@@ -184,8 +181,7 @@ class MqttLinkIntegrationTest {
 	}
 
 	private void awaitConnectionIs(TrackStateConnectionListener connectionListener, boolean connected) {
-		await().timeout(ofSeconds(TIMEOUT * 2)).pollInterval(ofMillis(100))
-				.until(() -> connectionListener.isConnected().get(), t -> t == connected);
+		await().pollInterval(ofMillis(100)).until(connectionListener.isConnected()::get, t -> t == connected);
 	}
 
 }
