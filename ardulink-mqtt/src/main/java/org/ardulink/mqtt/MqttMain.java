@@ -117,7 +117,8 @@ public class MqttMain {
 		this.args = args;
 		ensureBrokerTopicIsnormalized(args);
 		if (args.standalone) {
-			standaloneServer = createBroker().startBroker();
+			standaloneServer = configureBroker(
+					MqttBroker.builder().host(args.brokerHost).useSsl(args.ssl).port(args.brokerPort)).startBroker();
 		}
 	}
 
@@ -148,8 +149,8 @@ public class MqttMain {
 		this.context.start();
 	}
 
-	protected Builder createBroker() {
-		return MqttBroker.builder().host(args.brokerHost).useSsl(args.ssl).port(args.brokerPort);
+	protected Builder configureBroker(Builder builder) {
+		return builder;
 	}
 
 	public boolean isConnected() {

@@ -131,8 +131,7 @@ class MqttMainStandaloneIntegrationTest {
 	private void runMain() throws Exception {
 		MqttMain mqttMain = new MqttMain(args) {
 			@Override
-			protected Builder createBroker() {
-				Builder builder = super.createBroker();
+			protected Builder configureBroker(Builder builder) {
 				return hasAuthentication() ? builder.addAuthenication(brokerUser, brokerPassword.getBytes()) : builder;
 			}
 		};
