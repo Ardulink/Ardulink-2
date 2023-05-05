@@ -156,6 +156,10 @@
 					<excludes>
 						<exclude>**/*IntegrationTest.java</exclude>
 					</excludes>
+                                        <groups>!in-progress</groups>
+                                        <systemPropertyVariables>
+                                                <junit.jupiter.execution.timeout.default>5m</junit.jupiter.execution.timeout.default>
+                                        </systemPropertyVariables>
 				</configuration>
 				<executions>
 					<execution>

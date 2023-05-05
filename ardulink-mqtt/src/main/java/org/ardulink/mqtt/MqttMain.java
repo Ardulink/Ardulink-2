@@ -18,6 +18,7 @@ package org.ardulink.mqtt;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.joining;
+import static org.ardulink.mqtt.MqttBroker.builder;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
 
@@ -114,18 +115,10 @@ public class MqttMain {
 	}
 
 	public MqttMain(CommandLineArguments args) {
-		this.args = args;
-		ensureBrokerTopicIsnormalized(args);
+		this.args = args.normalize();
 		if (args.standalone) {
-			standaloneServer = configureBroker(
-					MqttBroker.builder().host(args.brokerHost).useSsl(args.ssl).port(args.brokerPort)).startBroker();
-		}
-	}
-
-	// TODO PF move to CommandLineArgs
-	private static void ensureBrokerTopicIsnormalized(CommandLineArguments args) {
-		if (args.brokerTopic != null && !args.brokerTopic.endsWith("/")) {
-			args.brokerTopic = args.brokerTopic + '/';
+			standaloneServer = configureBroker(builder().host(args.brokerHost).useSsl(args.ssl).port(args.brokerPort))
+					.startBroker();
 		}
 	}
 

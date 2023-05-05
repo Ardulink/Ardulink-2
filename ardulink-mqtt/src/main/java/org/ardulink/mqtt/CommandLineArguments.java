@@ -60,4 +60,11 @@ public class CommandLineArguments {
 	@Option(name = "-standalone", usage = "Start a mqtt server on this host")
 	public boolean standalone;
 
+	CommandLineArguments normalize() {
+		if (brokerTopic != null && !brokerTopic.endsWith("/")) {
+			brokerTopic = brokerTopic + '/';
+		}
+		return this;
+	}
+
 }
