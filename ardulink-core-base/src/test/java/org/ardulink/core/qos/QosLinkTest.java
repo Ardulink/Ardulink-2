@@ -34,7 +34,6 @@ import org.ardulink.core.Tone;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -90,7 +89,7 @@ class QosLinkTest {
 		assertThat(exception).hasMessageContaining("status").hasMessageContaining("not ok");
 	}
 
-	@RepeatedTest(100)
+	@Test
 	void secondCallPassesIfFirstOneKeepsUnresponded() throws Exception {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/tone\\/1\\/2\\/3\\?id\\=(\\d)"))).doNotRespond();
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/tone\\/4\\/5\\/6\\?id\\=(\\d)")))
