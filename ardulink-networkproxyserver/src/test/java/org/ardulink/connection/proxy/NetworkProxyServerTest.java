@@ -17,8 +17,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.util.Collection;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.Semaphore;
 
 import org.ardulink.connection.proxy.NetworkProxyServer.StartCommand;
 import org.ardulink.core.Connection;
@@ -40,27 +39,27 @@ class NetworkProxyServerTest {
 
 	private final StringBuilder proxySideReceived = new StringBuilder();
 	private final Connection proxySideConnection = new Connection() {
-	
+
 		@Override
 		public void write(byte[] bytes) throws IOException {
 			proxySideReceived.append(new String(bytes));
 		}
-	
+
 		@Override
 		public void addListener(Listener listener) {
 			// noop
 		}
-	
+
 		@Override
 		public void removeListener(Listener listener) {
 			// noop
 		}
-	
+
 		@Override
 		public void close() throws IOException {
 			// noop
 		}
-	
+
 	};
 
 	private ConnectionBasedLink clientSideLink;
@@ -101,8 +100,7 @@ class NetworkProxyServerTest {
 	}
 
 	private void startServerInBackground(int freePort) throws InterruptedException {
-		ReentrantLock lock = new ReentrantLock();
-		Condition waitUntilServerIsUp = lock.newCondition();
+		Semaphore waitUntilServerIsUp = new Semaphore(0);
 		new Thread() {
 
 			@Override
@@ -113,16 +111,12 @@ class NetworkProxyServerTest {
 						@Override
 						protected void serverIsUp(int portNumber) {
 							super.serverIsUp(portNumber);
-							lock.lock();
-							try {
-								waitUntilServerIsUp.signal();
-							} finally {
-								lock.unlock();
-							}
+							waitUntilServerIsUp.release();
 						}
 
 						@Override
-						protected NetworkProxyServerConnection newConnection(ServerSocket serverSocket) throws IOException {
+						protected NetworkProxyServerConnection newConnection(ServerSocket serverSocket)
+								throws IOException {
 							return new NetworkProxyServerConnection(serverSocket.accept()) {
 								@Override
 								protected Handshaker handshaker(InputStream isRemote, OutputStream osRemote) {
@@ -170,13 +164,7 @@ class NetworkProxyServerTest {
 				}
 			}
 		}.start();
-
-		lock.lock();
-		try {
-			waitUntilServerIsUp.await();
-		} finally {
-			lock.unlock();
-		}
+		waitUntilServerIsUp.acquire();
 	}
 
 	private ProxyLinkConfig configure(ProxyLinkConfig linkConfig, String hostname, int tcpPort) {
