@@ -42,18 +42,18 @@ import jssc.SerialPortList;
 @I18n("message")
 public class SerialLinkConfig implements LinkConfig {
 
-	private static final String PROTO = "proto";
+	private static final String NAMED_PROTO = "proto";
 
-	private static final String PORT = "port";
+	private static final String NAMED_PORT = "port";
 
-	@Named(PORT)
+	@Named(NAMED_PORT)
 	private String port;
 
 	@Named("baudrate")
 	@Min(1)
 	private int baudrate = 115200;
 
-	@Named(PROTO)
+	@Named(NAMED_PROTO)
 	private Protocol protoName = useProtoOrFallback(ArdulinkProtocol2.instance());
 
 	@Named("qos")
@@ -83,12 +83,12 @@ public class SerialLinkConfig implements LinkConfig {
 		return port;
 	}
 
-	@ChoiceFor(PORT)
+	@ChoiceFor(NAMED_PORT)
 	public String[] listPorts() {
 		return SerialPortList.getPortNames();
 	}
 
-	@ChoiceFor(PROTO)
+	@ChoiceFor(NAMED_PROTO)
 	public List<String> availableProtos() {
 		return Protocols.names();
 	}
