@@ -155,10 +155,10 @@ public class GenericPanelBuilder implements PanelBuilder {
 		ValidationInfo info = attribute.getValidationInfo();
 		Class<?> wrapped = wrap(attribute.getType());
 		if (info instanceof NumberValidationInfo && Number.class.isAssignableFrom(wrapped)) {
-			NumberValidationInfo nInfo = (NumberValidationInfo) info;
+			NumberValidationInfo numberValidationInfo = (NumberValidationInfo) info;
 			Numbers targetType = numberType((Class<Number>) wrapped);
-			Number min = targetType.convert(nInfo.min());
-			Number max = targetType.convert(nInfo.max());
+			Number min = targetType.convert(numberValidationInfo.min());
+			Number max = targetType.convert(numberValidationInfo.max());
 			Number stepSize = targetType.convert(1);
 			return new SpinnerNumberModel(min, (Comparable<Number>) min, (Comparable<Number>) max, stepSize);
 		}
