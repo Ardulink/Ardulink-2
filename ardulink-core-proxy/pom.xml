@@ -24,6 +24,13 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.ardulink</groupId>
+			<artifactId>ardulink-core-base</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+			<type>test-jar</type>
+		</dependency>
+		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>

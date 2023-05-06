@@ -16,14 +16,16 @@ limitations under the License.
 
 package org.ardulink.core.proxy;
 
+import static java.util.Collections.emptyList;
+
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Positive;
 
 import org.ardulink.core.linkmanager.LinkConfig;
+import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
@@ -36,6 +38,7 @@ import org.ardulink.core.proto.impl.ArdulinkProtocol2;
  * [adsense]
  *
  */
+@I18n("message")
 public class ProxyLinkConfig implements LinkConfig {
 
 	private static final String NAMED_PROTO = "proto";
@@ -113,7 +116,7 @@ public class ProxyLinkConfig implements LinkConfig {
 
 	@ChoiceFor(value = NAMED_PORT, dependsOn = { "tcphost", "tcpport" })
 	public List<String> getAvailablePorts() throws IOException {
-		return tcphost == null ? Collections.emptyList() : getRemoteInternal().getPortList();
+		return tcphost == null ? emptyList() : getRemoteInternal().getPortList();
 	}
 
 	public synchronized ProxyConnectionToRemote getRemote() throws IOException {
