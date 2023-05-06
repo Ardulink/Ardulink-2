@@ -16,9 +16,14 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static java.util.Collections.unmodifiableMap;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
+import static org.ardulink.util.Preconditions.checkNotNull;
+
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -50,6 +55,9 @@ public enum Numbers {
 		this.converter = converter;
 	}
 
+	private static final Map<Class<?>, Numbers> typeMapping = unmodifiableMap(
+			EnumSet.allOf(Numbers.class).stream().collect(toMap(Numbers::getType, identity())));
+
 	public Class<Number> getType() {
 		return type;
 	}
@@ -71,12 +79,7 @@ public enum Numbers {
 	}
 
 	public static <T extends Number> Numbers numberType(Class<T> target) {
-		return streamOfAll().filter(t -> t.getType().equals(target)).findFirst()
-				.orElseThrow(() -> new IllegalArgumentException("Unsupported type " + target));
-	}
-
-	private static Stream<Numbers> streamOfAll() {
-		return EnumSet.allOf(Numbers.class).stream();
+		return checkNotNull(typeMapping.get(target), "Unsupported type %s", target);
 	}
 
 }
