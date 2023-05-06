@@ -20,6 +20,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
+import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
@@ -49,6 +50,10 @@ import java.util.stream.Stream;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Negative;
+import javax.validation.constraints.NegativeOrZero;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.beans.Attribute;
@@ -336,8 +341,16 @@ public abstract class LinkManager {
 			public ValidationInfo getValidationInfo() {
 				Class<?> wrappedType = wrap(getType());
 				Annotation[] annotations = attribute.getAnnotations();
-				Optional<Long> min = find(annotations, Min.class).map(Min::value);
-				Optional<Long> max = find(annotations, Max.class).map(Max::value);
+				boolean positive = find(annotations, Positive.class).isPresent();
+				boolean positiveOrZero = find(annotations, PositiveOrZero.class).isPresent();
+				boolean negative = find(annotations, Negative.class).isPresent();
+				boolean negativeOrZero = find(annotations, NegativeOrZero.class).isPresent();
+				Optional<Long> min_ = find(annotations, Min.class).map(Min::value);
+				Optional<Long> min = min_.isPresent() ? min_
+						: positiveOrZero ? Optional.of(0L) : positive ? Optional.of(1L) : empty();
+				Optional<Long> max_ = find(annotations, Max.class).map(Max::value);
+				Optional<Long> max = max_.isPresent() ? max_
+						: negativeOrZero ? Optional.of(0L) : negative ? Optional.of(-1L) : empty();
 				// TODO What to define as min/max for fps? MAX_VALUE/-MAX_VALUE?
 				if (Character.class.isAssignableFrom(wrappedType)) {
 					return newNumberValidationInfo(min.orElse((long) Character.MIN_VALUE),

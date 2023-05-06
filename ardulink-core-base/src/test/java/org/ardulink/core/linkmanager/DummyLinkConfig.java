@@ -33,6 +33,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Negative;
+import javax.validation.constraints.NegativeOrZero;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
@@ -107,6 +111,26 @@ public class DummyLinkConfig implements LinkConfig {
 	@Max(+2)
 	@Named("byteMinMax")
 	public byte g12;
+
+	@Positive
+	@Max(+2)
+	@Named("positiveAnnotated")
+	public byte h1;
+
+	@PositiveOrZero
+	@Max(+2)
+	@Named("positiveOrZeroAnnotated")
+	public byte h2;
+
+	@Min(-2)
+	@Negative
+	@Named("negativeAnnotated")
+	public byte h3;
+
+	@Min(-2)
+	@NegativeOrZero
+	@Named("negativeOrZeroAnnotated")
+	public byte h4;
 
 	public static final ThreadLocal<String[]> choiceValuesOfD = new ThreadLocal<String[]>() {
 		@Override

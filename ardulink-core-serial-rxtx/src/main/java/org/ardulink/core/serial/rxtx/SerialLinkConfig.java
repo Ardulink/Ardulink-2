@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.serial.rxtx;
 
 import static gnu.io.CommPortIdentifier.PORT_SERIAL;
+import static java.util.stream.Collectors.toList;
 import static org.ardulink.util.Iterables.getFirst;
 
 import java.util.Collections;
@@ -24,13 +25,14 @@ import java.util.List;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.util.Lists;
 
 import gnu.io.CommPortIdentifier;
 
@@ -53,7 +55,7 @@ public class SerialLinkConfig implements LinkConfig {
 	private String port;
 
 	@Named("baudrate")
-	@Min(1)
+	@Positive
 	private int baudrate = 115200;
 
 	@Named(NAMED_PROTO)
@@ -62,7 +64,7 @@ public class SerialLinkConfig implements LinkConfig {
 	@Named("qos")
 	private boolean qos;
 
-	@Min(0)
+	@PositiveOrZero
 	@Max(59)
 	@Named("waitsecs")
 	private int waitsecs = 10;
@@ -88,13 +90,8 @@ public class SerialLinkConfig implements LinkConfig {
 
 	@ChoiceFor(NAMED_PORT)
 	public List<String> listPorts() {
-		List<String> ports = Lists.newArrayList();
-		for (CommPortIdentifier portIdentifier : portIdentifiers()) {
-			if (portIdentifier.getPortType() == PORT_SERIAL) {
-				ports.add(portIdentifier.getName());
-			}
-		}
-		return ports;
+		return portIdentifiers().stream().filter(p -> p.getPortType() == PORT_SERIAL).map(CommPortIdentifier::getName)
+				.collect(toList());
 	}
 
 	@ChoiceFor(NAMED_PROTO)
@@ -123,7 +120,7 @@ public class SerialLinkConfig implements LinkConfig {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Iterable<CommPortIdentifier> portIdentifiers() {
+	private List<CommPortIdentifier> portIdentifiers() {
 		return Collections.list(CommPortIdentifier.getPortIdentifiers());
 	}
 

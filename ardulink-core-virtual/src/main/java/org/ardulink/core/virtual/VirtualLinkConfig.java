@@ -4,7 +4,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.concurrent.TimeUnit;
 
-import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
 
 import org.ardulink.core.linkmanager.LinkConfig;
 
@@ -13,7 +13,7 @@ public class VirtualLinkConfig implements LinkConfig {
 	private static final String DELAY_UNIT = "delayUnit";
 
 	@Named("delay")
-	@Min(1)
+	@Positive
 	private long delay = 250;
 
 	@Named(DELAY_UNIT)

@@ -21,6 +21,8 @@ import static org.ardulink.util.Preconditions.checkNotNull;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
@@ -49,7 +51,7 @@ public class MqttLinkConfig implements LinkConfig {
 	private String host = DEFAULT_HOST;
 
 	@Named("port")
-	@Min(1)
+	@Positive
 	@Max(2 << 16 - 1)
 	public int port = DEFAULT_PORT;
 
@@ -61,7 +63,7 @@ public class MqttLinkConfig implements LinkConfig {
 	private String topic = normalize("home/devices/ardulink/");
 
 	@Named("qos")
-	@Min(0)
+	@PositiveOrZero
 	@Max(2)
 	public int qos;
 

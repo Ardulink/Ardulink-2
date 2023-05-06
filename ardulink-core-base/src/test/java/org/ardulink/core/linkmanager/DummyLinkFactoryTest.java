@@ -249,6 +249,20 @@ class DummyLinkFactoryTest {
 		hasMinMax(configurer.getAttribute("charMinMax"), -1, +2);
 	}
 
+	@Test
+	void positiveAnnotated() {
+		Configurer configurer = sut.getConfigurer(URIs.newURI("ardulink://dummyLink"));
+		hasMinMax(configurer.getAttribute("positiveAnnotated"), +1, +2);
+		hasMinMax(configurer.getAttribute("positiveOrZeroAnnotated"), 0, +2);
+	}
+
+	@Test
+	void negativeAnnotated() {
+		Configurer configurer = sut.getConfigurer(URIs.newURI("ardulink://dummyLink"));
+		hasMinMax(configurer.getAttribute("negativeAnnotated"), -2, -1);
+		hasMinMax(configurer.getAttribute("negativeOrZeroAnnotated"), -2, 0);
+	}
+
 	private void hasMinMax(ConfigAttribute attribute, long min, long max) {
 		assertThat(attribute.getValidationInfo()).isInstanceOfSatisfying(NumberValidationInfo.class, nvi -> {
 			try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {

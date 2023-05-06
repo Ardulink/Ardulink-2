@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
 
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.proto.api.Protocol;
@@ -50,7 +50,7 @@ public class ProxyLinkConfig implements LinkConfig {
 	private String tcphost;
 
 	@Named("tcpport")
-	@Min(1)
+	@Positive
 	@Max(2 << 16 - 1)
 	private int tcpport = DEFAULT_LISTENING_PORT;
 
@@ -58,7 +58,7 @@ public class ProxyLinkConfig implements LinkConfig {
 	private String port;
 
 	@Named("speed")
-	@Min(1)
+	@Positive
 	private int speed = DEFAULT_SPEED;
 
 	@Named(NAMED_PROTO)

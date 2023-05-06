@@ -22,6 +22,8 @@ import java.util.List;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
@@ -50,7 +52,7 @@ public class SerialLinkConfig implements LinkConfig {
 	private String port;
 
 	@Named("baudrate")
-	@Min(1)
+	@Positive
 	private int baudrate = 115200;
 
 	@Named(NAMED_PROTO)
@@ -59,7 +61,7 @@ public class SerialLinkConfig implements LinkConfig {
 	@Named("qos")
 	private boolean qos;
 
-	@Min(0)
+	@PositiveOrZero
 	@Max(59)
 	@Named("waitsecs")
 	private int waitsecs = 10;
