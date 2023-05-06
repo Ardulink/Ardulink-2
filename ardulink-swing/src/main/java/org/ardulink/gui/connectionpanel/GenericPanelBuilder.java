@@ -18,8 +18,7 @@ package org.ardulink.gui.connectionpanel;
 import static java.awt.GridBagConstraints.REMAINDER;
 import static java.util.Arrays.asList;
 import static org.ardulink.gui.connectionpanel.GridBagConstraintsBuilder.constraints;
-import static org.ardulink.util.Primitives.parseAs;
-import static org.ardulink.util.Primitives.unwrap;
+import static org.ardulink.util.Numbers.numberType;
 import static org.ardulink.util.Primitives.wrap;
 
 import java.awt.Component;
@@ -41,13 +40,12 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import org.ardulink.core.linkmanager.LinkManager.ValidationInfo;
+import org.ardulink.util.Numbers;
 import org.ardulink.util.Primitives;
 
 public class GenericPanelBuilder implements PanelBuilder {
@@ -74,25 +72,20 @@ public class GenericPanelBuilder implements PanelBuilder {
 
 			JComponent component = createComponent(attribute);
 			component.setToolTipText(description);
-			panel.add(
-					component,
-					constraints(row, col++)
-							.gridwidth(isDiscoverable ? 1 : REMAINDER)
-							.fillHorizontal().build());
+			panel.add(component,
+					constraints(row, col++).gridwidth(isDiscoverable ? 1 : REMAINDER).fillHorizontal().build());
 
 			@SuppressWarnings("unchecked")
-			Component comp = isDiscoverable ? createDiscoverButton(attribute,
-					(JComboBox<Object>) component) : new JPanel();
+			Component comp = isDiscoverable ? createDiscoverButton(attribute, (JComboBox<Object>) component)
+					: new JPanel();
 			panel.add(comp, constraints(row, col++).build());
 			row++;
 		}
-		panel.add(new JPanel(), constraints(row++, 0).gridwidth(REMAINDER)
-				.fillBoth().build());
+		panel.add(new JPanel(), constraints(row++, 0).gridwidth(REMAINDER).fillBoth().build());
 		return panel;
 	}
 
-	private static JButton createDiscoverButton(
-			ConfigAttribute attribute, JComboBox<Object> comboBox) {
+	private static JButton createDiscoverButton(ConfigAttribute attribute, JComboBox<Object> comboBox) {
 		JButton discoverButton = new JButton(loadIcon());
 		discoverButton.setToolTipText("Discover");
 		discoverButton
@@ -101,8 +94,7 @@ public class GenericPanelBuilder implements PanelBuilder {
 	}
 
 	private static ImageIcon loadIcon() {
-		return new ImageIcon(
-				GenericPanelBuilder.class.getResource("icons/search_icon.png"));
+		return new ImageIcon(GenericPanelBuilder.class.getResource("icons/search_icon.png"));
 	}
 
 	private static JComponent createComponent(ConfigAttribute attribute) {
@@ -141,21 +133,13 @@ public class GenericPanelBuilder implements PanelBuilder {
 		editor.getFormat().setGroupingUsed(false);
 		spinner.setEditor(editor);
 		spinner.setValue(attribute.getValue());
-
-		spinner.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				attribute.setValue(parseAs(unwrap(attribute.getType()),
-						String.valueOf(spinner.getValue())));
-			}
-		});
+		spinner.addChangeListener(e -> attribute.setValue(spinner.getValue()));
 		return spinner;
 	}
 
 	private static JComponent createTextField(ConfigAttribute attribute) {
 		Object value = attribute.getValue();
-		JTextField jTextField = new JTextField(value == null ? ""
-				: String.valueOf(value));
+		JTextField jTextField = new JTextField(value == null ? "" : String.valueOf(value));
 
 		jTextField.addFocusListener(new FocusAdapter() {
 			@Override
@@ -166,28 +150,27 @@ public class GenericPanelBuilder implements PanelBuilder {
 		return jTextField;
 	}
 
+	@SuppressWarnings("unchecked")
 	private static SpinnerModel createModel(ConfigAttribute attribute) {
 		ValidationInfo info = attribute.getValidationInfo();
-		if (info instanceof NumberValidationInfo) {
+		Class<?> wrapped = wrap(attribute.getType());
+		if (info instanceof NumberValidationInfo && Number.class.isAssignableFrom(wrapped)) {
 			NumberValidationInfo nInfo = (NumberValidationInfo) info;
-			if (wrap(attribute.getType()).equals(Integer.class)) {
-				return new SpinnerNumberModel((int) nInfo.min(),
-						(int) nInfo.min(), (int) nInfo.max(), 1);
-			}
-			return new SpinnerNumberModel(nInfo.min(), nInfo.min(),
-					nInfo.max(), 1);
+			Numbers targetType = numberType((Class<Number>) wrapped);
+			Number min = targetType.convert(nInfo.min());
+			Number max = targetType.convert(nInfo.max());
+			Number stepSize = targetType.convert(1);
+			return new SpinnerNumberModel(min, (Comparable<Number>) min, (Comparable<Number>) max, stepSize);
 		}
 		return new SpinnerNumberModel();
 	}
 
-	private static JComponent setState(JCheckBox checkBox,
-			ConfigAttribute attribute) {
+	private static JComponent setState(JCheckBox checkBox, ConfigAttribute attribute) {
 		checkBox.setSelected((Boolean) attribute.getValue());
 		return checkBox;
 	}
 
-	private static void setSelection(JComboBox<Object> comboBox, Object value,
-			boolean nullIsAvalidItem) {
+	private static void setSelection(JComboBox<Object> comboBox, Object value, boolean nullIsAvalidItem) {
 		if (value == null) {
 			if (nullIsAvalidItem) {
 				comboBox.setSelectedIndex(-1);
@@ -208,13 +191,11 @@ public class GenericPanelBuilder implements PanelBuilder {
 	}
 
 	private static boolean isBoolean(ConfigAttribute attribute) {
-		return attribute.getType().equals(Boolean.class)
-				|| attribute.getType().equals(boolean.class);
+		return attribute.getType().equals(Boolean.class) || attribute.getType().equals(boolean.class);
 	}
 
 	private static boolean isNumber(ConfigAttribute attribute) {
-		return Number.class
-				.isAssignableFrom(Primitives.wrap(attribute.getType()));
+		return Number.class.isAssignableFrom(Primitives.wrap(attribute.getType()));
 	}
 
 }
