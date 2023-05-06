@@ -6,30 +6,51 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+
 class NumbersTest {
 
-	@Test
-	void canConvert() {
-		assertThat(convertTo(1L, Double.class)).isEqualTo(Long.valueOf(1).doubleValue());
-		assertThat(convertTo(1.0, Double.class)).isEqualTo(Double.valueOf(1).doubleValue());
-		assertThat(convertTo(1.0, Long.class)).isEqualTo(Double.valueOf(1.0).longValue());
-		assertThat(convertTo(Long.MAX_VALUE, Long.class)).isEqualTo(Long.valueOf(Long.MAX_VALUE).longValue());
+	@Property
+	void integers(@ForAll Integer value) {
+		convert(value);
 	}
 
-	@Test
-	void noRoundingWhenConvertingFromFloatingPointNumbers() {
-		assertThat(convertTo(1.1, Long.class)).isEqualTo(Double.valueOf(1.1).longValue());
-		assertThat(convertTo(1.9999, Long.class)).isEqualTo(Double.valueOf(1.9999).longValue());
-		assertThat(convertTo(2.0, Long.class)).isEqualTo(Double.valueOf(2.0).longValue());
+	@Property
+	void bytes(@ForAll Byte value) {
+		convert(value);
 	}
 
-	@Test
-	void overflow() {
-		assertThat(convertTo(Long.MAX_VALUE, Integer.class)).isEqualTo(Long.valueOf(Long.MAX_VALUE).intValue());
+	@Property
+	void shorts(@ForAll Short value) {
+		convert(value);
+	}
+
+	@Property
+	void longs(@ForAll Long value) {
+		convert(value);
+	}
+
+	@Property
+	void floats(@ForAll Float value) {
+		convert(value);
+	}
+
+	@Property
+	void doubles(@ForAll Double value) {
+		convert(value);
+	}
+
+	private void convert(Number value) {
+		assertThat(convertTo(value, Integer.class)).isEqualTo(value.intValue());
+		assertThat(convertTo(value, Byte.class)).isEqualTo(value.byteValue());
+		assertThat(convertTo(value, Short.class)).isEqualTo(value.shortValue());
+		assertThat(convertTo(value, Long.class)).isEqualTo(value.longValue());
+		assertThat(convertTo(value, Float.class)).isEqualTo(value.floatValue());
+		assertThat(convertTo(value, Double.class)).isEqualTo(value.doubleValue());
 	}
 
 	@ParameterizedTest
