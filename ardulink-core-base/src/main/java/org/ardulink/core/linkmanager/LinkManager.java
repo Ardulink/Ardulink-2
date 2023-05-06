@@ -58,6 +58,7 @@ import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.linkmanager.LinkConfig.Named;
 import org.ardulink.core.linkmanager.LinkFactory.Alias;
 import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider;
+import org.ardulink.util.Numbers;
 import org.ardulink.util.Primitives;
 import org.ardulink.util.Throwables;
 
@@ -335,17 +336,8 @@ public abstract class LinkManager {
 				Annotation[] annotations = attribute.getAnnotations();
 				Optional<Long> min = find(annotations, Min.class).map(Min::value);
 				Optional<Long> max = find(annotations, Max.class).map(Max::value);
-				// TODO we could add min/max to Primitives but what to define as min/max for
-				// fps? MAX_VALUE/-MAX_VALUE?
-				if (Long.class.isAssignableFrom(wrappedType)) {
-					return newNumberValidationInfo(min.orElse(Long.MIN_VALUE), max.orElse(Long.MAX_VALUE));
-				} else if (Integer.class.isAssignableFrom(wrappedType)) {
-					return newNumberValidationInfo(min.orElse((long) Integer.MIN_VALUE),
-							max.orElse((long) Integer.MAX_VALUE));
-				} else if (Byte.class.isAssignableFrom(wrappedType)) {
-					return newNumberValidationInfo(min.orElse((long) Byte.MIN_VALUE),
-							max.orElse((long) Byte.MAX_VALUE));
-				} else if (Character.class.isAssignableFrom(wrappedType)) {
+				// TODO What to define as min/max for fps? MAX_VALUE/-MAX_VALUE?
+				if (Character.class.isAssignableFrom(wrappedType)) {
 					return newNumberValidationInfo(min.orElse((long) Character.MIN_VALUE),
 							max.orElse((long) Character.MAX_VALUE));
 				} else if (Double.class.isAssignableFrom(wrappedType)) {
@@ -354,6 +346,11 @@ public abstract class LinkManager {
 				} else if (Float.class.isAssignableFrom(wrappedType)) {
 					return newNumberValidationInfo(min.map(Number::floatValue).orElse(Float.NaN),
 							max.map(Number::floatValue).orElse(Float.NaN));
+				} else if (Number.class.isAssignableFrom(wrappedType)) {
+					@SuppressWarnings("unchecked")
+					Numbers numberType = Numbers.numberType((Class<Number>) wrappedType);
+					return newNumberValidationInfo(min.orElse((Long) Numbers.LONG.convert(numberType.min())),
+							max.orElse((Long) Numbers.LONG.convert(numberType.max())));
 				}
 				return ValidationInfo.NULL;
 			}

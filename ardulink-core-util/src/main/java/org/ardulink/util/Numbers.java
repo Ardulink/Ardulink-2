@@ -30,19 +30,36 @@ import java.util.stream.Stream;
  */
 public enum Numbers {
 
-	INT(Integer.class, Number::intValue), //
-	BYTE(Byte.class, Number::byteValue), //
-	SHORT(Short.class, Number::shortValue), //
-	LONG(Long.class, Number::longValue), //
-	FLOAT(Float.class, Number::floatValue), //
-	DOUBLE(Double.class, Number::doubleValue);
+	INTEGER(Integer.class, Integer.MIN_VALUE, Integer.MAX_VALUE, Number::intValue), //
+	BYTE(Byte.class, Byte.MIN_VALUE, Byte.MAX_VALUE, Number::byteValue), //
+	SHORT(Short.class, Short.MIN_VALUE, Short.MAX_VALUE, Number::shortValue), //
+	LONG(Long.class, Long.MIN_VALUE, Long.MAX_VALUE, Number::longValue), //
+	FLOAT(Float.class, Float.MIN_VALUE, Float.MAX_VALUE, Number::floatValue), //
+	DOUBLE(Double.class, Double.MIN_VALUE, Double.MAX_VALUE, Number::doubleValue);
 
-	private final Class<?> type;
+	private final Class<Number> type;
+	private final Number min;
+	private final Number max;
 	private final Function<Number, Number> converter;
 
-	Numbers(Class<?> type, Function<Number, Number> converter) {
-		this.type = type;
+	@SuppressWarnings("unchecked")
+	Numbers(Class<?> type, Number min, Number max, Function<Number, Number> converter) {
+		this.type = (Class<Number>) type;
+		this.min = min;
+		this.max = max;
 		this.converter = converter;
+	}
+
+	public Class<Number> getType() {
+		return type;
+	}
+
+	public Number min() {
+		return min;
+	}
+
+	public Number max() {
+		return max;
 	}
 
 	public Number convert(Number source) {
@@ -54,7 +71,7 @@ public enum Numbers {
 	}
 
 	public static <T extends Number> Numbers numberType(Class<T> target) {
-		return streamOfAll().filter(t -> t.type.equals(target)).findFirst()
+		return streamOfAll().filter(t -> t.getType().equals(target)).findFirst()
 				.orElseThrow(() -> new IllegalArgumentException("Unsupported type " + target));
 	}
 
