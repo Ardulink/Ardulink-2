@@ -1,11 +1,4 @@
-package org.ardulink.core.virtual.connection;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.concurrent.TimeUnit;
+package org.ardulink.core.virtual.console;
 
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
@@ -15,50 +8,17 @@ import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 
 public class VirtualConnectionLinkFactory implements LinkFactory<VirtualConnectionConfig> {
 
-	public static class NullInputStream extends InputStream {
-
-		private final byte[] message;
-		private final TimeUnit waitUnits;
-		private final int waitTime;
-
-		private int byteReturned;
-
-		public NullInputStream(String message, int waitTime, TimeUnit timeUnit) {
-			this.waitTime = waitTime;
-			this.waitUnits = timeUnit;
-			this.message = message.getBytes();
-		}
-
-		@Override
-		public int read() throws IOException {
-			try {
-				waitUnits.sleep(waitTime);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-			int retvalue = message[byteReturned];
-			byteReturned = (byteReturned + 1) % message.length;
-			return retvalue;
-		}
-	}
-
-	public class NullOutputStream extends OutputStream {
-		@Override
-		public void write(int b) throws IOException {
-			// Nothing to do!
-		}
-	}
-
 	@Override
 	public String getName() {
-		return "virtualConnectionBased";
+		return "virtual-console";
 	}
 
 	@Override
 	public Link newLink(VirtualConnectionConfig config) throws Exception {
+		System.out.println("Created a link that writes it's output to and gets it's input from here");
 		ByteStreamProcessor byteStreamProcessor = config.getProto().newByteStreamProcessor();
-		return new ConnectionBasedLink(new StreamConnection(new NullInputStream(config.getInput(), 500, MILLISECONDS),
-				new NullOutputStream(), byteStreamProcessor), byteStreamProcessor);
+		return new ConnectionBasedLink(new StreamConnection(System.in, System.out, byteStreamProcessor),
+				byteStreamProcessor);
 	}
 
 	@Override

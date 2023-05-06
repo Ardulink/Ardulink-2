@@ -1,4 +1,4 @@
-package org.ardulink.core.virtual.connection;
+package org.ardulink.core.virtual.console;
 
 import static org.ardulink.util.Iterables.getFirst;
 
@@ -15,9 +15,6 @@ public class VirtualConnectionConfig implements LinkConfig {
 
 	@Named(PROTO)
 	private Protocol protoName = useProtoOrFallback(ArdulinkProtocol2.instance());
-
-	@Named("input")
-	private String input = "alp://dred/1/1";
 
 	private Protocol useProtoOrFallback(Protocol prefered) {
 		return isAvailable(prefered) ? prefered : getFirst(Protocols.list()).orElse(null);
@@ -44,11 +41,4 @@ public class VirtualConnectionConfig implements LinkConfig {
 		return Protocols.getByName(getProtoName());
 	}
 
-	public String getInput() {
-		return input;
-	}
-
-	public void setInput(String input) {
-		this.input = input;
-	}
 }
