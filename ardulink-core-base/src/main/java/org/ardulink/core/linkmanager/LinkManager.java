@@ -27,6 +27,7 @@ import static org.ardulink.util.Numbers.convertTo;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Primitives.wrap;
 import static org.ardulink.util.ServiceLoaders.services;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
@@ -333,7 +334,7 @@ public abstract class LinkManager {
 
 			@Override
 			public ValidationInfo getValidationInfo() {
-				Class<?> wrappedType = Primitives.wrap(getType());
+				Class<?> wrappedType = wrap(getType());
 				Annotation[] annotations = attribute.getAnnotations();
 				Optional<Long> min = find(annotations, Min.class).map(Min::value);
 				Optional<Long> max = find(annotations, Max.class).map(Max::value);
