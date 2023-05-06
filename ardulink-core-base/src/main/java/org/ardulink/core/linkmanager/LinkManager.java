@@ -23,6 +23,7 @@ import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
+import static org.ardulink.util.Numbers.convertTo;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
@@ -349,8 +350,8 @@ public abstract class LinkManager {
 				} else if (Number.class.isAssignableFrom(wrappedType)) {
 					@SuppressWarnings("unchecked")
 					Numbers numberType = Numbers.numberType((Class<Number>) wrappedType);
-					return newNumberValidationInfo(min.orElse((Long) Numbers.LONG.convert(numberType.min())),
-							max.orElse((Long) Numbers.LONG.convert(numberType.max())));
+					return newNumberValidationInfo(min.orElse(convertTo(numberType.min(), Long.class)),
+							max.orElse(convertTo(numberType.max(), Long.class)));
 				}
 				return ValidationInfo.NULL;
 			}
