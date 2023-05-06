@@ -16,12 +16,13 @@ limitations under the License.
 
 package org.ardulink.core.proto.api;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Optional;
 
+import org.ardulink.core.proto.impl.DummyProtocol;
+import org.junit.jupiter.api.AssertionsKt;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -36,8 +37,20 @@ class ProtocolsTest {
 
 	@Test
 	void defaultAndDummyProtocolsAreRegistered() {
-		assertThat(new HashSet<>(Protocols.names()),
-				is(new HashSet<>(Arrays.asList("ardulink2", "dummyProto"))));
+		assertThat(Protocols.names()).containsExactlyInAnyOrder("ardulink2", "dummyProto");
+	}
+
+	@Test
+	void canLoadByName() {
+		assertThat(Protocols.getByName("dummyProto")).isExactlyInstanceOf(DummyProtocol.class);
+	}
+
+	@Test
+	void getByNameThrowsExceptionOnUnknownProtocolNames() {
+		String unknownProto = "XXXnonExistingProtocolNameXXX";
+		assertThat(Protocols.tryByName(unknownProto)).isEmpty();
+		assertThat(assertThrows(RuntimeException.class, () -> Protocols.getByName(unknownProto)))
+				.hasMessageContaining(unknownProto);
 	}
 
 }

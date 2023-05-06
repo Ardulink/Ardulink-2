@@ -18,12 +18,10 @@ package org.ardulink.core.proto.api;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
-import static org.ardulink.util.Streams.stream;
+import static org.ardulink.util.ServiceLoaders.services;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.stream.Stream;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -45,19 +43,15 @@ public final class Protocols {
 	}
 
 	public static Optional<Protocol> tryByName(String name) {
-		return protocols().filter(p -> p.getName().equals(name)).findFirst();
+		return list().stream().filter(p -> p.getName().equals(name)).findFirst();
 	}
 
 	public static List<Protocol> list() {
-		return protocols().collect(toList());
+		return services(Protocol.class);
 	}
 
 	public static List<String> names() {
-		return protocols().map(Protocol::getName).collect(toList());
-	}
-
-	private static Stream<Protocol> protocols() {
-		return stream(ServiceLoader.load(Protocol.class).iterator());
+		return list().stream().map(Protocol::getName).collect(toList());
 	}
 
 }
