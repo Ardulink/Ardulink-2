@@ -11,9 +11,11 @@ import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 public class VirtualConnectionConfig implements LinkConfig {
 
-	@Named("proto")
+	private static final String PROTO = "proto";
+
+	@Named(PROTO)
 	private Protocol protoName = useProtoOrFallback(ArdulinkProtocol2.instance());
-	
+
 	@Named("input")
 	private String input = "alp://dred/1/1";
 
@@ -24,7 +26,7 @@ public class VirtualConnectionConfig implements LinkConfig {
 	private boolean isAvailable(Protocol prefered) {
 		return availableProtos().contains(prefered.getName());
 	}
-	
+
 	public String getProtoName() {
 		return protoName == null ? null : protoName.getName();
 	}
@@ -33,7 +35,7 @@ public class VirtualConnectionConfig implements LinkConfig {
 		this.protoName = Protocols.getByName(protoName);
 	}
 
-	@ChoiceFor("proto")
+	@ChoiceFor(PROTO)
 	public List<String> availableProtos() {
 		return Protocols.names();
 	}

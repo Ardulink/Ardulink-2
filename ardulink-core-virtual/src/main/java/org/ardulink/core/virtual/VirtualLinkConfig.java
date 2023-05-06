@@ -8,9 +8,12 @@ import org.ardulink.core.linkmanager.LinkConfig;
 
 public class VirtualLinkConfig implements LinkConfig {
 
+	private static final String DELAY_UNIT = "delayUnit";
+
 	@Named("delay")
 	private long delay = 250;
 
+	@Named(DELAY_UNIT)
 	private TimeUnit delayUnit = MILLISECONDS;
 
 	public long getDelay() {
@@ -21,17 +24,15 @@ public class VirtualLinkConfig implements LinkConfig {
 		this.delay = delay;
 	}
 
-	@Named("delayUnit")
 	public TimeUnit getDelayUnit() {
 		return delayUnit;
 	}
 
-	@Named("delayUnit")
 	public void setDelayUnit(TimeUnit delayUnit) {
 		this.delayUnit = delayUnit;
 	}
 
-	@ChoiceFor("delayUnit")
+	@ChoiceFor(DELAY_UNIT)
 	public TimeUnit[] getDelayUnits() {
 		return TimeUnit.values();
 	}

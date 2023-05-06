@@ -27,10 +27,14 @@ import ch.ntb.usb.USBException;
 
 public class DigisparkLinkConfig implements LinkConfig {
 
-	@Named("deviceName")
+	private static final String PROTO = "proto";
+
+	private static final String DEVICE_NAME = "deviceName";
+
+	@Named(DEVICE_NAME)
 	private String deviceName;
 
-	@Named("proto")
+	@Named(PROTO)
 	private Protocol proto = SimpleDigisparkProtocol.instance();
 
 	public String getDeviceName() {
@@ -41,7 +45,7 @@ public class DigisparkLinkConfig implements LinkConfig {
 		this.deviceName = deviceName;
 	}
 
-	@ChoiceFor("deviceName")
+	@ChoiceFor(DEVICE_NAME)
 	public Set<String> listdeviceNames() {
 		try {
 			return DigisparkDiscoveryUtil.getDevices().keySet();
@@ -58,7 +62,7 @@ public class DigisparkLinkConfig implements LinkConfig {
 		this.proto = proto;
 	}
 
-	@ChoiceFor("proto")
+	@ChoiceFor(PROTO)
 	public Protocol[] protos() {
 		// at the moment the only supported protocol is SimpleDigisparkProtocol
 		return new Protocol[] { proto };

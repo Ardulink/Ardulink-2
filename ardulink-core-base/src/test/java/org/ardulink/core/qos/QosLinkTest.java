@@ -16,7 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.qos;
 
-import static java.lang.Integer.MAX_VALUE;
+import static java.lang.Long.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.analogPin;
@@ -83,7 +83,7 @@ class QosLinkTest {
 	@Test
 	void doesThrowExceptionIfKoResponse() throws Exception {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ko?id=%s"));
-		qosLink = newQosLink(500 + someMillisMore(), MILLISECONDS);
+		qosLink = newQosLink(MAX_VALUE, DAYS);
 		IllegalStateException exception = assertThrows(IllegalStateException.class,
 				() -> qosLink.sendNoTone(analogPin(3)));
 		assertThat(exception).hasMessageContaining("status").hasMessageContaining("not ok");
@@ -111,10 +111,6 @@ class QosLinkTest {
 
 	private Pattern regex(String regex) {
 		return Pattern.compile(regex);
-	}
-
-	private static int someMillisMore() {
-		return 250;
 	}
 
 	private static String lf(String string) {

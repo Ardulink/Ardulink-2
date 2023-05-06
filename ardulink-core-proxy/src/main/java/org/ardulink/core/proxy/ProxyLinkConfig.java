@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.core.proxy;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,6 +38,10 @@ import org.ardulink.core.proto.impl.ArdulinkProtocol2;
  */
 public class ProxyLinkConfig implements LinkConfig {
 
+	private static final String PROTO = "proto";
+
+	private static final String PORT = "port";
+
 	private static final int DEFAULT_LISTENING_PORT = 4478;
 
 	private static final int DEFAULT_SPEED = 115200;
@@ -51,14 +54,14 @@ public class ProxyLinkConfig implements LinkConfig {
 	@Max(2 << 16 - 1)
 	private int tcpport = DEFAULT_LISTENING_PORT;
 
-	@Named("port")
+	@Named(PORT)
 	private String port;
 
 	@Named("speed")
 	@Min(1)
 	private int speed = DEFAULT_SPEED;
 
-	@Named("proto")
+	@Named(PROTO)
 	private Protocol proto = ArdulinkProtocol2.instance();
 
 	private ProxyConnectionToRemote remote;
@@ -95,7 +98,7 @@ public class ProxyLinkConfig implements LinkConfig {
 		return proto == null ? null : proto.getName();
 	}
 
-	@ChoiceFor("proto")
+	@ChoiceFor(PROTO)
 	public List<String> getProtos() {
 		return Protocols.names();
 	}
@@ -108,21 +111,18 @@ public class ProxyLinkConfig implements LinkConfig {
 		this.tcpport = tcpport;
 	}
 
-	@ChoiceFor(value = "port", dependsOn = { "tcphost", "tcpport" })
+	@ChoiceFor(value = PORT, dependsOn = { "tcphost", "tcpport" })
 	public List<String> getAvailablePorts() throws IOException {
-		return tcphost == null ? Collections.emptyList()
-				: getRemoteInternal().getPortList();
+		return tcphost == null ? Collections.emptyList() : getRemoteInternal().getPortList();
 	}
 
-	public synchronized ProxyConnectionToRemote getRemote()
-			throws IOException {
+	public synchronized ProxyConnectionToRemote getRemote() throws IOException {
 		ProxyConnectionToRemote result = getRemoteInternal();
 		this.remote = null;
 		return result;
 	}
 
-	private ProxyConnectionToRemote getRemoteInternal()
-			throws IOException {
+	private ProxyConnectionToRemote getRemoteInternal() throws IOException {
 		if (this.remote == null) {
 			this.remote = new ProxyConnectionToRemote(tcphost, tcpport);
 		}

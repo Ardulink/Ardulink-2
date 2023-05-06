@@ -28,9 +28,11 @@ import org.ardulink.core.linkmanager.LinkConfig;
  */
 public class BluetoothLinkConfig implements LinkConfig {
 
+	private static final String DEVICE_NAME = "deviceName";
+
 	private static final String[] EMPTY_ARRAY = new String[0];
-	
-	@Named("deviceName")
+
+	@Named(DEVICE_NAME)
 	private String deviceName;
 
 	public String getDeviceName() {
@@ -41,10 +43,9 @@ public class BluetoothLinkConfig implements LinkConfig {
 		this.deviceName = deviceName;
 	}
 
-	@ChoiceFor("deviceName")
+	@ChoiceFor(DEVICE_NAME)
 	public String[] listDevices() {
-		return BluetoothDiscoveryUtil.getDevices().keySet()
-				.toArray(EMPTY_ARRAY);
+		return BluetoothDiscoveryUtil.getDevices().keySet().toArray(EMPTY_ARRAY);
 	}
-	
+
 }
