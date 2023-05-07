@@ -191,12 +191,11 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		// this is not really a ping message since such a message does not exist
 		// (yet). So let's write something that the arduino tries to respond to.
 		try {
-			long messageId = 0;
 			// TODO Introduce new message type: ToDeviceQueryFirmwareInfo (ArdulinkProtocol
 			// then would send the noTone message or any other message where Ardulink will
 			// respond to)
 			ToDeviceMessageNoTone dummyMessage = new DefaultToDeviceMessageNoTone(analogPin(0));
-			connection.write(this.byteStreamProcessor.toDevice(addMessageId(dummyMessage, messageId)));
+			connection.write(this.byteStreamProcessor.toDevice(addMessageId(dummyMessage, 0)));
 		} catch (IOException e) {
 			// ignore
 		}
