@@ -93,6 +93,41 @@ public abstract class LinkManager {
 
 	}
 
+	private static class AnnotationInfo {
+
+		private Optional<Long> minValue;
+		private Optional<Long> maxValue;
+
+		public AnnotationInfo(Annotation[] annotations) {
+			Optional<Long> min = find(annotations, Min.class).map(Min::value);
+			Optional<Long> max = find(annotations, Max.class).map(Max::value);
+			boolean positive = isPresent(annotations, Positive.class);
+			boolean positiveOrZero = isPresent(annotations, PositiveOrZero.class);
+			boolean negative = isPresent(annotations, Negative.class);
+			boolean negativeOrZero = isPresent(annotations, NegativeOrZero.class);
+			minValue = min.isPresent() ? min : positiveOrZero ? Optional.of(0L) : positive ? Optional.of(1L) : empty();
+			maxValue = max.isPresent() ? max : negativeOrZero ? Optional.of(0L) : negative ? Optional.of(-1L) : empty();
+		}
+
+		public Optional<Long> getMinValue() {
+			return minValue;
+		}
+
+		public Optional<Long> getMaxValue() {
+			return maxValue;
+		}
+
+		private <S extends Annotation> Optional<S> find(Annotation[] annotations, Class<S> annoClass) {
+			return stream(annotations).filter(a -> a.annotationType().equals(annoClass)).findFirst()
+					.map(annoClass::cast);
+		}
+
+		private <S extends Annotation> boolean isPresent(Annotation[] annotations, Class<S> annoClass) {
+			return stream(annotations).anyMatch(a -> a.annotationType().equals(annoClass));
+		}
+
+	}
+
 	public interface ConfigAttribute {
 
 		/**
@@ -339,40 +374,27 @@ public abstract class LinkManager {
 
 			@Override
 			public ValidationInfo getValidationInfo() {
-				Class<?> wrappedType = wrap(getType());
-				Annotation[] annotations = attribute.getAnnotations();
-				boolean positive = find(annotations, Positive.class).isPresent();
-				boolean positiveOrZero = find(annotations, PositiveOrZero.class).isPresent();
-				boolean negative = find(annotations, Negative.class).isPresent();
-				boolean negativeOrZero = find(annotations, NegativeOrZero.class).isPresent();
-				Optional<Long> min_ = find(annotations, Min.class).map(Min::value);
-				Optional<Long> min = min_.isPresent() ? min_
-						: positiveOrZero ? Optional.of(0L) : positive ? Optional.of(1L) : empty();
-				Optional<Long> max_ = find(annotations, Max.class).map(Max::value);
-				Optional<Long> max = max_.isPresent() ? max_
-						: negativeOrZero ? Optional.of(0L) : negative ? Optional.of(-1L) : empty();
+				AnnotationInfo annotationInfo = new AnnotationInfo(attribute.getAnnotations());
+				Optional<Long> minValue = annotationInfo.getMinValue();
+				Optional<Long> maxValue = annotationInfo.getMaxValue();
 				// TODO What to define as min/max for fps? MAX_VALUE/-MAX_VALUE?
+				Class<?> wrappedType = wrap(getType());
 				if (Character.class.isAssignableFrom(wrappedType)) {
-					return newNumberValidationInfo(min.orElse((long) Character.MIN_VALUE),
-							max.orElse((long) Character.MAX_VALUE));
+					return newNumberValidationInfo(minValue.orElse((long) Character.MIN_VALUE),
+							maxValue.orElse((long) Character.MAX_VALUE));
 				} else if (Double.class.isAssignableFrom(wrappedType)) {
-					return newNumberValidationInfo(min.map(Number::doubleValue).orElse(Double.NaN),
-							max.map(Number::doubleValue).orElse(Double.NaN));
+					return newNumberValidationInfo(minValue.map(Number::doubleValue).orElse(Double.NaN),
+							maxValue.map(Number::doubleValue).orElse(Double.NaN));
 				} else if (Float.class.isAssignableFrom(wrappedType)) {
-					return newNumberValidationInfo(min.map(Number::floatValue).orElse(Float.NaN),
-							max.map(Number::floatValue).orElse(Float.NaN));
+					return newNumberValidationInfo(minValue.map(Number::floatValue).orElse(Float.NaN),
+							maxValue.map(Number::floatValue).orElse(Float.NaN));
 				} else if (Number.class.isAssignableFrom(wrappedType)) {
 					@SuppressWarnings("unchecked")
 					Numbers numberType = Numbers.numberType((Class<Number>) wrappedType);
-					return newNumberValidationInfo(min.orElse(convertTo(numberType.min(), Long.class)),
-							max.orElse(convertTo(numberType.max(), Long.class)));
+					return newNumberValidationInfo(minValue.orElse(convertTo(numberType.min(), Long.class)),
+							maxValue.orElse(convertTo(numberType.max(), Long.class)));
 				}
 				return ValidationInfo.NULL;
-			}
-
-			private <S extends Annotation> Optional<S> find(Annotation[] annotations, Class<S> annoClass) {
-				return stream(annotations).filter(a -> a.annotationType().equals(annoClass)).findFirst()
-						.map(annoClass::cast);
 			}
 
 			private NumberValidationInfo newNumberValidationInfo(double min, double max) {
