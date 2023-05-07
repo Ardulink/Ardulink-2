@@ -93,32 +93,34 @@ public abstract class LinkManager {
 
 	}
 
-	private static class AnnotationInfo {
+	private static class ValidationInfoCreator {
 
-		private final Optional<Long> minValue;
-		private final Optional<Long> maxValue;
+		private final Attribute attribute;
+		private final Class<?> wrappedType;
 
-		public AnnotationInfo(Annotation[] annotations) {
+		ValidationInfoCreator(Attribute attribute) {
+			this.attribute = attribute;
+			this.wrappedType = wrap(attribute.getType());
+		}
+
+		private Optional<Long> minValue() {
+			Annotation[] annotations = attribute.getAnnotations();
 			Optional<Long> min = find(annotations, Min.class).map(Min::value);
-			Optional<Long> max = find(annotations, Max.class).map(Max::value);
-			this.minValue = min.isPresent() ? min
+			return min.isPresent() ? min
 					: isPresent(annotations, PositiveOrZero.class) ? value(0L)
 							: isPresent(annotations, Positive.class) ? value(+1) : empty();
-			this.maxValue = max.isPresent() ? max
+		}
+
+		private Optional<Long> maxValue() {
+			Annotation[] annotations = attribute.getAnnotations();
+			Optional<Long> max = find(annotations, Max.class).map(Max::value);
+			return max.isPresent() ? max
 					: isPresent(annotations, NegativeOrZero.class) ? value(0L)
 							: isPresent(annotations, Negative.class) ? value(-1) : empty();
 		}
 
-		private Optional<Long> value(long value) {
+		private static Optional<Long> value(long value) {
 			return Optional.of(value);
-		}
-
-		public Optional<Long> getMinValue() {
-			return this.minValue;
-		}
-
-		public Optional<Long> getMaxValue() {
-			return this.maxValue;
 		}
 
 		private <S extends Annotation> Optional<S> find(Annotation[] annotations, Class<S> annoClass) {
@@ -128,6 +130,47 @@ public abstract class LinkManager {
 
 		private <S extends Annotation> boolean isPresent(Annotation[] annotations, Class<S> annoClass) {
 			return stream(annotations).anyMatch(a -> a.annotationType().equals(annoClass));
+		}
+
+		ValidationInfo create() {
+			Optional<Long> minValue = minValue();
+			Optional<Long> maxValue = maxValue();
+			// TODO What to define as min/max for fps? MAX_VALUE/-MAX_VALUE?
+			if (typeIs(Character.class)) {
+				return newNumberValidationInfo(minValue.orElse((long) Character.MIN_VALUE),
+						maxValue.orElse((long) Character.MAX_VALUE));
+			} else if (typeIs(Double.class)) {
+				return newNumberValidationInfo(minValue.map(Number::doubleValue).orElse(Double.NaN),
+						maxValue.map(Number::doubleValue).orElse(Double.NaN));
+			} else if (typeIs(Float.class)) {
+				return newNumberValidationInfo(minValue.map(Number::floatValue).orElse(Float.NaN),
+						maxValue.map(Number::floatValue).orElse(Float.NaN));
+			} else if (typeIs(Number.class)) {
+				@SuppressWarnings("unchecked")
+				Numbers numberType = Numbers.numberType((Class<Number>) wrappedType);
+				return newNumberValidationInfo(minValue.orElse(convertTo(numberType.min(), Long.class)),
+						maxValue.orElse(convertTo(numberType.max(), Long.class)));
+			}
+			return ValidationInfo.NULL;
+		}
+
+		private boolean typeIs(Class<?> type) {
+			return type.isAssignableFrom(wrappedType);
+		}
+
+		NumberValidationInfo newNumberValidationInfo(double min, double max) {
+			return new NumberValidationInfo() {
+
+				@Override
+				public double min() {
+					return min;
+				}
+
+				@Override
+				public double max() {
+					return max;
+				}
+			};
 		}
 
 	}
@@ -246,9 +289,9 @@ public abstract class LinkManager {
 
 	}
 
-	private static class DefaultConfigurer<T extends LinkConfig> implements Configurer {
+	static class DefaultConfigurer<T extends LinkConfig> implements Configurer {
 
-		private class ConfigAttributeAdapter<C extends LinkConfig> implements ConfigAttribute {
+		class ConfigAttributeAdapter<C extends LinkConfig> implements ConfigAttribute {
 
 			private final Attribute attribute;
 			private final Attribute getChoicesFor;
@@ -378,42 +421,7 @@ public abstract class LinkManager {
 
 			@Override
 			public ValidationInfo getValidationInfo() {
-				AnnotationInfo annotationInfo = new AnnotationInfo(attribute.getAnnotations());
-				Optional<Long> minValue = annotationInfo.getMinValue();
-				Optional<Long> maxValue = annotationInfo.getMaxValue();
-				// TODO What to define as min/max for fps? MAX_VALUE/-MAX_VALUE?
-				Class<?> wrappedType = wrap(getType());
-				if (Character.class.isAssignableFrom(wrappedType)) {
-					return newNumberValidationInfo(minValue.orElse((long) Character.MIN_VALUE),
-							maxValue.orElse((long) Character.MAX_VALUE));
-				} else if (Double.class.isAssignableFrom(wrappedType)) {
-					return newNumberValidationInfo(minValue.map(Number::doubleValue).orElse(Double.NaN),
-							maxValue.map(Number::doubleValue).orElse(Double.NaN));
-				} else if (Float.class.isAssignableFrom(wrappedType)) {
-					return newNumberValidationInfo(minValue.map(Number::floatValue).orElse(Float.NaN),
-							maxValue.map(Number::floatValue).orElse(Float.NaN));
-				} else if (Number.class.isAssignableFrom(wrappedType)) {
-					@SuppressWarnings("unchecked")
-					Numbers numberType = Numbers.numberType((Class<Number>) wrappedType);
-					return newNumberValidationInfo(minValue.orElse(convertTo(numberType.min(), Long.class)),
-							maxValue.orElse(convertTo(numberType.max(), Long.class)));
-				}
-				return ValidationInfo.NULL;
-			}
-
-			private NumberValidationInfo newNumberValidationInfo(double min, double max) {
-				return new NumberValidationInfo() {
-
-					@Override
-					public double min() {
-						return min;
-					}
-
-					@Override
-					public double max() {
-						return max;
-					}
-				};
+				return new ValidationInfoCreator(attribute).create();
 			}
 
 		}
