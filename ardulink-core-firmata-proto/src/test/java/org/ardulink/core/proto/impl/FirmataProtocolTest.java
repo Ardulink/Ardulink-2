@@ -3,6 +3,8 @@ package org.ardulink.core.proto.impl;
 import static java.lang.Integer.parseInt;
 import static java.lang.Math.pow;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
@@ -32,6 +34,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
@@ -53,7 +56,6 @@ import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode;
 import org.ardulink.util.Bytes;
 import org.ardulink.util.Joiner;
 import org.ardulink.util.Lists;
-import org.ardulink.util.MapBuilder;
 import org.ardulink.util.anno.LapsedWith;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -167,16 +169,11 @@ public class FirmataProtocolTest {
 		byte valueHigh = binary("1");
 		givenMessage(command |= port, valueLow, valueHigh);
 		whenMessageIsProcessed();
-		byte pin = (byte) pow(2, port + 1);
 
 		// TODO PF onDigitalMappingReceive
-
-		assertMessage(messages, MapBuilder.<Pin, Object>newMapBuilder() //
-				.put(digitalPin(pin++), true).put(digitalPin(pin++), false) //
-				.put(digitalPin(pin++), true).put(digitalPin(pin++), false) //
-				.put(digitalPin(pin++), false).put(digitalPin(pin++), true) //
-				.put(digitalPin(pin++), false).put(digitalPin(pin++), true) //
-				.build());
+		AtomicInteger pin = new AtomicInteger((byte) pow(2, port + 1));
+		assertMessage(messages, Arrays.asList(true, false, true, false, false, true, false, true).stream()
+				.collect(toMap(__ -> digitalPin(pin.getAndIncrement()), identity())));
 	}
 
 	// -------------------------------------------------------------------------
