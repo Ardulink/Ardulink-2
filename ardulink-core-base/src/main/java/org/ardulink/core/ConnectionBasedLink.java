@@ -55,7 +55,6 @@ import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageTone;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor.FromDeviceListener;
 import org.ardulink.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,19 +76,15 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	private long messageId = 0;
 	private boolean readyMsgReceived;
 
-	// TODO change arg0 to StreamConnection, StreamConnection then can offer #getConnection().getByteStreamProcessor() so arg1 here can be purged
+	// TODO change arg0 to StreamConnection, StreamConnection then can offer
+	// #getConnection().getByteStreamProcessor() so arg1 here can be purged
 	// Alternative: Split ByteStreamProcessor into Sender/Receiver part
 	public ConnectionBasedLink(Connection connection, ByteStreamProcessor byteStreamProcessor) {
 		this.connection = connection;
 		this.byteStreamProcessor = byteStreamProcessor;
-		this.byteStreamProcessor.addListener(new FromDeviceListener() {
-			@Override
-			public void handle(FromDeviceMessage fromDevice) {
-				ConnectionBasedLink.this.received(fromDevice);
-			}
-		});
+		this.byteStreamProcessor.addListener(m -> ConnectionBasedLink.this.received(m));
 	}
-	
+
 	public Connection getConnection() {
 		return connection;
 	}
@@ -174,25 +169,21 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 			do {
 				ping();
 				TimeUnit.MILLISECONDS.sleep(100);
-				if (deviceIsReady.get()) {
-					return true;
-				}
-			} while (!stopWatch.elapsed(wait, timeUnit));
+			} while (!deviceIsReady.get() && !stopWatch.elapsed(wait, timeUnit));
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		} finally {
 			this.connection.removeListener(listener);
 		}
-		return false;
+		return deviceIsReady.get();
 	}
 
 	private void ping() {
 		// this is not really a ping message since such a message does not exist
 		// (yet). So let's write something that the arduino tries to respond to.
 		try {
-			long messageId = 0;
-			connection.write(this.byteStreamProcessor
-					.toDevice(addMessageId(new DefaultToDeviceMessageNoTone(analogPin(0)), messageId)));
+			connection.write(
+					this.byteStreamProcessor.toDevice(addMessageId(new DefaultToDeviceMessageNoTone(analogPin(0)), 0)));
 		} catch (IOException e) {
 			// ignore
 		}
@@ -201,23 +192,21 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	@Override
 	public long startListening(Pin pin) throws IOException {
 		logger.info("Starting listening on pin {}", pin);
-		ToDeviceMessageStartListening msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageStartListening(pin));
+			ToDeviceMessageStartListening msg = addMessageIdIfNeeded(new DefaultToDeviceMessageStartListening(pin));
 			send(this.byteStreamProcessor.toDevice(msg));
+			return messageIdOf(msg);
 		}
-		return messageIdOf(msg);
 	}
 
 	@Override
 	public long stopListening(Pin pin) throws IOException {
-		ToDeviceMessageStopListening msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageStopListening(pin));
+			ToDeviceMessageStopListening msg = addMessageIdIfNeeded(new DefaultToDeviceMessageStopListening(pin));
 			send(this.byteStreamProcessor.toDevice(msg));
+			logger.info("Stopped listening on pin {}", pin);
+			return messageIdOf(msg);
 		}
-		logger.info("Stopped listening on pin {}", pin);
-		return messageIdOf(msg);
 	}
 
 	@Override
@@ -233,61 +222,57 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	@Override
 	public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers, int keymodifiersex)
 			throws IOException {
-		ToDeviceMessageKeyPress msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(
+			ToDeviceMessageKeyPress msg = addMessageIdIfNeeded(
 					new DefaultToDeviceMessageKeyPress(keychar, keycode, keylocation, keymodifiers, keymodifiersex));
 			send(this.byteStreamProcessor.toDevice(msg));
+			return messageIdOf(msg);
 		}
-		return messageIdOf(msg);
 	}
 
 	@Override
 	public long sendTone(Tone tone) throws IOException {
-		ToDeviceMessageTone msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageTone(tone));
+			ToDeviceMessageTone msg = addMessageIdIfNeeded(new DefaultToDeviceMessageTone(tone));
 			send(this.byteStreamProcessor.toDevice(msg));
+			return messageIdOf(msg);
 		}
-		return messageIdOf(msg);
 	}
 
 	@Override
 	public long sendNoTone(AnalogPin analogPin) throws IOException {
-		ToDeviceMessageNoTone msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageNoTone(analogPin));
+			ToDeviceMessageNoTone msg = addMessageIdIfNeeded(new DefaultToDeviceMessageNoTone(analogPin));
 			send(this.byteStreamProcessor.toDevice(msg));
+			return messageIdOf(msg);
 		}
-		return messageIdOf(msg);
 	}
 
 	@Override
 	public long sendCustomMessage(String... messages) throws IOException {
-		ToDeviceMessageCustom msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToDeviceMessageCustom(messages));
+			ToDeviceMessageCustom msg = addMessageIdIfNeeded(new DefaultToDeviceMessageCustom(messages));
 			send(this.byteStreamProcessor.toDevice(msg));
+			return messageIdOf(msg);
 		}
-		return messageIdOf(msg);
 	}
 
 	private long send(AnalogPin pin, int value) throws IOException {
-		ToDeviceMessagePinStateChange msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToDeviceMessagePinStateChange(pin, value));
+			ToDeviceMessagePinStateChange msg = addMessageIdIfNeeded(
+					new DefaultToDeviceMessagePinStateChange(pin, value));
 			send(this.byteStreamProcessor.toDevice(msg));
+			return messageIdOf(msg);
 		}
-		return messageIdOf(msg);
 	}
 
 	private long send(DigitalPin pin, boolean value) throws IOException {
-		ToDeviceMessagePinStateChange msg;
 		synchronized (connection) {
-			msg = addMessageIdIfNeeded(new DefaultToDeviceMessagePinStateChange(pin, value));
+			ToDeviceMessagePinStateChange msg = addMessageIdIfNeeded(
+					new DefaultToDeviceMessagePinStateChange(pin, value));
 			send(this.byteStreamProcessor.toDevice(msg));
+			return messageIdOf(msg);
 		}
-		return messageIdOf(msg);
 	}
 
 	private void send(byte[] bytes) throws IOException {
