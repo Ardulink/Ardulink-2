@@ -95,26 +95,30 @@ public abstract class LinkManager {
 
 	private static class AnnotationInfo {
 
-		private Optional<Long> minValue;
-		private Optional<Long> maxValue;
+		private final Optional<Long> minValue;
+		private final Optional<Long> maxValue;
 
 		public AnnotationInfo(Annotation[] annotations) {
 			Optional<Long> min = find(annotations, Min.class).map(Min::value);
 			Optional<Long> max = find(annotations, Max.class).map(Max::value);
-			boolean positive = isPresent(annotations, Positive.class);
-			boolean positiveOrZero = isPresent(annotations, PositiveOrZero.class);
-			boolean negative = isPresent(annotations, Negative.class);
-			boolean negativeOrZero = isPresent(annotations, NegativeOrZero.class);
-			minValue = min.isPresent() ? min : positiveOrZero ? Optional.of(0L) : positive ? Optional.of(1L) : empty();
-			maxValue = max.isPresent() ? max : negativeOrZero ? Optional.of(0L) : negative ? Optional.of(-1L) : empty();
+			this.minValue = min.isPresent() ? min
+					: isPresent(annotations, PositiveOrZero.class) ? value(0L)
+							: isPresent(annotations, Positive.class) ? value(+1) : empty();
+			this.maxValue = max.isPresent() ? max
+					: isPresent(annotations, NegativeOrZero.class) ? value(0L)
+							: isPresent(annotations, Negative.class) ? value(-1) : empty();
+		}
+
+		private Optional<Long> value(long value) {
+			return Optional.of(value);
 		}
 
 		public Optional<Long> getMinValue() {
-			return minValue;
+			return this.minValue;
 		}
 
 		public Optional<Long> getMaxValue() {
-			return maxValue;
+			return this.maxValue;
 		}
 
 		private <S extends Annotation> Optional<S> find(Annotation[] annotations, Class<S> annoClass) {
