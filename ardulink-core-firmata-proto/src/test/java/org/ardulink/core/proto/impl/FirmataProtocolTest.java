@@ -1,6 +1,8 @@
 package org.ardulink.core.proto.impl;
 
 import static java.lang.Math.pow;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
@@ -11,17 +13,17 @@ import static org.firmata4j.firmata.parser.FirmataToken.DIGITAL_MESSAGE;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.impl.FirmataProtocol;
 import org.ardulink.util.Lists;
-import org.ardulink.util.MapBuilder;
 import org.junit.jupiter.api.Test;
 
 class FirmataProtocolTest {
@@ -48,13 +50,11 @@ class FirmataProtocolTest {
 		byte valueHigh = 0b1;
 		givenMessage(command |= port, valueLow, valueHigh);
 		whenMessageIsProcessed();
-		byte pin = (byte) pow(2, port + 1);
-		assertMessage(messages, MapBuilder.<Pin, Object>newMapBuilder() //
-				.put(digitalPin(pin++), true).put(digitalPin(pin++), false) //
-				.put(digitalPin(pin++), true).put(digitalPin(pin++), false) //
-				.put(digitalPin(pin++), false).put(digitalPin(pin++), true) //
-				.put(digitalPin(pin++), false).put(digitalPin(pin++), true) //
-				.build());
+
+		// TODO PF onDigitalMappingReceive
+		AtomicInteger pin = new AtomicInteger((byte) pow(2, port + 1));
+		assertMessage(messages, Arrays.asList(true, false, true, false, false, true, false, true).stream()
+				.collect(toMap(__ -> digitalPin(pin.getAndIncrement()), identity())));
 	}
 
 	private void givenMessage(byte... bytes) {
