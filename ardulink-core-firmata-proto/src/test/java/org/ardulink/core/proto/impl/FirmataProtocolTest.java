@@ -1,4 +1,4 @@
-package org.ardulink.core.protong.impl;
+package org.ardulink.core.proto.impl;
 
 import static java.lang.Math.pow;
 import static org.ardulink.core.Pin.analogPin;
