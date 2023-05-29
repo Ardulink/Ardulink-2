@@ -38,8 +38,8 @@ public final class Protocols {
 	}
 
 	public static Protocol getByName(String name) {
-		return tryByName(name)
-				.orElseThrow(() -> new IllegalStateException(format("No protocol with name %s registered", name)));
+		return tryByName(name).orElseThrow(() -> new IllegalStateException(
+				format("No protocol with name %s registered. Available names are %s", name, names())));
 	}
 
 	public static Optional<Protocol> tryByName(String name) {

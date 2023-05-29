@@ -55,23 +55,17 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
 	@Override
 	public LinkDelegate newLink(SerialLinkConfig config)
-			throws NoSuchPortException, PortInUseException,
-			UnsupportedCommOperationException, IOException {
-		CommPortIdentifier portIdentifier = CommPortIdentifier
-				.getPortIdentifier(config.getPort());
-		checkState(!portIdentifier.isCurrentlyOwned(),
-				"Port %s is currently in use", config.getPort());
+			throws NoSuchPortException, PortInUseException, UnsupportedCommOperationException, IOException {
+		CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(config.getPort());
+		checkState(!portIdentifier.isCurrentlyOwned(), "Port %s is currently in use", config.getPort());
 		SerialPort serialPort = serialPort(config, portIdentifier);
 
 		ByteStreamProcessor byteStreamProcessor = config.getProto().newByteStreamProcessor();
-		StreamConnection connection = new StreamConnection(
-				serialPort.getInputStream(), serialPort.getOutputStream(),
+		StreamConnection connection = new StreamConnection(serialPort.getInputStream(), serialPort.getOutputStream(),
 				byteStreamProcessor);
 
-		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(
-				connection, byteStreamProcessor);
-		Link link = config.isQos() ? new QosLink(connectionBasedLink)
-				: connectionBasedLink;
+		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(connection, byteStreamProcessor);
+		Link link = config.isQos() ? new QosLink(connectionBasedLink) : connectionBasedLink;
 
 		if (!waitForArdulink(config, connectionBasedLink)) {
 			connection.close();
@@ -87,8 +81,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		};
 	}
 
-	private boolean waitForArdulink(SerialLinkConfig config,
-			ConnectionBasedLink link) {
+	private boolean waitForArdulink(SerialLinkConfig config, ConnectionBasedLink link) {
 		if (config.isPingprobe()) {
 			return link.waitForArduinoToBoot(config.getWaitsecs(), SECONDS);
 		}
@@ -101,13 +94,10 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		return false;
 	}
 
-	private SerialPort serialPort(SerialLinkConfig config,
-			CommPortIdentifier portIdentifier) throws PortInUseException,
-			UnsupportedCommOperationException {
-		SerialPort serialPort = portIdentifier.open(
-				"RTBug_network", 2000);
-		serialPort.setSerialPortParams(config.getBaudrate(), DATABITS_8,
-				STOPBITS_1, PARITY_NONE);
+	private SerialPort serialPort(SerialLinkConfig config, CommPortIdentifier portIdentifier)
+			throws PortInUseException, UnsupportedCommOperationException {
+		SerialPort serialPort = portIdentifier.open("RTBug_network", 2000);
+		serialPort.setSerialPortParams(config.getBaudrate(), DATABITS_8, STOPBITS_1, PARITY_NONE);
 		return serialPort;
 	}
 

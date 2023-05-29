@@ -208,8 +208,8 @@ public abstract class LinkManager {
 		Object getValue();
 
 		/**
-		 * Sets the new value of this attribute. If this attribute hasChoiceValues only
-		 * one of those values can be set!
+		 * Sets the new value of this attribute. If this attribute hasChoiceValues the
+		 * value is <b>not</b> checked here for validity!
 		 */
 		void setValue(Object value);
 

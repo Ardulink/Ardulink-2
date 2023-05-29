@@ -14,27 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package org.ardulink.core.serial.jssc.connectionmanager;
+package org.ardulink.core.serial.jssc;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-import static org.ardulink.util.Lists.newArrayList;
+import static org.ardulink.util.URIs.newURI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
-
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.URIs;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import jssc.SerialPortList;
@@ -49,14 +42,16 @@ import jssc.SerialPortList;
  */
 class SerialLinkFactoryIntegrationTest {
 
+	private static final String PREFIX = "ardulink://" + new SerialLinkFactory().getName();
+
 	@Test
 	void canConfigureSerialConnectionViaURI() throws Exception {
 		String[] portNames = SerialPortList.getPortNames();
 		assumeTrue(portNames.length > 0);
 
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(URIs
-				.newURI("ardulink://serial-jssc?port=" + portNames[0] + "&baudrate=9600&pingprobe=false&waitsecs=1"));
+		Configurer configurer = connectionManager.getConfigurer(
+				URIs.newURI(PREFIX + "?port=" + portNames[0] + "&baudrate=9600&pingprobe=false&waitsecs=1"));
 		try (Link link = configurer.newLink()) {
 			assertNotNull(link);
 		}
@@ -65,30 +60,52 @@ class SerialLinkFactoryIntegrationTest {
 	@Test
 	void canConfigureSerialConnectionViaConfigurer() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(URIs.newURI("ardulink://serial-jssc"));
+		Configurer configurer = connectionManager.getConfigurer(newURI(PREFIX));
 
 		assertThat(configurer.getAttributes()).containsExactly("port", "baudrate", "proto", "qos", "waitsecs",
 				"pingprobe");
 
-		ConfigAttribute port = configurer.getAttribute("port");
-		ConfigAttribute proto = configurer.getAttribute("proto");
-		ConfigAttribute baudrate = configurer.getAttribute("baudrate");
+		assertThat(attribute(configurer, "port").hasChoiceValues()).isTrue();
+		assertThat(attribute(configurer, "proto").hasChoiceValues()).isTrue();
+		assertThat(attribute(configurer, "baudrate").hasChoiceValues()).isFalse();
+		assertThat(attribute(configurer, "qos").hasChoiceValues()).isFalse();
+		assertThat(attribute(configurer, "waitsecs").hasChoiceValues()).isFalse();
 
-		assertThat(port.hasChoiceValues()).isEqualTo(TRUE);
-		assertThat(port.getChoiceValues()).isNotNull();
-		assertThat(proto.hasChoiceValues()).isEqualTo(TRUE);
-		assertThat(baudrate.hasChoiceValues()).isEqualTo(FALSE);
-
-		port.setValue("anyString");
-		baudrate.setValue(115200);
+		attribute(configurer, "port").setValue(anyString());
+		attribute(configurer, "proto").setValue(validProtoName());
+		attribute(configurer, "baudrate").setValue(anyInt());
+		attribute(configurer, "qos").setValue(anyBoolean());
+		attribute(configurer, "waitsecs").setValue(anyInt());
 	}
 
 	@Test
 	void cantConnectWithoutPort() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(URIs.newURI("ardulink://serial-jssc?baudrate=9600"));
-		assertThat(assertThrows(RuntimeException.class, () -> configurer.newLink()))
-				.hasMessageContaining("Port name - null");
+		Configurer configurer = connectionManager.getConfigurer(URIs.newURI(PREFIX + "?baudrate=9600"));
+		assertThat(assertThrows(RuntimeException.class, () -> {
+			try (Link link = configurer.newLink()) {
+			}
+		})).hasMessageContaining("Port name - null");
+	}
+
+	private static String anyString() {
+		return "anyString";
+	}
+
+	private static int anyInt() {
+		return 42;
+	}
+
+	private static boolean anyBoolean() {
+		return false;
+	}
+
+	private static String validProtoName() {
+		return ArdulinkProtocol2.instance().getName();
+	}
+
+	private ConfigAttribute attribute(Configurer configurer, String name) {
+		return configurer.getAttribute(name);
 	}
 
 }

@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 

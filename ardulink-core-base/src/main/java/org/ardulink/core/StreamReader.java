@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core;
 
+import static org.ardulink.util.Preconditions.checkNotNull;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,28 +44,17 @@ public abstract class StreamReader implements Closeable {
 	private Thread thread;
 
 	protected StreamReader(InputStream inputStream) {
-		this.inputStream = inputStream;
+		this.inputStream = checkNotNull(inputStream, "InputStream must not be null");
 	}
 
 	public void runReaderThread(ByteStreamProcessor byteStreamProcessor) {
-		this.thread = new Thread() {
-			@Override
-			public void run() {
-				readUntilClosed(byteStreamProcessor);
-			}
-		};
+		this.thread = new Thread(() -> readUntilClosed(byteStreamProcessor));
 		this.thread.setDaemon(true);
 		this.thread.start();
 	}
 
 	public void runReaderThread() {
-		this.thread = new Thread() {
-			@Override
-			public void run() {
-				readUntilClosed();
-			}
-
-		};
+		this.thread = new Thread(() -> readUntilClosed());
 		this.thread.setDaemon(true);
 		this.thread.start();
 	}
@@ -113,6 +104,7 @@ public abstract class StreamReader implements Closeable {
 	@Override
 	public void close() throws IOException {
 		Optional.ofNullable(thread).ifPresent(Thread::interrupt);
+		inputStream.close();
 	}
 
 }
