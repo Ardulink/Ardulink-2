@@ -16,10 +16,14 @@ limitations under the License.
 
 package org.ardulink.core.raspi;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.condition.OS.LINUX;
 
 import org.ardulink.core.convenience.Links;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnOs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -32,8 +36,15 @@ import org.junit.jupiter.api.Test;
 class PiLinkTest {
 
 	@Test
+	@DisabledOnOs(value = LINUX, architectures = "aarch64")
 	void creatingInstanceWillFailOnX86withUnsatisfiedLinkError() {
 		assertThrows(UnsatisfiedLinkError.class, () -> Links.getLink("ardulink://raspberry"));
+	}
+
+	@Test
+	@EnabledOnOs(value = LINUX, architectures = "aarch64")
+	void creatingInstanceWillWorkOnLinuxAarch64() {
+		assertThat(Links.getLink("ardulink://raspberry")).isNotNull();
 	}
 
 }
