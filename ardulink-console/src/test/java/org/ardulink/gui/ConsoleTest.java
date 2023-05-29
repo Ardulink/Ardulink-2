@@ -1,22 +1,23 @@
 package org.ardulink.gui;
 
-import static java.awt.GraphicsEnvironment.isHeadless;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.Mockito.mock;
 
 import org.ardulink.legacy.Link;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 
 class ConsoleTest {
+
+	private static final String IS_HEADLESS = "java.awt.GraphicsEnvironment#isHeadless";
 
 	private final Link connectLink = mock(Link.class);
 
 	@Test
+	@DisabledIf(IS_HEADLESS)
 	void whenStartedConnectIsEnabledAndDisconnnectIsDisabled() {
-		assumeFalse(isHeadless());
 		Console console = newConsole();
 		assertThat(console.getLink()).isNull();
 		assertThat(console.btnConnect.isEnabled()).isEqualTo(TRUE);
@@ -24,8 +25,8 @@ class ConsoleTest {
 	}
 
 	@Test
+	@DisabledIf(IS_HEADLESS)
 	void whenConnectButtonIsClickedLinkIsExchangedAndPopertyChangeEventsIsFired() {
-		assumeFalse(isHeadless());
 		Console console = newConsole();
 		console.btnConnect.doClick();
 
@@ -35,8 +36,8 @@ class ConsoleTest {
 	}
 
 	@Test
+	@DisabledIf(IS_HEADLESS)
 	void whenDisconnectButtonIsClickedLinkIsExchangedAndPopertyChangeEventsIsFired() {
-		assumeFalse(isHeadless());
 		Console console = newConsole();
 		console.btnConnect.doClick();
 		console.btnDisconnect.doClick();
