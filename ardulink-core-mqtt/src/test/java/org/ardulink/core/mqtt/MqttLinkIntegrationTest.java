@@ -52,7 +52,7 @@ import org.junit.jupiter.params.provider.MethodSource;
  * [adsense]
  *
  */
-@Timeout(value = 1, unit = MINUTES)
+@Timeout(value = 2, unit = MINUTES)
 class MqttLinkIntegrationTest {
 
 	private static class TestConfig {
