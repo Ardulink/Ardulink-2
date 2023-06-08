@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.testsupport.mock;
 
 import static java.util.UUID.randomUUID;
+import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,18 +46,26 @@ public class StaticRegisterLinkFactory implements LinkFactory<StaticRegisterLink
 		public String identifier;
 	}
 
-	private static final ConcurrentMap<String, Link> links = new ConcurrentHashMap<>();
-
 	public static final class Registration implements AutoCloseable {
 
+		private static final ConcurrentMap<String, Registration> instances = new ConcurrentHashMap<>();
+
+		private final Link link;
 		private final String identifier;
 
-		public Registration() {
-			this(randomUUID().toString());
+		public Registration(Link link) {
+			this(link, randomUUID().toString());
 		}
 
-		public Registration(String identifier) {
+		public Registration(Link link, String identifier) {
+			this.link = link;
 			this.identifier = identifier;
+			checkState(instances.putIfAbsent(identifier, this) == null, "Identifier %s already taken", identifier);
+		}
+
+		@Override
+		public void close() throws Exception {
+			checkState(instances.remove(identifier) != null, "Identifier %s was not taken", identifier);
 		}
 
 		public String ardulinkUri() {
@@ -64,22 +73,15 @@ public class StaticRegisterLinkFactory implements LinkFactory<StaticRegisterLink
 					StaticRegisterLinkConfig.ATTRIBUTE_IDENTIFIER, identifier);
 		}
 
-		@Override
-		public void close() throws Exception {
-			deregister(identifier);
+		@SuppressWarnings("resource")
+		private static Link linkByIdentifier(String identifier) {
+			return checkNotNull(instances.get(identifier), "No link with identifier %s registered", identifier).link;
 		}
 
 	}
 
 	public static Registration register(Link link) {
-		Registration registration = new Registration();
-		String identifier = registration.identifier;
-		checkState(links.putIfAbsent(identifier, link) == null, "Identifier %s already taken", identifier);
-		return registration;
-	}
-
-	public static void deregister(String identifier) {
-		checkState(links.remove(identifier) != null, "Identifier %s was not taken", identifier);
+		return new Registration(link);
 	}
 
 	@Override
@@ -89,7 +91,7 @@ public class StaticRegisterLinkFactory implements LinkFactory<StaticRegisterLink
 
 	@Override
 	public Link newLink(StaticRegisterLinkConfig config) {
-		return links.get(config.identifier);
+		return Registration.linkByIdentifier(config.identifier);
 	}
 
 	@Override
