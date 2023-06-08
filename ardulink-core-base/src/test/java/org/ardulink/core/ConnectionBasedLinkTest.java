@@ -53,7 +53,6 @@ import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.Joiner;
-import org.ardulink.util.Lists;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -276,7 +275,7 @@ class ConnectionBasedLinkTest {
 				throw new IllegalStateException("Listener tries to inference");
 			}
 		});
-		List<String> events = Lists.newArrayList();
+		List<String> events = new ArrayList<>();
 		this.link.addListener(new EventListener() {
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {

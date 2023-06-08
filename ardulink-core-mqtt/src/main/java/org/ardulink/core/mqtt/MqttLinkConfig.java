@@ -44,7 +44,7 @@ public class MqttLinkConfig implements LinkConfig {
 		TCP, SSL, TLS
     }
 
-	private static final String DEFAULT_HOST = "localhost";
+	public static final String DEFAULT_HOST = "localhost";
 
 	@Named("host")
 	@NotNull

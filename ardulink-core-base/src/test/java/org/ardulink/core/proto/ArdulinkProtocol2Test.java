@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +25,6 @@ import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.Joiner;
-import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
 import org.junit.jupiter.api.Test;
 
@@ -118,7 +118,7 @@ class ArdulinkProtocol2Test {
 	private void whenMessageIsProcessed(Protocol protocol) throws IOException {
 		ByteStreamProcessor processor = byteStreamProcessor(protocol);
 		// read in "random" (three) junks
-		messages = Lists.newArrayList();
+		messages = new ArrayList<>();
 		InputStream stream = new ByteArrayInputStream(message.getBytes());
 		messages.addAll(parse(processor, read(stream, 2)));
 		messages.addAll(parse(processor, read(stream, 5)));

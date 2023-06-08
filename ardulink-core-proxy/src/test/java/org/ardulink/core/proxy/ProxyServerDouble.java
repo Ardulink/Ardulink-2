@@ -30,11 +30,11 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.ardulink.util.Lists;
 import org.ardulink.util.MapBuilder;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -64,7 +64,7 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 
 	private final Thread thread;
 	private Map<String, List<String>> answers = makeMap(1);
-	private final List<String> received = Lists.newArrayList();
+	private final List<String> received = new ArrayList<>();
 
 	private ServerSocket serverSocket;
 

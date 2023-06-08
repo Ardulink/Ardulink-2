@@ -81,7 +81,9 @@ import org.ardulink.util.MapBuilder;
 public class ArdulinkProtocol2 implements Protocol {
 
 	private static final String name = "ardulink2";
-	private static final byte[] separator = "\n".getBytes();
+	private static final char NEWLINE = '\n';
+	private static final char SLASH = '/';
+	private static final byte[] separator = new byte[] { NEWLINE };
 
 	private static final ArdulinkProtocol2 instance = new ArdulinkProtocol2();
 
@@ -122,7 +124,7 @@ public class ArdulinkProtocol2 implements Protocol {
 		private static class WaitingForCommand extends AbstractState {
 			@Override
 			public State process(byte b) {
-				if (b == '/') {
+				if (b == SLASH) {
 					return ALPProtocolKey.fromString(bufferAsString()).map(this::toCommand)
 							.orElseGet(() -> new WaitingForAlpPrefix());
 				}
@@ -173,7 +175,7 @@ public class ArdulinkProtocol2 implements Protocol {
 
 			@Override
 			public State process(byte b) {
-				if (b == '\n') {
+				if (b == NEWLINE) {
 					return new RplyParsed(ok, paramsToMap(bufferAsString()));
 				}
 				bufferAppend(b);
@@ -195,7 +197,7 @@ public class ArdulinkProtocol2 implements Protocol {
 
 			@Override
 			public State process(byte b) {
-				if (b == '\n') {
+				if (b == NEWLINE) {
 					return new CustomMessageParsed(bufferAsString());
 				}
 				bufferAppend(b);
@@ -250,10 +252,10 @@ public class ArdulinkProtocol2 implements Protocol {
 
 			@Override
 			public State process(byte b) {
-				if (b == '\n' && !hasValue) {
+				if (b == NEWLINE && !hasValue) {
 					return new CommandParsed(new DefaultFromDeviceChangeListeningState(pin(bufferAsString()), mode()));
 				}
-				if (b == '/') {
+				if (b == SLASH) {
 					return new WaitingForValue(protocolKey, bufferAsString());
 				}
 				bufferAppend(b);
@@ -295,7 +297,7 @@ public class ArdulinkProtocol2 implements Protocol {
 
 			@Override
 			public State process(byte b) {
-				if (b == '\n') {
+				if (b == NEWLINE) {
 					return new CommandParsed(
 							new DefaultFromDeviceMessagePinStateChanged(pin, getValue(bufferAsString())));
 				}

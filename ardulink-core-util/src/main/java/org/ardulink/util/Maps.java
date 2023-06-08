@@ -16,8 +16,12 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static java.util.stream.Collectors.toMap;
+
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.function.Function;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -38,5 +42,5 @@ public final class Maps {
 		properties.putAll(map);
 		return properties;
 	}
-	
+
 }

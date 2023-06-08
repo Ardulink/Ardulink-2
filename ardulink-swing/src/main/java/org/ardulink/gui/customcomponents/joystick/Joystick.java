@@ -30,6 +30,7 @@ import java.awt.Stroke;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -39,7 +40,6 @@ import org.ardulink.gui.Linkable;
 import org.ardulink.gui.event.PositionEvent;
 import org.ardulink.gui.event.PositionListener;
 import org.ardulink.legacy.Link;
-import org.ardulink.util.Lists;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -51,7 +51,7 @@ public class Joystick extends JPanel implements Linkable {
 
 	private transient Link link;
 	
-	private final List<PositionListener> positionListeners = Lists.newArrayList();
+	private final List<PositionListener> positionListeners = new ArrayList<>();
 	private String id = "none";
 	
 	// TODO rendere parametrico il border size e trasformare questo in un valore di defalut

@@ -1,11 +1,11 @@
 package org.ardulink.core.linkmanager.providers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.util.Lists;
 import org.junit.jupiter.api.function.Executable;
 
 public class DynamicLinkFactoriesProvider implements LinkFactoriesProvider {
@@ -32,7 +32,7 @@ public class DynamicLinkFactoriesProvider implements LinkFactoriesProvider {
 	private static final ThreadLocal<List<LinkFactory>> factories = new ThreadLocal<List<LinkFactory>>() {
 		@Override
 		protected List<LinkFactory> initialValue() {
-			return Lists.newArrayList();
+			return new ArrayList<>();
 		}
 	};
 

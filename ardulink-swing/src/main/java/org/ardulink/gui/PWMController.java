@@ -27,6 +27,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JCheckBox;
@@ -43,7 +44,6 @@ import org.ardulink.gui.event.PWMChangeEvent;
 import org.ardulink.gui.event.PWMControllerListener;
 import org.ardulink.gui.facility.IntMinMaxModel;
 import org.ardulink.legacy.Link;
-import org.ardulink.util.Lists;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -73,7 +73,7 @@ public class PWMController extends JPanel implements Linkable {
 	private JComboBox<Integer> pinComboBox;
 	private JLabel lblPowerPinController;
 	
-	private List<PWMControllerListener> pwmControllerListeners = Lists.newArrayList();
+	private List<PWMControllerListener> pwmControllerListeners = new ArrayList<>();
 	
 	private transient Link link;
 

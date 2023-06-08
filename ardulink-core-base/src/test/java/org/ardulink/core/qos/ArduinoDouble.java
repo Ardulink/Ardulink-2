@@ -24,6 +24,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -31,7 +32,6 @@ import java.util.regex.Pattern;
 
 import org.ardulink.core.StreamReader;
 import org.ardulink.util.ByteArray;
-import org.ardulink.util.Lists;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -142,7 +142,7 @@ public class ArduinoDouble implements Closeable {
 
 	}
 
-	private final List<ReponseGenerator> data = Lists.newArrayList();
+	private final List<ReponseGenerator> data = new ArrayList<>();
 	private final PipedInputStream is2;
 	private final PipedOutputStream os1;
 	private StreamReader streamReader;

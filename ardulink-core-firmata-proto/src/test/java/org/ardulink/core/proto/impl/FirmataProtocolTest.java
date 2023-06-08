@@ -13,6 +13,7 @@ import static org.firmata4j.firmata.parser.FirmataToken.DIGITAL_MESSAGE;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,6 @@ import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.util.Lists;
 import org.junit.jupiter.api.Test;
 
 class FirmataProtocolTest {
@@ -85,7 +85,7 @@ class FirmataProtocolTest {
 	private void process(FirmataProtocol protocol, byte[] bytes) throws IOException {
 		ByteStreamProcessor processor = byteStreamProcessor(protocol);
 		// read in "random" (two) junks
-		messages = Lists.newArrayList();
+		messages = new ArrayList<>();
 		InputStream stream = new ByteArrayInputStream(bytes);
 		messages.addAll(parse(processor, read(stream, 2)));
 		messages.addAll(parse(processor, read(stream, stream.available())));

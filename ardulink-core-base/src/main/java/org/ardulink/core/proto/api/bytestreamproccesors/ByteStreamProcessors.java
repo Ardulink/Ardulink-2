@@ -15,12 +15,12 @@ limitations under the License.
  */
 package org.ardulink.core.proto.api.bytestreamproccesors;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor.FromDeviceListener;
-import org.ardulink.util.Lists;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -41,7 +41,7 @@ public final class ByteStreamProcessors {
 	}
 
 	public static List<FromDeviceMessage> parse(ByteStreamProcessor byteStreamProcessor, byte[] bytes) {
-		List<FromDeviceMessage> messages = Lists.newArrayList();
+		List<FromDeviceMessage> messages = new ArrayList<>();
 		FromDeviceListener listener = fromDeviceListener(messages);
 		byteStreamProcessor.addListener(listener);
 		try {

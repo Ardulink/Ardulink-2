@@ -21,17 +21,22 @@ import static io.moquette.BrokerConstants.HOST_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
 import static io.moquette.BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME;
+import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.toMap;
+import static org.ardulink.util.Maps.toProperties;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.ardulink.core.mqtt.duplicated.Message;
-import org.ardulink.util.Lists;
+import org.ardulink.util.MapBuilder;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -55,10 +60,11 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 
 	private Server mqttServer;
 	private IAuthenticator authenticator;
-	private String host = "localhost";
+	private String host = MqttLinkConfig.DEFAULT_HOST;
 	private int port = MqttLinkConfig.DEFAULT_PORT;
-	private final List<InterceptHandler> listeners = Lists.newArrayList();
+	private final List<InterceptHandler> listeners = new ArrayList<>();
 	private final List<Message> messages = new CopyOnWriteArrayList<>();
+	private final List<Message> messagesView = unmodifiableList(messages);
 
 	private Broker() {
 		super();
@@ -86,20 +92,33 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 	}
 
 	public void start() throws IOException {
-		MemoryConfig memoryConfig = new MemoryConfig(properties());
-		this.mqttServer.startServer(memoryConfig, listeners, null, authenticator, null);
+		this.mqttServer.startServer(memoryConfig(), listeners, null, authenticator, null);
+	}
+
+	private MemoryConfig memoryConfig() {
+		return new MemoryConfig(properties());
 	}
 
 	private Properties properties() {
-		Properties properties = new Properties();
-		properties.put(HOST_PROPERTY_NAME, host);
-		properties.put(PORT_PROPERTY_NAME, String.valueOf(port));
-		if (this.authenticator != null) {
-			properties.setProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, Boolean.FALSE.toString());
-		}
-		properties.put(PERSISTENT_STORE_PROPERTY_NAME, "");
-		properties.put(WEB_SOCKET_PORT_PROPERTY_NAME, "0");
-		return properties;
+		return toProperties(toStringString(propertyMap()));
+	}
+
+	private static Map<String, String> toStringString(Map<String, Object> in) {
+		return in.entrySet().stream().collect(toMap(Map.Entry::getKey, e -> Objects.toString(e.getValue(), null)));
+	}
+
+	private Map<String, Object> propertyMap() {
+		return MapBuilder.<String, Object>newMapBuilder() //
+				.put(HOST_PROPERTY_NAME, host) //
+				.put(PORT_PROPERTY_NAME, port) //
+				.put(PERSISTENT_STORE_PROPERTY_NAME, "") //
+				.put(WEB_SOCKET_PORT_PROPERTY_NAME, 0) //
+				.put(ALLOW_ANONYMOUS_PROPERTY_NAME, isAnonymousLoginAllowed()) //
+				.build();
+	}
+
+	private boolean isAnonymousLoginAllowed() {
+		return this.authenticator == null;
 	}
 
 	public void stop() {
@@ -131,17 +150,17 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 		return this;
 	}
 
-	public int getPort() {
-		return port;
-	}
-
 	public Broker authentication(String username, byte[] password) {
 		this.authenticator = (c, u, p) -> Objects.equals(username, u) && Arrays.equals(password, p);
 		return this;
 	}
 
+	public int getPort() {
+		return port;
+	}
+
 	public List<Message> getMessages() {
-		return Lists.newArrayList(messages);
+		return messagesView;
 	}
 
 }
