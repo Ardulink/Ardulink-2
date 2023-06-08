@@ -18,7 +18,10 @@ package org.ardulink.core.proto.impl;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.stream.Collectors.toMap;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -41,6 +44,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LI
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.TONE;
 import static org.ardulink.util.Booleans.toBoolean;
 import static org.ardulink.util.Integers.tryParse;
+import static org.ardulink.util.Maps.entry;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.util.Map;
@@ -68,7 +72,6 @@ import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.api.bytestreamproccesors.State;
 import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 import org.ardulink.util.Bytes;
-import org.ardulink.util.MapBuilder;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -96,6 +99,14 @@ public class ArdulinkProtocol2 implements Protocol {
 		return name;
 	}
 
+	private static boolean isNewline(byte b) {
+		return b == NEWLINE;
+	}
+
+	private static boolean isSlash(byte b) {
+		return b == SLASH;
+	}
+
 	private static IllegalStateException illegalPinType(Pin pin) {
 		return new IllegalStateException("Illegal type " + pin.getType() + " of pin " + pin);
 	}
@@ -104,15 +115,15 @@ public class ArdulinkProtocol2 implements Protocol {
 
 		private static class WaitingForAlpPrefix extends AbstractState {
 
-			private static final byte[] alp = "alp://".getBytes();
+			private static final byte[] prefix = "alp://".getBytes();
 
 			@Override
 			public State process(byte b) {
 				int len = bufferLength();
-				if (len <= alp.length && b != alp[len]) {
-					return null;
+				if (len <= prefix.length && b != prefix[len]) {
+					return RESET_STATE;
 				}
-				if (len + 1 == alp.length) {
+				if (len + 1 == prefix.length) {
 					return new WaitingForCommand();
 				}
 				bufferAppend(b);
@@ -122,17 +133,17 @@ public class ArdulinkProtocol2 implements Protocol {
 		}
 
 		private static class WaitingForCommand extends AbstractState {
+
 			@Override
 			public State process(byte b) {
-				if (b == SLASH) {
-					return ALPProtocolKey.fromString(bufferAsString()).map(this::toCommand)
-							.orElseGet(() -> new WaitingForAlpPrefix());
+				if (isSlash(b)) {
+					return ALPProtocolKey.fromString(bufferAsString()).map(this::toCommand).orElse(RESET_STATE);
 				}
 				bufferAppend(b);
 				return this;
 			}
 
-			private AbstractState toCommand(ALPProtocolKey key) {
+			private State toCommand(ALPProtocolKey key) {
 				if (key.equals(READY)) {
 					return new ReadyParsed();
 				} else if (RPLY.equals(key)) {
@@ -156,7 +167,7 @@ public class ArdulinkProtocol2 implements Protocol {
 					} else if (bufferHasContent("ko")) {
 						return new WaitForRplyParams(false);
 					} else {
-						return new WaitingForAlpPrefix();
+						return RESET_STATE;
 					}
 				}
 				bufferAppend(b);
@@ -169,13 +180,13 @@ public class ArdulinkProtocol2 implements Protocol {
 
 			private final boolean ok;
 
-			public WaitForRplyParams(boolean ok) {
+			private WaitForRplyParams(boolean ok) {
 				this.ok = ok;
 			}
 
 			@Override
 			public State process(byte b) {
-				if (b == NEWLINE) {
+				if (isNewline(b)) {
 					return new RplyParsed(ok, paramsToMap(bufferAsString()));
 				}
 				bufferAppend(b);
@@ -183,12 +194,8 @@ public class ArdulinkProtocol2 implements Protocol {
 			}
 
 			private static Map<String, String> paramsToMap(String query) {
-				MapBuilder<String, String> builder = MapBuilder.newMapBuilder();
-				for (String param : checkNotNull(query, "Params can't be null").split("&")) {
-					String[] kv = param.split("=");
-					builder.put(kv[0], kv[1]);
-				}
-				return builder.build();
+				return stream(checkNotNull(query, "Params can't be null").split("&")).map(p -> p.split("="))
+						.map(kv -> entry(kv[0], kv[1])).collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
 			}
 
 		}
@@ -197,7 +204,7 @@ public class ArdulinkProtocol2 implements Protocol {
 
 			@Override
 			public State process(byte b) {
-				if (b == NEWLINE) {
+				if (isNewline(b)) {
 					return new CustomMessageParsed(bufferAsString());
 				}
 				bufferAppend(b);
@@ -210,15 +217,16 @@ public class ArdulinkProtocol2 implements Protocol {
 
 			private final DefaultFromDeviceMessageReply message;
 
-			public RplyParsed(boolean ok, Map<String, String> params) {
+			private RplyParsed(boolean ok, Map<String, String> params) {
+				String key = "id";
 				message = new DefaultFromDeviceMessageReply(ok,
-						parseLong(checkNotNull(params.remove("id"), "Reply message needs for mandatory param: id")),
+						parseLong(checkNotNull(params.remove(key), "Reply message needs for mandatory param: %s", key)),
 						params);
 			}
 
 			@Override
 			public State process(byte b) {
-				return null;
+				return RESET_STATE;
 			}
 
 		}
@@ -227,35 +235,34 @@ public class ArdulinkProtocol2 implements Protocol {
 
 			private final DefaultFromDeviceMessageCustom message;
 
-			public CustomMessageParsed(String message) {
+			private CustomMessageParsed(String message) {
 				this.message = new DefaultFromDeviceMessageCustom(message);
 			}
 
 			@Override
 			public State process(byte b) {
-				return null;
+				return RESET_STATE;
 			}
 
 		}
 
 		private static class WaitingForPin extends AbstractState {
-			private final ALPProtocolKey protocolKey;
-			private final boolean hasValue;
 
-			public WaitingForPin(ALPProtocolKey protocolKey) {
+			private final ALPProtocolKey protocolKey;
+			private final boolean waitForValue;
+
+			private WaitingForPin(ALPProtocolKey protocolKey) {
 				this.protocolKey = protocolKey;
-				this.hasValue = !START_LISTENING_ANALOG.equals(protocolKey) //
-						&& !STOP_LISTENING_ANALOG.equals(protocolKey) //
-						&& !START_LISTENING_DIGITAL.equals(protocolKey) //
-						&& !STOP_LISTENING_DIGITAL.equals(protocolKey);
+				this.waitForValue = !asList(START_LISTENING_ANALOG, STOP_LISTENING_ANALOG, START_LISTENING_DIGITAL,
+						STOP_LISTENING_DIGITAL).contains(protocolKey);
 			}
 
 			@Override
 			public State process(byte b) {
-				if (b == NEWLINE && !hasValue) {
+				if (isNewline(b) && !waitForValue) {
 					return new CommandParsed(new DefaultFromDeviceChangeListeningState(pin(bufferAsString()), mode()));
 				}
-				if (b == SLASH) {
+				if (isSlash(b)) {
 					return new WaitingForValue(protocolKey, bufferAsString());
 				}
 				bufferAppend(b);
@@ -287,17 +294,17 @@ public class ArdulinkProtocol2 implements Protocol {
 
 			private final Pin pin;
 
-			public WaitingForValue(ALPProtocolKey command, String pin) {
+			private WaitingForValue(ALPProtocolKey command, String pin) {
 				this(getPin(command, pin));
 			}
 
-			public WaitingForValue(Pin pin) {
+			private WaitingForValue(Pin pin) {
 				this.pin = pin;
 			}
 
 			@Override
 			public State process(byte b) {
-				if (b == NEWLINE) {
+				if (isNewline(b)) {
 					return new CommandParsed(
 							new DefaultFromDeviceMessagePinStateChanged(pin, getValue(bufferAsString())));
 				}
@@ -330,36 +337,35 @@ public class ArdulinkProtocol2 implements Protocol {
 
 			private final FromDeviceMessage message;
 
-			public CommandParsed(FromDeviceMessage message) {
+			private CommandParsed(FromDeviceMessage message) {
 				this.message = message;
 			}
 
 			@Override
 			public State process(byte b) {
-				return null;
+				return RESET_STATE;
 			}
 
 		}
 
 		private static class ReadyParsed extends AbstractState {
 
-			public final FromDeviceMessage message = new DefaultFromDeviceMessageReady();
+			private final FromDeviceMessage message = new DefaultFromDeviceMessageReady();
 
 			@Override
 			public State process(byte b) {
-				return null;
+				return RESET_STATE;
 			}
 
 		}
+
+		protected static final State RESET_STATE = null;
 
 		private State state;
 
 		@Override
 		public void process(byte b) {
-			if (state == null) {
-				state = new WaitingForAlpPrefix();
-			}
-			state = state.process(b);
+			state = (state == RESET_STATE ? new WaitingForAlpPrefix() : state).process(b);
 			if (state instanceof ReadyParsed) {
 				fireEvent(((ReadyParsed) state).message);
 			} else if (state instanceof CommandParsed) {
@@ -374,7 +380,7 @@ public class ArdulinkProtocol2 implements Protocol {
 		@Override
 		protected void fireEvent(FromDeviceMessage fromDevice) {
 			super.fireEvent(fromDevice);
-			state = null;
+			state = RESET_STATE;
 		}
 
 		// -- out

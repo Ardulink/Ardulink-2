@@ -16,12 +16,12 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static java.util.stream.Collectors.toMap;
-
+import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.function.Function;
+
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -41,6 +41,11 @@ public final class Maps {
 		Properties properties = new Properties();
 		properties.putAll(map);
 		return properties;
+	}
+
+	@LapsedWith(module = LapsedWith.JDK9, value = "Map#entry")
+	public static <K, V> Entry<K, V> entry(K k, V v) {
+		return new AbstractMap.SimpleEntry<>(k, v);
 	}
 
 }
