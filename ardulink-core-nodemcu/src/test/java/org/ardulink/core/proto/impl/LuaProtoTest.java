@@ -90,8 +90,8 @@ class LuaProtoTest {
 		return String.format("pwm.setup(%s,1000,1023) pwm.start(%s) pwm.setduty(%s,%s)", pin, pin, pin, value);
 	}
 
-	private String customMessage(String[] values) {
-		return Joiner.on(" ").join(asList(values));
+	private String customMessage(String... values) {
+		return Joiner.on(" ").join(values);
 	}
 
 	private int anyPin() {

@@ -16,14 +16,13 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static java.util.stream.Collectors.joining;
 
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-
-import org.ardulink.util.anno.LapsedWith;
+import java.util.stream.Stream;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -37,31 +36,20 @@ public final class Joiner {
 
 	public static class MapJoiner {
 
-		private final String separator;
+		private final Joiner joiner;
 		private final String kvSeparator;
 
-		public MapJoiner(String separator, String kvSeparator) {
-			this.separator = separator;
+		public MapJoiner(Joiner joiner, String kvSeparator) {
+			this.joiner = joiner;
 			this.kvSeparator = kvSeparator;
 		}
 
 		public String join(Map<?, ?> map) {
-			Set<?> entrySet = map.entrySet();
-			@SuppressWarnings("unchecked")
-			Iterator<Entry<Object, Object>> it = (Iterator<Entry<Object, Object>>) entrySet.iterator();
-			if (!it.hasNext()) {
-				return "";
-			}
-			StringBuilder sb = append(it, new StringBuilder());
-			while (it.hasNext()) {
-				sb = append(it, sb.append(separator));
-			}
-			return sb.toString();
+			return joiner.join(map.entrySet().stream().map(this::entryToString));
 		}
 
-		private StringBuilder append(Iterator<Entry<Object, Object>> iterator, StringBuilder sb) {
-			Entry<Object, Object> entry = iterator.next();
-			return sb.append(entry.getKey()).append(kvSeparator).append(entry.getValue());
+		private String entryToString(Entry<?, ?> entry) {
+			return entry.getKey() + kvSeparator + entry.getValue();
 		}
 
 	}
@@ -76,21 +64,20 @@ public final class Joiner {
 		return new Joiner(separator);
 	}
 
-	@LapsedWith(value = JDK8, module = "Stream/Collectors#joining")
-	public String join(Iterable<? extends Object> values) {
-		Iterator<? extends Object> iterator = values.iterator();
-		if (!iterator.hasNext()) {
-			return "";
-		}
-		StringBuilder sb = new StringBuilder().append(iterator.next());
-		while (iterator.hasNext()) {
-			sb = sb.append(separator).append(iterator.next());
-		}
-		return sb.toString();
+	public String join(Collection<? extends Object> values) {
+		return join(values.stream());
+	}
+
+	public String join(Object[] values) {
+		return join(Arrays.stream(values));
+	}
+
+	public String join(Stream<? extends Object> stream) {
+		return stream.map(String::valueOf).collect(joining(separator));
 	}
 
 	public MapJoiner withKeyValueSeparator(String kvSeparator) {
-		return new MapJoiner(this.separator, kvSeparator);
+		return new MapJoiner(this, kvSeparator);
 	}
 
 }

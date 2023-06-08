@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -344,7 +343,7 @@ class ConnectionBasedLinkTest {
 	}
 
 	private void assertToArduinoWasSent(String... messages) {
-		assertToArduinoWasSent(Joiner.on("\n").join(Arrays.asList(messages)));
+		assertToArduinoWasSent(Joiner.on("\n").join(messages));
 	}
 
 	private void assertToArduinoWasSent(String message) {

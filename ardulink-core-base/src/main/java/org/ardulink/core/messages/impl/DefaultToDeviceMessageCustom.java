@@ -15,8 +15,6 @@ limitations under the License.
 */
 package org.ardulink.core.messages.impl;
 
-import java.util.Arrays;
-
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.util.Joiner;
 
@@ -43,7 +41,7 @@ public class DefaultToDeviceMessageCustom implements ToDeviceMessageCustom {
 
 	@Override
 	public String toString() {
-		return Joiner.on(" ").join(Arrays.asList(messages));
+		return Joiner.on(" ").join(messages);
 	}
 
 }

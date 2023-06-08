@@ -15,13 +15,11 @@ limitations under the License.
  */
 package org.ardulink.util;
 
-import static org.ardulink.util.anno.LapsedWith.JDK8;
+import static java.util.Arrays.stream;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Optional;
-
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -38,14 +36,9 @@ public final class Classes {
 	}
 
 	@SuppressWarnings("unchecked")
-	@LapsedWith(module = JDK8, value = "Streams")
 	public static <T> Optional<Constructor<T>> constructor(Class<T> clazz, Class<?>... parameterTypes) {
-		for (Constructor<?> constructor : clazz.getConstructors()) {
-			if (Arrays.equals(constructor.getParameterTypes(), parameterTypes)) {
-				return Optional.of((Constructor<T>) constructor);
-			}
-		}
-		return Optional.empty();
+		return stream((Constructor<T>[]) clazz.getConstructors())
+				.filter(c -> Arrays.equals(c.getParameterTypes(), parameterTypes)).findFirst();
 	}
 
 }

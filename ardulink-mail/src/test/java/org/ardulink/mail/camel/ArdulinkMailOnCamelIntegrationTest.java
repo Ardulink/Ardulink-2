@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.UUID;
 
 import javax.mail.Folder;
@@ -62,6 +61,7 @@ import org.apache.camel.main.Main;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.util.Joiner;
+import org.ardulink.util.MapBuilder;
 import org.ardulink.util.Throwables;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -301,10 +301,10 @@ class ArdulinkMailOnCamelIntegrationTest {
 
 	private List<Message> retrieveViaImap(String host, int port, String user, String password)
 			throws MessagingException {
-		Properties props = new Properties();
-		props.setProperty("mail.store.protocol", "imap");
-		props.setProperty("mail.imap.port", String.valueOf(port));
-		Session session = Session.getInstance(props, null);
+		Session session = Session.getInstance(MapBuilder.<String, String>newMapBuilder() //
+				.put("mail.store.protocol", "imap") //
+				.put("mail.imap.port", String.valueOf(port)) //
+				.asProperties(), null);
 		Store store = session.getStore();
 		store.connect(host, user, password);
 		Folder inbox = store.getFolder("INBOX");
@@ -317,7 +317,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	private String anySubject() {
-		return "Subject";
+		return "anySubject";
 	}
 
 }

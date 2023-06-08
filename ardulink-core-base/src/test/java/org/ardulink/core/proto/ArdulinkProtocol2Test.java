@@ -85,8 +85,8 @@ class ArdulinkProtocol2Test {
 	@Test
 	void ardulinkProtocol2ReceiveRply() throws IOException {
 		long id = 1;
-		Map<String, Object> params = MapBuilder.<String, Object>newMapBuilder().put("UniqueID", "ABC-1234-5678")
-				.put("boo", "ciao").build();
+		Map<String, Object> params = MapBuilder.<String, Object>newMapBuilder().put("key1", "value1")
+				.put("key2", "value2").build();
 		givenMessage("alp://rply/ok?id=" + id + "&" + Joiner.on("&").withKeyValueSeparator("=").join(params));
 		whenMessageIsProcessed();
 		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class, m -> {
