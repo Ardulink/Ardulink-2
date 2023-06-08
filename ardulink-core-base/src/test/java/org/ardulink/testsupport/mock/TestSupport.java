@@ -57,7 +57,7 @@ public final class TestSupport {
 		return ((LinkDelegate) link).getDelegate();
 	}
 
-	public static AbstractListenerLink createAbstractListenerLink(PinValueChangedEvent... fireEvents) {
+	public static AbstractListenerLink eventFireringLink(PinValueChangedEvent... fireEvents) {
 		return new AbstractListenerLink() {
 
 			@Override

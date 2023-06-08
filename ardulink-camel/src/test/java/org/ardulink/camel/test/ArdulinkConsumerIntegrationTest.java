@@ -7,15 +7,15 @@ import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digita
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
-import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.ardulinkUri;
 import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.register;
-import static org.ardulink.testsupport.mock.TestSupport.createAbstractListenerLink;
+import static org.ardulink.testsupport.mock.TestSupport.eventFireringLink;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Link;
+import org.ardulink.testsupport.mock.StaticRegisterLinkFactory.Registration;
 import org.junit.jupiter.api.Test;
 
 class ArdulinkConsumerIntegrationTest {
@@ -26,8 +26,9 @@ class ArdulinkConsumerIntegrationTest {
 	void messageIsSentOnAnalogPinChange() throws Exception {
 		int pin = 2;
 		int value = 42;
-		try (Link link = createAbstractListenerLink(analogPinValueChanged(analogPin(pin), value));
-				CamelContext context = camelContext(ardulinkUri(register(link)))) {
+		try (Link link = eventFireringLink(analogPinValueChanged(analogPin(pin), value));
+				Registration registration = register(link);
+				CamelContext context = camelContext(registration.ardulinkUri())) {
 			MockEndpoint out = getMockEndpoint(context);
 			out.expectedBodiesReceived(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
 			out.assertIsSatisfied();
@@ -38,8 +39,9 @@ class ArdulinkConsumerIntegrationTest {
 	void messageIsSentOnDigitalPinChange() throws Exception {
 		int pin = 3;
 		boolean state = true;
-		try (Link link = createAbstractListenerLink(digitalPinValueChanged(digitalPin(pin), state));
-				CamelContext context = camelContext(ardulinkUri(register(link)))) {
+		try (Link link = eventFireringLink(digitalPinValueChanged(digitalPin(pin), state));
+				Registration registration = register(link);
+				CamelContext context = camelContext(registration.ardulinkUri())) {
 			MockEndpoint out = getMockEndpoint(context);
 			out.expectedBodiesReceived(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(state));
 			out.assertIsSatisfied();

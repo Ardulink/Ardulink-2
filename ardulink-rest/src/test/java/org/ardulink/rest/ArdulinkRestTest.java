@@ -22,9 +22,8 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
-import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.ardulinkUri;
 import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.register;
-import static org.ardulink.testsupport.mock.TestSupport.createAbstractListenerLink;
+import static org.ardulink.testsupport.mock.TestSupport.eventFireringLink;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.hamcrest.CoreMatchers.is;
@@ -35,6 +34,7 @@ import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.rest.main.CommandLineArguments;
 import org.ardulink.rest.main.RestMain;
+import org.ardulink.testsupport.mock.StaticRegisterLinkFactory.Registration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -85,8 +85,9 @@ class ArdulinkRestTest {
 	void canReadDigitalPin() throws Exception {
 		int pin = 5;
 		boolean state = true;
-		try (AbstractListenerLink link = createAbstractListenerLink(digitalPinValueChanged(digitalPin(pin), state));
-				RestMain main = runRestComponent(ardulinkUri(register(link)))) {
+		try (AbstractListenerLink link = eventFireringLink(digitalPinValueChanged(digitalPin(pin), state));
+				Registration registration = register(link);
+				RestMain main = runRestComponent(registration.ardulinkUri())) {
 			given().get("/pin/digital/{pin}", pin).then().statusCode(200).body(is(String.valueOf(state)));
 		}
 	}
@@ -95,8 +96,9 @@ class ArdulinkRestTest {
 	void canReadAnalogPin() throws Exception {
 		int pin = 7;
 		int value = 456;
-		try (AbstractListenerLink link = createAbstractListenerLink(analogPinValueChanged(analogPin(pin), value));
-				RestMain main = runRestComponent(ardulinkUri(register(link)))) {
+		try (AbstractListenerLink link = eventFireringLink(analogPinValueChanged(analogPin(pin), value));
+				Registration registration = register(link);
+				RestMain main = runRestComponent(registration.ardulinkUri())) {
 			given().get("/pin/analog/{pin}", pin).then().statusCode(200).body(is(String.valueOf(value)));
 		}
 	}

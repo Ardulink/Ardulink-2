@@ -47,13 +47,39 @@ public class StaticRegisterLinkFactory implements LinkFactory<StaticRegisterLink
 
 	private static final ConcurrentMap<String, Link> links = new ConcurrentHashMap<>();
 
-	public static String register(Link link) {
-		return register(randomUUID().toString(), link);
+	public static final class Registration implements AutoCloseable {
+
+		private final String identifier;
+
+		public Registration() {
+			this(randomUUID().toString());
+		}
+
+		public Registration(String identifier) {
+			this.identifier = identifier;
+		}
+
+		public String ardulinkUri() {
+			return String.format("ardulink://%s?%s=%s", StaticRegisterLinkFactory.NAME,
+					StaticRegisterLinkConfig.ATTRIBUTE_IDENTIFIER, identifier);
+		}
+
+		@Override
+		public void close() throws Exception {
+			deregister(identifier);
+		}
+
 	}
 
-	public static String register(String identifier, Link link) {
+	public static Registration register(Link link) {
+		Registration registration = new Registration();
+		String identifier = registration.identifier;
 		checkState(links.putIfAbsent(identifier, link) == null, "Identifier %s already taken", identifier);
-		return identifier;
+		return registration;
+	}
+
+	public static void deregister(String identifier) {
+		checkState(links.remove(identifier) != null, "Identifier %s was not taken", identifier);
 	}
 
 	@Override
@@ -69,11 +95,6 @@ public class StaticRegisterLinkFactory implements LinkFactory<StaticRegisterLink
 	@Override
 	public StaticRegisterLinkConfig newLinkConfig() {
 		return new StaticRegisterLinkConfig();
-	}
-
-	public static String ardulinkUri(String identifier) {
-		return String.format("ardulink://%s?%s=%s", StaticRegisterLinkFactory.NAME,
-				StaticRegisterLinkConfig.ATTRIBUTE_IDENTIFIER, identifier);
 	}
 
 }
