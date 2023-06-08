@@ -61,10 +61,6 @@ public class MqttCamelRouteBuilder {
 			return this;
 		}
 
-		public MqttConnectionProperties brokerPort(int brokerPort) {
-			return brokerPort(Integer.valueOf(brokerPort));
-		}
-
 		public MqttConnectionProperties ssl(boolean ssl) {
 			this.ssl = ssl;
 			return this;

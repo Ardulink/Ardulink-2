@@ -283,15 +283,13 @@ public class ArdulinkProtocol2 implements Protocol {
 
 		private static class WaitingForValue extends AbstractState {
 
-			private final ALPProtocolKey command;
 			private final Pin pin;
 
 			public WaitingForValue(ALPProtocolKey command, String pin) {
-				this(command, getPin(command, pin));
+				this(getPin(command, pin));
 			}
 
-			public WaitingForValue(ALPProtocolKey command, Pin pin) {
-				this.command = command;
+			public WaitingForValue(Pin pin) {
 				this.pin = pin;
 			}
 
@@ -314,14 +312,14 @@ public class ArdulinkProtocol2 implements Protocol {
 				throw new IllegalStateException(command + " " + pin);
 			}
 
-			private Object getValue(String s) {
-				int value = parseInt(s);
-				if (command == ANALOG_PIN_READ) {
+			private Object getValue(String string) {
+				int value = parseInt(string);
+				if (pin.is(ANALOG)) {
 					return value;
-				} else if (command == DIGITAL_PIN_READ) {
+				} else if (pin.is(DIGITAL)) {
 					return toBoolean(value);
 				}
-				throw new IllegalStateException(command + " " + this);
+				throw new IllegalStateException(pin + " " + string);
 			}
 
 		}

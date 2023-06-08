@@ -24,6 +24,7 @@ import static org.ardulink.util.Strings.nullOrEmpty;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -160,12 +161,7 @@ public class MqttMain {
 	}
 
 	private static void wait4ever() throws InterruptedException {
-		Object blocker = new Object();
-		synchronized (blocker) {
-			while (true) {
-				blocker.wait();
-			}
-		}
+		new CountDownLatch(1).await();
 	}
 
 }
