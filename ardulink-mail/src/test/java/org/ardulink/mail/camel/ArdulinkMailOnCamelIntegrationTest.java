@@ -86,6 +86,8 @@ class ArdulinkMailOnCamelIntegrationTest {
 
 	private static final String mockURI = "ardulink://mock";
 
+	private static final long receiveTimeout = SECONDS.toMillis(5);
+	
 	private Link link;
 
 	@RegisterExtension
@@ -124,8 +126,8 @@ class ArdulinkMailOnCamelIntegrationTest {
 
 			Link mockLink = getMock(link);
 			try {
-				verify(mockLink, timeout(SECONDS.toMillis(5))).switchDigitalPin(digitalPin(1), true);
-				verify(mockLink, timeout(SECONDS.toMillis(5))).switchAnalogPin(analogPin(2), 123);
+				verify(mockLink, timeout(receiveTimeout)).switchDigitalPin(digitalPin(1), true);
+				verify(mockLink, timeout(receiveTimeout)).switchAnalogPin(analogPin(2), 123);
 
 				MockEndpoint mockEndpoint = context.getEndpoint("mock:result", MockEndpoint.class);
 				mockEndpoint.expectedMessageCount(1);
