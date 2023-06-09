@@ -25,6 +25,7 @@ import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digita
 import static org.ardulink.core.proto.api.MessageIdHolders.NO_ID;
 import static org.ardulink.core.proto.api.MessageIdHolders.addMessageId;
 import static org.ardulink.core.proto.api.MessageIdHolders.toHolder;
+import static org.ardulink.util.StopWatch.createStartedCountdown;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +56,7 @@ import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageTone;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.util.StopWatch;
+import org.ardulink.util.StopWatch.Countdown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -165,11 +166,11 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		this.connection.addListener(listener);
 
 		try {
-			StopWatch stopWatch = StopWatch.createStarted();
+			Countdown countdown = createStartedCountdown(wait, timeUnit);
 			do {
 				ping();
 				TimeUnit.MILLISECONDS.sleep(100);
-			} while (!deviceIsReady.get() && !stopWatch.elapsed(wait, timeUnit));
+			} while (!deviceIsReady.get() && !countdown.finished());
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		} finally {
