@@ -3,6 +3,7 @@ package org.ardulink.rest;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.identityHashCode;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.joining;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
@@ -20,12 +21,14 @@ import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.StopWatch.createStartedCountdown;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.regex.Matcher;
@@ -34,11 +37,13 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Predicate;
 import org.apache.camel.builder.RouteBuilder;
+import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2.ALPByteStreamProcessor;
+import org.ardulink.util.StopWatch.Countdown;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.resource.EmptyResource;
 import org.eclipse.jetty.util.resource.Resource;
@@ -68,7 +73,7 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	@Override
 	public void configure() throws Exception {
-		BlockingQueue<FromDeviceMessagePinStateChanged> messages = new ArrayBlockingQueue<>(16);
+		BlockingQueue<FromDeviceMessagePinStateChanged> messages = new ArrayBlockingQueue<>(64);
 		String patchAnalog = "direct:patchAnalog-" + identityHashCode(this);
 		String patchDigital = "direct:patchDigital-" + identityHashCode(this);
 		String readAnalog = "direct:readAnalog-" + identityHashCode(this);
@@ -174,18 +179,35 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	private void readQueue(Exchange exchange, BlockingQueue<FromDeviceMessagePinStateChanged> messages)
 			throws InterruptedException {
-		FromDeviceMessagePinStateChanged polled = checkNotNull(messages.poll(1, SECONDS),
-				"Timeout retrieving message from arduino");
-		Message message = exchange.getMessage();
-		if (pinInMessageIs(message, polled.getPin().pinNum())) {
-			message.setBody(polled.getValue(), String.class);
-		} else if (!messages.offer(polled)) {
-			throw new IllegalStateException("Could not offer " + polled + " to queue");
+		Countdown countdown = createStartedCountdown(1, SECONDS);
+		while (!countdown.finished()) {
+			FromDeviceMessagePinStateChanged polled = checkNotNull(
+					messages.poll(countdown.remaining(MILLISECONDS), MILLISECONDS),
+					"Timeout retrieving message from arduino");
+			Message message = exchange.getMessage();
+			Pin pin = polled.getPin();
+			if (typeInMessageIs(message, pin.getType()) && pinInMessageIs(message, pin.pinNum())) {
+				message.setBody(polled.getValue(), String.class);
+				return;
+			} else {
+				safeOffer(messages, polled);
+			}
 		}
 	}
 
+	private void safeOffer(BlockingQueue<FromDeviceMessagePinStateChanged> messages,
+			FromDeviceMessagePinStateChanged message) {
+		while (!messages.offer(message)) {
+			messages.poll();
+		}
+	}
+
+	private boolean typeInMessageIs(Message message, Type type) {
+		return Objects.equals(type, message.getHeader(HEADER_TYPE));
+	}
+
 	private static boolean pinInMessageIs(Message message, int pinNum) {
-		return pinNum == ((Integer) message.getHeader(HEADER_PIN));
+		return Objects.equals(pinNum, message.getHeader(HEADER_PIN));
 	}
 
 	private void patchDigital(Exchange exchange) {
@@ -198,7 +220,7 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	private void patch(Exchange exchange, ALPProtocolKey startKey, ALPProtocolKey stopKey) {
 		Message message = exchange.getMessage();
-		Object pinRaw = message.getHeader("pin");
+		Object pinRaw = message.getHeader(HEADER_PIN);
 		String stateRaw = message.getBody(String.class);
 
 		String[] split = stateRaw.split("=");
@@ -225,12 +247,12 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	private Message setTypeAndPinHeader(Message message, Type type, int pin) {
 		message.setHeader(HEADER_PIN, pin);
-		message.setHeader(RestRouteBuilder.HEADER_TYPE, type);
+		message.setHeader(HEADER_TYPE, type);
 		return message;
 	}
 
 	private int readPin(Type type, Message message) {
-		Object pinRaw = message.getHeader("pin");
+		Object pinRaw = message.getHeader(HEADER_PIN);
 		return tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
 	}
 
@@ -241,14 +263,14 @@ public class RestRouteBuilder extends RouteBuilder {
 			FromDeviceMessage fromDevice = getFirst(parse(byteStreamProcessor, byteStreamProcessor.toBytes(body)))
 					.orElseThrow(() -> new IllegalStateException("Cannot handle " + body));
 			if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
-				messages.add((FromDeviceMessagePinStateChanged) fromDevice);
+				safeOffer(messages, (FromDeviceMessagePinStateChanged) fromDevice);
 			}
 		});
 	}
 
 	private void switchDigital(Exchange exchange) {
 		Message message = exchange.getMessage();
-		Object pinRaw = message.getHeader("pin");
+		Object pinRaw = message.getHeader(HEADER_PIN);
 		String stateRaw = message.getBody(String.class);
 		int pin = tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
 		boolean state = parseBoolean(stateRaw);
@@ -257,7 +279,7 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	private void switchAnalog(Exchange exchange) {
 		Message message = exchange.getMessage();
-		Object pinRaw = message.getHeader("pin");
+		Object pinRaw = message.getHeader(HEADER_PIN);
 		String valueRaw = message.getBody(String.class);
 		int pin = tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
 		int value = tryParse(valueRaw).orElseThrow(() -> parseError("Value", valueRaw));
