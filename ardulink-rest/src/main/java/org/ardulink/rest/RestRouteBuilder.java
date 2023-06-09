@@ -21,12 +21,13 @@ import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
-import static org.ardulink.util.StopWatch.createStartedCountdown;
+import static org.ardulink.util.StopWatch.Countdown.createStarted;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -179,12 +180,12 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	private void readQueue(Exchange exchange, BlockingQueue<FromDeviceMessagePinStateChanged> messages)
 			throws InterruptedException {
-		Countdown countdown = createStartedCountdown(1, SECONDS);
-		while (!countdown.finished()) {
+		Message message = exchange.getMessage();
+
+		for (Countdown countdown = createStarted(1, SECONDS); !countdown.finished();) {
 			FromDeviceMessagePinStateChanged polled = checkNotNull(
 					messages.poll(countdown.remaining(MILLISECONDS), MILLISECONDS),
 					"Timeout retrieving message from arduino");
-			Message message = exchange.getMessage();
 			Pin pin = polled.getPin();
 			if (typeInMessageIs(message, pin.getType()) && pinInMessageIs(message, pin.pinNum())) {
 				message.setBody(polled.getValue(), String.class);
@@ -195,10 +196,9 @@ public class RestRouteBuilder extends RouteBuilder {
 		}
 	}
 
-	private void safeOffer(BlockingQueue<FromDeviceMessagePinStateChanged> messages,
-			FromDeviceMessagePinStateChanged message) {
-		while (!messages.offer(message)) {
-			messages.poll();
+	private static <T> void safeOffer(BlockingQueue<T> queue, T element) {
+		while (!queue.offer(element)) {
+			queue.poll();
 		}
 	}
 

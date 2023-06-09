@@ -25,7 +25,7 @@ import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digita
 import static org.ardulink.core.proto.api.MessageIdHolders.NO_ID;
 import static org.ardulink.core.proto.api.MessageIdHolders.addMessageId;
 import static org.ardulink.core.proto.api.MessageIdHolders.toHolder;
-import static org.ardulink.util.StopWatch.createStartedCountdown;
+import static org.ardulink.util.StopWatch.Countdown.createStarted;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -166,17 +166,18 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		this.connection.addListener(listener);
 
 		try {
-			Countdown countdown = createStartedCountdown(wait, timeUnit);
-			do {
+			for (Countdown countdown = createStarted(wait, timeUnit); !countdown.finished();) {
 				ping();
 				TimeUnit.MILLISECONDS.sleep(100);
-			} while (!deviceIsReady.get() && !countdown.finished());
+				if (deviceIsReady.get())
+					return true;
+			}
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		} finally {
 			this.connection.removeListener(listener);
 		}
-		return deviceIsReady.get();
+		return false;
 	}
 
 	private void ping() {

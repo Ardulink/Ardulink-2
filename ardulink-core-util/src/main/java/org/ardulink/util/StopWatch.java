@@ -81,11 +81,19 @@ public abstract class StopWatch {
 		return new StoppedStopWatch();
 	}
 
-	public static class Countdown extends StopWatch {
+	public static class Countdown {
 
 		private final int amount;
 		private final TimeUnit timeUnit;
 		private final StopWatch stopWatch;
+
+		public static Countdown createStarted(int amount, TimeUnit timeUnit) {
+			return new Countdown(amount, timeUnit, StopWatch.createStarted());
+		}
+
+		public static Countdown createUnstarted(int amount, TimeUnit timeUnit) {
+			return new Countdown(amount, timeUnit, StopWatch.createUnstarted());
+		}
 
 		public Countdown(int amount, TimeUnit timeUnit, StopWatch stopWatch) {
 			this.amount = amount;
@@ -93,33 +101,22 @@ public abstract class StopWatch {
 			this.stopWatch = stopWatch;
 		}
 
-		@Override
 		public StopWatch start() {
 			return stopWatch.start();
 		}
 
-		@Override
 		public boolean isStarted() {
 			return stopWatch.isStarted();
 		}
 
-		@Override
-		public long getTime() {
-			return stopWatch.getTime();
-		}
-
 		public long remaining(TimeUnit timeUnit) {
-			return timeUnit.convert(amount - getTime(timeUnit), this.timeUnit);
+			return timeUnit.convert(amount - stopWatch.getTime(timeUnit), this.timeUnit);
 		}
 
 		public boolean finished() {
-			return elapsed(amount, timeUnit);
+			return stopWatch.elapsed(amount, timeUnit);
 		}
 
-	}
-
-	public static Countdown createStartedCountdown(int amount, TimeUnit timeUnit) {
-		return new Countdown(amount, timeUnit, createStarted());
 	}
 
 	public abstract StopWatch start();
