@@ -1,5 +1,7 @@
 package org.ardulink.testsupport.mock;
 
+import static java.lang.String.format;
+import static org.ardulink.testsupport.mock.MockLinkFactory.MockLinkConfig.NAME_ATTRIBUTE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.ardulink.core.Link;
@@ -12,29 +14,29 @@ class MockLinkFactoryTest {
 
 	@Test
 	void twoDefaultLinksAreSame() {
-		Link link1 = Links.getLink(MOCK_URI);
-		Link link2 = Links.getLink(MOCK_URI);
+		Link link1 = Links.getLink(format("%s", MOCK_URI));
+		Link link2 = Links.getLink(format("%s", MOCK_URI));
 		assertThat(link1).isSameAs(link2);
 	}
 
 	@Test
 	void namedNotDefault() {
-		Link link1 = Links.getLink(MOCK_URI);
-		Link link2 = Links.getLink(MOCK_URI + "?name=another");
+		Link link1 = Links.getLink(format("%s", MOCK_URI));
+		Link link2 = Links.getLink(format("%s?%s=%s", MOCK_URI, NAME_ATTRIBUTE, "another"));
 		assertThat(link1).isNotSameAs(link2);
 	}
 
 	@Test
 	void defaultNamedIsSameAsDefault() {
-		Link link1 = Links.getLink(MOCK_URI);
-		Link link2 = Links.getLink(MOCK_URI + "?name=default");
+		Link link1 = Links.getLink(format("%s", MOCK_URI));
+		Link link2 = Links.getLink(format("%s?%s=%s", MOCK_URI, NAME_ATTRIBUTE, "default"));
 		assertThat(link1).isSameAs(link2);
 	}
 
 	@Test
 	void differentNameAreDifferentMocks() {
-		Link link1 = Links.getLink(MOCK_URI + "?name=A");
-		Link link2 = Links.getLink(MOCK_URI + "?name=B");
+		Link link1 = Links.getLink(format("%s?%s=%s", MOCK_URI, NAME_ATTRIBUTE, "A"));
+		Link link2 = Links.getLink(format("%s?%s=%s", MOCK_URI, NAME_ATTRIBUTE, "B"));
 		assertThat(link1).isNotSameAs(link2);
 	}
 
