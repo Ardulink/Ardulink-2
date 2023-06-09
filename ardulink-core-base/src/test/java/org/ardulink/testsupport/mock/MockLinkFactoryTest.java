@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 class MockLinkFactoryTest {
 
-	private static final String MOCK_URI = "ardulink://mock";
+	private static final String MOCK_URI = String.format("ardulink://%s", MockLinkFactory.NAME);
 
 	@Test
 	void twoDefaultLinksAreSame() {

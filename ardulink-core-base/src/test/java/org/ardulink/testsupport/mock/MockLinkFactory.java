@@ -18,8 +18,6 @@ package org.ardulink.testsupport.mock;
 
 import static org.mockito.Mockito.spy;
 
-import java.io.IOException;
-
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
@@ -43,43 +41,43 @@ public class MockLinkFactory implements LinkFactory<MockLinkConfig> {
 	private static class DummyAbstractListenerLink extends AbstractListenerLink {
 
 		@Override
-		public long switchDigitalPin(DigitalPin digitalPin, boolean value) throws IOException {
+		public long switchDigitalPin(DigitalPin digitalPin, boolean value) {
 			return 0;
 		}
 
 		@Override
-		public long switchAnalogPin(AnalogPin analogPin, int value) throws IOException {
+		public long switchAnalogPin(AnalogPin analogPin, int value) {
 			return 0;
 		}
 
 		@Override
-		public long stopListening(Pin pin) throws IOException {
+		public long stopListening(Pin pin) {
 			return 0;
 		}
 
 		@Override
-		public long startListening(Pin pin) throws IOException {
+		public long startListening(Pin pin) {
 			return 0;
 		}
 
 		@Override
-		public long sendTone(Tone tone) throws IOException {
+		public long sendTone(Tone tone) {
 			return 0;
 		}
 
 		@Override
-		public long sendNoTone(AnalogPin analogPin) throws IOException {
+		public long sendNoTone(AnalogPin analogPin) {
 			return 0;
 		}
 
 		@Override
-		public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers, int keymodifiersex)
-				throws IOException {
+		public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers,
+				int keymodifiersex) {
 			return 0;
 		}
 
 		@Override
-		public long sendCustomMessage(String... messages) throws IOException {
+		public long sendCustomMessage(String... messages) {
 			return 0;
 		}
 	}
@@ -92,9 +90,11 @@ public class MockLinkFactory implements LinkFactory<MockLinkConfig> {
 		public String name = "default";
 	}
 
+	public static final String NAME = "mock";
+
 	@Override
 	public String getName() {
-		return "mock";
+		return NAME;
 	}
 
 	@Override
