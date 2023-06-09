@@ -16,9 +16,16 @@ limitations under the License.
 
 package org.ardulink.testsupport.mock;
 
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
+import java.io.IOException;
+
+import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Link;
+import org.ardulink.core.Pin;
+import org.ardulink.core.Pin.AnalogPin;
+import org.ardulink.core.Pin.DigitalPin;
+import org.ardulink.core.Tone;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.testsupport.mock.MockLinkFactory.MockLinkConfig;
@@ -45,12 +52,58 @@ public class MockLinkFactory implements LinkFactory<MockLinkConfig> {
 
 	@Override
 	public Link newLink(MockLinkConfig config) {
-		return mock(Link.class);
+		return spy(dummyLink());
 	}
 
 	@Override
 	public MockLinkConfig newLinkConfig() {
 		return new MockLinkConfig();
+	}
+
+	private static AbstractListenerLink dummyLink() {
+		return new AbstractListenerLink() {
+
+			@Override
+			public long switchDigitalPin(DigitalPin digitalPin, boolean value) throws IOException {
+				return 0;
+			}
+
+			@Override
+			public long switchAnalogPin(AnalogPin analogPin, int value) throws IOException {
+				return 0;
+			}
+
+			@Override
+			public long stopListening(Pin pin) throws IOException {
+				return 0;
+			}
+
+			@Override
+			public long startListening(Pin pin) throws IOException {
+				return 0;
+			}
+
+			@Override
+			public long sendTone(Tone tone) throws IOException {
+				return 0;
+			}
+
+			@Override
+			public long sendNoTone(AnalogPin analogPin) throws IOException {
+				return 0;
+			}
+
+			@Override
+			public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers,
+					int keymodifiersex) throws IOException {
+				return 0;
+			}
+
+			@Override
+			public long sendCustomMessage(String... messages) throws IOException {
+				return 0;
+			}
+		};
 	}
 
 }

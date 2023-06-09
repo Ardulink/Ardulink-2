@@ -16,19 +16,13 @@ limitations under the License.
 
 package org.ardulink.testsupport.mock;
 
-import java.io.IOException;
+import java.util.UUID;
 
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Link;
-import org.ardulink.core.Pin;
-import org.ardulink.core.Pin.AnalogPin;
-import org.ardulink.core.Pin.DigitalPin;
-import org.ardulink.core.Tone;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
-import org.ardulink.core.events.EventListener;
-import org.ardulink.core.events.PinValueChangedEvent;
 import org.mockito.internal.util.MockUtil;
 
 /**
@@ -45,10 +39,18 @@ public final class TestSupport {
 		super();
 	}
 
+	public static String uniqueMockUri() {
+		return "ardulink://mock?name=" + UUID.randomUUID().toString();
+	}
+
 	public static Link getMock(Link link) {
 		return isMock(link) || link == null ? link : getMock(extractDelegated(link));
 	}
 
+	private static AbstractListenerLink getDummy(Link link) {
+		return (AbstractListenerLink) getMock(link);
+	}
+	
 	private static boolean isMock(Link link) {
 		return MockUtil.isMock(link);
 	}
@@ -57,63 +59,12 @@ public final class TestSupport {
 		return ((LinkDelegate) link).getDelegate();
 	}
 
-	public static AbstractListenerLink eventFireringLink(PinValueChangedEvent... fireEvents) {
-		return new AbstractListenerLink() {
+	public static void fireEvent(Link link, AnalogPinValueChangedEvent event) {
+		getDummy(link).fireStateChanged(event);
+	}
 
-			@Override
-			public Link addListener(EventListener listener) throws IOException {
-				Link link = super.addListener(listener);
-				for (PinValueChangedEvent event : fireEvents) {
-					if (event instanceof AnalogPinValueChangedEvent) {
-						fireStateChanged((AnalogPinValueChangedEvent) event);
-					} else if (event instanceof DigitalPinValueChangedEvent) {
-						fireStateChanged((DigitalPinValueChangedEvent) event);
-					}
-				}
-				return link;
-			}
-
-			@Override
-			public long switchDigitalPin(DigitalPin digitalPin, boolean value) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public long switchAnalogPin(AnalogPin analogPin, int value) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public long stopListening(Pin pin) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public long startListening(Pin pin) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public long sendTone(Tone tone) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public long sendNoTone(AnalogPin analogPin) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers,
-					int keymodifiersex) throws IOException {
-				return 0;
-			}
-
-			@Override
-			public long sendCustomMessage(String... messages) throws IOException {
-				return 0;
-			}
-		};
+	public static void fireEvent(Link link, DigitalPinValueChangedEvent event) {
+		getDummy(link).fireStateChanged(event);
 	}
 
 }

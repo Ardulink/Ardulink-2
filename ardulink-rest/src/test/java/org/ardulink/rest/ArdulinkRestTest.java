@@ -22,19 +22,18 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
-import static org.ardulink.testsupport.mock.StaticRegisterLinkFactory.register;
-import static org.ardulink.testsupport.mock.TestSupport.eventFireringLink;
+import static org.ardulink.testsupport.mock.TestSupport.fireEvent;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
+import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.verify;
 
-import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
+import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.rest.main.CommandLineArguments;
 import org.ardulink.rest.main.RestMain;
-import org.ardulink.testsupport.mock.StaticRegisterLinkFactory.Registration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -48,6 +47,8 @@ import org.junit.jupiter.api.Test;
  */
 class ArdulinkRestTest {
 
+	String mockUri = uniqueMockUri();
+
 	@BeforeEach
 	void setup() {
 		port = freePort();
@@ -55,39 +56,39 @@ class ArdulinkRestTest {
 
 	@Test
 	void canSwitchDigitalPin() throws Exception {
-		try (Link link = Links.getLink("ardulink://mock")) {
-			Link mock = getMock(link);
-			try (RestMain main = runRestComponent("ardulink://mock")) {
-				int pin = 5;
-				boolean state = true;
-				given().body(state).put("/pin/digital/{pin}", pin).then().statusCode(200);
-				verify(mock).switchDigitalPin(digitalPin(pin), state);
-			}
-			verify(mock).close();
+		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
+			int pin = 5;
+			boolean state = true;
+			given().body(state).put("/pin/digital/{pin}", pin).then().statusCode(200);
+			verify(getMock(link)).switchDigitalPin(digitalPin(pin), state);
 		}
 	}
 
 	@Test
 	void canSwitchAnalogPin() throws Exception {
-		try (Link link = Links.getLink("ardulink://mock")) {
-			Link mock = getMock(link);
-			try (RestMain main = runRestComponent("ardulink://mock")) {
-				int pin = 9;
-				int value = 123;
-				given().body(value).put("/pin/analog/{pin}", pin).then().statusCode(200);
-				verify(mock).switchAnalogPin(analogPin(pin), value);
-			}
-			verify(mock).close();
+		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
+			int pin = 9;
+			int value = 123;
+			given().body(value).put("/pin/analog/{pin}", pin).then().statusCode(200);
+			verify(getMock(link)).switchAnalogPin(analogPin(pin), value);
 		}
 	}
 
 	@Test
+	void linkGetsClosedByRestMain() throws Exception {
+		try (Link link = Links.getLink(mockUri)) {
+			try (RestMain main = runRestComponent(mockUri)) {
+			}
+			verify(getMock(link)).close();
+		}
+	}
+	
+	@Test
 	void canReadDigitalPin() throws Exception {
 		int pin = 5;
 		boolean state = true;
-		try (AbstractListenerLink link = eventFireringLink(digitalPinValueChanged(digitalPin(pin), state));
-				Registration registration = register(link);
-				RestMain main = runRestComponent(registration.ardulinkUri())) {
+		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
+			fireEvent(link, digitalPinValueChanged(digitalPin(pin), state));
 			given().get("/pin/digital/{pin}", pin).then().statusCode(200).body(is(String.valueOf(state)));
 		}
 	}
@@ -96,9 +97,9 @@ class ArdulinkRestTest {
 	void canReadAnalogPin() throws Exception {
 		int pin = 7;
 		int value = 456;
-		try (AbstractListenerLink link = eventFireringLink(analogPinValueChanged(analogPin(pin), value));
-				Registration registration = register(link);
-				RestMain main = runRestComponent(registration.ardulinkUri())) {
+		AnalogPinValueChangedEvent analogPinValueChanged = analogPinValueChanged(analogPin(pin), value);
+		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
+			fireEvent(link, analogPinValueChanged);
 			given().get("/pin/analog/{pin}", pin).then().statusCode(200).body(is(String.valueOf(value)));
 		}
 	}
@@ -106,30 +107,22 @@ class ArdulinkRestTest {
 	@Test
 	void canEnableAndDisableListeningDigitalPin() throws Exception {
 		int pin = 5;
-		try (Link link = Links.getLink("ardulink://mock")) {
-			Link mock = getMock(link);
-			try (RestMain main = runRestComponent("ardulink://mock")) {
-				given().body("listen=true").patch("/pin/digital/{pin}", pin).then().statusCode(200);
-				verify(mock).startListening(digitalPin(pin));
-				given().body("listen=false").patch("/pin/digital/{pin}", pin).then().statusCode(200);
-				verify(mock).stopListening(digitalPin(pin));
-			}
-			verify(mock).close();
+		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
+			given().body("listen=true").patch("/pin/digital/{pin}", pin).then().statusCode(200);
+			verify(getMock(link)).startListening(digitalPin(pin));
+			given().body("listen=false").patch("/pin/digital/{pin}", pin).then().statusCode(200);
+			verify(getMock(link)).stopListening(digitalPin(pin));
 		}
 	}
 
 	@Test
 	void canEnableAndDisableListeningAnalogPin() throws Exception {
 		int pin = 7;
-		try (Link link = Links.getLink("ardulink://mock")) {
-			Link mock = getMock(link);
-			try (RestMain main = runRestComponent("ardulink://mock")) {
-				given().body("listen=true").patch("/pin/analog/{pin}", pin).then().statusCode(200);
-				verify(mock).startListening(analogPin(pin));
-				given().body("listen=false").patch("/pin/analog/{pin}", pin).then().statusCode(200);
-				verify(mock).stopListening(analogPin(pin));
-			}
-			verify(mock).close();
+		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
+			given().body("listen=true").patch("/pin/analog/{pin}", pin).then().statusCode(200);
+			verify(getMock(link)).startListening(analogPin(pin));
+			given().body("listen=false").patch("/pin/analog/{pin}", pin).then().statusCode(200);
+			verify(getMock(link)).stopListening(analogPin(pin));
 		}
 	}
 

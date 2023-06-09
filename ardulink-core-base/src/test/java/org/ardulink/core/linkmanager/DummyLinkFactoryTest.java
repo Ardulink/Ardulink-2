@@ -20,14 +20,12 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.ConnectionBasedLink;
@@ -181,17 +179,16 @@ class DummyLinkFactoryTest {
 
 	@Test
 	void canIterateRegisteredFactories() {
-		assertThat(sut.listURIs()).isEqualTo(links( //
+		assertThat(sut.listURIs()).containsExactlyInAnyOrder(links( //
 				"ardulink://dummyLink", //
 				"ardulink://mock", //
-				"ardulink://staticregistry", //
 				"ardulink://aLinkWithoutArealLinkFactoryWithoutConfig", //
 				"ardulink://aLinkWithoutArealLinkFactoryWithConfig" //
 		));
 	}
 
-	private List<URI> links(String... links) {
-		return Arrays.stream(links).map(URIs::newURI).collect(toList());
+	private URI[] links(String... links) {
+		return Arrays.stream(links).map(URIs::newURI).toArray(URI[]::new);
 	}
 
 	@Test

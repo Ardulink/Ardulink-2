@@ -16,7 +16,6 @@ import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -195,9 +194,9 @@ class ArdulinkComponentTest {
 		String name = "factoryName-" + randomUUID();
 
 		TestLinkConfig config = new TestLinkConfig();
-		LinkFactory<TestLinkConfig> linkFactorySpy = spy(new TestLinkFactory(name, newArrayList(config).iterator()));
-		withRegistered(linkFactorySpy)
-				.execute(() -> context = camelContext("ardulink://" + name + "?a=" + a + "&b=" + b, MOCK_URI));
+		LinkFactory<TestLinkConfig> linkFactory = new TestLinkFactory(name, newArrayList(config).iterator());
+		withRegistered(linkFactory)
+				.execute(() -> context = camelContext(String.format("ardulink://%s?a=%s&b=%s", name, a, b), MOCK_URI));
 
 		assertThat(config.a).isEqualTo(a);
 		assertThat(config.b).isEqualTo(TimeUnit.valueOf(b));
