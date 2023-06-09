@@ -16,7 +16,8 @@ limitations under the License.
 
 package org.ardulink.testsupport.mock;
 
-import java.util.UUID;
+import static java.util.UUID.randomUUID;
+import static org.ardulink.testsupport.mock.MockLinkFactory.MockLinkConfig.NAME_ATTRIBUTE;
 
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Link;
@@ -40,17 +41,17 @@ public final class TestSupport {
 	}
 
 	public static String uniqueMockUri() {
-		return "ardulink://mock?name=" + UUID.randomUUID().toString();
+		return String.format("ardulink://mock?%s=%s", NAME_ATTRIBUTE, randomUUID());
 	}
 
 	public static Link getMock(Link link) {
-		return isMock(link) || link == null ? link : getMock(extractDelegated(link));
+		return link == null || isMock(link) ? link : getMock(extractDelegated(link));
 	}
 
 	private static AbstractListenerLink getDummy(Link link) {
 		return (AbstractListenerLink) getMock(link);
 	}
-	
+
 	private static boolean isMock(Link link) {
 		return MockUtil.isMock(link);
 	}

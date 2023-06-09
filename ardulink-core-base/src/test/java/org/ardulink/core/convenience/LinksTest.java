@@ -16,12 +16,14 @@ limitations under the License.
 
 package org.ardulink.core.convenience;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
+import static org.ardulink.util.Strings.swapUpperLower;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -95,7 +97,7 @@ class LinksTest {
 	}
 
 	private static String serialDash(String appendix) {
-		return serial() + "-" + appendix;
+		return format("%s-%s", serial(), appendix);
 	}
 
 	private static String serial() {
@@ -210,7 +212,7 @@ class LinksTest {
 	@Test
 	void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws Throwable {
 		String name1 = new DummyLinkFactory().getName();
-		final String name2 = "DummyLINK";
+		String name2 = swapUpperLower(name1);
 		assert name1.equalsIgnoreCase(name2) && !name1.equals(name2);
 		class DummyLinkFactoryExtension extends DummyLinkFactory {
 			@Override
@@ -227,7 +229,7 @@ class LinksTest {
 	}
 
 	private static String makeUri(String name) {
-		return String.format("ardulink://%s?a=aVal1&b=4", name);
+		return format("ardulink://%s?a=aVal1&b=4", name);
 	}
 
 	@Test
@@ -266,10 +268,10 @@ class LinksTest {
 	}
 
 	private void close(Link... links) {
-		Arrays.stream(links).forEach(this::closeQuietly);
+		Arrays.stream(links).forEach(LinksTest::closeQuietly);
 	}
 
-	private void closeQuietly(Link link) {
+	private static void closeQuietly(Link link) {
 		try {
 			link.close();
 		} catch (IOException e) {
@@ -294,7 +296,7 @@ class LinksTest {
 	}
 
 	private String getRandomURI() {
-		return "ardulink://dummyLink?a=" + "&b=" + Thread.currentThread().getId() + "&c=" + System.currentTimeMillis();
+		return format("ardulink://dummyLink?a=&b=%d&c=%d", Thread.currentThread().getId(), System.currentTimeMillis());
 	}
 
 }

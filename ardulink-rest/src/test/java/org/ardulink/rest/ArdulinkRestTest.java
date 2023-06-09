@@ -31,7 +31,6 @@ import static org.mockito.Mockito.verify;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
-import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.rest.main.CommandLineArguments;
 import org.ardulink.rest.main.RestMain;
 import org.junit.jupiter.api.BeforeEach;
@@ -97,9 +96,8 @@ class ArdulinkRestTest {
 	void canReadAnalogPin() throws Exception {
 		int pin = 7;
 		int value = 456;
-		AnalogPinValueChangedEvent analogPinValueChanged = analogPinValueChanged(analogPin(pin), value);
 		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
-			fireEvent(link, analogPinValueChanged);
+			fireEvent(link, analogPinValueChanged(analogPin(pin), value));
 			given().get("/pin/analog/{pin}", pin).then().statusCode(200).body(is(String.valueOf(value)));
 		}
 	}

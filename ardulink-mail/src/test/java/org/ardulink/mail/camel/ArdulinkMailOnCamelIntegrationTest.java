@@ -24,7 +24,6 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.stream.Collectors.joining;
 import static org.apache.camel.builder.AggregationStrategies.string;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -35,6 +34,7 @@ import static org.ardulink.mail.test.MailSender.mailFrom;
 import static org.ardulink.mail.test.MailSender.send;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.MapBuilder.newMapBuilder;
+import static org.ardulink.util.Strings.swapUpperLower;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.timeout;
@@ -140,19 +140,6 @@ class ArdulinkMailOnCamelIntegrationTest {
 			verifyNoMoreInteractions(mockLink);
 		}
 
-	}
-
-	private String swapUpperLower(String in) {
-		String swapped = in.codePoints().mapToObj(c -> Character.valueOf((char) c)).map(c -> {
-			return Character.isUpperCase(c) //
-					? Character.toLowerCase(c)
-					: Character.isLowerCase(c) //
-							? Character.toUpperCase(c)
-							: c;
-		}).map(String::valueOf).collect(joining());
-		assert !swapped.equals(in);
-		assert swapped.equalsIgnoreCase(in);
-		return swapped;
 	}
 
 	@Test

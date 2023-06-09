@@ -16,6 +16,11 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static java.lang.Character.isLowerCase;
+import static java.lang.Character.isUpperCase;
+import static java.lang.Character.toLowerCase;
+import static java.lang.Character.toUpperCase;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -32,6 +37,19 @@ public final class Strings {
 
 	public static boolean nullOrEmpty(String string) {
 		return string == null || string.isEmpty();
+	}
+
+	public static String swapUpperLower(String string) {
+		char[] charArray = string.toCharArray();
+		for (int i = 0; i < charArray.length; i++) {
+			char c = charArray[i];
+			if (isUpperCase(c)) {
+				charArray[i] = toLowerCase(c);
+			} else if (isLowerCase(c)) {
+				charArray[i] = toUpperCase(c);
+			}
+		}
+		return new String(charArray);
 	}
 
 }

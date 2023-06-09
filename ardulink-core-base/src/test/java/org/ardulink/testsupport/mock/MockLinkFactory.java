@@ -85,7 +85,10 @@ public class MockLinkFactory implements LinkFactory<MockLinkConfig> {
 	}
 
 	public static class MockLinkConfig implements LinkConfig {
-		@Named("name")
+
+		public static final String NAME_ATTRIBUTE = "name";
+
+		@Named(NAME_ATTRIBUTE)
 		public String name = "default";
 	}
 
