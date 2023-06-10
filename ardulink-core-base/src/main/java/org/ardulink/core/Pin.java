@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core;
 
+import java.util.Objects;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -44,22 +46,19 @@ public abstract class Pin {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + num;
-		return result;
+		return Objects.hash(getType(), num);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if ((obj == null) || (getClass() != obj.getClass())) {
+		if (obj == null)
 			return false;
-		}
+		if (getClass() != obj.getClass())
+			return false;
 		Pin other = (Pin) obj;
-		return num == other.num;
+		return getType() == other.getType() && num == other.num;
 	}
 
 	public static class AnalogPin extends Pin {
@@ -91,6 +90,17 @@ public abstract class Pin {
 
 	public static DigitalPin digitalPin(int num) {
 		return new DigitalPin(num);
+	}
+
+	public static Pin createPin(Type type, int num) {
+		switch (type) {
+		case ANALOG:
+			return analogPin(num);
+		case DIGITAL:
+			return digitalPin(num);
+		default:
+			throw new IllegalStateException("Cannot handle type " + type);
+		}
 	}
 
 	public boolean is(Type type) {
