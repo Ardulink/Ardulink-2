@@ -5,6 +5,7 @@ import static java.lang.System.identityHashCode;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.regex.Matcher.quoteReplacement;
 import static java.util.stream.Collectors.joining;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.ardulink.core.Pin.analogPin;
@@ -32,7 +33,6 @@ import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -145,7 +145,7 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	private static String patch(String initializer, String apidocs) {
 		return content(META_INF_RESOURCES_WEBJARS + initializer)
-				.replaceAll(Matcher.quoteReplacement("https://petstore.swagger.io/v2/swagger.json"), apidocs);
+				.replaceAll(quoteReplacement("https://petstore.swagger.io/v2/swagger.json"), apidocs);
 	}
 
 	private static String content(String in) {
@@ -166,11 +166,6 @@ public class RestRouteBuilder extends RouteBuilder {
 		getContext().getRegistry().bind(id, ResourceHandler.class, resourceHandler(resource, ignore));
 	}
 
-	private static void redirect(Message message, String location) {
-		message.setHeader(HTTP_RESPONSE_CODE, 302);
-		message.setHeader("location", location);
-	}
-
 	private static ResourceHandler resourceHandler(URI resourceURI, String ignore) throws URISyntaxException {
 		ResourceHandler rh = new ResourceHandler() {
 			@Override
@@ -182,6 +177,11 @@ public class RestRouteBuilder extends RouteBuilder {
 		return rh;
 	}
 
+	private static void redirect(Message message, String location) {
+		message.setHeader(HTTP_RESPONSE_CODE, 302);
+		message.setHeader("location", location);
+	}
+	
 	private static void readQueue(Exchange exchange, AtomicReference<FromDeviceMessagePinStateChanged> messageRef,
 			CountDownLatch latch) throws InterruptedException {
 		Message message = exchange.getMessage();

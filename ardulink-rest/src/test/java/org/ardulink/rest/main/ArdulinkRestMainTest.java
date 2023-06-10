@@ -16,15 +16,12 @@ limitations under the License.
 
 package org.ardulink.rest.main;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.port;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.ServerSockets.freePort;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
