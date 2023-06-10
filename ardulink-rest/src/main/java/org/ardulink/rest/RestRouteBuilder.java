@@ -7,7 +7,9 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.joining;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
+import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.createPin;
+import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
@@ -199,6 +201,17 @@ public class RestRouteBuilder extends RouteBuilder {
 			}
 		}
 		throw new IllegalStateException("Timeout retrieving message from arduino");
+	}
+
+	private static Pin createPin(Type type, int num) {
+		switch (type) {
+		case ANALOG:
+			return analogPin(num);
+		case DIGITAL:
+			return digitalPin(num);
+		default:
+			throw new IllegalStateException("Cannot handle type " + type);
+		}
 	}
 
 	private void patchDigital(Exchange exchange) {

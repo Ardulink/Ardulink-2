@@ -62,6 +62,7 @@ public abstract class Pin {
 	}
 
 	public static class AnalogPin extends Pin {
+
 		private AnalogPin(int num) {
 			super(num);
 		}
@@ -73,6 +74,7 @@ public abstract class Pin {
 	}
 
 	public static class DigitalPin extends Pin {
+
 		private DigitalPin(int num) {
 			super(num);
 		}
@@ -90,17 +92,6 @@ public abstract class Pin {
 
 	public static DigitalPin digitalPin(int num) {
 		return new DigitalPin(num);
-	}
-
-	public static Pin createPin(Type type, int num) {
-		switch (type) {
-		case ANALOG:
-			return analogPin(num);
-		case DIGITAL:
-			return digitalPin(num);
-		default:
-			throw new IllegalStateException("Cannot handle type " + type);
-		}
 	}
 
 	public boolean is(Type type) {
