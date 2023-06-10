@@ -81,7 +81,7 @@ class ArdulinkRestTest {
 			verify(getMock(link)).close();
 		}
 	}
-	
+
 	@Test
 	void canReadDigitalPin() throws Exception {
 		int pin = 5;
@@ -99,6 +99,39 @@ class ArdulinkRestTest {
 		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
 			fireEvent(link, analogPinValueChanged(analogPin(pin), value));
 			given().get("/pin/analog/{pin}", pin).then().statusCode(200).body(is(String.valueOf(value)));
+		}
+	}
+
+	@Test
+	void timeoutWhenWaitingForDigitalMessageWithoutDigitalMessage() throws Exception {
+		int pin = 7;
+		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
+			fireEvent(link, analogPinValueChanged(analogPin(pin), 456));
+			given().get("/pin/digital/{pin}", pin).then().statusCode(500);
+		}
+	}
+
+	@Test
+	void timeoutWhenWaitingForAnalogMessageWithoutAnalogMessage() throws Exception {
+		int pin = 7;
+		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
+			fireEvent(link, digitalPinValueChanged(digitalPin(pin), true));
+			given().get("/pin/analog/{pin}", pin).then().statusCode(500);
+		}
+	}
+
+	@Test
+	void queueDoesNotExplode() throws Exception {
+		int pin = 7;
+		int lastValue = 1023;
+
+		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
+			for (int i = 0; i < 200; i++) {
+				for (int value = 0; value <= lastValue; value++) {
+					fireEvent(link, analogPinValueChanged(analogPin(pin), value));
+				}
+			}
+			given().get("/pin/analog/{pin}", pin).then().statusCode(200).body(is(String.valueOf(lastValue)));
 		}
 	}
 

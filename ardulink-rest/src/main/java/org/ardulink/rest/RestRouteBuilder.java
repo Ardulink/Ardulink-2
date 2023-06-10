@@ -7,6 +7,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.joining;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
+import static org.ardulink.core.Pin.createPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
@@ -28,9 +29,8 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 
 import org.apache.camel.Exchange;
@@ -73,7 +73,9 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	@Override
 	public void configure() throws Exception {
-		BlockingQueue<FromDeviceMessagePinStateChanged> messages = new ArrayBlockingQueue<>(64);
+		AtomicReference<FromDeviceMessagePinStateChanged> message = new AtomicReference<>();
+		CountDownLatch latch = new CountDownLatch(1);
+
 		String patchAnalog = "direct:patchAnalog-" + identityHashCode(this);
 		String patchDigital = "direct:patchDigital-" + identityHashCode(this);
 		String readAnalog = "direct:readAnalog-" + identityHashCode(this);
@@ -104,11 +106,13 @@ public class RestRouteBuilder extends RouteBuilder {
 		;
 		from(patchAnalog).process(exchange -> patchAnalog(exchange)).to(target);
 		from(patchDigital).process(exchange -> patchDigital(exchange)).to(target);
-		from(readAnalog).process(exchange -> readAnalog(exchange)).process(exchange -> readQueue(exchange, messages));
-		from(readDigital).process(exchange -> readDigital(exchange)).process(exchange -> readQueue(exchange, messages));
+		from(readAnalog).process(exchange -> readAnalog(exchange))
+				.process(exchange -> readQueue(exchange, message, latch));
+		from(readDigital).process(exchange -> readDigital(exchange))
+				.process(exchange -> readQueue(exchange, message, latch));
 		from(switchAnalog).process(exchange -> switchAnalog(exchange)).to(target);
 		from(switchDigital).process(exchange -> switchDigital(exchange)).to(target);
-		writeArduinoMessagesTo(target, messages);
+		writeArduinoMessagesTo(target, message, latch);
 	}
 
 	private void swagger(String apidocs) {
@@ -177,37 +181,24 @@ public class RestRouteBuilder extends RouteBuilder {
 		return rh;
 	}
 
-	private void readQueue(Exchange exchange, BlockingQueue<FromDeviceMessagePinStateChanged> messages)
-			throws InterruptedException {
+	private void readQueue(Exchange exchange, AtomicReference<FromDeviceMessagePinStateChanged> messages,
+			CountDownLatch latch) throws InterruptedException {
 		Message message = exchange.getMessage();
+		Pin messagePin = createPin( //
+				message.getHeader(HEADER_TYPE, Type.class), //
+				message.getHeader(HEADER_PIN, Integer.class) //
+		);
 
 		for (Countdown countdown = createStarted(1, SECONDS); !countdown.finished();) {
-			FromDeviceMessagePinStateChanged polled = checkNotNull(
-					messages.poll(countdown.remaining(MILLISECONDS), MILLISECONDS),
-					"Timeout retrieving message from arduino");
-			Pin pin = polled.getPin();
-			if (typeInMessageIs(message, pin.getType()) && pinInMessageIs(message, pin.pinNum())) {
-				message.setBody(polled.getValue(), String.class);
-				return;
-			} else {
-				safeOffer(messages, polled);
+			if (latch.await(countdown.remaining(MILLISECONDS), MILLISECONDS)) {
+				FromDeviceMessagePinStateChanged polled = messages.get();
+				if (messagePin.equals(polled.getPin())) {
+					message.setBody(polled.getValue(), String.class);
+					return;
+				}
 			}
 		}
-		throw new IllegalStateException("Could not retrieve value within given timeout");
-	}
-
-	private static <T> void safeOffer(BlockingQueue<T> queue, T element) {
-		while (!queue.offer(element)) {
-			queue.poll();
-		}
-	}
-
-	private boolean typeInMessageIs(Message message, Type type) {
-		return Objects.equals(type, message.getHeader(HEADER_TYPE));
-	}
-
-	private static boolean pinInMessageIs(Message message, int pinNum) {
-		return Objects.equals(pinNum, message.getHeader(HEADER_PIN));
+		throw new IllegalStateException("Timeout retrieving message from arduino");
 	}
 
 	private void patchDigital(Exchange exchange) {
@@ -256,14 +247,16 @@ public class RestRouteBuilder extends RouteBuilder {
 		return tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
 	}
 
-	private void writeArduinoMessagesTo(String arduino, BlockingQueue<FromDeviceMessagePinStateChanged> messages) {
+	private void writeArduinoMessagesTo(String arduino, AtomicReference<FromDeviceMessagePinStateChanged> messages,
+			CountDownLatch latch) {
 		ALPByteStreamProcessor byteStreamProcessor = new ALPByteStreamProcessor();
 		from(arduino).process(exchange -> {
 			String body = exchange.getMessage().getBody(String.class);
 			FromDeviceMessage fromDevice = getFirst(parse(byteStreamProcessor, byteStreamProcessor.toBytes(body)))
 					.orElseThrow(() -> new IllegalStateException("Cannot handle " + body));
 			if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
-				safeOffer(messages, (FromDeviceMessagePinStateChanged) fromDevice);
+				messages.set((FromDeviceMessagePinStateChanged) fromDevice);
+				latch.countDown();
 			}
 		});
 	}
