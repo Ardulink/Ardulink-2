@@ -143,18 +143,18 @@ public class RestRouteBuilder extends RouteBuilder {
 				.process(exchange -> redirect(exchange.getMessage(), "/swagger-ui/" + version));
 	}
 
-	private String patch(String initializer, String apidocs) {
+	private static String patch(String initializer, String apidocs) {
 		return content(META_INF_RESOURCES_WEBJARS + initializer)
 				.replaceAll(Matcher.quoteReplacement("https://petstore.swagger.io/v2/swagger.json"), apidocs);
 	}
 
-	private String content(String in) {
+	private static String content(String in) {
 		return new BufferedReader(
 				new InputStreamReader(RestRouteBuilder.class.getClassLoader().getResourceAsStream(in), UTF_8)).lines()
 				.collect(joining("\n"));
 	}
 
-	private Predicate isGet(String initializer) {
+	private static Predicate isGet(String initializer) {
 		return exchange -> initializer.equals(exchange.getMessage().getHeader("CamelHttpUri"));
 	}
 
@@ -171,7 +171,7 @@ public class RestRouteBuilder extends RouteBuilder {
 		message.setHeader("location", location);
 	}
 
-	private ResourceHandler resourceHandler(URI resourceURI, String ignore) throws URISyntaxException {
+	private static ResourceHandler resourceHandler(URI resourceURI, String ignore) throws URISyntaxException {
 		ResourceHandler rh = new ResourceHandler() {
 			@Override
 			public Resource getResource(String path) {
@@ -182,13 +182,10 @@ public class RestRouteBuilder extends RouteBuilder {
 		return rh;
 	}
 
-	private void readQueue(Exchange exchange, AtomicReference<FromDeviceMessagePinStateChanged> messages,
+	private static void readQueue(Exchange exchange, AtomicReference<FromDeviceMessagePinStateChanged> messages,
 			CountDownLatch latch) throws InterruptedException {
 		Message message = exchange.getMessage();
-		Pin messagePin = createPin( //
-				message.getHeader(HEADER_TYPE, Type.class), //
-				message.getHeader(HEADER_PIN, Integer.class) //
-		);
+		Pin messagePin = extractPin(message);
 
 		for (Countdown countdown = createStarted(1, SECONDS); !countdown.finished();) {
 			if (latch.await(countdown.remaining(MILLISECONDS), MILLISECONDS)) {
@@ -202,6 +199,31 @@ public class RestRouteBuilder extends RouteBuilder {
 		throw new IllegalStateException("Timeout retrieving message from arduino");
 	}
 
+	private static void patchDigital(Exchange exchange) {
+		patch(exchange, START_LISTENING_DIGITAL, STOP_LISTENING_DIGITAL);
+	}
+
+	private static void patchAnalog(Exchange exchange) {
+		patch(exchange, START_LISTENING_ANALOG, STOP_LISTENING_ANALOG);
+	}
+
+	private static void patch(Exchange exchange, ALPProtocolKey startKey, ALPProtocolKey stopKey) {
+		Message message = exchange.getMessage();
+		String stateRaw = message.getBody(String.class);
+
+		String[] split = stateRaw.split("=");
+		checkState(split.length == 2, "Could not split %s by =", stateRaw);
+		checkState(split[0].equalsIgnoreCase("listen"), "Expected listen=${state} but was %s", stateRaw);
+
+		int pin = extractPinNumber(message);
+		boolean state = parseBoolean(split[1]);
+		message.setBody(alpProtocolMessage(state ? startKey : stopKey).forPin(pin).withoutValue());
+	}
+
+	private static Pin extractPin(Message message) {
+		return createPin(extractType(message), extractPinNumber(message));
+	}
+
 	private static Pin createPin(Type type, int num) {
 		switch (type) {
 		case ANALOG:
@@ -213,49 +235,35 @@ public class RestRouteBuilder extends RouteBuilder {
 		}
 	}
 
-	private void patchDigital(Exchange exchange) {
-		patch(exchange, START_LISTENING_DIGITAL, STOP_LISTENING_DIGITAL);
+	private static Type extractType(Message message) {
+		return message.getHeader(HEADER_TYPE, Type.class);
 	}
 
-	private void patchAnalog(Exchange exchange) {
-		patch(exchange, START_LISTENING_ANALOG, STOP_LISTENING_ANALOG);
+	private static int extractPinNumber(Message message) {
+		return message.getHeader(HEADER_PIN, Integer.class);
 	}
 
-	private void patch(Exchange exchange, ALPProtocolKey startKey, ALPProtocolKey stopKey) {
-		Message message = exchange.getMessage();
-		Object pinRaw = message.getHeader(HEADER_PIN);
-		String stateRaw = message.getBody(String.class);
-
-		String[] split = stateRaw.split("=");
-		checkState(split.length == 2, "Could not split %s by =", stateRaw);
-		checkState(split[0].equalsIgnoreCase("listen"), "Expected listen=${state} but was %s", stateRaw);
-
-		int pin = tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
-		boolean state = parseBoolean(split[1]);
-		message.setBody(alpProtocolMessage(state ? startKey : stopKey).forPin(pin).withoutValue());
-	}
-
-	private void readAnalog(Exchange exchange) {
+	private static void readAnalog(Exchange exchange) {
 		setTypeAndPinHeader(exchange, ANALOG);
 	}
 
-	private void readDigital(Exchange exchange) {
+	private static void readDigital(Exchange exchange) {
 		setTypeAndPinHeader(exchange, DIGITAL);
 	}
 
-	private void setTypeAndPinHeader(Exchange exchange, Type type) {
+	private static void setTypeAndPinHeader(Exchange exchange, Type type) {
 		Message message = exchange.getMessage();
 		setTypeAndPinHeader(message, type, readPin(type, message));
 	}
 
-	private Message setTypeAndPinHeader(Message message, Type type, int pin) {
+	private static Message setTypeAndPinHeader(Message message, Type type, int pin) {
 		message.setHeader(HEADER_PIN, pin);
 		message.setHeader(HEADER_TYPE, type);
 		return message;
 	}
 
-	private int readPin(Type type, Message message) {
-		Object pinRaw = message.getHeader(HEADER_PIN);
+	private static int readPin(Type type, Message message) {
+		Object pinRaw = extractPinNumber(message);
 		return tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
 	}
 
@@ -273,25 +281,25 @@ public class RestRouteBuilder extends RouteBuilder {
 		});
 	}
 
-	private void switchDigital(Exchange exchange) {
+	private static void switchDigital(Exchange exchange) {
 		Message message = exchange.getMessage();
-		Object pinRaw = message.getHeader(HEADER_PIN);
+		Object pinRaw = extractPinNumber(message);
 		String stateRaw = message.getBody(String.class);
 		int pin = tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
 		boolean state = parseBoolean(stateRaw);
 		message.setBody(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(state));
 	}
 
-	private void switchAnalog(Exchange exchange) {
+	private static void switchAnalog(Exchange exchange) {
 		Message message = exchange.getMessage();
-		Object pinRaw = message.getHeader(HEADER_PIN);
+		Object pinRaw = extractPinNumber(message);
 		String valueRaw = message.getBody(String.class);
 		int pin = tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
 		int value = tryParse(valueRaw).orElseThrow(() -> parseError("Value", valueRaw));
 		message.setBody(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
 	}
 
-	private IllegalStateException parseError(String type, Object value) {
+	private static IllegalStateException parseError(String type, Object value) {
 		return new IllegalStateException(String.format("%s %s not parseable", type, value));
 	}
 
