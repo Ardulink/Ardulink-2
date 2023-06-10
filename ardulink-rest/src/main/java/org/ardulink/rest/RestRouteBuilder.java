@@ -74,7 +74,7 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	@Override
 	public void configure() throws Exception {
-		AtomicReference<FromDeviceMessagePinStateChanged> message = new AtomicReference<>();
+		AtomicReference<FromDeviceMessagePinStateChanged> messageRef = new AtomicReference<>();
 		CountDownLatch latch = new CountDownLatch(1);
 
 		String patchAnalog = "direct:patchAnalog-" + identityHashCode(this);
@@ -108,12 +108,12 @@ public class RestRouteBuilder extends RouteBuilder {
 		from(patchAnalog).process(exchange -> patchAnalog(exchange)).to(target);
 		from(patchDigital).process(exchange -> patchDigital(exchange)).to(target);
 		from(readAnalog).process(exchange -> readAnalog(exchange))
-				.process(exchange -> readQueue(exchange, message, latch));
+				.process(exchange -> readQueue(exchange, messageRef, latch));
 		from(readDigital).process(exchange -> readDigital(exchange))
-				.process(exchange -> readQueue(exchange, message, latch));
+				.process(exchange -> readQueue(exchange, messageRef, latch));
 		from(switchAnalog).process(exchange -> switchAnalog(exchange)).to(target);
 		from(switchDigital).process(exchange -> switchDigital(exchange)).to(target);
-		writeArduinoMessagesTo(target, message, latch);
+		writeArduinoMessagesTo(target, messageRef, latch);
 	}
 
 	private void swagger(String apidocs) {
@@ -182,14 +182,14 @@ public class RestRouteBuilder extends RouteBuilder {
 		return rh;
 	}
 
-	private static void readQueue(Exchange exchange, AtomicReference<FromDeviceMessagePinStateChanged> messages,
+	private static void readQueue(Exchange exchange, AtomicReference<FromDeviceMessagePinStateChanged> messageRef,
 			CountDownLatch latch) throws InterruptedException {
 		Message message = exchange.getMessage();
 		Pin pinOfMessage = extractPin(message);
 
 		for (Countdown countdown = createStarted(1, SECONDS); !countdown.finished();) {
 			if (latch.await(countdown.remaining(MILLISECONDS), MILLISECONDS)) {
-				FromDeviceMessagePinStateChanged polled = messages.get();
+				FromDeviceMessagePinStateChanged polled = messageRef.get();
 				if (pinOfMessage.equals(polled.getPin())) {
 					message.setBody(polled.getValue(), String.class);
 					return;
@@ -262,7 +262,7 @@ public class RestRouteBuilder extends RouteBuilder {
 		return message;
 	}
 
-	private void writeArduinoMessagesTo(String arduino, AtomicReference<FromDeviceMessagePinStateChanged> messages,
+	private void writeArduinoMessagesTo(String arduino, AtomicReference<FromDeviceMessagePinStateChanged> messageRef,
 			CountDownLatch latch) {
 		ALPByteStreamProcessor byteStreamProcessor = new ALPByteStreamProcessor();
 		from(arduino).process(exchange -> {
@@ -270,7 +270,7 @@ public class RestRouteBuilder extends RouteBuilder {
 			FromDeviceMessage fromDevice = getFirst(parse(byteStreamProcessor, byteStreamProcessor.toBytes(body)))
 					.orElseThrow(() -> new IllegalStateException("Cannot handle " + body));
 			if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
-				messages.set((FromDeviceMessagePinStateChanged) fromDevice);
+				messageRef.set((FromDeviceMessagePinStateChanged) fromDevice);
 				latch.countDown();
 			}
 		});
