@@ -185,12 +185,12 @@ public class RestRouteBuilder extends RouteBuilder {
 	private static void readQueue(Exchange exchange, AtomicReference<FromDeviceMessagePinStateChanged> messages,
 			CountDownLatch latch) throws InterruptedException {
 		Message message = exchange.getMessage();
-		Pin messagePin = extractPin(message);
+		Pin pinOfMessage = extractPin(message);
 
 		for (Countdown countdown = createStarted(1, SECONDS); !countdown.finished();) {
 			if (latch.await(countdown.remaining(MILLISECONDS), MILLISECONDS)) {
 				FromDeviceMessagePinStateChanged polled = messages.get();
-				if (messagePin.equals(polled.getPin())) {
+				if (pinOfMessage.equals(polled.getPin())) {
 					message.setBody(polled.getValue(), String.class);
 					return;
 				}
@@ -240,7 +240,7 @@ public class RestRouteBuilder extends RouteBuilder {
 	}
 
 	private static int extractPinNumber(Message message) {
-		return message.getHeader(HEADER_PIN, Integer.class);
+		return message.getHeader(HEADER_PIN, int.class);
 	}
 
 	private static void readAnalog(Exchange exchange) {
@@ -278,24 +278,16 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	private static void switchDigital(Exchange exchange) {
 		Message message = exchange.getMessage();
-		Object pinRaw = extractPinNumber(message);
-		String stateRaw = message.getBody(String.class);
-		int pin = tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
-		boolean state = parseBoolean(stateRaw);
-		message.setBody(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(state));
+		boolean state = parseBoolean(message.getBody(String.class));
+		message.setBody(alpProtocolMessage(DIGITAL_PIN_READ).forPin(extractPinNumber(message)).withState(state));
 	}
 
 	private static void switchAnalog(Exchange exchange) {
 		Message message = exchange.getMessage();
-		Object pinRaw = extractPinNumber(message);
-		String valueRaw = message.getBody(String.class);
-		int pin = tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
-		int value = tryParse(valueRaw).orElseThrow(() -> parseError("Value", valueRaw));
-		message.setBody(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
-	}
-
-	private static IllegalStateException parseError(String type, Object value) {
-		return new IllegalStateException(String.format("%s %s not parseable", type, value));
+		String rawValue = message.getBody(String.class);
+		int value = tryParse(rawValue)
+				.orElseThrow(() -> new IllegalStateException(String.format("Value %s not parseable", rawValue)));
+		message.setBody(alpProtocolMessage(ANALOG_PIN_READ).forPin(extractPinNumber(message)).withValue(value));
 	}
 
 }
