@@ -8,7 +8,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.joining;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.ardulink.core.Pin.analogPin;
-import static org.ardulink.core.Pin.createPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
