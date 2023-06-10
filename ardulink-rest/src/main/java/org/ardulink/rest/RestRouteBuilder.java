@@ -253,18 +253,13 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	private static void setTypeAndPinHeader(Exchange exchange, Type type) {
 		Message message = exchange.getMessage();
-		setTypeAndPinHeader(message, type, readPin(type, message));
+		setTypeAndPinHeader(message, type, extractPinNumber(message));
 	}
 
 	private static Message setTypeAndPinHeader(Message message, Type type, int pin) {
 		message.setHeader(HEADER_PIN, pin);
 		message.setHeader(HEADER_TYPE, type);
 		return message;
-	}
-
-	private static int readPin(Type type, Message message) {
-		Object pinRaw = extractPinNumber(message);
-		return tryParse(String.valueOf(pinRaw)).orElseThrow(() -> parseError("Pin", pinRaw));
 	}
 
 	private void writeArduinoMessagesTo(String arduino, AtomicReference<FromDeviceMessagePinStateChanged> messages,
