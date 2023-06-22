@@ -20,6 +20,7 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.port;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
+import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -59,17 +60,17 @@ class ArdulinkRestMainTest {
 	@Test
 	void canStartMainWithArgs() throws IOException, CmdLineException {
 		CommandLineArguments args = args();
-		try (RestMain restMain = new RestMain(args); Link mock = getMock(Links.getLink(args.connection))) {
+		try (Link link = Links.getLink(args.connection); RestMain restMain = new RestMain(args)) {
 			int pin = 5;
 			boolean state = true;
 			given().body(state).put("/pin/digital/{pin}", pin).then().statusCode(200);
-			verify(mock).switchDigitalPin(digitalPin(pin), state);
+			verify(getMock(link)).switchDigitalPin(digitalPin(pin), state);
 		}
 	}
 
 	private CommandLineArguments args() {
 		CommandLineArguments args = new CommandLineArguments();
-		args.connection = "ardulink://mock";
+		args.connection = uniqueMockUri();
 		args.port = port;
 		return args;
 	}

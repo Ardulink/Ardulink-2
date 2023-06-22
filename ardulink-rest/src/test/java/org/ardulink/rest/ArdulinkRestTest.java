@@ -72,22 +72,22 @@ class ArdulinkRestTest {
 	@Test
 	void canSwitchDigitalPin() throws Exception {
 		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
-			int pin = 5;
+			DigitalPin pin = digitalPin(5);
 			boolean state = true;
-			given().body(state).put("/pin/digital/{pin}", pin).then().statusCode(200).and()
-					.body(is(okResponseWith(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(state))));
-			verify(getMock(link)).switchDigitalPin(digitalPin(pin), state);
+			given().body(state).put("/pin/digital/{pin}", pin.pinNum()).then().statusCode(200).and().body(
+					is(okResponseWith(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin.pinNum()).withState(state))));
+			verify(getMock(link)).switchDigitalPin(pin, state);
 		}
 	}
 
 	@Test
 	void canSwitchAnalogPin() throws Exception {
 		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
-			int pin = 9;
+			AnalogPin pin = analogPin(9);
 			int value = 123;
-			given().body(value).put("/pin/analog/{pin}", pin).then().statusCode(200).and()
-					.body(is(okResponseWith(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value))));
-			verify(getMock(link)).switchAnalogPin(analogPin(pin), value);
+			given().body(value).put("/pin/analog/{pin}", pin.pinNum()).then().statusCode(200).and().body(
+					is(okResponseWith(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum()).withValue(value))));
+			verify(getMock(link)).switchAnalogPin(pin, value);
 		}
 	}
 
@@ -112,11 +112,11 @@ class ArdulinkRestTest {
 
 	@Test
 	void canReadAnalogPin() throws Exception {
-		int pin = 7;
+		AnalogPin pin = analogPin(7);
 		int value = 456;
 		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
-			fireEvent(link, analogPinValueChanged(analogPin(pin), value));
-			given().get("/pin/analog/{pin}", pin).then().statusCode(200).body(is(String.valueOf(value)));
+			fireEvent(link, analogPinValueChanged(pin, value));
+			given().get("/pin/analog/{pin}", pin.pinNum()).then().statusCode(200).body(is(String.valueOf(value)));
 		}
 	}
 
@@ -143,38 +143,41 @@ class ArdulinkRestTest {
 
 	@Test
 	void queueDoesNotExplode() throws Exception {
-		int pin = 7;
+		AnalogPin pin = analogPin(7);
 		int lastValue = 1023;
 		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
-			range(0, 200).forEach(__ -> rangeClosed(0, lastValue)
-					.forEach(v -> fireEvent(link, analogPinValueChanged(analogPin(pin), v))));
-			given().get("/pin/analog/{pin}", pin).then().statusCode(200).body(is(String.valueOf(lastValue)));
+			range(0, 200).forEach(__ -> rangeClosed(0, lastValue).forEach(v -> {
+				fireEvent(link, analogPinValueChanged(pin, v));
+			}));
+			given().get("/pin/analog/{pin}", pin.pinNum()).then().statusCode(200).body(is(String.valueOf(lastValue)));
 		}
 	}
 
 	@Test
 	void canEnableAndDisableListeningDigitalPin() throws Exception {
-		int pin = 5;
+		DigitalPin pin = digitalPin(5);
 		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
-			given().body("listen=true").patch("/pin/digital/{pin}", pin).then().statusCode(200).and()
-					.body(is(okResponseWith(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(pin).withoutValue())));
-			verify(getMock(link)).startListening(digitalPin(pin));
-			given().body("listen=false").patch("/pin/digital/{pin}", pin).then().statusCode(200).and()
-					.body(is(okResponseWith(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(pin).withoutValue())));
-			verify(getMock(link)).stopListening(digitalPin(pin));
+			given().body("listen=true").patch("/pin/digital/{pin}", pin.pinNum()).then().statusCode(200).and().body(is(
+					okResponseWith(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue())));
+			verify(getMock(link)).startListening(pin);
+
+			given().body("listen=false").patch("/pin/digital/{pin}", pin.pinNum()).then().statusCode(200).and().body(
+					is(okResponseWith(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue())));
+			verify(getMock(link)).stopListening(pin);
 		}
 	}
 
 	@Test
 	void canEnableAndDisableListeningAnalogPin() throws Exception {
-		int pin = 7;
+		AnalogPin pin = analogPin(7);
 		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
-			given().body("listen=true").patch("/pin/analog/{pin}", pin).then().statusCode(200).and()
-					.body(is(okResponseWith(alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin).withoutValue())));
-			verify(getMock(link)).startListening(analogPin(pin));
-			given().body("listen=false").patch("/pin/analog/{pin}", pin).then().statusCode(200).and()
-					.body(is(okResponseWith(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(pin).withoutValue())));
-			verify(getMock(link)).stopListening(analogPin(pin));
+			given().body("listen=true").patch("/pin/analog/{pin}", pin.pinNum()).then().statusCode(200).and().body(
+					is(okResponseWith(alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue())));
+			verify(getMock(link)).startListening(pin);
+
+			given().body("listen=false").patch("/pin/analog/{pin}", pin.pinNum()).then().statusCode(200).and().body(
+					is(okResponseWith(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue())));
+			verify(getMock(link)).stopListening(pin);
 		}
 	}
 
@@ -190,7 +193,7 @@ class ArdulinkRestTest {
 	}
 
 	private static IntStream allPinsNotEqualTo(Pin pin) {
-		return range(0, 100).filter(i -> pin.pinNum() != i);
+		return range(0, 100).filter(p -> pin.pinNum() != p);
 	}
 
 	private static String okResponseWith(String string) {
