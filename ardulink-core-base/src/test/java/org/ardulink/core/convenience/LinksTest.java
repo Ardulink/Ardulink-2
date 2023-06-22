@@ -27,6 +27,7 @@ import static org.ardulink.util.Strings.swapUpperLower;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -151,7 +152,7 @@ class LinksTest {
 	void canCloseConnection() throws IOException {
 		try (Link link = getRandomLink()) {
 			DummyConnection connection = getConnection(link);
-			verify(connection, times(0)).close();
+			verify(connection, never()).close();
 			close(link);
 			verify(connection, times(1)).close();
 		}
@@ -165,10 +166,10 @@ class LinksTest {
 		assertThat(links).allSatisfy(l -> assertThat(l).isSameAs(links[0]));
 		// all links point to the same instance, so choose one of them
 		try (Link link = links[0]) {
-			for (int i = 0; i < links.length - 1; i++) {
+			for (int __ = 0; __ < links.length - 1; __++) {
 				link.close();
 			}
-			verify(getConnection(link), times(0)).close();
+			verify(getConnection(link), never()).close();
 			link.close();
 			verify(getConnection(link), times(1)).close();
 		}
@@ -202,7 +203,7 @@ class LinksTest {
 			link1.stopListening(analogPin(anyPin.pinNum()));
 			link1.stopListening(analogPin(anyPin.pinNum() + 1));
 			link1.stopListening(digitalPin(anyPin.pinNum() + 1));
-			verify(delegate1, times(0)).stopListening(anyPin);
+			verify(delegate1, never()).stopListening(anyPin);
 
 			link2.stopListening(anyPin);
 			verify(delegate1, times(1)).stopListening(anyPin);
@@ -235,8 +236,8 @@ class LinksTest {
 	@Test
 	void aliasLinksAreSharedToo() throws Throwable {
 		withRegistered(new AliasUsingLinkFactory()).execute(() -> {
-			try (Link link1 = Links.getLink("ardulink://aliasLink");
-					Link link2 = Links.getLink("ardulink://aliasLinkAlias")) {
+			try (Link link1 = Links.getLink("ardulink://aliasFactoryName");
+					Link link2 = Links.getLink("ardulink://aliasFactoryAlias")) {
 				assertThat(link1).isSameAs(link2);
 			}
 		});

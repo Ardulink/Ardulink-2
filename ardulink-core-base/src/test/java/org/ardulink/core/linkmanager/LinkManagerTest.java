@@ -16,14 +16,17 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.ardulink.util.URIs.newURI;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
@@ -95,7 +98,7 @@ class LinkManagerTest {
 	}
 
 	@Test
-	void canLoadDummyLinkViaAlias() throws Throwable {
+	void canLoadDummyLinkViaAlias() throws Throwable  {
 		withRegistered(new AliasUsingLinkFactory())
 				.execute(() -> assertThat(sut.getConfigurer(aliasUri())).isNotNull());
 	}
@@ -109,14 +112,16 @@ class LinkManagerTest {
 
 	@Test
 	void nameHasPriorityOverAlias() throws Throwable {
-		AliasUsingLinkFactory factory = new AliasUsingLinkFactory();
-		String dummyLinkFactoryName = new DummyLinkFactory().getName();
-		assert aliasNames(factory).contains(dummyLinkFactoryName);
+		DummyLinkFactory nameFactorySpy = spy(new DummyLinkFactory());
+		AliasUsingLinkFactory aliasFactorySpy = spy(new AliasUsingLinkFactory());
+		assert aliasNames(aliasFactorySpy).contains(nameFactorySpy.getName());
 
-		AliasUsingLinkFactory spy = spy(factory);
-		withRegistered(spy).execute(() -> {
-			try (Link link = sut.getConfigurer(newURI("ardulink://" + dummyLinkFactoryName)).newLink()) {
-				verify(spy, never()).newLink(any(LinkConfig.class));
+		withRegistered(aliasFactorySpy, nameFactorySpy).execute(() -> {
+			try (Link link = sut.getConfigurer(newURI("ardulink://" + nameFactorySpy.getName())).newLink()) {
+				assertAll(() -> {
+					verify(aliasFactorySpy, never()).newLink(any(LinkConfig.class));
+					verify(nameFactorySpy, times(1)).newLink(any(DummyLinkConfig.class));
+				});
 			}
 		});
 	}
@@ -126,7 +131,7 @@ class LinkManagerTest {
 	}
 
 	private URI aliasUri() {
-		return newURI("ardulink://aliasLink");
+		return newURI(format("ardulink://%s", AliasUsingLinkFactory.NAME));
 	}
 
 }
