@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.serial.rxtx;
 
+import static java.util.stream.Collectors.toList;
 import static org.ardulink.util.URIs.newURI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -46,12 +47,12 @@ import gnu.io.NoSuchPortException;
  */
 class SerialLinkFactoryIntegrationTest {
 
-	private static final String PREFIX = "ardulink://" + new SerialLinkFactory().getName();
+	private static final String PREFIX = "ardulink://" + SerialLinkFactory.NAME;
 
 	@Test
 	@Disabled("Link#close hangs since StreamReader calls read and this native method doesn't get interrupted even if the InputStream gets closed. That's the reason why RXTX's close does not get a writeLock since the lock remains locked")
 	void canConfigureSerialConnectionViaURI() throws Exception {
-		List<String> portNames = new SerialLinkConfig().listPorts();
+		List<String> portNames = new SerialLinkConfig().listPorts().collect(toList());
 		assumeFalse(portNames.isEmpty());
 
 		LinkManager connectionManager = LinkManager.getInstance();

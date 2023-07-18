@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.core.serial.rxtx;
 
 import static gnu.io.CommPortIdentifier.PORT_SERIAL;
-import static java.util.stream.Collectors.toList;
 import static org.ardulink.util.Iterables.getFirst;
 
 import java.util.Collections;

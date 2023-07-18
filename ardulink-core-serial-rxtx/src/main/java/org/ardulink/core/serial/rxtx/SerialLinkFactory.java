@@ -48,9 +48,11 @@ import gnu.io.UnsupportedCommOperationException;
  */
 public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
+	protected static final String NAME = "serial-rxtx";
+
 	@Override
 	public String getName() {
-		return "serial-rxtx";
+		return NAME;
 	}
 
 	@Override

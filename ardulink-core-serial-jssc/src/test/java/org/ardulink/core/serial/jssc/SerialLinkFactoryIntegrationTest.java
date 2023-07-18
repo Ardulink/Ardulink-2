@@ -42,7 +42,7 @@ import jssc.SerialPortList;
  */
 class SerialLinkFactoryIntegrationTest {
 
-	private static final String PREFIX = "ardulink://" + new SerialLinkFactory().getName();
+	private static final String PREFIX = "ardulink://" + SerialLinkFactory.NAME;
 
 	@Test
 	void canConfigureSerialConnectionViaURI() throws Exception {

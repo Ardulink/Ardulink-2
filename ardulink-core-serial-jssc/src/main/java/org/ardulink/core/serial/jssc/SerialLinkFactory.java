@@ -44,9 +44,11 @@ import jssc.SerialPortException;
  */
 public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
+	protected  static final String NAME = "serial-jssc";
+
 	@Override
 	public String getName() {
-		return "serial-jssc";
+		return NAME;
 	}
 
 	@Override
