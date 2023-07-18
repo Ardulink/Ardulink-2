@@ -16,11 +16,14 @@ limitations under the License.
 
 package org.ardulink.core.proxy;
 
+import static java.lang.String.format;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.proxy.ProxyServerDouble.portName;
 import static org.ardulink.util.URIs.newURI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+
+import java.io.IOException;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager;
@@ -48,54 +51,63 @@ class ProxyLinkFactoryTest {
 	@Test
 	void canConnectWhileConfiguring() {
 		proxyServerDouble.setNumberOfPorts(0);
-		Configurer configurer = linkManager.getConfigurer(
-				newURI("ardulink://proxy?tcphost=localhost&tcpport=" + proxyServerDouble.getLocalPort()));
+		Configurer configurer = configurerForProxy();
 		assertThat(configurer.getAttribute("port").getChoiceValues()).isEmpty();
 	}
 
 	@Test
 	void canReadAvailablePorts() {
 		proxyServerDouble.setNumberOfPorts(1);
-		Configurer configurer = linkManager.getConfigurer(
-				newURI("ardulink://proxy?tcphost=localhost&tcpport=" + proxyServerDouble.getLocalPort()));
+		Configurer configurer = configurerForProxy();
 		ConfigAttribute port = configurer.getAttribute("port");
 		assertThat(port.getChoiceValues()).containsExactly(portName(0));
-		await().untilAsserted(() -> assertThat(proxyServerDouble.received()).singleElement()
-				.isEqualTo("ardulink:networkproxyserver:get_port_list"));
+		assertThatProxyServerDoubleReceived("ardulink:networkproxyserver:get_port_list");
 	}
 
 	@Test
-	void canConnect() throws Exception {
+	void canConnect() throws IOException {
 		proxyServerDouble.setNumberOfPorts(3);
-		Configurer configurer = linkManager.getConfigurer(
-				newURI("ardulink://proxy?tcphost=localhost&tcpport=" + proxyServerDouble.getLocalPort()));
+		Configurer configurer = configurerForProxy();
 		ConfigAttribute port = configurer.getAttribute("port");
 		assertThat(port.getChoiceValues()).containsExactly(portName(0), portName(1), portName(2));
 		port.setValue(portName(2));
 
 		try (Link newLink = configurer.newLink()) {
-			await().untilAsserted(() -> assertThat(proxyServerDouble.received()).containsExactly(
-					"ardulink:networkproxyserver:get_port_list", "ardulink:networkproxyserver:get_port_list",
-					"ardulink:networkproxyserver:connect", portName(2), "115200"));
+			assertThatProxyServerDoubleReceived( //
+					"ardulink:networkproxyserver:get_port_list", //
+					"ardulink:networkproxyserver:get_port_list", //
+					"ardulink:networkproxyserver:connect", //
+					portName(2), //
+					"115200" //
+			);
 		}
 	}
 
 	@Test
-	void canSwitchAnalogPort() throws Exception {
+	void canSwitchAnalogPort() throws IOException {
 		proxyServerDouble.setNumberOfPorts(1);
-		Configurer configurer = linkManager.getConfigurer(
-				newURI("ardulink://proxy?tcphost=localhost&tcpport=" + proxyServerDouble.getLocalPort()));
+		Configurer configurer = configurerForProxy();
 		configurer.getAttribute("port").setValue(portName(0));
 		try (Link newLink = configurer.newLink()) {
 			// sends message to double
 			newLink.switchAnalogPin(analogPin(1), 123);
-			await().untilAsserted(() -> assertThat(proxyServerDouble.received()).containsExactly(
+			assertThatProxyServerDoubleReceived( //
 					"ardulink:networkproxyserver:get_port_list", //
 					"ardulink:networkproxyserver:connect", //
 					portName(0), //
-					"115200", "alp://ppin/1/123" //
-			));
+					"115200", //
+					"alp://ppin/1/123" //
+			);
 		}
+	}
+
+	private Configurer configurerForProxy() {
+		return linkManager.getConfigurer(newURI(
+				format("ardulink://proxy?tcphost=%s&tcpport=%d", "localhost", proxyServerDouble.getLocalPort())));
+	}
+
+	private void assertThatProxyServerDoubleReceived(String... expected) {
+		await().untilAsserted(() -> assertThat(proxyServerDouble.received()).containsExactly(expected));
 	}
 
 }
