@@ -18,6 +18,7 @@ package org.ardulink.core.convenience;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.stream.IntStream.range;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -37,7 +38,6 @@ import static org.mockito.Mockito.withSettings;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
@@ -119,7 +119,16 @@ class LinksTest {
 			assertThat(config.getProto()).isInstanceOf(ArdulinkProtocol2.class);
 			assertThat(config.getA()).isEqualTo("aVal1");
 			assertThat(config.getD()).isEqualTo(dVal1);
-			assertThat(config.getF()).isEqualTo(TimeUnit.NANOSECONDS);
+			assertThat(config.getF()).isEqualTo(NANOSECONDS);
+			assertThat(config.getF2()).isEqualTo(NANOSECONDS);
+		}
+	}
+
+	@Test
+	void streamConsume() throws IOException {
+		try (Link link = Links.getDefault()) {
+			DummyLinkConfig config = getConnection(link).getConfig();
+			range(0, 42).forEach(__ -> assertThat(config.getF2()).isEqualTo(NANOSECONDS));
 		}
 	}
 

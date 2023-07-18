@@ -30,6 +30,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -63,6 +64,9 @@ public class DummyLinkConfig implements LinkConfig {
 
 	@Named("f")
 	public TimeUnit f;
+	
+	@Named("f2")
+	public TimeUnit f2;
 
 	@Named("intNoMinMax")
 	public int g1;
@@ -168,8 +172,13 @@ public class DummyLinkConfig implements LinkConfig {
 	}
 
 	@ChoiceFor("f")
-	public List<TimeUnit> choiceValuesForAtttribute_F() {
+	public List<TimeUnit> choiceValuesForAtttribute_F_TypeIsList() {
 		return Arrays.asList(NANOSECONDS, DAYS);
+	}
+
+	@ChoiceFor("f2")
+	public Stream<TimeUnit> choiceValuesForAtttribute_F2_TypeIsStream() {
+		return Stream.of(NANOSECONDS, DAYS);
 	}
 
 	@Named("a")
@@ -207,6 +216,10 @@ public class DummyLinkConfig implements LinkConfig {
 		return f;
 	}
 
+	public TimeUnit getF2() {
+		return f2;
+	}
+	
 	@ChoiceFor("d")
 	public static String[] choiceValuesCanBeSetViaThreadLocalForTesting() {
 		return choiceValuesOfD.get();

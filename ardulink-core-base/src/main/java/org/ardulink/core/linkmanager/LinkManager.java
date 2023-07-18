@@ -414,7 +414,12 @@ public abstract class LinkManager {
 					Collection<?> collection = (Collection<?>) value;
 					value = collection.toArray(new Object[collection.size()]);
 				}
-				checkState(value instanceof Object[], "returntype is not an Object[] but %s",
+				if (value instanceof Stream<?>) {
+					try (Stream<?> stream = (Stream<?>) value) {
+						value = stream.toArray();
+					}
+				}
+				checkState(value instanceof Object[], "returntype is not a Collection, Stream or Object[] but %s",
 						value == null ? null : value.getClass());
 				return (Object[]) value;
 			}
