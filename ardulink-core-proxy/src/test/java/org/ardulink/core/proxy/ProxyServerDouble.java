@@ -120,19 +120,16 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 		return serverSocket.getLocalPort();
 	}
 
-	private Map<String, List<String>> makeMap(int numberOfPorts) {
-		return MapBuilder.<String, List<String>>newMapBuilder()
-				.put(proxyMessage("get_port_list"), portList(numberOfPorts))
-				.put(proxyMessage("connect"), singletonList(OK)).build();
-	}
-
-	private static String proxyMessage(String string) {
-		return String.format("ardulink:networkproxyserver:%s", string);
+	private static String proxyMessage(String message) {
+		return String.format("ardulink:networkproxyserver:%s", message);
 	}
 
 	private List<String> portList(int numberOfPorts) {
-		return concat(Stream.of("NUMBER_OF_PORTS=" + numberOfPorts),
-				range(0, numberOfPorts).mapToObj(ProxyServerDouble::portName)).collect(toList());
+		return concat(Stream.of("NUMBER_OF_PORTS=" + numberOfPorts), portNames(numberOfPorts)).collect(toList());
+	}
+
+	private Stream<String> portNames(int numberOfPorts) {
+		return range(0, numberOfPorts).mapToObj(ProxyServerDouble::portName);
 	}
 
 	public static String portName(int i) {
@@ -142,6 +139,12 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 	public ProxyServerDouble setNumberOfPorts(int numberOfPorts) {
 		this.answers = makeMap(numberOfPorts);
 		return this;
+	}
+
+	private Map<String, List<String>> makeMap(int numberOfPorts) {
+		return MapBuilder.<String, List<String>>newMapBuilder()
+				.put(proxyMessage("get_port_list"), portList(numberOfPorts))
+				.put(proxyMessage("connect"), singletonList(OK)).build();
 	}
 
 	public List<String> received() {

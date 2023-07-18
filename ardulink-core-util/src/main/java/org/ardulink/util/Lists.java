@@ -16,11 +16,15 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static java.util.Arrays.asList;
+import static java.util.Spliterator.ORDERED;
+import static java.util.Spliterators.spliteratorUnknownSize;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.StreamSupport.stream;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.anno.LapsedWith.JDK9;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -46,17 +50,12 @@ public final class Lists {
 	}
 
 	public static <T> List<T> newArrayList(Iterator<T> iterator) {
-		List<T> list = new ArrayList<>();
-		while (iterator.hasNext()) {
-			list.add(iterator.next());
-		}
-		return list;
+		return stream(spliteratorUnknownSize(iterator, ORDERED), false).collect(toList());
 	}
 
+	@SafeVarargs
 	public static <T> List<T> newArrayList(T... values) {
-		List<T> list = new ArrayList<>();
-		Collections.addAll(list, values);
-		return list;
+		return new ArrayList<>(asList(values));
 	}
 
 	public static <T> T rangeCheckedGet(List<T> list, int index) {

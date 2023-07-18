@@ -90,8 +90,11 @@ class ProxyLinkFactoryTest {
 			// sends message to double
 			newLink.switchAnalogPin(analogPin(1), 123);
 			await().untilAsserted(() -> assertThat(proxyServerDouble.received()).containsExactly(
-					"ardulink:networkproxyserver:get_port_list", "ardulink:networkproxyserver:connect", portName(0),
-					"115200", "alp://ppin/1/123"));
+					"ardulink:networkproxyserver:get_port_list", //
+					"ardulink:networkproxyserver:connect", //
+					portName(0), //
+					"115200", "alp://ppin/1/123" //
+			));
 		}
 	}
 
