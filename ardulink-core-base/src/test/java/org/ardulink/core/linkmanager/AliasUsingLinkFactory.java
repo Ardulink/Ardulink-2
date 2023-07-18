@@ -6,11 +6,13 @@ import static org.mockito.Mockito.mock;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkFactory.Alias;
 
-@Alias({ "aliasFactoryAlias", AliasUsingLinkFactory.ALREADY_TAKEN_NAME })
+@Alias({ AliasUsingLinkFactory.ALIAS_FACTORY_ALIAS, AliasUsingLinkFactory.ALREADY_TAKEN_NAME })
 public class AliasUsingLinkFactory implements LinkFactory<LinkConfig> {
 
-	protected static final String NAME = "aliasFactoryName";
-	
+	public static final String NAME = "aliasFactoryName";
+
+	public static final String ALIAS_FACTORY_ALIAS = "aliasFactoryAlias";
+
 	protected static final String ALREADY_TAKEN_NAME = DummyLinkFactory.DUMMY_LINK_NAME;
 
 	@Override

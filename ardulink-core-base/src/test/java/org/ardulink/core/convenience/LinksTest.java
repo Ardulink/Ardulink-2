@@ -18,6 +18,7 @@ package org.ardulink.core.convenience;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.stream.IntStream.range;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
@@ -26,11 +27,13 @@ import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 import static org.ardulink.util.Strings.swapUpperLower;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.withSettings;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -69,6 +72,8 @@ class LinksTest {
 	@Test
 	void whenRequestingDefaultLinkSerialHasPriorityOverAllOthers() throws Throwable {
 		LinkFactory<LinkConfig> factory = spy(factoryNamed(serial()));
+		Link dummyLink = mock(Link.class, withSettings().stubOnly());
+		doReturn(dummyLink).when(factory).newLink(any(LinkConfig.class));
 		withRegistered(factoryNamed(serialDash("a")), factoryNamed("a"), factory, factoryNamed("z"),
 				factoryNamed(serialDash("z"))).execute(() -> {
 					try (Link link = Links.getDefault()) {
@@ -166,9 +171,7 @@ class LinksTest {
 		assertThat(links).allSatisfy(l -> assertThat(l).isSameAs(links[0]));
 		// all links point to the same instance, so choose one of them
 		try (Link link = links[0]) {
-			for (int __ = 0; __ < links.length - 1; __++) {
-				link.close();
-			}
+			range(0, links.length - 1).forEach(__ -> closeQuietly(link));
 			verify(getConnection(link), never()).close();
 			link.close();
 			verify(getConnection(link), times(1)).close();
@@ -194,19 +197,19 @@ class LinksTest {
 			ConnectionBasedLink delegate1 = getDelegate(link1);
 			ConnectionBasedLink delegate2 = getDelegate(link2);
 			assertThat(delegate1).isSameAs(delegate2);
-			Pin anyPin = digitalPin(3);
-			link1.startListening(anyPin);
-			link2.startListening(anyPin);
+			Pin anyDigitalPin = digitalPin(3);
+			link1.startListening(anyDigitalPin);
+			link2.startListening(anyDigitalPin);
 
-			link1.stopListening(anyPin);
+			link1.stopListening(anyDigitalPin);
 			// stop on others (not listening-started) pins
-			link1.stopListening(analogPin(anyPin.pinNum()));
-			link1.stopListening(analogPin(anyPin.pinNum() + 1));
-			link1.stopListening(digitalPin(anyPin.pinNum() + 1));
-			verify(delegate1, never()).stopListening(anyPin);
+			link1.stopListening(analogPin(anyDigitalPin.pinNum()));
+			link1.stopListening(analogPin(anyDigitalPin.pinNum() + 1));
+			link1.stopListening(digitalPin(anyDigitalPin.pinNum() + 1));
+			verify(delegate1, never()).stopListening(anyDigitalPin);
 
-			link2.stopListening(anyPin);
-			verify(delegate1, times(1)).stopListening(anyPin);
+			link2.stopListening(anyDigitalPin);
+			verify(delegate1, times(1)).stopListening(anyDigitalPin);
 		}
 	}
 
@@ -214,7 +217,10 @@ class LinksTest {
 	void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws Throwable {
 		String name1 = new DummyLinkFactory().getName();
 		String name2 = swapUpperLower(name1);
-		assert name1.equalsIgnoreCase(name2) && !name1.equals(name2);
+
+		assert name1.equalsIgnoreCase(name2);
+		assert !name1.equals(name2);
+
 		class DummyLinkFactoryExtension extends DummyLinkFactory {
 			@Override
 			public String getName() {
@@ -236,8 +242,8 @@ class LinksTest {
 	@Test
 	void aliasLinksAreSharedToo() throws Throwable {
 		withRegistered(new AliasUsingLinkFactory()).execute(() -> {
-			try (Link link1 = Links.getLink("ardulink://aliasFactoryName");
-					Link link2 = Links.getLink("ardulink://aliasFactoryAlias")) {
+			try (Link link1 = Links.getLink(format("ardulink://%s", AliasUsingLinkFactory.NAME));
+					Link link2 = Links.getLink(format("ardulink://%s", AliasUsingLinkFactory.ALIAS_FACTORY_ALIAS))) {
 				assertThat(link1).isSameAs(link2);
 			}
 		});
