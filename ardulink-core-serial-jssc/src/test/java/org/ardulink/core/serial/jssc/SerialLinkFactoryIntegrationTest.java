@@ -27,7 +27,6 @@ import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.util.URIs;
 import org.junit.jupiter.api.Test;
 
 import jssc.SerialPortList;
@@ -50,8 +49,8 @@ class SerialLinkFactoryIntegrationTest {
 		assumeTrue(portNames.length > 0);
 
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(
-				URIs.newURI(PREFIX + "?port=" + portNames[0] + "&baudrate=9600&pingprobe=false&waitsecs=1"));
+		Configurer configurer = connectionManager
+				.getConfigurer(newURI(PREFIX + "?port=" + portNames[0] + "&baudrate=9600&pingprobe=false&waitsecs=1"));
 		try (Link link = configurer.newLink()) {
 			assertNotNull(link);
 		}
@@ -80,12 +79,8 @@ class SerialLinkFactoryIntegrationTest {
 
 	@Test
 	void cantConnectWithoutPort() {
-		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(URIs.newURI(PREFIX + "?baudrate=9600"));
-		assertThat(assertThrows(RuntimeException.class, () -> {
-			try (Link link = configurer.newLink()) {
-			}
-		})).hasMessageContaining("Port name - null");
+		Configurer configurer = LinkManager.getInstance().getConfigurer(newURI(PREFIX + "?baudrate=9600"));
+		assertThat(assertThrows(RuntimeException.class, configurer::newLink)).hasMessageContaining("Port name - null");
 	}
 
 	private static String anyString() {
