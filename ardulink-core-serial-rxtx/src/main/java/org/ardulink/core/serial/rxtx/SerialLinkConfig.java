@@ -22,6 +22,7 @@ import static org.ardulink.util.Iterables.getFirst;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Positive;
@@ -88,9 +89,12 @@ public class SerialLinkConfig implements LinkConfig {
 	}
 
 	@ChoiceFor(NAMED_PORT)
-	public List<String> listPorts() {
-		return portIdentifiers().stream().filter(p -> p.getPortType() == PORT_SERIAL).map(CommPortIdentifier::getName)
-				.collect(toList());
+	public Stream<String> listPorts() {
+		return portIdentifiers().stream().filter(this::isSerial).map(CommPortIdentifier::getName);
+	}
+
+	private boolean isSerial(CommPortIdentifier identifier) {
+		return identifier.getPortType() == PORT_SERIAL;
 	}
 
 	@ChoiceFor(NAMED_PROTO)
