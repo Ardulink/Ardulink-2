@@ -51,6 +51,7 @@ class PrimitivesTest {
 
 	@Test
 	void cannotParseDoubleAsInt() {
+		assertThrows(NumberFormatException.class, () -> Primitives.parseAs(Integer.class, "123.456"));
 		assertThrows(NumberFormatException.class, () -> Primitives.parseAs(int.class, "123.456"));
 	}
 
