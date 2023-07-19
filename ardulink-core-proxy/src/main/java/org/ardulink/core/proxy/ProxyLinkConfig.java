@@ -41,6 +41,10 @@ import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 @I18n("message")
 public class ProxyLinkConfig implements LinkConfig {
 
+	private static final String NAMED_TCPHOST = "tcphost";
+
+	private static final String NAMED_TCPPORT = "tcpport";
+
 	private static final String NAMED_PROTO = "proto";
 
 	private static final String NAMED_PORT = "port";
@@ -49,10 +53,10 @@ public class ProxyLinkConfig implements LinkConfig {
 
 	private static final int DEFAULT_SPEED = 115200;
 
-	@Named("tcphost")
+	@Named(NAMED_TCPHOST)
 	private String tcphost;
 
-	@Named("tcpport")
+	@Named(NAMED_TCPPORT)
 	@Positive
 	@Max(2 << 16 - 1)
 	private int tcpport = DEFAULT_LISTENING_PORT;
@@ -114,7 +118,7 @@ public class ProxyLinkConfig implements LinkConfig {
 		this.tcpport = tcpport;
 	}
 
-	@ChoiceFor(value = NAMED_PORT, dependsOn = { "tcphost", "tcpport" })
+	@ChoiceFor(value = NAMED_PORT, dependsOn = { NAMED_TCPHOST, NAMED_TCPPORT })
 	public List<String> getAvailablePorts() throws IOException {
 		return tcphost == null ? emptyList() : getRemoteInternal().getPortList();
 	}
