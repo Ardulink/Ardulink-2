@@ -21,7 +21,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.Stream.concat;
 import static org.ardulink.core.proxy.ProxyLinkFactory.OK;
-import static org.ardulink.util.Maps.consumeIfPresent;
+import static org.ardulink.util.Maps.getOptional;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.io.BufferedReader;
@@ -87,7 +87,7 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 					while ((line = in.readLine()) != null) {
 						logger.info("Read {}", line);
 						received.add(line);
-						consumeIfPresent(answers, line, (k, v) -> v.stream().peek(m -> logger.info("Responding {}", m))
+						getOptional(answers, line).ifPresent(v -> v.stream().peek(m -> logger.info("Responding {}", m))
 								.forEach(m -> out.print(m + "\n")));
 						out.flush();
 					}

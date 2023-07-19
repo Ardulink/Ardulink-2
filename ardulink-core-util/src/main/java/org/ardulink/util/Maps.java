@@ -21,8 +21,8 @@ import static org.ardulink.util.anno.LapsedWith.JDK9;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
-import java.util.function.BiConsumer;
 
 import org.ardulink.util.anno.LapsedWith;
 
@@ -51,11 +51,8 @@ public final class Maps {
 		return new AbstractMap.SimpleEntry<>(k, v);
 	}
 
-	public static <K, V> void consumeIfPresent(Map<K, V> map, K key, BiConsumer<K, V> consumer) {
-		map.computeIfPresent(key, (k, v) -> {
-			consumer.accept(k, v);
-			return v;
-		});
+	public static <K, V> Optional<V> getOptional(Map<K, V> map, K key) {
+		return Optional.ofNullable(map.get(key));
 	}
 
 }
