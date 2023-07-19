@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
 
@@ -14,8 +13,7 @@ class MapsTest {
 
 	@Test
 	void testToProperties() {
-		Properties properties = Maps.toProperties(map);
-		assertThat(properties).hasSameSizeAs(map).containsAllEntriesOf(map);
+		assertThat(Maps.toProperties(map)).containsExactlyInAnyOrderEntriesOf(map);
 	}
 
 	@Test
@@ -24,16 +22,6 @@ class MapsTest {
 		Entry<Integer, String> otherEntry = Maps.entry(1, "a");
 		assertThat(entry).hasSameHashCodeAs(otherEntry);
 		assertThat(entry).isEqualTo(otherEntry);
-	}
-
-	@Test
-	void testConsumeIfPresentWithMatch() {
-		assertThat(Maps.getOptional(map, 1)).hasValue("a");
-	}
-
-	@Test
-	void testConsumeIfPresentWithoutMatch() {
-		assertThat(Maps.getOptional(map, 42)).isEmpty();
 	}
 
 }

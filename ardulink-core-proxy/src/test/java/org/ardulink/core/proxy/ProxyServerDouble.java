@@ -16,12 +16,12 @@ limitations under the License.
 
 package org.ardulink.core.proxy;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.Stream.concat;
 import static org.ardulink.core.proxy.ProxyLinkFactory.OK;
-import static org.ardulink.util.Maps.getOptional;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.io.BufferedReader;
@@ -87,8 +87,8 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 					while ((line = in.readLine()) != null) {
 						logger.info("Read {}", line);
 						received.add(line);
-						getOptional(answers, line).ifPresent(v -> v.stream().peek(m -> logger.info("Responding {}", m))
-								.map(m -> m + "\n").forEach(out::print));
+						answers.getOrDefault(line, emptyList()).stream().peek(m -> logger.info("Responding {}", m))
+								.map(m -> m + "\n").forEach(out::print);
 						out.flush();
 					}
 				} catch (IOException e) {

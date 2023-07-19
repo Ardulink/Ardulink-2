@@ -21,7 +21,6 @@ import static org.ardulink.util.anno.LapsedWith.JDK9;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Properties;
 
 import org.ardulink.util.anno.LapsedWith;
@@ -49,10 +48,6 @@ public final class Maps {
 	@LapsedWith(module = JDK9, value = "Map#entry")
 	public static <K, V> Entry<K, V> entry(K k, V v) {
 		return new AbstractMap.SimpleEntry<>(k, v);
-	}
-
-	public static <K, V> Optional<V> getOptional(Map<K, V> map, K key) {
-		return Optional.ofNullable(map.get(key));
 	}
 
 }
