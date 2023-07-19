@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.util;
 
 import java.util.Collection;
-import java.util.Optional;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -28,19 +27,11 @@ import java.util.Optional;
  *
  */
 public final class Integers {
-	
+
 	private Integers() {
 		super();
 	}
 
-	public static Optional<Integer> tryParse(String string) {
-		try {
-			return Optional.of(Integer.valueOf(string));
-		} catch (NumberFormatException e) {
-			return Optional.empty();
-		}
-	}
-	
 	public static int average(Collection<Integer> values) {
 		return sum(values) / values.size();
 	}

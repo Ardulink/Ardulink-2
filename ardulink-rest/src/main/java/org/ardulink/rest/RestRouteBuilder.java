@@ -20,10 +20,10 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
-import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Primitives.tryParseAs;
 import static org.ardulink.util.StopWatch.Countdown.createStarted;
 
 import java.io.BufferedReader;
@@ -285,7 +285,7 @@ public class RestRouteBuilder extends RouteBuilder {
 	private static void switchAnalog(Exchange exchange) {
 		Message message = exchange.getMessage();
 		String rawValue = message.getBody(String.class);
-		int value = tryParse(rawValue)
+		int value = tryParseAs(Integer.class, rawValue)
 				.orElseThrow(() -> new IllegalStateException(String.format("Value %s not parseable", rawValue)));
 		message.setBody(alpProtocolMessage(ANALOG_PIN_READ).forPin(extractPinNumber(message)).withValue(value));
 	}

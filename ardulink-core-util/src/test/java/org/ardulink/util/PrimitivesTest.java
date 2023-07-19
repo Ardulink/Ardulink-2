@@ -33,16 +33,19 @@ class PrimitivesTest {
 
 	@Test
 	void canParseIntAsInt() {
+		assertThat(Primitives.parseAs(Integer.class, "123")).isEqualTo(Integer.valueOf(123));
 		assertThat(Primitives.parseAs(int.class, "123")).isEqualTo(Integer.valueOf(123));
 	}
 
 	@Test
 	void canParseIntAsDouble() {
+		assertThat(Primitives.parseAs(Double.class, "123")).isEqualTo(Double.valueOf(123));
 		assertThat(Primitives.parseAs(double.class, "123")).isEqualTo(Double.valueOf(123));
 	}
 
 	@Test
 	void canParseDoubleAsDouble() {
+		assertThat(Primitives.parseAs(Double.class, "123.456")).isEqualTo(Double.valueOf(123.456));
 		assertThat(Primitives.parseAs(double.class, "123.456")).isEqualTo(Double.valueOf(123.456));
 	}
 

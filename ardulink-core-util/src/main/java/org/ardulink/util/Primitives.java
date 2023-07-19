@@ -68,8 +68,17 @@ public enum Primitives {
 		return wrapperType;
 	}
 
-	public static Object parseAs(Class<?> type, String value) {
-		return findPrimitiveFor(type).map(p -> p.parse(value)).orElse(null);
+	@SuppressWarnings("unchecked")
+	public static <T> T parseAs(Class<T> type, String value) {
+		return (T) wrap(type).cast(findPrimitiveFor(unwrap(type)).map(p -> p.parse(value)).orElse(null));
+	}
+
+	public static <T> Optional<T> tryParseAs(Class<T> type, String value) {
+		try {
+			return Optional.of(parseAs(type, value));
+		} catch (NumberFormatException e) {
+			return Optional.empty();
+		}
 	}
 
 	private static Optional<Primitives> findPrimitiveFor(Class<?> type) {

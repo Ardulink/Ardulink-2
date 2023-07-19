@@ -11,9 +11,9 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
-import static org.ardulink.util.Integers.tryParse;
 import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Primitives.tryParseAs;
 import static org.ardulink.util.anno.LapsedWith.JDK9;
 
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ public final class ToArdulinkProtocol implements Processor {
 		public Optional<String> createMessage(String topic, String message) {
 			return Optional.of(this.pattern.matcher(topic)) //
 					.filter(m -> m.matches() && m.groupCount() > 0) //
-					.flatMap(m -> tryParse(m.group(1))) //
+					.flatMap(m -> tryParseAs(Integer.class, m.group(1))) //
 					.map(pin -> createMessage(pin, message));
 		}
 

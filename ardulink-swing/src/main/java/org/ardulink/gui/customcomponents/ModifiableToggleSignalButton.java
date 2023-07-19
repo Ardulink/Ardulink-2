@@ -18,10 +18,9 @@ limitations under the License.
 
 package org.ardulink.gui.customcomponents;
 
-import static org.ardulink.util.Integers.tryParse;
+import static org.ardulink.util.Primitives.tryParseAs;
 
 import java.awt.BorderLayout;
-import java.util.Optional;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -110,7 +109,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 			}
 
 			private void updateColumns() {
-				tryParse(columnsTextField.getText()).ifPresent(v -> {
+				tryParseAs(Integer.class, columnsTextField.getText()).ifPresent(v -> {
 					signalButton.setValueOnColumns(v);
 					signalButton.setValueOffColumns(v);
 				});
