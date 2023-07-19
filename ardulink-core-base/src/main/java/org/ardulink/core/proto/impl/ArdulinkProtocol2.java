@@ -83,7 +83,7 @@ import org.ardulink.util.Bytes;
  */
 public class ArdulinkProtocol2 implements Protocol {
 
-	private static final String name = "ardulink2";
+	public static final String NAME = "ardulink2";
 	private static final char NEWLINE = '\n';
 	private static final char SLASH = '/';
 	private static final byte[] separator = new byte[] { NEWLINE };
@@ -96,7 +96,7 @@ public class ArdulinkProtocol2 implements Protocol {
 
 	@Override
 	public String getName() {
-		return name;
+		return NAME;
 	}
 
 	private static boolean isNewline(byte b) {

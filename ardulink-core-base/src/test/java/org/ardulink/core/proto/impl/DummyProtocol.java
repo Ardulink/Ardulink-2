@@ -31,15 +31,11 @@ import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
  */
 public class DummyProtocol implements Protocol {
 
-	private static final DummyProtocol instance = new DummyProtocol();
-
-	public static Protocol getInstance() {
-		return instance;
-	}
+	public static final String NAME = "dummyProto";
 
 	@Override
 	public String getName() {
-		return "dummyProto";
+		return NAME;
 	}
 
 	@Override

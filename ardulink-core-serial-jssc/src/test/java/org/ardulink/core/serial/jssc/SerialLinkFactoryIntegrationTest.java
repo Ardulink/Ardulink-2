@@ -96,7 +96,7 @@ class SerialLinkFactoryIntegrationTest {
 	}
 
 	private static String validProtoName() {
-		return ArdulinkProtocol2.instance().getName();
+		return ArdulinkProtocol2.NAME;
 	}
 
 	private ConfigAttribute attribute(Configurer configurer, String name) {

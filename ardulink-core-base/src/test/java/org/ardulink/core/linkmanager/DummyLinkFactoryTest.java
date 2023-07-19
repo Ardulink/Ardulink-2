@@ -88,15 +88,14 @@ class DummyLinkFactoryTest {
 		String cValue = "cValue";
 		TimeUnit eValue = TimeUnit.DAYS;
 		try (Link link = sut.getConfigurer(URIs.newURI("ardulink://dummyLink?a=" + aValue + "&b=" + bValue + "&c="
-				+ cValue + "&proto=dummyProto&e=" + eValue.name())).newLink()) {
+				+ cValue + "&proto=" + DummyProtocol.NAME + "&e=" + eValue.name())).newLink()) {
 			assertThat(link).isInstanceOf(ConnectionBasedLink.class);
 			DummyConnection connection = (DummyConnection) ((ConnectionBasedLink) link).getConnection();
 			DummyLinkConfig config = connection.getConfig();
 			assertThat(config.a).isEqualTo(aValue);
 			assertThat(config.b).isEqualTo(bValue);
 			assertThat(config.c).isEqualTo(cValue);
-			assertThat(config.protocol.getClass().getName())
-					.isEqualTo(DummyProtocol.getInstance().getClass().getName());
+			assertThat(config.protocol).isExactlyInstanceOf(DummyProtocol.class);
 			assertThat(config.e).isEqualTo(eValue);
 		}
 	}

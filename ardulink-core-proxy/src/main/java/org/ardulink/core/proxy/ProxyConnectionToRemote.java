@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.proxy;
 
+import static java.lang.String.format;
 import static org.ardulink.core.proxy.ProxyConnectionToRemote.Command.GET_PORT_LIST_CMD;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
@@ -24,7 +25,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -46,11 +46,10 @@ public class ProxyConnectionToRemote implements Closeable {
 
 		GET_PORT_LIST_CMD("get_port_list"), CONNECT_CMD("connect");
 
-		private static final String PREFIX = "ardulink:networkproxyserver:";
 		private final String command;
 
 		Command(String command) {
-			this.command = PREFIX + command;
+			this.command = format("ardulink:networkproxyserver:%s", command);
 		}
 
 		public String getCommand() {
@@ -71,10 +70,9 @@ public class ProxyConnectionToRemote implements Closeable {
 	private final Scanner scanner;
 	private final PrintWriter printWriter;
 
-
 	public ProxyConnectionToRemote(String host, int port) throws IOException {
 		this.host = host;
-		socket = new Socket(host, port);
+		this.socket = new Socket(host, port);
 		this.scanner = new Scanner(socket.getInputStream()).useDelimiter(Pattern.quote(PROXY_CONNECTION_SEPARATOR));
 		this.printWriter = new PrintWriter(socket.getOutputStream(), false);
 	}

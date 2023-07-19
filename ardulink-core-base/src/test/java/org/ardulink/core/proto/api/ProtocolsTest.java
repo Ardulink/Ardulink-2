@@ -19,10 +19,8 @@ package org.ardulink.core.proto.api;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.Optional;
-
+import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.proto.impl.DummyProtocol;
-import org.junit.jupiter.api.AssertionsKt;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -37,12 +35,12 @@ class ProtocolsTest {
 
 	@Test
 	void defaultAndDummyProtocolsAreRegistered() {
-		assertThat(Protocols.names()).containsExactlyInAnyOrder("ardulink2", "dummyProto");
+		assertThat(Protocols.names()).containsExactlyInAnyOrder(ArdulinkProtocol2.NAME, DummyProtocol.NAME);
 	}
 
 	@Test
 	void canLoadByName() {
-		assertThat(Protocols.getByName("dummyProto")).isExactlyInstanceOf(DummyProtocol.class);
+		assertThat(Protocols.getByName(DummyProtocol.NAME)).isExactlyInstanceOf(DummyProtocol.class);
 	}
 
 	@Test
