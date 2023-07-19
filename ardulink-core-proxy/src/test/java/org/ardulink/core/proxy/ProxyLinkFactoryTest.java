@@ -46,7 +46,6 @@ class ProxyLinkFactoryTest {
 
 	@RegisterExtension
 	ProxyServerDouble proxyServerDouble = new ProxyServerDouble();
-	LinkManager linkManager = LinkManager.getInstance();
 
 	@Test
 	void canConnectWhileConfiguring() {
@@ -61,7 +60,7 @@ class ProxyLinkFactoryTest {
 		Configurer configurer = configurerForProxy();
 		ConfigAttribute port = configurer.getAttribute("port");
 		assertThat(port.getChoiceValues()).containsExactly(portName(0));
-		assertThatProxyServerDoubleReceived("ardulink:networkproxyserver:get_port_list");
+		assertThatProxyServerReceived(proxyMessage("get_port_list"));
 	}
 
 	@Test
@@ -73,10 +72,10 @@ class ProxyLinkFactoryTest {
 		port.setValue(portName(2));
 
 		try (Link newLink = configurer.newLink()) {
-			assertThatProxyServerDoubleReceived( //
-					"ardulink:networkproxyserver:get_port_list", //
-					"ardulink:networkproxyserver:get_port_list", //
-					"ardulink:networkproxyserver:connect", //
+			assertThatProxyServerReceived( //
+					proxyMessage("get_port_list"), //
+					proxyMessage("get_port_list"), //
+					proxyMessage("connect"), //
 					portName(2), //
 					"115200" //
 			);
@@ -91,9 +90,9 @@ class ProxyLinkFactoryTest {
 		try (Link newLink = configurer.newLink()) {
 			// sends message to double
 			newLink.switchAnalogPin(analogPin(1), 123);
-			assertThatProxyServerDoubleReceived( //
-					"ardulink:networkproxyserver:get_port_list", //
-					"ardulink:networkproxyserver:connect", //
+			assertThatProxyServerReceived( //
+					proxyMessage("get_port_list"), //
+					proxyMessage("connect"), //
 					portName(0), //
 					"115200", //
 					"alp://ppin/1/123" //
@@ -102,11 +101,19 @@ class ProxyLinkFactoryTest {
 	}
 
 	private Configurer configurerForProxy() {
-		return linkManager.getConfigurer(newURI(
-				format("ardulink://proxy?tcphost=%s&tcpport=%d", "localhost", proxyServerDouble.getLocalPort())));
+		return configurerForProxy("localhost", proxyServerDouble.getLocalPort());
 	}
 
-	private void assertThatProxyServerDoubleReceived(String... expected) {
+	private static Configurer configurerForProxy(String host, int port) {
+		return LinkManager.getInstance()
+				.getConfigurer(newURI(format("ardulink://proxy?tcphost=%s&tcpport=%d", host, port)));
+	}
+
+	private static String proxyMessage(String message) {
+		return "ardulink:networkproxyserver:" + message;
+	}
+
+	private void assertThatProxyServerReceived(String... expected) {
 		await().untilAsserted(() -> assertThat(proxyServerDouble.received()).containsExactly(expected));
 	}
 
