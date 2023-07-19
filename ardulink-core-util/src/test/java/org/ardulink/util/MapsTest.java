@@ -1,10 +1,10 @@
 package org.ardulink.util;
 
-import static org.ardulink.util.Maps.entry;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -13,16 +13,6 @@ import java.util.function.BiConsumer;
 import org.junit.jupiter.api.Test;
 
 class MapsTest {
-
-	private static final class CollectingBiConsumer<K, V> implements BiConsumer<K, V> {
-
-		List<Entry<K, V>> entries = new ArrayList<>();
-
-		@Override
-		public void accept(K k, V v) {
-			entries.add(Maps.entry(k, v));
-		}
-	}
 
 	Map<Integer, String> map = MapBuilder.<Integer, String>newMapBuilder().put(1, "a").put(2, "b").put(3, "c").build();
 
@@ -42,16 +32,22 @@ class MapsTest {
 
 	@Test
 	void testConsumeIfPresentWithMatch() {
-		CollectingBiConsumer<Integer, String> consumer = new CollectingBiConsumer<>();
-		Maps.consumeIfPresent(map, 1, consumer);
-		assertThat(consumer.entries).containsExactly(entry(1, "a"));
+		BiConsumer<Integer, String> consumerMock = consumerMock();
+		Maps.consumeIfPresent(map, 1, consumerMock);
+		verify(consumerMock).accept(1, "a");
+		verifyNoMoreInteractions(consumerMock);
 	}
 
 	@Test
 	void testConsumeIfPresentWithoutMatch() {
-		CollectingBiConsumer<Integer, String> consumer = new CollectingBiConsumer<>();
-		Maps.consumeIfPresent(map, 42, consumer);
-		assertThat(consumer.entries).isEmpty();
+		BiConsumer<Integer, String> consumerMock = consumerMock();
+		Maps.consumeIfPresent(map, 42, consumerMock);
+		verifyNoMoreInteractions(consumerMock);
+	}
+
+	@SuppressWarnings("unchecked")
+	private BiConsumer<Integer, String> consumerMock() {
+		return mock(BiConsumer.class);
 	}
 
 }
