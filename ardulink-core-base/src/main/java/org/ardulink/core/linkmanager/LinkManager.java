@@ -33,6 +33,7 @@ import static org.ardulink.util.ServiceLoaders.services;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.URIs.newURI;
+import static org.ardulink.util.anno.LapsedWith.JDK14;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -68,6 +69,7 @@ import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider;
 import org.ardulink.util.Numbers;
 import org.ardulink.util.Primitives;
 import org.ardulink.util.Throwables;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -408,7 +410,7 @@ public abstract class LinkManager {
 
 			private Object[] loadChoiceValues() throws Exception {
 				Object value = checkNotNull(this.getChoicesFor.readValue(),
-						"returntype for choice of %s was null (should be an empty Object[] or empty Collection)",
+						"returntype for choice of %s was null (should be empty Collection, empty Stream or an empty Object[])",
 						getName());
 				if (value instanceof Collection<?>) {
 					Collection<?> collection = (Collection<?>) value;
@@ -443,6 +445,7 @@ public abstract class LinkManager {
 			this.beanProperties = BeanProperties.builder(linkConfig).using(propertyAnnotated(Named.class)).build();
 		}
 
+		@LapsedWith(value = JDK14, module = "records")
 		class CacheKey {
 
 			private final Class<? extends LinkFactory> factoryType;
