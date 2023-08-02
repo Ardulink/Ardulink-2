@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.mqtt;
 
 import static io.moquette.broker.config.IConfig.ALLOW_ANONYMOUS_PROPERTY_NAME;
+import static io.moquette.broker.config.IConfig.ENABLE_TELEMETRY_NAME;
 import static io.moquette.broker.config.IConfig.HOST_PROPERTY_NAME;
 import static io.moquette.broker.config.IConfig.KEY_MANAGER_PASSWORD_PROPERTY_NAME;
 import static io.moquette.broker.config.IConfig.PERSISTENCE_ENABLED_PROPERTY_NAME;
@@ -99,6 +100,7 @@ public class MqttBroker implements Closeable {
 				properties.setProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, Boolean.FALSE.toString());
 			}
 			properties.put(PERSISTENCE_ENABLED_PROPERTY_NAME, Boolean.FALSE.toString());
+			properties.put(ENABLE_TELEMETRY_NAME, Boolean.FALSE.toString());
 			return properties;
 		}
 
