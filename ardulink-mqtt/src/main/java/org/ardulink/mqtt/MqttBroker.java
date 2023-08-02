@@ -30,6 +30,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 
 import io.moquette.broker.Server;
@@ -65,10 +66,6 @@ public class MqttBroker implements Closeable {
 			return this;
 		}
 
-		public Builder port(int port) {
-			return port(Integer.valueOf(port));
-		}
-
 		public Builder useSsl(boolean ssl) {
 			this.ssl = ssl;
 			return this;
@@ -84,12 +81,11 @@ public class MqttBroker implements Closeable {
 		}
 
 		public Properties properties() {
-			String sPort = String.valueOf(port == null ? defaultPort() : port.intValue());
+			String portAsString = String.valueOf(Optional.ofNullable(port).orElse(defaultPort()));
 			properties.put(HOST_PROPERTY_NAME, host);
-			properties.put(PORT_PROPERTY_NAME, sPort);
+			properties.put(PORT_PROPERTY_NAME, ssl ? "0" : portAsString);
 			if (ssl) {
-				properties.put(PORT_PROPERTY_NAME, 0);
-				properties.put(SSL_PORT_PROPERTY_NAME, sPort);
+				properties.put(SSL_PORT_PROPERTY_NAME, portAsString);
 				properties.put(WEB_SOCKET_PORT_PROPERTY_NAME, 0);
 
 				properties.put(KEY_MANAGER_PASSWORD_PROPERTY_NAME, "non-null-value");
