@@ -16,15 +16,17 @@ limitations under the License.
 
 package org.ardulink.mqtt;
 
-import static io.moquette.BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.HOST_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.KEY_MANAGER_PASSWORD_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.SSL_PORT_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME;
+import static io.moquette.broker.config.IConfig.ALLOW_ANONYMOUS_PROPERTY_NAME;
+import static io.moquette.broker.config.IConfig.DATA_PATH_PROPERTY_NAME;
+import static io.moquette.broker.config.IConfig.HOST_PROPERTY_NAME;
+import static io.moquette.broker.config.IConfig.KEY_MANAGER_PASSWORD_PROPERTY_NAME;
+import static io.moquette.broker.config.IConfig.PORT_PROPERTY_NAME;
+import static io.moquette.broker.config.IConfig.SSL_PORT_PROPERTY_NAME;
+import static io.moquette.broker.config.IConfig.WEB_SOCKET_PORT_PROPERTY_NAME;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Properties;
@@ -96,7 +98,7 @@ public class MqttBroker implements Closeable {
 			if (this.authenticator != null) {
 				properties.setProperty(ALLOW_ANONYMOUS_PROPERTY_NAME, Boolean.FALSE.toString());
 			}
-			properties.put(PERSISTENT_STORE_PROPERTY_NAME, "");
+			properties.put(DATA_PATH_PROPERTY_NAME, "");
 			return properties;
 		}
 
@@ -119,8 +121,12 @@ public class MqttBroker implements Closeable {
 	}
 
 	private Server startBroker(Server server, IConfig memoryConfig, IAuthenticator authenticator) {
-		server.startServer(memoryConfig, null, null, authenticator, null);
-		return server;
+		try {
+			server.startServer(memoryConfig, null, null, authenticator, null);
+			return server;
+		} catch (IOException e) {
+			throw propagate(e);
+		}
 	}
 
 	public String getHost() {
