@@ -16,11 +16,14 @@ limitations under the License.
  */
 package org.ardulink.util;
 
+import static java.util.stream.Collectors.toMap;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -30,7 +33,7 @@ import java.util.Map.Entry;
  * [adsense]
  *
  */
-public abstract class AbstractMultiMap<K, V> implements Iterable<Map.Entry<K, V>> {
+public abstract class AbstractMultiMap<K, V, T extends Collection<V>> implements Iterable<Entry<K, V>> {
 
 	public static class MapEntry<K, V> implements Entry<K, V> {
 
@@ -58,7 +61,7 @@ public abstract class AbstractMultiMap<K, V> implements Iterable<Map.Entry<K, V>
 		}
 	}
 
-	protected final Map<K, Collection<V>> data = new HashMap<>();
+	protected final Map<K, T> data = new HashMap<>();
 
 	public boolean isEmpty() {
 		return this.data.isEmpty();
@@ -69,7 +72,7 @@ public abstract class AbstractMultiMap<K, V> implements Iterable<Map.Entry<K, V>
 	}
 
 	public boolean remove(K key, V value) {
-		Collection<V> values = this.data.get(key);
+		T values = this.data.get(key);
 		boolean removed = values != null && values.remove(value);
 		if (removed && values.isEmpty()) {
 			this.data.remove(key);
@@ -77,7 +80,15 @@ public abstract class AbstractMultiMap<K, V> implements Iterable<Map.Entry<K, V>
 		return removed;
 	}
 
-	protected abstract Collection<V> make();
+	protected abstract T make();
+
+	private Set<Entry<K, T>> entrySet() {
+		return data.entrySet();
+	}
+
+	public Map<K, T> asMap() {
+		return entrySet().stream().collect(toMap(Entry::getKey, Entry::getValue));
+	}
 
 	public void clear() {
 		this.data.clear();
@@ -85,9 +96,9 @@ public abstract class AbstractMultiMap<K, V> implements Iterable<Map.Entry<K, V>
 
 	@Override
 	public Iterator<Entry<K, V>> iterator() {
-		return new Iterator<Map.Entry<K, V>>() {
+		return new Iterator<Entry<K, V>>() {
 
-			private final Iterator<Entry<K, Collection<V>>> it = data.entrySet().iterator();
+			private final Iterator<Entry<K, T>> it = entrySet().iterator();
 			private K key;
 			private Iterator<V> cur;
 
@@ -99,7 +110,7 @@ public abstract class AbstractMultiMap<K, V> implements Iterable<Map.Entry<K, V>
 
 			private void fetch() {
 				while ((cur == null || !cur.hasNext()) && it.hasNext()) {
-					Entry<K, Collection<V>> next = it.next();
+					Entry<K, T> next = it.next();
 					key = next.getKey();
 					cur = next.getValue().iterator();
 				}

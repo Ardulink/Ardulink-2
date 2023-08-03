@@ -16,11 +16,7 @@ limitations under the License.
  */
 package org.ardulink.util;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -31,19 +27,11 @@ import java.util.Set;
  * [adsense]
  *
  */
-public class SetMultiMap<K, V> extends AbstractMultiMap<K, V> {
+public class SetMultiMap<K, V> extends AbstractMultiMap<K, V, Set<V>> {
 
 	@Override
-	protected Collection<V> make() {
+	protected Set<V> make() {
 		return new HashSet<>();
-	}
-
-	public Map<K, Set<V>> asMap() {
-		Map<K, Set<V>> map = new HashMap<>();
-		for (Entry<K, Collection<V>> entry : data.entrySet()) {
-			map.put(entry.getKey(), (Set<V>) entry.getValue());
-		}
-		return map;
 	}
 
 }

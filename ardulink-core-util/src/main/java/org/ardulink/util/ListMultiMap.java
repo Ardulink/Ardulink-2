@@ -17,11 +17,7 @@ limitations under the License.
 package org.ardulink.util;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -31,19 +27,11 @@ import java.util.Map.Entry;
  * [adsense]
  *
  */
-public class ListMultiMap<K, V> extends AbstractMultiMap<K, V> {
+public class ListMultiMap<K, V> extends AbstractMultiMap<K, V, List<V>> {
 
 	@Override
-	protected Collection<V> make() {
+	protected List<V> make() {
 		return new ArrayList<>();
-	}
-
-	public Map<K, List<V>> asMap() {
-		Map<K, List<V>> map = new HashMap<>();
-		for (Entry<K, Collection<V>> entry : data.entrySet()) {
-			map.put(entry.getKey(), (List<V>) entry.getValue());
-		}
-		return map;
 	}
 
 }
