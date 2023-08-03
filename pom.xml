@@ -64,6 +64,7 @@
 		<mockito.version>4.11.0</mockito.version>
 		<jqwik.version>1.7.4</jqwik.version>
 		<awaitility.version>4.2.0</awaitility.version>
+		<junit-pioneer.version>1.9.1</junit-pioneer.version>
 		<!-- The next LTS release Camel 3.14, scheduled for December 2021, will be the last release to support Java 8 -->
 		<!-- https://camel.apache.org/blog/2021/09/eol-java8/ -->
 		<camel.version>3.14.0</camel.version>
@@ -157,10 +158,10 @@
 					<excludes>
 						<exclude>**/*IntegrationTest.java</exclude>
 					</excludes>
-                                        <groups>!in-progress</groups>
-                                        <systemPropertyVariables>
-                                                <junit.jupiter.execution.timeout.default>5m</junit.jupiter.execution.timeout.default>
-                                        </systemPropertyVariables>
+					<groups>!in-progress</groups>
+					<systemPropertyVariables>
+						<junit.jupiter.execution.timeout.default>5m</junit.jupiter.execution.timeout.default>
+					</systemPropertyVariables>
 				</configuration>
 				<executions>
 					<execution>
@@ -300,6 +301,13 @@
 				<artifactId>awaitility</artifactId>
 				<version>${awaitility.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.junit-pioneer</groupId>
+				<artifactId>junit-pioneer</artifactId>
+				<version>${junit-pioneer.version}</version>
+				<scope>test</scope>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 

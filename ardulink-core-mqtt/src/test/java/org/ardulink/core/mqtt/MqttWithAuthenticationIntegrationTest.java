@@ -16,13 +16,15 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
+import static org.ardulink.util.Throwables.getRootCause;
+import static org.ardulink.util.URIs.newURI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
 
 import org.ardulink.core.linkmanager.LinkManager;
-import org.ardulink.util.URIs;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -49,22 +51,23 @@ class MqttWithAuthenticationIntegrationTest {
 
 	@Test
 	void canNotConnectWithoutUserAndPassword() {
-		Exception exception = createLinkAndCatchRTE(URIs.newURI("ardulink://mqtt?topic=" + TOPIC));
-		assertThat(exception).hasMessageContaining("BAD").hasMessageContaining("USERNAME").hasMessageContaining("OR")
-				.hasMessageContaining("PASSWORD");
+		assertIsAuthError(createLinkAndCatchRTE(newURI("ardulink://mqtt?topic=" + TOPIC)));
 	}
 
 	@Test
 	void canNotConnectWithWrongPassword() {
-		Exception exception = createLinkAndCatchRTE(
-				URIs.newURI("ardulink://mqtt?user=" + USER + "&password=" + "anyWrongPassword" + "&topic=" + TOPIC));
-		assertThat(exception).hasMessageContaining("BAD").hasMessageContaining("USERNAME").hasMessageContaining("OR")
-				.hasMessageContaining("PASSWORD");
+		assertIsAuthError(createLinkAndCatchRTE(
+				newURI("ardulink://mqtt?user=" + USER + "&password=" + "anyWrongPassword" + "&topic=" + TOPIC)));
 	}
 
 	@Test
 	void canConnectUsingUserAndPassword() {
-		createLink(URIs.newURI("ardulink://mqtt?user=" + USER + "&password=" + PASSWORD + "&topic=" + TOPIC));
+		createLink(newURI("ardulink://mqtt?user=" + USER + "&password=" + PASSWORD + "&topic=" + TOPIC));
+	}
+
+	private void assertIsAuthError(Exception exception) {
+		assertThat(getRootCause(exception)).isInstanceOfSatisfying(MqttException.class,
+				e -> assertThat(e.getReasonCode()).isEqualTo(MqttException.REASON_CODE_FAILED_AUTHENTICATION));
 	}
 
 	private static RuntimeException createLinkAndCatchRTE(URI uri) {

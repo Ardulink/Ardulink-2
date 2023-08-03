@@ -155,10 +155,12 @@ class MqttLinkIntegrationTest {
 	private void breedReconnectedState(Link link) throws IOException {
 		TrackStateConnectionListener connectionListener = new TrackStateConnectionListener();
 		((AbstractListenerLink) extractDelegated(link)).addConnectionListener(connectionListener);
-		assertThat(connectionListener.isConnected()).isTrue();
-
-		restartBroker(connectionListener);
-		waitForLinkReconnect(connectionListener);
+		try {
+			assertThat(connectionListener.isConnected()).isTrue();
+			restartBrokerAndWaitForReconnect(connectionListener);
+		} finally {
+			((AbstractListenerLink) extractDelegated(link)).removeConnectionListener(connectionListener);
+		}
 	}
 
 	private Link makeLink(TestConfig config) throws IOException {
@@ -171,14 +173,14 @@ class MqttLinkIntegrationTest {
 		return link;
 	}
 
-	private void waitForLinkReconnect(TrackStateConnectionListener connectionListener) {
-		awaitConnectionIs(connectionListener, true);
-	}
-
-	private void restartBroker(TrackStateConnectionListener connectionListener) throws IOException {
+	private void restartBrokerAndWaitForReconnect(TrackStateConnectionListener connectionListener) throws IOException {
 		this.broker.stop();
 		awaitConnectionIs(connectionListener, false);
+		await().pollInterval(ofMillis(100)).until(() -> !this.mqttClient.isConnected());
+
 		this.broker.start();
+		awaitConnectionIs(connectionListener, true);
+		await().pollInterval(ofMillis(100)).until(() -> this.mqttClient.isConnected());
 	}
 
 	private void awaitConnectionIs(TrackStateConnectionListener connectionListener, boolean connected) {
