@@ -24,6 +24,7 @@ import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
+import static org.ardulink.core.mqtt.EventCollector.eventCollector;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -182,7 +183,7 @@ class MqttIntegrationTest {
 
 	// ---------------------------------------------------------------------------
 
-	EventCollector eventCollector = new EventCollector().withTimeout(TIMEOUT_IN_SECS, SECONDS);
+	EventCollector eventCollector = eventCollector().withTimeout(TIMEOUT_IN_SECS, SECONDS);
 
 	@ParameterizedTest(name = "{index} {0}")
 	@MethodSource("data")

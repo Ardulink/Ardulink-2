@@ -50,6 +50,14 @@ public class EventCollector implements EventListener {
 	private int timeout = 10;
 	private TimeUnit timeUnit = SECONDS;
 
+	public static EventCollector eventCollector() {
+		return new EventCollector();
+	}
+
+	private EventCollector() {
+		super();
+	}
+
 	public EventCollector withTimeout(int timeout, TimeUnit timeUnit) {
 		this.timeout = timeout;
 		this.timeUnit = timeUnit;

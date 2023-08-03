@@ -23,6 +23,7 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
+import static org.ardulink.core.mqtt.EventCollector.eventCollector;
 import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -121,7 +122,7 @@ class MqttLinkIntegrationTest {
 		}
 	}
 
-	EventCollector eventCollector = new EventCollector();
+	EventCollector eventCollector = eventCollector();
 
 	@ParameterizedTest(name = "{index} {0}")
 	@MethodSource("data")
