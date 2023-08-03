@@ -176,15 +176,18 @@ class MqttLinkIntegrationTest {
 	private void restartBrokerAndWaitForReconnect(TrackStateConnectionListener connectionListener) throws IOException {
 		this.broker.stop();
 		awaitConnectionIs(connectionListener, false);
-		await().pollInterval(ofMillis(100)).until(() -> !this.mqttClient.isConnected());
+		await("mqttClient lost connection").timeout(2, MINUTES).pollInterval(ofMillis(100))
+				.until(() -> !this.mqttClient.isConnected());
 
 		this.broker.start();
 		awaitConnectionIs(connectionListener, true);
-		await().pollInterval(ofMillis(100)).until(() -> this.mqttClient.isConnected());
+		await("mqttClient reconnected").timeout(2, MINUTES).pollInterval(ofMillis(100))
+				.until(() -> this.mqttClient.isConnected());
 	}
 
 	private void awaitConnectionIs(TrackStateConnectionListener connectionListener, boolean connected) {
-		await().pollInterval(ofMillis(100)).until(connectionListener.isConnected()::get, t -> t == connected);
+		await("await connectionListener == " + connected).timeout(2, MINUTES).pollInterval(ofMillis(100))
+				.until(connectionListener.isConnected()::get, t -> t == connected);
 	}
 
 }
