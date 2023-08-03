@@ -188,8 +188,8 @@ public abstract class LinkManager {
 		String getName();
 
 		/**
-		 * Returns the description of this attribute. If there is a localized
-		 * description available <code>null</code> is returned.
+		 * Returns the localized description of this attribute. Returns
+		 * <code>null</code> if there is no localized description available.
 		 * 
 		 * @return description of this attribute
 		 */
@@ -241,6 +241,8 @@ public abstract class LinkManager {
 		Object[] getChoiceValues();
 
 		ValidationInfo getValidationInfo();
+
+		String getChoiceDescription(Object value);
 
 	}
 
@@ -354,6 +356,11 @@ public abstract class LinkManager {
 			@Override
 			public String getDescription() {
 				return getFromBundle(this.attribute.getName() + ".description", null);
+			}
+
+			@Override
+			public String getChoiceDescription(Object value) {
+				return getFromBundle(this.attribute.getName() + "." + value, null);
 			}
 
 			private String getFromBundle(String bundleKey, String defaultValue) {

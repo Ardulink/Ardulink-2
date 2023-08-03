@@ -24,7 +24,9 @@ import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
+import static org.ardulink.core.mqtt.Broker.newBroker;
 import static org.ardulink.core.mqtt.EventCollector.eventCollector;
+import static org.ardulink.core.mqtt.duplicated.AnotherMqttClient.newClient;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -80,10 +82,10 @@ class MqttIntegrationTest {
 	static final String TOPIC = "myTopic" + System.currentTimeMillis();
 
 	@RegisterExtension
-	Broker broker = Broker.newBroker().port(freePort());
+	Broker broker = newBroker().port(freePort());
 
 	@RegisterExtension
-	AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC, broker.port());
+	AnotherMqttClient mqttClient = newClient(TOPIC, broker.port());
 
 	Link link;
 

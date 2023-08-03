@@ -21,7 +21,6 @@ import static org.ardulink.util.Preconditions.checkNotNull;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
@@ -41,7 +40,7 @@ public class MqttLinkConfig implements LinkConfig {
 
 	public enum Connection {
 		TCP, SSL, TLS
-    }
+	}
 
 	public static final String DEFAULT_HOST = "localhost";
 
@@ -62,9 +61,7 @@ public class MqttLinkConfig implements LinkConfig {
 	private String topic = normalize("home/devices/ardulink/");
 
 	@Named("qos")
-	@PositiveOrZero
-	@Max(2)
-	public int qos;
+	public Qos qos = Qos.DEFAULT;
 
 	@Named("clientId")
 	@NotNull

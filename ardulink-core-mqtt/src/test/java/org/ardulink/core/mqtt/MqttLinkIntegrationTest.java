@@ -23,7 +23,9 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
+import static org.ardulink.core.mqtt.Broker.newBroker;
 import static org.ardulink.core.mqtt.EventCollector.eventCollector;
+import static org.ardulink.core.mqtt.duplicated.AnotherMqttClient.newClient;
 import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -76,13 +78,9 @@ class MqttLinkIntegrationTest {
 
 	}
 
-	public static class TrackStateConnectionListener implements ConnectionListener {
+	private static class TrackStateConnectionListener implements ConnectionListener {
 
-		private AtomicBoolean connected = new AtomicBoolean(true);
-
-		public AtomicBoolean isConnected() {
-			return connected;
-		}
+		public final AtomicBoolean connected = new AtomicBoolean(true);
 
 		@Override
 		public void connectionLost() {
@@ -99,10 +97,10 @@ class MqttLinkIntegrationTest {
 	static final String TOPIC = "myTopic" + System.currentTimeMillis();
 
 	@RegisterExtension
-	Broker broker = Broker.newBroker().port(freePort());
+	Broker broker = newBroker().port(freePort());
 
 	@RegisterExtension
-	AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC, broker.port());
+	AnotherMqttClient mqttClient = newClient(TOPIC, broker.port());
 
 	String messageFormat;
 
@@ -157,7 +155,7 @@ class MqttLinkIntegrationTest {
 		TrackStateConnectionListener connectionListener = new TrackStateConnectionListener();
 		((AbstractListenerLink) extractDelegated(link)).addConnectionListener(connectionListener);
 		try {
-			assertThat(connectionListener.isConnected()).isTrue();
+			assertThat(connectionListener.connected).isTrue();
 			restartBrokerAndWaitForReconnect(connectionListener);
 		} finally {
 			((AbstractListenerLink) extractDelegated(link)).removeConnectionListener(connectionListener);
@@ -185,8 +183,7 @@ class MqttLinkIntegrationTest {
 	}
 
 	private void awaitConnectionIs(TrackStateConnectionListener connectionListener, boolean connected) {
-		await("await connectionListener == " + connected).until(connectionListener.isConnected()::get,
-				t -> t == connected);
+		await("await connectionListener == " + connected).until(connectionListener.connected::get, t -> t == connected);
 	}
 
 	private static ConditionFactory await(String alias) {

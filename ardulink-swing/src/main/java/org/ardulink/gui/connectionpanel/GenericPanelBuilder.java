@@ -37,6 +37,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
@@ -111,12 +112,18 @@ public class GenericPanelBuilder implements PanelBuilder {
 
 	private static JComponent createCheckBox(ConfigAttribute attribute) {
 		JCheckBox checkBox = new JCheckBox();
-		checkBox.addActionListener(e -> attribute.setValue(Boolean.valueOf(checkBox.isSelected())));
+		checkBox.addActionListener(e -> attribute.setValue(checkBox.isSelected()));
 		return setState(checkBox, attribute);
 	}
 
 	private static JComponent createComboxBox(ConfigAttribute attribute) {
 		JComboBox<Object> jComboBox = new JComboBox<>(attribute.getChoiceValues());
+		if (attribute.getType().isEnum()) {
+			ListCellRenderer<Object> delegate = jComboBox.getRenderer();
+			jComboBox.setRenderer(
+					(list, value, index, isSelected, cellHasFocus) -> delegate.getListCellRendererComponent(list,
+							value == null ? null : resolveText(attribute, value), index, isSelected, cellHasFocus));
+		}
 		jComboBox.addActionListener(e -> attribute.setValue(jComboBox.getSelectedItem()));
 		boolean nullIsAvalidItem = asList(attribute.getChoiceValues()).contains(null);
 		// raise a selection event on model changes
@@ -124,6 +131,11 @@ public class GenericPanelBuilder implements PanelBuilder {
 				pce -> setSelection(jComboBox, attribute.getValue(), nullIsAvalidItem));
 		setSelection(jComboBox, attribute.getValue(), nullIsAvalidItem);
 		return jComboBox;
+	}
+
+	private static Object resolveText(ConfigAttribute attribute, Object value) {
+		String choiceDescription = attribute.getChoiceDescription(value);
+		return choiceDescription == null ? value : choiceDescription;
 	}
 
 	private static JComponent createSpinner(ConfigAttribute attribute) {
