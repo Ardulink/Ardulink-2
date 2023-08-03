@@ -20,6 +20,7 @@ import static java.lang.Long.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.qos.ArduinoStub.newArduinoStub;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -50,7 +51,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 class QosLinkTest {
 
 	@RegisterExtension
-	ArduinoStub arduinoStub = ArduinoStub.newArduinoStub();
+	ArduinoStub arduinoStub = newArduinoStub();
 
 	ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
 	QosLink qosLink;
