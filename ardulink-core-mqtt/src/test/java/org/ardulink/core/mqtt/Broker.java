@@ -16,11 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
-import static io.moquette.BrokerConstants.ALLOW_ANONYMOUS_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.HOST_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
-import static io.moquette.BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME;
+import static io.moquette.broker.config.IConfig.*;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toMap;
 import static org.ardulink.util.Maps.toProperties;
@@ -111,7 +107,8 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 		return MapBuilder.<String, Object>newMapBuilder() //
 				.put(HOST_PROPERTY_NAME, host) //
 				.put(PORT_PROPERTY_NAME, port) //
-				.put(PERSISTENT_STORE_PROPERTY_NAME, "") //
+				.put(PERSISTENCE_ENABLED_PROPERTY_NAME, Boolean.FALSE) //
+				.put(ENABLE_TELEMETRY_NAME, Boolean.FALSE) //
 				.put(WEB_SOCKET_PORT_PROPERTY_NAME, 0) //
 				.put(ALLOW_ANONYMOUS_PROPERTY_NAME, isAnonymousLoginAllowed()) //
 				.build();
@@ -128,12 +125,17 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 	public Broker recordMessages() {
 		listeners.add(new AbstractInterceptHandler() {
 			@Override
+			public String getID() {
+				return getClass().getName();
+			}
+			
+			@Override
 			public void onPublish(InterceptPublishMessage message) {
 				messages.add(new Message(message.getTopicName(), new String(message.getPayload().array())));
 			}
 
 			@Override
-			public String getID() {
+			public void onSessionLoopError(Throwable error) {
 				throw new IllegalStateException("not implemented");
 			}
 		});
