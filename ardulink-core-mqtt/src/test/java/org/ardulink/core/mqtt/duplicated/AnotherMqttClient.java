@@ -17,11 +17,11 @@ limitations under the License.
 package org.ardulink.core.mqtt.duplicated;
 
 import static java.time.Duration.ofMillis;
-import static java.time.Duration.ofSeconds;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.util.Throwables.propagate;
 import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
@@ -137,7 +137,7 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 				try {
 					subscribe();
 				} catch (MqttException e) {
-					Throwables.propagate(e);
+					propagate(e);
 				}
 			}
 		};
@@ -156,7 +156,7 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 	}
 
 	public void awaitMessages(ThrowingConsumer<List<Message>> throwingConsumer) {
-		await().timeout(ofSeconds(10)).pollInterval(ofMillis(100)).untilAsserted(() -> {
+		await().forever().pollInterval(ofMillis(100)).untilAsserted(() -> {
 			throwingConsumer.accept(messagesView);
 			messages.clear();
 		});

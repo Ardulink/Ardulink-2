@@ -16,7 +16,9 @@ limitations under the License.
 
 package org.ardulink.mqtt.camel;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.getCauses;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -26,7 +28,6 @@ import org.apache.camel.FailedToStartRouteException;
 import org.ardulink.mqtt.CommandLineArguments;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttMain;
-import org.ardulink.util.Strings;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -40,7 +41,7 @@ import org.junit.jupiter.api.Timeout;
  * [adsense]
  *
  */
-@Timeout(10)
+@Timeout(value = 10, unit = SECONDS)
 class MqttMainStandaloneIntegrationTest {
 
 	String someUser = "someUser";
@@ -96,7 +97,7 @@ class MqttMainStandaloneIntegrationTest {
 	}
 
 	private boolean hasAuthentication() {
-		return !Strings.nullOrEmpty(brokerPassword) && brokerPassword != null;
+		return !nullOrEmpty(brokerPassword) && brokerPassword != null;
 	}
 
 	@Test

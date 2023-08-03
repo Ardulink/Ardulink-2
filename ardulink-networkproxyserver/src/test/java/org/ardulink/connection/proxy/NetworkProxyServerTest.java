@@ -1,8 +1,8 @@
 package org.ardulink.connection.proxy;
 
 import static java.time.Duration.ofMillis;
-import static java.time.Duration.ofSeconds;
 import static java.util.Collections.singletonList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
@@ -32,10 +32,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-@Timeout(NetworkProxyServerTest.TIMEOUT)
+@Timeout(value = 5, unit = SECONDS)
 class NetworkProxyServerTest {
-
-	static final int TIMEOUT = 5;
 
 	private final StringBuilder proxySideReceived = new StringBuilder();
 	private final Connection proxySideConnection = new Connection() {
@@ -86,8 +84,7 @@ class NetworkProxyServerTest {
 	}
 
 	private void assertReceived(String expectedMsg) {
-		await().timeout(ofSeconds(TIMEOUT * 2)).pollInterval(ofMillis(50)).until(() -> proxySideReceived.toString(),
-				expectedMsg::equals);
+		await().forever().pollInterval(ofMillis(50)).until(() -> proxySideReceived.toString(), expectedMsg::equals);
 	}
 
 	private ConnectionBasedLink clientLinkToServer(String hostname, int port) throws IOException {

@@ -68,7 +68,7 @@ import org.junit.jupiter.api.Timeout;
 @Timeout(5)
 class ConnectionBasedLinkTest {
 
-	// TODO PF Migrate to @Rule Arduino
+	// TODO PF Migrate to Arduino Jupiter Extension
 	private PipedOutputStream arduinosOutputStream;
 	private final ByteArrayOutputStream os = new ByteArrayOutputStream();
 	private Connection connection;
@@ -355,7 +355,7 @@ class ConnectionBasedLinkTest {
 	}
 
 	private void waitUntilRead() {
-		await().pollDelay(ofMillis(10)).until(() -> bytesNotYetRead.get() == 0);
+		await().forever().pollDelay(ofMillis(10)).until(() -> bytesNotYetRead.get() == 0);
 	}
 
 }

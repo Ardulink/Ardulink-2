@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.mqtt.Broker.newBroker;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.Throwables.getRootCause;
@@ -40,7 +41,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * [adsense]
  *
  */
-@Timeout(30)
+@Timeout(value = 30, unit = SECONDS)
 class MqttWithAuthenticationIntegrationTest {
 
 	static final String USER = "user";

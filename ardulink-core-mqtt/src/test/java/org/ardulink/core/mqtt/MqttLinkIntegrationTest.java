@@ -187,7 +187,7 @@ class MqttLinkIntegrationTest {
 	}
 
 	private static ConditionFactory await(String alias) {
-		return Awaitility.await(alias).timeout(2, MINUTES).pollInterval(ofMillis(100));
+		return Awaitility.await(alias).forever().pollInterval(ofMillis(100));
 	}
 
 }

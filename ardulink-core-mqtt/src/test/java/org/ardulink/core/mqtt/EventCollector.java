@@ -18,7 +18,7 @@ package org.ardulink.core.mqtt;
 
 import static java.time.Duration.ofMillis;
 import static java.util.Collections.emptyList;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,6 +34,7 @@ import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.util.ListMultiMap;
+import org.awaitility.core.ConditionFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -46,9 +47,7 @@ import org.ardulink.util.ListMultiMap;
 public class EventCollector implements EventListener {
 
 	private final ListMultiMap<Type, PinValueChangedEvent> events = new ListMultiMap<>();
-
-	private int timeout = 10;
-	private TimeUnit timeUnit = SECONDS;
+	private Long timeout;
 
 	public static EventCollector eventCollector() {
 		return new EventCollector();
@@ -59,8 +58,7 @@ public class EventCollector implements EventListener {
 	}
 
 	public EventCollector withTimeout(int timeout, TimeUnit timeUnit) {
-		this.timeout = timeout;
-		this.timeUnit = timeUnit;
+		this.timeout = timeUnit.toMillis(timeout);
 		return this;
 	}
 
@@ -75,10 +73,14 @@ public class EventCollector implements EventListener {
 	}
 
 	public void awaitEvents(Type type, Predicate<? super List<? extends PinValueChangedEvent>> predicate) {
-		await().pollInterval(ofMillis(100)).timeout(timeout, timeUnit).untilAsserted(() -> {
+		conditionFactory().pollInterval(ofMillis(100)).untilAsserted(() -> {
 			List<PinValueChangedEvent> eventsOfType = eventsOfType(type);
 			assertThat(eventsOfType).matches(predicate).describedAs("Received events: %s", eventsOfType);
 		});
+	}
+
+	private ConditionFactory conditionFactory() {
+		return timeout == null ? await().forever() : await().timeout(timeout, MILLISECONDS);
 	}
 
 	private List<PinValueChangedEvent> eventsOfType(Type type) {

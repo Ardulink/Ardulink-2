@@ -81,7 +81,7 @@ import com.icegreen.greenmail.smtp.SmtpServer;
  * [adsense]
  *
  */
-@Timeout(10)
+@Timeout(value = 10, unit = SECONDS)
 class ArdulinkMailOnCamelIntegrationTest {
 
 	private static final String mockURI = "ardulink://mock";
@@ -283,7 +283,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 	private List<Message> fetchMails(String loginId, String password) throws MessagingException, InterruptedException {
 		ImapServer imapd = mailMock.getImap();
 		List<Message> messages = new ArrayList<>();
-		await().pollInterval(100, MILLISECONDS)
+		await().forever().pollInterval(100, MILLISECONDS)
 				.until(() -> messages.addAll(retrieveViaImap(imapd.getBindTo(), imapd.getPort(), loginId, password)));
 		return messages;
 	}

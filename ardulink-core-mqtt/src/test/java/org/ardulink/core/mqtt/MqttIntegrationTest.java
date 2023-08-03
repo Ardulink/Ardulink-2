@@ -55,10 +55,8 @@ import org.junit.jupiter.params.provider.MethodSource;
  * [adsense]
  *
  */
-@Timeout(MqttIntegrationTest.TIMEOUT_IN_SECS)
+@Timeout(value = 10, unit = SECONDS)
 class MqttIntegrationTest {
-
-	static final int TIMEOUT_IN_SECS = 10;
 
 	private static class TestConfig {
 
@@ -185,7 +183,7 @@ class MqttIntegrationTest {
 
 	// ---------------------------------------------------------------------------
 
-	EventCollector eventCollector = eventCollector().withTimeout(TIMEOUT_IN_SECS, SECONDS);
+	EventCollector eventCollector = eventCollector();
 
 	@ParameterizedTest(name = "{index} {0}")
 	@MethodSource("data")

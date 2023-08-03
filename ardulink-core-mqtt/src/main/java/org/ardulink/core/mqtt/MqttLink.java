@@ -53,7 +53,6 @@ import org.ardulink.core.Tone;
 import org.ardulink.core.mqtt.MqttLinkConfig.Connection;
 import org.ardulink.core.proto.api.MessageIdHolders;
 import org.ardulink.util.MapBuilder;
-import org.ardulink.util.Throwables;
 import org.ardulink.util.anno.LapsedWith;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -142,7 +141,7 @@ public class MqttLink extends AbstractListenerLink {
 				try {
 					subscribe();
 				} catch (MqttException e) {
-					throw Throwables.propagate(e);
+					throw propagate(e);
 				}
 			}
 		};

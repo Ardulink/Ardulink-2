@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.proxy;
 
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.proxy.ProxyServerDouble.portName;
 import static org.ardulink.util.URIs.newURI;
@@ -41,7 +42,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * [adsense]
  *
  */
-@Timeout(5)
+@Timeout(value = 5, unit = SECONDS)
 class ProxyLinkFactoryTest {
 
 	@RegisterExtension
@@ -114,7 +115,7 @@ class ProxyLinkFactoryTest {
 	}
 
 	private void assertThatProxyServerReceived(String... expected) {
-		await().untilAsserted(() -> assertThat(proxyServerDouble.received()).containsExactly(expected));
+		await().forever().untilAsserted(() -> assertThat(proxyServerDouble.received()).containsExactly(expected));
 	}
 
 }
