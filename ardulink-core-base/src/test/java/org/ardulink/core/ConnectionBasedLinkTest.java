@@ -16,7 +16,6 @@ limitations under the License.
 
 package org.ardulink.core;
 
-import static java.time.Duration.ofMillis;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -31,31 +30,23 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.ardulink.core.Connection.ListenerAdapter;
+import org.ardulink.core.Connection.Listener;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.EventListenerAdapter;
 import org.ardulink.core.events.FilteredEventListenerAdapter;
 import org.ardulink.core.events.PinValueChangedEvent;
-import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.Joiner;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -65,57 +56,57 @@ import org.junit.jupiter.api.Timeout;
  * [adsense]
  *
  */
-@Timeout(5)
+@Timeout(value = 5, unit = SECONDS)
 class ConnectionBasedLinkTest {
 
-	// TODO PF Migrate to Arduino Jupiter Extension
-	private PipedOutputStream arduinosOutputStream;
-	private final ByteArrayOutputStream os = new ByteArrayOutputStream();
-	private Connection connection;
-	private ConnectionBasedLink link;
-	private final AtomicInteger bytesNotYetRead = new AtomicInteger();
+	private final class StringBuilderListenerAdapter implements Listener {
 
-	@BeforeEach
-	void setup() throws IOException {
-		PipedInputStream pis = new PipedInputStream();
-		this.arduinosOutputStream = new PipedOutputStream(pis);
-		ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
-		this.connection = new StreamConnection(pis, os, byteStreamProcessor);
-		this.connection.addListener(new ListenerAdapter() {
-			@Override
-			public void received(byte[] bytes) throws IOException {
-				ConnectionBasedLinkTest.this.bytesNotYetRead.addAndGet(-bytes.length);
-			}
-		});
-		this.link = new ConnectionBasedLink(connection, byteStreamProcessor);
-	}
+		private final StringBuilder received = new StringBuilder();
+		private final StringBuilder sent = new StringBuilder();
 
-	@AfterEach
-	void tearDown() throws IOException {
-		if (this.link != null) {
-			this.link.close();
+		@Override
+		public void received(byte[] bytes) throws IOException {
+			received.append(new String(bytes));
+		}
+
+		@Override
+		public void sent(byte[] bytes) throws IOException {
+			sent.append(new String(bytes));
 		}
 	}
+
+	private static final class DigitalPinValueCollector extends EventListenerAdapter {
+
+		private final List<PinValueChangedEvent> digitalEvents = new ArrayList<>();
+
+		@Override
+		public void stateChanged(DigitalPinValueChangedEvent event) {
+			digitalEvents.add(event);
+		}
+	}
+
+	@RegisterExtension
+	IOStreamWatchExtension streamEx = new IOStreamWatchExtension();
 
 	@Test
 	void canSendAnalogValue() throws IOException {
 		int pin = anyPositive(int.class);
 		int value = anyPositive(int.class);
-		this.link.switchAnalogPin(analogPin(pin), value);
+		streamEx.link().switchAnalogPin(analogPin(pin), value);
 		assertToArduinoWasSent(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(pin).withValue(value));
 	}
 
 	@Test
 	void canSendDigitalValue() throws IOException {
 		int pin = anyPositive(int.class);
-		this.link.switchDigitalPin(digitalPin(pin), true);
+		streamEx.link().switchDigitalPin(digitalPin(pin), true);
 		assertToArduinoWasSent(alpProtocolMessage(POWER_PIN_SWITCH).forPin(pin).withState(true));
 	}
 
 	@Test
 	void doesSendStartListeningAnalogCommangToArduino() throws IOException {
 		int pin = anyPositive(int.class);
-		this.link.addListener(new FilteredEventListenerAdapter(analogPin(pin), null));
+		streamEx.link().addListener(new FilteredEventListenerAdapter(analogPin(pin), null));
 		assertToArduinoWasSent(alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin).withoutValue());
 	}
 
@@ -124,12 +115,12 @@ class ConnectionBasedLinkTest {
 		int pin = anyPositive(int.class);
 		FilteredEventListenerAdapter l1 = new FilteredEventListenerAdapter(analogPin(pin), null);
 		FilteredEventListenerAdapter l2 = new FilteredEventListenerAdapter(analogPin(pin), null);
-		this.link.addListener(l1);
-		this.link.addListener(l2);
+		streamEx.link().addListener(l1);
+		streamEx.link().addListener(l2);
 		String m1 = alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin).withoutValue();
 		assertToArduinoWasSent(m1, m1);
-		this.link.removeListener(l1);
-		this.link.removeListener(l2);
+		streamEx.link().removeListener(l1);
+		streamEx.link().removeListener(l2);
 		String m2 = alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(pin).withoutValue();
 		assertToArduinoWasSent(m1, m1, m2);
 	}
@@ -143,127 +134,98 @@ class ConnectionBasedLinkTest {
 				analogEvents.add(event);
 			}
 		};
-		this.link.addListener(listener);
+		streamEx.link().addListener(listener);
 		int pin = anyPositive(int.class);
 		int value = anyPositive(int.class);
 		String message = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value);
-		simulateArduinoSend(message);
-		waitUntilRead();
+		streamEx.simulateArduinoSend(message);
 		assertThat(analogEvents).contains(analogPinValueChanged(analogPin(pin), value));
 	}
 
 	@Test
 	void doesSendStartListeningDigitalCommangToArduino() throws IOException {
 		int pin = anyPositive(int.class);
-		this.link.addListener(new FilteredEventListenerAdapter(digitalPin(pin), null));
+		streamEx.link().addListener(new FilteredEventListenerAdapter(digitalPin(pin), null));
 		assertToArduinoWasSent(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(pin).withoutValue());
 	}
 
 	@Test
 	void canReceiveDigitalPinChange() throws IOException {
-		List<PinValueChangedEvent> digitalEvents = new ArrayList<>();
-		EventListenerAdapter listener = new EventListenerAdapter() {
-			@Override
-			public void stateChanged(DigitalPinValueChangedEvent event) {
-				digitalEvents.add(event);
-			}
-		};
-		this.link.addListener(listener);
+		DigitalPinValueCollector listener = new DigitalPinValueCollector();
+		streamEx.link().addListener(listener);
 		int pin = anyPositive(int.class);
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
-		simulateArduinoSend(message);
-		waitUntilRead();
-		assertThat(digitalEvents).contains(digitalPinValueChanged(digitalPin(pin), true));
+		streamEx.simulateArduinoSend(message);
+		assertThat(listener.digitalEvents).contains(digitalPinValueChanged(digitalPin(pin), true));
 	}
 
 	@Test
 	void canFilterPins() throws IOException {
 		int pin = anyPositive(int.class);
-		List<DigitalPinValueChangedEvent> digitalEvents = new ArrayList<>();
-		EventListenerAdapter listener = new EventListenerAdapter() {
-			@Override
-			public void stateChanged(DigitalPinValueChangedEvent event) {
-				digitalEvents.add(event);
-			}
-		};
-		this.link.addListener(new FilteredEventListenerAdapter(digitalPin(anyOtherPin(pin)), listener));
+		DigitalPinValueCollector listener = new DigitalPinValueCollector();
+		streamEx.link().addListener(new FilteredEventListenerAdapter(digitalPin(anyOtherPin(pin)), listener));
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
-		simulateArduinoSend(message);
-		waitUntilRead();
+		streamEx.simulateArduinoSend(message);
 		List<DigitalPinValueChangedEvent> emptyList = Collections.emptyList();
-		assertThat(digitalEvents).isEqualTo(emptyList);
+		assertThat(listener.digitalEvents).isEqualTo(emptyList);
 	}
 
 	@Test
 	void canSendKbdEvents() throws IOException {
-		this.link.sendKeyPressEvent('#', 1, 2, 3, 4);
+		streamEx.link().sendKeyPressEvent('#', 1, 2, 3, 4);
 		assertToArduinoWasSent("alp://kprs/chr#cod1loc2mod3mex4");
 	}
 
 	@Test
 	void canSendToneWithDuration() throws IOException {
-		this.link.sendTone(Tone.forPin(analogPin(2)).withHertz(3000).withDuration(5, SECONDS));
+		streamEx.link().sendTone(Tone.forPin(analogPin(2)).withHertz(3000).withDuration(5, SECONDS));
 		assertToArduinoWasSent("alp://tone/2/3000/5000");
 	}
 
 	@Test
 	void canSendEndlessTone() throws IOException {
-		this.link.sendTone(Tone.forPin(analogPin(2)).withHertz(3000).endless());
+		streamEx.link().sendTone(Tone.forPin(analogPin(2)).withHertz(3000).endless());
 		assertToArduinoWasSent("alp://tone/2/3000/-1");
 	}
 
 	@Test
 	void canSendNoTone() throws IOException {
-		this.link.sendNoTone(analogPin(5));
+		streamEx.link().sendNoTone(analogPin(5));
 		assertToArduinoWasSent("alp://notn/5");
 	}
 
 	@Test
 	void canSendCustomMessageSingleValue() throws IOException {
 		String message = "myMessage";
-		this.link.sendCustomMessage(message);
+		streamEx.link().sendCustomMessage(message);
 		assertToArduinoWasSent("alp://cust/" + message);
 	}
 
 	@Test
 	void canSendCustomMessageMultiValue() throws IOException {
-		this.link.sendCustomMessage("1", "2", "3");
+		streamEx.link().sendCustomMessage("1", "2", "3");
 		assertToArduinoWasSent("alp://cust/1/2/3");
 	}
 
 	@Test
-	void canReadRawMessagesRead() throws IOException {
+	void canReadRawMessagesRead() throws Exception {
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(anyPositive(int.class)).withState(true);
-		StringBuilder sb = new StringBuilder();
-		this.connection.addListener(new ListenerAdapter() {
-			@Override
-			public void received(byte[] bytes) throws IOException {
-				sb.append(new String(bytes));
-			}
-		});
-		simulateArduinoSend(message);
-		waitUntilRead();
-		assertThat(sb).hasToString(message + "\n");
+		assertThat(streamEx.withListener(new StringBuilderListenerAdapter(),
+				() -> streamEx.simulateArduinoSend(message)).received).hasToString(message + "\n");
 	}
 
 	@Test
-	void canReadRawMessagesSent() throws IOException {
-		StringBuilder sb = new StringBuilder();
-		this.connection.addListener(new ListenerAdapter() {
-			@Override
-			public void sent(byte[] bytes) throws IOException {
-				sb.append(new String(bytes));
-			}
-		});
+	void canReadRawMessagesSent() throws Exception {
 		int pin = anyPositive(int.class);
 		int value = anyPositive(int.class);
-		this.link.switchAnalogPin(analogPin(pin), value);
-		assertThat(sb).hasToString(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(pin).withValue(value) + "\n");
+		assertThat(streamEx.withListener(new StringBuilderListenerAdapter(),
+				() -> streamEx.link().switchAnalogPin(analogPin(pin), value)).sent)
+				.hasToString(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(pin).withValue(value) + "\n");
 	}
 
 	@Test
 	void twoListenersMustNotInference() throws IOException {
-		this.link.addListener(new EventListener() {
+		streamEx.link().addListener(new EventListener() {
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
 				throw new IllegalStateException("Listener tries to inference");
@@ -275,7 +237,7 @@ class ConnectionBasedLinkTest {
 			}
 		});
 		List<String> events = new ArrayList<>();
-		this.link.addListener(new EventListener() {
+		streamEx.link().addListener(new EventListener() {
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
 				events.add("AnalogPinValueChangedEvent");
@@ -289,26 +251,24 @@ class ConnectionBasedLinkTest {
 		int pin = anyPositive(int.class);
 		String m1 = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(anyOtherValueThan(pin));
 		String m2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
-		simulateArduinoSend(m1);
-		simulateArduinoSend(m2);
-		waitUntilRead();
+		streamEx.simulateArduinoSend(m1);
+		streamEx.simulateArduinoSend(m2);
 		assertThat(Joiner.on(",").join(events)).isEqualTo("AnalogPinValueChangedEvent,DigitalPinValueChangedEvent");
 	}
 
 	@Test
 	void unparseableInput() throws IOException {
 		String m1 = "eXTRaoRdINARy dATa";
-		simulateArduinoSend(m1);
+		streamEx.simulateArduinoSend(m1);
 		String m2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(anyPositive(int.class)).withState(true);
-		simulateArduinoSend(m2);
-		simulateArduinoSend(m2);
-		waitUntilRead();
+		streamEx.simulateArduinoSend(m2);
+		streamEx.simulateArduinoSend(m2);
 	}
 
 	@Test
 	void doesDeregisterAllListenersBeforeClosing() throws IOException {
 		StringBuilder sb = new StringBuilder();
-		this.link.addListener(new EventListener() {
+		streamEx.link().addListener(new EventListener() {
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
 				sb.append(event);
@@ -319,8 +279,8 @@ class ConnectionBasedLinkTest {
 				sb.append(event);
 			}
 		});
-		this.link.close();
-		this.link.switchAnalogPin(analogPin(anyPositive(int.class)), anyPositive(int.class));
+		streamEx.link().close();
+		streamEx.link().switchAnalogPin(analogPin(anyPositive(int.class)), anyPositive(int.class));
 		assertThat(sb).isEmpty();
 	}
 
@@ -336,26 +296,12 @@ class ConnectionBasedLinkTest {
 		return value + 1;
 	}
 
-	private void simulateArduinoSend(String message) throws IOException {
-		this.arduinosOutputStream.write(message.getBytes());
-		this.arduinosOutputStream.write('\n');
-		this.bytesNotYetRead.addAndGet(message.getBytes().length + 1);
-	}
-
 	private void assertToArduinoWasSent(String... messages) {
 		assertToArduinoWasSent(Joiner.on("\n").join(messages));
 	}
 
 	private void assertToArduinoWasSent(String message) {
-		assertThat(toArduinoWasSent()).isEqualTo(message + "\n");
-	}
-
-	private String toArduinoWasSent() {
-		return this.os.toString();
-	}
-
-	private void waitUntilRead() {
-		await().forever().pollDelay(ofMillis(10)).until(() -> bytesNotYetRead.get() == 0);
+		assertThat(streamEx.toArduinoWasSent()).isEqualTo(message + "\n");
 	}
 
 }
