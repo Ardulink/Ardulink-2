@@ -27,7 +27,6 @@ import static org.ardulink.core.mqtt.EventCollector.eventCollector;
 import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,6 +39,8 @@ import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
 import org.ardulink.core.mqtt.duplicated.Message;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionFactory;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -176,18 +177,20 @@ class MqttLinkIntegrationTest {
 	private void restartBrokerAndWaitForReconnect(TrackStateConnectionListener connectionListener) throws IOException {
 		this.broker.stop();
 		awaitConnectionIs(connectionListener, false);
-		await("mqttClient lost connection").timeout(2, MINUTES).pollInterval(ofMillis(100))
-				.until(() -> !this.mqttClient.isConnected());
+		await("mqttClient lost connection").until(() -> !this.mqttClient.isConnected());
 
 		this.broker.start();
 		awaitConnectionIs(connectionListener, true);
-		await("mqttClient reconnected").timeout(2, MINUTES).pollInterval(ofMillis(100))
-				.until(() -> this.mqttClient.isConnected());
+		await("mqttClient reconnected").until(() -> this.mqttClient.isConnected());
 	}
 
 	private void awaitConnectionIs(TrackStateConnectionListener connectionListener, boolean connected) {
-		await("await connectionListener == " + connected).timeout(2, MINUTES).pollInterval(ofMillis(100))
-				.until(connectionListener.isConnected()::get, t -> t == connected);
+		await("await connectionListener == " + connected).until(connectionListener.isConnected()::get,
+				t -> t == connected);
+	}
+
+	private static ConditionFactory await(String alias) {
+		return Awaitility.await(alias).timeout(2, MINUTES).pollInterval(ofMillis(100));
 	}
 
 }
