@@ -33,7 +33,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.ardulink.core.Connection.Listener;
@@ -166,8 +165,7 @@ class ConnectionBasedLinkTest {
 		streamEx.link().addListener(new FilteredEventListenerAdapter(digitalPin(anyOtherPin(pin)), listener));
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
 		streamEx.simulateArduinoSend(message);
-		List<DigitalPinValueChangedEvent> emptyList = Collections.emptyList();
-		assertThat(listener.digitalEvents).isEqualTo(emptyList);
+		assertThat(listener.digitalEvents).isEmpty();
 	}
 
 	@Test
@@ -249,20 +247,18 @@ class ConnectionBasedLinkTest {
 			}
 		});
 		int pin = anyPositive(int.class);
-		String m1 = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(anyOtherValueThan(pin));
-		String m2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
-		streamEx.simulateArduinoSend(m1);
-		streamEx.simulateArduinoSend(m2);
+		String message1 = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(anyOtherValueThan(pin));
+		String message2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
+		streamEx.simulateArduinoSend(message1, message2);
 		assertThat(Joiner.on(",").join(events)).isEqualTo("AnalogPinValueChangedEvent,DigitalPinValueChangedEvent");
 	}
 
 	@Test
 	void unparseableInput() throws IOException {
-		String m1 = "eXTRaoRdINARy dATa";
-		streamEx.simulateArduinoSend(m1);
-		String m2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(anyPositive(int.class)).withState(true);
-		streamEx.simulateArduinoSend(m2);
-		streamEx.simulateArduinoSend(m2);
+		String message1 = "eXTRaoRdINARy dATa";
+		streamEx.simulateArduinoSend(message1);
+		String message2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(anyPositive(int.class)).withState(true);
+		streamEx.simulateArduinoSend(message2, message2);
 	}
 
 	@Test

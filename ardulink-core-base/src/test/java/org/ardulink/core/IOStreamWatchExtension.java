@@ -78,6 +78,12 @@ public class IOStreamWatchExtension extends TypeBasedParameterResolver<IOStreamW
 		}
 	}
 
+	public void simulateArduinoSend(String... messages) throws IOException {
+		for (String message : messages) {
+			simulateArduinoSend(message);
+		}
+	}
+
 	public void simulateArduinoSend(String message) throws IOException {
 		this.arduinosOutputStream.write(message.getBytes());
 		this.arduinosOutputStream.write('\n');
