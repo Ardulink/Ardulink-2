@@ -82,7 +82,7 @@ class MqttIntegrationTest {
 	Broker broker = Broker.newBroker().port(freePort());
 
 	@RegisterExtension
-	AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC, broker.getPort());
+	AnotherMqttClient mqttClient = AnotherMqttClient.newClient(TOPIC, broker.port());
 
 	Link link;
 
@@ -103,7 +103,7 @@ class MqttIntegrationTest {
 	void init(TestConfig config) {
 		this.mqttClient.appendValueSet(config.separatedTopics);
 		this.messageFormat = config.messageFormat;
-		String clientUri = "ardulink://mqtt?host=localhost&port=" + broker.getPort() + "&topic=" + TOPIC
+		String clientUri = "ardulink://mqtt?host=localhost&port=" + broker.port() + "&topic=" + TOPIC
 				+ "&separatedTopics=" + config.separatedTopics;
 		this.link = Links.getLink(clientUri);
 	}

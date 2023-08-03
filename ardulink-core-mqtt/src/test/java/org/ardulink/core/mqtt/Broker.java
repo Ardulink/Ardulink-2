@@ -157,7 +157,7 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 		return this;
 	}
 
-	public int getPort() {
+	public int port() {
 		return port;
 	}
 
