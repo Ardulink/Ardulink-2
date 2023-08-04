@@ -119,7 +119,7 @@ class MqttMainStandaloneIntegrationTest {
 		withBrokerUser(someUser).withBrokerPassword(somePassword);
 		withClientUser(someUser).withClientPassword(not(somePassword));
 		Exception exception = assertThrows(FailedToStartRouteException.class, () -> runMain());
-		assertThat(getCauses(exception).anyMatch(MqttSecurityException.class::isInstance)).isTrue();
+		assertThat(getCauses(exception)).anyMatch(MqttSecurityException.class::isInstance);
 	}
 
 	@Test
