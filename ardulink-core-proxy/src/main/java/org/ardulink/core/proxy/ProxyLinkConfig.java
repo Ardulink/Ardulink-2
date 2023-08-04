@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.proxy;
 
 import static java.util.Collections.emptyList;
+import static org.ardulink.core.proto.api.Protocols.getByName;
 
 import java.io.IOException;
 import java.util.List;
@@ -69,7 +70,7 @@ public class ProxyLinkConfig implements LinkConfig {
 	private int speed = DEFAULT_SPEED;
 
 	@Named(NAMED_PROTO)
-	private Protocol proto = ArdulinkProtocol2.instance();
+	private Protocol proto = getByName(ArdulinkProtocol2.NAME);
 
 	private ProxyConnectionToRemote remote;
 

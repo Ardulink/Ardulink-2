@@ -18,8 +18,8 @@ package org.ardulink.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,22 +31,25 @@ import org.junit.jupiter.api.Test;
  * [adsense]
  *
  */
-class IteratorsTest {
+class OptionalsTest {
+
+	String presentValue = "present";
+	Optional<String> presentOptional = Optional.of(presentValue);
+	Optional<String> emptyOptional = Optional.empty();
+
+	String supplierValue = "other";
+	Supplier<Optional<String>> supplingOther = () -> Optional.of(supplierValue);
 
 	@Test
-	void getFirst() {
-		assertThat(Iterators.getFirst(iteratorOf(1)).get()).isEqualTo(1);
-		assertThat(Iterators.getFirst(iteratorOf(1, 2)).get()).isEqualTo(1);
+	void whenPresentAlwaysThePresentValueIsReturned() {
+		assertThat(Optionals.or(presentOptional, supplingOther)).hasValue(presentValue);
+		assertThat(Optionals.or(presentOptional, () -> emptyOptional)).hasValue(presentValue);
 	}
 
 	@Test
-	void getLast() {
-		assertThat(Iterators.getLast(iteratorOf(1)).get()).isEqualTo(1);
-		assertThat(Iterators.getLast(iteratorOf(1, 2)).get()).isEqualTo(2);
-	}
-
-	private <T> Iterator<T> iteratorOf(T... elements) {
-		return Arrays.asList(elements).iterator();
+	void whenEmptyTheValueOfTheSupplierIsReturned() {
+		assertThat(Optionals.or(emptyOptional, supplingOther)).hasValue(supplierValue);
+		assertThat(Optionals.or(emptyOptional, () -> emptyOptional)).isEmpty();
 	}
 
 }

@@ -16,12 +16,12 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.ardulink.util.anno.LapsedWith.JDK9;
 
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.Optional;
+import java.util.function.Supplier;
 
-import org.junit.jupiter.api.Test;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -31,22 +31,15 @@ import org.junit.jupiter.api.Test;
  * [adsense]
  *
  */
-class IteratorsTest {
+public final class Optionals {
 
-	@Test
-	void getFirst() {
-		assertThat(Iterators.getFirst(iteratorOf(1)).get()).isEqualTo(1);
-		assertThat(Iterators.getFirst(iteratorOf(1, 2)).get()).isEqualTo(1);
+	private Optionals() {
+		super();
 	}
 
-	@Test
-	void getLast() {
-		assertThat(Iterators.getLast(iteratorOf(1)).get()).isEqualTo(1);
-		assertThat(Iterators.getLast(iteratorOf(1, 2)).get()).isEqualTo(2);
-	}
-
-	private <T> Iterator<T> iteratorOf(T... elements) {
-		return Arrays.asList(elements).iterator();
+	@LapsedWith(module = JDK9, value = "Optional#or")
+	public static <T> Optional<T> or(Optional<T> optional, Supplier<? extends Optional<T>> supplier) {
+		return optional.map(Optional::of).orElseGet(supplier);
 	}
 
 }

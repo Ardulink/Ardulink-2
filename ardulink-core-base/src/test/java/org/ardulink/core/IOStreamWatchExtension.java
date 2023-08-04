@@ -1,6 +1,7 @@
 package org.ardulink.core;
 
 import static java.time.Duration.ofMillis;
+import static org.ardulink.core.proto.api.Protocols.getByName;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.Throwables.propagateIfInstanceOf;
 import static org.awaitility.Awaitility.await;
@@ -13,8 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.ardulink.core.Connection.Listener;
 import org.ardulink.core.Connection.ListenerAdapter;
+import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.function.Executable;
 
 public class IOStreamWatchExtension extends TypeBasedParameterResolver<IOStreamWatchExtension>
 		implements BeforeEachCallback, AfterEachCallback {
+	private final Protocol protocol;
 
 	private final ByteArrayOutputStream os = new ByteArrayOutputStream();
 	private PipedOutputStream arduinosOutputStream;
@@ -38,11 +40,19 @@ public class IOStreamWatchExtension extends TypeBasedParameterResolver<IOStreamW
 		return new IOStreamWatchExtension();
 	}
 
+	public IOStreamWatchExtension() {
+		this(getByName("ardulink2"));
+	}
+
+	public IOStreamWatchExtension(Protocol protocol) {
+		this.protocol = protocol;
+	}
+
 	@Override
 	public void beforeEach(ExtensionContext context) throws Exception {
 		PipedInputStream pis = new PipedInputStream();
 		this.arduinosOutputStream = new PipedOutputStream(pis);
-		ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
+		ByteStreamProcessor byteStreamProcessor = protocol.newByteStreamProcessor();
 		this.connection = new StreamConnection(pis, os, byteStreamProcessor);
 		this.connection.addListener(new ListenerAdapter() {
 			@Override

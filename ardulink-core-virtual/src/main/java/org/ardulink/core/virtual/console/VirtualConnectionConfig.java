@@ -1,6 +1,8 @@
 package org.ardulink.core.virtual.console;
 
+import static org.ardulink.core.proto.api.Protocols.tryByName;
 import static org.ardulink.util.Iterables.getFirst;
+import static org.ardulink.util.Optionals.or;
 
 import java.util.List;
 
@@ -14,14 +16,10 @@ public class VirtualConnectionConfig implements LinkConfig {
 	private static final String PROTO = "proto";
 
 	@Named(PROTO)
-	private Protocol protoName = useProtoOrFallback(ArdulinkProtocol2.instance());
+	private Protocol protoName = useProtoOrFallback(ArdulinkProtocol2.NAME);
 
-	private Protocol useProtoOrFallback(Protocol prefered) {
-		return isAvailable(prefered) ? prefered : getFirst(Protocols.list()).orElse(null);
-	}
-
-	private boolean isAvailable(Protocol prefered) {
-		return availableProtos().contains(prefered.getName());
+	private Protocol useProtoOrFallback(String prefered) {
+		return or(tryByName(prefered), () -> getFirst(Protocols.list())).orElse(null);
 	}
 
 	public String getProtoName() {

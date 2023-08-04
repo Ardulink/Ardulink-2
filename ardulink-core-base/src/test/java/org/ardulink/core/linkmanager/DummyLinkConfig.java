@@ -26,6 +26,7 @@ package org.ardulink.core.linkmanager;
  */
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static org.ardulink.core.proto.api.Protocols.getByName;
 
 import java.util.Arrays;
 import java.util.List;
@@ -54,7 +55,7 @@ public class DummyLinkConfig implements LinkConfig {
 	@Named("c")
 	public String c;
 
-	public Protocol protocol = ArdulinkProtocol2.instance();
+	public Protocol protocol = getByName(ArdulinkProtocol2.NAME);
 
 	@Named("d")
 	public String d;
@@ -157,7 +158,7 @@ public class DummyLinkConfig implements LinkConfig {
 
 	@Named("proto")
 	public void setProtocol(String protocol) {
-		this.protocol = Protocols.getByName(protocol);
+		this.protocol = getByName(protocol);
 	}
 
 	@ChoiceFor("a")

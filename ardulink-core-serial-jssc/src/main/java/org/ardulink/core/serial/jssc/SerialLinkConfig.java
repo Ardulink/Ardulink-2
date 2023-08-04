@@ -16,7 +16,9 @@ limitations under the License.
 
 package org.ardulink.core.serial.jssc;
 
+import static org.ardulink.core.proto.api.Protocols.tryByName;
 import static org.ardulink.util.Iterables.getFirst;
+import static org.ardulink.util.Optionals.or;
 
 import java.util.List;
 
@@ -55,7 +57,7 @@ public class SerialLinkConfig implements LinkConfig {
 	private int baudrate = 115200;
 
 	@Named(NAMED_PROTO)
-	private Protocol protoName = useProtoOrFallback(ArdulinkProtocol2.instance());
+	private Protocol protoName = useProtoOrFallback(ArdulinkProtocol2.NAME);
 
 	@Named("qos")
 	private boolean qos;
@@ -72,12 +74,8 @@ public class SerialLinkConfig implements LinkConfig {
 		return baudrate;
 	}
 
-	private Protocol useProtoOrFallback(Protocol prefered) {
-		return isAvailable(prefered) ? prefered : getFirst(Protocols.list()).orElse(null);
-	}
-
-	private boolean isAvailable(Protocol prefered) {
-		return availableProtos().contains(prefered.getName());
+	private Protocol useProtoOrFallback(String prefered) {
+		return or(tryByName(prefered), () -> getFirst(Protocols.list())).orElse(null);
 	}
 
 	public String getPort() {
