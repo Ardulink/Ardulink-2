@@ -27,10 +27,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.apache.camel.FailedToStartRouteException;
 import org.ardulink.mqtt.CommandLineArguments;
 import org.ardulink.mqtt.MqttBroker.Builder;
-import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.ardulink.mqtt.MqttMain;
+import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -49,17 +49,18 @@ class MqttMainStandaloneIntegrationTest {
 	String someUser = "someUser";
 	String somePassword = "somePassword";
 
-	private static final CommandLineArguments args = new CommandLineArguments();
+	private final CommandLineArguments args = new CommandLineArguments();
 	private String brokerUser;
 	private String brokerPassword;
 	private String clientUser;
 	private String clientPassword;
 
-	@BeforeAll
-	static void configureArgs(@MockUri String mockUri) {
+	@BeforeEach
+	void setup(@MockUri String mockUri) {
 		args.standalone = true;
 		args.brokerTopic = "myTestTopic";
 		args.connection = mockUri;
+		withBrokerPort(freePort());
 	}
 
 	private MqttMainStandaloneIntegrationTest withBrokerPort(int port) {
@@ -103,21 +104,20 @@ class MqttMainStandaloneIntegrationTest {
 
 	@Test
 	void clientCanConnectToNewlyStartedBroker() throws Exception {
-		withBrokerPort(freePort());
 		assertDoesNotThrow(this::runMain);
 	}
 
 	@Test
 	void clientCanConnectUsingCredentialsToNewlyStartedBroker() throws Exception {
-		withBrokerPort(freePort()).withBrokerUser(someUser).withBrokerPassword(somePassword).withClientUser(someUser)
-				.withClientPassword(somePassword);
+		withBrokerUser(someUser).withBrokerPassword(somePassword);
+		withClientUser(someUser).withClientPassword(somePassword);
 		assertDoesNotThrow(this::runMain);
 	}
 
 	@Test
 	void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker() throws Exception {
-		withBrokerPort(freePort()).withBrokerUser(someUser).withBrokerPassword(somePassword).withClientUser(someUser)
-				.withClientPassword(not(somePassword));
+		withBrokerUser(someUser).withBrokerPassword(somePassword);
+		withClientUser(someUser).withClientPassword(not(somePassword));
 		Exception exception = assertThrows(FailedToStartRouteException.class, () -> runMain());
 		assertThat(getCauses(exception).anyMatch(MqttSecurityException.class::isInstance)).isTrue();
 	}
@@ -125,8 +125,9 @@ class MqttMainStandaloneIntegrationTest {
 	@Test
 	@Disabled("test fails with Caused by: javax.net.ssl.SSLHandshakeException: Received fatal alert: handshake_failure")
 	void clientCanConnectUsingCredentialsToNewlyStartedSslBroker() throws Exception {
-		withSsl().withBrokerPort(freePort()).withBrokerUser(someUser).withBrokerPassword(somePassword)
-				.withClientUser(someUser).withClientPassword(somePassword);
+		withSsl();
+		withBrokerUser(someUser).withBrokerPassword(somePassword);
+		withClientUser(someUser).withClientPassword(somePassword);
 		assertDoesNotThrow(this::runMain);
 	}
 
