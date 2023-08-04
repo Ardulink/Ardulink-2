@@ -165,9 +165,9 @@ class NetworkProxyServerTest {
 	}
 
 	private ProxyLinkConfig configure(ProxyLinkConfig linkConfig, String hostname, int tcpPort) {
-		linkConfig.setTcphost(hostname);
-		linkConfig.setTcpport(tcpPort);
-		linkConfig.setPort("anything non-null");
+		linkConfig.tcphost = hostname;
+		linkConfig.tcpport = tcpPort;
+		linkConfig.port = "anything non-null";
 		return linkConfig;
 	}
 

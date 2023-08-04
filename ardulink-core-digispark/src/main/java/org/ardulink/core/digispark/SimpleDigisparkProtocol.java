@@ -23,6 +23,8 @@ import org.ardulink.util.MapBuilder;
 
 public class SimpleDigisparkProtocol implements Protocol {
 
+	public static final String NAME = SimpleDigisparkProtocol.class.getSimpleName();
+
 	private static class SimpleDigisparkProtocolByteStreamProcessor implements ByteStreamProcessor {
 
 		private static final byte separator = (byte) 255;
@@ -65,7 +67,7 @@ public class SimpleDigisparkProtocol implements Protocol {
 		public void addListener(FromDeviceListener listener) {
 			throw new UnsupportedOperationException();
 		}
-		
+
 		@Override
 		public void removeListener(FromDeviceListener listener) {
 			throw new UnsupportedOperationException();
@@ -115,19 +117,13 @@ public class SimpleDigisparkProtocol implements Protocol {
 		public abstract byte getValue(ToDeviceMessagePinStateChange pinStateChange);
 	}
 
-	private static final SimpleDigisparkProtocol instance = new SimpleDigisparkProtocol();
-
 	private static final Map<Type, Message> messages = Collections
 			.unmodifiableMap(new EnumMap<>(MapBuilder.<Type, Message>newMapBuilder()
 					.put(ANALOG, Message.POWER_PIN_INTENSITY).put(DIGITAL, Message.POWER_PIN_SWITCH).build()));
 
-	public static Protocol instance() {
-		return instance;
-	}
-
 	@Override
 	public String getName() {
-		return SimpleDigisparkProtocol.class.getSimpleName();
+		return NAME;
 	}
 
 	@Override

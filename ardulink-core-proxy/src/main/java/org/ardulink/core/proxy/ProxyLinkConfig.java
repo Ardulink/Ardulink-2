@@ -55,48 +55,24 @@ public class ProxyLinkConfig implements LinkConfig {
 	private static final int DEFAULT_SPEED = 115200;
 
 	@Named(NAMED_TCPHOST)
-	private String tcphost;
+	public String tcphost = "localhost";
 
 	@Named(NAMED_TCPPORT)
 	@Positive
 	@Max(2 << 16 - 1)
-	private int tcpport = DEFAULT_LISTENING_PORT;
+	public int tcpport = DEFAULT_LISTENING_PORT;
 
 	@Named(NAMED_PORT)
-	private String port;
+	public String port;
 
 	@Named("speed")
 	@Positive
-	private int speed = DEFAULT_SPEED;
+	public int speed = DEFAULT_SPEED;
 
 	@Named(NAMED_PROTO)
 	private Protocol proto = getByName(ArdulinkProtocol2.NAME);
 
 	private ProxyConnectionToRemote remote;
-
-	public String getPort() {
-		return port;
-	}
-
-	public int getSpeed() {
-		return speed;
-	}
-
-	public String getTcphost() {
-		return tcphost;
-	}
-
-	public int getTcpport() {
-		return tcpport;
-	}
-
-	public void setPort(String port) {
-		this.port = port;
-	}
-
-	public void setSpeed(int speed) {
-		this.speed = speed;
-	}
 
 	public void setProto(String proto) {
 		this.proto = Protocols.getByName(proto);
@@ -109,14 +85,6 @@ public class ProxyLinkConfig implements LinkConfig {
 	@ChoiceFor(NAMED_PROTO)
 	public List<String> getProtos() {
 		return Protocols.names();
-	}
-
-	public void setTcphost(String tcphost) {
-		this.tcphost = tcphost;
-	}
-
-	public void setTcpport(int tcpport) {
-		this.tcpport = tcpport;
 	}
 
 	@ChoiceFor(value = NAMED_PORT, dependsOn = { NAMED_TCPHOST, NAMED_TCPPORT })

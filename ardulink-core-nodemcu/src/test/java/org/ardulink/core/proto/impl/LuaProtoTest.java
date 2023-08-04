@@ -15,9 +15,9 @@ limitations under the License.
  */
 package org.ardulink.core.proto.impl;
 
-import static java.util.Arrays.asList;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.proto.api.Protocols.getByName;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Random;
@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test;
 
 class LuaProtoTest {
 
-	private final ByteStreamProcessor sut = LuaProtocol.instance().newByteStreamProcessor();
+	private final ByteStreamProcessor sut = getByName(LuaProtocol.NAME).newByteStreamProcessor();
 
 	private final DigitalPin anyDigitalPin = digitalPin(anyPin());
 	private final AnalogPin anyAnalogPin = analogPin(anyPin());

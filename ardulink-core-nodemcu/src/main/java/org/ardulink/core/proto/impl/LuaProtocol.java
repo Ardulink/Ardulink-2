@@ -55,18 +55,12 @@ import org.ardulink.util.Bytes;
  */
 public class LuaProtocol implements Protocol {
 
-	private static final String name = "LUA";
-	private static final byte[] separator = "\r\n".getBytes();
-
-	private static final LuaProtocol instance = new LuaProtocol();
-
-	public static Protocol instance() {
-		return instance;
-	}
+	public static final String NAME = "LUA";
+	private static final byte[] SEPARATOR = "\r\n".getBytes();
 
 	@Override
 	public String getName() {
-		return name;
+		return NAME;
 	}
 
 	@Override
@@ -138,7 +132,7 @@ public class LuaProtocol implements Protocol {
 			 */
 			@Override
 			public byte[] toBytes(String message) {
-				return Bytes.concat(message.getBytes(), separator);
+				return Bytes.concat(message.getBytes(), SEPARATOR);
 			}
 
 			private UnsupportedOperationException notSupported(String type) {

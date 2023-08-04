@@ -53,8 +53,8 @@ public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
 		ProxyConnectionToRemote remote = config.getRemote();
 
 		remote.send(CONNECT_CMD.getCommand());
-		remote.send(checkNotNull(config.getPort(), "port must not be null"));
-		remote.send(String.valueOf(config.getSpeed()));
+		remote.send(checkNotNull(config.port, "port must not be null"));
+		remote.send(String.valueOf(config.speed));
 		String response = remote.read();
 		checkState(OK.equals(response),
 				"Did not receive %s from remote, got %s", OK, response);

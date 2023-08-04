@@ -37,19 +37,47 @@ public final class Protocols {
 		super();
 	}
 
+	/**
+	 * Returns the protocol with the given name. If no protocol with the given name
+	 * is registered a {@link RuntimeException} is thrown.
+	 * 
+	 * @param name the name of the protocol
+	 * @return protocol with the given name
+	 * @see #tryByName(String)
+	 */
 	public static Protocol getByName(String name) {
 		return tryByName(name).orElseThrow(() -> new IllegalStateException(
 				format("No protocol with name %s registered. Available names are %s", name, names())));
 	}
 
+	/**
+	 * Returns an {@link Optional} of the protocol with the given name. If no
+	 * protocol with the given name is registered the {@link Optional} is empty.
+	 * 
+	 * @param name the name of the protocol
+	 * @return Optional holding the protocol with the given name or empty if not
+	 *         found
+	 */
 	public static Optional<Protocol> tryByName(String name) {
 		return list().stream().filter(p -> p.getName().equals(name)).findFirst();
 	}
 
+	/**
+	 * List all registered protocols
+	 * 
+	 * @return list of all registered protocols
+	 * @see #names()
+	 */
 	public static List<Protocol> list() {
 		return services(Protocol.class);
 	}
 
+	/**
+	 * List all registered protocols names
+	 * 
+	 * @return list of all registered protocols names
+	 * @see #list()
+	 */
 	public static List<String> names() {
 		return list().stream().map(Protocol::getName).collect(toList());
 	}

@@ -86,13 +86,7 @@ public class ArdulinkProtocol2 implements Protocol {
 	public static final String NAME = "ardulink2";
 	private static final char NEWLINE = '\n';
 	private static final char SLASH = '/';
-	private static final byte[] separator = new byte[] { NEWLINE };
-
-	private static final ArdulinkProtocol2 instance = new ArdulinkProtocol2();
-
-	public static Protocol instance() {
-		return instance;
-	}
+	private static final byte[] SEPARATOR = new byte[] { NEWLINE };
 
 	@Override
 	public String getName() {
@@ -459,7 +453,7 @@ public class ArdulinkProtocol2 implements Protocol {
 		 * @return byte[] holding the passed message and the protocol's divider
 		 */
 		public byte[] toBytes(String message) {
-			return Bytes.concat(message.getBytes(), separator);
+			return Bytes.concat(message.getBytes(), SEPARATOR);
 		}
 
 	}

@@ -36,4 +36,8 @@ public final class Iterables {
 		return Iterators.getFirst(iterable.iterator());
 	}
 
+	public static Optional<Integer> getLast(Iterable<Integer> iterable) {
+		return Iterators.getLast(iterable.iterator());
+	}
+
 }

@@ -33,7 +33,7 @@ public class DigisparkLinkFactory implements LinkFactory<DigisparkLinkConfig> {
 	public AbstractListenerLink newLink(DigisparkLinkConfig config)
 			throws IOException {
 		return new ConnectionBasedLink(new DigisparkConnection(config),
-				config.getProto().newByteStreamProcessor());
+				config.proto.newByteStreamProcessor());
 	}
 
 	@Override

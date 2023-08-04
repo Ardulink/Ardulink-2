@@ -44,7 +44,7 @@ public class DigisparkConnection extends AbstractConnection {
 	private long usbDevHandle;
 
 	public DigisparkConnection(DigisparkLinkConfig config) {
-		this.deviceName = config.getDeviceName();
+		this.deviceName = config.deviceName;
 		this.usbDevice = getDevices().get(deviceName);
 		checkState(usbDevice != null, "No device with portName %s found",
 				deviceName);
