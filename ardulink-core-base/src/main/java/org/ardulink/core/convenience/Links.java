@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.convenience;
 
+import static java.net.URI.create;
 import static java.util.Arrays.stream;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
@@ -40,7 +41,6 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.util.URIs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -126,7 +126,7 @@ public final class Links {
 	 * @throws Exception
 	 */
 	public static Link getLink(String uri) {
-		return getLink(URIs.newURI(uri));
+		return getLink(create(uri));
 	}
 
 	/**

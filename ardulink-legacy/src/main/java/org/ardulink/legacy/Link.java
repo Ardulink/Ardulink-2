@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.legacy;
 
+import static java.net.URI.create;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -305,7 +306,7 @@ public abstract class Link {
 
 	public static Link createInstance(String type) {
 		try {
-			URI uri = URIs.newURI("ardulink://" + type);
+			URI uri = create("ardulink://" + type);
 			Configurer configurer = LinkManager.getInstance()
 					.getConfigurer(uri);
 			return new LegacyLinkAdapter(configurer);

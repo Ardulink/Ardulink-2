@@ -16,11 +16,9 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static java.net.URI.create;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.net.URLEncoder;
 
 /**
@@ -35,10 +33,6 @@ public final class URIs {
 
 	private URIs() {
 		super();
-	}
-
-	public static URI newURI(String asciiString) {
-		return create(asciiString);
 	}
 
 	public static String encode(String asciiString) {

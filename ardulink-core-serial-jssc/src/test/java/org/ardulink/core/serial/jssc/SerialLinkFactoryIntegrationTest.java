@@ -16,7 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.serial.jssc;
 
-import static org.ardulink.util.URIs.newURI;
+import static java.net.URI.create;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -50,7 +50,7 @@ class SerialLinkFactoryIntegrationTest {
 
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager
-				.getConfigurer(newURI(PREFIX + "?port=" + portNames[0] + "&baudrate=9600&pingprobe=false&waitsecs=1"));
+				.getConfigurer(create(PREFIX + "?port=" + portNames[0] + "&baudrate=9600&pingprobe=false&waitsecs=1"));
 		try (Link link = configurer.newLink()) {
 			assertNotNull(link);
 		}
@@ -59,7 +59,7 @@ class SerialLinkFactoryIntegrationTest {
 	@Test
 	void canConfigureSerialConnectionViaConfigurer() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(newURI(PREFIX));
+		Configurer configurer = connectionManager.getConfigurer(create(PREFIX));
 
 		assertThat(configurer.getAttributes()).containsExactlyInAnyOrder("port", "baudrate", "proto", "qos", "waitsecs",
 				"pingprobe");
@@ -79,7 +79,7 @@ class SerialLinkFactoryIntegrationTest {
 
 	@Test
 	void cantConnectWithoutPort() {
-		Configurer configurer = LinkManager.getInstance().getConfigurer(newURI(PREFIX + "?baudrate=9600"));
+		Configurer configurer = LinkManager.getInstance().getConfigurer(create(PREFIX + "?baudrate=9600"));
 		assertThat(assertThrows(RuntimeException.class, configurer::newLink)).hasMessageContaining("Port name - null");
 	}
 

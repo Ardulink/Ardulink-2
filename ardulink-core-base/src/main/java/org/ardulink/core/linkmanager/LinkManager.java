@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.linkmanager;
 
 import static java.lang.String.format;
+import static java.net.URI.create;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
@@ -32,7 +33,6 @@ import static org.ardulink.util.Primitives.wrap;
 import static org.ardulink.util.ServiceLoaders.services;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
-import static org.ardulink.util.URIs.newURI;
 import static org.ardulink.util.anno.LapsedWith.JDK14;
 
 import java.lang.annotation.Annotation;
@@ -569,7 +569,7 @@ public abstract class LinkManager {
 
 			@Override
 			public List<URI> listURIs() {
-				return getConnectionFactories().stream().map(f -> newURI(format("%s://%s", SCHEMA, f.getName())))
+				return getConnectionFactories().stream().map(f -> create(format("%s://%s", SCHEMA, f.getName())))
 						.collect(toList());
 			}
 

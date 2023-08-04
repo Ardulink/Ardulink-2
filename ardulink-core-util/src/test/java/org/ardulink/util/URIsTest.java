@@ -1,5 +1,6 @@
 package org.ardulink.util;
 
+import static java.net.URI.create;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
@@ -29,7 +30,7 @@ class URIsTest {
 
 		public URI build() {
 			String string = this.base.toString();
-			return URIs.newURI(string.endsWith("&") ? string.substring(0, string.length() - 1) : string);
+			return create(string.endsWith("&") ? string.substring(0, string.length() - 1) : string);
 		}
 
 	}

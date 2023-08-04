@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.gui.connectionpanel;
 
+import static java.net.URI.create;
 import static org.ardulink.gui.assertj.PanelAssert.assertThat;
 
 import java.net.URI;
@@ -39,7 +40,7 @@ import org.junit.jupiter.api.Test;
  */
 class GenericConnectionPanelTest {
 
-	private final URI uri = URIs.newURI("ardulink://dummy");
+	private final URI uri = create("ardulink://dummy");
 	private final GenericPanelBuilder sut = new GenericPanelBuilder();
 
 	@Test

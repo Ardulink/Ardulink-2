@@ -17,6 +17,7 @@ package org.ardulink.gui.connectionpanel;
 
 import static java.awt.Color.RED;
 import static java.awt.event.ItemEvent.SELECTED;
+import static java.net.URI.create;
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
@@ -84,7 +85,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 					Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
 				return value == null ? null : super.getListCellRendererComponent(list,
-						extractNameFromURI(URIs.newURI((String) value)), index,
+						extractNameFromURI(create((String) value)), index,
 						isSelected, cellHasFocus);
 			}
 		});
@@ -194,7 +195,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 	}
 
 	private JPanel createSubpanel() {
-		URI uri = URIs.newURI(String.valueOf(uris.getSelectedItem()));
+		URI uri = create(String.valueOf(uris.getSelectedItem()));
 		JPanel subpanel = findPanelBuilder(uri).createPanel(
 				configurer = LinkManager.getInstance().getConfigurer(uri));
 		subpanel.setBorder(BorderFactory.createLoweredBevelBorder());

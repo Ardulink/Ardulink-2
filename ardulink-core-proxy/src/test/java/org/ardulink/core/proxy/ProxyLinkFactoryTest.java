@@ -17,10 +17,10 @@ limitations under the License.
 package org.ardulink.core.proxy;
 
 import static java.lang.String.format;
+import static java.net.URI.create;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.proxy.ProxyServerDouble.portName;
-import static org.ardulink.util.URIs.newURI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -107,7 +107,7 @@ class ProxyLinkFactoryTest {
 
 	private static Configurer configurerForProxy(String host, int port) {
 		return LinkManager.getInstance()
-				.getConfigurer(newURI(format("ardulink://proxy?tcphost=%s&tcpport=%d", host, port)));
+				.getConfigurer(create(format("ardulink://proxy?tcphost=%s&tcpport=%d", host, port)));
 	}
 
 	private static String proxyMessage(String message) {

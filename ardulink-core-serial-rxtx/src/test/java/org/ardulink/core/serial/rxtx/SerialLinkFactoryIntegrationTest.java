@@ -16,8 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.serial.rxtx;
 
+import static java.net.URI.create;
 import static java.util.stream.Collectors.toList;
-import static org.ardulink.util.URIs.newURI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,7 +31,6 @@ import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.Throwables;
-import org.ardulink.util.URIs;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -57,7 +56,7 @@ class SerialLinkFactoryIntegrationTest {
 
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(
-				URIs.newURI(PREFIX + "?port=" + portNames.get(0) + "&baudrate=9600&pingprobe=false&waitsecs=1"));
+				create(PREFIX + "?port=" + portNames.get(0) + "&baudrate=9600&pingprobe=false&waitsecs=1"));
 		try (Link link = configurer.newLink()) {
 			assertNotNull(link);
 		}
@@ -66,7 +65,7 @@ class SerialLinkFactoryIntegrationTest {
 	@Test
 	void canConfigureSerialConnectionViaConfigurer() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(newURI(PREFIX));
+		Configurer configurer = connectionManager.getConfigurer(create(PREFIX));
 
 		assertThat(configurer.getAttributes()).containsExactly("port", "baudrate", "proto", "qos", "waitsecs",
 				"pingprobe");
@@ -87,7 +86,7 @@ class SerialLinkFactoryIntegrationTest {
 	@Test
 	void cantConnectWithoutPort() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(URIs.newURI(PREFIX + "?baudrate=9600"));
+		Configurer configurer = connectionManager.getConfigurer(create(PREFIX + "?baudrate=9600"));
 		assertThat(Throwables.getCauses(assertThrows(RuntimeException.class, () -> {
 			try (Link link = configurer.newLink()) {
 			}

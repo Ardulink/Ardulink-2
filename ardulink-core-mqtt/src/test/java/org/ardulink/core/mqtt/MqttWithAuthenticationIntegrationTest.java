@@ -16,11 +16,11 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
+import static java.net.URI.create;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.mqtt.Broker.newBroker;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.Throwables.getRootCause;
-import static org.ardulink.util.URIs.newURI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_FAILED_AUTHENTICATION;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -55,18 +55,18 @@ class MqttWithAuthenticationIntegrationTest {
 
 	@Test
 	void canNotConnectWithoutUserAndPassword() {
-		assertIsAuthError(createLinkAndCatchRTE(newURI(mqttBase())));
+		assertIsAuthError(createLinkAndCatchRTE(create(mqttBase())));
 	}
 
 	@Test
 	void canNotConnectWithWrongPassword() {
 		assertIsAuthError(
-				createLinkAndCatchRTE(newURI(mqttBase() + "&user=" + USER + "&password=" + "anyWrongPassword")));
+				createLinkAndCatchRTE(create(mqttBase() + "&user=" + USER + "&password=" + "anyWrongPassword")));
 	}
 
 	@Test
 	void canConnectUsingUserAndPassword() {
-		createLink(newURI(mqttBase() + "&user=" + USER + "&password=" + PASSWORD));
+		createLink(create(mqttBase() + "&user=" + USER + "&password=" + PASSWORD));
 	}
 
 	private String mqttBase() {
