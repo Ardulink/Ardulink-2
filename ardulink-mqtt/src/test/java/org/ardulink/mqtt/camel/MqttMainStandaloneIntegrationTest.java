@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.mqtt.camel;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.getCauses;
@@ -28,8 +27,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.apache.camel.FailedToStartRouteException;
 import org.ardulink.mqtt.CommandLineArguments;
 import org.ardulink.mqtt.MqttBroker.Builder;
+import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.ardulink.mqtt.MqttMain;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -48,18 +49,17 @@ class MqttMainStandaloneIntegrationTest {
 	String someUser = "someUser";
 	String somePassword = "somePassword";
 
-	private final CommandLineArguments args = args();
+	private static final CommandLineArguments args = new CommandLineArguments();
 	private String brokerUser;
 	private String brokerPassword;
 	private String clientUser;
 	private String clientPassword;
 
-	private static CommandLineArguments args() {
-		CommandLineArguments args = new CommandLineArguments();
+	@BeforeAll
+	static void configureArgs(@MockUri String mockUri) {
 		args.standalone = true;
 		args.brokerTopic = "myTestTopic";
-		args.connection = uniqueMockUri();
-		return args;
+		args.connection = mockUri;
 	}
 
 	private MqttMainStandaloneIntegrationTest withBrokerPort(int port) {

@@ -13,7 +13,6 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
-import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
 import static org.mockito.Mockito.mock;
@@ -32,6 +31,7 @@ import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
+import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -40,21 +40,22 @@ import org.junit.jupiter.api.Test;
 class ArdulinkComponentTest {
 
 	String in = "direct:in";
-	String mockUri = uniqueMockUri();
 
+	String mockUri;
 	Link link;
 	CamelContext context;
 
 	@BeforeEach
-	void setup() throws Exception {
-		context = camelContext(in, mockUri);
-		link = Links.getLink(mockUri);
+	void setup(@MockUri String mockUri) throws Exception {
+		this.mockUri = mockUri;
+		this.context = camelContext(in, mockUri);
+		this.link = Links.getLink(mockUri);
 	}
 
 	@AfterEach
 	void tearDown() throws Exception {
-		link.close();
-		context.stop();
+		this.link.close();
+		this.context.stop();
 	}
 
 	@Test

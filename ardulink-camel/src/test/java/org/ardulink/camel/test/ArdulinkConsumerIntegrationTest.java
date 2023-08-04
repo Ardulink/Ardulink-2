@@ -8,7 +8,6 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static org.ardulink.testsupport.mock.TestSupport.fireEvent;
-import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
@@ -16,16 +15,15 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
+import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.junit.jupiter.api.Test;
 
 class ArdulinkConsumerIntegrationTest {
 
-	private static final String CAMEL_MOCK_OUT = "mock:result";
-	
-	String mockUri = uniqueMockUri();
+	String camelMockOut = "mock:result";
 
 	@Test
-	void messageIsSentOnAnalogPinChange() throws Exception {
+	void messageIsSentOnAnalogPinChange(@MockUri String mockUri) throws Exception {
 		int pin = 2;
 		int value = 42;
 		try (Link link = Links.getLink(mockUri); CamelContext context = camelContext(mockUri)) {
@@ -37,7 +35,7 @@ class ArdulinkConsumerIntegrationTest {
 	}
 
 	@Test
-	void messageIsSentOnDigitalPinChange() throws Exception {
+	void messageIsSentOnDigitalPinChange(@MockUri String mockUri) throws Exception {
 		int pin = 3;
 		boolean state = true;
 		try (Link link = Links.getLink(mockUri); CamelContext context = camelContext(mockUri)) {
@@ -53,7 +51,7 @@ class ArdulinkConsumerIntegrationTest {
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() throws Exception {
-				from(from).to(CAMEL_MOCK_OUT);
+				from(from).to(camelMockOut);
 			}
 		});
 		context.start();
@@ -61,7 +59,7 @@ class ArdulinkConsumerIntegrationTest {
 	}
 
 	private MockEndpoint getMockEndpoint(CamelContext context) {
-		return context.getEndpoint(CAMEL_MOCK_OUT, MockEndpoint.class);
+		return context.getEndpoint(camelMockOut, MockEndpoint.class);
 	}
 
 }

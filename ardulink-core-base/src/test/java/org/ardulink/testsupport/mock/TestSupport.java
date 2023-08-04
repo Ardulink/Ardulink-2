@@ -44,8 +44,12 @@ public final class TestSupport {
 		return mockUriWithName(randomUUID().toString());
 	}
 
+	public static String mockUriUnnamed() {
+		return "ardulink://mock";
+	}
+
 	public static String mockUriWithName(String name) {
-		return String.format("ardulink://mock?%s=%s", NAME_ATTRIBUTE, name);
+		return String.format(mockUriUnnamed() + "?%s=%s", NAME_ATTRIBUTE, name);
 	}
 
 	public static Link getMock(Link link) {

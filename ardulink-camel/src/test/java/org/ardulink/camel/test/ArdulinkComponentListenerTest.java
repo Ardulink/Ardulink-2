@@ -4,7 +4,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
-import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -15,6 +14,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
+import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,18 +23,18 @@ import org.junit.jupiter.api.Timeout;
 @Timeout(value = 5, unit = SECONDS)
 class ArdulinkComponentListenerTest {
 
-	String mockUri = uniqueMockUri();
-
+	String mockUri;
 	Link link;
 
 	@BeforeEach
-	void setup() throws Exception {
-		link = Links.getLink(mockUri);
+	void setup(@MockUri String mockUri) throws Exception {
+		this.mockUri = mockUri;
+		this.link = Links.getLink(mockUri);
 	}
 
 	@AfterEach
 	void tearDown() throws IOException {
-		link.close();
+		this.link.close();
 	}
 
 	@Test

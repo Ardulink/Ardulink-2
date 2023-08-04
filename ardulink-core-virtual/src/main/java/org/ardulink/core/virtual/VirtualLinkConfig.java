@@ -14,26 +14,10 @@ public class VirtualLinkConfig implements LinkConfig {
 
 	@Named("delay")
 	@Positive
-	private long delay = 250;
+	public long delay = 250;
 
 	@Named(DELAY_UNIT)
-	private TimeUnit delayUnit = MILLISECONDS;
-
-	public long getDelay() {
-		return delay;
-	}
-
-	public void setDelay(long delay) {
-		this.delay = delay;
-	}
-
-	public TimeUnit getDelayUnit() {
-		return delayUnit;
-	}
-
-	public void setDelayUnit(TimeUnit delayUnit) {
-		this.delayUnit = delayUnit;
-	}
+	public TimeUnit delayUnit = MILLISECONDS;
 
 	@ChoiceFor(DELAY_UNIT)
 	public TimeUnit[] getDelayUnits() {
