@@ -41,10 +41,6 @@ public final class Streams {
 		super();
 	}
 
-	public static <T> Optional<T> getFirst(Stream<T> stream) {
-		return stream.findFirst();
-	}
-
 	public static <T> Optional<T> getLast(Stream<T> stream) {
 		return stream.reduce((first, second) -> second);
 	}

@@ -17,21 +17,21 @@ limitations under the License.
 package org.ardulink.core.convenience;
 
 import static java.net.URI.create;
+import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.core.linkmanager.LinkManager.replaceName;
 import static org.ardulink.util.Iterables.getFirst;
-import static org.ardulink.util.Streams.getFirst;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
@@ -53,12 +53,11 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 public final class Links {
 
 	// TODO use a WeakHashMap and use PhantomReferences to close GCed Links
-	private static final Map<Object, CacheValue> cache = new HashMap<>();
+	private static final Map<Object, CacheEntry> cache = new HashMap<>();
 	private static final LinkManager linkManager = LinkManager.getInstance();
 
-	private Links() {
-		super();
-	}
+	private static final Alias serialAlias = new Alias("serial", Pattern.compile("serial\\-.+"));
+	private static final List<Alias> aliases = asList(new Alias("default", Pattern.compile(".*")), serialAlias);
 
 	private static class Alias {
 		private final String aliasName;
@@ -79,8 +78,32 @@ public final class Links {
 
 	}
 
-	private static final Alias serialAlias = new Alias("serial", Pattern.compile("serial\\-.+"));
-	private static final List<Alias> aliases = Arrays.asList(new Alias("default", Pattern.compile(".*")), serialAlias);
+	private static class CacheEntry {
+
+		private final Link link;
+		private int usageCounter;
+
+		private CacheEntry(Link link) {
+			this.link = link;
+		}
+
+		private Link getLink() {
+			return link;
+		}
+
+		private int increaseUsageCounter() {
+			return ++usageCounter;
+		}
+
+		private int decreaseUsageCounter() {
+			return --usageCounter;
+		}
+
+	}
+
+	private Links() {
+		super();
+	}
 
 	/**
 	 * Returns the default Link which is a connection to the first serial port if
@@ -151,12 +174,12 @@ public final class Links {
 						.map(r -> replaceName(uri, extractNameFromURI(r))).orElse(uri);
 	}
 
-	private static java.util.Optional<URI> isAliasFor(List<URI> availableUris, Alias alias) {
+	private static Optional<URI> isAliasFor(List<URI> availableUris, Alias alias) {
 		return availableUris.stream().filter(u -> alias.isAliasFor(extractNameFromURI(u))).findFirst();
 	}
 
-	private static java.util.Optional<Alias> findAlias(String name) {
-		return getFirst(aliases.stream().filter(alias -> alias.isAliasName(name)));
+	private static Optional<Alias> findAlias(String name) {
+		return aliases.stream().filter(alias -> alias.isAliasName(name)).findFirst();
 	}
 
 	private static boolean containsName(List<URI> uris, String name) {
@@ -166,12 +189,10 @@ public final class Links {
 	public static Link getLink(Configurer configurer) {
 		Object cacheKey = configurer.uniqueIdentifier();
 		synchronized (cache) {
-			CacheValue cacheValue = cache.get(cacheKey);
-			if (cacheValue == null) {
-				cache.put(cacheKey, (cacheValue = new CacheValue(newDelegate(cacheKey, configurer.newLink()))));
-			}
-			cacheValue.increaseUsageCounter();
-			return cacheValue.getLink();
+			CacheEntry cacheEntry = cache.computeIfAbsent(cacheKey,
+					k -> new CacheEntry(newDelegate(k, configurer.newLink())));
+			cacheEntry.increaseUsageCounter();
+			return cacheEntry.getLink();
 		}
 	}
 
@@ -180,15 +201,15 @@ public final class Links {
 			@Override
 			public void close() throws IOException {
 				synchronized (cache) {
-					CacheValue cacheValue = cache.get(cacheKey);
-					if (cacheValue != null && cacheValue.decreaseUsageCounter() == 0) {
+					CacheEntry cacheEntry = cache.get(cacheKey);
+					if (cacheEntry != null && cacheEntry.decreaseUsageCounter() == 0) {
 						cache.remove(cacheKey);
 						super.close();
 					}
 				}
 			}
 
-			private final ConcurrentHashMap<Pin, AtomicInteger> listenCounter = new ConcurrentHashMap<>();
+			private final Map<Pin, AtomicInteger> listenCounter = new ConcurrentHashMap<>();
 
 			@Override
 			public long startListening(Pin pin) throws IOException {
