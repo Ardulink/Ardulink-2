@@ -201,7 +201,7 @@ public class DummyLinkConfig implements LinkConfig {
 		return protocol == null ? null : protocol.getName();
 	}
 
-	public Protocol getProto() {
+	public Protocol getProtocol() {
 		return protocol;
 	}
 

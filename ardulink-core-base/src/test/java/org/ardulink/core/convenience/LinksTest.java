@@ -116,7 +116,7 @@ class LinksTest {
 		DummyLinkConfig.choiceValuesOfD.set(new String[] { dVal1, "dVal2" });
 		try (Link link = Links.getDefault()) {
 			DummyLinkConfig config = getConnection(link).getConfig();
-			assertThat(config.getProto()).isInstanceOf(ArdulinkProtocol2.class);
+			assertThat(config.getProtocol()).isInstanceOf(ArdulinkProtocol2.class);
 			assertThat(config.getA()).isEqualTo("aVal1");
 			assertThat(config.getD()).isEqualTo(dVal1);
 			assertThat(config.getF()).isEqualTo(NANOSECONDS);
