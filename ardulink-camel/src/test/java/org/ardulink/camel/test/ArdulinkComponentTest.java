@@ -13,6 +13,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
+import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
 import static org.mockito.Mockito.mock;
@@ -38,18 +39,16 @@ import org.junit.jupiter.api.Test;
 
 class ArdulinkComponentTest {
 
-	private static final String IN = "direct:in";
+	String in = "direct:in";
+	String mockUri = uniqueMockUri();
 
-	private static final String MOCK_URI = "ardulink://mock";
-
-	private Link link;
-
-	private CamelContext context;
+	Link link;
+	CamelContext context;
 
 	@BeforeEach
 	void setup() throws Exception {
-		context = camelContext(IN, MOCK_URI);
-		link = Links.getLink(MOCK_URI);
+		context = camelContext(in, mockUri);
+		link = Links.getLink(mockUri);
 	}
 
 	@AfterEach
@@ -149,7 +148,7 @@ class ArdulinkComponentTest {
 	}
 
 	private void send(String message) {
-		context.createProducerTemplate().sendBody(MOCK_URI, message);
+		context.createProducerTemplate().sendBody(mockUri, message);
 	}
 
 	private static class TestLinkFactory implements LinkFactory<TestLinkConfig> {
@@ -196,7 +195,7 @@ class ArdulinkComponentTest {
 		TestLinkConfig config = new TestLinkConfig();
 		LinkFactory<TestLinkConfig> linkFactory = new TestLinkFactory(name, newArrayList(config).iterator());
 		withRegistered(linkFactory)
-				.execute(() -> context = camelContext(String.format("ardulink://%s?a=%s&b=%s", name, a, b), MOCK_URI));
+				.execute(() -> context = camelContext(String.format("ardulink://%s?a=%s&b=%s", name, a, b), mockUri));
 
 		assertThat(config.a).isEqualTo(a);
 		assertThat(config.b).isEqualTo(TimeUnit.valueOf(b));

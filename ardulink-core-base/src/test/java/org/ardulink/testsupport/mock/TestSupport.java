@@ -41,7 +41,11 @@ public final class TestSupport {
 	}
 
 	public static String uniqueMockUri() {
-		return String.format("ardulink://mock?%s=%s", NAME_ATTRIBUTE, randomUUID());
+		return mockUriWithName(randomUUID().toString());
+	}
+
+	public static String mockUriWithName(String randomUUID) {
+		return String.format("ardulink://mock?%s=%s", NAME_ATTRIBUTE, randomUUID);
 	}
 
 	public static Link getMock(Link link) {

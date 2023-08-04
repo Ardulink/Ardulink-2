@@ -33,6 +33,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL
 import static org.ardulink.mail.test.MailSender.mailFrom;
 import static org.ardulink.mail.test.MailSender.send;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
+import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
 import static org.ardulink.util.MapBuilder.newMapBuilder;
 import static org.ardulink.util.Strings.swapUpperLower;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -84,18 +85,17 @@ import com.icegreen.greenmail.smtp.SmtpServer;
 @Timeout(value = 10, unit = SECONDS)
 class ArdulinkMailOnCamelIntegrationTest {
 
-	private static final String mockURI = "ardulink://mock";
+	long receiveTimeout = SECONDS.toMillis(5);
 
-	private static final long receiveTimeout = SECONDS.toMillis(5);
-	
-	private Link link;
+	String mockUri = uniqueMockUri();
+	Link link;
 
 	@RegisterExtension
 	GreenMailExtension mailMock = new GreenMailExtension(SMTP_IMAP);
 
 	@BeforeEach
 	void setup() throws Exception {
-		link = Links.getLink(mockURI);
+		link = Links.getLink(mockUri);
 	}
 
 	@AfterEach
@@ -121,7 +121,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 			String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
 
 			context.addRoutes(ardulinkProcessing(imapUri(username, password), swapUpperLower(validSender), commandName,
-					asList(switchDigitalPin, switchAnalogPin), makeURI(mockURI, emptyMap()), "mock:result"));
+					asList(switchDigitalPin, switchAnalogPin), makeURI(mockUri, emptyMap()), "mock:result"));
 			context.start();
 
 			Link mockLink = getMock(link);
@@ -155,7 +155,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 		String commandName = "usedScenario";
 		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText(commandName));
 
-		String ardulink = makeURI(mockURI, newMapBuilder().build());
+		String ardulink = makeURI(mockUri, newMapBuilder().build());
 
 		String switchDigitalPin = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
 		String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
@@ -205,7 +205,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 		String smtpRouteStart = "direct:smtp-" + UUID.randomUUID();
 		main.configure().addRoutesBuilder(setToAndFromHeaderAndSendTo(smtpRouteStart, "{{to}}"));
 		main.configure().addRoutesBuilder(ardulinkProcessing("{{from}}", validSender, commandName,
-				asList(command.split("\\,")), makeURI(mockURI, emptyMap()), smtpRouteStart));
+				asList(command.split("\\,")), makeURI(mockUri, emptyMap()), smtpRouteStart));
 		runInBackground(main);
 
 		try {
@@ -302,7 +302,8 @@ class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	private String makeURI(String uri, Map<? extends Object, ? extends Object> kv) {
-		return uri + "?" + Joiner.on("&").withKeyValueSeparator("=").join(kv);
+		return kv.isEmpty() ? uri
+				: uri + (uri.contains("?") ? "&" : "?") + Joiner.on("&").withKeyValueSeparator("=").join(kv);
 	}
 
 	private String anySubject() {

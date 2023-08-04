@@ -1,8 +1,10 @@
 package org.ardulink.camel.test;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
+import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -18,16 +20,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-@Timeout(5)
+@Timeout(value = 5, unit = SECONDS)
 class ArdulinkComponentListenerTest {
 
-	private static final String MOCK_URI = "ardulink://mock";
+	String mockUri = uniqueMockUri();
 
-	private Link link;
+	Link link;
 
 	@BeforeEach
 	void setup() throws Exception {
-		link = Links.getLink(MOCK_URI);
+		link = Links.getLink(mockUri);
 	}
 
 	@AfterEach
@@ -78,7 +80,7 @@ class ArdulinkComponentListenerTest {
 		context.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() {
-				from(noMatterWhat()).to(MOCK_URI + "?" + args);
+				from(noMatterWhat()).to(mockUri + "&" + args);
 			}
 		});
 		context.start();

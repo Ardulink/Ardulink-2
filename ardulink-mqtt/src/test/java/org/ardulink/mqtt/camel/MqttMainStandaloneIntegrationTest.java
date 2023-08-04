@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.mqtt.camel;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.getCauses;
@@ -57,7 +58,7 @@ class MqttMainStandaloneIntegrationTest {
 		CommandLineArguments args = new CommandLineArguments();
 		args.standalone = true;
 		args.brokerTopic = "myTestTopic";
-		args.connection = "ardulink://mock";
+		args.connection = uniqueMockUri();
 		return args;
 	}
 

@@ -17,13 +17,13 @@ limitations under the License.
 package org.ardulink.rest.swagger;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.port;
 import static io.restassured.http.ContentType.JSON;
 import static java.awt.GraphicsEnvironment.isHeadless;
 import static java.lang.Boolean.parseBoolean;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
+import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -46,6 +46,8 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.AriaRole;
 
+import io.restassured.RestAssured;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -58,17 +60,17 @@ class ArdulinkRestSwaggerTest {
 
 	private static final long TIMEOUT = SECONDS.toMillis(5);
 	private static final String SYS_PROP_PREFIX = "ardulink.test.";
-	private static final String MOCK_URI = "ardulink://mock";
+	private static final String MOCK_URI = uniqueMockUri();
 
 	@BeforeEach
 	void setup() {
-		port = freePort();
+		RestAssured.port = freePort();
 	}
 
 	@Test
 	void canAccesApiDoc() throws Exception {
 		try (RestMain main = runRestComponent()) {
-			given().port(port).get("/api-docs").then().assertThat().statusCode(200).contentType(JSON) //
+			given().port(RestAssured.port).get("/api-docs").then().assertThat().statusCode(200).contentType(JSON) //
 					.body("info.title", equalTo("User API")) //
 					.body("paths", hasKey("/pin/analog/{pin}")) //
 					.body("paths", hasKey("/pin/digital/{pin}")) //
@@ -85,7 +87,7 @@ class ArdulinkRestSwaggerTest {
 
 				Page page = context.newPage();
 
-				page.navigate("http://localhost:" + port + "/api-browser");
+				page.navigate("http://localhost:" + RestAssured.port + "/api-browser");
 
 				Page page1 = page.waitForPopup(() -> {
 					page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("/api-docs")).click();
@@ -105,7 +107,7 @@ class ArdulinkRestSwaggerTest {
 
 				Page page = context.newPage();
 
-				page.navigate("http://localhost:" + port + "/api-browser");
+				page.navigate("http://localhost:" + RestAssured.port + "/api-browser");
 				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("put ​/pin​/analog​/{pin}"))
 						.click();
 
@@ -150,7 +152,7 @@ class ArdulinkRestSwaggerTest {
 	private RestMain runRestComponent() throws Exception {
 		CommandLineArguments args = new CommandLineArguments();
 		args.connection = MOCK_URI;
-		args.port = port;
+		args.port = RestAssured.port;
 		return new RestMain(args);
 	}
 

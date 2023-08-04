@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.rest;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.port;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.IntStream.rangeClosed;
 import static org.ardulink.core.Pin.analogPin;
@@ -52,6 +51,8 @@ import org.ardulink.rest.main.RestMain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import io.restassured.RestAssured;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -66,7 +67,7 @@ class ArdulinkRestTest {
 
 	@BeforeEach
 	void setup() {
-		port = freePort();
+		RestAssured.port = freePort();
 	}
 
 	@Test
@@ -184,7 +185,7 @@ class ArdulinkRestTest {
 	private RestMain runRestComponent(String target) throws Exception {
 		CommandLineArguments args = new CommandLineArguments();
 		args.connection = target;
-		args.port = port;
+		args.port = RestAssured.port;
 		return new RestMain(args);
 	}
 
