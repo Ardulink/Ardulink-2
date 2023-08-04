@@ -32,7 +32,6 @@ import org.ardulink.core.convenience.Links;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.util.URIs;
 
 /**
  * [ardulinktitle] [ardulinkversion]

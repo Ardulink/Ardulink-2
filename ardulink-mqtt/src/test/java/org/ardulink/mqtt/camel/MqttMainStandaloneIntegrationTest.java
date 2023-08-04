@@ -17,8 +17,8 @@ limitations under the License.
 package org.ardulink.mqtt.camel;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.ardulink.util.Bytes.concat;
 import static org.ardulink.util.ServerSockets.freePort;
-import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.getCauses;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -47,103 +47,79 @@ import org.junit.jupiter.api.Timeout;
 class MqttMainStandaloneIntegrationTest {
 
 	String someUser = "someUser";
-	String somePassword = "somePassword";
+	byte[] somePassword = "somePassword".getBytes();
 
-	private final CommandLineArguments args = new CommandLineArguments();
-	private String brokerUser;
-	private String brokerPassword;
-	private String clientUser;
-	private String clientPassword;
+	CommandLineArguments args = new CommandLineArguments();
+	String brokerUser;
+	byte[] brokerPassword;
 
 	@BeforeEach
 	void setup(@MockUri String mockUri) {
 		args.standalone = true;
-		args.brokerTopic = "myTestTopic";
+		args.brokerPort = freePort();
+		args.brokerTopic = "any/test/topic";
 		args.connection = mockUri;
-		withBrokerPort(freePort());
-	}
-
-	private MqttMainStandaloneIntegrationTest withBrokerPort(int port) {
-		args.brokerPort = port;
-		return this;
-	}
-
-	public MqttMainStandaloneIntegrationTest withBrokerUser(String brokerUser) {
-		this.brokerUser = brokerUser;
-		return this;
-	}
-
-	public MqttMainStandaloneIntegrationTest withSsl() {
-		args.ssl = true;
-		return this;
-	}
-
-	public MqttMainStandaloneIntegrationTest withBrokerPassword(String brokerPassword) {
-		this.brokerPassword = brokerPassword;
-		return this;
-	}
-
-	public MqttMainStandaloneIntegrationTest withClientUser(String clientUser) {
-		this.clientUser = clientUser;
-		return updateCredentials();
-	}
-
-	public MqttMainStandaloneIntegrationTest withClientPassword(String clientPassword) {
-		this.clientPassword = clientPassword;
-		return updateCredentials();
-	}
-
-	private MqttMainStandaloneIntegrationTest updateCredentials() {
-		args.credentials = clientUser + ":" + clientPassword;
-		return this;
-	}
-
-	private boolean hasAuthentication() {
-		return !nullOrEmpty(brokerPassword) && brokerPassword != null;
 	}
 
 	@Test
 	void clientCanConnectToNewlyStartedBroker() throws Exception {
-		assertDoesNotThrow(this::runMain);
+		assertDoesNotThrow(this::runMainAndConnectToBroker);
 	}
 
 	@Test
 	void clientCanConnectUsingCredentialsToNewlyStartedBroker() throws Exception {
-		withBrokerUser(someUser).withBrokerPassword(somePassword);
-		withClientUser(someUser).withClientPassword(somePassword);
-		assertDoesNotThrow(this::runMain);
+		givenBrokerCredentials(someUser, somePassword);
+		givenClientCredentials(someUser, somePassword);
+		assertDoesNotThrow(this::runMainAndConnectToBroker);
 	}
 
 	@Test
 	void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker() throws Exception {
-		withBrokerUser(someUser).withBrokerPassword(somePassword);
-		withClientUser(someUser).withClientPassword(not(somePassword));
-		Exception exception = assertThrows(FailedToStartRouteException.class, () -> runMain());
+		givenBrokerCredentials(someUser, somePassword);
+		givenClientCredentials(someUser, not(somePassword));
+		Exception exception = assertThrows(FailedToStartRouteException.class, () -> runMainAndConnectToBroker());
 		assertThat(getCauses(exception)).anyMatch(MqttSecurityException.class::isInstance);
 	}
 
 	@Test
 	@Disabled("test fails with Caused by: javax.net.ssl.SSLHandshakeException: Received fatal alert: handshake_failure")
 	void clientCanConnectUsingCredentialsToNewlyStartedSslBroker() throws Exception {
-		withSsl();
-		withBrokerUser(someUser).withBrokerPassword(somePassword);
-		withClientUser(someUser).withClientPassword(somePassword);
-		assertDoesNotThrow(this::runMain);
+		givenSslEnabled(true);
+		givenBrokerCredentials(someUser, somePassword);
+		givenClientCredentials(someUser, somePassword);
+		assertDoesNotThrow(this::runMainAndConnectToBroker);
 	}
 
-	private void runMain() throws Exception {
+	private void runMainAndConnectToBroker() throws Exception {
 		MqttMain mqttMain = new MqttMain(args) {
 			@Override
 			protected Builder configureBroker(Builder builder) {
-				return hasAuthentication() ? builder.addAuthenication(brokerUser, brokerPassword.getBytes()) : builder;
+				return hasAuthentication() ? builder.addAuthenication(brokerUser, brokerPassword) : builder;
 			}
 		};
 		mqttMain.connectToMqttBroker();
 		mqttMain.close();
 	}
 
-	private static String not(String value) {
-		return "not" + value;
+	private void givenSslEnabled(boolean state) {
+		args.ssl = state;
+	}
+
+	private void givenBrokerCredentials(String brokerUser, byte[] brokerPassword) {
+		this.brokerUser = brokerUser;
+		this.brokerPassword = brokerPassword;
+	}
+
+	private void givenClientCredentials(String clientUser, byte[] clientPassword) {
+		args.credentials = clientUser + ":" + new String(clientPassword);
+	}
+
+	private boolean hasAuthentication() {
+		return brokerPassword != null && brokerPassword.length > 0;
+	}
+
+	private static byte[] not(byte[] value) {
+		return concat("not".getBytes(), value);
 	}
 
 }
