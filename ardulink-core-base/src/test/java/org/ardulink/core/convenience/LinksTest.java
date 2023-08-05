@@ -182,7 +182,7 @@ class LinksTest {
 
 	@Test
 	void doesNotCloseConnectionIfStillInUse(@MockUri String mockUri) throws IOException {
-		Link[] links = { Links.getLink(mockUri), Links.getLink(mockUri), Links.getLink(mockUri) };
+		Link[] links = range(0, 3).mapToObj(__ -> Links.getLink(mockUri)).toArray(Link[]::new);
 		assertThat(links).allSatisfy(l -> assertThat(l).isSameAs(links[0]));
 		// all links point to the same instance, so choose one of them
 		try (Link link = links[0]) {
