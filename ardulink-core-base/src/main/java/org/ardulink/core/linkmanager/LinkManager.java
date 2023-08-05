@@ -29,6 +29,7 @@ import static org.ardulink.util.Numbers.convertTo;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Primitives.findPrimitiveFor;
 import static org.ardulink.util.Primitives.wrap;
 import static org.ardulink.util.ServiceLoaders.services;
 import static org.ardulink.util.Strings.nullOrEmpty;
@@ -67,7 +68,6 @@ import org.ardulink.core.linkmanager.LinkConfig.Named;
 import org.ardulink.core.linkmanager.LinkFactory.Alias;
 import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider;
 import org.ardulink.util.Numbers;
-import org.ardulink.util.Primitives;
 import org.ardulink.util.anno.LapsedWith;
 
 /**
@@ -495,10 +495,7 @@ public abstract class LinkManager {
 				} else if (!factoryType.equals(other.factoryType)) {
 					return false;
 				}
-				if (values == null) {
-					return other.values == null;
-				} else
-					return values.equals(other.values);
+				return values == null ? other.values == null : values.equals(other.values);
 			}
 
 			@Override
@@ -627,7 +624,8 @@ public abstract class LinkManager {
 				Class<Enum<?>> enumClass = (Class<Enum<?>>) targetType;
 				return enumWithName(enumClass, value);
 			} else {
-				return Primitives.parseAs(targetType, value);
+				return findPrimitiveFor(targetType).map(p -> nullOrEmpty(value) ? p.defaultValue() : p.parse(value))
+						.orElse(value);
 			}
 		}
 

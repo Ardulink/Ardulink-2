@@ -144,6 +144,12 @@ public class DummyLinkConfig implements LinkConfig {
 	@Named("i2")
 	public TimeUnit i2 = DAYS;
 
+	@Named("i3")
+	public int i3 = 42;
+	
+	@Named("i4")
+	public Integer i4 = 42;
+	
 	public static final ThreadLocal<String[]> choiceValuesOfD = new ThreadLocal<String[]>() {
 		@Override
 		protected String[] initialValue() {
