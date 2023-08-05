@@ -65,8 +65,15 @@ class LinksTest {
 	@Test
 	void whenRequestingDefaultLinkReturnsFirstAvailableConnectionIfSerialNotAvailable() throws IOException {
 		try (Link link = Links.getDefault()) {
-			assertThat(getConnection(link)).isInstanceOf(DummyConnection.class);
+			isDummyConnection(link);
 		}
+		try (Link link = Links.getLink(Links.DEFAULT_URI)) {
+			isDummyConnection(link);
+		}
+	}
+
+	private void isDummyConnection(Link link) {
+		assertThat(getConnection(link)).isInstanceOf(DummyConnection.class);
 	}
 
 	@Test

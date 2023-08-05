@@ -52,12 +52,15 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
  */
 public final class Links {
 
+	private static final String DEFAULT_ALIAS = "default";
 	// TODO use a WeakHashMap and use PhantomReferences to close GCed Links
 	private static final Map<Object, CacheEntry> cache = new HashMap<>();
 	private static final LinkManager linkManager = LinkManager.getInstance();
 
 	private static final Alias serialAlias = new Alias("serial", Pattern.compile("serial\\-.+"));
-	private static final List<Alias> aliases = asList(new Alias("default", Pattern.compile(".*")), serialAlias);
+	private static final List<Alias> aliases = asList(new Alias(DEFAULT_ALIAS, Pattern.compile(".*")), serialAlias);
+
+	public static final String DEFAULT_URI = "ardulink://" + DEFAULT_ALIAS;
 
 	private static class Alias {
 		private final String aliasName;

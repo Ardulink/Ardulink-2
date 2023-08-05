@@ -17,10 +17,10 @@ limitations under the License.
 package org.ardulink.mqtt.camel;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.ardulink.util.Bytes.concat;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.Throwables.getCauses;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.util.Strings.isNullOrEmpty;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -47,14 +47,15 @@ import org.junit.jupiter.api.Timeout;
 class MqttMainStandaloneIntegrationTest {
 
 	String someUser = "someUser";
-	byte[] somePassword = "somePassword".getBytes();
+	String somePassword = "somePassword";
 
-	CommandLineArguments args = new CommandLineArguments();
+	CommandLineArguments args;
 	String brokerUser;
-	byte[] brokerPassword;
+	String brokerPassword;
 
 	@BeforeEach
 	void setup(@MockUri String mockUri) {
+		args = new CommandLineArguments();
 		args.standalone = true;
 		args.brokerPort = freePort();
 		args.brokerTopic = "any/test/topic";
@@ -94,7 +95,7 @@ class MqttMainStandaloneIntegrationTest {
 		MqttMain mqttMain = new MqttMain(args) {
 			@Override
 			protected Builder configureBroker(Builder builder) {
-				return hasAuthentication() ? builder.addAuthenication(brokerUser, brokerPassword) : builder;
+				return hasAuthentication() ? builder.addAuthenication(brokerUser, brokerPassword.getBytes()) : builder;
 			}
 		};
 		mqttMain.connectToMqttBroker();
@@ -105,21 +106,21 @@ class MqttMainStandaloneIntegrationTest {
 		args.ssl = state;
 	}
 
-	private void givenBrokerCredentials(String brokerUser, byte[] brokerPassword) {
+	private void givenBrokerCredentials(String brokerUser, String brokerPassword) {
 		this.brokerUser = brokerUser;
 		this.brokerPassword = brokerPassword;
 	}
 
-	private void givenClientCredentials(String clientUser, byte[] clientPassword) {
-		args.credentials = clientUser + ":" + new String(clientPassword);
+	private void givenClientCredentials(String clientUser, String clientPassword) {
+		args.credentials = clientUser + ":" + clientPassword;
 	}
 
 	private boolean hasAuthentication() {
-		return brokerPassword != null && brokerPassword.length > 0;
+		return !isNullOrEmpty(brokerUser) || !isNullOrEmpty(brokerPassword);
 	}
 
-	private static byte[] not(byte[] value) {
-		return concat("not".getBytes(), value);
+	private static String not(String value) {
+		return "not" + value;
 	}
 
 }

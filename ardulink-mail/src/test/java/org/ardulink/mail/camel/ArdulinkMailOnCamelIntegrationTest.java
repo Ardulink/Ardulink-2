@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.mail.camel;
 
 import static com.icegreen.greenmail.util.ServerSetupTest.SMTP_IMAP;
+import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
@@ -35,13 +36,13 @@ import static org.ardulink.mail.test.MailSender.send;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.MapBuilder.newMapBuilder;
 import static org.ardulink.util.Strings.swapUpperLower;
+import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -63,9 +64,6 @@ import org.ardulink.core.convenience.Links;
 import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.ardulink.util.Joiner;
 import org.ardulink.util.MapBuilder;
-import org.ardulink.util.Throwables;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -82,60 +80,46 @@ import com.icegreen.greenmail.smtp.SmtpServer;
  * [adsense]
  *
  */
-@Timeout(value = 10, unit = SECONDS)
+@Timeout(value = ArdulinkMailOnCamelIntegrationTest.TIMEOUT_SECS, unit = SECONDS)
 class ArdulinkMailOnCamelIntegrationTest {
 
-	long receiveTimeout = SECONDS.toMillis(5);
-
-	String mockUri;
-	Link link;
+	static final int TIMEOUT_SECS = 10;
 
 	@RegisterExtension
 	GreenMailExtension mailMock = new GreenMailExtension(SMTP_IMAP);
 
-	@BeforeEach
-	void setup(@MockUri String mockUri) throws Exception {
-		this.mockUri = mockUri;
-		this.link = Links.getLink(mockUri);
-	}
-
-	@AfterEach
-	void tearDown() throws IOException {
-		this.link.close();
-	}
-
 	@Test
-	void readsFromImap_controlsArdulink_sendsResultToEndpoint() throws Exception {
-		String receiverUser = "receiver";
-		String username = "loginIdReceiver";
-		String password = "secretOfReceiver";
-		String receiver = receiverUser + "@" + "someReceiverDomain.com";
-		createMailUser(receiver, username, password);
+	void readsFromImap_controlsArdulink_sendsResultToEndpoint(@MockUri String mockUri) throws Exception {
+		try (Link link = Links.getLink(mockUri)) {
+			String receiverUser = "receiver";
+			String username = "loginIdReceiver";
+			String password = "secretOfReceiver";
+			String receiver = receiverUser + "@" + "someReceiverDomain.com";
+			createMailUser(receiver, username, password);
 
-		String validSender = "valid.sender@someSenderDomain.com";
-		createMailUser(validSender, "loginIdSender", "secretOfSender");
-		String commandName = "usedScenario";
-		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText(commandName));
-
-		try (CamelContext context = new DefaultCamelContext()) {
-			String switchDigitalPin = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
-			String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
-
-			context.addRoutes(ardulinkProcessing(imapUri(username, password), swapUpperLower(validSender), commandName,
-					asList(switchDigitalPin, switchAnalogPin), makeURI(mockUri, emptyMap()), "mock:result"));
-			context.start();
+			String validSender = "valid.sender@someSenderDomain.com";
+			createMailUser(validSender, "loginIdSender", "secretOfSender");
+			String commandName = "usedScenario";
+			send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText(commandName));
 
 			Link mockLink = getMock(link);
-			try {
-				verify(mockLink, timeout(receiveTimeout)).switchDigitalPin(digitalPin(1), true);
-				verify(mockLink, timeout(receiveTimeout)).switchAnalogPin(analogPin(2), 123);
+			try (CamelContext context = new DefaultCamelContext()) {
+				String switchDigitalPin = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
+				String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
+
+				context.addRoutes(ardulinkProcessing(imapUri(username, password), swapUpperLower(validSender),
+						commandName, asList(switchDigitalPin, switchAnalogPin), makeURI(mockUri, emptyMap()),
+						"mock:result"));
+				context.start();
+
+				long timeoutMillis = SECONDS.toMillis(TIMEOUT_SECS);
+				verify(mockLink, timeout(timeoutMillis)).switchDigitalPin(digitalPin(1), true);
+				verify(mockLink, timeout(timeoutMillis)).switchAnalogPin(analogPin(2), 123);
 
 				MockEndpoint mockEndpoint = context.getEndpoint("mock:result", MockEndpoint.class);
 				mockEndpoint.expectedMessageCount(1);
 				mockEndpoint.expectedBodiesReceived(switchDigitalPin + "=OK" + "\r\n" + switchAnalogPin + "=OK");
 				mockEndpoint.assertIsSatisfied();
-			} finally {
-				context.stop();
 			}
 			verify(mockLink).close();
 			verifyNoMoreInteractions(mockLink);
@@ -144,11 +128,11 @@ class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	@Test
-	void writesResultToSender() throws Exception {
+	void writesResultToSender(@MockUri String mockUri) throws Exception {
 		String receiverUser = "receiver";
 		String username = "loginIdReceiver";
 		String password = "secretOfReceiver";
-		String receiver = receiverUser + "@" + "someReceiverDomain.com";
+		String receiver = format("%s@someReceiverDomain.com", receiverUser);
 		createMailUser(receiver, username, password);
 
 		String validSender = "valid.sender@someSenderDomain.com";
@@ -168,20 +152,14 @@ class ArdulinkMailOnCamelIntegrationTest {
 					asList(switchDigitalPin, switchAnalogPin), ardulink, smtpName));
 			context.start();
 
-			try {
-				assertThat(fetchMails("loginIdSender", "secretOfSender")).singleElement()
-						.satisfies(m -> assertThat(m.getContent())
-								.isEqualTo(switchDigitalPin + "=OK\r\n" + switchAnalogPin + "=OK"));
-
-			} finally {
-				context.stop();
-			}
+			assertThat(fetchMails("loginIdSender", "secretOfSender")).singleElement().satisfies(
+					m -> assertThat(m.getContent()).isEqualTo(switchDigitalPin + "=OK\r\n" + switchAnalogPin + "=OK"));
 		}
 
 	}
 
 	@Test
-	void writesResultToSender_ConfiguredViaProperties() throws Exception {
+	void writesResultToSender_ConfiguredViaProperties(@MockUri String mockUri) throws Exception {
 		String receiver = "receiver@someReceiverDomain.com";
 		String username = "loginIdReceiver";
 		String password = "secretOfReceiver";
@@ -218,8 +196,8 @@ class ArdulinkMailOnCamelIntegrationTest {
 
 	}
 
-	private RouteBuilder ardulinkProcessing(String from, String validSender, String commandName, List<String> commands,
-			String ardulink, String to) {
+	private static RouteBuilder ardulinkProcessing(String from, String validSender, String commandName,
+			List<String> commands, String ardulink, String to) {
 		return new RouteBuilder() {
 			@Override
 			public void configure() {
@@ -235,7 +213,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 		};
 	}
 
-	private RouteBuilder setToAndFromHeaderAndSendTo(String from, String to) {
+	private static RouteBuilder setToAndFromHeaderAndSendTo(String from, String to) {
 		return new RouteBuilder() {
 			@Override
 			public void configure() throws Exception {
@@ -272,7 +250,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 			try {
 				main.run();
 			} catch (Exception e) {
-				Throwables.propagate(e);
+				propagate(e);
 			}
 		});
 	}
@@ -302,9 +280,13 @@ class ArdulinkMailOnCamelIntegrationTest {
 		return asList(inbox.getMessages());
 	}
 
-	private String makeURI(String uri, Map<? extends Object, ? extends Object> kv) {
+	private static String makeURI(String uri, Map<? extends Object, ? extends Object> kv) {
 		return kv.isEmpty() ? uri
-				: uri + (uri.contains("?") ? "&" : "?") + Joiner.on("&").withKeyValueSeparator("=").join(kv);
+				: format("%s%s%s", uri, separator(uri), Joiner.on("&").withKeyValueSeparator("=").join(kv));
+	}
+
+	private static String separator(String uri) {
+		return uri.contains("?") ? "&" : "?";
 	}
 
 	private String anySubject() {

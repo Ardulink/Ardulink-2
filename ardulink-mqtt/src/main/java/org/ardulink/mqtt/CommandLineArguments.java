@@ -1,6 +1,7 @@
 package org.ardulink.mqtt;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.ardulink.core.convenience.Links.DEFAULT_URI;
 import static org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy.AVERAGE;
 
 import org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy;
@@ -52,7 +53,7 @@ public class CommandLineArguments {
 	public CompactStrategy compactStrategy = AVERAGE;
 
 	@Option(name = "-connection", usage = "Connection URI to the arduino")
-	public String connection = "ardulink://serial";
+	public String connection = DEFAULT_URI;
 
 	@Option(name = "-control", usage = "Enable the control of listeners via mqtt")
 	public boolean control;
