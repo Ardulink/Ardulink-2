@@ -521,11 +521,8 @@ public abstract class LinkManager {
 
 		@Override
 		public ConfigAttribute getAttribute(String key) {
-			ConfigAttributeAdapter<T> configAttributeAdapter = cache.get(key);
-			if (configAttributeAdapter == null) {
-				cache.put(key, configAttributeAdapter = new ConfigAttributeAdapter<>(linkConfig, beanProperties, key));
-			}
-			return configAttributeAdapter;
+			return cache.computeIfAbsent(key, k -> new ConfigAttributeAdapter<>(linkConfig, beanProperties, k));
+
 		}
 
 		@Override
@@ -564,12 +561,11 @@ public abstract class LinkManager {
 
 		@Override
 		public List<URI> listURIs() {
-			return getConnectionFactories().stream().map(f -> create(format("%s://%s", SCHEMA, f.getName())))
-					.collect(toList());
+			return getConnectionFactories().map(f -> create(format("%s://%s", SCHEMA, f.getName()))).collect(toList());
 		}
 
 		private Optional<LinkFactory> getConnectionFactory(String name) {
-			List<LinkFactory> connectionFactories = getConnectionFactories();
+			List<LinkFactory> connectionFactories = getConnectionFactories().collect(toList());
 			BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function1 = (t, u) -> getByName(t, u);
 			BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function2 = (t, u) -> getByAlias(t, u);
 			return Stream.of(function1, function2).map(f -> f.apply(name, connectionFactories))
@@ -586,12 +582,12 @@ public abstract class LinkManager {
 
 		private boolean hasAliasNamed(String name, LinkFactory factory) {
 			Alias alias = factory.getClass().getAnnotation(LinkFactory.Alias.class);
-			return (alias == null ? emptyList() : asList(alias.value())).contains(name);
+			return alias != null && asList(alias.value()).contains(name);
 		}
 
-		private List<LinkFactory> getConnectionFactories() {
+		private Stream<LinkFactory> getConnectionFactories() {
 			return services(LinkFactoriesProvider.class, moduleClassloader()).stream()
-					.map(LinkFactoriesProvider::loadLinkFactories).flatMap(Collection::stream).collect(toList());
+					.map(LinkFactoriesProvider::loadLinkFactories).flatMap(Collection::stream);
 		}
 
 		@Override
