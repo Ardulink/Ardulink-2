@@ -36,14 +36,14 @@ import java.util.stream.Stream;
  */
 public enum Primitives {
 
-	INT(Integer.TYPE, Integer.class, Integer::valueOf), //
-	BYTE(Byte.TYPE, Byte.class, Byte::valueOf), //
-	SHORT(Short.TYPE, Short.class, Short::valueOf), //
-	LONG(Long.TYPE, Long.class, Long::valueOf), //
-	FLOAT(Float.TYPE, Float.class, Float::valueOf), //
-	DOUBLE(Double.TYPE, Double.class, Double::valueOf), //
-	BOOLEAN(Boolean.TYPE, Boolean.class, Boolean::valueOf), //
-	CHAR(Character.TYPE, Character.class, Primitives::charValueOfHelper);
+	INT(Integer.TYPE, Integer.class, Integer::valueOf, (int) 0), //
+	BYTE(Byte.TYPE, Byte.class, Byte::valueOf, (byte) 0), //
+	SHORT(Short.TYPE, Short.class, Short::valueOf, (short) 0), //
+	LONG(Long.TYPE, Long.class, Long::valueOf, (long) 0), //
+	FLOAT(Float.TYPE, Float.class, Float::valueOf, (float) 0), //
+	DOUBLE(Double.TYPE, Double.class, Double::valueOf, (double) 0), //
+	BOOLEAN(Boolean.TYPE, Boolean.class, Boolean::valueOf, false), //
+	CHAR(Character.TYPE, Character.class, Primitives::charValueOfHelper, (char) 0);
 
 	private static char charValueOfHelper(String string) {
 		checkArgument(string.length() == 1, "single character expected but got %s", string);
@@ -53,11 +53,13 @@ public enum Primitives {
 	private final Class<?> type;
 	private final Class<?> wrapperType;
 	private final Function<String, Object> parseFunction;
+	private final Object defaultValue;
 
-	Primitives(Class<?> type, Class<?> wrapperType, Function<String, Object> parseFunction) {
+	Primitives(Class<?> type, Class<?> wrapperType, Function<String, Object> parseFunction, Object defaultValue) {
 		this.type = type;
 		this.wrapperType = wrapperType;
 		this.parseFunction = parseFunction;
+		this.defaultValue = defaultValue;
 	}
 
 	public final Object parse(String value) {
@@ -66,6 +68,10 @@ public enum Primitives {
 
 	public final Class<?> getWrapperType() {
 		return wrapperType;
+	}
+	
+	public Object defaultValue() {
+		return defaultValue;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -81,7 +87,7 @@ public enum Primitives {
 		}
 	}
 
-	private static Optional<Primitives> findPrimitiveFor(Class<?> type) {
+	public static Optional<Primitives> findPrimitiveFor(Class<?> type) {
 		return primitiveMatching(p -> type.isAssignableFrom(p.getType()));
 	}
 

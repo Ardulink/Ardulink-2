@@ -98,4 +98,31 @@ class PrimitivesTest {
 		assertThat(Primitives.wrap(int.class)).isEqualTo(Integer.class);
 	}
 
+	@Test
+	void findPrimitiveFor() {
+		assertThat(Primitives.findPrimitiveFor(Boolean.class)).isEmpty();
+		assertThat(Primitives.findPrimitiveFor(String.class)).isEmpty();
+
+		assertThat(Primitives.findPrimitiveFor(boolean.class)).hasValue(Primitives.BOOLEAN);
+		assertThat(Primitives.findPrimitiveFor(byte.class)).hasValue(Primitives.BYTE);
+		assertThat(Primitives.findPrimitiveFor(char.class)).hasValue(Primitives.CHAR);
+		assertThat(Primitives.findPrimitiveFor(double.class)).hasValue(Primitives.DOUBLE);
+		assertThat(Primitives.findPrimitiveFor(float.class)).hasValue(Primitives.FLOAT);
+		assertThat(Primitives.findPrimitiveFor(int.class)).hasValue(Primitives.INT);
+		assertThat(Primitives.findPrimitiveFor(long.class)).hasValue(Primitives.LONG);
+		assertThat(Primitives.findPrimitiveFor(short.class)).hasValue(Primitives.SHORT);
+	}
+
+	@Test
+	void defaults() {
+		assertThat(Primitives.BOOLEAN.defaultValue()).isEqualTo(false);
+		assertThat(Primitives.BYTE.defaultValue()).isEqualTo((byte) 0);
+		assertThat(Primitives.CHAR.defaultValue()).isEqualTo((char) 0);
+		assertThat(Primitives.DOUBLE.defaultValue()).isEqualTo((double) 0);
+		assertThat(Primitives.FLOAT.defaultValue()).isEqualTo((float) 0);
+		assertThat(Primitives.INT.defaultValue()).isEqualTo((int) 0);
+		assertThat(Primitives.LONG.defaultValue()).isEqualTo((long) 0);
+		assertThat(Primitives.SHORT.defaultValue()).isEqualTo((short) 0);
+	}
+
 }
