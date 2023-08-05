@@ -35,14 +35,15 @@ class IteratorsTest {
 
 	@Test
 	void getFirst() {
-		assertThat(Iterators.getFirst(iteratorOf(1)).get()).isEqualTo(1);
-		assertThat(Iterators.getFirst(iteratorOf(1, 2)).get()).isEqualTo(1);
+		assertThat(Iterators.getFirst(iteratorOf(1))).hasValue(1);
+		assertThat(Iterators.getFirst(iteratorOf(1, 2, null))).hasValue(1);
+		assertThat(Iterators.getFirst(iteratorOf(null, 1, 2))).isEmpty();
 	}
 
 	@Test
 	void getLast() {
-		assertThat(Iterators.getLast(iteratorOf(1)).get()).isEqualTo(1);
-		assertThat(Iterators.getLast(iteratorOf(1, 2)).get()).isEqualTo(2);
+		assertThat(Iterators.getLast(iteratorOf(1))).hasValue(1);
+		assertThat(Iterators.getLast(iteratorOf(1, 2))).hasValue(2);
 	}
 
 	private <T> Iterator<T> iteratorOf(T... elements) {
