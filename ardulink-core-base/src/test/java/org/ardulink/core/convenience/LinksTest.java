@@ -22,10 +22,11 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.stream.IntStream.range;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.convenience.Links.DEFAULT_URI;
 import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
-import static org.ardulink.util.Strings.swapUpperLower;
+import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -49,7 +50,6 @@ import org.ardulink.core.linkmanager.DummyLinkFactory;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.util.Throwables;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -67,7 +67,7 @@ class LinksTest {
 		try (Link link = Links.getDefault()) {
 			isDummyConnection(link);
 		}
-		try (Link link = Links.getLink(Links.DEFAULT_URI)) {
+		try (Link link = Links.getLink(DEFAULT_URI)) {
 			isDummyConnection(link);
 		}
 	}
@@ -231,22 +231,19 @@ class LinksTest {
 
 	@Test
 	void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws Throwable {
-		String name1 = new DummyLinkFactory().getName();
-		String name2 = swapUpperLower(name1);
-
-		assert name1.equalsIgnoreCase(name2);
-		assert !name1.equals(name2);
+		String nameOrig = new DummyLinkFactory().getName();
+		String nameOther = "Not" + nameOrig;
 
 		class DummyLinkFactoryExtension extends DummyLinkFactory {
 			@Override
 			public String getName() {
-				return name2;
+				return nameOther;
 			}
 		}
 
 		withRegistered(new DummyLinkFactoryExtension()).execute(() -> {
-			try (Link link1 = Links.getLink(makeUri(name1)); Link link2 = Links.getLink(makeUri(name2))) {
-				assertThat(link1).isNotSameAs(link2);
+			try (Link linkOrig = Links.getLink(makeUri(nameOrig)); Link linkOther = Links.getLink(makeUri(nameOther))) {
+				assertThat(linkOrig).isNotSameAs(linkOther);
 			}
 		});
 	}
@@ -298,7 +295,7 @@ class LinksTest {
 		try {
 			link.close();
 		} catch (IOException e) {
-			Throwables.propagate(e);
+			propagate(e);
 		}
 	}
 
