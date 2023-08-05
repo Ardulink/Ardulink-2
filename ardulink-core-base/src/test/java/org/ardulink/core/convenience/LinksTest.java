@@ -132,7 +132,7 @@ class LinksTest {
 		try (Link link = Links.getDefault()) {
 			DummyLinkConfig config = getConfig(link);
 			try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-				softly.assertThat(config.getProtocol()).isInstanceOf(ArdulinkProtocol2.class);
+				softly.assertThat(config.getProtocol()).isExactlyInstanceOf(ArdulinkProtocol2.class);
 				softly.assertThat(config.getA()).isEqualTo("aVal1");
 				softly.assertThat(config.getD()).isEqualTo(dVal1);
 				softly.assertThat(config.getF1()).isEqualTo(NANOSECONDS);

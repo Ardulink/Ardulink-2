@@ -616,7 +616,7 @@ public abstract class LinkManager {
 			return "".equals(value) ? null : value;
 		}
 
-		private Object convert(String value, Class<? extends Object> targetType) {
+		private Object convert(String value, Class<?> targetType) {
 			if (targetType.isInstance(value)) {
 				return value;
 			} else if (targetType.isEnum()) {

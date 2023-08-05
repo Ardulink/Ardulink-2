@@ -81,7 +81,7 @@ class LinkManagerTest {
 	void canLoadViaMetaInfServicesArdulinkLinkfactoryWithoutConfig() throws IOException {
 		try (Link link = sut.getConfigurer(create(format("%s://aLinkWithoutArealLinkFactoryWithoutConfig", SCHEMA)))
 				.newLink()) {
-			assertThat(link).isInstanceOf(AlLinkWithoutArealLinkFactoryWithoutConfig.class);
+			assertThat(link).isExactlyInstanceOf(AlLinkWithoutArealLinkFactoryWithoutConfig.class);
 		}
 	}
 
@@ -89,7 +89,7 @@ class LinkManagerTest {
 	void canLoadViaMetaInfServicesArdulinkLinkfactoryWithConfig() throws IOException {
 		try (Link link = sut.getConfigurer(create(format("%s://aLinkWithoutArealLinkFactoryWithConfig", SCHEMA)))
 				.newLink()) {
-			assertThat(link).isInstanceOf(AlLinkWithoutArealLinkFactoryWithConfig.class);
+			assertThat(link).isExactlyInstanceOf(AlLinkWithoutArealLinkFactoryWithConfig.class);
 		}
 	}
 
