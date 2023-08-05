@@ -18,8 +18,10 @@ package org.ardulink.core.linkmanager;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.lang.String.format;
 import static java.net.URI.create;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static org.ardulink.core.linkmanager.LinkManager.SCHEMA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -52,7 +54,7 @@ class DummyLinkFactoryTest {
 	private final class ExecutableImplementation implements Executable {
 		@Override
 		public void execute() throws Throwable {
-			sut.getConfigurer(create("wrongSchema://dummy"));
+			sut.getConfigurer(create(not(SCHEMA) + "://dummy"));
 		}
 	}
 
@@ -62,8 +64,8 @@ class DummyLinkFactoryTest {
 	void throwsExceptionOnInvalidNames() {
 		String name = "non.existing.name";
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-				() -> sut.getConfigurer(create("ardulink://" + name + "")));
-		assertThat(exception).hasMessageContaining("No factory registered for \"" + name + "\"");
+				() -> sut.getConfigurer(create(format("%s://%s", SCHEMA, name))));
+		assertThat(exception).hasMessageContainingAll("No factory registered", name);
 	}
 
 	@Test
@@ -75,7 +77,7 @@ class DummyLinkFactoryTest {
 
 	@Test
 	void canCreateDummyConnection() throws IOException {
-		try (Link link = sut.getConfigurer(create("ardulink://dummyLink")).newLink()) {
+		try (Link link = sut.getConfigurer(dummyLinkURI()).newLink()) {
 			assertThat(link).isNotNull();
 		}
 	}
@@ -86,7 +88,7 @@ class DummyLinkFactoryTest {
 		int bValue = 1;
 		String cValue = "cValue";
 		TimeUnit eValue = TimeUnit.DAYS;
-		try (Link link = sut.getConfigurer(create("ardulink://dummyLink?a=" + aValue + "&b=" + bValue + "&c=" + cValue
+		try (Link link = sut.getConfigurer(create(SCHEMA + "://dummyLink?a=" + aValue + "&b=" + bValue + "&c=" + cValue
 				+ "&proto=" + DummyProtocol.NAME + "&e=" + eValue.name() + "&i1=&i2=&i3=&i4=")).newLink()) {
 			assertThat(link).isInstanceOf(ConnectionBasedLink.class);
 			DummyConnection connection = (DummyConnection) ((ConnectionBasedLink) link).getConnection();
@@ -107,7 +109,7 @@ class DummyLinkFactoryTest {
 	void enumsHaveDefaultChoiceValues() {
 		// if type is an enum and there is no @ChoiceFor defined the enum's
 		// constants should be returned
-		Configurer configurer = sut.getConfigurer(create("ardulink://dummyLink"));
+		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		ConfigAttribute e = configurer.getAttribute("e");
 		assertThat(e.hasChoiceValues()).isEqualTo(TRUE);
 		assertThat(e.getChoiceValues()).isEqualTo(TimeUnit.values());
@@ -115,7 +117,7 @@ class DummyLinkFactoryTest {
 
 	@Test
 	void enumsWithChoiceValuesDoNotUseDefaultValues() {
-		Configurer configurer = sut.getConfigurer(create("ardulink://dummyLink"));
+		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		ConfigAttribute f1 = configurer.getAttribute("f1");
 		assertThat(f1.hasChoiceValues()).isEqualTo(TRUE);
 		assertThat(f1.getChoiceValues()).containsExactly(NANOSECONDS);
@@ -125,13 +127,13 @@ class DummyLinkFactoryTest {
 	void throwsExceptionOnInvalidKey() {
 		String nonExistingKey = "nonExistingKey";
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-				() -> sut.getConfigurer(create("ardulink://dummyLink?" + nonExistingKey + "=someValue")));
+				() -> sut.getConfigurer(create(format("%s://dummyLink?%s=someValue", SCHEMA, nonExistingKey))));
 		assertThat(exception).hasMessageContaining("Could not determine attribute " + nonExistingKey);
 	}
 
 	@Test
 	void canDefineChoiceValues() throws Exception {
-		Configurer configurer = sut.getConfigurer(create("ardulink://dummyLink"));
+		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		ConfigAttribute a = configurer.getAttribute("a");
 		assertThat(a.hasChoiceValues()).isEqualTo(TRUE);
 		assertThat(a.getChoiceValues()).isEqualTo(new Object[] { "aVal1", "aVal2" });
@@ -147,7 +149,7 @@ class DummyLinkFactoryTest {
 	@Test
 	@DefaultLocale(language = "en")
 	void cannotSetChoiceValuesThatDoNotExist_WithPreviousQuery() {
-		Configurer configurer = sut.getConfigurer(create("ardulink://dummyLink"));
+		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		ConfigAttribute a = configurer.getAttribute("a");
 		assertThat(a.getChoiceValues()).isEqualTo(new Object[] { "aVal1", "aVal2" });
 		String invalidValue = "aVal3IsNotAvalidValue";
@@ -160,7 +162,7 @@ class DummyLinkFactoryTest {
 	@Test
 	@DefaultLocale(language = "en")
 	void cannotSetChoiceValuesThatDoNotExist_WithoutPreviousQuery() {
-		Configurer configurer = sut.getConfigurer(create("ardulink://dummyLink"));
+		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		ConfigAttribute a = configurer.getAttribute("a");
 		String invalidValue = "aVal3IsNotAvalidValue";
 		a.setValue(invalidValue);
@@ -171,7 +173,7 @@ class DummyLinkFactoryTest {
 
 	@Test
 	void attributeWithoutChoiceValueThrowsRTE() {
-		Configurer configurer = sut.getConfigurer(create("ardulink://dummyLink"));
+		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		ConfigAttribute configAttribute = configurer.getAttribute("c");
 		assertThat(configAttribute.hasChoiceValues()).isFalse();
 		IllegalStateException exception = assertThrows(IllegalStateException.class,
@@ -182,11 +184,10 @@ class DummyLinkFactoryTest {
 	@Test
 	void canIterateRegisteredFactories() {
 		assertThat(sut.listURIs()).containsExactlyInAnyOrder(links( //
-				"ardulink://dummyLink", //
-				"ardulink://mock", //
-				"ardulink://aLinkWithoutArealLinkFactoryWithoutConfig", //
-				"ardulink://aLinkWithoutArealLinkFactoryWithConfig" //
-		));
+				format("%s://dummyLink", SCHEMA), //
+				format("%s://mock", SCHEMA), //
+				format("%s://aLinkWithoutArealLinkFactoryWithoutConfig", SCHEMA), //
+				format("%s://aLinkWithoutArealLinkFactoryWithConfig", SCHEMA)));
 	}
 
 	private URI[] links(String... links) {
@@ -222,13 +223,13 @@ class DummyLinkFactoryTest {
 
 	@Test
 	void hasMinValue() {
-		Configurer configurer = sut.getConfigurer(create("ardulink://dummyLink"));
+		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		hasMinMax(configurer.getAttribute("b"), 3, 12);
 	}
 
 	@Test
 	void minMaxValuesOfDatatypes() {
-		Configurer configurer = sut.getConfigurer(create("ardulink://dummyLink"));
+		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		hasMinMax(configurer.getAttribute("intNoMinMax"), Integer.MIN_VALUE, Integer.MAX_VALUE);
 		hasMinMax(configurer.getAttribute("intMinMax"), -1, +2);
 
@@ -250,14 +251,14 @@ class DummyLinkFactoryTest {
 
 	@Test
 	void positiveAnnotated() {
-		Configurer configurer = sut.getConfigurer(create("ardulink://dummyLink"));
+		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		hasMinMax(configurer.getAttribute("positiveAnnotated"), +1, +2);
 		hasMinMax(configurer.getAttribute("positiveOrZeroAnnotated"), 0, +2);
 	}
 
 	@Test
 	void negativeAnnotated() {
-		Configurer configurer = sut.getConfigurer(create("ardulink://dummyLink"));
+		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		hasMinMax(configurer.getAttribute("negativeAnnotated"), -2, -1);
 		hasMinMax(configurer.getAttribute("negativeOrZeroAnnotated"), -2, 0);
 	}
@@ -289,8 +290,16 @@ class DummyLinkFactoryTest {
 	}
 
 	private ConfigAttribute getAttribute(String name) {
-		Configurer configurer = sut.getConfigurer(create("ardulink://dummyLink"));
+		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		return configurer.getAttribute(name);
+	}
+
+	private static String not(String value) {
+		return "not" + value;
+	}
+
+	private static URI dummyLinkURI() {
+		return create(format("%s://dummyLink", SCHEMA));
 	}
 
 }

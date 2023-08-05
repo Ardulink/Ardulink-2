@@ -598,7 +598,7 @@ public abstract class LinkManager {
 		public Configurer getConfigurer(URI uri) {
 			String name = checkNotNull(extractNameFromURI(uri), "%s not a valid URI: Unable not extract name", uri);
 			LinkFactory connectionFactory = getConnectionFactory(name).orElseThrow(() -> new IllegalArgumentException(
-					format("No factory registered for \"%s\", available names are %s", name, listURIs())));
+					format("No factory registered for '%s', available names are %s", name, listURIs())));
 			@SuppressWarnings("unchecked")
 			Configurer configurer = new DefaultConfigurer(connectionFactory);
 			return uri.getQuery() == null ? configurer : configure(configurer, uri.getQuery().split("\\&"));
