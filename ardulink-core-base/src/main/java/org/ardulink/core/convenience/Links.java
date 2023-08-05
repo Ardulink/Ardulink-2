@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.convenience;
 
+import static java.lang.String.format;
 import static java.net.URI.create;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -60,7 +61,7 @@ public final class Links {
 	private static final Alias serialAlias = new Alias("serial", Pattern.compile("serial\\-.+"));
 	private static final List<Alias> aliases = asList(new Alias(DEFAULT_ALIAS, Pattern.compile(".*")), serialAlias);
 
-	public static final String DEFAULT_URI = "ardulink://" + DEFAULT_ALIAS;
+	public static final String DEFAULT_URI = format("%s://%s", LinkManager.SCHEMA, DEFAULT_ALIAS);
 
 	private static class Alias {
 		private final String aliasName;

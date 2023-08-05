@@ -26,6 +26,7 @@ import static org.ardulink.core.convenience.Links.DEFAULT_URI;
 import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
+import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,6 +51,7 @@ import org.ardulink.core.linkmanager.DummyLinkFactory;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -64,11 +66,11 @@ class LinksTest {
 
 	@Test
 	void whenRequestingDefaultLinkReturnsFirstAvailableConnectionIfSerialNotAvailable() throws IOException {
-		try (Link link = Links.getDefault()) {
-			isDummyConnection(link);
-		}
-		try (Link link = Links.getLink(DEFAULT_URI)) {
-			isDummyConnection(link);
+		try (Link link1 = Links.getDefault(); Link link2 = Links.getLink(DEFAULT_URI)) {
+			assertThat(asList(link1, link2)).doesNotContainNull();
+			assertThat(link1).isSameAs(link2);
+			isDummyConnection(link1);
+			isDummyConnection(link2);
 		}
 	}
 
@@ -122,7 +124,7 @@ class LinksTest {
 		String dVal1 = "dVal1";
 		DummyLinkConfig.choiceValuesOfD.set(new String[] { dVal1, "dVal2" });
 		try (Link link = Links.getDefault()) {
-			DummyLinkConfig config = getConnection(link).getConfig();
+			DummyLinkConfig config = getConfig(link);
 			assertThat(config.getProtocol()).isInstanceOf(ArdulinkProtocol2.class);
 			assertThat(config.getA()).isEqualTo("aVal1");
 			assertThat(config.getD()).isEqualTo(dVal1);
@@ -134,7 +136,7 @@ class LinksTest {
 	@Test
 	void streamConsume() throws IOException {
 		try (Link link = Links.getDefault()) {
-			DummyLinkConfig config = getConnection(link).getConfig();
+			DummyLinkConfig config = getConfig(link);
 			range(0, 42).forEach(__ -> assertThat(config.getF2()).isEqualTo(NANOSECONDS));
 		}
 	}
@@ -170,49 +172,43 @@ class LinksTest {
 	}
 
 	@Test
-	void canCloseConnection() throws IOException {
-		try (Link link = getRandomLink()) {
-			DummyConnection connection = getConnection(link);
-			verify(connection, never()).close();
+	void canCloseConnection(@MockUri String mockUri) throws IOException {
+		try (Link link = Links.getLink(mockUri)) {
+			verify(getMock(link), never()).close();
 			close(link);
-			verify(connection, times(1)).close();
+			verify(getMock(link), times(1)).close();
 		}
 	}
 
 	@Test
-	void doesNotCloseConnectionIfStillInUse() throws IOException {
-		String randomURI = getRandomURI();
-		Link[] links = { createConnectionBasedLink(randomURI), createConnectionBasedLink(randomURI),
-				createConnectionBasedLink(randomURI) };
+	void doesNotCloseConnectionIfStillInUse(@MockUri String mockUri) throws IOException {
+		Link[] links = { Links.getLink(mockUri), Links.getLink(mockUri), Links.getLink(mockUri) };
 		assertThat(links).allSatisfy(l -> assertThat(l).isSameAs(links[0]));
 		// all links point to the same instance, so choose one of them
 		try (Link link = links[0]) {
 			range(0, links.length - 1).forEach(__ -> closeQuietly(link));
-			verify(getConnection(link), never()).close();
+			verify(getMock(link), never()).close();
 			link.close();
-			verify(getConnection(link), times(1)).close();
+			verify(getMock(link), times(1)).close();
 		}
 	}
 
 	@Test
-	void afterClosingWeGetAfreshLink() throws IOException {
-		String randomURI = getRandomURI();
-		try (Link link1 = createConnectionBasedLink(randomURI); Link link2 = createConnectionBasedLink(randomURI)) {
+	void afterClosingWeGetAfreshLink(@MockUri String mockUri) throws IOException {
+		try (Link link1 = Links.getLink(mockUri); Link link2 = Links.getLink(mockUri)) {
 			assertThat(link1).isSameAs(link2);
 			close(link1, link2);
-			try (Link link3 = createConnectionBasedLink(randomURI)) {
+			try (Link link3 = Links.getLink(mockUri)) {
 				assertThat(link3).isNotSameAs(link1).isNotSameAs(link2);
 			}
 		}
 	}
 
 	@Test
-	void stopsListenigAfterAllCallersLikeToStopListening() throws IOException {
-		String randomURI = getRandomURI();
-		try (Link link1 = createConnectionBasedLink(randomURI); Link link2 = createConnectionBasedLink(randomURI)) {
-			ConnectionBasedLink delegate1 = getDelegate(link1);
-			ConnectionBasedLink delegate2 = getDelegate(link2);
-			assertThat(delegate1).isSameAs(delegate2);
+	void stopsListenigAfterAllCallersLikeToStopListening(@MockUri String mockUri) throws IOException {
+		try (Link link1 = Links.getLink(mockUri); Link link2 = Links.getLink(mockUri)) {
+			assertThat(link1).isSameAs(link2);
+			Link mock = getMock(link1);
 			Pin anyDigitalPin = digitalPin(3);
 			link1.startListening(anyDigitalPin);
 			link2.startListening(anyDigitalPin);
@@ -222,10 +218,10 @@ class LinksTest {
 			link1.stopListening(analogPin(anyDigitalPin.pinNum()));
 			link1.stopListening(analogPin(anyDigitalPin.pinNum() + 1));
 			link1.stopListening(digitalPin(anyDigitalPin.pinNum() + 1));
-			verify(delegate1, never()).stopListening(anyDigitalPin);
+			verify(mock, never()).stopListening(anyDigitalPin);
 
 			link2.stopListening(anyDigitalPin);
-			verify(delegate1, times(1)).stopListening(anyDigitalPin);
+			verify(mock, times(1)).stopListening(anyDigitalPin);
 		}
 	}
 
@@ -299,12 +295,8 @@ class LinksTest {
 		}
 	}
 
-	private Link getRandomLink() {
-		return Links.getLink(getRandomURI());
-	}
-
-	private Link createConnectionBasedLink(String uri) {
-		return Links.getLink(uri);
+	private DummyLinkConfig getConfig(Link link) {
+		return getConnection(link).getConfig();
 	}
 
 	private DummyConnection getConnection(Link link) {
@@ -313,10 +305,6 @@ class LinksTest {
 
 	private ConnectionBasedLink getDelegate(Link link) {
 		return (ConnectionBasedLink) extractDelegated(link);
-	}
-
-	private String getRandomURI() {
-		return format("ardulink://dummyLink?a=&b=%d&c=%d", Thread.currentThread().getId(), System.currentTimeMillis());
 	}
 
 }

@@ -562,7 +562,7 @@ public abstract class LinkManager {
 
 	}
 
-	private static final String SCHEMA = "ardulink";
+	public static final String SCHEMA = "ardulink";
 
 	public static LinkManager getInstance() {
 		return new LinkManager() {
@@ -601,7 +601,7 @@ public abstract class LinkManager {
 
 			@Override
 			public Configurer getConfigurer(URI uri) {
-				String name = checkNotNull(extractNameFromURI(uri), uri + " not a valid URI: Unable not extract name");
+				String name = checkNotNull(extractNameFromURI(uri), "%s not a valid URI: Unable not extract name", uri);
 				LinkFactory connectionFactory = getConnectionFactory(name)
 						.orElseThrow(() -> new IllegalArgumentException(
 								format("No factory registered for \"%s\", available names are %s", name, listURIs())));
