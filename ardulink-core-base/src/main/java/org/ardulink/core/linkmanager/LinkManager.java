@@ -610,9 +610,13 @@ public abstract class LinkManager {
 		private Configurer configure(Configurer configurer, String[] params) {
 			stream(params).map(p -> p.split("\\=", 2)).filter(s -> s.length == 2).forEach(s -> {
 				ConfigAttribute attribute = configurer.getAttribute(s[0]);
-				attribute.setValue(convert(s[1], attribute.getType()));
+				attribute.setValue(nullEmptyString(convert(s[1], attribute.getType())));
 			});
 			return configurer;
+		}
+
+		private Object nullEmptyString(Object value) {
+			return "".equals(value) ? null : value;
 		}
 
 		private Object convert(String value, Class<? extends Object> targetType) {

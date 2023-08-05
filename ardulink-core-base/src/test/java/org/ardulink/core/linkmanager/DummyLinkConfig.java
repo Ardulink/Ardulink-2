@@ -138,8 +138,11 @@ public class DummyLinkConfig implements LinkConfig {
 	@Named("negativeOrZeroAnnotated")
 	public byte h4;
 
-	@Named("i")
-	public String i = "nullMe";
+	@Named("i1")
+	public String i1 = "nullMe";
+
+	@Named("i2")
+	public TimeUnit i2 = DAYS;
 
 	public static final ThreadLocal<String[]> choiceValuesOfD = new ThreadLocal<String[]>() {
 		@Override
