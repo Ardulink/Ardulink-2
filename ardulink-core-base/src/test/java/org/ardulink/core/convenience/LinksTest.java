@@ -19,6 +19,7 @@ package org.ardulink.core.convenience;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.stream.IntStream.range;
 import static org.ardulink.core.Pin.analogPin;
@@ -42,7 +43,6 @@ import static org.mockito.Mockito.withSettings;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import org.ardulink.core.ConnectionBasedLink;
@@ -57,6 +57,7 @@ import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.ardulink.util.ListMultiMap;
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -130,11 +131,13 @@ class LinksTest {
 		DummyLinkConfig.choiceValuesOfD.set(new String[] { dVal1, "dVal2" });
 		try (Link link = Links.getDefault()) {
 			DummyLinkConfig config = getConfig(link);
-			assertThat(config.getProtocol()).isInstanceOf(ArdulinkProtocol2.class);
-			assertThat(config.getA()).isEqualTo("aVal1");
-			assertThat(config.getD()).isEqualTo(dVal1);
-			assertThat(config.getF1()).isEqualTo(NANOSECONDS);
-			assertThat(config.getF2()).isEqualTo(NANOSECONDS);
+			try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+				softly.assertThat(config.getProtocol()).isInstanceOf(ArdulinkProtocol2.class);
+				softly.assertThat(config.getA()).isEqualTo("aVal1");
+				softly.assertThat(config.getD()).isEqualTo(dVal1);
+				softly.assertThat(config.getF1()).isEqualTo(NANOSECONDS);
+				softly.assertThat(config.getF2()).isEqualTo(MINUTES);
+			}
 		}
 	}
 
@@ -142,7 +145,7 @@ class LinksTest {
 	void streamConsume() throws IOException {
 		try (Link link = Links.getDefault()) {
 			DummyLinkConfig config = getConfig(link);
-			range(0, 42).forEach(__ -> assertThat(config.getF2()).isEqualTo(NANOSECONDS));
+			range(0, 42).forEach(__ -> assertThat(config.getF2()).isEqualTo(MINUTES));
 		}
 	}
 
@@ -170,7 +173,7 @@ class LinksTest {
 	@Test
 	void doesCacheLinksWhenUsingDefaultValues() throws IOException {
 		try (Link link1 = Links.getLink("ardulink://dummyLink");
-				Link link2 = Links.getLink("ardulink://dummyLink?a=&b=42&c=")) {
+				Link link2 = Links.getLink("ardulink://dummyLink?b=42&f1=NANOSECONDS&f2=MINUTES")) {
 			assertThat(asList(link1, link2)).doesNotContainNull();
 			assertThat(link1).isSameAs(link2);
 		}
@@ -285,6 +288,7 @@ class LinksTest {
 		private static final String A3 = "hasChoiceValueWithNullValue_getsNull_andSoKeepsNull";
 		private static final String A4 = "initializedVarWithoutChoiceValue_keepsOldValue";
 		private static final String A5 = "initializedVarWithChoiceValue_keepsOldValue";
+		private static final String A6 = "hasDefault_isNulledViaUriParamToNewValue";
 
 		@Named(A1)
 		public String keepsNull;
@@ -296,6 +300,8 @@ class LinksTest {
 		public String keepsOldValue1 = "keepsValue_noChoice";
 		@Named(A5)
 		public String keepsOldValue2 = "keepsValue_withChoice";
+		@Named(A6)
+		public String isNulledViaUriParamToNewValue = "shouldDisappear";
 
 		@ChoiceFor(A2)
 		public String[] a2ChoicesWithoutNull() {
@@ -322,11 +328,13 @@ class LinksTest {
 			try (Link link = Links.getLink(format("%s://%s", SCHEMA, randomName))) {
 				assertThat(linkFactory.configsAndLinks.asMap().keySet()).singleElement()
 						.isInstanceOfSatisfying(MyLinkConfig.class, c -> {
-							assertThat(c.keepsNull).isNull();
-							assertThat(c.turnsFirstChoiceValue).isEqualTo("Choice1");
-							assertThat(c.getsNullAndSoKeepsNull).isNull();
-							assertThat(c.keepsOldValue1).isEqualTo("keepsValue_noChoice");
-							assertThat(c.keepsOldValue2).isEqualTo("keepsValue_withChoice");
+							try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+								softly.assertThat(c.keepsNull).isNull();
+								softly.assertThat(c.turnsFirstChoiceValue).isEqualTo("Choice1");
+								softly.assertThat(c.getsNullAndSoKeepsNull).isNull();
+								softly.assertThat(c.keepsOldValue1).isEqualTo("keepsValue_noChoice");
+								softly.assertThat(c.keepsOldValue2).isEqualTo("keepsValue_withChoice");
+							}
 						});
 			}
 		});

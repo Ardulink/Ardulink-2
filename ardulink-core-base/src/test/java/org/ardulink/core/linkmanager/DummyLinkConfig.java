@@ -25,6 +25,7 @@ package org.ardulink.core.linkmanager;
  *
  */
 import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.ardulink.core.proto.api.Protocols.getByName;
 
@@ -65,7 +66,7 @@ public class DummyLinkConfig implements LinkConfig {
 
 	@Named("f1")
 	public TimeUnit f1;
-	
+
 	@Named("f2")
 	public TimeUnit f2;
 
@@ -137,6 +138,9 @@ public class DummyLinkConfig implements LinkConfig {
 	@Named("negativeOrZeroAnnotated")
 	public byte h4;
 
+	@Named("i")
+	public String i = "nullMe";
+
 	public static final ThreadLocal<String[]> choiceValuesOfD = new ThreadLocal<String[]>() {
 		@Override
 		protected String[] initialValue() {
@@ -173,12 +177,12 @@ public class DummyLinkConfig implements LinkConfig {
 
 	@ChoiceFor("f1")
 	public List<TimeUnit> choiceValuesForAtttribute_f1_typeIsList() {
-		return Arrays.asList(NANOSECONDS, DAYS);
+		return Arrays.asList(NANOSECONDS);
 	}
 
 	@ChoiceFor("f2")
 	public Stream<TimeUnit> choiceValuesForAtttribute_f2_typeIsStream() {
-		return Stream.of(NANOSECONDS, DAYS);
+		return Stream.of(MINUTES, DAYS);
 	}
 
 	@Named("a")
@@ -219,7 +223,7 @@ public class DummyLinkConfig implements LinkConfig {
 	public TimeUnit getF2() {
 		return f2;
 	}
-	
+
 	@ChoiceFor("d")
 	public static String[] choiceValuesCanBeSetViaThreadLocalForTesting() {
 		return choiceValuesOfD.get();

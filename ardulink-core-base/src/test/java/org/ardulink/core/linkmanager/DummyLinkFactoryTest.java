@@ -19,7 +19,6 @@ package org.ardulink.core.linkmanager;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.net.URI.create;
-import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -88,7 +87,7 @@ class DummyLinkFactoryTest {
 		String cValue = "cValue";
 		TimeUnit eValue = TimeUnit.DAYS;
 		try (Link link = sut.getConfigurer(create("ardulink://dummyLink?a=" + aValue + "&b=" + bValue + "&c=" + cValue
-				+ "&proto=" + DummyProtocol.NAME + "&e=" + eValue.name())).newLink()) {
+				+ "&proto=" + DummyProtocol.NAME + "&e=" + eValue.name() + "&i=")).newLink()) {
 			assertThat(link).isInstanceOf(ConnectionBasedLink.class);
 			DummyConnection connection = (DummyConnection) ((ConnectionBasedLink) link).getConnection();
 			DummyLinkConfig config = connection.getConfig();
@@ -97,6 +96,7 @@ class DummyLinkFactoryTest {
 			assertThat(config.c).isEqualTo(cValue);
 			assertThat(config.protocol).isExactlyInstanceOf(DummyProtocol.class);
 			assertThat(config.e).isEqualTo(eValue);
+			assertThat(config.i).isEmpty();
 		}
 	}
 
@@ -115,7 +115,7 @@ class DummyLinkFactoryTest {
 		Configurer configurer = sut.getConfigurer(create("ardulink://dummyLink"));
 		ConfigAttribute f1 = configurer.getAttribute("f1");
 		assertThat(f1.hasChoiceValues()).isEqualTo(TRUE);
-		assertThat(f1.getChoiceValues()).containsExactly(NANOSECONDS, DAYS);
+		assertThat(f1.getChoiceValues()).containsExactly(NANOSECONDS);
 	}
 
 	@Test
@@ -150,7 +150,7 @@ class DummyLinkFactoryTest {
 		String invalidValue = "aVal3IsNotAvalidValue";
 		a.setValue(invalidValue);
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> configurer.newLink());
-		assertThat(exception).hasMessage(invalidValue + " is not a valid value for "
+		assertThat(exception).hasMessage("'" + invalidValue + "' is not a valid value for "
 				+ "A is meant just to be an example attribute" + ", valid values are [aVal1, aVal2]");
 	}
 
@@ -162,7 +162,7 @@ class DummyLinkFactoryTest {
 		String invalidValue = "aVal3IsNotAvalidValue";
 		a.setValue(invalidValue);
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> configurer.newLink());
-		assertThat(exception).hasMessage(invalidValue + " is not a valid value for "
+		assertThat(exception).hasMessage("'" + invalidValue + "' is not a valid value for "
 				+ "A is meant just to be an example attribute" + ", valid values are [aVal1, aVal2]");
 	}
 

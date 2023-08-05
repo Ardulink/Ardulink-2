@@ -68,7 +68,6 @@ import org.ardulink.core.linkmanager.LinkFactory.Alias;
 import org.ardulink.core.linkmanager.providers.LinkFactoriesProvider;
 import org.ardulink.util.Numbers;
 import org.ardulink.util.Primitives;
-import org.ardulink.util.Throwables;
 import org.ardulink.util.anno.LapsedWith;
 
 /**
@@ -538,7 +537,7 @@ public abstract class LinkManager {
 			try {
 				return this.linkFactory.newLink(this.linkConfig);
 			} catch (Exception e) {
-				throw Throwables.propagate(e);
+				throw propagate(e);
 			}
 		}
 
@@ -555,8 +554,8 @@ public abstract class LinkManager {
 			Object value = attribute.getValue();
 			if (value != null) {
 				List<Object> validValues = asList(attribute.getChoiceValues());
-				checkArgument(validValues.contains(value), "%s is not a valid value for %s, valid values are %s", value,
-						attribute.getName(), validValues);
+				checkArgument(validValues.contains(value), "'%s' is not a valid value for %s, valid values are %s",
+						value, attribute.getName(), validValues);
 			}
 		}
 
@@ -564,78 +563,78 @@ public abstract class LinkManager {
 
 	public static final String SCHEMA = "ardulink";
 
-	public static LinkManager getInstance() {
-		return new LinkManager() {
+	private static final LinkManager instance = new LinkManager() {
 
-			@Override
-			public List<URI> listURIs() {
-				return getConnectionFactories().stream().map(f -> create(format("%s://%s", SCHEMA, f.getName())))
-						.collect(toList());
-			}
+		@Override
+		public List<URI> listURIs() {
+			return getConnectionFactories().stream().map(f -> create(format("%s://%s", SCHEMA, f.getName())))
+					.collect(toList());
+		}
 
-			private Optional<LinkFactory> getConnectionFactory(String name) {
-				List<LinkFactory> connectionFactories = getConnectionFactories();
-				BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function1 = (t, u) -> getByName(t, u);
-				BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function2 = (t, u) -> getByAlias(t, u);
-				return Stream.of(function1, function2).map(f -> f.apply(name, connectionFactories))
-						.filter(Optional::isPresent).map(Optional::get).findFirst();
-			}
+		private Optional<LinkFactory> getConnectionFactory(String name) {
+			List<LinkFactory> connectionFactories = getConnectionFactories();
+			BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function1 = (t, u) -> getByName(t, u);
+			BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function2 = (t, u) -> getByAlias(t, u);
+			return Stream.of(function1, function2).map(f -> f.apply(name, connectionFactories))
+					.filter(Optional::isPresent).map(Optional::get).findFirst();
+		}
 
-			private Optional<LinkFactory> getByName(String name, List<LinkFactory> connectionFactories) {
-				return connectionFactories.stream().filter(f -> f.getName().equals(name)).findFirst();
-			}
+		private Optional<LinkFactory> getByName(String name, List<LinkFactory> connectionFactories) {
+			return connectionFactories.stream().filter(f -> f.getName().equals(name)).findFirst();
+		}
 
-			private Optional<LinkFactory> getByAlias(String name, List<LinkFactory> connectionFactories) {
-				return connectionFactories.stream().filter(f -> hasAliasNamed(name, f)).findFirst();
-			}
+		private Optional<LinkFactory> getByAlias(String name, List<LinkFactory> connectionFactories) {
+			return connectionFactories.stream().filter(f -> hasAliasNamed(name, f)).findFirst();
+		}
 
-			private boolean hasAliasNamed(String name, LinkFactory factory) {
-				Alias alias = factory.getClass().getAnnotation(LinkFactory.Alias.class);
-				return (alias == null ? emptyList() : asList(alias.value())).contains(name);
-			}
+		private boolean hasAliasNamed(String name, LinkFactory factory) {
+			Alias alias = factory.getClass().getAnnotation(LinkFactory.Alias.class);
+			return (alias == null ? emptyList() : asList(alias.value())).contains(name);
+		}
 
-			private List<LinkFactory> getConnectionFactories() {
-				return services(LinkFactoriesProvider.class, moduleClassloader()).stream()
-						.map(LinkFactoriesProvider::loadLinkFactories).flatMap(Collection::stream).collect(toList());
-			}
+		private List<LinkFactory> getConnectionFactories() {
+			return services(LinkFactoriesProvider.class, moduleClassloader()).stream()
+					.map(LinkFactoriesProvider::loadLinkFactories).flatMap(Collection::stream).collect(toList());
+		}
 
-			@Override
-			public Configurer getConfigurer(URI uri) {
-				String name = checkNotNull(extractNameFromURI(uri), "%s not a valid URI: Unable not extract name", uri);
-				LinkFactory connectionFactory = getConnectionFactory(name)
-						.orElseThrow(() -> new IllegalArgumentException(
-								format("No factory registered for \"%s\", available names are %s", name, listURIs())));
+		@Override
+		public Configurer getConfigurer(URI uri) {
+			String name = checkNotNull(extractNameFromURI(uri), "%s not a valid URI: Unable not extract name", uri);
+			LinkFactory connectionFactory = getConnectionFactory(name).orElseThrow(() -> new IllegalArgumentException(
+					format("No factory registered for \"%s\", available names are %s", name, listURIs())));
+			@SuppressWarnings("unchecked")
+			Configurer configurer = new DefaultConfigurer(connectionFactory);
+			return uri.getQuery() == null ? configurer : configure(configurer, uri.getQuery().split("\\&"));
+		}
+
+		private Configurer configure(Configurer configurer, String[] params) {
+			stream(params).map(p -> p.split("\\=", 2)).filter(s -> s.length == 2).forEach(s -> {
+				ConfigAttribute attribute = configurer.getAttribute(s[0]);
+				attribute.setValue(convert(s[1], attribute.getType()));
+			});
+			return configurer;
+		}
+
+		private Object convert(String value, Class<? extends Object> targetType) {
+			if (targetType.isInstance(value)) {
+				return value;
+			} else if (targetType.isEnum()) {
 				@SuppressWarnings("unchecked")
-				Configurer configurer = new DefaultConfigurer(connectionFactory);
-				return uri.getQuery() == null ? configurer : configure(configurer, uri.getQuery().split("\\&"));
+				Class<Enum<?>> enumClass = (Class<Enum<?>>) targetType;
+				return enumWithName(enumClass, value);
+			} else {
+				return Primitives.parseAs(targetType, value);
 			}
+		}
 
-			private Configurer configure(Configurer configurer, String[] params) {
-				stream(params).map(p -> p.split("\\=")).filter(s -> s.length == 2).forEach(s -> {
-					ConfigAttribute attribute = configurer.getAttribute(s[0]);
-					attribute.setValue(convert(s[1], attribute.getType()));
-				});
-				return configurer;
-			}
+		private Object enumWithName(Class<Enum<?>> targetType, String value) {
+			return stream(targetType.getEnumConstants()).filter(e -> e.name().equals(value)).findFirst().orElse(null);
+		}
 
-			private Object convert(String value, Class<? extends Object> targetType) {
-				if (targetType.isInstance(value)) {
-					return value;
-				} else if (targetType.isEnum()) {
-					@SuppressWarnings("unchecked")
-					Class<Enum<?>> enumClass = (Class<Enum<?>>) targetType;
-					return enumWithName(enumClass, value);
-				} else {
-					return Primitives.parseAs(targetType, value);
-				}
-			}
+	};
 
-			private Object enumWithName(Class<Enum<?>> targetType, String value) {
-				return stream(targetType.getEnumConstants()).filter(e -> e.name().equals(value)).findFirst()
-						.orElse(null);
-			}
-
-		};
+	public static LinkManager getInstance() {
+		return instance;
 	}
 
 	public static String extractNameFromURI(URI uri) {
@@ -647,7 +646,7 @@ public abstract class LinkManager {
 			return new URI(uri.getScheme(), uri.getUserInfo(), name, uri.getPort(), uri.getPath(), uri.getQuery(),
 					uri.getFragment());
 		} catch (URISyntaxException e) {
-			throw Throwables.propagate(e);
+			throw propagate(e);
 		}
 	}
 
