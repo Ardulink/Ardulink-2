@@ -19,8 +19,8 @@ package org.ardulink.core.convenience;
 import static java.lang.String.format;
 import static java.net.URI.create;
 import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
 import static java.util.Comparator.comparing;
+import static java.util.regex.Pattern.compile;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.core.linkmanager.LinkManager.replaceName;
@@ -42,6 +42,7 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.util.Iterables;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -53,15 +54,15 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
  */
 public final class Links {
 
-	private static final String DEFAULT_ALIAS = "default";
 	// TODO use a WeakHashMap and use PhantomReferences to close GCed Links
 	private static final Map<Object, CacheEntry> cache = new HashMap<>();
 	private static final LinkManager linkManager = LinkManager.getInstance();
 
-	private static final Alias serialAlias = new Alias("serial", Pattern.compile("serial\\-.+"));
-	private static final List<Alias> aliases = asList(new Alias(DEFAULT_ALIAS, Pattern.compile(".*")), serialAlias);
+	private static final Alias defaultAlias = new Alias("default", compile(".*"));
+	private static final Alias serialAlias = new Alias("serial", compile("serial\\-.+"));
+	private static final List<Alias> aliases = asList(defaultAlias, serialAlias);
 
-	public static final String DEFAULT_URI = format("%s://%s", LinkManager.SCHEMA, DEFAULT_ALIAS);
+	public static final String DEFAULT_URI = format("%s://%s", LinkManager.SCHEMA, defaultAlias.aliasName);
 
 	private static class Alias {
 		private final String aliasName;
@@ -122,8 +123,8 @@ public final class Links {
 	}
 
 	public static Configurer getDefaultConfigurer() {
-		return setChoiceValues(linkManager.getConfigurer(getFirst(sorted(linkManager.listURIs()))
-				.orElseThrow(() -> new IllegalStateException("No factory registered"))));
+		return getConfigurerWithDefaultsSet(getFirst(sorted(linkManager.listURIs()))
+				.orElseThrow(() -> new IllegalStateException("No factory registered")));
 	}
 
 	private static List<URI> sorted(List<URI> uris) {
@@ -167,7 +168,11 @@ public final class Links {
 	 *         that URI exists
 	 */
 	public static Link getLink(URI uri) {
-		return getLink(linkManager.getConfigurer(aliasReplacement(uri)));
+		return getLink(getConfigurerWithDefaultsSet(aliasReplacement(uri)));
+	}
+
+	private static Configurer getConfigurerWithDefaultsSet(URI uri) {
+		return setChoiceValues(linkManager.getConfigurer(uri));
 	}
 
 	private static URI aliasReplacement(URI uri) {
@@ -233,7 +238,7 @@ public final class Links {
 	public static Configurer setChoiceValues(Configurer configurer) {
 		configurer.getAttributes().stream().map(k -> configurer.getAttribute(k))
 				.filter(a -> a.hasChoiceValues() && !isConfigured(a))
-				.forEach(a -> stream(a.getChoiceValues()).findFirst().ifPresent(a::setValue));
+				.forEach(a -> Iterables.getFirst(asList(a.getChoiceValues())).ifPresent(a::setValue));
 		return configurer;
 	}
 

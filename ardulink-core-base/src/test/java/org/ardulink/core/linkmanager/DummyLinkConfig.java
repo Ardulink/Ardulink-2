@@ -63,8 +63,8 @@ public class DummyLinkConfig implements LinkConfig {
 	@Named("e")
 	public TimeUnit e;
 
-	@Named("f")
-	public TimeUnit f;
+	@Named("f1")
+	public TimeUnit f1;
 	
 	@Named("f2")
 	public TimeUnit f2;
@@ -167,18 +167,17 @@ public class DummyLinkConfig implements LinkConfig {
 	}
 
 	@ChoiceFor("proto")
-	public static String[] names() {
-		List<String> names = Protocols.names();
-		return names.toArray(new String[names.size()]);
+	public static String[] choiceValuesForAtttribute_proto_typeIsArray() {
+		return Protocols.names().stream().toArray(String[]::new);
 	}
 
-	@ChoiceFor("f")
-	public List<TimeUnit> choiceValuesForAtttribute_F_TypeIsList() {
+	@ChoiceFor("f1")
+	public List<TimeUnit> choiceValuesForAtttribute_f1_typeIsList() {
 		return Arrays.asList(NANOSECONDS, DAYS);
 	}
 
 	@ChoiceFor("f2")
-	public Stream<TimeUnit> choiceValuesForAtttribute_F2_TypeIsStream() {
+	public Stream<TimeUnit> choiceValuesForAtttribute_f2_typeIsStream() {
 		return Stream.of(NANOSECONDS, DAYS);
 	}
 
@@ -213,8 +212,8 @@ public class DummyLinkConfig implements LinkConfig {
 		this.d = d;
 	}
 
-	public TimeUnit getF() {
-		return f;
+	public TimeUnit getF1() {
+		return f1;
 	}
 
 	public TimeUnit getF2() {

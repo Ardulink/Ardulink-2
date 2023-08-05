@@ -87,8 +87,8 @@ class DummyLinkFactoryTest {
 		int bValue = 1;
 		String cValue = "cValue";
 		TimeUnit eValue = TimeUnit.DAYS;
-		try (Link link = sut.getConfigurer(create("ardulink://dummyLink?a=" + aValue + "&b=" + bValue + "&c="
-		+ cValue + "&proto=" + DummyProtocol.NAME + "&e=" + eValue.name())).newLink()) {
+		try (Link link = sut.getConfigurer(create("ardulink://dummyLink?a=" + aValue + "&b=" + bValue + "&c=" + cValue
+				+ "&proto=" + DummyProtocol.NAME + "&e=" + eValue.name())).newLink()) {
 			assertThat(link).isInstanceOf(ConnectionBasedLink.class);
 			DummyConnection connection = (DummyConnection) ((ConnectionBasedLink) link).getConnection();
 			DummyLinkConfig config = connection.getConfig();
@@ -113,9 +113,9 @@ class DummyLinkFactoryTest {
 	@Test
 	void enumsWithChoiceValuesDoNotUseDefaultValues() {
 		Configurer configurer = sut.getConfigurer(create("ardulink://dummyLink"));
-		ConfigAttribute f = configurer.getAttribute("f");
-		assertThat(f.hasChoiceValues()).isEqualTo(TRUE);
-		assertThat(f.getChoiceValues()).containsExactly(NANOSECONDS, DAYS);
+		ConfigAttribute f1 = configurer.getAttribute("f1");
+		assertThat(f1.hasChoiceValues()).isEqualTo(TRUE);
+		assertThat(f1.getChoiceValues()).containsExactly(NANOSECONDS, DAYS);
 	}
 
 	@Test

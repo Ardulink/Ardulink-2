@@ -377,7 +377,7 @@ public abstract class LinkManager {
 				try {
 					return this.attribute.readValue();
 				} catch (Exception e) {
-					throw propagate(e);
+					throw new IllegalStateException("Error reading attribute " + this.attribute.getName(), e);
 				}
 			}
 
@@ -387,7 +387,7 @@ public abstract class LinkManager {
 					this.attribute.writeValue(value);
 					changed = true;
 				} catch (Exception e) {
-					throw propagate(e);
+					throw new IllegalStateException("Error writing attribute " + this.attribute.getName(), e);
 				}
 			}
 

@@ -18,12 +18,14 @@ package org.ardulink.core.convenience;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.stream.IntStream.range;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.convenience.Links.DEFAULT_URI;
 import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
+import static org.ardulink.core.linkmanager.LinkManager.SCHEMA;
 import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
@@ -40,6 +42,8 @@ import static org.mockito.Mockito.withSettings;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
@@ -52,6 +56,7 @@ import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.testsupport.mock.junit5.MockUri;
+import org.ardulink.util.ListMultiMap;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -128,7 +133,7 @@ class LinksTest {
 			assertThat(config.getProtocol()).isInstanceOf(ArdulinkProtocol2.class);
 			assertThat(config.getA()).isEqualTo("aVal1");
 			assertThat(config.getD()).isEqualTo(dVal1);
-			assertThat(config.getF()).isEqualTo(NANOSECONDS);
+			assertThat(config.getF1()).isEqualTo(NANOSECONDS);
 			assertThat(config.getF2()).isEqualTo(NANOSECONDS);
 		}
 	}
@@ -244,6 +249,89 @@ class LinksTest {
 		});
 	}
 
+	private static class LinkFactoryForTest implements LinkFactory<LinkConfig> {
+
+		private final String name;
+		private final Supplier<LinkConfig> linkConfigSupplier;
+		private final ListMultiMap<LinkConfig, Link> configsAndLinks = new ListMultiMap<>();
+
+		public LinkFactoryForTest(String name, Supplier<LinkConfig> linkConfigSupplier) {
+			this.name = name;
+			this.linkConfigSupplier = linkConfigSupplier;
+		}
+
+		@Override
+		public String getName() {
+			return name;
+		}
+
+		@Override
+		public Link newLink(LinkConfig config) {
+			Link mock = mock(Link.class);
+			configsAndLinks.put(config, mock);
+			return mock;
+		}
+
+		@Override
+		public LinkConfig newLinkConfig() {
+			return linkConfigSupplier.get();
+		}
+	}
+
+	public static class MyLinkConfig implements LinkConfig {
+
+		private static final String A1 = "noChoiceValue_keepsNull";
+		private static final String A2 = "hasChoiceValueWithoutNullValue_turnsFirstChoiceValue";
+		private static final String A3 = "hasChoiceValueWithNullValue_getsNull_andSoKeepsNull";
+		private static final String A4 = "initializedVarWithoutChoiceValue_keepsOldValue";
+		private static final String A5 = "initializedVarWithChoiceValue_keepsOldValue";
+
+		@Named(A1)
+		public String keepsNull;
+		@Named(A2)
+		public String turnsFirstChoiceValue;
+		@Named(A3)
+		public String getsNullAndSoKeepsNull;
+		@Named(A4)
+		public String keepsOldValue1 = "keepsValue_noChoice";
+		@Named(A5)
+		public String keepsOldValue2 = "keepsValue_withChoice";
+
+		@ChoiceFor(A2)
+		public String[] a2ChoicesWithoutNull() {
+			return new String[] { "Choice1", "Choice2", "Choice3" };
+		}
+
+		@ChoiceFor(A3)
+		public String[] a3ChoicesWithNull() {
+			return new String[] { null, "Choice1", "Choice2", "Choice3" };
+		}
+
+		@ChoiceFor(A5)
+		public String[] mustAtLeastHoldTheCurrentValue() {
+			return new String[] { "Choice1", "Choice2", "keepsValue_withChoice", "Choice3" };
+		}
+
+	}
+
+	@Test
+	void handlesChoiceValuesCorrectly() throws Throwable {
+		String randomName = "factory-" + randomUUID().toString();
+		LinkFactoryForTest linkFactory = factory(randomName, () -> new MyLinkConfig());
+		withRegistered(linkFactory).execute(() -> {
+			try (Link link = Links.getLink(format("%s://%s", SCHEMA, randomName))) {
+				assertThat(linkFactory.configsAndLinks.asMap().keySet()).singleElement()
+						.isInstanceOfSatisfying(MyLinkConfig.class, c -> {
+							assertThat(c.keepsNull).isNull();
+							assertThat(c.turnsFirstChoiceValue).isEqualTo("Choice1");
+							assertThat(c.getsNullAndSoKeepsNull).isNull();
+							assertThat(c.keepsOldValue1).isEqualTo("keepsValue_noChoice");
+							assertThat(c.keepsOldValue2).isEqualTo("keepsValue_withChoice");
+						});
+			}
+		});
+	}
+
 	private static String makeUri(String name) {
 		return format("ardulink://%s?a=aVal1&b=4", name);
 	}
@@ -251,8 +339,8 @@ class LinksTest {
 	@Test
 	void aliasLinksAreSharedToo() throws Throwable {
 		withRegistered(new AliasUsingLinkFactory()).execute(() -> {
-			try (Link link1 = Links.getLink(format("ardulink://%s", AliasUsingLinkFactory.NAME));
-					Link link2 = Links.getLink(format("ardulink://%s", AliasUsingLinkFactory.ALIAS_FACTORY_ALIAS))) {
+			try (Link link1 = Links.getLink(format("%s://%s", SCHEMA, AliasUsingLinkFactory.NAME));
+					Link link2 = Links.getLink(format("%s://%s", SCHEMA, AliasUsingLinkFactory.ALIAS_FACTORY_ALIAS))) {
 				assertThat(link1).isSameAs(link2);
 			}
 		});
@@ -263,24 +351,11 @@ class LinksTest {
 	}
 
 	private LinkFactory<LinkConfig> factoryNamed(String name) {
-		return new LinkFactory<LinkConfig>() {
+		return factory(name, () -> NO_ATTRIBUTES);
+	}
 
-			@Override
-			public String getName() {
-				return name;
-			}
-
-			@Override
-			public Link newLink(LinkConfig config) {
-				return mock(Link.class);
-			}
-
-			@Override
-			public LinkConfig newLinkConfig() {
-				return NO_ATTRIBUTES;
-			}
-
-		};
+	private LinkFactoryForTest factory(String name, Supplier<LinkConfig> linkConfigSupplier) {
+		return new LinkFactoryForTest(name, linkConfigSupplier);
 	}
 
 	private void close(Link... links) {
