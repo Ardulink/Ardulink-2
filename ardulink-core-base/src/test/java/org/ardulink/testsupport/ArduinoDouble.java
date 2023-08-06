@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.core.qos;
+package org.ardulink.testsupport;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.stream.IntStream.rangeClosed;

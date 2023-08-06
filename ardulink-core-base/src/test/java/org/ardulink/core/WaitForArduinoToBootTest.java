@@ -20,7 +20,6 @@ import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.ConnectionBasedLink.Mode.READY_MESSAGE_ONLY;
-import static org.ardulink.core.qos.ArduinoStub.newArduinoStub;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -28,7 +27,7 @@ import java.util.regex.Pattern;
 
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.core.qos.ArduinoStub;
+import org.ardulink.testsupport.junit5.ArduinoStubExt;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -48,7 +47,7 @@ class WaitForArduinoToBootTest {
 	private static final ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
 
 	@RegisterExtension
-	ArduinoStub arduinoStub = newArduinoStub();
+	ArduinoStubExt arduinoStub = new ArduinoStubExt();
 
 	ConnectionBasedLink link = new ConnectionBasedLink(
 			new StreamConnection(arduinoStub.getInputStream(), arduinoStub.getOutputStream(), byteStreamProcessor),

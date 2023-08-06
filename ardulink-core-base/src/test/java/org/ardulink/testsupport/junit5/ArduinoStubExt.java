@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.core.qos;
+package org.ardulink.testsupport.junit5;
 
 import static org.ardulink.util.Throwables.propagate;
 
@@ -24,9 +24,10 @@ import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.ardulink.core.qos.ArduinoDouble.Adder;
-import org.ardulink.core.qos.ArduinoDouble.RegexAdder;
-import org.ardulink.core.qos.ArduinoDouble.ExecRunnableThenDoBuilder;
+import org.ardulink.testsupport.ArduinoDouble;
+import org.ardulink.testsupport.ArduinoDouble.Adder;
+import org.ardulink.testsupport.ArduinoDouble.ExecRunnableThenDoBuilder;
+import org.ardulink.testsupport.ArduinoDouble.RegexAdder;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
@@ -38,26 +39,18 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  * [adsense]
  *
  */
-public class ArduinoStub implements AfterEachCallback {
+public class ArduinoStubExt implements AfterEachCallback {
 
 	private final ArduinoDouble arduinoDouble;
 
-	public static ArduinoStub newArduinoStub() {
-		return new ArduinoStub();
-	}
-
-	public ArduinoStub() {
-		this.arduinoDouble = createArduinoDouble();
-	}
-
-	private ArduinoDouble createArduinoDouble() {
+	public ArduinoStubExt() {
 		try {
-			return new ArduinoDouble();
+			this.arduinoDouble = new ArduinoDouble();
 		} catch (IOException e) {
 			throw propagate(e);
 		}
 	}
-	
+
 	@Override
 	public void afterEach(ExtensionContext context) {
 		try {
