@@ -20,7 +20,6 @@ import static java.lang.Long.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.analogPin;
-import static org.ardulink.core.proto.api.Protocols.getByName;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -28,12 +27,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Pin.AnalogPin;
-import org.ardulink.core.StreamConnection;
 import org.ardulink.core.Tone;
-import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.testsupport.junit5.ArduinoStubExt;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -54,7 +49,6 @@ class QosLinkTest {
 	@RegisterExtension
 	ArduinoStubExt arduinoStub = new ArduinoStubExt();
 
-	ByteStreamProcessor byteStreamProcessor = getByName(ArdulinkProtocol2.NAME).newByteStreamProcessor();
 	QosLink qosLink;
 
 	@AfterEach
@@ -104,11 +98,7 @@ class QosLinkTest {
 	}
 
 	private QosLink newQosLink(long timeout, TimeUnit timeUnit) throws IOException {
-		return new QosLink(new ConnectionBasedLink(connectionTo(arduinoStub), byteStreamProcessor), timeout, timeUnit);
-	}
-
-	private StreamConnection connectionTo(ArduinoStubExt arduino) {
-		return new StreamConnection(arduino.getInputStream(), arduino.getOutputStream(), byteStreamProcessor);
+		return new QosLink(arduinoStub.link(), timeout, timeUnit);
 	}
 
 	private Pattern regex(String regex) {

@@ -39,6 +39,7 @@ import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.FilteredEventListenerAdapter;
 import org.ardulink.core.events.PinValueChangedEvent;
+import org.ardulink.testsupport.junit5.ArduinoStubExt;
 import org.ardulink.util.Joiner;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -100,33 +101,33 @@ class ConnectionBasedLinkTest {
 	}
 
 	@RegisterExtension
-	IOStreamWatchExtension streamEx = new IOStreamWatchExtension();
+	ArduinoStubExt arduinoStub = new ArduinoStubExt();
 
 	@Test
 	void canSendAnalogValue() throws IOException {
 		int pin = anyPositive(int.class);
 		int value = anyPositive(int.class);
-		streamEx.link().switchAnalogPin(analogPin(pin), value);
+		arduinoStub.link().switchAnalogPin(analogPin(pin), value);
 		assertToArduinoWasSent(format("alp://ppin/%d/%d", pin, value));
 	}
 
 	@Test
 	void canSendDigitalValue() throws IOException {
 		int pin = anyPositive(int.class);
-		streamEx.link().switchDigitalPin(digitalPin(pin), true);
+		arduinoStub.link().switchDigitalPin(digitalPin(pin), true);
 		assertToArduinoWasSent(format("alp://ppsw/%d/%d", pin, 1));
 	}
 
 	@Test
 	void doesSendStartListeningAnalogCommangToArduino() throws IOException {
 		int pin = anyPositive(int.class);
-		streamEx.link().addListener(new FilteredEventListenerAdapter(analogPin(pin), null));
+		arduinoStub.link().addListener(new FilteredEventListenerAdapter(analogPin(pin), null));
 		assertToArduinoWasSent(format("alp://srla/%d", pin));
 	}
 
 	@Test
 	void doesSendStopListeningAnalogCommangToArduino() throws IOException {
-		ConnectionBasedLink link = streamEx.link();
+		ConnectionBasedLink link = arduinoStub.link();
 		int pin = anyPositive(int.class);
 		FilteredEventListenerAdapter l1 = new FilteredEventListenerAdapter(analogPin(pin), null);
 		FilteredEventListenerAdapter l2 = new FilteredEventListenerAdapter(analogPin(pin), null);
@@ -142,27 +143,27 @@ class ConnectionBasedLinkTest {
 	@Test
 	void canReceiveAnalogPinChange() throws IOException {
 		StateChangeCollector listener = new StateChangeCollector();
-		streamEx.link().addListener(listener);
+		arduinoStub.link().addListener(listener);
 		int pin = anyPositive(int.class);
 		int value = anyPositive(int.class);
-		streamEx.simulateArduinoSend(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
+		arduinoStub.simulateArduinoSend(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
 		assertThat(listener.analogEvents).contains(analogPinValueChanged(analogPin(pin), value));
 	}
 
 	@Test
 	void doesSendStartListeningDigitalCommangToArduino() throws IOException {
 		int pin = anyPositive(int.class);
-		streamEx.link().addListener(new FilteredEventListenerAdapter(digitalPin(pin), null));
+		arduinoStub.link().addListener(new FilteredEventListenerAdapter(digitalPin(pin), null));
 		assertToArduinoWasSent(format("alp://srld/%d", pin));
 	}
 
 	@Test
 	void canReceiveDigitalPinChange() throws IOException {
 		StateChangeCollector listener = new StateChangeCollector();
-		streamEx.link().addListener(listener);
+		arduinoStub.link().addListener(listener);
 		int pin = anyPositive(int.class);
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
-		streamEx.simulateArduinoSend(message);
+		arduinoStub.simulateArduinoSend(message);
 		assertThat(listener.digitalEvents).contains(digitalPinValueChanged(digitalPin(pin), true));
 	}
 
@@ -170,9 +171,9 @@ class ConnectionBasedLinkTest {
 	void canFilterPins() throws IOException {
 		int pin = anyPositive(int.class);
 		StateChangeCollector listener = new StateChangeCollector();
-		streamEx.link().addListener(new FilteredEventListenerAdapter(digitalPin(anyOtherPin(pin)), listener));
+		arduinoStub.link().addListener(new FilteredEventListenerAdapter(digitalPin(anyOtherPin(pin)), listener));
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
-		streamEx.simulateArduinoSend(message);
+		arduinoStub.simulateArduinoSend(message);
 		assertThat(listener.digitalEvents).isEmpty();
 	}
 
@@ -182,7 +183,7 @@ class ConnectionBasedLinkTest {
 		int loc = 2;
 		int mod = 3;
 		int mex = 4;
-		streamEx.link().sendKeyPressEvent('#', cod, loc, mod, mex);
+		arduinoStub.link().sendKeyPressEvent('#', cod, loc, mod, mex);
 		assertToArduinoWasSent(format("alp://kprs/chr#cod%dloc%dmod%dmex%d", cod, loc, mod, mex));
 	}
 
@@ -191,7 +192,7 @@ class ConnectionBasedLinkTest {
 		int pin = anyPositive(int.class);
 		int hertz = 3000;
 		int durationSecs = 5;
-		streamEx.link().sendTone(Tone.forPin(analogPin(pin)).withHertz(hertz).withDuration(durationSecs, SECONDS));
+		arduinoStub.link().sendTone(Tone.forPin(analogPin(pin)).withHertz(hertz).withDuration(durationSecs, SECONDS));
 		assertToArduinoWasSent(format("alp://tone/%d/%d/%d", pin, hertz, SECONDS.toMillis(durationSecs)));
 	}
 
@@ -199,42 +200,42 @@ class ConnectionBasedLinkTest {
 	void canSendEndlessTone() throws IOException {
 		int pin = anyPositive(int.class);
 		int hertz = 3000;
-		streamEx.link().sendTone(Tone.forPin(analogPin(pin)).withHertz(hertz).endless());
+		arduinoStub.link().sendTone(Tone.forPin(analogPin(pin)).withHertz(hertz).endless());
 		assertToArduinoWasSent(format("alp://tone/%d/%d/-1", pin, hertz));
 	}
 
 	@Test
 	void canSendNoTone() throws IOException {
 		int pin = anyPositive(int.class);
-		streamEx.link().sendNoTone(analogPin(pin));
+		arduinoStub.link().sendNoTone(analogPin(pin));
 		assertToArduinoWasSent(format("alp://notn/%d", pin));
 	}
 
 	@Test
 	void canSendCustomMessage() throws IOException {
-		streamEx.link().sendCustomMessage("1", "2", "3");
+		arduinoStub.link().sendCustomMessage("1", "2", "3");
 		assertToArduinoWasSent("alp://cust/1/2/3");
 	}
 
 	@Test
 	void canReadRawMessagesRead() throws Exception {
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(anyPositive(int.class)).withState(true);
-		assertThat(streamEx.withListener(new StringBuilderListenerAdapter(),
-				() -> streamEx.simulateArduinoSend(message)).received).hasToString(message + "\n");
+		assertThat(arduinoStub.withListener(new StringBuilderListenerAdapter(),
+				() -> arduinoStub.simulateArduinoSend(message)).received).hasToString(message + "\n");
 	}
 
 	@Test
 	void canReadRawMessagesSent() throws Exception {
 		int pin = anyPositive(int.class);
 		int value = anyPositive(int.class);
-		assertThat(streamEx.withListener(new StringBuilderListenerAdapter(),
-				() -> streamEx.link().switchAnalogPin(analogPin(pin), value)).sent)
+		assertThat(arduinoStub.withListener(new StringBuilderListenerAdapter(),
+				() -> arduinoStub.link().switchAnalogPin(analogPin(pin), value)).sent)
 				.hasToString(format("alp://ppin/%d/%d\n", pin, value));
 	}
 
 	@Test
 	void listenersCannotInference() throws IOException {
-		ConnectionBasedLink link = streamEx.link();
+		ConnectionBasedLink link = arduinoStub.link();
 		link.addListener(exceptionThrowingListener());
 		StateChangeCollector listener = new StateChangeCollector();
 		link.addListener(listener);
@@ -242,7 +243,7 @@ class ConnectionBasedLinkTest {
 		int pin = anyPositive(int.class);
 		String message1 = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(anyOtherValueThan(pin));
 		String message2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
-		streamEx.simulateArduinoSend(message1, message2);
+		arduinoStub.simulateArduinoSend(message1, message2);
 		assertThat(listener.analogEvents).hasSize(1);
 		assertThat(listener.digitalEvents).hasSize(1);
 	}
@@ -250,14 +251,14 @@ class ConnectionBasedLinkTest {
 	@Test
 	void unparseableInput() throws IOException {
 		String message1 = "eXTRaoRdINARy unParSEable dATa";
-		streamEx.simulateArduinoSend(message1);
+		arduinoStub.simulateArduinoSend(message1);
 		String message2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(anyPositive(int.class)).withState(true);
-		streamEx.simulateArduinoSend(message2, message2);
+		arduinoStub.simulateArduinoSend(message2, message2);
 	}
 
 	@Test
 	void doesDeregisterAllListenersBeforeClosing() throws IOException {
-		ConnectionBasedLink link = streamEx.link();
+		ConnectionBasedLink link = arduinoStub.link();
 		StateChangeCollector listener = new StateChangeCollector();
 		link.addListener(listener);
 		link.close();
@@ -283,7 +284,7 @@ class ConnectionBasedLinkTest {
 	}
 
 	private void assertToArduinoWasSent(String message) {
-		assertThat(streamEx.toArduinoWasSent()).isEqualTo(message + "\n");
+		assertThat(arduinoStub.toArduinoWasSent()).isEqualTo(message + "\n");
 	}
 
 }

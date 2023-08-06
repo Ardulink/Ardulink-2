@@ -25,10 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.testsupport.junit5.ArduinoStubExt;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -41,51 +38,40 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * [adsense]
  *
  */
-@Timeout(5)
+@Timeout(value = 5, unit = SECONDS)
 class WaitForArduinoToBootTest {
-
-	private static final ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
 
 	@RegisterExtension
 	ArduinoStubExt arduinoStub = new ArduinoStubExt();
 
-	ConnectionBasedLink link = new ConnectionBasedLink(
-			new StreamConnection(arduinoStub.getInputStream(), arduinoStub.getOutputStream(), byteStreamProcessor),
-			byteStreamProcessor);
-
-	@AfterEach
-	void tearDown() throws IOException {
-		this.link.close();
-	}
-
 	@Test
 	void ifNoResponseReceivedWithin1SecondWaitWillReturnFalse() throws IOException {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))).doNotRespond();
-		assertThat(link.waitForArduinoToBoot(1, SECONDS)).isFalse();
+		assertThat(arduinoStub.link().waitForArduinoToBoot(1, SECONDS)).isFalse();
 	}
 
 	@Test
 	void noNeedToWaitIfArduinoDoesRespond() throws IOException {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ok?id=%s"));
-		assertThat(link.waitForArduinoToBoot(MAX_VALUE, DAYS)).isTrue();
+		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS)).isTrue();
 	}
 
 	@Test
 	void canDetectReadyPaket() throws IOException {
 		arduinoStub.after(1, SECONDS).send(lf("alp://ready/"));
-		assertThat(link.waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY)).isTrue();
+		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY)).isTrue();
 	}
 
 	@Test
 	void ignoresMisformedReadyPaket() throws IOException {
 		arduinoStub.after(1, SECONDS).send(lf("alp://XXXXXreadyXXXXX/"));
-		assertThat(link.waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY)).isFalse();
+		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY)).isFalse();
 	}
 
 	@Test
 	void detectAlreadySentReadyPaket() throws IOException {
 		arduinoStub.send(lf("alp://ready/"));
-		assertThat(link.waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY)).isTrue();
+		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY)).isTrue();
 	}
 
 	private Pattern regex(String regex) {
