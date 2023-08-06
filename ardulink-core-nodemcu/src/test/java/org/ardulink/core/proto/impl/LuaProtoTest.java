@@ -20,8 +20,6 @@ import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.api.Protocols.getByName;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Random;
-
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
@@ -36,11 +34,11 @@ import org.junit.jupiter.api.Test;
 
 class LuaProtoTest {
 
-	private final ByteStreamProcessor sut = getByName(LuaProtocol.NAME).newByteStreamProcessor();
+	ByteStreamProcessor sut = getByName(LuaProtocol.NAME).newByteStreamProcessor();
 
-	private final DigitalPin anyDigitalPin = digitalPin(anyPin());
-	private final AnalogPin anyAnalogPin = analogPin(anyPin());
-	private final int anyValue = anyIntValue();
+	DigitalPin anyDigitalPin = digitalPin(anyPin());
+	AnalogPin anyAnalogPin = analogPin(anyPin());
+	int anyValue = anyValue(int.class);
 
 	@Test
 	void generatePowerPinSwitchMessageHigh() {
@@ -95,11 +93,11 @@ class LuaProtoTest {
 	}
 
 	private int anyPin() {
-		return new Random().nextInt(99);
+		return 42;
 	}
 
-	private int anyIntValue() {
-		return new Random().nextInt(1023);
+	private int anyValue(Class<?> type) {
+		return 1023;
 	}
 
 }

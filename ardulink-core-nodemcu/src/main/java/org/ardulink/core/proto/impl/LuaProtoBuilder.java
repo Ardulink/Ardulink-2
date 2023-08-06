@@ -106,7 +106,7 @@ public class LuaProtoBuilder {
 				// improve this code.
 				// Actually we remove CR and LF sending the script on a single
 				// line.
-				return InputStreams.toString(is).replaceAll("\\r|\\n", " ");
+				return InputStreams.lines(is).map(String::trim).collect(joining(" "));
 			} catch (IOException e) {
 				throw propagate(e);
 			}
