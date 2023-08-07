@@ -16,7 +16,9 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
+import static java.lang.Integer.valueOf;
 import static java.net.URI.create;
+import static java.util.Optional.ofNullable;
 import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,11 +62,11 @@ class LinkConfigWithDependentAttributesLinkFactoryTest {
 		}
 
 		public int getPort() {
-			return port == null ? -1 : port.intValue();
+			return ofNullable(port).orElse(valueOf(1)).intValue();
 		}
 
 		public void setPort(int port) {
-			this.port = Integer.valueOf(port);
+			this.port = valueOf(port);
 		}
 
 		public String getDevicePort() {

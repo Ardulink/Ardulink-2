@@ -44,7 +44,7 @@ import jssc.SerialPortException;
  */
 public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
-	protected  static final String NAME = "serial-jssc";
+	protected static final String NAME = "serial-jssc";
 
 	@Override
 	public String getName() {
@@ -52,18 +52,17 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 	}
 
 	@Override
-	public LinkDelegate newLink(SerialLinkConfig config)
-			throws SerialPortException, IOException {
-		String portIdentifier = config.getPort();
+	public LinkDelegate newLink(SerialLinkConfig config) throws SerialPortException, IOException {
+		String portIdentifier = config.port;
 		SerialPort serialPort = serialPort(config, portIdentifier);
 
 		ByteStreamProcessor byteStreamProcessor = config.getProto().newByteStreamProcessor();
 		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(
-				new StreamConnection(new SerialInputStream(serialPort), new SerialOutputStream(serialPort), byteStreamProcessor),
+				new StreamConnection(new SerialInputStream(serialPort), new SerialOutputStream(serialPort),
+						byteStreamProcessor),
 				byteStreamProcessor);
 
-		Link link = config.isQos() ? new QosLink(connectionBasedLink)
-				: connectionBasedLink;
+		Link link = config.qos ? new QosLink(connectionBasedLink) : connectionBasedLink;
 
 		if (!waitForArdulink(config, connectionBasedLink)) {
 			connectionBasedLink.close();
@@ -83,13 +82,12 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		};
 	}
 
-	private boolean waitForArdulink(SerialLinkConfig config,
-			ConnectionBasedLink link) {
-		if (config.isPingprobe()) {
-			return link.waitForArduinoToBoot(config.getWaitsecs(), SECONDS);
+	private boolean waitForArdulink(SerialLinkConfig config, ConnectionBasedLink link) {
+		if (config.pingprobe) {
+			return link.waitForArduinoToBoot(config.waitsecs, SECONDS);
 		}
 		try {
-			SECONDS.sleep(config.getWaitsecs());
+			SECONDS.sleep(config.waitsecs);
 			return true;
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
@@ -97,12 +95,10 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		return false;
 	}
 
-	private SerialPort serialPort(SerialLinkConfig config, String portIdentifier)
-			throws SerialPortException {
+	private SerialPort serialPort(SerialLinkConfig config, String portIdentifier) throws SerialPortException {
 		SerialPort serialPort = new SerialPort(portIdentifier);
 		serialPort.openPort();
-		serialPort.setParams(config.getBaudrate(), DATABITS_8, STOPBITS_1,
-				PARITY_NONE);
+		serialPort.setParams(config.baudrate, DATABITS_8, STOPBITS_1, PARITY_NONE);
 		return serialPort;
 	}
 

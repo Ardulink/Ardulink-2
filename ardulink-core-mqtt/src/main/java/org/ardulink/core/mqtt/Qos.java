@@ -7,18 +7,18 @@ public enum Qos {
 	AT_MOST_ONCE(0), AT_LEAST_ONCE(1), EXACTLY_ONCE(2);
 
 	public static final Qos DEFAULT = AT_MOST_ONCE;
-	private final int level;
+	private final int intValue;
 
-	private Qos(int level) {
-		this.level = level;
+	private Qos(int intValue) {
+		this.intValue = intValue;
 	}
 
-	public int level() {
-		return level;
+	public int intValue() {
+		return intValue;
 	}
 
 	public static Qos forInt(int level) {
-		return EnumSet.allOf(Qos.class).stream().filter(q -> q.level() == level).findFirst()
+		return EnumSet.allOf(Qos.class).stream().filter(q -> q.intValue() == level).findFirst()
 				.orElseThrow(() -> new IllegalArgumentException("Invalid qos level " + level));
 	}
 

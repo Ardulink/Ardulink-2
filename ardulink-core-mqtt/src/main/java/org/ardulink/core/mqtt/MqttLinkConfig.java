@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
+import static org.ardulink.util.Objects.firstNonNull;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import javax.validation.constraints.Max;
@@ -36,13 +37,15 @@ import org.ardulink.core.linkmanager.LinkConfig.I18n;
 @I18n("message")
 public class MqttLinkConfig implements LinkConfig {
 
+	public static final String DEFAULT_HOST = "localhost";
+	
 	public static final int DEFAULT_PORT = 1883;
 
+	private static final Qos DEFAULT_QOS = Qos.DEFAULT;
+	
 	public enum Connection {
 		TCP, SSL, TLS
 	}
-
-	public static final String DEFAULT_HOST = "localhost";
 
 	@Named("host")
 	@NotNull
@@ -61,7 +64,7 @@ public class MqttLinkConfig implements LinkConfig {
 	private String topic = normalize("home/devices/ardulink/");
 
 	@Named("qos")
-	public Qos qos = Qos.DEFAULT;
+	private Qos qos = DEFAULT_QOS;
 
 	@Named("clientId")
 	@NotNull
@@ -81,7 +84,15 @@ public class MqttLinkConfig implements LinkConfig {
 	}
 
 	public void setHost(String host) {
-		this.host = host == null ? DEFAULT_HOST : host;
+		this.host = firstNonNull(host, DEFAULT_HOST);
+	}
+
+	public Qos getQos() {
+		return qos;
+	}
+
+	public void setQos(Qos qos) {
+		this.qos = firstNonNull(qos, DEFAULT_QOS);
 	}
 
 	public Connection getConnection() {

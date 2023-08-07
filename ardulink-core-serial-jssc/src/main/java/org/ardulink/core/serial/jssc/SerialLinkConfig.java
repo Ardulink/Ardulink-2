@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.serial.jssc;
 
+import static org.ardulink.core.proto.api.Protocols.getByName;
+import static org.ardulink.core.proto.api.Protocols.names;
 import static org.ardulink.core.proto.api.Protocols.tryByName;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Optionals.or;
@@ -50,36 +52,28 @@ public class SerialLinkConfig implements LinkConfig {
 	private static final String NAMED_PORT = "port";
 
 	@Named(NAMED_PORT)
-	private String port;
+	public String port;
 
 	@Named("baudrate")
 	@Positive
-	private int baudrate = 115200;
+	public int baudrate = 115200;
 
 	@Named(NAMED_PROTO)
 	private Protocol protoName = useProtoOrFallback(ArdulinkProtocol2.NAME);
 
 	@Named("qos")
-	private boolean qos;
+	public boolean qos;
 
 	@PositiveOrZero
 	@Max(59)
 	@Named("waitsecs")
-	private int waitsecs = 10;
+	public int waitsecs = 10;
 
 	@Named("pingprobe")
-	private boolean pingprobe = true;
-
-	public int getBaudrate() {
-		return baudrate;
-	}
+	public boolean pingprobe = true;
 
 	private Protocol useProtoOrFallback(String prefered) {
 		return or(tryByName(prefered), () -> getFirst(Protocols.list())).orElse(null);
-	}
-
-	public String getPort() {
-		return port;
 	}
 
 	@ChoiceFor(NAMED_PORT)
@@ -89,51 +83,19 @@ public class SerialLinkConfig implements LinkConfig {
 
 	@ChoiceFor(NAMED_PROTO)
 	public List<String> availableProtos() {
-		return Protocols.names();
+		return names();
 	}
 
 	public String getProtoName() {
 		return protoName == null ? null : protoName.getName();
 	}
 
-	public Protocol getProto() {
-		return Protocols.getByName(getProtoName());
-	}
-
-	public int getWaitsecs() {
-		return waitsecs;
-	}
-
-	public boolean isPingprobe() {
-		return pingprobe;
-	}
-
-	public boolean isQos() {
-		return this.qos;
-	}
-
-	public void setBaudrate(int baudrate) {
-		this.baudrate = baudrate;
-	}
-
-	public void setPingprobe(boolean pingprobe) {
-		this.pingprobe = pingprobe;
-	}
-
-	public void setPort(String port) {
-		this.port = port;
-	}
-
 	public void setProtoName(String protoName) {
-		this.protoName = Protocols.getByName(protoName);
+		this.protoName = getByName(protoName);
 	}
 
-	public void setQos(boolean qos) {
-		this.qos = qos;
-	}
-
-	public void setWaitsecs(int waitsecs) {
-		this.waitsecs = waitsecs;
+	public Protocol getProto() {
+		return getByName(getProtoName());
 	}
 
 }

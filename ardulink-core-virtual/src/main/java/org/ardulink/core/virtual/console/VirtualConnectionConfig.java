@@ -1,5 +1,7 @@
 package org.ardulink.core.virtual.console;
 
+import static org.ardulink.core.proto.api.Protocols.getByName;
+import static org.ardulink.core.proto.api.Protocols.names;
 import static org.ardulink.core.proto.api.Protocols.tryByName;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Optionals.or;
@@ -27,16 +29,16 @@ public class VirtualConnectionConfig implements LinkConfig {
 	}
 
 	public void setProtoName(String protoName) {
-		this.protoName = Protocols.getByName(protoName);
+		this.protoName = getByName(protoName);
 	}
 
 	@ChoiceFor(PROTO)
 	public List<String> availableProtos() {
-		return Protocols.names();
+		return names();
 	}
 
 	public Protocol getProto() {
-		return Protocols.getByName(getProtoName());
+		return getByName(getProtoName());
 	}
 
 }

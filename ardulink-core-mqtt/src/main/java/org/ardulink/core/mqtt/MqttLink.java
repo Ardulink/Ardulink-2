@@ -100,7 +100,7 @@ public class MqttLink extends AbstractListenerLink {
 		checkArgument(config.getHost() != null, "host must not be null");
 		checkArgument(config.getClientId() != null, "clientId must not be null");
 		checkArgument(config.getTopic() != null, "topic must not be null");
-		this.qos = config.qos.level();
+		this.qos = config.getQos().intValue();
 		this.hasAppendix = config.separateTopics;
 		this.topic = config.getTopic();
 		this.mqttReceivePattern = regex(MqttLink.this.topic + "([aAdD])(\\d+)" + quote(appendixSub()));

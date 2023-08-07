@@ -16,7 +16,9 @@ limitations under the License.
 
 package org.ardulink.gui;
 
-import java.util.Arrays;
+import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.DAYS;
+
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -48,16 +50,16 @@ public class DummyLinkConfig implements LinkConfig {
 	private String stringValueWithChoicesIncludingNull;
 
 	@Named("6_aEnumValue")
-	private TimeUnit enumValue = TimeUnit.DAYS;
+	private TimeUnit enumValue = DAYS;
 
 	@ChoiceFor("4_aStringValueWithChoices")
 	public List<String> someValuesForChoiceWithoutNull() {
-		return Arrays.asList("foo", "bar");
+		return asList("foo", "bar");
 	}
 
 	@ChoiceFor("5_aStringValueWithChoicesIncludingNull")
 	public List<String> someValuesForChoiceWithNull() {
-		return Arrays.asList("foo", null, "bar");
+		return asList("foo", null, "bar");
 	}
 
 	public int getIntValue() {
@@ -96,8 +98,7 @@ public class DummyLinkConfig implements LinkConfig {
 		return stringValueWithChoicesIncludingNull;
 	}
 
-	public void setStringValueWithChoicesIncludingNull(
-			String stringValueWithChoicesIncludingNull) {
+	public void setStringValueWithChoicesIncludingNull(String stringValueWithChoicesIncludingNull) {
 		this.stringValueWithChoicesIncludingNull = stringValueWithChoicesIncludingNull;
 	}
 
