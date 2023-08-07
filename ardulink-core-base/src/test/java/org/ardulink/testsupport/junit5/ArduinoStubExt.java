@@ -16,21 +16,21 @@ limitations under the License.
 package org.ardulink.testsupport.junit5;
 
 import static java.time.Duration.ofMillis;
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.stream.IntStream.rangeClosed;
 import static org.ardulink.core.proto.api.Protocols.getByName;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.Throwables.propagateIfInstanceOf;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.is;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -146,32 +146,11 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 
 	}
 
-	public class ExecRunnableThenDoBuilder {
-
-		private final Runnable runnable;
-
-		public ExecRunnableThenDoBuilder(Runnable runnable) {
-			this.runnable = runnable;
-		}
-
-		public void send(String message) {
-			newSingleThreadExecutor().submit(() -> {
-				try {
-					runnable.run();
-					ArduinoStubExt.this.send(message);
-				} catch (Exception e) {
-					throw propagate(e);
-				}
-			});
-		}
-
-	}
-
 	private final Protocol protocol;
 
 	private final List<ResponseGenerator> data = new ArrayList<>();
 	private final ByteArrayOutputStream os = new ByteArrayOutputStream();
-	private PipedOutputStream toArduinoOs;
+	private OutputStream simulatedArduinoOs;
 	private StreamConnection connection;
 	private ConnectionBasedLink link;
 	private final AtomicInteger bytesNotYetRead = new AtomicInteger();
@@ -184,14 +163,10 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 		this.protocol = protocol;
 	}
 
-	public void send(String message) throws IOException {
-		toArduinoOs.write(message.getBytes());
-	}
-
 	@Override
 	public void beforeEach(ExtensionContext context) throws Exception {
 		PipedInputStream is = new PipedInputStream();
-		this.toArduinoOs = new PipedOutputStream(is);
+		this.simulatedArduinoOs = new PipedOutputStream(is);
 		ByteStreamProcessor byteStreamProcessor = protocol.newByteStreamProcessor();
 		this.connection = new StreamConnection(is, os, byteStreamProcessor);
 		this.connection.addListener(new Listener() {
@@ -210,8 +185,8 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 					if (generator.matches(new String(this.bytes.copy()))) {
 						String response = generator.getResponse();
 						if (response != NO_RESPONSE) {
-							send(response);
-							toArduinoOs.flush();
+							simulateArduinoSends(response);
+							simulatedArduinoOs.flush();
 						}
 						this.bytes.clear();
 					}
@@ -247,16 +222,16 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 		}
 	}
 
-	public void simulateArduinoSend(String... messages) throws IOException {
+	public void simulateArduinoSends(String... messages) throws IOException {
 		for (String message : messages) {
-			simulateArduinoSend(message);
+			simulateArduinoSends(message);
 		}
 	}
 
-	public void simulateArduinoSend(String message) throws IOException {
-		this.toArduinoOs.write(message.getBytes());
-		this.toArduinoOs.write('\n');
-		this.bytesNotYetRead.addAndGet(message.getBytes().length + 1);
+	public void simulateArduinoSends(String message) throws IOException {
+		byte[] bytes = message.getBytes();
+		this.simulatedArduinoOs.write(bytes);
+		this.bytesNotYetRead.addAndGet(bytes.length);
 		waitUntilRead();
 	}
 
@@ -265,7 +240,7 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 	}
 
 	public void waitUntilRead() {
-		await().forever().pollDelay(ofMillis(10)).until(() -> bytesNotYetRead.get() == 0);
+		await().forever().pollDelay(ofMillis(10)).untilAtomic(bytesNotYetRead, is(0));
 	}
 
 	public Adder onReceive(String whenReceived) {
@@ -274,16 +249,6 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 
 	public RegexAdder onReceive(Pattern pattern) {
 		return new RegexAdder(pattern);
-	}
-
-	public ExecRunnableThenDoBuilder after(int amount, TimeUnit timeUnit) {
-		return new ExecRunnableThenDoBuilder(() -> {
-			try {
-				timeUnit.sleep(amount);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-		});
 	}
 
 }

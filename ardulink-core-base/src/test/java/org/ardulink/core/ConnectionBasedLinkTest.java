@@ -146,7 +146,8 @@ class ConnectionBasedLinkTest {
 		arduinoStub.link().addListener(listener);
 		int pin = anyPositive(int.class);
 		int value = anyPositive(int.class);
-		arduinoStub.simulateArduinoSend(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
+		String message = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value);
+		arduinoStub.simulateArduinoSends(lf(message));
 		assertThat(listener.analogEvents).contains(analogPinValueChanged(analogPin(pin), value));
 	}
 
@@ -163,7 +164,7 @@ class ConnectionBasedLinkTest {
 		arduinoStub.link().addListener(listener);
 		int pin = anyPositive(int.class);
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
-		arduinoStub.simulateArduinoSend(message);
+		arduinoStub.simulateArduinoSends(lf(message));
 		assertThat(listener.digitalEvents).contains(digitalPinValueChanged(digitalPin(pin), true));
 	}
 
@@ -173,7 +174,7 @@ class ConnectionBasedLinkTest {
 		StateChangeCollector listener = new StateChangeCollector();
 		arduinoStub.link().addListener(new FilteredEventListenerAdapter(digitalPin(anyOtherPin(pin)), listener));
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
-		arduinoStub.simulateArduinoSend(message);
+		arduinoStub.simulateArduinoSends(lf(message));
 		assertThat(listener.digitalEvents).isEmpty();
 	}
 
@@ -221,7 +222,7 @@ class ConnectionBasedLinkTest {
 	void canReadRawMessagesRead() throws Exception {
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(anyPositive(int.class)).withState(true);
 		assertThat(arduinoStub.withListener(new StringBuilderListenerAdapter(),
-				() -> arduinoStub.simulateArduinoSend(message)).received).hasToString(message + "\n");
+				() -> arduinoStub.simulateArduinoSends(lf(message))).received).hasToString(message + "\n");
 	}
 
 	@Test
@@ -243,7 +244,7 @@ class ConnectionBasedLinkTest {
 		int pin = anyPositive(int.class);
 		String message1 = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(anyOtherValueThan(pin));
 		String message2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
-		arduinoStub.simulateArduinoSend(message1, message2);
+		arduinoStub.simulateArduinoSends(lf(message1), lf(message2));
 		assertThat(listener.analogEvents).hasSize(1);
 		assertThat(listener.digitalEvents).hasSize(1);
 	}
@@ -251,9 +252,9 @@ class ConnectionBasedLinkTest {
 	@Test
 	void unparseableInput() throws IOException {
 		String message1 = "eXTRaoRdINARy unParSEable dATa";
-		arduinoStub.simulateArduinoSend(message1);
+		arduinoStub.simulateArduinoSends(lf(message1));
 		String message2 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(anyPositive(int.class)).withState(true);
-		arduinoStub.simulateArduinoSend(message2, message2);
+		arduinoStub.simulateArduinoSends(lf(message2), lf(message2));
 	}
 
 	@Test
@@ -285,6 +286,10 @@ class ConnectionBasedLinkTest {
 
 	private void assertToArduinoWasSent(String message) {
 		assertThat(arduinoStub.toArduinoWasSent()).isEqualTo(message + "\n");
+	}
+
+	private static String lf(String string) {
+		return string + "\n";
 	}
 
 }

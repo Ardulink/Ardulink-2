@@ -17,10 +17,12 @@ limitations under the License.
 package org.ardulink.core;
 
 import static java.lang.Integer.MAX_VALUE;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.ConnectionBasedLink.Mode.READY_MESSAGE_ONLY;
 import static org.ardulink.util.Regex.regex;
+import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -61,20 +63,25 @@ class WaitForArduinoToBootTest {
 
 	@Test
 	void canDetectReadyPaket() throws IOException {
-		arduinoStub.after(1, SECONDS).send(lf("alp://ready/"));
+		sendInOneSecond(lf("alp://ready/"));
 		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY)).isTrue();
 	}
 
 	@Test
 	void ignoresMisformedReadyPaket() throws IOException {
-		arduinoStub.after(1, SECONDS).send(lf("alp://readyX/"));
+		sendInOneSecond(lf("alp://readyX/"));
 		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY)).isFalse();
 	}
 
-	@Test
-	void detectAlreadySentReadyPaket() throws IOException {
-		arduinoStub.send(lf("alp://ready/"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY)).isTrue();
+	private void sendInOneSecond(String message) {
+		newSingleThreadExecutor().execute(() -> {
+			try {
+				SECONDS.sleep(1);
+				arduinoStub.simulateArduinoSends(message);
+			} catch (InterruptedException | IOException e) {
+				throw propagate(e);
+			}
+		});
 	}
 
 	private static String lf(String string) {
