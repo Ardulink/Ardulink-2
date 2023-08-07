@@ -63,17 +63,17 @@ class WaitForArduinoToBootTest {
 
 	@Test
 	void canDetectReadyPaket() throws IOException {
-		sendInOneSecond(lf("alp://ready/"));
+		simulateArduinoSendsInOneSecond(lf("alp://ready/"));
 		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY)).isTrue();
 	}
 
 	@Test
 	void ignoresMisformedReadyPaket() throws IOException {
-		sendInOneSecond(lf("alp://readyX/"));
+		simulateArduinoSendsInOneSecond(lf("alp://readyX/"));
 		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY)).isFalse();
 	}
 
-	private void sendInOneSecond(String message) {
+	private void simulateArduinoSendsInOneSecond(String message) {
 		newSingleThreadExecutor().execute(() -> {
 			try {
 				SECONDS.sleep(1);
