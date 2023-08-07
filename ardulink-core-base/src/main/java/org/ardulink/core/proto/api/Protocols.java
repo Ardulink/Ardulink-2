@@ -46,8 +46,9 @@ public final class Protocols {
 	 * @see #tryByName(String)
 	 */
 	public static Protocol getByName(String name) {
-		return tryByName(name).orElseThrow(() -> new IllegalStateException(
-				format("No protocol with name %s registered. Available names are %s", name, names())));
+		List<Protocol> availables = list();
+		return withName(availables, name).orElseThrow(() -> new IllegalStateException(
+				format("No protocol with name %s registered. Available names are %s", name, names(availables))));
 	}
 
 	/**
@@ -59,7 +60,11 @@ public final class Protocols {
 	 *         found
 	 */
 	public static Optional<Protocol> tryByName(String name) {
-		return list().stream().filter(p -> p.getName().equals(name)).findFirst();
+		return withName(list(), name);
+	}
+
+	private static Optional<Protocol> withName(List<Protocol> protocols, String name) {
+		return protocols.stream().filter(p -> p.getName().equals(name)).findFirst();
 	}
 
 	/**
@@ -79,7 +84,11 @@ public final class Protocols {
 	 * @see #list()
 	 */
 	public static List<String> names() {
-		return list().stream().map(Protocol::getName).collect(toList());
+		return names(list());
+	}
+
+	private static List<String> names(List<Protocol> list) {
+		return list.stream().map(Protocol::getName).collect(toList());
 	}
 
 }

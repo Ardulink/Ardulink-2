@@ -16,8 +16,14 @@ limitations under the License.
 
 package org.ardulink.core.proto.api;
 
+import static java.util.stream.Collectors.joining;
+import static org.ardulink.core.proto.api.Protocols.getByName;
+import static org.ardulink.core.proto.api.Protocols.names;
+import static org.ardulink.core.proto.api.Protocols.tryByName;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.Optional;
 
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.proto.impl.DummyProtocol;
@@ -35,20 +41,23 @@ class ProtocolsTest {
 
 	@Test
 	void defaultAndDummyProtocolsAreRegistered() {
-		assertThat(Protocols.names()).containsExactlyInAnyOrder(ArdulinkProtocol2.NAME, DummyProtocol.NAME);
+		assertThat(names()).containsExactlyInAnyOrder(ArdulinkProtocol2.NAME, DummyProtocol.NAME);
 	}
 
 	@Test
 	void canLoadByName() {
-		assertThat(Protocols.getByName(DummyProtocol.NAME)).isExactlyInstanceOf(DummyProtocol.class);
+		assertThat(getByName(DummyProtocol.NAME)).isExactlyInstanceOf(DummyProtocol.class);
+		assertThat(tryByName(DummyProtocol.NAME))
+				.hasValueSatisfying(p -> assertThat(p).isExactlyInstanceOf(DummyProtocol.class));
 	}
 
 	@Test
 	void getByNameThrowsExceptionOnUnknownProtocolNames() {
 		String unknownProto = "XXXnonExistingProtocolNameXXX";
 		assertThat(Protocols.tryByName(unknownProto)).isEmpty();
-		assertThat(assertThrows(RuntimeException.class, () -> Protocols.getByName(unknownProto)))
-				.hasMessageContaining(unknownProto);
+		assertThat(assertThrows(RuntimeException.class, () -> getByName(unknownProto)))
+				.hasMessageContaining(unknownProto, ArdulinkProtocol2.NAME, DummyProtocol.NAME);
+		assertThat(tryByName(unknownProto)).isEmpty();
 	}
 
 }
