@@ -20,11 +20,11 @@ import static java.lang.String.format;
 import static java.net.URI.create;
 import static java.util.Arrays.asList;
 import static java.util.Comparator.comparing;
-import static java.util.regex.Pattern.compile;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.core.linkmanager.LinkManager.replaceName;
 import static org.ardulink.util.Iterables.getFirst;
+import static org.ardulink.util.Regex.regex;
 
 import java.io.IOException;
 import java.net.URI;
@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.ardulink.core.Link;
@@ -42,7 +43,6 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
-import org.ardulink.util.Iterables;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -58,17 +58,22 @@ public final class Links {
 	private static final Map<Object, CacheEntry> cache = new HashMap<>();
 	private static final LinkManager linkManager = LinkManager.getInstance();
 
-	private static final Alias defaultAlias = new Alias("default", compile(".*"));
-	private static final Alias serialAlias = new Alias("serial", compile("serial\\-.+"));
+	private static final Alias defaultAlias = new Alias("default", regex(".*"));
+	private static final Alias serialAlias = new Alias("serial", regex("serial\\-.+"));
 	private static final List<Alias> aliases = asList(defaultAlias, serialAlias);
 
 	public static final String DEFAULT_URI = format("%s://%s", LinkManager.SCHEMA, defaultAlias.aliasName);
 
 	private static class Alias {
+
 		private final String aliasName;
-		private final Pattern aliasFor;
+		private final Predicate<String> aliasFor;
 
 		public Alias(String aliasName, Pattern aliasFor) {
+			this(aliasName, aliasFor.asPredicate());
+		}
+
+		public Alias(String aliasName, Predicate<String> aliasFor) {
 			this.aliasName = aliasName;
 			this.aliasFor = aliasFor;
 		}
@@ -78,7 +83,7 @@ public final class Links {
 		}
 
 		public boolean isAliasFor(String name) {
-			return !isAliasName(name) && aliasFor.matcher(name).matches();
+			return !isAliasName(name) && aliasFor.test(name);
 		}
 
 	}
@@ -238,7 +243,7 @@ public final class Links {
 	public static Configurer setChoiceValues(Configurer configurer) {
 		configurer.getAttributes().stream().map(k -> configurer.getAttribute(k))
 				.filter(a -> a.hasChoiceValues() && !isConfigured(a))
-				.forEach(a -> Iterables.getFirst(asList(a.getChoiceValues())).ifPresent(a::setValue));
+				.forEach(a -> getFirst(asList(a.getChoiceValues())).ifPresent(a::setValue));
 		return configurer;
 	}
 

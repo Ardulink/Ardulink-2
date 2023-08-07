@@ -15,17 +15,16 @@ limitations under the License.
  */
 
 package org.ardulink.core.qos;
-
 import static java.lang.Long.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.util.Regex.regex;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Tone;
@@ -60,7 +59,7 @@ class QosLinkTest {
 
 	@Test
 	void canDoGuranteedDelivery() throws Exception {
-		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ok?id=%s"));
+		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ok?id={0}"));
 		qosLink = newQosLink(MAX_VALUE, DAYS);
 		AnalogPin pin = analogPin(3);
 		assertThat(qosLink.sendNoTone(pin)).isEqualTo(1);
@@ -78,7 +77,7 @@ class QosLinkTest {
 
 	@Test
 	void doesThrowExceptionIfKoResponse() throws Exception {
-		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ko?id=%s"));
+		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ko?id={0}"));
 		qosLink = newQosLink(MAX_VALUE, DAYS);
 		IllegalStateException exception = assertThrows(IllegalStateException.class,
 				() -> qosLink.sendNoTone(analogPin(3)));
@@ -89,7 +88,7 @@ class QosLinkTest {
 	void secondCallPassesIfFirstOneKeepsUnresponded() throws Exception {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/tone\\/1\\/2\\/3\\?id\\=(\\d)"))).doNotRespond();
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/tone\\/4\\/5\\/6\\?id\\=(\\d)")))
-				.respondWith(lf("alp://rply/ok?id=%s"));
+				.respondWith(lf("alp://rply/ok?id={0}"));
 		qosLink = newQosLink(500, MILLISECONDS);
 		assertThat(assertThrows(IllegalStateException.class,
 				() -> qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2).withDuration(3, MILLISECONDS))))
@@ -99,10 +98,6 @@ class QosLinkTest {
 
 	private QosLink newQosLink(long timeout, TimeUnit timeUnit) throws IOException {
 		return new QosLink(arduinoStub.link(), timeout, timeUnit);
-	}
-
-	private Pattern regex(String regex) {
-		return Pattern.compile(regex);
 	}
 
 	private static String lf(String string) {

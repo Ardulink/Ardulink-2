@@ -15,14 +15,12 @@ limitations under the License.
  */
 
 package org.ardulink.core.mqtt;
-
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.unmodifiableMap;
-import static java.util.regex.Pattern.compile;
 import static java.util.regex.Pattern.quote;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -34,6 +32,7 @@ import static org.ardulink.core.mqtt.MqttLinkConfig.Connection.TLS;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Predicates.not;
+import static org.ardulink.util.Regex.regex;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK9;
 
@@ -104,7 +103,7 @@ public class MqttLink extends AbstractListenerLink {
 		this.qos = config.qos.level();
 		this.hasAppendix = config.separateTopics;
 		this.topic = config.getTopic();
-		this.mqttReceivePattern = compile(MqttLink.this.topic + "([aAdD])(\\d+)" + quote(appendixSub()));
+		this.mqttReceivePattern = regex(MqttLink.this.topic + "([aAdD])(\\d+)" + quote(appendixSub()));
 		this.mqttClient = newClient(config);
 		MqttCallback callback = callback();
 		this.mqttClient.setCallback(callback);

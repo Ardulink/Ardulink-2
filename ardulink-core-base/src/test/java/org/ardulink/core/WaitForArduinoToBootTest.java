@@ -20,6 +20,7 @@ import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.ConnectionBasedLink.Mode.READY_MESSAGE_ONLY;
+import static org.ardulink.util.Regex.regex;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -41,18 +42,20 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @Timeout(value = 5, unit = SECONDS)
 class WaitForArduinoToBootTest {
 
+	Pattern noToneRegex = regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)"));
+
 	@RegisterExtension
 	ArduinoStubExt arduinoStub = new ArduinoStubExt();
 
 	@Test
-	void ifNoResponseReceivedWithin1SecondWaitWillReturnFalse() throws IOException {
-		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))).doNotRespond();
-		assertThat(arduinoStub.link().waitForArduinoToBoot(1, SECONDS)).isFalse();
+	void ifNoResponseReceivedWithin3SecondsWaitWillReturnFalse() throws IOException {
+		arduinoStub.onReceive(noToneRegex).doNotRespond();
+		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS)).isFalse();
 	}
 
 	@Test
 	void noNeedToWaitIfArduinoDoesRespond() throws IOException {
-		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ok?id=%s"));
+		arduinoStub.onReceive(noToneRegex).respondWith(lf("alp://rply/ok?id={0}"));
 		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS)).isTrue();
 	}
 
@@ -64,7 +67,7 @@ class WaitForArduinoToBootTest {
 
 	@Test
 	void ignoresMisformedReadyPaket() throws IOException {
-		arduinoStub.after(1, SECONDS).send(lf("alp://XXXXXreadyXXXXX/"));
+		arduinoStub.after(1, SECONDS).send(lf("alp://readyX/"));
 		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY)).isFalse();
 	}
 
@@ -72,10 +75,6 @@ class WaitForArduinoToBootTest {
 	void detectAlreadySentReadyPaket() throws IOException {
 		arduinoStub.send(lf("alp://ready/"));
 		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY)).isTrue();
-	}
-
-	private Pattern regex(String regex) {
-		return Pattern.compile(regex);
 	}
 
 	private static String lf(String string) {

@@ -1,3 +1,18 @@
+/**
+Copyright 2013 project Ardulink http://www.ardulink.org/
+ 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+ 
+    http://www.apache.org/licenses/LICENSE-2.0
+ 
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+ */
 package org.ardulink.testsupport.junit5;
 
 import static java.time.Duration.ofMillis;
@@ -12,6 +27,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -20,7 +36,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.ardulink.core.Connection.Listener;
-import org.ardulink.core.Connection.ListenerAdapter;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.proto.api.Protocol;
@@ -31,11 +46,28 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.function.Executable;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ * JUnit5 Extension that provides a stub for a real Arduino.<br>
+ * The stub can be configured, on what requests it should answer with what
+ * response.<br>
+ * 
+ * The link to it can be retrieved via {@link #link}.
+ * 
+ * @see #onReceive(String)
+ * @see #onReceive(Pattern)
+ * 
+ */
 public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 
 	private static final String NO_RESPONSE = null;
 
-	interface ReponseGenerator {
+	interface ResponseGenerator {
 
 		boolean matches(String received);
 
@@ -43,7 +75,7 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 
 	}
 
-	public class Adder implements ReponseGenerator {
+	public class Adder implements ResponseGenerator {
 
 		private String whenReceived;
 		private String thenRespond;
@@ -73,9 +105,9 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 
 	}
 
-	public Matcher matcher;
+	private Matcher matcher;
 
-	public class RegexAdder implements ReponseGenerator {
+	public class RegexAdder implements ResponseGenerator {
 
 		private Pattern whenReceived;
 		private String thenRespond;
@@ -90,19 +122,22 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 		}
 
 		public void doNotRespond() {
-			this.thenRespond = NO_RESPONSE;
-			data.add(this);
+			respondWith(NO_RESPONSE);
 		}
 
 		@Override
 		public boolean matches(String received) {
-			matcher = whenReceived.matcher(received);
-			return matcher.matches();
+			Matcher tmpMatcher = whenReceived.matcher(received);
+			if (tmpMatcher.matches()) {
+				matcher = tmpMatcher;
+				return true;
+			}
+			return false;
 		}
 
 		@Override
 		public String getResponse() {
-			return thenRespond == null ? null : String.format(thenRespond, groupValues());
+			return thenRespond == null ? null : MessageFormat.format(thenRespond, groupValues());
 		}
 
 		private Object[] groupValues() {
@@ -134,7 +169,7 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 
 	private final Protocol protocol;
 
-	private final List<ReponseGenerator> data = new ArrayList<>();
+	private final List<ResponseGenerator> data = new ArrayList<>();
 	private final ByteArrayOutputStream os = new ByteArrayOutputStream();
 	private PipedOutputStream toArduinoOs;
 	private StreamConnection connection;
@@ -159,21 +194,19 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 		this.toArduinoOs = new PipedOutputStream(is);
 		ByteStreamProcessor byteStreamProcessor = protocol.newByteStreamProcessor();
 		this.connection = new StreamConnection(is, os, byteStreamProcessor);
-		this.connection.addListener(new ListenerAdapter() {
-			@Override
-			public void received(byte[] bytes) throws IOException {
-				ArduinoStubExt.this.bytesNotYetRead.addAndGet(-bytes.length);
-			}
-		});
-
-		this.connection.addListener(new ListenerAdapter() {
+		this.connection.addListener(new Listener() {
 
 			private final ByteArray bytes = new ByteArray();
 
 			@Override
+			public void received(byte[] bytes) throws IOException {
+				ArduinoStubExt.this.bytesNotYetRead.addAndGet(-bytes.length);
+			}
+
+			@Override
 			public void sent(byte[] bytes) throws IOException {
 				this.bytes.append(bytes);
-				for (ReponseGenerator generator : data) {
+				for (ResponseGenerator generator : data) {
 					if (generator.matches(new String(this.bytes.copy()))) {
 						String response = generator.getResponse();
 						if (response != NO_RESPONSE) {
@@ -184,7 +217,6 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 					}
 				}
 			}
-
 		});
 
 		this.link = new ConnectionBasedLink(connection, byteStreamProcessor);

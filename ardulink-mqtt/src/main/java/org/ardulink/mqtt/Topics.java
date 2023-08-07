@@ -16,7 +16,8 @@ limitations under the License.
  */
 package org.ardulink.mqtt;
 
-import static java.util.regex.Pattern.compile;
+import static java.lang.String.format;
+import static org.ardulink.util.Regex.regex;
 
 import java.util.regex.Pattern;
 
@@ -150,37 +151,33 @@ public abstract class Topics {
 
 	public Topics withControlChannelEnabled() {
 		String prefix = "system/listening/";
-		return DefaultTopics
-				.typedCopy(this)
-				.withTopicPatternDigitalControl(
-						prefix(getTopicPatternDigitalWrite(), prefix))
-				.withTopicPatternAnalogControl(
-						prefix(getTopicPatternAnalogWrite(), prefix));
+		return DefaultTopics.typedCopy(this)
+				.withTopicPatternDigitalControl(prefix(getTopicPatternDigitalWrite(), prefix))
+				.withTopicPatternAnalogControl(prefix(getTopicPatternAnalogWrite(), prefix));
 	}
 
 	private String prefix(Pattern writePattern, String prefix) {
-		return new StringBuilder(writePattern.pattern()).insert(
-				getTopic().length(), prefix).toString();
+		return new StringBuilder(writePattern.pattern()).insert(getTopic().length(), prefix).toString();
 	}
 
 	public Topics withTopicPatternDigitalControl(String write) {
 		DefaultTopics copy = DefaultTopics.typedCopy(this);
-		copy.topicPatternDigitalControl = compile(write);
+		copy.topicPatternDigitalControl = regex(write);
 		return copy;
 	}
 
 	public Topics withTopicPatternAnalogControl(String write) {
 		DefaultTopics copy = DefaultTopics.typedCopy(this);
-		copy.topicPatternAnalogControl = compile(write);
+		copy.topicPatternAnalogControl = regex(write);
 		return copy;
 	}
 
 	private static Pattern write(String format) {
-		return compile(String.format(format, "(\\w+)"));
+		return regex(format(format, "(\\w+)"));
 	}
 
-	private static String read(String format) {
-		return String.format(format, "%s");
+	private static String read(String formatPattern) {
+		return format(formatPattern, "%s");
 	}
 
 	protected abstract String getTopic();
