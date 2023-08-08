@@ -16,12 +16,14 @@ limitations under the License.
 
 package org.ardulink.core.proxy;
 
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.Stream.concat;
 import static org.ardulink.core.proxy.ProxyLinkFactory.OK;
+import static org.ardulink.util.Closeables.closeQuietly;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.io.BufferedReader;
@@ -74,7 +76,7 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 
 	public ProxyServerDouble(ServerSocket serverSocket) {
 		this.serverSocket = serverSocket;
-		thread = new Thread() {
+		this.thread = new Thread() {
 
 			@Override
 			public void run() {
@@ -106,19 +108,15 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 	@Override
 	public void afterEach(ExtensionContext context) {
 		this.thread.interrupt();
-		try {
-			this.serverSocket.close();
-		} catch (IOException e) {
-			throw propagate(e);
-		}
+		closeQuietly(this.serverSocket);
 	}
 
 	public int getLocalPort() {
-		return serverSocket.getLocalPort();
+		return this.serverSocket.getLocalPort();
 	}
 
 	private static String proxyMessage(String message) {
-		return String.format("ardulink:networkproxyserver:%s", message);
+		return format("ardulink:networkproxyserver:%s", message);
 	}
 
 	private List<String> portList(int numberOfPorts) {

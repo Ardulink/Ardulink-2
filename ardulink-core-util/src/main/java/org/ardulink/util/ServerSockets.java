@@ -1,5 +1,7 @@
 package org.ardulink.util;
 
+import static org.ardulink.util.Throwables.propagate;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 
@@ -15,7 +17,7 @@ public final class ServerSockets {
 			socket.close();
 			return socket.getLocalPort();
 		} catch (IOException e) {
-			throw Throwables.propagate(e);
+			throw propagate(e);
 		}
 	}
 }

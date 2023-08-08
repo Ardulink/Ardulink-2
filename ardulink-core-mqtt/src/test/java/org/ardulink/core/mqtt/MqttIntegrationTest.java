@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.mqtt;
 
 import static java.util.Arrays.asList;
+import static java.util.Optional.ofNullable;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -41,6 +42,7 @@ import org.ardulink.core.events.EventListenerAdapter;
 import org.ardulink.core.events.FilteredEventListenerAdapter;
 import org.ardulink.core.mqtt.duplicated.AnotherMqttClient;
 import org.ardulink.core.mqtt.duplicated.Message;
+import org.ardulink.util.Closeables;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -90,8 +92,8 @@ class MqttIntegrationTest {
 	String messageFormat;
 
 	@AfterEach
-	void tearDown() throws InterruptedException, IOException {
-		link.close();
+	void tearDown() {
+		ofNullable(this.link).ifPresent(Closeables::closeQuietly);
 	}
 
 	private static List<TestConfig> data() {

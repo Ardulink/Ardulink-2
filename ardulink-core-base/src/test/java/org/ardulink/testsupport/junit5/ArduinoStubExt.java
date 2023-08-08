@@ -31,6 +31,7 @@ import java.io.PipedOutputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,6 +42,7 @@ import org.ardulink.core.StreamConnection;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.util.ByteArray;
+import org.ardulink.util.Closeables;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -198,11 +200,8 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 	}
 
 	@Override
-	public void afterEach(ExtensionContext context) throws Exception {
-		ConnectionBasedLink lLink = this.link();
-		if (lLink != null) {
-			lLink.close();
-		}
+	public void afterEach(ExtensionContext context) {
+		Optional.ofNullable(this.link).ifPresent(Closeables::closeQuietly);
 	}
 
 	public ConnectionBasedLink link() {

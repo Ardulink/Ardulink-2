@@ -15,9 +15,11 @@ limitations under the License.
  */
 
 package org.ardulink.core.qos;
+
 import static java.lang.Long.MAX_VALUE;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.util.Regex.regex;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Tone;
 import org.ardulink.testsupport.junit5.ArduinoStubExt;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -42,46 +43,39 @@ import org.junit.jupiter.api.extension.RegisterExtension;
  * [adsense]
  *
  */
-@Timeout(15)
+@Timeout(value = 15, unit = SECONDS)
 class QosLinkTest {
 
 	@RegisterExtension
 	ArduinoStubExt arduinoStub = new ArduinoStubExt();
 
-	QosLink qosLink;
-
-	@AfterEach
-	void tearDown() throws IOException {
-		if (qosLink != null) {
-			qosLink.close();
-		}
-	}
-
 	@Test
 	void canDoGuranteedDelivery() throws Exception {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ok?id={0}"));
-		qosLink = newQosLink(MAX_VALUE, DAYS);
-		AnalogPin pin = analogPin(3);
-		assertThat(qosLink.sendNoTone(pin)).isEqualTo(1);
-		assertThat(qosLink.sendNoTone(pin)).isEqualTo(2);
-		assertThat(qosLink.sendNoTone(pin)).isEqualTo(3);
+		try (QosLink qosLink = newQosLink(MAX_VALUE, DAYS)) {
+			AnalogPin pin = analogPin(3);
+			assertThat(qosLink.sendNoTone(pin)).isEqualTo(1);
+			assertThat(qosLink.sendNoTone(pin)).isEqualTo(2);
+			assertThat(qosLink.sendNoTone(pin)).isEqualTo(3);
+		}
 	}
 
 	@Test
 	void doesThrowExceptionIfNotResponseReceivedWithinHalfAsecond() throws Exception {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).doNotRespond();
-		qosLink = newQosLink(500, MILLISECONDS);
-		assertThat(assertThrows(IllegalStateException.class, () -> qosLink.sendNoTone(analogPin(3))))
-				.hasMessageContaining("response").hasMessageContaining("500 MILLISECONDS");
+		try (QosLink qosLink = newQosLink(500, MILLISECONDS)) {
+			assertThat(assertThrows(IllegalStateException.class, () -> qosLink.sendNoTone(analogPin(3))))
+					.hasMessageContaining("response").hasMessageContaining("500 MILLISECONDS");
+		}
 	}
 
 	@Test
 	void doesThrowExceptionIfKoResponse() throws Exception {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ko?id={0}"));
-		qosLink = newQosLink(MAX_VALUE, DAYS);
-		IllegalStateException exception = assertThrows(IllegalStateException.class,
-				() -> qosLink.sendNoTone(analogPin(3)));
-		assertThat(exception).hasMessageContaining("status").hasMessageContaining("not ok");
+		try (QosLink qosLink = newQosLink(MAX_VALUE, DAYS)) {
+			assertThat(assertThrows(IllegalStateException.class, () -> qosLink.sendNoTone(analogPin(3))))
+					.hasMessageContaining("status").hasMessageContaining("not ok");
+		}
 	}
 
 	@Test
@@ -89,11 +83,12 @@ class QosLinkTest {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/tone\\/1\\/2\\/3\\?id\\=(\\d)"))).doNotRespond();
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/tone\\/4\\/5\\/6\\?id\\=(\\d)")))
 				.respondWith(lf("alp://rply/ok?id={0}"));
-		qosLink = newQosLink(500, MILLISECONDS);
-		assertThat(assertThrows(IllegalStateException.class,
-				() -> qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2).withDuration(3, MILLISECONDS))))
-				.hasMessageContaining("No response");
-		qosLink.sendTone(Tone.forPin(analogPin(4)).withHertz(5).withDuration(6, MILLISECONDS));
+		try (QosLink qosLink = newQosLink(500, MILLISECONDS)) {
+			assertThat(assertThrows(IllegalStateException.class,
+					() -> qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2).withDuration(3, MILLISECONDS))))
+					.hasMessageContaining("No response");
+			qosLink.sendTone(Tone.forPin(analogPin(4)).withHertz(5).withDuration(6, MILLISECONDS));
+		}
 	}
 
 	private QosLink newQosLink(long timeout, TimeUnit timeUnit) throws IOException {

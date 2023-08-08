@@ -18,6 +18,7 @@ package org.ardulink.core.convenience;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
@@ -30,7 +31,6 @@ import static org.ardulink.core.linkmanager.LinkManager.SCHEMA;
 import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
-import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -56,6 +56,7 @@ import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.testsupport.mock.junit5.MockUri;
+import org.ardulink.util.Closeables;
 import org.ardulink.util.ListMultiMap;
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -111,18 +112,10 @@ class LinksTest {
 	void serialDashDoesHandleSerial() throws Throwable {
 		LinkFactory<LinkConfig> factory = spy(factoryNamed(serialDash("appendix-does-not-matter")));
 		withRegistered(factory).execute(() -> {
-			try (Link link = Links.getLink("ardulink://serial")) {
+			try (Link link = Links.getLink(namedUri(serial()))) {
 				assertLinkFactoryCreatedOneLink(factory);
 			}
 		});
-	}
-
-	private static String serialDash(String appendix) {
-		return format("%s-%s", serial(), appendix);
-	}
-
-	private static String serial() {
-		return "serial";
 	}
 
 	@Test
@@ -194,7 +187,7 @@ class LinksTest {
 		assertThat(links).allSatisfy(l -> assertThat(l).isSameAs(links[0]));
 		// all links point to the same instance, so choose one of them
 		try (Link link = links[0]) {
-			range(0, links.length - 1).forEach(__ -> closeQuietly(link));
+			stream(links).skip(1).forEach(Closeables::closeQuietly);
 			verify(getMock(link), never()).close();
 			link.close();
 			verify(getMock(link), times(1)).close();
@@ -246,7 +239,8 @@ class LinksTest {
 		}
 
 		withRegistered(new DummyLinkFactoryExtension()).execute(() -> {
-			try (Link linkOrig = Links.getLink(makeUri(nameOrig)); Link linkOther = Links.getLink(makeUri(nameOther))) {
+			try (Link linkOrig = Links.getLink(namedUriWithParams(nameOrig));
+					Link linkOther = Links.getLink(namedUriWithParams(nameOther))) {
 				assertThat(linkOrig).isNotSameAs(linkOther);
 			}
 		});
@@ -340,10 +334,6 @@ class LinksTest {
 		});
 	}
 
-	private static String makeUri(String name) {
-		return format("ardulink://%s?a=aVal1&b=4", name);
-	}
-
 	@Test
 	void aliasLinksAreSharedToo() throws Throwable {
 		withRegistered(new AliasUsingLinkFactory()).execute(() -> {
@@ -366,16 +356,24 @@ class LinksTest {
 		return new LinkFactoryForTest(name, linkConfigSupplier);
 	}
 
-	private void close(Link... links) {
-		Arrays.stream(links).forEach(LinksTest::closeQuietly);
+	private static String serialDash(String appendix) {
+		return format("%s-%s", serial(), appendix);
 	}
 
-	private static void closeQuietly(Link link) {
-		try {
-			link.close();
-		} catch (IOException e) {
-			propagate(e);
-		}
+	private static String serial() {
+		return "serial";
+	}
+
+	private static String namedUri(String name) {
+		return format("ardulink://%s", name);
+	}
+
+	private static String namedUriWithParams(String name) {
+		return namedUri(name) + "?a=aVal1&b=4";
+	}
+
+	private void close(Link... links) {
+		Arrays.stream(links).forEach(Closeables::closeQuietly);
 	}
 
 	private DummyLinkConfig getConfig(Link link) {

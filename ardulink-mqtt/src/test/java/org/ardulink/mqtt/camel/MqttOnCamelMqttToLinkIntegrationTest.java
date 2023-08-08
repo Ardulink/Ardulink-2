@@ -1,5 +1,6 @@
 package org.ardulink.mqtt.camel;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.apache.camel.builder.AdviceWith.adviceWith;
 import static org.ardulink.core.Pin.analogPin;
@@ -93,9 +94,7 @@ class MqttOnCamelMqttToLinkIntegrationTest {
 	@AfterEach
 	void tearDown() throws Exception {
 		mqttClient.close();
-		if (context != null) {
-			context.stop();
-		}
+		ofNullable(context).ifPresent(CamelContext::stop);
 		broker.close();
 	}
 
