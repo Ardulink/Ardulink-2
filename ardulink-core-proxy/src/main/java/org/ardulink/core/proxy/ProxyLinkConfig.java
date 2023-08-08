@@ -17,7 +17,8 @@ limitations under the License.
 package org.ardulink.core.proxy;
 
 import static java.util.Collections.emptyList;
-import static org.ardulink.core.proto.api.Protocols.getByName;
+import static org.ardulink.core.proto.api.Protocols.protoByName;
+import static org.ardulink.core.proto.api.Protocols.protocolNames;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,7 +29,6 @@ import javax.validation.constraints.Positive;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
@@ -70,12 +70,12 @@ public class ProxyLinkConfig implements LinkConfig {
 	public int speed = DEFAULT_SPEED;
 
 	@Named(NAMED_PROTO)
-	private Protocol proto = getByName(ArdulinkProtocol2.NAME);
+	private Protocol proto = protoByName(ArdulinkProtocol2.NAME);
 
 	private ProxyConnectionToRemote remote;
 
 	public void setProto(String proto) {
-		this.proto = Protocols.getByName(proto);
+		this.proto = protoByName(proto);
 	}
 
 	public String getProto() {
@@ -84,7 +84,7 @@ public class ProxyLinkConfig implements LinkConfig {
 
 	@ChoiceFor(NAMED_PROTO)
 	public List<String> getProtos() {
-		return Protocols.names();
+		return protocolNames();
 	}
 
 	@ChoiceFor(value = NAMED_PORT, dependsOn = { NAMED_TCPHOST, NAMED_TCPPORT })

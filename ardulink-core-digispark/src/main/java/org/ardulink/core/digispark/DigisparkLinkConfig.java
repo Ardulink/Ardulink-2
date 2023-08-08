@@ -17,7 +17,7 @@ limitations under the License.
 package org.ardulink.core.digispark;
 
 import static java.util.Arrays.asList;
-import static org.ardulink.core.proto.api.Protocols.getByName;
+import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Throwables.propagate;
 
@@ -36,7 +36,7 @@ public class DigisparkLinkConfig implements LinkConfig {
 	private static final String NAMED_DEVICE_NAME = "deviceName";
 
 	// at the moment the only supported protocol is SimpleDigisparkProtocol
-	private static final List<Protocol> VALID_PROTOS = asList(getByName(SimpleDigisparkProtocol.NAME));
+	private static final List<Protocol> VALID_PROTOS = asList(protoByName(SimpleDigisparkProtocol.NAME));
 
 	@Named(NAMED_DEVICE_NAME)
 	public String deviceName;

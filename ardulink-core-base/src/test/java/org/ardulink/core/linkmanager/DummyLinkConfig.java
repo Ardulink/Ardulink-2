@@ -27,7 +27,8 @@ package org.ardulink.core.linkmanager;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static org.ardulink.core.proto.api.Protocols.getByName;
+import static org.ardulink.core.proto.api.Protocols.protoByName;
+import static org.ardulink.core.proto.api.Protocols.protocolNames;
 
 import java.util.Arrays;
 import java.util.List;
@@ -43,7 +44,6 @@ import javax.validation.constraints.PositiveOrZero;
 
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 @I18n("message")
@@ -56,7 +56,7 @@ public class DummyLinkConfig implements LinkConfig {
 	@Named("c")
 	public String c;
 
-	public Protocol protocol = getByName(ArdulinkProtocol2.NAME);
+	public Protocol protocol = protoByName(ArdulinkProtocol2.NAME);
 
 	@Named("d")
 	public String d;
@@ -171,7 +171,7 @@ public class DummyLinkConfig implements LinkConfig {
 
 	@Named("proto")
 	public void setProtocol(String protocol) {
-		this.protocol = getByName(protocol);
+		this.protocol = protoByName(protocol);
 	}
 
 	@ChoiceFor("a")
@@ -181,7 +181,7 @@ public class DummyLinkConfig implements LinkConfig {
 
 	@ChoiceFor("proto")
 	public static String[] choiceValuesForAtttribute_proto_typeIsArray() {
-		return Protocols.names().stream().toArray(String[]::new);
+		return protocolNames().stream().toArray(String[]::new);
 	}
 
 	@ChoiceFor("f1")

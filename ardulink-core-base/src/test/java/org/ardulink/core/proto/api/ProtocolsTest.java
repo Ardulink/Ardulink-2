@@ -16,14 +16,11 @@ limitations under the License.
 
 package org.ardulink.core.proto.api;
 
-import static java.util.stream.Collectors.joining;
-import static org.ardulink.core.proto.api.Protocols.getByName;
-import static org.ardulink.core.proto.api.Protocols.names;
-import static org.ardulink.core.proto.api.Protocols.tryByName;
+import static org.ardulink.core.proto.api.Protocols.protocolNames;
+import static org.ardulink.core.proto.api.Protocols.protoByName;
+import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import java.util.Optional;
 
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.proto.impl.DummyProtocol;
@@ -41,23 +38,23 @@ class ProtocolsTest {
 
 	@Test
 	void defaultAndDummyProtocolsAreRegistered() {
-		assertThat(names()).containsExactlyInAnyOrder(ArdulinkProtocol2.NAME, DummyProtocol.NAME);
+		assertThat(protocolNames()).containsExactlyInAnyOrder(ArdulinkProtocol2.NAME, DummyProtocol.NAME);
 	}
 
 	@Test
 	void canLoadByName() {
-		assertThat(getByName(DummyProtocol.NAME)).isExactlyInstanceOf(DummyProtocol.class);
-		assertThat(tryByName(DummyProtocol.NAME))
+		assertThat(protoByName(DummyProtocol.NAME)).isExactlyInstanceOf(DummyProtocol.class);
+		assertThat(tryProtoByName(DummyProtocol.NAME))
 				.hasValueSatisfying(p -> assertThat(p).isExactlyInstanceOf(DummyProtocol.class));
 	}
 
 	@Test
 	void getByNameThrowsExceptionOnUnknownProtocolNames() {
 		String unknownProto = "XXXnonExistingProtocolNameXXX";
-		assertThat(Protocols.tryByName(unknownProto)).isEmpty();
-		assertThat(assertThrows(RuntimeException.class, () -> getByName(unknownProto)))
+		assertThat(tryProtoByName(unknownProto)).isEmpty();
+		assertThat(assertThrows(RuntimeException.class, () -> protoByName(unknownProto)))
 				.hasMessageContaining(unknownProto, ArdulinkProtocol2.NAME, DummyProtocol.NAME);
-		assertThat(tryByName(unknownProto)).isEmpty();
+		assertThat(tryProtoByName(unknownProto)).isEmpty();
 	}
 
 }

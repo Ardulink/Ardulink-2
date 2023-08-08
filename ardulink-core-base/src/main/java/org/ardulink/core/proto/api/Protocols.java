@@ -17,11 +17,15 @@ limitations under the License.
 package org.ardulink.core.proto.api;
 
 import static java.lang.String.format;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
+import static org.ardulink.util.Predicates.attribute;
 import static org.ardulink.util.ServiceLoaders.services;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -38,15 +42,35 @@ public final class Protocols {
 	}
 
 	/**
+	 * List all registered protocols
+	 * 
+	 * @return list of all registered protocols
+	 * @see #protocolNames()
+	 */
+	public static List<Protocol> protocols() {
+		return services(Protocol.class);
+	}
+
+	/**
+	 * List all registered protocols names
+	 * 
+	 * @return list of all registered protocols names
+	 * @see #protocols()
+	 */
+	public static List<String> protocolNames() {
+		return names(protocols());
+	}
+
+	/**
 	 * Returns the protocol with the given name. If no protocol with the given name
 	 * is registered a {@link RuntimeException} is thrown.
 	 * 
 	 * @param name the name of the protocol
 	 * @return protocol with the given name
-	 * @see #tryByName(String)
+	 * @see #tryProtoByName(String)
 	 */
-	public static Protocol getByName(String name) {
-		List<Protocol> availables = list();
+	public static Protocol protoByName(String name) {
+		List<Protocol> availables = protocols();
 		return withName(availables, name).orElseThrow(() -> new IllegalStateException(
 				format("No protocol with name %s registered. Available names are %s", name, names(availables))));
 	}
@@ -59,36 +83,20 @@ public final class Protocols {
 	 * @return Optional holding the protocol with the given name or empty if not
 	 *         found
 	 */
-	public static Optional<Protocol> tryByName(String name) {
-		return withName(list(), name);
+	public static Optional<Protocol> tryProtoByName(String name) {
+		return withName(protocols(), name);
 	}
 
 	private static Optional<Protocol> withName(List<Protocol> protocols, String name) {
-		return protocols.stream().filter(p -> p.getName().equals(name)).findFirst();
+		return withAttribute(protocols, attribute(Protocol::getName, isEqual(name)));
 	}
 
-	/**
-	 * List all registered protocols
-	 * 
-	 * @return list of all registered protocols
-	 * @see #names()
-	 */
-	public static List<Protocol> list() {
-		return services(Protocol.class);
+	private static <T> Optional<Protocol> withAttribute(Collection<Protocol> protocols, Predicate<Protocol> predicate) {
+		return protocols.stream().filter(predicate).findFirst();
 	}
 
-	/**
-	 * List all registered protocols names
-	 * 
-	 * @return list of all registered protocols names
-	 * @see #list()
-	 */
-	public static List<String> names() {
-		return names(list());
-	}
-
-	private static List<String> names(List<Protocol> list) {
-		return list.stream().map(Protocol::getName).collect(toList());
+	private static List<String> names(List<Protocol> protocols) {
+		return protocols.stream().map(Protocol::getName).collect(toList());
 	}
 
 }

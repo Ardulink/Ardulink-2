@@ -17,7 +17,7 @@ package org.ardulink.testsupport.junit5;
 
 import static java.time.Duration.ofMillis;
 import static java.util.stream.IntStream.rangeClosed;
-import static org.ardulink.core.proto.api.Protocols.getByName;
+import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.Throwables.propagateIfInstanceOf;
 import static org.awaitility.Awaitility.await;
@@ -156,7 +156,7 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 	private final AtomicInteger bytesNotYetRead = new AtomicInteger();
 
 	public ArduinoStubExt() {
-		this(getByName("ardulink2"));
+		this(protoByName("ardulink2"));
 	}
 
 	public ArduinoStubExt(Protocol protocol) {

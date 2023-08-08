@@ -1,8 +1,8 @@
 package org.ardulink.core.virtual.console;
 
-import static org.ardulink.core.proto.api.Protocols.getByName;
-import static org.ardulink.core.proto.api.Protocols.names;
-import static org.ardulink.core.proto.api.Protocols.tryByName;
+import static org.ardulink.core.proto.api.Protocols.protoByName;
+import static org.ardulink.core.proto.api.Protocols.protocolNames;
+import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Optionals.or;
 
@@ -21,7 +21,7 @@ public class VirtualConnectionConfig implements LinkConfig {
 	private Protocol protoName = useProtoOrFallback(ArdulinkProtocol2.NAME);
 
 	private Protocol useProtoOrFallback(String prefered) {
-		return or(tryByName(prefered), () -> getFirst(Protocols.list())).orElse(null);
+		return or(tryProtoByName(prefered), () -> getFirst(Protocols.protocols())).orElse(null);
 	}
 
 	public String getProtoName() {
@@ -29,16 +29,16 @@ public class VirtualConnectionConfig implements LinkConfig {
 	}
 
 	public void setProtoName(String protoName) {
-		this.protoName = getByName(protoName);
+		this.protoName = protoByName(protoName);
 	}
 
 	@ChoiceFor(PROTO)
 	public List<String> availableProtos() {
-		return names();
+		return protocolNames();
 	}
 
 	public Protocol getProto() {
-		return getByName(getProtoName());
+		return protoByName(getProtoName());
 	}
 
 }

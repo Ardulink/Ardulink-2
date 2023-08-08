@@ -16,9 +16,9 @@ limitations under the License.
 
 package org.ardulink.core.serial.jssc;
 
-import static org.ardulink.core.proto.api.Protocols.getByName;
-import static org.ardulink.core.proto.api.Protocols.names;
-import static org.ardulink.core.proto.api.Protocols.tryByName;
+import static org.ardulink.core.proto.api.Protocols.protoByName;
+import static org.ardulink.core.proto.api.Protocols.protocolNames;
+import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Optionals.or;
 
@@ -73,7 +73,7 @@ public class SerialLinkConfig implements LinkConfig {
 	public boolean pingprobe = true;
 
 	private Protocol useProtoOrFallback(String prefered) {
-		return or(tryByName(prefered), () -> getFirst(Protocols.list())).orElse(null);
+		return or(tryProtoByName(prefered), () -> getFirst(Protocols.protocols())).orElse(null);
 	}
 
 	@ChoiceFor(NAMED_PORT)
@@ -83,7 +83,7 @@ public class SerialLinkConfig implements LinkConfig {
 
 	@ChoiceFor(NAMED_PROTO)
 	public List<String> availableProtos() {
-		return names();
+		return protocolNames();
 	}
 
 	public String getProtoName() {
@@ -91,11 +91,11 @@ public class SerialLinkConfig implements LinkConfig {
 	}
 
 	public void setProtoName(String protoName) {
-		this.protoName = getByName(protoName);
+		this.protoName = protoByName(protoName);
 	}
 
 	public Protocol getProto() {
-		return getByName(getProtoName());
+		return protoByName(getProtoName());
 	}
 
 }
