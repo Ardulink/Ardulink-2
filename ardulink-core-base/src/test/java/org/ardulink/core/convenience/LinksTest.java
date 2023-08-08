@@ -81,10 +81,6 @@ class LinksTest {
 		}
 	}
 
-	private void isDummyConnection(Link link) {
-		assertThat(getConnection(link)).isInstanceOf(DummyConnection.class);
-	}
-
 	@Test
 	void whenRequestingDefaultLinkSerialHasPriorityOverAllOthers() throws Throwable {
 		LinkFactory<LinkConfig> factory = spy(factoryNamed(serial()));
@@ -112,7 +108,7 @@ class LinksTest {
 	void serialDashDoesHandleSerial() throws Throwable {
 		LinkFactory<LinkConfig> factory = spy(factoryNamed(serialDash("appendix-does-not-matter")));
 		withRegistered(factory).execute(() -> {
-			try (Link link = Links.getLink(namedUri(serial()))) {
+			try (Link link = link(serial())) {
 				assertLinkFactoryCreatedOneLink(factory);
 			}
 		});
@@ -229,18 +225,16 @@ class LinksTest {
 	@Test
 	void twoDifferentURIsWithSameParamsMustNotBeenMixed() throws Throwable {
 		String nameOrig = new DummyLinkFactory().getName();
-		String nameOther = "Not" + nameOrig;
+		String nameOther = "NOT" + nameOrig;
 
-		class DummyLinkFactoryExtension extends DummyLinkFactory {
+		withRegistered(new DummyLinkFactory() {
 			@Override
 			public String getName() {
 				return nameOther;
 			}
-		}
-
-		withRegistered(new DummyLinkFactoryExtension()).execute(() -> {
-			try (Link linkOrig = Links.getLink(namedUriWithParams(nameOrig));
-					Link linkOther = Links.getLink(namedUriWithParams(nameOther))) {
+		}).execute(() -> {
+			String params = "?a=aVal1&b=4";
+			try (Link linkOrig = link(nameOrig + params); Link linkOther = link(nameOther + params)) {
 				assertThat(linkOrig).isNotSameAs(linkOther);
 			}
 		});
@@ -319,7 +313,7 @@ class LinksTest {
 		String randomName = "factory-" + randomUUID().toString();
 		LinkFactoryForTest linkFactory = factory(randomName, () -> new MyLinkConfig());
 		withRegistered(linkFactory).execute(() -> {
-			try (Link link = Links.getLink(format("%s://%s", SCHEMA, randomName))) {
+			try (Link link = link(randomName)) {
 				assertThat(linkFactory.configsAndLinks.asMap().keySet()).singleElement()
 						.isInstanceOfSatisfying(MyLinkConfig.class, c -> {
 							try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
@@ -337,11 +331,19 @@ class LinksTest {
 	@Test
 	void aliasLinksAreSharedToo() throws Throwable {
 		withRegistered(new AliasUsingLinkFactory()).execute(() -> {
-			try (Link link1 = Links.getLink(format("%s://%s", SCHEMA, AliasUsingLinkFactory.NAME));
-					Link link2 = Links.getLink(format("%s://%s", SCHEMA, AliasUsingLinkFactory.ALIAS_FACTORY_ALIAS))) {
+			try (Link link1 = link(AliasUsingLinkFactory.NAME);
+					Link link2 = link(AliasUsingLinkFactory.ALIAS_FACTORY_ALIAS)) {
 				assertThat(link1).isSameAs(link2);
 			}
 		});
+	}
+
+	private static Link link(String name) {
+		return Links.getLink(format("%s://%s", SCHEMA, name));
+	}
+
+	private void isDummyConnection(Link link) {
+		assertThat(getConnection(link)).isInstanceOf(DummyConnection.class);
 	}
 
 	private void assertLinkFactoryCreatedOneLink(LinkFactory<LinkConfig> factory) throws Exception {
@@ -362,14 +364,6 @@ class LinksTest {
 
 	private static String serial() {
 		return "serial";
-	}
-
-	private static String namedUri(String name) {
-		return format("ardulink://%s", name);
-	}
-
-	private static String namedUriWithParams(String name) {
-		return namedUri(name) + "?a=aVal1&b=4";
 	}
 
 	private void close(Link... links) {

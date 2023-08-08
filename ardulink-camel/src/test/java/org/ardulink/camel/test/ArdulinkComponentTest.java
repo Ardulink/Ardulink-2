@@ -1,6 +1,8 @@
 package org.ardulink.camel.test;
 
+import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
+import static java.util.concurrent.TimeUnit.HOURS;
 import static org.apache.camel.ShutdownRunningTask.CompleteAllTasks;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -190,16 +192,16 @@ class ArdulinkComponentTest {
 	@Test
 	void canSetLinkParameters() throws Throwable {
 		String a = "foo";
-		String b = "HOURS";
+		TimeUnit b = HOURS;
 		String name = "factoryName-" + randomUUID();
 
 		TestLinkConfig config = new TestLinkConfig();
 		LinkFactory<TestLinkConfig> linkFactory = new TestLinkFactory(name, newArrayList(config).iterator());
 		withRegistered(linkFactory)
-				.execute(() -> context = camelContext(String.format("ardulink://%s?a=%s&b=%s", name, a, b), mockUri));
+				.execute(() -> context = camelContext(format("ardulink://%s?a=%s&b=%s", name, a, b), mockUri));
 
 		assertThat(config.a).isEqualTo(a);
-		assertThat(config.b).isEqualTo(TimeUnit.valueOf(b));
+		assertThat(config.b).isEqualTo(b);
 	}
 
 }
