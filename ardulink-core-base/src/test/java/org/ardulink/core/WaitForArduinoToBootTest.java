@@ -50,28 +50,29 @@ class WaitForArduinoToBootTest {
 	@Test
 	void ifNoResponseReceivedWithin3SecondsWaitWillReturnFalse() throws IOException {
 		onNoTone().doNotRespond();
-		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS)).isFalse();
+		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS)).describedAs("Arduino did respond but shouldn't")
+				.isFalse();
 	}
 
 	@Test
 	void noNeedToWaitIfArduinoDoesRespond() throws IOException {
 		onNoTone().respondWith(lf("alp://rply/ok?id={0}"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS)).isTrue()
-				.describedAs("Arduino did not respond");
+		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS)).describedAs("Arduino did not respond")
+				.isTrue();
 	}
 
 	@Test
 	void canDetectReadyPaket() throws IOException {
 		simulateArduinoSendsInOneSecond(lf("alp://ready/"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY)).isTrue()
-				.describedAs("Arduino did not respond");
+		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY))
+				.describedAs("Arduino did not respond").isTrue();
 	}
 
 	@Test
 	void ignoresMisformedReadyPaket() throws IOException {
 		simulateArduinoSendsInOneSecond(lf("alp://readyX/"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY)).isFalse()
-				.describedAs("Arduino did respond but shouldn't");
+		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY))
+				.describedAs("Arduino did respond but shouldn't").isFalse();
 	}
 
 	private RegexAdder onNoTone() {
