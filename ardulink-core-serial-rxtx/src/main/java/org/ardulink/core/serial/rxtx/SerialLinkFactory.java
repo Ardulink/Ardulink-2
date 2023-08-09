@@ -62,7 +62,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		SerialPort serialPort = serialPort(config, portIdentifier);
 
 		StreamConnection connection = new StreamConnection(serialPort.getInputStream(), serialPort.getOutputStream(),
-				config.getProto().newByteStreamProcessor());
+				config.protocol().newByteStreamProcessor());
 
 		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(connection);
 		Link link = config.qos ? new QosLink(connectionBasedLink) : connectionBasedLink;

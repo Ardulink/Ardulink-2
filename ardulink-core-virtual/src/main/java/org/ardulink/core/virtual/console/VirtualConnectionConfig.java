@@ -40,7 +40,7 @@ public class VirtualConnectionConfig implements LinkConfig {
 
 	private static final String NAMED_PROTO = "proto";
 
-	private Protocol protoName = useProtoOrFallback(ArdulinkProtocol2.NAME);
+	private Protocol protocol = useProtoOrFallback(ArdulinkProtocol2.NAME);
 
 	private Protocol useProtoOrFallback(String prefered) {
 		return or(tryProtoByName(prefered), () -> getFirst(protocols())).orElse(null);
@@ -48,12 +48,12 @@ public class VirtualConnectionConfig implements LinkConfig {
 
 	@Named(NAMED_PROTO)
 	public String getProtoName() {
-		return protoName == null ? null : protoName.getName();
+		return protocol == null ? null : protocol.getName();
 	}
 
 	@Named(NAMED_PROTO)
 	public void setProtoName(String protoName) {
-		this.protoName = protoByName(protoName);
+		this.protocol = protoByName(protoName);
 	}
 
 	@ChoiceFor(NAMED_PROTO)
@@ -61,8 +61,8 @@ public class VirtualConnectionConfig implements LinkConfig {
 		return protocolNames();
 	}
 
-	public Protocol getProto() {
-		return protoName;
+	public Protocol protocol() {
+		return protocol;
 	}
 
 }

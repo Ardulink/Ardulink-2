@@ -17,8 +17,6 @@ limitations under the License.
 package org.ardulink.core.proxy;
 
 import static java.util.Collections.emptyList;
-import static org.ardulink.core.proto.api.Protocols.protoByName;
-import static org.ardulink.core.proto.api.Protocols.protocolNames;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,8 +26,6 @@ import javax.validation.constraints.Positive;
 
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
-import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -46,8 +42,6 @@ public class ProxyLinkConfig implements LinkConfig {
 
 	private static final String NAMED_TCPPORT = "tcpport";
 
-	private static final String NAMED_PROTO = "proto";
-
 	private static final String NAMED_PORT = "port";
 
 	private static final int DEFAULT_LISTENING_PORT = 4478;
@@ -55,7 +49,7 @@ public class ProxyLinkConfig implements LinkConfig {
 	private static final int DEFAULT_SPEED = 115200;
 
 	@Named(NAMED_TCPHOST)
-	public String tcphost = "localhost";
+	public String tcphost;
 
 	@Named(NAMED_TCPPORT)
 	@Positive
@@ -69,23 +63,7 @@ public class ProxyLinkConfig implements LinkConfig {
 	@Positive
 	public int speed = DEFAULT_SPEED;
 
-	@Named(NAMED_PROTO)
-	private Protocol proto = protoByName(ArdulinkProtocol2.NAME);
-
 	private ProxyConnectionToRemote remote;
-
-	public void setProto(String proto) {
-		this.proto = protoByName(proto);
-	}
-
-	public String getProto() {
-		return proto == null ? null : proto.getName();
-	}
-
-	@ChoiceFor(NAMED_PROTO)
-	public List<String> getProtos() {
-		return protocolNames();
-	}
 
 	@ChoiceFor(value = NAMED_PORT, dependsOn = { NAMED_TCPHOST, NAMED_TCPPORT })
 	public List<String> getAvailablePorts() throws IOException {

@@ -19,17 +19,17 @@ import org.ardulink.core.linkmanager.LinkConfig;
 
 import com.pi4j.io.gpio.PinPullResistance;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class PiLinkConfig implements LinkConfig {
 
 	@Named("pinPullResistance")
-	private PinPullResistance pinPullResistance = PinPullResistance.PULL_DOWN;
-
-	public PinPullResistance getPinPullResistance() {
-		return pinPullResistance;
-	}
-
-	public void setPinPullResistance(PinPullResistance pinPullResistance) {
-		this.pinPullResistance = pinPullResistance;
-	}
+	public PinPullResistance pinPullResistance = PinPullResistance.PULL_DOWN;
 
 }

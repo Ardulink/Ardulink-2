@@ -32,13 +32,14 @@ public class BluetoothLinkConfig implements LinkConfig {
 
 	private static final String DEVICE_NAME = "deviceName";
 
-	@Named(DEVICE_NAME)
 	private String deviceName;
 
+	@Named(DEVICE_NAME)
 	public String getDeviceName() {
 		return deviceName;
 	}
 
+	@Named(DEVICE_NAME)
 	public void setDeviceName(String deviceName) {
 		this.deviceName = deviceName;
 	}

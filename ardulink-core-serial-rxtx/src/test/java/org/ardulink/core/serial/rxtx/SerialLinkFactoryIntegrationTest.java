@@ -67,8 +67,8 @@ class SerialLinkFactoryIntegrationTest {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(create(PREFIX));
 
-		assertThat(configurer.getAttributes()).containsExactly("port", "baudrate", "proto", "qos", "waitsecs",
-				"pingprobe");
+		assertThat(configurer.getAttributes()).containsExactlyInAnyOrder( //
+				"port", "baudrate", "proto", "qos", "waitsecs", "pingprobe");
 
 		assertThat(attribute(configurer, "port").hasChoiceValues()).isTrue();
 		assertThat(attribute(configurer, "proto").hasChoiceValues()).isTrue();

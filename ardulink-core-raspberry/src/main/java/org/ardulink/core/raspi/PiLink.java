@@ -92,7 +92,7 @@ public class PiLink extends AbstractListenerLink {
 
 	private void addListener(Pin pin, GpioPinListener listener) {
 		GpioPin gpioPin = getOrCreate(pin.pinNum(), pi4jInputMode(pin));
-		gpioPin.setPullResistance(config.getPinPullResistance());
+		gpioPin.setPullResistance(config.pinPullResistance);
 		gpioPin.addListener(listener);
 		this.listeners.put(gpioPin, listener);
 	}

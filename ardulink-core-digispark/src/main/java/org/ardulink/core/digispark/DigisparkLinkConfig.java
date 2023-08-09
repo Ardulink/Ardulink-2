@@ -17,7 +17,7 @@ limitations under the License.
 package org.ardulink.core.digispark;
 
 import static java.util.Arrays.asList;
-import static org.ardulink.core.proto.api.Protocols.protoByName;
+import static org.ardulink.core.digispark.DigisparkDiscoveryUtil.getDevices;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Throwables.propagate;
 
@@ -36,18 +36,20 @@ public class DigisparkLinkConfig implements LinkConfig {
 	private static final String NAMED_DEVICE_NAME = "deviceName";
 
 	// at the moment the only supported protocol is SimpleDigisparkProtocol
-	private static final List<Protocol> VALID_PROTOS = asList(protoByName(SimpleDigisparkProtocol.NAME));
+	// SimpleDigisparkProtocol is NOT registered as available protocol so don't try
+	// to load it by name!
+	private static final List<Protocol> VALID_PROTOS = asList(new SimpleDigisparkProtocol());
 
 	@Named(NAMED_DEVICE_NAME)
 	public String deviceName;
 
 	@Named(NAMED_PROTO)
-	public Protocol proto = getFirst(VALID_PROTOS).orElseThrow(() -> new RuntimeException("valid protos is empty"));
+	public Protocol protocol = getFirst(VALID_PROTOS).orElseThrow(() -> new RuntimeException("valid protos is empty"));
 
 	@ChoiceFor(NAMED_DEVICE_NAME)
 	public Set<String> listdeviceNames() {
 		try {
-			return DigisparkDiscoveryUtil.getDevices().keySet();
+			return getDevices().keySet();
 		} catch (USBException e) {
 			throw propagate(e);
 		}

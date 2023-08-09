@@ -41,8 +41,10 @@ class LinkConfigWithDependentAttributesLinkFactoryTest {
 
 		@Named("host")
 		private String host;
+
 		@Named("port")
 		private Integer port;
+
 		@Named("devicePort")
 		private String devicePort;
 

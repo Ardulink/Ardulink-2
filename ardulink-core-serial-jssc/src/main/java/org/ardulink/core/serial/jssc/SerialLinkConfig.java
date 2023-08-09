@@ -18,6 +18,7 @@ package org.ardulink.core.serial.jssc;
 
 import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.core.proto.api.Protocols.protocolNames;
+import static org.ardulink.core.proto.api.Protocols.protocols;
 import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Optionals.or;
@@ -31,7 +32,6 @@ import javax.validation.constraints.PositiveOrZero;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 import jssc.SerialPortList;
@@ -58,7 +58,6 @@ public class SerialLinkConfig implements LinkConfig {
 	@Positive
 	public int baudrate = 115200;
 
-	@Named(NAMED_PROTO)
 	private Protocol protocol = useProtoOrFallback(ArdulinkProtocol2.NAME);
 
 	@Named("qos")
@@ -73,7 +72,7 @@ public class SerialLinkConfig implements LinkConfig {
 	public boolean pingprobe = true;
 
 	private Protocol useProtoOrFallback(String prefered) {
-		return or(tryProtoByName(prefered), () -> getFirst(Protocols.protocols())).orElse(null);
+		return or(tryProtoByName(prefered), () -> getFirst(protocols())).orElse(null);
 	}
 
 	@ChoiceFor(NAMED_PORT)
@@ -86,16 +85,18 @@ public class SerialLinkConfig implements LinkConfig {
 		return protocolNames();
 	}
 
+	@Named(NAMED_PROTO)
 	public String getProtoName() {
 		return protocol == null ? null : protocol.getName();
 	}
 
+	@Named(NAMED_PROTO)
 	public void setProtoName(String protoName) {
 		this.protocol = protoByName(protoName);
 	}
 
-	public Protocol getProto() {
-		return protoByName(getProtoName());
+	public Protocol protocol() {
+		return protocol;
 	}
 
 }
