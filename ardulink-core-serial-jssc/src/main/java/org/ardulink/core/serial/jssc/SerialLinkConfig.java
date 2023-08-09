@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.serial.jssc;
 
+import static jssc.SerialPortList.getPortNames;
 import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.core.proto.api.Protocols.protocolNames;
 import static org.ardulink.core.proto.api.Protocols.protocols;
@@ -33,8 +34,6 @@ import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-
-import jssc.SerialPortList;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -77,7 +76,7 @@ public class SerialLinkConfig implements LinkConfig {
 
 	@ChoiceFor(NAMED_PORT)
 	public String[] listPorts() {
-		return SerialPortList.getPortNames();
+		return getPortNames();
 	}
 
 	@ChoiceFor(NAMED_PROTO)

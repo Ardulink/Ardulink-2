@@ -19,11 +19,6 @@ public class VirtualLinkConfig implements LinkConfig {
 	@Named(DELAY_UNIT)
 	public TimeUnit delayUnit = MILLISECONDS;
 
-	@ChoiceFor(DELAY_UNIT)
-	public TimeUnit[] getDelayUnits() {
-		return TimeUnit.values();
-	}
-
 	public void delay() {
 		try {
 			this.delayUnit.sleep(delay);

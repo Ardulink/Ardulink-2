@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.bluetooth;
 
+import static org.ardulink.core.bluetooth.BluetoothDiscoveryUtil.getDevices;
+
 import java.util.Set;
 
 import org.ardulink.core.linkmanager.LinkConfig;
@@ -46,7 +48,7 @@ public class BluetoothLinkConfig implements LinkConfig {
 
 	@ChoiceFor(DEVICE_NAME)
 	public Set<String> listDevices() {
-		return BluetoothDiscoveryUtil.getDevices().keySet();
+		return getDevices().keySet();
 	}
 
 }
