@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.bluetooth;
 
 import static javax.bluetooth.ServiceRecord.NOAUTHENTICATE_NOENCRYPT;
+import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
@@ -25,10 +26,10 @@ import javax.bluetooth.ServiceRecord;
 import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnectionNotifier;
 
+import org.ardulink.core.ByteStreamProcessorProvider;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
@@ -41,47 +42,38 @@ import org.ardulink.core.proto.impl.ArdulinkProtocol2;
  */
 public class BluetoothLinkFactory implements LinkFactory<BluetoothLinkConfig> {
 
-
 	@Override
 	public String getName() {
 		return "bluetooth";
 	}
 
 	@Override
-	public ConnectionBasedLink newLink(BluetoothLinkConfig config)
-			throws IOException {
+	public ConnectionBasedLink newLink(BluetoothLinkConfig config) throws IOException {
 		String url = getURL(config);
-		checkState(url != null,
-				"The connection could not be made. Connection url not found");
-		javax.microedition.io.StreamConnection streamConnection = getStreamConnection(Connector
-				.open(url));
-		ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
-		return new ConnectionBasedLink(new StreamConnection(
-				streamConnection.openInputStream(),
-				streamConnection.openOutputStream(), byteStreamProcessor), byteStreamProcessor);
+		checkState(url != null, "The connection could not be made. Connection url not found");
+		javax.microedition.io.StreamConnection streamConnection = getStreamConnection(Connector.open(url));
+		return new ConnectionBasedLink(new StreamConnection(streamConnection.openInputStream(),
+				streamConnection.openOutputStream(), protoByName(ArdulinkProtocol2.NAME).newByteStreamProcessor()));
 	}
 
 	public String getURL(BluetoothLinkConfig config) {
-		return getServiceRecord(config).getConnectionURL(
-				NOAUTHENTICATE_NOENCRYPT, false);
+		return getServiceRecord(config).getConnectionURL(NOAUTHENTICATE_NOENCRYPT, false);
 	}
 
 	public ServiceRecord getServiceRecord(BluetoothLinkConfig config) {
 		ServiceRecord serviceRecord = BluetoothDiscoveryUtil.getDevices().get(config.getDeviceName());
-		checkState(serviceRecord != null,
-				"The connection could not be made. Device not discovered");
+		checkState(serviceRecord != null, "The connection could not be made. Device not discovered");
 		return serviceRecord;
 	}
 
-	public javax.microedition.io.StreamConnection getStreamConnection(
-			javax.microedition.io.Connection connection) throws IOException {
+	public javax.microedition.io.StreamConnection getStreamConnection(javax.microedition.io.Connection connection)
+			throws IOException {
 		if (connection instanceof StreamConnectionNotifier) {
 			return ((StreamConnectionNotifier) connection).acceptAndOpen();
-		} else if (connection instanceof StreamConnection) {
+		} else if (connection instanceof ByteStreamProcessorProvider) {
 			return (javax.microedition.io.StreamConnection) connection;
 		} else {
-			throw new IllegalStateException("Connection class not known. "
-					+ connection.getClass().getName());
+			throw new IllegalStateException("Connection class not known. " + connection.getClass().getName());
 		}
 	}
 

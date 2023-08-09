@@ -59,7 +59,7 @@ public class SerialLinkConfig implements LinkConfig {
 	public int baudrate = 115200;
 
 	@Named(NAMED_PROTO)
-	private Protocol protoName = useProtoOrFallback(ArdulinkProtocol2.NAME);
+	private Protocol protocol = useProtoOrFallback(ArdulinkProtocol2.NAME);
 
 	@Named("qos")
 	public boolean qos;
@@ -87,11 +87,11 @@ public class SerialLinkConfig implements LinkConfig {
 	}
 
 	public String getProtoName() {
-		return protoName == null ? null : protoName.getName();
+		return protocol == null ? null : protocol.getName();
 	}
 
 	public void setProtoName(String protoName) {
-		this.protoName = protoByName(protoName);
+		this.protocol = protoByName(protoName);
 	}
 
 	public Protocol getProto() {

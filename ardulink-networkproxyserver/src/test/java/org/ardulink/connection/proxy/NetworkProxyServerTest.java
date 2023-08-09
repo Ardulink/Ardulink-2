@@ -4,6 +4,7 @@ import static java.time.Duration.ofMillis;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static org.ardulink.util.ServerSockets.freePort;
@@ -25,6 +26,7 @@ import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.proxy.ProxyLinkConfig;
 import org.ardulink.core.proxy.ProxyLinkFactory;
@@ -141,7 +143,7 @@ class NetworkProxyServerTest {
 										@Override
 										public Link newLink() {
 											return new ConnectionBasedLink(proxySideConnection,
-													new ArdulinkProtocol2().newByteStreamProcessor());
+													protoByName(ArdulinkProtocol2.NAME).newByteStreamProcessor());
 										}
 
 									};

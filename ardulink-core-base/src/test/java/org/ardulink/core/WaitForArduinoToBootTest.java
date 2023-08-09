@@ -26,9 +26,9 @@ import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
 
 import org.ardulink.testsupport.junit5.ArduinoStubExt;
+import org.ardulink.testsupport.junit5.ArduinoStubExt.RegexAdder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -44,33 +44,38 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 @Timeout(value = 5, unit = SECONDS)
 class WaitForArduinoToBootTest {
 
-	Pattern noToneRegex = regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)"));
-
 	@RegisterExtension
 	ArduinoStubExt arduinoStub = new ArduinoStubExt();
 
 	@Test
 	void ifNoResponseReceivedWithin3SecondsWaitWillReturnFalse() throws IOException {
-		arduinoStub.onReceive(noToneRegex).doNotRespond();
+		onNoTone().doNotRespond();
 		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS)).isFalse();
 	}
 
 	@Test
 	void noNeedToWaitIfArduinoDoesRespond() throws IOException {
-		arduinoStub.onReceive(noToneRegex).respondWith(lf("alp://rply/ok?id={0}"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS)).isTrue();
+		onNoTone().respondWith(lf("alp://rply/ok?id={0}"));
+		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS)).isTrue()
+				.describedAs("Arduino did not respond");
 	}
 
 	@Test
 	void canDetectReadyPaket() throws IOException {
 		simulateArduinoSendsInOneSecond(lf("alp://ready/"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY)).isTrue();
+		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY)).isTrue()
+				.describedAs("Arduino did not respond");
 	}
 
 	@Test
 	void ignoresMisformedReadyPaket() throws IOException {
 		simulateArduinoSendsInOneSecond(lf("alp://readyX/"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY)).isFalse();
+		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY)).isFalse()
+				.describedAs("Arduino did respond but shouldn't");
+	}
+
+	private RegexAdder onNoTone() {
+		return arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)")));
 	}
 
 	private void simulateArduinoSendsInOneSecond(String message) {

@@ -34,20 +34,21 @@ import org.slf4j.LoggerFactory;
  * [adsense]
  *
  */
-public class StreamConnection extends AbstractConnection {
+public class StreamConnection extends AbstractConnection implements ByteStreamProcessorProvider {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(StreamConnection.class);
+	private static final Logger logger = LoggerFactory.getLogger(StreamConnection.class);
 
 	private final StreamReader streamReader;
 	private final OutputStream outputStream;
+	private final ByteStreamProcessor byteStreamProcessor;
 
 	public StreamConnection(InputStream inputStream, OutputStream outputStream,
 			ByteStreamProcessor byteStreamProcessor) {
 		this.outputStream = outputStream;
+		this.byteStreamProcessor = byteStreamProcessor;
 		this.streamReader = new StreamReader(inputStream) {
 			@Override
-			protected void received(byte[] bytes) throws Exception { 
+			protected void received(byte[] bytes) throws Exception {
 				fireReceived(bytes);
 			}
 		};
@@ -68,6 +69,11 @@ public class StreamConnection extends AbstractConnection {
 	public void close() throws IOException {
 		this.streamReader.close();
 		this.outputStream.close();
+	}
+
+	@Override
+	public ByteStreamProcessor getByteStreamProcessor() {
+		return byteStreamProcessor;
 	}
 
 }

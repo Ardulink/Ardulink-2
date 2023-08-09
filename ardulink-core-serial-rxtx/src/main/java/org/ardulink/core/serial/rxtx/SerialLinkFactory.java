@@ -29,7 +29,6 @@ import org.ardulink.core.Link;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.qos.QosLink;
 
 import gnu.io.CommPortIdentifier;
@@ -62,11 +61,10 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		checkState(!portIdentifier.isCurrentlyOwned(), "Port %s is currently in use", config.port);
 		SerialPort serialPort = serialPort(config, portIdentifier);
 
-		ByteStreamProcessor byteStreamProcessor = config.getProto().newByteStreamProcessor();
 		StreamConnection connection = new StreamConnection(serialPort.getInputStream(), serialPort.getOutputStream(),
-				byteStreamProcessor);
+				config.getProto().newByteStreamProcessor());
 
-		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(connection, byteStreamProcessor);
+		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(connection);
 		Link link = config.qos ? new QosLink(connectionBasedLink) : connectionBasedLink;
 
 		if (!waitForArdulink(config, connectionBasedLink)) {

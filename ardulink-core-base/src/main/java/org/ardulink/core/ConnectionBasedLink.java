@@ -74,12 +74,13 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 
 	private final Connection connection;
 	private final ByteStreamProcessor byteStreamProcessor;
-	private long messageId = 0;
+	private long messageId;
 	private boolean readyMsgReceived;
 
-	// TODO change arg0 to StreamConnection, StreamConnection then can offer
-	// #getConnection().getByteStreamProcessor() so arg1 here can be purged
-	// Alternative: Split ByteStreamProcessor into Sender/Receiver part
+	public <T extends Connection & ByteStreamProcessorProvider> ConnectionBasedLink(T connection) {
+		this(connection, connection.getByteStreamProcessor());
+	}
+
 	public ConnectionBasedLink(Connection connection, ByteStreamProcessor byteStreamProcessor) {
 		this.connection = connection;
 		this.byteStreamProcessor = byteStreamProcessor;

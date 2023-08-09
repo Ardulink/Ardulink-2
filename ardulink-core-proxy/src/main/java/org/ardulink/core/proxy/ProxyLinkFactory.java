@@ -16,18 +16,17 @@ limitations under the License.
 
 package org.ardulink.core.proxy;
 
+import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.core.proxy.ProxyConnectionToRemote.Command.CONNECT_CMD;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 /**
@@ -48,21 +47,17 @@ public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
 	}
 
 	@Override
-	public ConnectionBasedLink newLink(ProxyLinkConfig config)
-			throws IOException {
+	public ConnectionBasedLink newLink(ProxyLinkConfig config) throws IOException {
 		ProxyConnectionToRemote remote = config.getRemote();
 
 		remote.send(CONNECT_CMD.getCommand());
 		remote.send(checkNotNull(config.port, "port must not be null"));
 		remote.send(String.valueOf(config.speed));
 		String response = remote.read();
-		checkState(OK.equals(response),
-				"Did not receive %s from remote, got %s", OK, response);
+		checkState(OK.equals(response), "Did not receive %s from remote, got %s", OK, response);
 		Socket socket = remote.getSocket();
-		ByteStreamProcessor byteStreamProcessor = new ArdulinkProtocol2().newByteStreamProcessor();
-		return new ConnectionBasedLink(
-				new StreamConnection(socket.getInputStream(), socket.getOutputStream(), byteStreamProcessor),
-				byteStreamProcessor) {
+		return new ConnectionBasedLink(new StreamConnection(socket.getInputStream(), socket.getOutputStream(),
+				protoByName(ArdulinkProtocol2.NAME).newByteStreamProcessor())) {
 			@Override
 			public void close() throws IOException {
 				super.close();

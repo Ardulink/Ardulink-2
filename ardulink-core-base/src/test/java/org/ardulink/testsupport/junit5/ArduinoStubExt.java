@@ -196,7 +196,7 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 			}
 		});
 
-		this.link = new ConnectionBasedLink(connection, byteStreamProcessor);
+		this.link = new ConnectionBasedLink(this.connection);
 	}
 
 	@Override
