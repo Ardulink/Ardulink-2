@@ -28,14 +28,19 @@ import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
  */
 public class DefaultToDeviceMessageKeyPress implements ToDeviceMessageKeyPress {
 
+	public static ToDeviceMessageKeyPress toDeviceMessageKeyPress(char keychar, int keycode, int keylocation,
+			int keymodifiers, int keymodifiersex) {
+		return new DefaultToDeviceMessageKeyPress(keychar, keycode, keylocation, keymodifiers, keymodifiersex);
+	}
+
 	private final char keychar;
 	private final int keycode;
 	private final int keylocation;
 	private final int keymodifiers;
 	private final int keymodifiersex;
 
-	public DefaultToDeviceMessageKeyPress(char keychar, int keycode, int keylocation,
-			int keymodifiers, int keymodifiersex) {
+	public DefaultToDeviceMessageKeyPress(char keychar, int keycode, int keylocation, int keymodifiers,
+			int keymodifiersex) {
 		this.keychar = keychar;
 		this.keycode = keycode;
 		this.keylocation = keylocation;

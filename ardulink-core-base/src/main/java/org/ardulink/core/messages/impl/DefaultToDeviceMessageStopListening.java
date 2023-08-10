@@ -29,6 +29,10 @@ import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
  */
 public class DefaultToDeviceMessageStopListening implements ToDeviceMessageStopListening {
 
+	public static DefaultToDeviceMessageStopListening toDeviceMessageStopListening(Pin pin) {
+		return new DefaultToDeviceMessageStopListening(pin);
+	}
+
 	private final Pin pin;
 
 	public DefaultToDeviceMessageStopListening(Pin pin) {

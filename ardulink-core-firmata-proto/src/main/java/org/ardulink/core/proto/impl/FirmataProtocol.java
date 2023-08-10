@@ -19,6 +19,7 @@ package org.ardulink.core.proto.impl;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.messages.impl.DefaultFromDeviceMessagePinStateChanged.fromDeviceMessagePinStateChanged;
 import static org.ardulink.util.Primitives.tryParseAs;
 import static org.firmata4j.firmata.parser.FirmataEventType.ANALOG_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.DIGITAL_MESSAGE_RESPONSE;
@@ -34,7 +35,6 @@ import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
-import org.ardulink.core.messages.impl.DefaultFromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProcessor;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
@@ -81,7 +81,7 @@ public class FirmataProtocol implements Protocol {
 					Pin pin = createPin(event.getType(), tryParseAs(Integer.class, pinNumber)
 							.orElseThrow(() -> new IllegalStateException("Cannot parse " + pinNumber)));
 					Object value = event.getBodyItem(PIN_VALUE);
-					return new DefaultFromDeviceMessagePinStateChanged(pin, convertValue(pin, value));
+					return fromDeviceMessagePinStateChanged(pin, convertValue(pin, value));
 				}
 
 				private Object convertValue(Pin pin, Object value) {

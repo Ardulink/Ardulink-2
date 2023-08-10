@@ -29,6 +29,11 @@ import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
  */
 public class DefaultFromDeviceMessagePinStateChanged implements FromDeviceMessagePinStateChanged {
 
+	public static FromDeviceMessagePinStateChanged fromDeviceMessagePinStateChanged(Pin pin,
+			Object value) {
+		return new DefaultFromDeviceMessagePinStateChanged(pin, value);
+	}
+
 	private final Pin pin;
 	private final Object value;
 

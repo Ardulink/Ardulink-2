@@ -29,6 +29,10 @@ import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
  */
 public class DefaultToDeviceMessageNoTone implements ToDeviceMessageNoTone {
 
+	public static ToDeviceMessageNoTone toDeviceMessageNoTone(AnalogPin analogPin) {
+		return new DefaultToDeviceMessageNoTone(analogPin);
+	}
+
 	private final AnalogPin analogPin;
 
 	public DefaultToDeviceMessageNoTone(AnalogPin analogPin) {

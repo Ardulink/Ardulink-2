@@ -27,6 +27,10 @@ import org.ardulink.core.messages.api.FromDeviceMessageCustom;
  */
 public class DefaultFromDeviceMessageCustom implements FromDeviceMessageCustom {
 
+	public static FromDeviceMessageCustom fromDeviceMessageCustom(String message) {
+		return new DefaultFromDeviceMessageCustom(message);
+	}
+
 	private final String message;
 
 	public DefaultFromDeviceMessageCustom(String message) {

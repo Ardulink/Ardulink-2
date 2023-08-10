@@ -31,6 +31,14 @@ import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
  */
 public class DefaultToDeviceMessagePinStateChange implements ToDeviceMessagePinStateChange {
 
+	public static ToDeviceMessagePinStateChange toDeviceMessagePinStateChange(AnalogPin pin, int value) {
+		return new DefaultToDeviceMessagePinStateChange(pin, value);
+	}
+
+	public static DefaultToDeviceMessagePinStateChange toDeviceMessagePinStateChange(DigitalPin pin, boolean value) {
+		return new DefaultToDeviceMessagePinStateChange(pin, value);
+	}
+
 	private final Pin pin;
 	private final Object value;
 

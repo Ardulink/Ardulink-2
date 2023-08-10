@@ -26,16 +26,21 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.messages.impl.DefaultFromDeviceChangeListeningState.fromDeviceChangeListeningState;
+import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageCustom.fromDeviceMessageCustom;
+import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageInfo.fromDeviceMessageInfo;
+import static org.ardulink.core.messages.impl.DefaultFromDeviceMessagePinStateChanged.fromDeviceMessagePinStateChanged;
+import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageReply.fromDeviceMessageReply;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.CHAR_PRESSED;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.CUSTOM_EVENT;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.CUSTOM_MESSAGE;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.INFO;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.NOTONE;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.INFO;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.RPLY;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
@@ -52,6 +57,8 @@ import java.util.Map;
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceChangeListeningState.Mode;
 import org.ardulink.core.messages.api.FromDeviceMessage;
+import org.ardulink.core.messages.api.FromDeviceMessageCustom;
+import org.ardulink.core.messages.api.FromDeviceMessageReply;
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
 import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
@@ -59,11 +66,6 @@ import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
-import org.ardulink.core.messages.impl.DefaultFromDeviceChangeListeningState;
-import org.ardulink.core.messages.impl.DefaultFromDeviceMessageCustom;
-import org.ardulink.core.messages.impl.DefaultFromDeviceMessagePinStateChanged;
-import org.ardulink.core.messages.impl.DefaultFromDeviceMessageInfo;
-import org.ardulink.core.messages.impl.DefaultFromDeviceMessageReply;
 import org.ardulink.core.proto.api.MessageIdHolder;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProcessor;
@@ -209,11 +211,11 @@ public class ArdulinkProtocol2 implements Protocol {
 
 		private static class RplyParsed extends AbstractState {
 
-			private final DefaultFromDeviceMessageReply message;
+			private final FromDeviceMessageReply message;
 
 			private RplyParsed(boolean ok, Map<String, String> params) {
 				String key = "id";
-				message = new DefaultFromDeviceMessageReply(ok,
+				message = fromDeviceMessageReply(ok,
 						parseLong(checkNotNull(params.remove(key), "Reply message needs for mandatory param: %s", key)),
 						params);
 			}
@@ -227,10 +229,10 @@ public class ArdulinkProtocol2 implements Protocol {
 
 		private static class CustomMessageParsed extends AbstractState {
 
-			private final DefaultFromDeviceMessageCustom message;
+			private final FromDeviceMessageCustom message;
 
 			private CustomMessageParsed(String message) {
-				this.message = new DefaultFromDeviceMessageCustom(message);
+				this.message = fromDeviceMessageCustom(message);
 			}
 
 			@Override
@@ -254,7 +256,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			@Override
 			public State process(byte b) {
 				if (isNewline(b) && !waitForValue) {
-					return new CommandParsed(new DefaultFromDeviceChangeListeningState(pin(bufferAsString()), mode()));
+					return new CommandParsed(fromDeviceChangeListeningState(pin(bufferAsString()), mode()));
 				}
 				if (isSlash(b)) {
 					return new WaitingForValue(protocolKey, bufferAsString());
@@ -299,8 +301,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			@Override
 			public State process(byte b) {
 				if (isNewline(b)) {
-					return new CommandParsed(
-							new DefaultFromDeviceMessagePinStateChanged(pin, getValue(bufferAsString())));
+					return new CommandParsed(fromDeviceMessagePinStateChanged(pin, getValue(bufferAsString())));
 				}
 				bufferAppend(b);
 				return this;
@@ -344,7 +345,7 @@ public class ArdulinkProtocol2 implements Protocol {
 
 		private static class InfoParsed extends AbstractState {
 
-			private final FromDeviceMessage message = new DefaultFromDeviceMessageInfo();
+			private final FromDeviceMessage message = fromDeviceMessageInfo();
 
 			@Override
 			public State process(byte b) {

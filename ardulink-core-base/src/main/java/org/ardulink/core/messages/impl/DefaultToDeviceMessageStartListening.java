@@ -29,6 +29,10 @@ import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
  */
 public class DefaultToDeviceMessageStartListening implements ToDeviceMessageStartListening {
 
+	public static ToDeviceMessageStartListening toDeviceMessageStartListening(Pin pin) {
+		return new DefaultToDeviceMessageStartListening(pin);
+	}
+
 	private final Pin pin;
 
 	public DefaultToDeviceMessageStartListening(Pin pin) {

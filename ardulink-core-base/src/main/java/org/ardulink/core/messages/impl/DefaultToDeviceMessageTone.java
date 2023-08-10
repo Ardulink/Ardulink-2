@@ -29,6 +29,10 @@ import org.ardulink.core.messages.api.ToDeviceMessageTone;
  */
 public class DefaultToDeviceMessageTone implements ToDeviceMessageTone {
 
+	public static ToDeviceMessageTone toDeviceMessageTone(Tone tone) {
+		return new DefaultToDeviceMessageTone(tone);
+	}
+
 	private final Tone tone;
 
 	public DefaultToDeviceMessageTone(Tone tone) {

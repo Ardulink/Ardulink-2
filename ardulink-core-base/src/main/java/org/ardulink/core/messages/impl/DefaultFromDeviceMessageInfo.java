@@ -28,4 +28,8 @@ import org.ardulink.core.messages.api.FromDeviceMessageInfo;
  */
 public class DefaultFromDeviceMessageInfo implements FromDeviceMessageInfo {
 
+	public static FromDeviceMessageInfo fromDeviceMessageInfo() {
+		return new DefaultFromDeviceMessageInfo();
+	}
+
 }

@@ -22,6 +22,13 @@ import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom.toDeviceMessageCustom;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageKeyPress.toDeviceMessageKeyPress;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone.toDeviceMessageNoTone;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange.toDeviceMessagePinStateChange;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening.toDeviceMessageStartListening;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening.toDeviceMessageStopListening;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
 import static org.ardulink.core.proto.api.MessageIdHolders.NO_ID;
 import static org.ardulink.core.proto.api.MessageIdHolders.addMessageId;
 import static org.ardulink.core.proto.api.MessageIdHolders.toHolder;
@@ -38,8 +45,8 @@ import org.ardulink.core.events.DefaultCustomEvent;
 import org.ardulink.core.events.DefaultRplyEvent;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessageCustom;
-import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.messages.api.FromDeviceMessageInfo;
+import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.messages.api.FromDeviceMessageReply;
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
@@ -48,13 +55,6 @@ import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessageKeyPress;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessageTone;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.util.StopWatch.Countdown;
 import org.slf4j.Logger;
@@ -134,17 +134,17 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 
 	public enum Mode {
 		/**
-		 * interpret any message received from arduino to be ok
+		 * interpret any message received from arduino as "device is ready"
 		 */
 		ANY_MESSAGE_RECEIVED,
 		/**
-		 * only interpret "info" packets to be ok
+		 * only interpret "info" packets as "device is ready"
 		 */
 		INFO_MESSAGE_ONLY
 	}
 
 	/**
-	 * Will wait for the arduino to received the "ready" packet or the arduino to
+	 * Will wait for the arduino to received the "info" packet or the arduino to
 	 * respond to our messages sent.
 	 * 
 	 * @param wait     the maximum time to wait
@@ -170,8 +170,9 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 			for (Countdown countdown = createStarted(wait, timeUnit); !countdown.finished();) {
 				ping();
 				TimeUnit.MILLISECONDS.sleep(100);
-				if (deviceIsReady.get())
+				if (deviceIsReady.get()) {
 					return true;
+				}
 			}
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
@@ -185,8 +186,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		// this is not really a ping message since such a message does not exist
 		// (yet). So let's write something that the arduino tries to respond to.
 		try {
-			connection.write(
-					this.byteStreamProcessor.toDevice(addMessageId(new DefaultToDeviceMessageNoTone(analogPin(0)), 0)));
+			connection.write(this.byteStreamProcessor.toDevice(addMessageId(toDeviceMessageNoTone(analogPin(0)), 0)));
 		} catch (IOException e) {
 			// ignore
 		}
@@ -196,7 +196,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	public long startListening(Pin pin) throws IOException {
 		logger.info("Starting listening on pin {}", pin);
 		synchronized (connection) {
-			ToDeviceMessageStartListening msg = addMessageIdIfNeeded(new DefaultToDeviceMessageStartListening(pin));
+			ToDeviceMessageStartListening msg = addMessageIdIfNeeded(toDeviceMessageStartListening(pin));
 			send(this.byteStreamProcessor.toDevice(msg));
 			return messageIdOf(msg);
 		}
@@ -205,7 +205,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	@Override
 	public long stopListening(Pin pin) throws IOException {
 		synchronized (connection) {
-			ToDeviceMessageStopListening msg = addMessageIdIfNeeded(new DefaultToDeviceMessageStopListening(pin));
+			ToDeviceMessageStopListening msg = addMessageIdIfNeeded(toDeviceMessageStopListening(pin));
 			send(this.byteStreamProcessor.toDevice(msg));
 			logger.info("Stopped listening on pin {}", pin);
 			return messageIdOf(msg);
@@ -227,7 +227,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 			throws IOException {
 		synchronized (connection) {
 			ToDeviceMessageKeyPress msg = addMessageIdIfNeeded(
-					new DefaultToDeviceMessageKeyPress(keychar, keycode, keylocation, keymodifiers, keymodifiersex));
+					toDeviceMessageKeyPress(keychar, keycode, keylocation, keymodifiers, keymodifiersex));
 			send(this.byteStreamProcessor.toDevice(msg));
 			return messageIdOf(msg);
 		}
@@ -236,7 +236,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	@Override
 	public long sendTone(Tone tone) throws IOException {
 		synchronized (connection) {
-			ToDeviceMessageTone msg = addMessageIdIfNeeded(new DefaultToDeviceMessageTone(tone));
+			ToDeviceMessageTone msg = addMessageIdIfNeeded(toDeviceMessageTone(tone));
 			send(this.byteStreamProcessor.toDevice(msg));
 			return messageIdOf(msg);
 		}
@@ -245,7 +245,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	@Override
 	public long sendNoTone(AnalogPin analogPin) throws IOException {
 		synchronized (connection) {
-			ToDeviceMessageNoTone msg = addMessageIdIfNeeded(new DefaultToDeviceMessageNoTone(analogPin));
+			ToDeviceMessageNoTone msg = addMessageIdIfNeeded(toDeviceMessageNoTone(analogPin));
 			send(this.byteStreamProcessor.toDevice(msg));
 			return messageIdOf(msg);
 		}
@@ -254,7 +254,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	@Override
 	public long sendCustomMessage(String... messages) throws IOException {
 		synchronized (connection) {
-			ToDeviceMessageCustom msg = addMessageIdIfNeeded(new DefaultToDeviceMessageCustom(messages));
+			ToDeviceMessageCustom msg = addMessageIdIfNeeded(toDeviceMessageCustom(messages));
 			send(this.byteStreamProcessor.toDevice(msg));
 			return messageIdOf(msg);
 		}
@@ -262,8 +262,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 
 	private long send(AnalogPin pin, int value) throws IOException {
 		synchronized (connection) {
-			ToDeviceMessagePinStateChange msg = addMessageIdIfNeeded(
-					new DefaultToDeviceMessagePinStateChange(pin, value));
+			ToDeviceMessagePinStateChange msg = addMessageIdIfNeeded(toDeviceMessagePinStateChange(pin, value));
 			send(this.byteStreamProcessor.toDevice(msg));
 			return messageIdOf(msg);
 		}
@@ -271,8 +270,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 
 	private long send(DigitalPin pin, boolean value) throws IOException {
 		synchronized (connection) {
-			ToDeviceMessagePinStateChange msg = addMessageIdIfNeeded(
-					new DefaultToDeviceMessagePinStateChange(pin, value));
+			ToDeviceMessagePinStateChange msg = addMessageIdIfNeeded(toDeviceMessagePinStateChange(pin, value));
 			send(this.byteStreamProcessor.toDevice(msg));
 			return messageIdOf(msg);
 		}

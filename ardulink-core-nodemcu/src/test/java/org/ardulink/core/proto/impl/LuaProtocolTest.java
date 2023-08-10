@@ -17,6 +17,9 @@ package org.ardulink.core.proto.impl;
 
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom.toDeviceMessageCustom;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange.toDeviceMessagePinStateChange;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening.toDeviceMessageStartListening;
 import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,14 +28,11 @@ import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.util.Joiner;
 import org.junit.jupiter.api.Test;
 
-class LuaProtoTest {
+class LuaProtocolTest {
 
 	ByteStreamProcessor sut = protoByName(LuaProtocol.NAME).newByteStreamProcessor();
 
@@ -42,33 +42,33 @@ class LuaProtoTest {
 
 	@Test
 	void generatePowerPinSwitchMessageHigh() {
-		ToDeviceMessagePinStateChange msg = new DefaultToDeviceMessagePinStateChange(anyDigitalPin, true);
+		ToDeviceMessagePinStateChange msg = toDeviceMessagePinStateChange(anyDigitalPin, true);
 		assertThat(stringOf(sut.toDevice(msg))).isEqualTo(lua(powerPinMessage(anyDigitalPin.pinNum(), "HIGH")));
 	}
 
 	@Test
 	void generatePowerPinSwitchMessageLow() {
-		ToDeviceMessagePinStateChange msg = new DefaultToDeviceMessagePinStateChange(anyDigitalPin, false);
+		ToDeviceMessagePinStateChange msg = toDeviceMessagePinStateChange(anyDigitalPin, false);
 		assertThat(stringOf(sut.toDevice(msg))).isEqualTo(lua(powerPinMessage(anyDigitalPin.pinNum(), "LOW")));
 	}
 
 	@Test
 	void generatePowerPinIntensityMessage() {
-		ToDeviceMessagePinStateChange msg = new DefaultToDeviceMessagePinStateChange(anyAnalogPin, anyValue);
+		ToDeviceMessagePinStateChange msg = toDeviceMessagePinStateChange(anyAnalogPin, anyValue);
 		assertThat(stringOf(sut.toDevice(msg))).isEqualTo(lua(pinStateChangeMessage(anyAnalogPin.pinNum(), anyValue)));
 	}
 
 	@Test
 	void generateCustomMessage() {
 		String[] values = new String[] { "param1", "somethingelse2", "final3" };
-		ToDeviceMessageCustom msg = new DefaultToDeviceMessageCustom(values);
+		ToDeviceMessageCustom msg = toDeviceMessageCustom(values);
 		assertThat(stringOf(sut.toDevice(msg))).isEqualTo(lua(customMessage(values)));
 	}
 
 	@Test
 	void generateStartListeningDigitalMessage() {
 		DigitalPin pin = digitalPin(anyPin());
-		ToDeviceMessageStartListening msg = new DefaultToDeviceMessageStartListening(pin);
+		ToDeviceMessageStartListening msg = toDeviceMessageStartListening(pin);
 		assertThat(stringOf(sut.toDevice(msg))).contains("alp://dred/" + pin.pinNum() + "/%s");
 	}
 

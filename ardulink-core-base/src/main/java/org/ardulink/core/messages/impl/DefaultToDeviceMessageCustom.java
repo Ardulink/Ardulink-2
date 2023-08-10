@@ -28,6 +28,10 @@ import org.ardulink.util.Joiner;
  */
 public class DefaultToDeviceMessageCustom implements ToDeviceMessageCustom {
 
+	public static ToDeviceMessageCustom toDeviceMessageCustom(String... messages) {
+		return new DefaultToDeviceMessageCustom(messages);
+	}
+
 	private final String[] messages;
 
 	public DefaultToDeviceMessageCustom(String... messages) {

@@ -27,8 +27,11 @@ import org.ardulink.core.messages.api.FromDeviceChangeListeningState;
  * [adsense]
  *
  */
-public class DefaultFromDeviceChangeListeningState implements
-		FromDeviceChangeListeningState {
+public class DefaultFromDeviceChangeListeningState implements FromDeviceChangeListeningState {
+
+	public static FromDeviceChangeListeningState fromDeviceChangeListeningState(Pin pin, Mode mode) {
+		return new DefaultFromDeviceChangeListeningState(pin, mode);
+	}
 
 	private final Pin pin;
 	private final Mode mode;
