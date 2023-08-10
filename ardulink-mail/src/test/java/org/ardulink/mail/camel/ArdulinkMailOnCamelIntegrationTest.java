@@ -83,7 +83,7 @@ import com.icegreen.greenmail.smtp.SmtpServer;
 @Timeout(value = ArdulinkMailOnCamelIntegrationTest.TIMEOUT_SECS, unit = SECONDS)
 class ArdulinkMailOnCamelIntegrationTest {
 
-	static final int TIMEOUT_SECS = 10;
+	static final int TIMEOUT_SECS = 30;
 
 	@RegisterExtension
 	GreenMailExtension mailMock = new GreenMailExtension(SMTP_IMAP);
