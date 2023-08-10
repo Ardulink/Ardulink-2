@@ -23,6 +23,6 @@ package org.ardulink.core.messages.api;
  * [adsense]
  *
  */
-public interface FromDeviceMessageReady extends FromDeviceMessage {
+public interface FromDeviceMessageInfo extends FromDeviceMessage {
 
 }

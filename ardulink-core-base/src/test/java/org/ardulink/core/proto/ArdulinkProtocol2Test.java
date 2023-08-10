@@ -19,7 +19,7 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessageCustom;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
-import org.ardulink.core.messages.api.FromDeviceMessageReady;
+import org.ardulink.core.messages.api.FromDeviceMessageInfo;
 import org.ardulink.core.messages.api.FromDeviceMessageReply;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
@@ -55,23 +55,24 @@ class ArdulinkProtocol2Test {
 	void canReadRplyViaArdulinkProto() throws IOException {
 		givenMessage("alp://rply/ok?id=1&UniqueID=456-2342-2342&ciao=boo");
 		whenMessageIsProcessed();
-		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class,
-				m -> assertThat(m.getParameters()).isEqualTo(MapBuilder.<String, Object>newMapBuilder()
-						.put("UniqueID", "456-2342-2342").put("ciao", "boo").build()));
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class, m -> {
+			assertThat(m.getParameters()).containsExactlyEntriesOf(MapBuilder.<String, Object>newMapBuilder()
+					.put("UniqueID", "456-2342-2342").put("ciao", "boo").build());
+		});
 	}
 
 	@Test
-	void canReadReadyViaArdulinkProto() throws IOException {
-		givenMessage("alp://ready/");
+	void canReadInfoViaArdulinkProto() throws IOException {
+		givenMessage("alp://info/");
 		whenMessageIsProcessed();
-		assertThat(messages).singleElement().isInstanceOf(FromDeviceMessageReady.class);
+		assertThat(messages).singleElement().isInstanceOf(FromDeviceMessageInfo.class);
 	}
 
 	@Test
 	void doesRecoverFromMisformedContent() throws IOException {
-		givenMessages("alp://XXXXXreadyXXXXX/", "alp://ready/");
+		givenMessages("xxx", "alp://info/");
 		whenMessageIsProcessed();
-		assertThat(messages).singleElement().isInstanceOf(FromDeviceMessageReady.class);
+		assertThat(messages).singleElement().isInstanceOf(FromDeviceMessageInfo.class);
 	}
 
 	@Test
@@ -92,7 +93,8 @@ class ArdulinkProtocol2Test {
 		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class, m -> {
 			assertThat(m.isOk()).isTrue();
 			assertThat(m.getId()).isEqualTo(id);
-			assertThat(m.getParameters()).isEqualTo(params);
+			// expected in same order defined
+			assertThat(m.getParameters()).containsExactlyEntriesOf(params);
 		});
 	}
 

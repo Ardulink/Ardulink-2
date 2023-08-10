@@ -35,7 +35,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.NOTONE;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.READY;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.INFO;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.RPLY;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
@@ -62,7 +62,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageTone;
 import org.ardulink.core.messages.impl.DefaultFromDeviceChangeListeningState;
 import org.ardulink.core.messages.impl.DefaultFromDeviceMessageCustom;
 import org.ardulink.core.messages.impl.DefaultFromDeviceMessagePinStateChanged;
-import org.ardulink.core.messages.impl.DefaultFromDeviceMessageReady;
+import org.ardulink.core.messages.impl.DefaultFromDeviceMessageInfo;
 import org.ardulink.core.messages.impl.DefaultFromDeviceMessageReply;
 import org.ardulink.core.proto.api.MessageIdHolder;
 import org.ardulink.core.proto.api.Protocol;
@@ -138,8 +138,8 @@ public class ArdulinkProtocol2 implements Protocol {
 			}
 
 			private State toCommand(ALPProtocolKey key) {
-				if (key.equals(READY)) {
-					return new ReadyParsed();
+				if (key.equals(INFO)) {
+					return new InfoParsed();
 				} else if (RPLY.equals(key)) {
 					return new WaitingForOkKo();
 				} else if (CUSTOM_EVENT.equals(key)) {
@@ -342,9 +342,9 @@ public class ArdulinkProtocol2 implements Protocol {
 
 		}
 
-		private static class ReadyParsed extends AbstractState {
+		private static class InfoParsed extends AbstractState {
 
-			private final FromDeviceMessage message = new DefaultFromDeviceMessageReady();
+			private final FromDeviceMessage message = new DefaultFromDeviceMessageInfo();
 
 			@Override
 			public State process(byte b) {
@@ -360,8 +360,8 @@ public class ArdulinkProtocol2 implements Protocol {
 		@Override
 		public void process(byte b) {
 			state = (state == RESET_STATE ? new WaitingForAlpPrefix() : state).process(b);
-			if (state instanceof ReadyParsed) {
-				fireEvent(((ReadyParsed) state).message);
+			if (state instanceof InfoParsed) {
+				fireEvent(((InfoParsed) state).message);
 			} else if (state instanceof CommandParsed) {
 				fireEvent(((CommandParsed) state).message);
 			} else if (state instanceof RplyParsed) {

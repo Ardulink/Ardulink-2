@@ -47,7 +47,7 @@ public class ALProtoBuilder {
 		POWER_PIN_SWITCH("ppsw"), POWER_PIN_INTENSITY("ppin"), DIGITAL_PIN_READ("dred"), ANALOG_PIN_READ("ared"),
 		START_LISTENING_DIGITAL("srld"), START_LISTENING_ANALOG("srla"), STOP_LISTENING_DIGITAL("spld"),
 		STOP_LISTENING_ANALOG("spla"), CHAR_PRESSED("kprs"), TONE("tone"), NOTONE("notn"), CUSTOM_MESSAGE("cust"),
-		RPLY("rply"), READY("ready"), CUSTOM_EVENT("cevnt");
+		RPLY("rply"), INFO("info"), CUSTOM_EVENT("cevnt");
 
 		private String proto;
 

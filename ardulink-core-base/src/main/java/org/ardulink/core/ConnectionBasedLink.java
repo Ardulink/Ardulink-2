@@ -39,7 +39,7 @@ import org.ardulink.core.events.DefaultRplyEvent;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessageCustom;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
-import org.ardulink.core.messages.api.FromDeviceMessageReady;
+import org.ardulink.core.messages.api.FromDeviceMessageInfo;
 import org.ardulink.core.messages.api.FromDeviceMessageReply;
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
@@ -75,7 +75,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	private final Connection connection;
 	private final ByteStreamProcessor byteStreamProcessor;
 	private long messageId;
-	private boolean readyMsgReceived;
+	private boolean infoMsgReceived;
 
 	public <T extends Connection & ByteStreamProcessorProvider> ConnectionBasedLink(T connection) {
 		this(connection, connection.getByteStreamProcessor());
@@ -100,8 +100,8 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		} else if (fromDevice instanceof FromDeviceMessageCustom) {
 			FromDeviceMessageCustom customEvent = (FromDeviceMessageCustom) fromDevice;
 			fireCustomReceived(new DefaultCustomEvent(customEvent.getMessage()));
-		} else if (fromDevice instanceof FromDeviceMessageReady) {
-			this.readyMsgReceived = true;
+		} else if (fromDevice instanceof FromDeviceMessageInfo) {
+			this.infoMsgReceived = true;
 		} else {
 			throw new IllegalStateException("Cannot handle " + fromDevice);
 		}
@@ -138,9 +138,9 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		 */
 		ANY_MESSAGE_RECEIVED,
 		/**
-		 * only interpret "ready" packets to be ok
+		 * only interpret "info" packets to be ok
 		 */
-		READY_MESSAGE_ONLY
+		INFO_MESSAGE_ONLY
 	}
 
 	/**
@@ -159,7 +159,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		ListenerAdapter listener = new ListenerAdapter() {
 			@Override
 			public void received(byte[] bytes) throws IOException {
-				if (mode == ANY_MESSAGE_RECEIVED || readyMsgReceived) {
+				if (mode == ANY_MESSAGE_RECEIVED || infoMsgReceived) {
 					deviceIsReady.set(true);
 				}
 			}

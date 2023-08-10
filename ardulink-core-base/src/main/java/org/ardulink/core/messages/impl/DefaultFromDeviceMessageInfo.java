@@ -16,7 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.messages.impl;
 
-import org.ardulink.core.messages.api.FromDeviceMessageReady;
+import org.ardulink.core.messages.api.FromDeviceMessageInfo;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -26,6 +26,6 @@ import org.ardulink.core.messages.api.FromDeviceMessageReady;
  * [adsense]
  *
  */
-public class DefaultFromDeviceMessageReady implements FromDeviceMessageReady {
+public class DefaultFromDeviceMessageInfo implements FromDeviceMessageInfo {
 
 }

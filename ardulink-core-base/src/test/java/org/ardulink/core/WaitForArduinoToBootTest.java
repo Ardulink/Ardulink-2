@@ -20,7 +20,7 @@ import static java.lang.Integer.MAX_VALUE;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.ardulink.core.ConnectionBasedLink.Mode.READY_MESSAGE_ONLY;
+import static org.ardulink.core.ConnectionBasedLink.Mode.INFO_MESSAGE_ONLY;
 import static org.ardulink.util.Regex.regex;
 import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,16 +62,16 @@ class WaitForArduinoToBootTest {
 	}
 
 	@Test
-	void canDetectReadyPaket() throws IOException {
-		simulateArduinoSendsInOneSecond(lf("alp://ready/"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, READY_MESSAGE_ONLY))
+	void canDetectInfoPaketFirmwarVersion2xSendingAfterBoot() throws IOException {
+		simulateArduinoSendsInOneSecond(lf("alp://info/"));
+		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, INFO_MESSAGE_ONLY))
 				.describedAs("Arduino did not respond").isTrue();
 	}
 
 	@Test
 	void ignoresMisformedReadyPaket() throws IOException {
-		simulateArduinoSendsInOneSecond(lf("alp://readyX/"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS, READY_MESSAGE_ONLY))
+		simulateArduinoSendsInOneSecond(lf("alp://infoX/"));
+		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS, INFO_MESSAGE_ONLY))
 				.describedAs("Arduino did respond but shouldn't").isFalse();
 	}
 
