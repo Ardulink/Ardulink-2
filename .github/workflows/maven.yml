@@ -32,7 +32,7 @@ jobs:
     - name: Distribute build results
       uses: actions/upload-artifact@v3
       with:
-        name: jars
+        name: ${{ matrix.java-version }} jars
         path: "*/target/*.jar"
     - name: Test Report JDK ${{ matrix.java-version }}
       uses: dorny/test-reporter@v1
