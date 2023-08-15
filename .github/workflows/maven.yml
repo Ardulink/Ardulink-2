@@ -29,6 +29,11 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn -B org.jacoco:jacoco-maven-plugin:prepare-agent compile jib:dockerBuild verify --file pom.xml
+    - name: Distribute build results
+      uses: actions/upload-artifact@v3
+      with:
+        name: jars
+        path: "*/target/*.jar"
     - name: Test Report JDK ${{ matrix.java-version }}
       uses: dorny/test-reporter@v1
       if: (success() || failure()) && github.event_name != 'pull_request' && github.actor != 'dependabot[bot]'  # run this step even if previous step failed
