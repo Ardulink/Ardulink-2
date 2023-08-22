@@ -108,8 +108,7 @@ class ArdulinkRestSwaggerTest {
 				Page page = context.newPage();
 
 				page.navigate("http://localhost:" + RestAssured.port + "/api-browser");
-				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("put ​/pin​/analog​/{pin}"))
-						.click();
+			    page.getByText("PUT/pin/analog/{pin}").click();
 
 				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Try it out")).click();
 				page.getByPlaceholder("pin").click();
