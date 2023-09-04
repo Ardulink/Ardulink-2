@@ -58,7 +58,7 @@
 		<maven.compiler.source>${compilerVersion}</maven.compiler.source>
 		<maven.compiler.target>${compilerVersion}</maven.compiler.target>
 		<args4j.version>2.33</args4j.version>
-		<slf4j.version>2.0.7</slf4j.version>
+		<slf4j.version>2.0.9</slf4j.version>
 		<junit.version>5.10.0</junit.version>
 		<assertj.version>3.24.2</assertj.version>
 		<mockito.version>4.11.0</mockito.version>
