@@ -62,7 +62,7 @@
 		<junit.version>5.10.0</junit.version>
 		<assertj.version>3.24.2</assertj.version>
 		<mockito.version>4.11.0</mockito.version>
-		<jqwik.version>1.7.4</jqwik.version>
+		<jqwik.version>1.8.0</jqwik.version>
 		<awaitility.version>4.2.0</awaitility.version>
 		<junit-pioneer.version>1.9.1</junit-pioneer.version>
 		<!-- The next LTS release Camel 3.14, scheduled for December 2021, will be the last release to support Java 8 -->
