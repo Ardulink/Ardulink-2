@@ -34,7 +34,7 @@
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>swagger-ui</artifactId>
-			<version>5.4.2</version>
+			<version>5.6.1</version>
 			<scope>runtime</scope>
 		</dependency>
 		<!-- webjars without version number -->
