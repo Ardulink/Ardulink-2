@@ -42,4 +42,4 @@ jobs:
         path: "*/target/surefire-reports/*.xml"
         reporter: java-junit
     - name: Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
