@@ -19,9 +19,10 @@ package org.ardulink.core.beans.finder.impl;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.util.Arrays.stream;
 import static java.util.Collections.addAll;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Stream.concat;
 import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
-import static org.ardulink.util.Streams.stream;
+import static org.ardulink.util.Iterables.stream;
+import static org.ardulink.util.Streams.iterable;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.lang.annotation.Annotation;
@@ -158,19 +159,17 @@ public class FindByAnnotation implements AttributeFinder {
 	@Override
 	public Iterable<? extends AttributeReader> listReaders(Object bean) {
 		try {
-			Stream<ReadMethod> methods = Stream.of(bean.getClass().getDeclaredMethods())
-					.filter(m -> m.isAnnotationPresent(annotationClass)).filter(ReadMethod::isReadMethod)
+			Stream<ReadMethod> methods = annotatedMethods(bean) //
+					.filter(ReadMethod::isReadMethod) //
 					.map(m -> readMethod(bean, m));
 
-			Stream<AttributeReader> fields = stream(bean.getClass().getDeclaredFields())
-					.filter(field -> field.isAnnotationPresent(annotationClass))
-					.flatMap(field -> readMethodForAttribute(bean, field.getName())
-							.map(reader -> Stream.of(
-									AttributeReaderDelegate.attributeReaderDelegate(reader, annoValue(field), field)))
-							.orElseGet(() -> isPublic(field.getModifiers()) ? Stream.of(fieldAccess(bean, field))
-									: Stream.empty()));
+			Stream<AttributeReader> fields = stream(bean.getClass().getDeclaredFields()) //
+					.filter(f -> f.isAnnotationPresent(annotationClass)) //
+					.map(f -> readMethodForAttribute(bean, f.getName()) //
+							.map(r -> AttributeReaderDelegate.attributeReaderDelegate(r, annoValue(f), f))
+							.orElseGet(() -> fieldAccess(bean, f)));
 
-			return Stream.concat(methods, fields).collect(toList());
+			return iterable(concat(methods, fields));
 		} catch (Exception e) {
 			throw propagate(e);
 		}
@@ -179,26 +178,28 @@ public class FindByAnnotation implements AttributeFinder {
 	@Override
 	public Iterable<AttributeWriter> listWriters(Object bean) {
 		try {
-			Stream<WriteMethod> methods = Stream.of(bean.getClass().getDeclaredMethods())
-					.filter(m -> m.isAnnotationPresent(annotationClass)).filter(WriteMethod::isWriteMethod)
+			Stream<WriteMethod> methods = annotatedMethods(bean) //
+					.filter(WriteMethod::isWriteMethod) //
 					.map(m -> writeMethod(bean, m));
 
 			Stream<AttributeWriter> fields = stream(bean.getClass().getDeclaredFields())
-					.filter(field -> field.isAnnotationPresent(annotationClass))
-					.flatMap(field -> writeMethodForAttribute(bean, field.getName())
-							.map(writer -> Stream.of(
-									AttributeWriterDelegate.attributeWriterDelegate(writer, annoValue(field), field)))
-							.orElseGet(() -> isPublic(field.getModifiers()) ? Stream.of(fieldAccess(bean, field))
-									: Stream.empty()));
+					.filter(f -> f.isAnnotationPresent(annotationClass)) //
+					.map(f -> writeMethodForAttribute(bean, f.getName()) //
+							.map(w -> AttributeWriterDelegate.attributeWriterDelegate(w, annoValue(f), f))
+							.orElseGet(() -> fieldAccess(bean, f)));
 
-			return Stream.concat(methods, fields).collect(toList());
+			return iterable(concat(methods, fields));
 		} catch (Exception e) {
 			throw propagate(e);
 		}
 	}
 
+	private Stream<Method> annotatedMethods(Object bean) {
+		return Stream.of(bean.getClass().getDeclaredMethods()).filter(m -> m.isAnnotationPresent(annotationClass));
+	}
+
 	private FieldAccess fieldAccess(Object bean, Field field) {
-		return new FieldAccess(bean, annoValue(field), field);
+		return isPublic(field.getModifiers()) ? new FieldAccess(bean, annoValue(field), field) : null;
 	}
 
 	private ReadMethod readMethod(Object bean, Method method) {
