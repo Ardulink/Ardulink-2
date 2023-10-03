@@ -21,8 +21,8 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Stream.concat;
 import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
+import static org.ardulink.util.Iterables.stream;
 import static org.ardulink.util.Preconditions.checkState;
-import static org.ardulink.util.Streams.stream;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.lang.annotation.Annotation;
@@ -84,12 +84,12 @@ public class BeanProperties {
 
 		@Override
 		public String getName() {
-			return this.name;
+			return name;
 		}
 
 		@Override
 		public Class<?> getType() {
-			return this.type;
+			return type;
 		}
 
 		@Override
