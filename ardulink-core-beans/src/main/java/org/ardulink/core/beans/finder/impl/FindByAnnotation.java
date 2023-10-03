@@ -18,11 +18,11 @@ package org.ardulink.core.beans.finder.impl;
 
 import static java.lang.reflect.Modifier.isPublic;
 import static java.util.Arrays.stream;
+import static java.util.Collections.addAll;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
 import static org.ardulink.util.Streams.stream;
 import static org.ardulink.util.Throwables.propagate;
-import static org.ardulink.util.anno.LapsedWith.JDK8;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -30,8 +30,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -40,7 +38,6 @@ import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.Attribute.AttributeWriter;
 import org.ardulink.core.beans.Attribute.TypedAttributeProvider;
 import org.ardulink.core.beans.finder.api.AttributeFinder;
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -58,7 +55,12 @@ public class FindByAnnotation implements AttributeFinder {
 		private final String name;
 		private final Field annoFoundOn;
 
-		AttributeReaderDelegate(AttributeReader delegate, String name, Field annoFoundOn) {
+		public static AttributeReader attributeReaderDelegate(AttributeReader delegate, String name,
+				Field annoFoundOn) {
+			return new AttributeReaderDelegate(delegate, name, annoFoundOn);
+		}
+
+		private AttributeReaderDelegate(AttributeReader delegate, String name, Field annoFoundOn) {
 			this.delegate = delegate;
 			this.name = name;
 			this.annoFoundOn = annoFoundOn;
@@ -81,7 +83,7 @@ public class FindByAnnotation implements AttributeFinder {
 
 		@Override
 		public void addAnnotations(Collection<Annotation> annotations) {
-			Collections.addAll(annotations, this.annoFoundOn.getAnnotations());
+			addAll(annotations, this.annoFoundOn.getAnnotations());
 		}
 
 	}
@@ -91,6 +93,11 @@ public class FindByAnnotation implements AttributeFinder {
 		private final AttributeWriter delegate;
 		private final String name;
 		private final Field annoFoundOn;
+
+		public static AttributeWriter attributeWriterDelegate(AttributeWriter delegate, String name,
+				Field annoFoundOn) {
+			return new AttributeWriterDelegate(delegate, name, annoFoundOn);
+		}
 
 		private AttributeWriterDelegate(AttributeWriter delegate, String name, Field annoFoundOn) {
 			this.delegate = delegate;
@@ -115,7 +122,7 @@ public class FindByAnnotation implements AttributeFinder {
 
 		@Override
 		public void addAnnotations(Collection<Annotation> annotations) {
-			Collections.addAll(annotations, this.annoFoundOn.getAnnotations());
+			addAll(annotations, this.annoFoundOn.getAnnotations());
 		}
 
 	}
@@ -149,51 +156,42 @@ public class FindByAnnotation implements AttributeFinder {
 	}
 
 	@Override
-	@LapsedWith(module = JDK8, value = "Streams")
 	public Iterable<? extends AttributeReader> listReaders(Object bean) {
 		try {
-			List<AttributeReader> readers = stream(bean.getClass().getDeclaredMethods())
+			Stream<ReadMethod> methods = Stream.of(bean.getClass().getDeclaredMethods())
 					.filter(m -> m.isAnnotationPresent(annotationClass)).filter(ReadMethod::isReadMethod)
-					.map(m -> readMethod(bean, m)).collect(toList());
+					.map(m -> readMethod(bean, m));
 
-			for (Field field : bean.getClass().getDeclaredFields()) {
-				if (field.isAnnotationPresent(annotationClass)) {
-					Optional<? extends AttributeReader> readMethodForAttribute = readMethodForAttribute(bean,
-							field.getName());
-					if (readMethodForAttribute.isPresent()) {
-						readers.add(new AttributeReaderDelegate(readMethodForAttribute.get(), annoValue(field), field));
-					} else if (isPublic(field.getModifiers())) {
-						readers.add(fieldAccess(bean, field));
-					}
-				}
-			}
-			return readers;
+			Stream<AttributeReader> fields = stream(bean.getClass().getDeclaredFields())
+					.filter(field -> field.isAnnotationPresent(annotationClass))
+					.flatMap(field -> readMethodForAttribute(bean, field.getName())
+							.map(reader -> Stream.of(
+									AttributeReaderDelegate.attributeReaderDelegate(reader, annoValue(field), field)))
+							.orElseGet(() -> isPublic(field.getModifiers()) ? Stream.of(fieldAccess(bean, field))
+									: Stream.empty()));
+
+			return Stream.concat(methods, fields).collect(toList());
 		} catch (Exception e) {
 			throw propagate(e);
 		}
 	}
 
 	@Override
-	@LapsedWith(module = JDK8, value = "Streams")
 	public Iterable<AttributeWriter> listWriters(Object bean) {
 		try {
-			List<AttributeWriter> writers = stream(bean.getClass().getDeclaredMethods())
+			Stream<WriteMethod> methods = Stream.of(bean.getClass().getDeclaredMethods())
 					.filter(m -> m.isAnnotationPresent(annotationClass)).filter(WriteMethod::isWriteMethod)
-					.map(m -> writeMethod(bean, m)).collect(toList());
+					.map(m -> writeMethod(bean, m));
 
-			for (Field field : bean.getClass().getDeclaredFields()) {
-				if (field.isAnnotationPresent(annotationClass)) {
-					Optional<? extends AttributeWriter> writeMethodForAttribute = writeMethodForAttribute(bean,
-							field.getName());
-					if (writeMethodForAttribute.isPresent()) {
-						writers.add(
-								new AttributeWriterDelegate(writeMethodForAttribute.get(), annoValue(field), field));
-					} else if (isPublic(field.getModifiers())) {
-						writers.add(fieldAccess(bean, field));
-					}
-				}
-			}
-			return writers;
+			Stream<AttributeWriter> fields = stream(bean.getClass().getDeclaredFields())
+					.filter(field -> field.isAnnotationPresent(annotationClass))
+					.flatMap(field -> writeMethodForAttribute(bean, field.getName())
+							.map(writer -> Stream.of(
+									AttributeWriterDelegate.attributeWriterDelegate(writer, annoValue(field), field)))
+							.orElseGet(() -> isPublic(field.getModifiers()) ? Stream.of(fieldAccess(bean, field))
+									: Stream.empty()));
+
+			return Stream.concat(methods, fields).collect(toList());
 		} catch (Exception e) {
 			throw propagate(e);
 		}
