@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -34,18 +35,27 @@ class IterablesTest {
 
 	@Test
 	void getFirst() {
-		assertThat(Iterables.getFirst(iteratorOf(1))).hasValue(1);
-		assertThat(Iterables.getFirst(iteratorOf(1, 2, null))).hasValue(1);
-		assertThat(Iterables.getFirst(iteratorOf(null, 1, 2))).isEmpty();
+		assertThat(Iterables.getFirst(iterableOf(1))).hasValue(1);
+		assertThat(Iterables.getFirst(iterableOf(1, 2, null))).hasValue(1);
+		assertThat(Iterables.getFirst(iterableOf(null, 1, 2))).isEmpty();
 	}
 
 	@Test
 	void getLast() {
-		assertThat(Iterables.getLast(iteratorOf(1))).hasValue(1);
-		assertThat(Iterables.getLast(iteratorOf(1, 2))).hasValue(2);
+		assertThat(Iterables.getLast(iterableOf(1))).hasValue(1);
+		assertThat(Iterables.getLast(iterableOf(1, 2))).hasValue(2);
 	}
 
-	private <T> Iterable<T> iteratorOf(T... elements) {
+	@Test
+	void stream() {
+		assertThat(Iterables.stream(iterableOf(1))).containsExactly(1);
+		assertThat(Iterables.stream(iterableOf(1, 2))).containsExactly(1, 2);
+		assertThat(Iterables.stream(iterableOf(1, 2, null))).containsExactly(1, 2, null);
+		assertThat(Iterables.stream(iterableOf(null, 1, 2))).containsExactly(null, 1, 2);
+		assertThat(Iterables.stream(iterableOf())).isEmpty();
+	}
+
+	private <T> Iterable<T> iterableOf(T... elements) {
 		return Arrays.asList(elements);
 	}
 

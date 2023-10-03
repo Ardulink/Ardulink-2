@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.util;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -38,6 +39,10 @@ public final class Iterables {
 
 	public static Optional<Integer> getLast(Iterable<Integer> iterable) {
 		return Iterators.getLast(iterable.iterator());
+	}
+
+	public static <T> Stream<T> stream(Iterable<T> iterable) {
+		return Iterators.stream(iterable.iterator());
 	}
 
 }

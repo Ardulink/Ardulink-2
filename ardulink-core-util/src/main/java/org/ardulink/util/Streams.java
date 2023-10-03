@@ -16,16 +16,10 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static org.ardulink.util.anno.LapsedWith.JDK9;
-
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -45,13 +39,12 @@ public final class Streams {
 		return stream.reduce((first, second) -> second);
 	}
 
-	@LapsedWith(module = JDK9, value = "ServiceLoader#stream")
-	public static <T> Stream<T> stream(Iterator<T> iterator) {
-		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
+	public static <T> Iterable<T> iterable(Stream<T> stream) {
+		return () -> iterator(stream);
 	}
 
-	public static <T> Stream<T> stream(Iterable<T> iterable) {
-		return stream(iterable.iterator());
+	public static <T> Iterator<T> iterator(Stream<T> stream) {
+		return Spliterators.iterator(stream.spliterator());
 	}
 
 }

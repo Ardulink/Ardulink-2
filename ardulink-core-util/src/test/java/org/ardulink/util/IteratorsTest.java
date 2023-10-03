@@ -46,6 +46,15 @@ class IteratorsTest {
 		assertThat(Iterators.getLast(iteratorOf(1, 2))).hasValue(2);
 	}
 
+	@Test
+	void stream() {
+		assertThat(Iterators.stream(iteratorOf(1))).containsExactly(1);
+		assertThat(Iterators.stream(iteratorOf(1, 2))).containsExactly(1, 2);
+		assertThat(Iterators.stream(iteratorOf(1, 2, null))).containsExactly(1, 2, null);
+		assertThat(Iterators.stream(iteratorOf(null, 1, 2))).containsExactly(null, 1, 2);
+		assertThat(Iterators.stream(iteratorOf())).isEmpty();
+	}
+
 	private <T> Iterator<T> iteratorOf(T... elements) {
 		return Arrays.asList(elements).iterator();
 	}
