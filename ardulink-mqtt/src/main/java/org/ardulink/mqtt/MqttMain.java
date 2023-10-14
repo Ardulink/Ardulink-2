@@ -81,17 +81,13 @@ public class MqttMain {
 		return connection.contains("?") ? "&" : "?";
 	}
 
-	private MqttConnectionProperties appendAuth(MqttConnectionProperties properties) {
+	protected MqttConnectionProperties appendAuth(MqttConnectionProperties properties) {
 		if (nullOrEmpty(args.credentials)) {
 			return properties;
 		}
 		String[] auth = args.credentials.split(":");
 		checkState(auth.length == 2, "Credentials not in format user:password");
-		return appendAuth(properties, auth[0], auth[1].getBytes());
-	}
-
-	protected MqttConnectionProperties appendAuth(MqttConnectionProperties properties, String user, byte[] password) {
-		return properties.user(user).password(password);
+		return properties.user(auth[0]).password(auth[1].getBytes());
 	}
 
 	private String listenTo() {

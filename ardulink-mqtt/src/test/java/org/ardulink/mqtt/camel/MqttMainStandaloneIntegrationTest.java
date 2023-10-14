@@ -94,9 +94,8 @@ class MqttMainStandaloneIntegrationTest {
 	void runMainAndConnectToBroker() throws Exception {
 		MqttMain mqttMain = new MqttMain(cmdLineArgs) {
 			@Override
-			protected MqttConnectionProperties appendAuth(MqttConnectionProperties properties, String user,
-					byte[] password) {
-				MqttConnectionProperties superProps = super.appendAuth(properties, user, password);
+			protected MqttConnectionProperties appendAuth(MqttConnectionProperties properties) {
+				MqttConnectionProperties superProps = super.appendAuth(properties);
 				return nullOrEmpty(injectClientPassword) //
 						? superProps //
 						: superProps.password(injectClientPassword.getBytes());
