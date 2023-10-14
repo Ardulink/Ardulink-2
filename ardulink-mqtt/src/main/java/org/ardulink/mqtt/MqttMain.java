@@ -87,7 +87,11 @@ public class MqttMain {
 		}
 		String[] auth = args.credentials.split(":");
 		checkState(auth.length == 2, "Credentials not in format user:password");
-		return properties.auth(auth[0], auth[1].getBytes());
+		return appendAuth(properties, auth[0], auth[1].getBytes());
+	}
+
+	protected MqttConnectionProperties appendAuth(MqttConnectionProperties properties, String user, byte[] password) {
+		return properties.user(user).password(password);
 	}
 
 	private String listenTo() {
@@ -119,9 +123,8 @@ public class MqttMain {
 	public MqttMain(CommandLineArguments args) {
 		this.args = args.normalize();
 		if (args.standalone) {
-			standaloneServer = configureBroker(addCredentials(
-					builder().host(args.brokerHost).useSsl(args.ssl).port(args.brokerPort), args.credentials))
-					.startBroker();
+			standaloneServer = addCredentials(builder().host(args.brokerHost).useSsl(args.ssl).port(args.brokerPort),
+					args.credentials).startBroker();
 		}
 	}
 
@@ -151,10 +154,6 @@ public class MqttMain {
 				: Topics.basedOn(args.brokerTopic);
 		this.context = createCamelContext(args.control ? topics.withControlChannelEnabled() : topics);
 		this.context.start();
-	}
-
-	protected Builder configureBroker(Builder builder) {
-		return builder;
 	}
 
 	public boolean isConnected() {

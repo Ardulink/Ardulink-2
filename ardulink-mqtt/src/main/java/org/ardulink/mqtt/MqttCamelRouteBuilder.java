@@ -44,7 +44,7 @@ public class MqttCamelRouteBuilder {
 		private Integer brokerPort;
 		private boolean ssl;
 		private String user;
-		private byte[] pass;
+		private byte[] password;
 
 		public MqttConnectionProperties name(String name) {
 			this.name = name == null ? DEFAULT_NAME : name;
@@ -74,11 +74,15 @@ public class MqttCamelRouteBuilder {
 			return ssl ? DEFAULT_SSL_PORT : DEFAULT_PORT;
 		}
 
-		public MqttConnectionProperties auth(String user, byte[] pass) {
+		public MqttConnectionProperties user(String user) {
 			checkArgument(!Strings.nullOrEmpty(user), "user must not be null or empty");
-			checkArgument(pass != null, "pass must not be null");
 			this.user = user;
-			this.pass = pass;
+			return this;
+		}
+
+		public MqttConnectionProperties password(byte[] password) {
+			checkArgument(password != null, "password must not be null");
+			this.password = password;
 			return this;
 		}
 
@@ -86,7 +90,7 @@ public class MqttCamelRouteBuilder {
 			StringBuilder sb = new StringBuilder();
 			sb = sb.append(String.format("paho:%s#?brokerUrl=%s://%s:%s", topics.getTopic(), (ssl ? "ssl" : "tcp"),
 					brokerHost, getBrokerPort()));
-			sb = hasAuth() ? sb.append(String.format("&userName=%s&password=%s", user, new String(pass))) : sb;
+			sb = hasAuth() ? sb.append(String.format("&userName=%s&password=%s", user, new String(password))) : sb;
 			sb = sb.append("&automaticReconnect=false");
 			sb = sb.append("&maxInflight=65535");
 			sb = sb.append(String.format("&clientId=%s", name));
@@ -95,7 +99,7 @@ public class MqttCamelRouteBuilder {
 		}
 
 		private boolean hasAuth() {
-			return user != null && pass != null;
+			return user != null && password != null;
 		}
 
 	}

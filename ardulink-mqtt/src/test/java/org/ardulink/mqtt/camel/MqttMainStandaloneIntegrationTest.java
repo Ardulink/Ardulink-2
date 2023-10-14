@@ -17,22 +17,18 @@ limitations under the License.
 package org.ardulink.mqtt.camel;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.ardulink.util.Predicates.not;
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.getCauses;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import java.util.Objects;
-import java.util.stream.Stream;
-
 import org.apache.camel.FailedToStartRouteException;
 import org.ardulink.mqtt.CommandLineArguments;
-import org.ardulink.mqtt.MqttBroker.Builder;
+import org.ardulink.mqtt.MqttCamelRouteBuilder.MqttConnectionProperties;
 import org.ardulink.mqtt.MqttMain;
 import org.ardulink.testsupport.mock.junit5.MockUri;
-import org.ardulink.util.Strings;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -53,17 +49,18 @@ class MqttMainStandaloneIntegrationTest {
 	String someUser = "someUser";
 	String somePassword = "somePassword";
 
-	CommandLineArguments args;
+	CommandLineArguments cmdLineArgs;
 	String brokerUser;
 	String brokerPassword;
+	String injectClientPassword;
 
 	@BeforeEach
 	void setup(@MockUri String mockUri) {
-		args = new CommandLineArguments();
-		args.standalone = true;
-		args.brokerPort = freePort();
-		args.brokerTopic = "any/test/topic";
-		args.connection = mockUri;
+		cmdLineArgs = new CommandLineArguments();
+		cmdLineArgs.standalone = true;
+		cmdLineArgs.brokerPort = freePort();
+		cmdLineArgs.brokerTopic = "any/test/topic";
+		cmdLineArgs.connection = mockUri;
 	}
 
 	@Test
@@ -73,15 +70,15 @@ class MqttMainStandaloneIntegrationTest {
 
 	@Test
 	void clientCanConnectUsingCredentialsToNewlyStartedBroker() throws Exception {
-		givenBrokerCredentials(someUser, somePassword);
-		givenClientCredentials(someUser, somePassword);
+		givenBrokerAndClientCredentials(someUser, somePassword);
 		assertDoesNotThrow(this::runMainAndConnectToBroker);
 	}
 
 	@Test
 	void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker() throws Exception {
-		givenBrokerCredentials(someUser, somePassword);
-		givenClientCredentials(someUser, otherThan(somePassword));
+		givenBrokerAndClientCredentials(someUser, somePassword);
+		givenClientPassword("not" + somePassword + "not");
+
 		assertThatThrownBy(this::runMainAndConnectToBroker).isInstanceOfSatisfying(FailedToStartRouteException.class,
 				e -> assertThat(getCauses(e)).anyMatch(MqttSecurityException.class::isInstance));
 	}
@@ -90,43 +87,37 @@ class MqttMainStandaloneIntegrationTest {
 	@Disabled("test fails with Caused by: javax.net.ssl.SSLHandshakeException: Received fatal alert: handshake_failure")
 	void clientCanConnectUsingCredentialsToNewlyStartedSslBroker() throws Exception {
 		givenSslEnabled(true);
-		givenBrokerCredentials(someUser, somePassword);
-		givenClientCredentials(someUser, somePassword);
+		givenBrokerAndClientCredentials(someUser, somePassword);
 		assertDoesNotThrow(this::runMainAndConnectToBroker);
 	}
 
-	private void runMainAndConnectToBroker() throws Exception {
-		MqttMain mqttMain = new MqttMain(args) {
+	void runMainAndConnectToBroker() throws Exception {
+		MqttMain mqttMain = new MqttMain(cmdLineArgs) {
 			@Override
-			protected Builder configureBroker(Builder builder) {
-				return hasAuthentication() && !Objects.equals(args.credentials, brokerUser + ":" + brokerPassword)
-						? builder.addAuthenication(brokerUser, brokerPassword.getBytes())
-						: builder;
+			protected MqttConnectionProperties appendAuth(MqttConnectionProperties properties, String user,
+					byte[] password) {
+				MqttConnectionProperties superProps = super.appendAuth(properties, user, password);
+				return nullOrEmpty(injectClientPassword) //
+						? superProps //
+						: superProps.password(injectClientPassword.getBytes());
 			}
+
 		};
 		mqttMain.connectToMqttBroker();
 		mqttMain.close();
 	}
 
-	private void givenSslEnabled(boolean state) {
-		args.ssl = state;
+	void givenSslEnabled(boolean sslIsOn) {
+		this.cmdLineArgs.ssl = sslIsOn;
 	}
 
-	private void givenBrokerCredentials(String brokerUser, String brokerPassword) {
+	void givenBrokerAndClientCredentials(String brokerUser, String brokerPassword) {
 		this.brokerUser = brokerUser;
 		this.brokerPassword = brokerPassword;
+		this.cmdLineArgs.credentials = brokerUser + ":" + brokerPassword;
 	}
 
-	private void givenClientCredentials(String clientUser, String clientPassword) {
-		args.credentials = clientUser + ":" + clientPassword;
+	void givenClientPassword(String password) {
+		this.injectClientPassword = password;
 	}
-
-	private boolean hasAuthentication() {
-		return Stream.of(brokerUser, brokerPassword).anyMatch(not(Strings::nullOrEmpty));
-	}
-
-	private static String otherThan(String value) {
-		return "not" + value;
-	}
-
 }
