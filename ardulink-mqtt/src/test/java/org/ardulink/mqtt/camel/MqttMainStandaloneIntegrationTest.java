@@ -17,18 +17,21 @@ limitations under the License.
 package org.ardulink.mqtt.camel;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.ardulink.util.Predicates.not;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.Throwables.getCauses;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.util.Strings.isNullOrEmpty;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
+import java.util.stream.Stream;
 
 import org.apache.camel.FailedToStartRouteException;
 import org.ardulink.mqtt.CommandLineArguments;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttMain;
 import org.ardulink.testsupport.mock.junit5.MockUri;
+import org.ardulink.util.Strings;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -77,7 +80,7 @@ class MqttMainStandaloneIntegrationTest {
 	@Test
 	void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker() throws Exception {
 		givenBrokerCredentials(someUser, somePassword);
-		givenClientCredentials(someUser, not(somePassword));
+		givenClientCredentials(someUser, otherThan(somePassword));
 		assertThatThrownBy(this::runMainAndConnectToBroker).isInstanceOfSatisfying(FailedToStartRouteException.class,
 				e -> assertThat(getCauses(e)).anyMatch(MqttSecurityException.class::isInstance));
 	}
@@ -116,10 +119,10 @@ class MqttMainStandaloneIntegrationTest {
 	}
 
 	private boolean hasAuthentication() {
-		return !isNullOrEmpty(brokerUser) || !isNullOrEmpty(brokerPassword);
+		return Stream.of(brokerUser, brokerPassword).anyMatch(not(Strings::nullOrEmpty));
 	}
 
-	private static String not(String value) {
+	private static String otherThan(String value) {
 		return "not" + value;
 	}
 
