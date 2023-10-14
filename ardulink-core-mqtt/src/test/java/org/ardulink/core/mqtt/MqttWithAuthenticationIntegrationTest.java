@@ -20,14 +20,14 @@ import static java.net.URI.create;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.mqtt.Broker.newBroker;
 import static org.ardulink.util.ServerSockets.freePort;
-import static org.ardulink.util.Throwables.getRootCause;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_FAILED_AUTHENTICATION;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
 
 import org.ardulink.core.linkmanager.LinkManager;
+import org.assertj.core.api.AbstractThrowableAssert;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -73,13 +73,13 @@ class MqttWithAuthenticationIntegrationTest {
 		return "ardulink://mqtt?port=" + broker.port() + "&topic=" + TOPIC;
 	}
 
-	private void assertIsAuthError(Exception exception) {
-		assertThat(getRootCause(exception)).isInstanceOfSatisfying(MqttException.class,
+	private void assertIsAuthError(AbstractThrowableAssert<?, ?> abstractThrowableAssert) {
+		abstractThrowableAssert.rootCause().isInstanceOfSatisfying(MqttException.class,
 				e -> assertThat(e.getReasonCode()).isEqualTo(REASON_CODE_FAILED_AUTHENTICATION));
 	}
 
-	private static RuntimeException createLinkAndCatchRTE(URI uri) {
-		return assertThrows(RuntimeException.class, () -> createLink(uri));
+	private static AbstractThrowableAssert<?, ?> createLinkAndCatchRTE(URI uri) {
+		return assertThatThrownBy(() -> createLink(uri)).isInstanceOf(RuntimeException.class);
 	}
 
 	private static void createLink(URI uri) {

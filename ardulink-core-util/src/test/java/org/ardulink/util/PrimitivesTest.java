@@ -17,7 +17,7 @@ limitations under the License.
 package org.ardulink.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 
@@ -51,8 +51,10 @@ class PrimitivesTest {
 
 	@Test
 	void cannotParseDoubleAsInt() {
-		assertThrows(NumberFormatException.class, () -> Primitives.parseAs(Integer.class, "123.456"));
-		assertThrows(NumberFormatException.class, () -> Primitives.parseAs(int.class, "123.456"));
+		assertThatThrownBy(() -> Primitives.parseAs(Integer.class, "123.456"))
+				.isInstanceOf(NumberFormatException.class);
+		assertThatThrownBy(() -> Primitives.parseAs(int.class, "123.456")).isInstanceOf(NumberFormatException.class);
+
 	}
 
 	@Test

@@ -23,7 +23,7 @@ import static java.net.URI.create;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.ardulink.core.linkmanager.LinkManager.SCHEMA;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.net.URI;
@@ -38,7 +38,6 @@ import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import org.ardulink.core.proto.impl.DummyProtocol;
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import org.junitpioneer.jupiter.DefaultLocale;
 
 /**
@@ -51,28 +50,19 @@ import org.junitpioneer.jupiter.DefaultLocale;
  */
 class DummyLinkFactoryTest {
 
-	private final class ExecutableImplementation implements Executable {
-		@Override
-		public void execute() throws Throwable {
-			sut.getConfigurer(create(not(SCHEMA) + "://dummy"));
-		}
-	}
-
 	private final LinkManager sut = LinkManager.getInstance();
 
 	@Test
 	void throwsExceptionOnInvalidNames() {
 		String name = "non.existing.name";
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-				() -> sut.getConfigurer(create(format("%s://%s", SCHEMA, name))));
-		assertThat(exception).hasMessageContainingAll("No factory registered", name);
+		assertThatThrownBy(() -> sut.getConfigurer(create(format("%s://%s", SCHEMA, name))))
+				.isInstanceOf(IllegalArgumentException.class).hasMessageContainingAll("No factory registered", name);
 	}
 
 	@Test
 	void schemaHasToBeArdulink() {
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-				new ExecutableImplementation());
-		assertThat(exception).hasMessageContaining("schema not ardulink");
+		assertThatThrownBy(() -> sut.getConfigurer(create(not(SCHEMA) + "://dummy")))
+				.isInstanceOf(IllegalArgumentException.class).hasMessageContaining("schema not ardulink");
 	}
 
 	@Test
@@ -126,9 +116,10 @@ class DummyLinkFactoryTest {
 	@Test
 	void throwsExceptionOnInvalidKey() {
 		String nonExistingKey = "nonExistingKey";
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-				() -> sut.getConfigurer(create(format("%s://dummyLink?%s=someValue", SCHEMA, nonExistingKey))));
-		assertThat(exception).hasMessageContaining("Could not determine attribute " + nonExistingKey);
+		assertThatThrownBy(
+				() -> sut.getConfigurer(create(format("%s://dummyLink?%s=someValue", SCHEMA, nonExistingKey))))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Could not determine attribute " + nonExistingKey);
 	}
 
 	@Test
@@ -154,9 +145,9 @@ class DummyLinkFactoryTest {
 		assertThat(a.getChoiceValues()).isEqualTo(new Object[] { "aVal1", "aVal2" });
 		String invalidValue = "aVal3IsNotAvalidValue";
 		a.setValue(invalidValue);
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> configurer.newLink());
-		assertThat(exception).hasMessage("'" + invalidValue + "' is not a valid value for "
-				+ "A is meant just to be an example attribute" + ", valid values are [aVal1, aVal2]");
+		assertThatThrownBy(configurer::newLink).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("'" + invalidValue + "' is not a valid value for "
+						+ "A is meant just to be an example attribute" + ", valid values are [aVal1, aVal2]");
 	}
 
 	@Test
@@ -166,9 +157,9 @@ class DummyLinkFactoryTest {
 		ConfigAttribute a = configurer.getAttribute("a");
 		String invalidValue = "aVal3IsNotAvalidValue";
 		a.setValue(invalidValue);
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> configurer.newLink());
-		assertThat(exception).hasMessage("'" + invalidValue + "' is not a valid value for "
-				+ "A is meant just to be an example attribute" + ", valid values are [aVal1, aVal2]");
+		assertThatThrownBy(configurer::newLink).isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("'" + invalidValue + "' is not a valid value for "
+						+ "A is meant just to be an example attribute" + ", valid values are [aVal1, aVal2]");
 	}
 
 	@Test
@@ -176,9 +167,8 @@ class DummyLinkFactoryTest {
 		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		ConfigAttribute configAttribute = configurer.getAttribute("c");
 		assertThat(configAttribute.hasChoiceValues()).isFalse();
-		IllegalStateException exception = assertThrows(IllegalStateException.class,
-				() -> configAttribute.getChoiceValues());
-		assertThat(exception).hasMessage("attribute does not have choiceValues");
+		assertThatThrownBy(configAttribute::getChoiceValues).isInstanceOf(IllegalStateException.class)
+				.hasMessage("attribute does not have choiceValues");
 	}
 
 	@Test

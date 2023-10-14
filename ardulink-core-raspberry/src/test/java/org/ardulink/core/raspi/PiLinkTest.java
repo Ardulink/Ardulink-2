@@ -17,7 +17,7 @@ limitations under the License.
 package org.ardulink.core.raspi;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.condition.OS.LINUX;
 
 import org.ardulink.core.convenience.Links;
@@ -38,7 +38,7 @@ class PiLinkTest {
 	@Test
 	@DisabledOnOs(value = LINUX, architectures = "aarch64")
 	void creatingInstanceWillFailOnX86withUnsatisfiedLinkError() {
-		assertThrows(UnsatisfiedLinkError.class, () -> Links.getLink("ardulink://raspberry"));
+		assertThatThrownBy(() -> Links.getLink("ardulink://raspberry")).isInstanceOf(UnsatisfiedLinkError.class);
 	}
 
 	@Test

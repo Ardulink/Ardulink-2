@@ -19,10 +19,9 @@ package org.ardulink.mqtt.camel;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.Throwables.getCauses;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.util.Strings.isNullOrEmpty;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.camel.FailedToStartRouteException;
 import org.ardulink.mqtt.CommandLineArguments;
@@ -78,8 +77,8 @@ class MqttMainStandaloneIntegrationTest {
 	void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker() throws Exception {
 		givenBrokerCredentials(someUser, somePassword);
 		givenClientCredentials(someUser, not(somePassword));
-		Exception exception = assertThrows(FailedToStartRouteException.class, () -> runMainAndConnectToBroker());
-		assertThat(getCauses(exception)).anyMatch(MqttSecurityException.class::isInstance);
+		assertThatThrownBy(this::runMainAndConnectToBroker).isInstanceOf(FailedToStartRouteException.class)
+				.satisfies(e -> getCauses(e).anyMatch(MqttSecurityException.class::isInstance));
 	}
 
 	@Test

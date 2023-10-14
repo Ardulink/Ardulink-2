@@ -16,11 +16,11 @@ limitations under the License.
 
 package org.ardulink.core.proto.api;
 
-import static org.ardulink.core.proto.api.Protocols.protocolNames;
 import static org.ardulink.core.proto.api.Protocols.protoByName;
+import static org.ardulink.core.proto.api.Protocols.protocolNames;
 import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.proto.impl.DummyProtocol;
@@ -52,7 +52,7 @@ class ProtocolsTest {
 	void getByNameThrowsExceptionOnUnknownProtocolNames() {
 		String unknownProto = "XXXnonExistingProtocolNameXXX";
 		assertThat(tryProtoByName(unknownProto)).isEmpty();
-		assertThat(assertThrows(RuntimeException.class, () -> protoByName(unknownProto)))
+		assertThatThrownBy(() -> protoByName(unknownProto)).isInstanceOf(RuntimeException.class)
 				.hasMessageContaining(unknownProto, ArdulinkProtocol2.NAME, DummyProtocol.NAME);
 		assertThat(tryProtoByName(unknownProto)).isEmpty();
 	}

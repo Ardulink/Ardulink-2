@@ -19,8 +19,8 @@ package org.ardulink.core.serial.rxtx;
 import static java.net.URI.create;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.List;
@@ -30,7 +30,6 @@ import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.util.Throwables;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -87,10 +86,10 @@ class SerialLinkFactoryIntegrationTest {
 	void cantConnectWithoutPort() {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(create(PREFIX + "?baudrate=9600"));
-		assertThat(Throwables.getCauses(assertThrows(RuntimeException.class, () -> {
+		assertThatThrownBy(() -> {
 			try (Link link = configurer.newLink()) {
 			}
-		}))).anyMatch(NoSuchPortException.class::isInstance);
+		}).isInstanceOf(RuntimeException.class).hasCauseInstanceOf(NoSuchPortException.class);
 	}
 
 	private static String anyString() {
