@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.apache.camel.FailedToStartRouteException;
@@ -98,7 +99,9 @@ class MqttMainStandaloneIntegrationTest {
 		MqttMain mqttMain = new MqttMain(args) {
 			@Override
 			protected Builder configureBroker(Builder builder) {
-				return hasAuthentication() ? builder.addAuthenication(brokerUser, brokerPassword.getBytes()) : builder;
+				return hasAuthentication() && !Objects.equals(args.credentials, brokerUser + ":" + brokerPassword)
+						? builder.addAuthenication(brokerUser, brokerPassword.getBytes())
+						: builder;
 			}
 		};
 		mqttMain.connectToMqttBroker();

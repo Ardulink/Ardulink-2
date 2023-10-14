@@ -35,6 +35,7 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.spi.RouteController;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttCamelRouteBuilder.MqttConnectionProperties;
+import org.ardulink.util.Strings;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
@@ -118,9 +119,18 @@ public class MqttMain {
 	public MqttMain(CommandLineArguments args) {
 		this.args = args.normalize();
 		if (args.standalone) {
-			standaloneServer = configureBroker(builder().host(args.brokerHost).useSsl(args.ssl).port(args.brokerPort))
+			standaloneServer = configureBroker(addCredentials(
+					builder().host(args.brokerHost).useSsl(args.ssl).port(args.brokerPort), args.credentials))
 					.startBroker();
 		}
+	}
+
+	private static Builder addCredentials(Builder builder, String credentials) {
+		if (Strings.nullOrEmpty(credentials)) {
+			return builder;
+		}
+		String[] split = credentials.split(":");
+		return builder.addAuthenication(split[0], split[1].getBytes());
 	}
 
 	private static Optional<CommandLineArguments> tryParse(String... args) {
