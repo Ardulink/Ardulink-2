@@ -19,15 +19,18 @@ package org.ardulink.mqtt.camel;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.Throwables.getCauses;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.util.Strings.isNullOrEmpty;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.camel.FailedToStartRouteException;
 import org.ardulink.mqtt.CommandLineArguments;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttMain;
 import org.ardulink.testsupport.mock.junit5.MockUri;
+import org.ardulink.util.Throwables;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -78,7 +81,7 @@ class MqttMainStandaloneIntegrationTest {
 		givenBrokerCredentials(someUser, somePassword);
 		givenClientCredentials(someUser, not(somePassword));
 		assertThatThrownBy(this::runMainAndConnectToBroker).isInstanceOf(FailedToStartRouteException.class)
-				.satisfies(e -> getCauses(e).anyMatch(MqttSecurityException.class::isInstance));
+				.satisfies(e -> assertThat(getCauses(e)).anyMatch(MqttSecurityException.class::isInstance));
 	}
 
 	@Test
