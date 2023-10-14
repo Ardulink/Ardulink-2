@@ -18,7 +18,7 @@ package org.ardulink.util;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
+import static org.ardulink.util.Collectors.toUnmodifiableMap;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.util.EnumSet;
@@ -48,7 +48,7 @@ public enum Numbers {
 	private final Function<Number, Number> converter;
 
 	@SuppressWarnings("unchecked")
-	Numbers(Class<?> type, Number min, Number max, Function<Number, Number> converter) {
+	private Numbers(Class<?> type, Number min, Number max, Function<Number, Number> converter) {
 		this.type = (Class<Number>) type;
 		this.min = min;
 		this.max = max;
@@ -56,7 +56,7 @@ public enum Numbers {
 	}
 
 	private static final Map<Class<?>, Numbers> typeMapping = unmodifiableMap(
-			EnumSet.allOf(Numbers.class).stream().collect(toMap(Numbers::getType, identity())));
+			EnumSet.allOf(Numbers.class).stream().collect(toUnmodifiableMap(Numbers::getType, identity())));
 
 	public Class<Number> getType() {
 		return type;
