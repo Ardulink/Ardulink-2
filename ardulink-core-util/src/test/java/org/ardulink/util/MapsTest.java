@@ -44,8 +44,7 @@ class MapsTest {
 	void testEntry() {
 		Entry<Integer, String> entry = Maps.entry(1, "a");
 		Entry<Integer, String> otherEntry = Maps.entry(1, "a");
-		assertThat(entry).hasSameHashCodeAs(otherEntry);
-		assertThat(entry).isEqualTo(otherEntry);
+		assertThat(entry).hasSameHashCodeAs(otherEntry).isEqualTo(otherEntry);
 	}
 
 }

@@ -33,39 +33,36 @@ import org.junit.jupiter.api.Test;
  */
 class ListMultiMapTest {
 
+	ListMultiMap<Integer, String> sut = new ListMultiMap<>();
+
 	@Test
 	void iteratorOnEmpty() {
-		ListMultiMap<Integer, String> sut = new ListMultiMap<>();
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();
-		assertThat(iterator.hasNext()).isFalse();
+		assertThat(iterator).isExhausted();
 	}
 
 	@Test
 	void iteratorOnSingleElement() {
-		ListMultiMap<Integer, String> sut = new ListMultiMap<>();
 		sut.put(1, "foo");
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();
-		assertThat(iterator.hasNext()).isTrue();
 		Entry<Integer, String> next = iterator.next();
 		assertThat(next.getKey()).isEqualTo(1);
 		assertThat(next.getValue()).isEqualTo("foo");
-		assertThat(iterator.hasNext()).isFalse();
+		assertThat(iterator).isExhausted();
 	}
 
 	@Test
 	void iteratorOnCollisionElement() {
-		ListMultiMap<Integer, String> sut = new ListMultiMap<>();
 		sut.put(1, "foo");
 		sut.put(1, "bar");
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();
-		assertThat(iterator.hasNext()).isTrue();
 		Entry<Integer, String> next = iterator.next();
 		assertThat(next.getKey()).isEqualTo(1);
 		assertThat(next.getValue()).isEqualTo("foo");
 		next = iterator.next();
 		assertThat(next.getKey()).isEqualTo(1);
 		assertThat(next.getValue()).isEqualTo("bar");
-		assertThat(iterator.hasNext()).isFalse();
+		assertThat(iterator).isExhausted();
 	}
 
 }

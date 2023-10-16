@@ -18,11 +18,13 @@ package org.ardulink.util;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Collections.singleton;
+import static org.ardulink.util.Maps.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -37,49 +39,40 @@ import org.junit.jupiter.api.Test;
  */
 class SetMultiMapTest {
 
+	SetMultiMap<Integer, String> sut = new SetMultiMap<>();
+
 	@Test
 	void canPut() {
-		SetMultiMap<Integer, String> s = new SetMultiMap<>();
-		assertThat(s.put(1, "foo")).isEqualTo(TRUE);
-		assertThat(s.asMap()).isEqualTo(buildMap(1, Collections.singleton("foo")));
+		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
+		assertThat(sut.asMap()).containsExactly(entry(1, singleton("foo")));
 	}
 
 	@Test
 	void canPutTwice() {
-		SetMultiMap<Integer, String> s = new SetMultiMap<>();
-		assertThat(s.put(1, "foo")).isEqualTo(TRUE);
-		assertThat(s.put(1, "foo")).isEqualTo(FALSE);
-		assertThat(s.asMap()).isEqualTo(buildMap(1, Collections.singleton("foo")));
+		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
+		assertThat(sut.put(1, "foo")).isEqualTo(FALSE);
+		assertThat(sut.asMap()).containsExactly(entry(1, singleton("foo")));
 	}
 
 	@Test
 	void canRemoveExistingValue() {
-		SetMultiMap<Integer, String> s = new SetMultiMap<>();
-		assertThat(s.put(1, "foo")).isEqualTo(TRUE);
-		assertThat(s.remove(1, "foo")).isEqualTo(TRUE);
-		assertThat(s.asMap()).isEqualTo(Collections.<Integer, Set<String>>emptyMap());
+		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
+		assertThat(sut.remove(1, "foo")).isEqualTo(TRUE);
+		assertThat(sut.asMap()).isEmpty();
 	}
 
 	@Test
 	void canHandleRemovesOfNonExistingValues() {
-		SetMultiMap<Integer, String> s = new SetMultiMap<>();
-		assertThat(s.put(1, "foo")).isEqualTo(TRUE);
-		assertThat(s.remove(1, "bar")).isEqualTo(FALSE);
-		assertThat(s.asMap()).isEqualTo(buildMap(1, Collections.singleton("foo")));
+		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
+		assertThat(sut.remove(1, "bar")).isEqualTo(FALSE);
+		assertThat(sut.asMap()).containsExactly(entry(1, singleton("foo")));
 	}
 
 	@Test
 	void canHandleRemovesOfNonExistingKeys() {
-		SetMultiMap<Integer, String> s = new SetMultiMap<>();
-		assertThat(s.put(1, "foo")).isEqualTo(TRUE);
-		assertThat(s.remove(2, "foo")).isEqualTo(FALSE);
-		assertThat(s.asMap()).isEqualTo(buildMap(1, Collections.singleton("foo")));
-	}
-
-	private static Map<Integer, Set<String>> buildMap(Integer key, Set<String> value) {
-		Map<Integer, Set<String>> m = new HashMap<>();
-		m.put(key, value);
-		return m;
+		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
+		assertThat(sut.remove(2, "foo")).isEqualTo(FALSE);
+		assertThat(sut.asMap()).containsExactly(entry(1, singleton("foo")));
 	}
 
 }

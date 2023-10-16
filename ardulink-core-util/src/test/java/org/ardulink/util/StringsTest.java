@@ -21,6 +21,12 @@ import static org.ardulink.util.Strings.swapUpperLower;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.NullString;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -32,12 +38,17 @@ import org.junit.jupiter.api.Test;
  */
 class StringsTest {
 
-	@Test
-	void testNullOrEmpty() {
-		assertThat(nullOrEmpty(null)).isTrue();
-		assertThat(nullOrEmpty("")).isTrue();
-		assertThat(nullOrEmpty(" ")).isFalse();
-		assertThat(nullOrEmpty("anyString")).isFalse();
+	@ParameterizedTest
+	@ValueSource(strings = { " ", "anyString" })
+	void testNullOrEmpty_nulls(String string) {
+		assertThat(nullOrEmpty(string)).isFalse();
+	}
+
+	@ParameterizedTest
+	@NullSource
+	@EmptySource
+	void testNullOrEmpty_nonNulls(String string) {
+		assertThat(nullOrEmpty(string)).isTrue();
 	}
 
 	@Test

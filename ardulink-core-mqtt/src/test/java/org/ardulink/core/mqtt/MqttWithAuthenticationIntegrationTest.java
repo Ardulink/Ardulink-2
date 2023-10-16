@@ -23,11 +23,13 @@ import static org.ardulink.util.ServerSockets.freePort;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_FAILED_AUTHENTICATION;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+import java.io.IOException;
 import java.net.URI;
 
+import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager;
-import org.assertj.core.api.AbstractThrowableAssert;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -55,35 +57,34 @@ class MqttWithAuthenticationIntegrationTest {
 
 	@Test
 	void canNotConnectWithoutUserAndPassword() {
-		assertIsAuthError(createLinkAndCatchRTE(create(mqttBase())));
+		assertAuthFailure(create(mqttBase()));
 	}
 
 	@Test
 	void canNotConnectWithWrongPassword() {
-		assertIsAuthError(
-				createLinkAndCatchRTE(create(mqttBase() + "&user=" + USER + "&password=" + "anyWrongPassword")));
+		assertAuthFailure(create(mqttBase() + "&user=" + USER + "&password=" + "anyWrongPassword"));
 	}
 
 	@Test
-	void canConnectUsingUserAndPassword() {
-		createLink(create(mqttBase() + "&user=" + USER + "&password=" + PASSWORD));
+	void canConnectUsingUserAndPassword() throws IOException {
+		assertDoesNotThrow(() -> {
+			try (Link link = createLink(create(mqttBase() + "&user=" + USER + "&password=" + PASSWORD))) {
+			}
+		});
 	}
 
 	private String mqttBase() {
 		return "ardulink://mqtt?port=" + broker.port() + "&topic=" + TOPIC;
 	}
 
-	private void assertIsAuthError(AbstractThrowableAssert<?, ?> abstractThrowableAssert) {
-		abstractThrowableAssert.rootCause().isInstanceOfSatisfying(MqttException.class,
-				e -> assertThat(e.getReasonCode()).isEqualTo(REASON_CODE_FAILED_AUTHENTICATION));
+	private void assertAuthFailure(URI uri) {
+		assertThatThrownBy(() -> createLink(uri)).isInstanceOf(RuntimeException.class).rootCause()
+				.isInstanceOfSatisfying(MqttException.class,
+						e -> assertThat(e.getReasonCode()).isEqualTo(REASON_CODE_FAILED_AUTHENTICATION));
 	}
 
-	private static AbstractThrowableAssert<?, ?> createLinkAndCatchRTE(URI uri) {
-		return assertThatThrownBy(() -> createLink(uri)).isInstanceOf(RuntimeException.class);
-	}
-
-	private static void createLink(URI uri) {
-		LinkManager.getInstance().getConfigurer(uri).newLink();
+	private static Link createLink(URI uri) {
+		return LinkManager.getInstance().getConfigurer(uri).newLink();
 	}
 
 }
