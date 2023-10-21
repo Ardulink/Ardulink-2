@@ -20,7 +20,6 @@ import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom.toDeviceMessageCustom;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange.toDeviceMessagePinStateChange;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening.toDeviceMessageStartListening;
-import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.ardulink.core.Pin.AnalogPin;
@@ -34,7 +33,7 @@ import org.junit.jupiter.api.Test;
 
 class LuaProtocolTest {
 
-	ByteStreamProcessor sut = protoByName(LuaProtocol.NAME).newByteStreamProcessor();
+	ByteStreamProcessor sut = new LuaProtocol().newByteStreamProcessor();
 
 	DigitalPin anyDigitalPin = digitalPin(anyPin());
 	AnalogPin anyAnalogPin = analogPin(anyPin());
