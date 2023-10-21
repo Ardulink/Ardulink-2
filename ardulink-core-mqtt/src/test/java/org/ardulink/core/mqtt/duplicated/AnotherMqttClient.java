@@ -46,8 +46,7 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-// TODO create a Mqtt test package and move AnotherMQttClient, ... to it
-// TODO create a @MqttBroker Extension
+// TODO create a Mqtt test package and move AnotherMqttClient, ... to it
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
