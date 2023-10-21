@@ -5,29 +5,21 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 
-import org.ardulink.core.Link;
+import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.Tone;
-import org.ardulink.core.events.CustomListener;
-import org.ardulink.core.events.EventListener;
-import org.ardulink.core.events.RplyListener;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.providers.FactoriesViaMetaInfArdulink.GenericLinkFactory;
 import org.junit.jupiter.api.Test;
 
 public class FactoriesViaMetaInfArdulinkTest {
 
-	private static final class TestLinkConfig implements LinkConfig {
+	static final class TestLinkConfig implements LinkConfig {
 	}
 
-	private static class TestLinkWithoutConstructor implements Link {
-
-		@Override
-		public void close() throws IOException {
-			throw new UnsupportedOperationException();
-		}
+	static class TestLinkWithoutConstructor extends AbstractListenerLink {
 
 		@Override
 		public long switchDigitalPin(DigitalPin digitalPin, boolean value) throws IOException {
@@ -70,38 +62,9 @@ public class FactoriesViaMetaInfArdulinkTest {
 			throw new UnsupportedOperationException();
 		}
 
-		@Override
-		public Link removeRplyListener(RplyListener listener) throws IOException {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Link removeListener(EventListener listener) throws IOException {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Link removeCustomListener(CustomListener listener) throws IOException {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Link addRplyListener(RplyListener listener) throws IOException {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Link addListener(EventListener listener) throws IOException {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Link addCustomListener(CustomListener listener) throws IOException {
-			throw new UnsupportedOperationException();
-		}
 	}
 
-	private static class TestLinkWithConstructor extends TestLinkWithoutConstructor {
+	static class TestLinkWithConstructor extends TestLinkWithoutConstructor {
 
 		public TestLinkWithConstructor(TestLinkConfig config) {
 			super();
