@@ -18,6 +18,7 @@ package org.ardulink.core.linkmanager.providers;
 
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
+import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.util.Classes.constructor;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Predicates.not;
@@ -99,15 +100,13 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 		}
 
 		private <T> Class<? extends T> loadClass(String name, Class<T> targetType) throws ClassNotFoundException {
-			Class<?> clazz = this.classloader.loadClass(name);
-			checkState(targetType.isAssignableFrom(clazz), "%s not of type %s", clazz.getName(), targetType.getName());
-			return clazz.asSubclass(targetType);
+			return this.classloader.loadClass(name).asSubclass(targetType);
 		}
 
 		@Override
 		public LinkConfig newLinkConfig() {
 			try {
-				return configClass == null ? LinkConfig.NO_ATTRIBUTES : configClass.newInstance();
+				return configClass == null ? NO_ATTRIBUTES : configClass.newInstance();
 			} catch (InstantiationException e) {
 				throw propagate(e);
 			} catch (IllegalAccessException e) {
