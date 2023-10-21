@@ -50,14 +50,14 @@ import org.ardulink.util.Strings;
  */
 public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 
-	private static final class GenericLinkFactory implements LinkFactory<LinkConfig> {
+	static final class GenericLinkFactory implements LinkFactory<LinkConfig> {
 
 		private final ClassLoader classloader;
 		private final String name;
 		private final String linkClassName;
 		private final Class<? extends LinkConfig> configClass;
 
-		private GenericLinkFactory(ClassLoader classloader, String name, String configClassName, String linkClassName)
+		GenericLinkFactory(ClassLoader classloader, String name, String configClassName, String linkClassName)
 				throws ClassNotFoundException {
 			this.classloader = classloader;
 			this.name = name;
@@ -100,7 +100,9 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 		}
 
 		private <T> Class<? extends T> loadClass(String name, Class<T> targetType) throws ClassNotFoundException {
-			return this.classloader.loadClass(name).asSubclass(targetType);
+			Class<?> clazz = this.classloader.loadClass(name);
+			checkState(targetType.isAssignableFrom(clazz), "%s not of type %s", clazz.getName(), targetType.getName());
+			return clazz.asSubclass(targetType);
 		}
 
 		@Override
