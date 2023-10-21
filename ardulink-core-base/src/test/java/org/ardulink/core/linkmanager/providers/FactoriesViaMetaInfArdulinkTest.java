@@ -80,22 +80,20 @@ public class FactoriesViaMetaInfArdulinkTest {
 	}
 
 	@Test
-	void linkClassDoesNotExist() throws Exception {
+	void linkClassDoesNotExist() {
 		LinkConfig linkConfig = new LinkConfig() {
 		};
 		String configClassName = linkConfig.getClass().getName();
-		GenericLinkFactory genericLinkFactory = sut(configClassName, "SomeNotExistingClassName");
-		assertThatThrownBy(() -> genericLinkFactory.newLink(linkConfig)).isInstanceOf(ClassNotFoundException.class)
-				.hasMessage("SomeNotExistingClassName");
+		assertThatThrownBy(() -> sut(configClassName, "SomeNotExistingClassName"))
+				.isInstanceOf(ClassNotFoundException.class).hasMessage("SomeNotExistingClassName");
 	}
 
 	@Test
-	void linkClassHasNoConstructorWithArgumentOfTypeLinkConfig() throws Exception {
+	void linkClassHasNoConstructorWithArgumentOfTypeLinkConfig() throws ClassNotFoundException {
 		TestLinkConfig config = new TestLinkConfig();
 		String configClassName = config.getClass().getName();
 		String linkClassName = TestLinkWithoutConstructor.class.getName();
-		GenericLinkFactory genericLinkFactory = sut(configClassName, linkClassName);
-		assertThatThrownBy(() -> genericLinkFactory.newLink(config)).isInstanceOf(RuntimeException.class)
+		assertThatThrownBy(() -> sut(configClassName, linkClassName)).isInstanceOf(RuntimeException.class)
 				.hasMessage(linkClassName + " has no public constructor with argument of type " + configClassName);
 	}
 
