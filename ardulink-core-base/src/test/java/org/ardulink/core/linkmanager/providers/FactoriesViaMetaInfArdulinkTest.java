@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 
 public class FactoriesViaMetaInfArdulinkTest {
 
@@ -96,9 +97,8 @@ public class FactoriesViaMetaInfArdulinkTest {
 
 	@Test
 	void linkClassDoesNotExist() {
-		LinkConfig linkConfig = new LinkConfig() {
-		};
-		String configClassName = linkConfig.getClass().getName();
+		TestLinkConfig config = new TestLinkConfig();
+		String configClassName = config.getClass().getName();
 		assertThatThrownBy(() -> sut(configClassName, "SomeNotExistingClassName")).isInstanceOf(RuntimeException.class)
 				.hasCauseInstanceOf(ClassNotFoundException.class).hasMessageContaining("SomeNotExistingClassName");
 	}
