@@ -16,7 +16,6 @@ import org.ardulink.core.linkmanager.LinkFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class FactoriesViaMetaInfArdulinkTest {
@@ -79,6 +78,15 @@ public class FactoriesViaMetaInfArdulinkTest {
 		}
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = { "one:two", "one:two:three:four" })
+	void throwsExceptionIfNotThreeArgs(String line) {
+		assertThatThrownBy(
+				() -> new FactoriesViaMetaInfArdulink.LineProcessor(getClass().getClassLoader()).processLine(line))
+				.isInstanceOf(RuntimeException.class)
+				.hasMessage("Could not split " + line + " into name:configclass:linkclass");
+	}
+
 	@Test
 	void configClassNameNotOfTypeLinkConfig() {
 		String configClassName = String.class.getName();
@@ -133,7 +141,7 @@ public class FactoriesViaMetaInfArdulinkTest {
 	}
 
 	LinkFactory<LinkConfig> sut(String configClassName, String linkClassName) {
-		return new FactoriesViaMetaInfArdulink.LineParser(getClass().getClassLoader())
+		return new FactoriesViaMetaInfArdulink.LineProcessor(getClass().getClassLoader())
 				.processLine("anyName:" + configClassName + ":" + linkClassName);
 	}
 
