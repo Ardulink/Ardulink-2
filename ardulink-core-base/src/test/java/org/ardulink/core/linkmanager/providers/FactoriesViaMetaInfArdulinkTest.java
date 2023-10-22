@@ -11,15 +11,22 @@ import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.Tone;
 import org.ardulink.core.linkmanager.LinkConfig;
-import org.ardulink.core.linkmanager.providers.FactoriesViaMetaInfArdulink.GenericLinkFactory;
+import org.ardulink.core.linkmanager.LinkFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class FactoriesViaMetaInfArdulinkTest {
 
 	static final class TestLinkConfig implements LinkConfig {
 	}
 
-	static class TestLinkWithoutConstructor extends AbstractListenerLink {
+	static class TestLinkWithoutLinkConfigConstructor extends AbstractListenerLink {
+
+		public TestLinkWithoutLinkConfigConstructor() {
+			super();
+		}
 
 		@Override
 		public long switchDigitalPin(DigitalPin digitalPin, boolean value) throws IOException {
@@ -64,12 +71,10 @@ public class FactoriesViaMetaInfArdulinkTest {
 
 	}
 
-	static class TestLinkWithConstructor extends TestLinkWithoutConstructor {
-
+	static class TestLinkWithConstructor extends TestLinkWithoutLinkConfigConstructor {
 		public TestLinkWithConstructor(TestLinkConfig config) {
 			super();
 		}
-
 	}
 
 	@Test
@@ -84,15 +89,15 @@ public class FactoriesViaMetaInfArdulinkTest {
 		LinkConfig linkConfig = new LinkConfig() {
 		};
 		String configClassName = linkConfig.getClass().getName();
-		assertThatThrownBy(() -> sut(configClassName, "SomeNotExistingClassName"))
-				.isInstanceOf(ClassNotFoundException.class).hasMessage("SomeNotExistingClassName");
+		assertThatThrownBy(() -> sut(configClassName, "SomeNotExistingClassName")).isInstanceOf(RuntimeException.class)
+				.hasCauseInstanceOf(ClassNotFoundException.class).hasMessageContaining("SomeNotExistingClassName");
 	}
 
 	@Test
 	void linkClassHasNoConstructorWithArgumentOfTypeLinkConfig() throws ClassNotFoundException {
 		TestLinkConfig config = new TestLinkConfig();
 		String configClassName = config.getClass().getName();
-		String linkClassName = TestLinkWithoutConstructor.class.getName();
+		String linkClassName = TestLinkWithoutLinkConfigConstructor.class.getName();
 		assertThatThrownBy(() -> sut(configClassName, linkClassName)).isInstanceOf(RuntimeException.class)
 				.hasMessage(linkClassName + " has no public constructor with argument of type " + configClassName);
 	}
@@ -101,11 +106,21 @@ public class FactoriesViaMetaInfArdulinkTest {
 	void ok() throws Exception {
 		TestLinkConfig config = new TestLinkConfig();
 		assertThat(sut(config.getClass().getName(), TestLinkWithConstructor.class.getName()).newLink(config))
-				.isNotNull();
+				.isInstanceOf(TestLinkWithConstructor.class);
 	}
 
-	GenericLinkFactory sut(String configClassName, String linkClassName) throws ClassNotFoundException {
-		return new GenericLinkFactory(getClass().getClassLoader(), "anyName", configClassName, linkClassName);
+	@ParameterizedTest
+	@ValueSource(strings = { "null", "NULL", "Null", "nUlL" })
+	@NullSource
+	void okWithoutConfig(String configClassName) throws Exception {
+		TestLinkConfig config = new TestLinkConfig();
+		assertThat(sut(configClassName, TestLinkWithoutLinkConfigConstructor.class.getName()).newLink(config))
+				.isInstanceOf(TestLinkWithoutLinkConfigConstructor.class);
+	}
+
+	LinkFactory<LinkConfig> sut(String configClassName, String linkClassName) {
+		return new FactoriesViaMetaInfArdulink.LineParser(getClass().getClassLoader())
+				.processLine("anyName:" + configClassName + ":" + linkClassName);
 	}
 
 }

@@ -176,7 +176,6 @@ class DummyLinkFactoryTest {
 		assertThat(sut.listURIs()).containsExactlyInAnyOrder(links( //
 				format("%s://dummyLink", SCHEMA), //
 				format("%s://mock", SCHEMA), //
-				format("%s://aLinkWithoutArealLinkFactoryWithoutConfig", SCHEMA), //
 				format("%s://aLinkWithoutArealLinkFactoryWithConfig", SCHEMA)));
 	}
 

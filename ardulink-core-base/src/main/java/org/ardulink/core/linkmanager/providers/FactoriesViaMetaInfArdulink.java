@@ -23,6 +23,7 @@ import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.util.Classes.constructor;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Predicates.not;
+import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.Throwables.propagateIfInstanceOf;
 
@@ -39,7 +40,6 @@ import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.Classloaders;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.util.Strings;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -51,7 +51,32 @@ import org.ardulink.util.Strings;
  */
 public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 
-	static final class GenericLinkFactory implements LinkFactory<LinkConfig> {
+	static class LineParser {
+
+		private final ClassLoader classloader;
+
+		LineParser(ClassLoader classloader) {
+			this.classloader = classloader;
+		}
+
+		LinkFactory<LinkConfig> processLine(String line) {
+			String[] split = line.split("\\:");
+			checkState(split.length == 3, "Could not split %s into name:configclass:linkclass", line);
+			try {
+				return createLinkFactory(split[0], split[1], split[2]);
+			} catch (ClassNotFoundException e) {
+				throw propagate(e);
+			}
+		}
+
+		private LinkFactory<LinkConfig> createLinkFactory(String name, String configClassName, String linkClassName)
+				throws ClassNotFoundException {
+			return new GenericLinkFactory(classloader, name, configClassName, linkClassName);
+		}
+
+	}
+
+	private static final class GenericLinkFactory implements LinkFactory<LinkConfig> {
 
 		private final ClassLoader classloader;
 		private final String name;
@@ -65,9 +90,14 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 			this.name = name;
 			this.configClass = loadConfigClass(configClassName);
 			this.linkClass = loadClass(linkClassName, Link.class);
-			this.constructor = constructor(linkClass, configClass).orElseThrow(
-					() -> new IllegalStateException(format("%s has no public constructor with argument of type %s",
-							linkClass.getName(), configClass.getName())));
+			if (isNullConfig(configClass)) {
+				this.constructor = constructor(linkClass).orElseThrow(() -> new IllegalStateException(
+						format("%s has no public zero arg constructor", linkClass.getName())));
+			} else {
+				this.constructor = constructor(linkClass, configClass).orElseThrow(
+						() -> new IllegalStateException(format("%s has no public constructor with argument of type %s",
+								linkClass.getName(), configClass.getName())));
+			}
 		}
 
 		@Override
@@ -78,7 +108,9 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 		@Override
 		public Link newLink(LinkConfig config) throws Exception {
 			try {
-				return constructor.newInstance(config);
+				return constructor.getParameterCount() == 0 //
+						? constructor.newInstance() //
+						: constructor.newInstance(config);
 			} catch (InvocationTargetException e) {
 				propagateIfInstanceOf(e.getTargetException(), Error.class);
 				propagateIfInstanceOf(e.getTargetException(), Exception.class);
@@ -91,7 +123,11 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 		}
 
 		private static boolean isNull(String configClassName) {
-			return Strings.nullOrEmpty(configClassName) || "null".equalsIgnoreCase(configClassName);
+			return nullOrEmpty(configClassName) || "null".equalsIgnoreCase(configClassName);
+		}
+
+		private static boolean isNullConfig(Class<?> configClass) {
+			return LinkConfig.class.equals(configClass);
 		}
 
 		private <T> Class<? extends T> loadClass(String name, Class<T> targetType) throws ClassNotFoundException {
@@ -103,13 +139,14 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 		@Override
 		public LinkConfig newLinkConfig() {
 			try {
-				return LinkConfig.class.equals(configClass) ? NO_ATTRIBUTES : configClass.newInstance();
+				return isNullConfig(configClass) ? NO_ATTRIBUTES : configClass.newInstance();
 			} catch (InstantiationException e) {
 				throw propagate(e);
 			} catch (IllegalAccessException e) {
 				throw propagate(e);
 			}
 		}
+
 	}
 
 	@Override
@@ -124,26 +161,12 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 	}
 
 	private List<LinkFactory<LinkConfig>> read(ClassLoader classloader, URL url) {
+		LineParser lineParser = new LineParser(classloader);
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
-			return reader.lines().filter(not(String::isEmpty)).map(l -> processLine(classloader, l)).collect(toList());
+			return reader.lines().filter(not(String::isEmpty)).map(lineParser::processLine).collect(toList());
 		} catch (IOException e) {
 			throw propagate(e);
 		}
-	}
-
-	private LinkFactory<LinkConfig> processLine(ClassLoader classloader, String line) {
-		String[] split = line.split("\\:");
-		checkState(split.length == 3, "Could not split %s into name:configclass:linkclass", line);
-		try {
-			return createLinkFactory(classloader, split[0], split[1], split[2]);
-		} catch (ClassNotFoundException e) {
-			throw propagate(e);
-		}
-	}
-
-	private LinkFactory<LinkConfig> createLinkFactory(ClassLoader classloader, String name, String configClassName,
-			String linkClassName) throws ClassNotFoundException {
-		return new GenericLinkFactory(classloader, name, configClassName, linkClassName);
 	}
 
 }

@@ -38,7 +38,6 @@ import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkFactory.Alias;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.viaservices.AlLinkWithoutArealLinkFactoryWithConfig;
-import org.ardulink.core.linkmanager.viaservices.AlLinkWithoutArealLinkFactoryWithoutConfig;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -75,14 +74,6 @@ class LinkManagerTest {
 
 	private void choiceValuesOfDNowAre(String... values) {
 		DummyLinkConfig.choiceValuesOfD.set(values);
-	}
-
-	@Test
-	void canLoadViaMetaInfServicesArdulinkLinkfactoryWithoutConfig() throws IOException {
-		try (Link link = sut.getConfigurer(create(format("%s://aLinkWithoutArealLinkFactoryWithoutConfig", SCHEMA)))
-				.newLink()) {
-			assertThat(link).isExactlyInstanceOf(AlLinkWithoutArealLinkFactoryWithoutConfig.class);
-		}
 	}
 
 	@Test
