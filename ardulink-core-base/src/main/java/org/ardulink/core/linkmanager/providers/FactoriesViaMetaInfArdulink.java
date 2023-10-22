@@ -90,7 +90,7 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 			this.name = name;
 			this.configClass = loadConfigClass(configClassName);
 			this.linkClass = loadClass(linkClassName, Link.class);
-			if (isNullConfig(configClass)) {
+			if (isNullConfig(this.configClass)) {
 				this.constructor = constructor(linkClass).orElseThrow(() -> new IllegalStateException(
 						format("%s has no public zero arg constructor", linkClass.getName())));
 			} else {

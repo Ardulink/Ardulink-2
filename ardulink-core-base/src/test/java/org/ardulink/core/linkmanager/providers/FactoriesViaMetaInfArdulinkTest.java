@@ -71,8 +71,8 @@ public class FactoriesViaMetaInfArdulinkTest {
 
 	}
 
-	static class TestLinkWithConstructor extends TestLinkWithoutLinkConfigConstructor {
-		public TestLinkWithConstructor(TestLinkConfig config) {
+	static class TestLinkWithConfigConstructor extends TestLinkWithoutLinkConfigConstructor {
+		public TestLinkWithConfigConstructor(TestLinkConfig config) {
 			super();
 		}
 	}
@@ -105,17 +105,27 @@ public class FactoriesViaMetaInfArdulinkTest {
 	@Test
 	void ok() throws Exception {
 		TestLinkConfig config = new TestLinkConfig();
-		assertThat(sut(config.getClass().getName(), TestLinkWithConstructor.class.getName()).newLink(config))
-				.isInstanceOf(TestLinkWithConstructor.class);
+		assertThat(sut(config.getClass().getName(), TestLinkWithConfigConstructor.class.getName()).newLink(config))
+				.isInstanceOf(TestLinkWithConfigConstructor.class);
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = { "null", "NULL", "Null", "nUlL" })
 	@NullSource
 	void okWithoutConfig(String configClassName) throws Exception {
+		String linkClassName = TestLinkWithoutLinkConfigConstructor.class.getName();
 		TestLinkConfig config = new TestLinkConfig();
-		assertThat(sut(configClassName, TestLinkWithoutLinkConfigConstructor.class.getName()).newLink(config))
+		assertThat(sut(configClassName, linkClassName).newLink(config))
 				.isInstanceOf(TestLinkWithoutLinkConfigConstructor.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "null", "NULL", "Null", "nUlL" })
+	@NullSource
+	void ifTheConfigClassIsNullThereHasToBePublicZeroArgConstructor(String configClassName) throws Exception {
+		String linkClassName = TestLinkWithConfigConstructor.class.getName();
+		assertThatThrownBy(() -> sut(configClassName, linkClassName)).isInstanceOf(RuntimeException.class)
+				.hasMessage(linkClassName + " has no public zero arg constructor");
 	}
 
 	LinkFactory<LinkConfig> sut(String configClassName, String linkClassName) {
