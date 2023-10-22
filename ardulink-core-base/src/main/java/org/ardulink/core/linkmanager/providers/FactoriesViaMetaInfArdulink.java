@@ -18,6 +18,7 @@ package org.ardulink.core.linkmanager.providers;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
+import static org.ardulink.core.linkmanager.Classloaders.getResources;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
 import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.util.Classes.constructor;
@@ -37,7 +38,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.ardulink.core.Link;
-import org.ardulink.core.linkmanager.Classloaders;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 
@@ -51,11 +51,95 @@ import org.ardulink.core.linkmanager.LinkFactory;
  */
 public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 
-	static class LineParser {
+	static class LineProcessor {
+
+		/**
+		 * A generic LinkFactory that has no implementation but a {@link LinkConfig} and
+		 * {@link Link} that has a constructor accepting the {@link LinkConfig}.<br>
+		 * Creating {@link Link} without {@link LinkConfig}s is also supported, when
+		 * passing "null" as <code>configClassName</code> and the {@link Link} has a
+		 * public zero arg constructor.
+		 */
+		private static final class GenericLinkFactory implements LinkFactory<LinkConfig> {
+
+			private final ClassLoader classloader;
+			private final String name;
+			private final Class<? extends LinkConfig> configClass;
+			private final Class<? extends Link> linkClass;
+			private final Constructor<? extends Link> constructor;
+
+			private GenericLinkFactory(ClassLoader classloader, String name, String configClassName,
+					String linkClassName) throws ClassNotFoundException {
+				this.classloader = classloader;
+				this.name = name;
+				this.configClass = loadConfigClass(configClassName);
+				this.linkClass = loadClass(linkClassName, Link.class);
+				this.constructor = determineConstructor(this.configClass, this.linkClass);
+			}
+
+			private static Constructor<? extends Link> determineConstructor(Class<? extends LinkConfig> configClass,
+					Class<? extends Link> linkClass) {
+				return isNullConfig(configClass) //
+						? constructor(linkClass).orElseThrow(() -> new IllegalStateException(
+								format("%s has no public zero arg constructor", linkClass.getName()))) //
+						: constructor(linkClass, configClass).orElseThrow(() -> new IllegalStateException(
+								format("%s has no public constructor with argument of type %s", linkClass.getName(),
+										configClass.getName())));
+			}
+
+			@Override
+			public String getName() {
+				return name;
+			}
+
+			@Override
+			public Link newLink(LinkConfig config) throws Exception {
+				try {
+					return constructor.getParameterCount() == 0 //
+							? constructor.newInstance() //
+							: constructor.newInstance(config);
+				} catch (InvocationTargetException e) {
+					propagateIfInstanceOf(e.getTargetException(), Error.class);
+					propagateIfInstanceOf(e.getTargetException(), Exception.class);
+					throw propagate(e);
+				}
+			}
+
+			private Class<? extends LinkConfig> loadConfigClass(String configClassName) throws ClassNotFoundException {
+				return isNull(configClassName) ? LinkConfig.class : loadClass(configClassName, LinkConfig.class);
+			}
+
+			private static boolean isNull(String configClassName) {
+				return nullOrEmpty(configClassName) || "null".equalsIgnoreCase(configClassName);
+			}
+
+			private static boolean isNullConfig(Class<?> configClass) {
+				return LinkConfig.class.equals(configClass);
+			}
+
+			private <T> Class<? extends T> loadClass(String name, Class<T> targetType) throws ClassNotFoundException {
+				Class<?> clazz = this.classloader.loadClass(name);
+				checkState(targetType.isAssignableFrom(clazz), "%s not of type %s", clazz.getName(),
+						targetType.getName());
+				return clazz.asSubclass(targetType);
+			}
+
+			@Override
+			public LinkConfig newLinkConfig() {
+				try {
+					return isNullConfig(configClass) ? NO_ATTRIBUTES : configClass.newInstance();
+				} catch (InstantiationException e) {
+					throw propagate(e);
+				} catch (IllegalAccessException e) {
+					throw propagate(e);
+				}
+			}
+
+		}
 
 		private final ClassLoader classloader;
 
-		LineParser(ClassLoader classloader) {
+		LineProcessor(ClassLoader classloader) {
 			this.classloader = classloader;
 		}
 
@@ -76,94 +160,21 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 
 	}
 
-	private static final class GenericLinkFactory implements LinkFactory<LinkConfig> {
-
-		private final ClassLoader classloader;
-		private final String name;
-		private final Class<? extends LinkConfig> configClass;
-		private final Class<? extends Link> linkClass;
-		private final Constructor<? extends Link> constructor;
-
-		GenericLinkFactory(ClassLoader classloader, String name, String configClassName, String linkClassName)
-				throws ClassNotFoundException {
-			this.classloader = classloader;
-			this.name = name;
-			this.configClass = loadConfigClass(configClassName);
-			this.linkClass = loadClass(linkClassName, Link.class);
-			if (isNullConfig(this.configClass)) {
-				this.constructor = constructor(linkClass).orElseThrow(() -> new IllegalStateException(
-						format("%s has no public zero arg constructor", linkClass.getName())));
-			} else {
-				this.constructor = constructor(linkClass, configClass).orElseThrow(
-						() -> new IllegalStateException(format("%s has no public constructor with argument of type %s",
-								linkClass.getName(), configClass.getName())));
-			}
-		}
-
-		@Override
-		public String getName() {
-			return name;
-		}
-
-		@Override
-		public Link newLink(LinkConfig config) throws Exception {
-			try {
-				return constructor.getParameterCount() == 0 //
-						? constructor.newInstance() //
-						: constructor.newInstance(config);
-			} catch (InvocationTargetException e) {
-				propagateIfInstanceOf(e.getTargetException(), Error.class);
-				propagateIfInstanceOf(e.getTargetException(), Exception.class);
-				throw propagate(e);
-			}
-		}
-
-		private Class<? extends LinkConfig> loadConfigClass(String configClassName) throws ClassNotFoundException {
-			return isNull(configClassName) ? LinkConfig.class : loadClass(configClassName, LinkConfig.class);
-		}
-
-		private static boolean isNull(String configClassName) {
-			return nullOrEmpty(configClassName) || "null".equalsIgnoreCase(configClassName);
-		}
-
-		private static boolean isNullConfig(Class<?> configClass) {
-			return LinkConfig.class.equals(configClass);
-		}
-
-		private <T> Class<? extends T> loadClass(String name, Class<T> targetType) throws ClassNotFoundException {
-			Class<?> clazz = this.classloader.loadClass(name);
-			checkState(targetType.isAssignableFrom(clazz), "%s not of type %s", clazz.getName(), targetType.getName());
-			return clazz.asSubclass(targetType);
-		}
-
-		@Override
-		public LinkConfig newLinkConfig() {
-			try {
-				return isNullConfig(configClass) ? NO_ATTRIBUTES : configClass.newInstance();
-			} catch (InstantiationException e) {
-				throw propagate(e);
-			} catch (IllegalAccessException e) {
-				throw propagate(e);
-			}
-		}
-
-	}
-
 	@Override
 	public Collection<LinkFactory> loadLinkFactories() {
+		ClassLoader classloader = moduleClassloader();
+		LineProcessor lineParser = new LineProcessor(classloader);
 		try {
-			ClassLoader classloader = moduleClassloader();
-			return Classloaders.getResources(classloader, "META-INF/services/ardulink/linkfactory").stream()
-					.map(url -> read(classloader, url)).flatMap(Collection::stream).collect(toList());
+			return getResources(classloader, "META-INF/services/ardulink/linkfactory").stream()
+					.map(url -> loadLinkFactories(lineParser, url)).flatMap(Collection::stream).collect(toList());
 		} catch (Exception e) {
 			throw propagate(e);
 		}
 	}
 
-	private List<LinkFactory<LinkConfig>> read(ClassLoader classloader, URL url) {
-		LineParser lineParser = new LineParser(classloader);
+	private List<LinkFactory<LinkConfig>> loadLinkFactories(LineProcessor lineProcessor, URL url) {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
-			return reader.lines().filter(not(String::isEmpty)).map(lineParser::processLine).collect(toList());
+			return reader.lines().filter(not(String::isEmpty)).map(lineProcessor::processLine).collect(toList());
 		} catch (IOException e) {
 			throw propagate(e);
 		}
