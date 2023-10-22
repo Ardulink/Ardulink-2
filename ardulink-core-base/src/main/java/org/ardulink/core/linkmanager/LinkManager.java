@@ -22,6 +22,7 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
@@ -29,6 +30,7 @@ import static org.ardulink.util.Numbers.convertTo;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Predicates.attribute;
 import static org.ardulink.util.Primitives.findPrimitiveFor;
 import static org.ardulink.util.Primitives.wrap;
 import static org.ardulink.util.ServiceLoaders.services;
@@ -106,31 +108,37 @@ public abstract class LinkManager {
 
 		private Optional<Long> minValue() {
 			Annotation[] annotations = attribute.getAnnotations();
-			Optional<Long> min = find(annotations, Min.class).map(Min::value);
-			return min.isPresent() ? min
-					: isPresent(annotations, PositiveOrZero.class) ? value(0L)
-							: isPresent(annotations, Positive.class) ? value(+1) : empty();
+			Optional<Long> min = tryFind(annotations, Min.class).map(Min::value);
+			return min.isPresent() //
+					? min //
+					: contains(annotations, PositiveOrZero.class) //
+							? value(0) //
+							: contains(annotations, Positive.class) ? value(+1) : empty();
 		}
 
 		private Optional<Long> maxValue() {
 			Annotation[] annotations = attribute.getAnnotations();
-			Optional<Long> max = find(annotations, Max.class).map(Max::value);
-			return max.isPresent() ? max
-					: isPresent(annotations, NegativeOrZero.class) ? value(0L)
-							: isPresent(annotations, Negative.class) ? value(-1) : empty();
+			Optional<Long> max = tryFind(annotations, Max.class).map(Max::value);
+			return max.isPresent() //
+					? max //
+					: contains(annotations, NegativeOrZero.class) //
+							? value(0) //
+							: contains(annotations, Negative.class) ? value(-1) : empty();
 		}
 
 		private static Optional<Long> value(long value) {
 			return Optional.of(value);
 		}
 
-		private <S extends Annotation> Optional<S> find(Annotation[] annotations, Class<S> annoClass) {
-			return stream(annotations).filter(a -> a.annotationType().equals(annoClass)).findFirst()
+		private <S extends Annotation> Optional<S> tryFind(Annotation[] annotations, Class<S> annoClass) {
+			return stream(annotations) //
+					.filter(attribute(Annotation::annotationType, isEqual(annoClass))) //
+					.findFirst() //
 					.map(annoClass::cast);
 		}
 
-		private <S extends Annotation> boolean isPresent(Annotation[] annotations, Class<S> annoClass) {
-			return stream(annotations).anyMatch(a -> a.annotationType().equals(annoClass));
+		private <S extends Annotation> boolean contains(Annotation[] annotations, Class<S> annoClass) {
+			return tryFind(annotations, annoClass).isPresent();
 		}
 
 		ValidationInfo create() {
@@ -536,12 +544,8 @@ public abstract class LinkManager {
 		}
 
 		private void validate() {
-			for (String name : getAttributes()) {
-				ConfigAttribute attribute = getAttribute(name);
-				if (attribute.hasChoiceValues()) {
-					checkIfValid(attribute);
-				}
-			}
+			getAttributes().stream().map(this::getAttribute).filter(ConfigAttribute::hasChoiceValues)
+					.forEach(this::checkIfValid);
 		}
 
 		private void checkIfValid(ConfigAttribute attribute) {
@@ -573,7 +577,7 @@ public abstract class LinkManager {
 		}
 
 		private Optional<LinkFactory> getByName(String name, List<LinkFactory> connectionFactories) {
-			return connectionFactories.stream().filter(f -> f.getName().equals(name)).findFirst();
+			return connectionFactories.stream().filter(attribute(LinkFactory::getName, isEqual(name))).findFirst();
 		}
 
 		private Optional<LinkFactory> getByAlias(String name, List<LinkFactory> connectionFactories) {
@@ -626,7 +630,8 @@ public abstract class LinkManager {
 		}
 
 		private Object enumWithName(Class<Enum<?>> targetType, String value) {
-			return stream(targetType.getEnumConstants()).filter(e -> e.name().equals(value)).findFirst().orElse(null);
+			return stream(targetType.getEnumConstants()).filter(attribute(Enum::name, isEqual(value))).findFirst()
+					.orElse(null);
 		}
 
 	};
