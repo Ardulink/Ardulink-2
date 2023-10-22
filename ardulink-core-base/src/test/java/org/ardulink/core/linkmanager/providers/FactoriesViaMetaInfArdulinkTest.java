@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Pin;
@@ -14,6 +15,7 @@ import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -110,8 +112,7 @@ public class FactoriesViaMetaInfArdulinkTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "null", "NULL", "Null", "nUlL" })
-	@NullSource
+	@MethodSource("stringsRepresentingNull")
 	void okWithoutConfig(String configClassName) throws Exception {
 		String linkClassName = TestLinkWithoutLinkConfigConstructor.class.getName();
 		TestLinkConfig config = new TestLinkConfig();
@@ -120,12 +121,15 @@ public class FactoriesViaMetaInfArdulinkTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "null", "NULL", "Null", "nUlL" })
-	@NullSource
+	@MethodSource("stringsRepresentingNull")
 	void ifTheConfigClassIsNullThereHasToBePublicZeroArgConstructor(String configClassName) throws Exception {
 		String linkClassName = TestLinkWithConfigConstructor.class.getName();
 		assertThatThrownBy(() -> sut(configClassName, linkClassName)).isInstanceOf(RuntimeException.class)
 				.hasMessage(linkClassName + " has no public zero arg constructor");
+	}
+
+	static Stream<String> stringsRepresentingNull() {
+		return Stream.of("null", "NULL", "Null", "nUlL", null);
 	}
 
 	LinkFactory<LinkConfig> sut(String configClassName, String linkClassName) {
