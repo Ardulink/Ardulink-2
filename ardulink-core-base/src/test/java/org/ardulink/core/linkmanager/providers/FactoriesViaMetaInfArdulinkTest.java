@@ -1,10 +1,14 @@
 package org.ardulink.core.linkmanager.providers;
 
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
+import static java.util.stream.IntStream.rangeClosed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.ardulink.core.convenience.LinkDelegate;
@@ -13,7 +17,6 @@ import org.ardulink.core.linkmanager.LinkFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 public class FactoriesViaMetaInfArdulinkTest {
 
@@ -33,16 +36,16 @@ public class FactoriesViaMetaInfArdulinkTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "one:two", "one:two:three:four" })
 	@MethodSource("zeroToTwentyWordsExcludingThreeWords")
-	void throwsExceptionIfNotThreeArgs(String row) {
+	void throwsExceptionIfNotThreeArgs(List<String> words) {
+		String row = row(words);
 		assertThatThrownBy(() -> sut(row)).isInstanceOf(RuntimeException.class)
 				.hasMessage("Could not split " + row + " into name:configclass:linkclass");
 	}
 
-	static Stream<String> zeroToTwentyWordsExcludingThreeWords() {
-		return range(0, 19).filter(i -> i != 3)
-				.mapToObj(i -> range(0, i).mapToObj(String::valueOf).collect(joining(":")));
+	static Stream<List<String>> zeroToTwentyWordsExcludingThreeWords() {
+		return rangeClosed(0, 20).filter(i -> i != 3)
+				.mapToObj(i -> range(0, i).mapToObj(String::valueOf).collect(toList()));
 	}
 
 	@Test
@@ -100,7 +103,11 @@ public class FactoriesViaMetaInfArdulinkTest {
 	}
 
 	static String makeRow(String configClassName, String linkClassName) {
-		return Stream.of("anyName", configClassName, linkClassName).collect(joining(":"));
+		return row(asList("anyName", configClassName, linkClassName));
+	}
+
+	private static String row(List<String> row) {
+		return row.stream().collect(joining(":"));
 	}
 
 	LinkFactory<LinkConfig> sut(String line) {
