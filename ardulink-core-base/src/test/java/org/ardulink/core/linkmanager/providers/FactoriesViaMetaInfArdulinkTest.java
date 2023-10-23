@@ -106,7 +106,7 @@ public class FactoriesViaMetaInfArdulinkTest {
 		return row(asList("anyName", configClassName, linkClassName));
 	}
 
-	private static String row(List<String> row) {
+	static String row(List<String> row) {
 		return row.stream().collect(joining(":"));
 	}
 
