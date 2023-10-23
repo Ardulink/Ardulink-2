@@ -3,79 +3,30 @@ package org.ardulink.core.linkmanager.providers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.IOException;
 import java.util.stream.Stream;
 
-import org.ardulink.core.AbstractListenerLink;
-import org.ardulink.core.Pin;
-import org.ardulink.core.Pin.AnalogPin;
-import org.ardulink.core.Pin.DigitalPin;
-import org.ardulink.core.Tone;
+import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
 
 public class FactoriesViaMetaInfArdulinkTest {
 
 	static final class TestLinkConfig implements LinkConfig {
 	}
 
-	static class TestLinkWithoutLinkConfigConstructor extends AbstractListenerLink {
-
+	static class TestLinkWithoutLinkConfigConstructor extends LinkDelegate {
 		public TestLinkWithoutLinkConfigConstructor() {
-			super();
+			super(null);
 		}
-
-		@Override
-		public long switchDigitalPin(DigitalPin digitalPin, boolean value) throws IOException {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public long switchAnalogPin(AnalogPin analogPin, int value) throws IOException {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public long stopListening(Pin pin) throws IOException {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public long startListening(Pin pin) throws IOException {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public long sendTone(Tone tone) throws IOException {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public long sendNoTone(AnalogPin analogPin) throws IOException {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers, int keymodifiersex)
-				throws IOException {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public long sendCustomMessage(String... messages) throws IOException {
-			throw new UnsupportedOperationException();
-		}
-
 	}
 
-	static class TestLinkWithConfigConstructor extends TestLinkWithoutLinkConfigConstructor {
+	static class TestLinkWithConfigConstructor extends LinkDelegate {
 		public TestLinkWithConfigConstructor(TestLinkConfig config) {
-			super();
+			super(null);
 		}
 	}
 
