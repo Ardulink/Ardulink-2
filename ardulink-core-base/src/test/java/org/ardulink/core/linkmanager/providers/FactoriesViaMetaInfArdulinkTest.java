@@ -1,5 +1,7 @@
 package org.ardulink.core.linkmanager.providers;
 
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.IntStream.range;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -32,17 +34,22 @@ public class FactoriesViaMetaInfArdulinkTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = { "one:two", "one:two:three:four" })
-	void throwsExceptionIfNotThreeArgs(String line) {
-		assertThatThrownBy(
-				() -> new FactoriesViaMetaInfArdulink.LineProcessor(getClass().getClassLoader()).processLine(line))
-				.isInstanceOf(RuntimeException.class)
-				.hasMessage("Could not split " + line + " into name:configclass:linkclass");
+	@MethodSource("zeroToTwentyWordsExcludingThreeWords")
+	void throwsExceptionIfNotThreeArgs(String row) {
+		assertThatThrownBy(() -> sut(row)).isInstanceOf(RuntimeException.class)
+				.hasMessage("Could not split " + row + " into name:configclass:linkclass");
+	}
+
+	static Stream<String> zeroToTwentyWordsExcludingThreeWords() {
+		return range(0, 19).filter(i -> i != 3)
+				.mapToObj(i -> range(0, i).mapToObj(String::valueOf).collect(joining(":")));
 	}
 
 	@Test
 	void configClassNameNotOfTypeLinkConfig() {
 		String configClassName = String.class.getName();
-		assertThatThrownBy(() -> sut(configClassName, "SomeNotExistingClassName")).isInstanceOf(RuntimeException.class)
+		assertThatThrownBy(() -> sut(makeRow(configClassName, "SomeNotExistingClassName")))
+				.isInstanceOf(RuntimeException.class)
 				.hasMessage(configClassName + " not of type " + LinkConfig.class.getName());
 	}
 
@@ -50,8 +57,9 @@ public class FactoriesViaMetaInfArdulinkTest {
 	void linkClassDoesNotExist() {
 		TestLinkConfig config = new TestLinkConfig();
 		String configClassName = config.getClass().getName();
-		assertThatThrownBy(() -> sut(configClassName, "SomeNotExistingClassName")).isInstanceOf(RuntimeException.class)
-				.hasCauseInstanceOf(ClassNotFoundException.class).hasMessageContaining("SomeNotExistingClassName");
+		assertThatThrownBy(() -> sut(makeRow(configClassName, "SomeNotExistingClassName")))
+				.isInstanceOf(RuntimeException.class).hasCauseInstanceOf(ClassNotFoundException.class)
+				.hasMessageContaining("SomeNotExistingClassName");
 	}
 
 	@Test
@@ -59,15 +67,15 @@ public class FactoriesViaMetaInfArdulinkTest {
 		TestLinkConfig config = new TestLinkConfig();
 		String configClassName = config.getClass().getName();
 		String linkClassName = TestLinkWithoutLinkConfigConstructor.class.getName();
-		assertThatThrownBy(() -> sut(configClassName, linkClassName)).isInstanceOf(RuntimeException.class)
+		assertThatThrownBy(() -> sut(makeRow(configClassName, linkClassName))).isInstanceOf(RuntimeException.class)
 				.hasMessage(linkClassName + " has no public constructor with argument of type " + configClassName);
 	}
 
 	@Test
 	void ok() throws Exception {
 		TestLinkConfig config = new TestLinkConfig();
-		assertThat(sut(config.getClass().getName(), TestLinkWithConfigConstructor.class.getName()).newLink(config))
-				.isInstanceOf(TestLinkWithConfigConstructor.class);
+		assertThat(sut(makeRow(config.getClass().getName(), TestLinkWithConfigConstructor.class.getName()))
+				.newLink(config)).isInstanceOf(TestLinkWithConfigConstructor.class);
 	}
 
 	@ParameterizedTest
@@ -75,7 +83,7 @@ public class FactoriesViaMetaInfArdulinkTest {
 	void okWithoutConfig(String configClassName) throws Exception {
 		String linkClassName = TestLinkWithoutLinkConfigConstructor.class.getName();
 		TestLinkConfig config = new TestLinkConfig();
-		assertThat(sut(configClassName, linkClassName).newLink(config))
+		assertThat(sut(makeRow(configClassName, linkClassName)).newLink(config))
 				.isInstanceOf(TestLinkWithoutLinkConfigConstructor.class);
 	}
 
@@ -83,7 +91,7 @@ public class FactoriesViaMetaInfArdulinkTest {
 	@MethodSource("stringsRepresentingNull")
 	void ifTheConfigClassIsNullThereHasToBePublicZeroArgConstructor(String configClassName) throws Exception {
 		String linkClassName = TestLinkWithConfigConstructor.class.getName();
-		assertThatThrownBy(() -> sut(configClassName, linkClassName)).isInstanceOf(RuntimeException.class)
+		assertThatThrownBy(() -> sut(makeRow(configClassName, linkClassName))).isInstanceOf(RuntimeException.class)
 				.hasMessage(linkClassName + " has no public zero arg constructor");
 	}
 
@@ -91,9 +99,12 @@ public class FactoriesViaMetaInfArdulinkTest {
 		return Stream.of("null", "NULL", "Null", "nUlL", null);
 	}
 
-	LinkFactory<LinkConfig> sut(String configClassName, String linkClassName) {
-		return new FactoriesViaMetaInfArdulink.LineProcessor(getClass().getClassLoader())
-				.processLine("anyName:" + configClassName + ":" + linkClassName);
+	static String makeRow(String configClassName, String linkClassName) {
+		return Stream.of("anyName", configClassName, linkClassName).collect(joining(":"));
+	}
+
+	LinkFactory<LinkConfig> sut(String line) {
+		return new FactoriesViaMetaInfArdulink.LineProcessor(getClass().getClassLoader()).processLine(line);
 	}
 
 }
