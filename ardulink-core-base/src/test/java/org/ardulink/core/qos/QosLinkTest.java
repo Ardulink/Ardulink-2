@@ -23,6 +23,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.util.Regex.regex;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
@@ -64,8 +65,8 @@ class QosLinkTest {
 	void doesThrowExceptionIfNotResponseReceivedWithinHalfAsecond() throws Exception {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).doNotRespond();
 		try (QosLink qosLink = newQosLink(500, MILLISECONDS)) {
-			assertThatThrownBy(() -> qosLink.sendNoTone(analogPin(3))).isInstanceOf(IllegalStateException.class)
-					.hasMessageContaining("response").hasMessageContaining("500 MILLISECONDS");
+			assertThatIllegalStateException().isThrownBy(() -> qosLink.sendNoTone(analogPin(3)))
+					.withMessageContainingAll("response", "500 MILLISECONDS");
 		}
 	}
 
@@ -73,8 +74,8 @@ class QosLinkTest {
 	void doesThrowExceptionIfKoResponse() throws Exception {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/3\\?id\\=(\\d)"))).respondWith(lf("alp://rply/ko?id={0}"));
 		try (QosLink qosLink = newQosLink(MAX_VALUE, DAYS)) {
-			assertThatThrownBy(() -> qosLink.sendNoTone(analogPin(3))).isInstanceOf(IllegalStateException.class)
-					.hasMessageContaining("status").hasMessageContaining("not ok");
+			assertThatIllegalStateException().isThrownBy(() -> qosLink.sendNoTone(analogPin(3)))
+					.withMessageContainingAll("status", "not ok");
 		}
 	}
 
@@ -84,9 +85,9 @@ class QosLinkTest {
 		arduinoStub.onReceive(regex(lf("alp:\\/\\/tone\\/4\\/5\\/6\\?id\\=(\\d)")))
 				.respondWith(lf("alp://rply/ok?id={0}"));
 		try (QosLink qosLink = newQosLink(500, MILLISECONDS)) {
-			assertThatThrownBy(
+			assertThatIllegalStateException().isThrownBy(
 					() -> qosLink.sendTone(Tone.forPin(analogPin(1)).withHertz(2).withDuration(3, MILLISECONDS)))
-					.isInstanceOf(IllegalStateException.class).hasMessageContaining("No response");
+					.withMessageContaining("No response");
 			qosLink.sendTone(Tone.forPin(analogPin(4)).withHertz(5).withDuration(6, MILLISECONDS));
 		}
 	}

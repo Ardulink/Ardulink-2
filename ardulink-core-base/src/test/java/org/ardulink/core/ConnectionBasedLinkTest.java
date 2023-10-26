@@ -26,7 +26,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
@@ -95,10 +95,12 @@ class ConnectionBasedLinkTest {
 	}
 
 	private static EventListener verifyThrowsExceptions(EventListener listener) {
-		assertThatThrownBy(() -> listener.stateChanged(analogPinValueChanged(analogPin(1), 2)))
-				.isInstanceOf(RuntimeException.class);
-		assertThatThrownBy(() -> listener.stateChanged(digitalPinValueChanged(digitalPin(3), true)))
-				.isInstanceOf(RuntimeException.class);
+		AnalogPinValueChangedEvent analogPinValueChanged = analogPinValueChanged(analogPin(1), 2);
+		assertThatRuntimeException().isThrownBy(() -> listener.stateChanged(analogPinValueChanged));
+
+		DigitalPinValueChangedEvent digitalPinValueChanged = digitalPinValueChanged(digitalPin(3), true);
+		assertThatRuntimeException().isThrownBy(() -> listener.stateChanged(digitalPinValueChanged));
+
 		return listener;
 	}
 

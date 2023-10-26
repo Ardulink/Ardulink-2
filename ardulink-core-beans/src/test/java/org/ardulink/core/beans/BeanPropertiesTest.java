@@ -22,6 +22,7 @@ import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnot
 import static org.ardulink.core.beans.finder.impl.FindByFieldAccess.directFieldAccess;
 import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.lang.annotation.Retention;
@@ -30,6 +31,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -235,8 +237,8 @@ class BeanPropertiesTest {
 	@Test
 	void throwsExceptionsIfAnnotationHasNoValueAttribute() {
 		Class<ThisAnnotationHasNoValueAttribute> clazz = ThisAnnotationHasNoValueAttribute.class;
-		assertThatThrownBy(() -> propertyAnnotated(clazz)).isInstanceOf(IllegalArgumentException.class)
-				.hasMessageContaining(clazz.getName()).hasMessageContaining("has no attribute named value");
+		assertThatIllegalArgumentException().isThrownBy(() -> propertyAnnotated(clazz))
+				.withMessageContainingAll(clazz.getName(), "has no attribute named value");
 	}
 
 	@Test

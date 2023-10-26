@@ -53,12 +53,7 @@ public class DynamicLinkFactoriesProvider implements LinkFactoriesProvider {
 
 	}
 
-	private static final ThreadLocal<List<LinkFactory>> factories = new ThreadLocal<List<LinkFactory>>() {
-		@Override
-		protected List<LinkFactory> initialValue() {
-			return new ArrayList<>();
-		}
-	};
+	private static final ThreadLocal<List<LinkFactory>> factories = ThreadLocal.withInitial(() -> new ArrayList<>());
 
 	private static List<LinkFactory> factories() {
 		return factories.get();

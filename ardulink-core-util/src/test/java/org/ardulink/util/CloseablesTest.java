@@ -1,7 +1,7 @@
 package org.ardulink.util;
 
 import static org.ardulink.util.Closeables.closeQuietly;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.io.Closeable;
@@ -24,7 +24,7 @@ class CloseablesTest {
 		Closeable closeable = () -> {
 			throw ioex;
 		};
-		assertThatThrownBy(() -> closeQuietly(closeable)).isInstanceOf(RuntimeException.class).hasCause(ioex);
+		assertThatRuntimeException().isThrownBy(() -> closeQuietly(closeable)).withCause(ioex);
 	}
 
 }

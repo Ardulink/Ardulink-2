@@ -18,6 +18,7 @@ package org.ardulink.core.serial.jssc;
 
 import static java.net.URI.create;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -27,6 +28,7 @@ import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import jssc.SerialPortList;
@@ -80,8 +82,7 @@ class SerialLinkFactoryIntegrationTest {
 	@Test
 	void cantConnectWithoutPort() {
 		Configurer configurer = LinkManager.getInstance().getConfigurer(create(PREFIX + "?baudrate=9600"));
-		assertThatThrownBy(configurer::newLink).isInstanceOf(RuntimeException.class)
-				.hasMessageContaining("Port name - null");
+		assertThatRuntimeException().isThrownBy(configurer::newLink).withMessageContaining("Port name - null");
 	}
 
 	private static String anyString() {

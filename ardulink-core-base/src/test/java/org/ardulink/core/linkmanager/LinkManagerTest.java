@@ -22,6 +22,7 @@ import static java.util.Arrays.asList;
 import static org.ardulink.core.linkmanager.LinkManager.SCHEMA;
 import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
@@ -86,9 +87,9 @@ class LinkManagerTest {
 
 	@Test
 	void nonExistingNameWitllThrowRTE() throws IOException {
-		assertThatThrownBy(() -> sut.getConfigurer(create(format("%s://XXX-aNameThatIsNotRegistered-XXX", SCHEMA))))
-				.isInstanceOf(RuntimeException.class).hasMessageContaining("registered")
-				.hasMessageContaining("factory");
+		assertThatRuntimeException()
+				.isThrownBy(() -> sut.getConfigurer(create(format("%s://XXX-aNameThatIsNotRegistered-XXX", SCHEMA))))
+				.withMessageContainingAll("registered", "factory");
 	}
 
 	@Test

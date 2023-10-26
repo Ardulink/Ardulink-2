@@ -20,6 +20,7 @@ import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.core.proto.api.Protocols.protocolNames;
 import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
@@ -52,8 +53,8 @@ class ProtocolsTest {
 	void getByNameThrowsExceptionOnUnknownProtocolNames() {
 		String unknownProto = "XXXnonExistingProtocolNameXXX";
 		assertThat(tryProtoByName(unknownProto)).isEmpty();
-		assertThatThrownBy(() -> protoByName(unknownProto)).isInstanceOf(RuntimeException.class)
-				.hasMessageContaining(unknownProto, ArdulinkProtocol2.NAME, DummyProtocol.NAME);
+		assertThatRuntimeException().isThrownBy(() -> protoByName(unknownProto)).withMessageContainingAll(unknownProto,
+				ArdulinkProtocol2.NAME, DummyProtocol.NAME);
 		assertThat(tryProtoByName(unknownProto)).isEmpty();
 	}
 

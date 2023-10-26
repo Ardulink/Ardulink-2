@@ -17,7 +17,7 @@ limitations under the License.
 package org.ardulink.util;
 
 import static java.util.function.Function.identity;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,13 +40,13 @@ class CollectorsTest {
 	@Test
 	void toUnmodifiableList() {
 		List<Integer> list = elements.stream().collect(Collectors.toUnmodifiableList());
-		assertThatThrownBy(() -> list.add(4)).isInstanceOf(RuntimeException.class);
+		assertThatRuntimeException().isThrownBy(() -> list.add(4));
 	}
 
 	@Test
 	void toUnmodifiableMap() {
 		Map<Integer, String> map = elements.stream().collect(Collectors.toUnmodifiableMap(identity(), String::valueOf));
-		assertThatThrownBy(() -> map.put(4, "4")).isInstanceOf(RuntimeException.class);
+		assertThatRuntimeException().isThrownBy(() -> map.put(4, "4"));
 	}
 
 }

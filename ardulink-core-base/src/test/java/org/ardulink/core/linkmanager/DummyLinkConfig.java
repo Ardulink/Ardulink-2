@@ -150,12 +150,7 @@ public class DummyLinkConfig implements LinkConfig {
 	@Named("i4")
 	public Integer i4 = 42;
 	
-	public static final ThreadLocal<String[]> choiceValuesOfD = new ThreadLocal<String[]>() {
-		@Override
-		protected String[] initialValue() {
-			return new String[] { "---unconfigured---" };
-		}
-	};
+	public static final ThreadLocal<String[]> choiceValuesOfD = ThreadLocal.withInitial(() -> new String[] { "---unconfigured---" });
 
 	@Named("a")
 	public void setPort(String a) {
