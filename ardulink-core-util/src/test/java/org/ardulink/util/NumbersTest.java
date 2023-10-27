@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -69,12 +70,14 @@ class NumbersTest {
 	}
 
 	private void convert(Number value) {
-		assertThat(convertTo(value, Integer.class)).isEqualTo(value.intValue());
-		assertThat(convertTo(value, Byte.class)).isEqualTo(value.byteValue());
-		assertThat(convertTo(value, Short.class)).isEqualTo(value.shortValue());
-		assertThat(convertTo(value, Long.class)).isEqualTo(value.longValue());
-		assertThat(convertTo(value, Float.class)).isEqualTo(value.floatValue());
-		assertThat(convertTo(value, Double.class)).isEqualTo(value.doubleValue());
+		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+			softly.assertThat(convertTo(value, Integer.class)).isEqualTo(value.intValue());
+			softly.assertThat(convertTo(value, Byte.class)).isEqualTo(value.byteValue());
+			softly.assertThat(convertTo(value, Short.class)).isEqualTo(value.shortValue());
+			softly.assertThat(convertTo(value, Long.class)).isEqualTo(value.longValue());
+			softly.assertThat(convertTo(value, Float.class)).isEqualTo(value.floatValue());
+			softly.assertThat(convertTo(value, Double.class)).isEqualTo(value.doubleValue());
+		}
 	}
 
 	@ParameterizedTest

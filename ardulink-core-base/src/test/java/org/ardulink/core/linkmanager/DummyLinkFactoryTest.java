@@ -25,7 +25,6 @@ import static org.ardulink.core.linkmanager.LinkManager.SCHEMA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.net.URI;
@@ -38,9 +37,7 @@ import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import org.ardulink.core.proto.impl.DummyProtocol;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AutoCloseableSoftAssertions;
-import org.assertj.core.api.ThrowableAssertAlternative;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.DefaultLocale;
 
@@ -89,15 +86,17 @@ class DummyLinkFactoryTest {
 			assertThat(link).isInstanceOf(ConnectionBasedLink.class);
 			DummyConnection connection = (DummyConnection) ((ConnectionBasedLink) link).getConnection();
 			DummyLinkConfig config = connection.getConfig();
-			assertThat(config.a).isEqualTo(aValue);
-			assertThat(config.b).isEqualTo(bValue);
-			assertThat(config.c).isEqualTo(cValue);
-			assertThat(config.protocol).isExactlyInstanceOf(DummyProtocol.class);
-			assertThat(config.e).isEqualTo(eValue);
-			assertThat(config.i1).isNull();
-			assertThat(config.i2).isNull();
-			assertThat(config.i3).isZero();
-			assertThat(config.i4).isNull();
+			try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+				softly.assertThat(config.a).isEqualTo(aValue);
+				softly.assertThat(config.b).isEqualTo(bValue);
+				softly.assertThat(config.c).isEqualTo(cValue);
+				softly.assertThat(config.protocol).isExactlyInstanceOf(DummyProtocol.class);
+				softly.assertThat(config.e).isEqualTo(eValue);
+				softly.assertThat(config.i1).isNull();
+				softly.assertThat(config.i2).isNull();
+				softly.assertThat(config.i3).isZero();
+				softly.assertThat(config.i4).isNull();
+			}
 		}
 	}
 
