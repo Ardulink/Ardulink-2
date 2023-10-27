@@ -15,11 +15,19 @@ class ClassesTest {
 	}
 
 	@Test
-	void constructor() {
+	void constructorTestClass1() {
 		assertThat(Classes.constructor(TestClass1.class))
 				.hasValueSatisfying(c -> assertThat(c.getParameterTypes()).isEmpty());
+	}
+
+	@Test
+	void constructorTestClass2() {
 		assertThat(Classes.constructor(TestClass2.class, String.class, int.class))
 				.hasValueSatisfying(c -> assertThat(c.getParameterTypes()).containsExactly(String.class, int.class));
+	}
+
+	@Test
+	void constructorTestClass2HasNoZeroArgConstructor() {
 		assertThat(Classes.constructor(TestClass2.class)).isEmpty();
 	}
 
