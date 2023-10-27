@@ -22,11 +22,6 @@ import static java.util.Collections.singleton;
 import static org.ardulink.util.Maps.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.junit.jupiter.api.Test;
 
 /**
