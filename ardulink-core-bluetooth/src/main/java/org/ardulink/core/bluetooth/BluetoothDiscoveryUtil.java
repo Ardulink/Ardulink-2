@@ -1,13 +1,16 @@
 package org.ardulink.core.bluetooth;
 
+import static java.util.Arrays.stream;
+import static java.util.function.Predicate.isEqual;
+import static org.ardulink.util.Maps.entry;
 import static org.ardulink.util.Throwables.propagate;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.Semaphore;
 
 import javax.bluetooth.BluetoothStateException;
@@ -24,7 +27,7 @@ public final class BluetoothDiscoveryUtil {
 
 	private static final int SERVICE_NAME = 0x0100;
 	private static final UUID SERIAL_PORT_SERVICE = new UUID(0x1101);
-	
+
 	private BluetoothDiscoveryUtil() {
 		super();
 	}
@@ -38,7 +41,9 @@ public final class BluetoothDiscoveryUtil {
 		try {
 			agent.startInquiry(DiscoveryAgent.GIAC, listener);
 			semaphore.acquire();
-		} catch (Exception e) {
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		} catch (BluetoothStateException e) {
 			throw propagate(e);
 		}
 
@@ -46,7 +51,9 @@ public final class BluetoothDiscoveryUtil {
 			try {
 				agent.searchServices(serviceName(), serialPortService(), device, listener);
 				semaphore.acquire();
-			} catch (Exception e) {
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			} catch (BluetoothStateException e) {
 				throw propagate(e);
 			}
 		}
@@ -65,18 +72,16 @@ public final class BluetoothDiscoveryUtil {
 			}
 
 			@Override
-			public void inquiryCompleted(int arg0) {
+			public void inquiryCompleted(int discType) {
 				semaphore.release();
 			}
 
 			@Override
-			public void serviceSearchCompleted(int arg0, int arg1) {
-				for (Entry<RemoteDevice, ServiceRecord[]> entry : services.entrySet()) {
-					ServiceRecord service = findService(entry.getValue());
-					if (service != null) {
-						ports.put(getName(entry.getKey()), service);
-					}
-				}
+			public void serviceSearchCompleted(int transID, int respCode) {
+				services.entrySet().stream() //
+						.map(e -> entry(getName(e.getKey()), findService(e.getValue()))) //
+						.filter(e -> e.getValue() != null) //
+						.forEach(e -> ports.put(e.getKey(), e.getValue()));
 				semaphore.release();
 			}
 
@@ -87,7 +92,7 @@ public final class BluetoothDiscoveryUtil {
 			public String getFriendlyName(RemoteDevice remoteDevice) {
 				try {
 					return remoteDevice.getFriendlyName(false);
-				} catch (Exception e) {
+				} catch (IOException e) {
 					return "noname";
 				}
 			}
@@ -99,22 +104,21 @@ public final class BluetoothDiscoveryUtil {
 			 * @return the service record
 			 */
 			private ServiceRecord findService(ServiceRecord[] serviceRecords) {
-				if (serviceRecords.length == 1) {
-					return serviceRecords[0];
-				}
-				return Arrays.stream(serviceRecords).filter(r -> isDevB(r)).findFirst().orElse(null);
+				return serviceRecords.length == 1 //
+						? serviceRecords[0] //
+						: stream(serviceRecords).filter(r -> isDevB(r)).findFirst().orElse(null);
 			}
 
-			private boolean isDevB(ServiceRecord r) {
-				DataElement serviceName = r.getAttributeValue(SERVICE_NAME);
-				return serviceName != null && "DevB".equals(serviceName.getValue());
+			private boolean isDevB(ServiceRecord serviceRecords) {
+				return Optional.ofNullable(serviceRecords.getAttributeValue(SERVICE_NAME)) //
+						.map(DataElement::getValue) //
+						.filter(isEqual("DevB")) //
+						.isPresent();
 			}
 
 			@Override
 			public void servicesDiscovered(int transID, ServiceRecord[] serviceRecords) {
-				for (ServiceRecord serviceRecord : serviceRecords) {
-					services.put(serviceRecord.getHostDevice(), serviceRecords);
-				}
+				stream(serviceRecords).forEach(r -> services.put(r.getHostDevice(), serviceRecords));
 			}
 
 		};
