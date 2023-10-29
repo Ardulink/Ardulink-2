@@ -67,10 +67,7 @@ class MqttWithAuthenticationIntegrationTest {
 
 	@Test
 	void canConnectUsingUserAndPassword() throws IOException {
-		assertDoesNotThrow(() -> {
-			try (Link link = createLink(create(mqttBase() + "&user=" + USER + "&password=" + PASSWORD))) {
-			}
-		});
+		assertDoesNotThrow(createLink(create(mqttBase() + "&user=" + USER + "&password=" + PASSWORD))::close);
 	}
 
 	private String mqttBase() {
