@@ -21,7 +21,7 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static java.net.URI.create;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static org.ardulink.core.linkmanager.LinkManager.SCHEMA;
+import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
@@ -55,17 +55,18 @@ class DummyLinkFactoryTest {
 
 	@Test
 	void throwsExceptionOnInvalidNames() {
-		String name = "non.existing.name";
+		String nonExistingName = "non.existing.name";
 		assertThatIllegalArgumentException()
-				.isThrownBy(() -> sut.getConfigurer(create(format("%s://%s", SCHEMA, name))))
-				.withMessageContainingAll("No factory registered", name);
+				.isThrownBy(() -> sut.getConfigurer(create(format("%s://%s", ARDULINK_SCHEME, nonExistingName))))
+				.withMessageContainingAll("No factory registered", nonExistingName);
 
 	}
 
 	@Test
-	void schemaHasToBeArdulink() {
-		assertThatIllegalArgumentException().isThrownBy(() -> sut.getConfigurer(create(not(SCHEMA) + "://dummy")))
-				.withMessageContaining("schema not ardulink");
+	void schemeHasToBeArdulink() {
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> sut.getConfigurer(create(not(ARDULINK_SCHEME) + "://dummy")))
+				.withMessageContaining("scheme not ardulink");
 	}
 
 	@Test
@@ -81,8 +82,8 @@ class DummyLinkFactoryTest {
 		int bValue = 1;
 		String cValue = "cValue";
 		TimeUnit eValue = TimeUnit.DAYS;
-		try (Link link = sut.getConfigurer(create(SCHEMA + "://dummyLink?a=" + aValue + "&b=" + bValue + "&c=" + cValue
-				+ "&proto=" + DummyProtocol.NAME + "&e=" + eValue.name() + "&i1=&i2=&i3=&i4=")).newLink()) {
+		try (Link link = sut.getConfigurer(create(ARDULINK_SCHEME + "://dummyLink?a=" + aValue + "&b=" + bValue + "&c="
+				+ cValue + "&proto=" + DummyProtocol.NAME + "&e=" + eValue.name() + "&i1=&i2=&i3=&i4=")).newLink()) {
 			assertThat(link).isInstanceOf(ConnectionBasedLink.class);
 			DummyConnection connection = (DummyConnection) ((ConnectionBasedLink) link).getConnection();
 			DummyLinkConfig config = connection.getConfig();
@@ -121,9 +122,8 @@ class DummyLinkFactoryTest {
 	@Test
 	void throwsExceptionOnInvalidKey() {
 		String nonExistingKey = "nonExistingKey";
-		assertThatIllegalArgumentException()
-				.isThrownBy(
-						() -> sut.getConfigurer(create(format("%s://dummyLink?%s=someValue", SCHEMA, nonExistingKey))))
+		assertThatIllegalArgumentException().isThrownBy(
+				() -> sut.getConfigurer(create(format("%s://dummyLink?%s=someValue", ARDULINK_SCHEME, nonExistingKey))))
 				.withMessageContaining("Could not determine attribute " + nonExistingKey);
 	}
 
@@ -179,9 +179,9 @@ class DummyLinkFactoryTest {
 	@Test
 	void canIterateRegisteredFactories() {
 		assertThat(sut.listURIs()).containsExactlyInAnyOrder(links( //
-				format("%s://dummyLink", SCHEMA), //
-				format("%s://mock", SCHEMA), //
-				format("%s://aLinkWithoutArealLinkFactoryWithConfig", SCHEMA)));
+				format("%s://dummyLink", ARDULINK_SCHEME), //
+				format("%s://mock", ARDULINK_SCHEME), //
+				format("%s://aLinkWithoutArealLinkFactoryWithConfig", ARDULINK_SCHEME)));
 	}
 
 	private URI[] links(String... links) {
@@ -293,7 +293,7 @@ class DummyLinkFactoryTest {
 	}
 
 	private static URI dummyLinkURI() {
-		return create(format("%s://dummyLink", SCHEMA));
+		return create(format("%s://dummyLink", ARDULINK_SCHEME));
 	}
 
 }

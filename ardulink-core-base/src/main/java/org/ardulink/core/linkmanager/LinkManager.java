@@ -559,13 +559,14 @@ public abstract class LinkManager {
 
 	}
 
-	public static final String SCHEMA = "ardulink";
+	public static final String ARDULINK_SCHEME = "ardulink";
 
 	private static final LinkManager instance = new LinkManager() {
 
 		@Override
 		public List<URI> listURIs() {
-			return getConnectionFactories().map(f -> create(format("%s://%s", SCHEMA, f.getName()))).collect(toList());
+			return getConnectionFactories().map(f -> create(format("%s://%s", ARDULINK_SCHEME, f.getName())))
+					.collect(toList());
 		}
 
 		private Optional<LinkFactory> getConnectionFactory(String name) {
@@ -654,7 +655,8 @@ public abstract class LinkManager {
 	}
 
 	private static URI checkSchema(URI uri) {
-		checkArgument(SCHEMA.equalsIgnoreCase(uri.getScheme()), "schema not %s (was %s)", SCHEMA, uri.getScheme());
+		String scheme = uri.getScheme();
+		checkArgument(ARDULINK_SCHEME.equalsIgnoreCase(scheme), "scheme not %s (was %s)", ARDULINK_SCHEME, scheme);
 		return uri;
 	}
 

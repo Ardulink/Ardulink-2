@@ -27,11 +27,14 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.convenience.Links.DEFAULT_URI;
 import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
-import static org.ardulink.core.linkmanager.LinkManager.SCHEMA;
+import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.DynamicContainer.*;
+import static org.junit.jupiter.api.DynamicTest.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -59,7 +62,10 @@ import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.ardulink.util.Closeables;
 import org.ardulink.util.ListMultiMap;
 import org.assertj.core.api.AutoCloseableSoftAssertions;
+import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -338,8 +344,17 @@ class LinksTest {
 		});
 	}
 
+	@Test
+	@ExpectedToFail("Needs a ReferenceQueue in Links class")
+	void closesUnunsedLinksThatGetGCed(@MockUri String mockUri) throws IOException {
+		Link link = Links.getLink(mockUri);
+		link = null;
+		System.gc();
+		verify(getMock(link), times(1)).close();
+	}
+
 	private static Link link(String name) {
-		return Links.getLink(format("%s://%s", SCHEMA, name));
+		return Links.getLink(format("%s://%s", ARDULINK_SCHEME, name));
 	}
 
 	private void isDummyConnection(Link link) {

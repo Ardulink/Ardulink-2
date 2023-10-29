@@ -21,6 +21,7 @@ import static java.net.URI.create;
 import static java.util.Arrays.asList;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
+import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.core.linkmanager.LinkManager.replaceName;
 import static org.ardulink.util.Iterables.getFirst;
@@ -54,7 +55,8 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
  */
 public final class Links {
 
-	// TODO use a WeakHashMap and use PhantomReferences to close GCed Links
+	// TODO add ReferenceQueue to close GCed Links, we need strong refs to the keys
+	// but weak ones to the links
 	private static final Map<Object, CacheEntry> cache = new HashMap<>();
 	private static final LinkManager linkManager = LinkManager.getInstance();
 
@@ -62,7 +64,7 @@ public final class Links {
 	private static final Alias serialAlias = new Alias("serial", regex("serial\\-.+"));
 	private static final List<Alias> aliases = asList(defaultAlias, serialAlias);
 
-	public static final String DEFAULT_URI = format("%s://%s", LinkManager.SCHEMA, defaultAlias.aliasName);
+	public static final String DEFAULT_URI = format("%s://%s", ARDULINK_SCHEME, defaultAlias.aliasName);
 
 	private static class Alias {
 
