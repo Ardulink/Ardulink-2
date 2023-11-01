@@ -24,7 +24,7 @@ package org.ardulink.core.mqtt.duplicated;
  * [adsense]
  *
  */
-public class Message {
+public final class Message {
 
 	private final String topic;
 	private final String message;

@@ -26,62 +26,57 @@ import java.util.Objects;
  * [adsense]
  *
  */
-public abstract class Pin {
+public class Pin {
 
 	public enum Type {
 		ANALOG, DIGITAL
 	}
 
 	private final int num;
+	private final Type type;
 
-	protected Pin(int num) {
+	protected Pin(int num, Type type) {
 		this.num = num;
+		this.type = type;
 	}
 
 	public int pinNum() {
 		return num;
 	}
 
-	public abstract Type getType();
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(getType(), num);
+	public Type getType() {
+		return type;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public final int hashCode() {
+		return Objects.hash(type, num);
+	}
+
+	@Override
+	public final boolean equals(Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof Pin))
 			return false;
 		Pin other = (Pin) obj;
-		return getType() == other.getType() && num == other.num;
+		return type == other.type && num == other.num;
 	}
 
 	public static class AnalogPin extends Pin {
 
 		private AnalogPin(int num) {
-			super(num);
+			super(num, Type.ANALOG);
 		}
 
-		@Override
-		public Type getType() {
-			return Type.ANALOG;
-		}
 	}
 
 	public static class DigitalPin extends Pin {
 
 		private DigitalPin(int num) {
-			super(num);
-		}
-
-		@Override
-		public Type getType() {
-			return Type.DIGITAL;
+			super(num, Type.DIGITAL);
 		}
 
 	}

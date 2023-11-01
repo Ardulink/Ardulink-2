@@ -22,8 +22,7 @@ import static java.util.Arrays.asList;
 import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -38,8 +37,11 @@ import java.util.List;
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkFactory.Alias;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.core.linkmanager.LinkManager.DefaultConfigurer.CacheKey;
 import org.ardulink.core.linkmanager.viaservices.AlLinkWithoutArealLinkFactoryWithConfig;
 import org.junit.jupiter.api.Test;
+
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -79,7 +81,8 @@ class LinkManagerTest {
 
 	@Test
 	void canLoadViaMetaInfServicesArdulinkLinkfactoryWithConfig() throws IOException {
-		try (Link link = sut.getConfigurer(create(format("%s://aLinkWithoutArealLinkFactoryWithConfig", ARDULINK_SCHEME)))
+		try (Link link = sut
+				.getConfigurer(create(format("%s://aLinkWithoutArealLinkFactoryWithConfig", ARDULINK_SCHEME)))
 				.newLink()) {
 			assertThat(link).isExactlyInstanceOf(AlLinkWithoutArealLinkFactoryWithConfig.class);
 		}
@@ -87,8 +90,8 @@ class LinkManagerTest {
 
 	@Test
 	void nonExistingNameWitllThrowRTE() throws IOException {
-		assertThatRuntimeException()
-				.isThrownBy(() -> sut.getConfigurer(create(format("%s://XXX-aNameThatIsNotRegistered-XXX", ARDULINK_SCHEME))))
+		assertThatRuntimeException().isThrownBy(
+				() -> sut.getConfigurer(create(format("%s://XXX-aNameThatIsNotRegistered-XXX", ARDULINK_SCHEME))))
 				.withMessageContainingAll("registered", "factory");
 	}
 
@@ -113,7 +116,8 @@ class LinkManagerTest {
 		assert aliasNames(aliasFactorySpy).contains(nameFactorySpy.getName());
 
 		withRegistered(aliasFactorySpy, nameFactorySpy).execute(() -> {
-			try (Link link = sut.getConfigurer(create(format("%s://%s", ARDULINK_SCHEME, nameFactorySpy.getName()))).newLink()) {
+			try (Link link = sut.getConfigurer(create(format("%s://%s", ARDULINK_SCHEME, nameFactorySpy.getName())))
+					.newLink()) {
 				assertAll(() -> {
 					verify(aliasFactorySpy, never()).newLink(any(LinkConfig.class));
 					verify(nameFactorySpy, times(1)).newLink(any(DummyLinkConfig.class));
@@ -122,11 +126,16 @@ class LinkManagerTest {
 		});
 	}
 
-	private List<String> aliasNames(LinkFactory<?> factory) {
+	@Test
+	void equalsContract() {
+		EqualsVerifier.forClass(CacheKey.class).verify();
+	}
+
+	List<String> aliasNames(LinkFactory<?> factory) {
 		return asList(factory.getClass().getAnnotation(Alias.class).value());
 	}
 
-	private URI aliasUri() {
+	URI aliasUri() {
 		return create(format("%s://%s", ARDULINK_SCHEME, AliasUsingLinkFactory.NAME));
 	}
 

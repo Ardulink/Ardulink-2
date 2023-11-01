@@ -460,7 +460,7 @@ public abstract class LinkManager {
 		}
 
 		@LapsedWith(value = JDK14, module = "records")
-		class CacheKey {
+		final class CacheKey {
 
 			private final Class<? extends LinkFactory> factoryType;
 
