@@ -1,4 +1,21 @@
-package org.ardulink.camel.test;
+/**
+Copyright 2013 project Ardulink http://www.ardulink.org/
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+*/
+
+package org.ardulink.camel;
 
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
@@ -28,6 +45,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Link;
+import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.convenience.Links;
@@ -36,9 +54,17 @@ import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 class ArdulinkComponentTest {
 
 	String in = "direct:in";
@@ -61,84 +87,81 @@ class ArdulinkComponentTest {
 	}
 
 	@Test
-	void canSwitchDigitalPin2On() throws Exception {
-		testDigital(digitalPin(2), true);
-	}
-
-	@Test
-	void canSwitchDigitalPin2Off() throws Exception {
+	void canSwitchDigitalPin() throws Exception {
+		testDigital(digitalPin(1), true);
 		testDigital(digitalPin(2), false);
 	}
 
 	@Test
-	void canSwitchDigitalPin3() throws Exception {
-		testDigital(digitalPin(3), true);
+	void canSwitchAnalogPin() throws Exception {
+		testAnalog(analogPin(3), 123);
+		testAnalog(analogPin(4), 456);
 	}
 
 	@Test
-	void canSwitchAnalogPin3() throws Exception {
-		testAnalog(analogPin(5), 123);
-	}
-
-	@Test
-	@Disabled("clarify who should filter it")
+	@ExpectedToFail("clarify who should filter it")
 	void ignoresNegativeValues() {
-		send(alpProtocolMessage(ANALOG_PIN_READ).forPin(analogPin(6).pinNum()).withValue(-1));
+		Pin pin = analogPin(5);
+		send(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum()).withValue(-1));
 		Link mock = getMock(link);
 		verifyNoMoreInteractions(mock);
 	}
 
 	@Test
 	void canEnableAnalogListening() throws Exception {
-		send(alpProtocolMessage(START_LISTENING_ANALOG).forPin(analogPin(6).pinNum()).withoutValue());
+		Pin pin = analogPin(6);
+		send(alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
 		Link mock = getMock(link);
-		verify(mock).startListening(analogPin(6));
+		verify(mock).startListening(pin);
 		verifyNoMoreInteractions(mock);
 	}
 
 	@Test
 	void canEnableDigitalListening() throws Exception {
-		send(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(digitalPin(7).pinNum()).withoutValue());
+		Pin pin = digitalPin(7);
+		send(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue());
 		Link mock = getMock(link);
-		verify(mock).startListening(digitalPin(7));
+		verify(mock).startListening(pin);
 		verifyNoMoreInteractions(mock);
 	}
 
 	@Test
 	void canDisableAnalogListening() throws Exception {
-		send(alpProtocolMessage(START_LISTENING_ANALOG).forPin(6).withoutValue());
-		send(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(6).withoutValue());
+		Pin pin = analogPin(8);
+		send(alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
+		send(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
 		Link mock = getMock(link);
-		verify(mock).startListening(analogPin(6));
-		verify(mock).stopListening(analogPin(6));
+		verify(mock).startListening(pin);
+		verify(mock).stopListening(pin);
 		verifyNoMoreInteractions(mock);
 	}
 
 	@Test
 	void canDisableDigitalListening() throws Exception {
-		send(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(7).withoutValue());
-		send(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(7).withoutValue());
+		Pin pin = digitalPin(9);
+		send(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue());
+		send(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue());
 		Link mock = getMock(link);
-		verify(mock).startListening(digitalPin(7));
-		verify(mock).stopListening(digitalPin(7));
+		verify(mock).startListening(pin);
+		verify(mock).stopListening(pin);
 		verifyNoMoreInteractions(mock);
 	}
 
-	private void testDigital(DigitalPin pin, boolean state) throws Exception {
+	void testDigital(DigitalPin pin, boolean state) throws Exception {
 		send(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin.pinNum()).withState(state));
 		Link mock = getMock(link);
 		verify(mock).switchDigitalPin(pin, state);
 		verifyNoMoreInteractions(mock);
 	}
 
-	private void testAnalog(AnalogPin pin, int value) throws Exception {
+	void testAnalog(AnalogPin pin, int value) throws Exception {
 		send(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum()).withValue(value));
 		Link mock = getMock(link);
 		verify(mock).switchAnalogPin(pin, value);
 		verifyNoMoreInteractions(mock);
 	}
 
-	private CamelContext camelContext(String in, String to) throws Exception {
+	CamelContext camelContext(String in, String to) throws Exception {
 		CamelContext context = new DefaultCamelContext();
 		context.addRoutes(new RouteBuilder() {
 			@Override
@@ -150,11 +173,11 @@ class ArdulinkComponentTest {
 		return context;
 	}
 
-	private void send(String message) {
+	void send(String message) {
 		context.createProducerTemplate().sendBody(mockUri, message);
 	}
 
-	private static class TestLinkFactory implements LinkFactory<TestLinkConfig> {
+	static class TestLinkFactory implements LinkFactory<TestLinkConfig> {
 
 		private final String name;
 		private final Iterator<TestLinkConfig> configProvider;
