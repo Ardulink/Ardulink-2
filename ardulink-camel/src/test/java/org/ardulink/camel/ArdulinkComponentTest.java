@@ -34,6 +34,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LI
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -88,14 +89,18 @@ class ArdulinkComponentTest {
 
 	@Test
 	void canSwitchDigitalPin() throws Exception {
-		testDigital(digitalPin(1), true);
-		testDigital(digitalPin(2), false);
+		assertAll( //
+				() -> testDigital(digitalPin(1), true), //
+				() -> testDigital(digitalPin(2), false) //
+		);
 	}
 
 	@Test
 	void canSwitchAnalogPin() throws Exception {
-		testAnalog(analogPin(3), 123);
-		testAnalog(analogPin(4), 456);
+		assertAll( //
+				() -> testAnalog(analogPin(3), 123), //
+				() -> testAnalog(analogPin(4), 456) //
+		);
 	}
 
 	@Test
