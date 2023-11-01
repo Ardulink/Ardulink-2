@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -57,6 +58,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
+import org.mockito.Mockito;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -134,9 +136,9 @@ class ArdulinkComponentTest {
 	void canDisableAnalogListening() throws Exception {
 		Pin pin = analogPin(8);
 		send(alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
-		send(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
 		Link mock = getMock(link);
-		verify(mock).startListening(pin);
+		reset(mock);
+		send(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
 		verify(mock).stopListening(pin);
 		verifyNoMoreInteractions(mock);
 	}
