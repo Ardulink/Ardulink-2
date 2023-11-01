@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -24,6 +26,6 @@ class PinTest {
 
 	@Test
 	public void equalsContract() {
-		EqualsVerifier.forClass(Pin.class).verify();
+		assertDoesNotThrow(EqualsVerifier.forClass(Pin.class)::verify);
 	}
 }

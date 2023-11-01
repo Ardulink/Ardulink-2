@@ -24,6 +24,7 @@ import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvid
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -128,7 +129,7 @@ class LinkManagerTest {
 
 	@Test
 	void equalsContract() {
-		EqualsVerifier.forClass(CacheKey.class).verify();
+		assertDoesNotThrow(EqualsVerifier.forClass(CacheKey.class)::verify);
 	}
 
 	List<String> aliasNames(LinkFactory<?> factory) {

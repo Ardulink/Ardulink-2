@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.mqtt.util;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import org.junit.jupiter.api.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -24,7 +26,7 @@ class MessageTest {
 
 	@Test
 	public void equalsContract() {
-		EqualsVerifier.forClass(Message.class).verify();
+		assertDoesNotThrow(EqualsVerifier.forClass(Message.class)::verify);
 	}
 
 }
