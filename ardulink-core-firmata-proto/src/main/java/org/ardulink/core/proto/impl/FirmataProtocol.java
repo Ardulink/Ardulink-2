@@ -82,7 +82,7 @@ public class FirmataProtocol implements Protocol {
 	 * To enable Firmata protocol (work in progress) set the system property
 	 * {@value #FIRMATA_ENABLED_PROPERTY_FEATURE} to any non-empty value.
 	 */
-	private static final String FIRMATA_ENABLED_PROPERTY_FEATURE = "protocol.firmata.enabled";
+	public static final String FIRMATA_ENABLED_PROPERTY_FEATURE = "protocol.firmata.enabled";
 
 	// TODO visible for testing
 	public static class FirmataPin {

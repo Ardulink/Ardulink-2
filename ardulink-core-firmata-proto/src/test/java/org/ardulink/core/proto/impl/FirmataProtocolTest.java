@@ -10,6 +10,7 @@ import static org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone.toDev
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange.toDeviceMessagePinStateChange;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
+import static org.ardulink.core.proto.impl.FirmataProtocol.FIRMATA_ENABLED_PROPERTY_FEATURE;
 import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.ANALOG_INPUT;
 import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.DIGITAL_INPUT;
 import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.DIGITAL_OUTPUT;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.ardulink.core.Pin;
@@ -40,12 +42,16 @@ import org.ardulink.core.messages.api.FromDeviceMessageInfo;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
+import org.ardulink.core.proto.api.Protocol;
+import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin;
 import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode;
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ClearSystemProperty;
 import org.junitpioneer.jupiter.ExpectedToFail;
+import org.junitpioneer.jupiter.SetSystemProperty;
 
 class FirmataProtocolTest {
 
@@ -53,6 +59,22 @@ class FirmataProtocolTest {
 
 	private byte[] bytes;
 	private List<FromDeviceMessage> messages = new ArrayList<>();
+
+	@Test
+	@SetSystemProperty(key = FIRMATA_ENABLED_PROPERTY_FEATURE, value = "anyNonNullValue")
+	void firmataIsAvailableIfSystemPropertyIsSet() {
+		assertThat(loadFirmata()).isNotEmpty();
+	}
+
+	@Test
+	@ClearSystemProperty(key = FIRMATA_ENABLED_PROPERTY_FEATURE)
+	void firmataIsAbsentIfSystemPropertyIsNotSet() {
+		assertThat(loadFirmata()).isEmpty();
+	}
+
+	private static Optional<Protocol> loadFirmata() {
+		return Protocols.tryProtoByName("Firmata");
+	}
 
 	@Test
 	void canReadFirmwareStartupResponseAndRequestsCapabilities() throws IOException {
