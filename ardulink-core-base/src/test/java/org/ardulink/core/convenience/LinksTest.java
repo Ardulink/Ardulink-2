@@ -32,6 +32,7 @@ import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvid
 import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -43,6 +44,8 @@ import static org.mockito.Mockito.withSettings;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import org.ardulink.core.ConnectionBasedLink;
@@ -238,6 +241,32 @@ class LinksTest {
 			try (Link linkOrig = link(nameOrig + params); Link linkOther = link(nameOther + params)) {
 				assertThat(linkOrig).isNotSameAs(linkOther);
 			}
+		});
+	}
+
+	@Test
+	void aFilteredFactoryGetsIgnored() throws Throwable {
+		AtomicBoolean isActive = new AtomicBoolean();
+		String name = "Name" + UUID.randomUUID();
+
+		withRegistered(new DummyLinkFactory() {
+			@Override
+			public String getName() {
+				return name;
+			}
+
+			@Override
+			public boolean isActive() {
+				return isActive.get();
+			}
+
+		}).execute(() -> {
+			isActive.set(true);
+			try (Link link = link(name)) {
+				assertThat(link).isNotNull();
+			}
+			isActive.set(false);
+			assertThatIllegalArgumentException().isThrownBy(() -> link(name)).withMessageContaining("No factory", name);
 		});
 	}
 
