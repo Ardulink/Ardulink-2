@@ -6,6 +6,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone.toDeviceMessageNoTone;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange.toDeviceMessagePinStateChange;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
@@ -37,9 +38,6 @@ import org.ardulink.core.Tone;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessageInfo;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
-import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
-import org.ardulink.core.messages.api.ToDeviceMessageTone;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
@@ -213,24 +211,15 @@ class FirmataProtocolTest {
 	 * part of Firmata! This is a proposal</a>
 	 */
 	@Test
-	void canSendTone() {
-		byte pinNumber = 1;
-		ToDeviceMessageTone toDeviceMessage = toDeviceMessageTone(
-				Tone.forPin(analogPin(pinNumber)).withHertz(234).withDuration(5, SECONDS));
-		assertThat(sut.toDevice(toDeviceMessage)).containsExactly(0xF0, 0x5F, 0x00, pinNumber, 0x6A, 0x01, 0x08, 0x27,
-				0xF7);
-	}
-
-	/**
-	 * <a href=
-	 * "https://github.com/firmata/protocol/blob/master/proposals/tone-proposal.md">Not
-	 * part of Firmata! This is a proposal</a>
-	 */
-	@Test
-	void canSendNoTone() {
-		byte pinNumber = 1;
-		ToDeviceMessageNoTone toDeviceMessage = new DefaultToDeviceMessageNoTone(analogPin(pinNumber));
-		assertThat(sut.toDevice(toDeviceMessage)).containsExactly(0xF0, 0x5F, 0x01, pinNumber, 0xF7);
+	void canSendToneAndNoTone() {
+		AnalogPin pin = analogPin(1);
+		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+			Tone tone = Tone.forPin(pin).withHertz(234).withDuration(5, SECONDS);
+			softly.assertThat(sut.toDevice(toDeviceMessageTone(tone))) //
+					.containsExactly(0xF0, 0x5F, 0x00, pin.pinNum(), 0x6A, 0x01, 0x08, 0x27, 0xF7);
+			softly.assertThat(sut.toDevice(toDeviceMessageNoTone(pin))) //
+					.containsExactly(0xF0, 0x5F, 0x01, pin.pinNum(), 0xF7);
+		}
 	}
 
 	// -------------------------------------------------------------------------
