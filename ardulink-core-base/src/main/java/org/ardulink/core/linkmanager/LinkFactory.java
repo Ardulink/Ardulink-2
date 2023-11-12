@@ -40,6 +40,10 @@ public interface LinkFactory<T extends LinkConfig> {
 		String[] value();
 	}
 
+	default boolean isActive() {
+		return true;
+	}
+	
 	String getName();
 
 	Link newLink(T config) throws Exception;

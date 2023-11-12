@@ -565,12 +565,12 @@ public abstract class LinkManager {
 
 		@Override
 		public List<URI> listURIs() {
-			return getConnectionFactories().map(f -> create(format("%s://%s", ARDULINK_SCHEME, f.getName())))
+			return getLinkFactories().map(f -> create(format("%s://%s", ARDULINK_SCHEME, f.getName())))
 					.collect(toList());
 		}
 
-		private Optional<LinkFactory> getConnectionFactory(String name) {
-			List<LinkFactory> connectionFactories = getConnectionFactories().collect(toList());
+		private Optional<LinkFactory> getLinkFactory(String name) {
+			List<LinkFactory> connectionFactories = getLinkFactories().collect(toList());
 			BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function1 = (t, u) -> getByName(t, u);
 			BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function2 = (t, u) -> getByAlias(t, u);
 			return Stream.of(function1, function2).map(f -> f.apply(name, connectionFactories))
@@ -590,15 +590,16 @@ public abstract class LinkManager {
 			return alias != null && asList(alias.value()).contains(name);
 		}
 
-		private Stream<LinkFactory> getConnectionFactories() {
+		private Stream<LinkFactory> getLinkFactories() {
 			return services(LinkFactoriesProvider.class, moduleClassloader())
-					.map(LinkFactoriesProvider::loadLinkFactories).flatMap(Collection::stream);
+					.map(LinkFactoriesProvider::loadLinkFactories).flatMap(Collection::stream)
+					.filter(LinkFactory::isActive);
 		}
 
 		@Override
 		public Configurer getConfigurer(URI uri) {
 			String name = checkNotNull(extractNameFromURI(uri), "%s not a valid URI: Unable not extract name", uri);
-			LinkFactory connectionFactory = getConnectionFactory(name).orElseThrow(() -> new IllegalArgumentException(
+			LinkFactory connectionFactory = getLinkFactory(name).orElseThrow(() -> new IllegalArgumentException(
 					format("No factory registered for '%s', available names are %s", name, listURIs())));
 			@SuppressWarnings("unchecked")
 			Configurer configurer = new DefaultConfigurer(connectionFactory);
