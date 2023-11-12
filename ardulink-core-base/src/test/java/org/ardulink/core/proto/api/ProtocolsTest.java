@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.core.proto.impl.DummyProtocol;
+import org.ardulink.core.proto.impl.InactiveProtocol;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -55,6 +56,11 @@ class ProtocolsTest {
 		assertThatRuntimeException().isThrownBy(() -> protoByName(unknownProto)).withMessageContainingAll(unknownProto,
 				ArdulinkProtocol2.NAME, DummyProtocol.NAME);
 		assertThat(tryProtoByName(unknownProto)).isEmpty();
+	}
+
+	@Test
+	void inactiveProtcolGetsFilteredOut() {
+		assertThat(tryProtoByName(InactiveProtocol.NAME)).isEmpty();
 	}
 
 }

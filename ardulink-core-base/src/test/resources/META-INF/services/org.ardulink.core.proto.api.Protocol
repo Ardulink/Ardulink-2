@@ -1,1 +1,2 @@
 org.ardulink.core.proto.impl.DummyProtocol
+org.ardulink.core.proto.impl.InactiveProtocol
