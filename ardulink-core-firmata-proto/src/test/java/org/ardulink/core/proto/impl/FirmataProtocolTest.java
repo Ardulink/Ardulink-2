@@ -73,7 +73,7 @@ class FirmataProtocolTest {
 	}
 
 	private static Optional<Protocol> loadFirmata() {
-		return Protocols.tryProtoByName("Firmata");
+		return Protocols.tryProtoByName(FirmataProtocol.NAME);
 	}
 
 	@Test

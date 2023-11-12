@@ -78,6 +78,8 @@ import org.firmata4j.fsm.FiniteStateMachine;
  */
 public class FirmataProtocol implements Protocol {
 
+	public static final String NAME = "Firmata";
+
 	/**
 	 * To enable Firmata protocol (work in progress) set the system property
 	 * {@value #FIRMATA_ENABLED_PROPERTY_FEATURE} to any non-empty value.
@@ -154,7 +156,7 @@ public class FirmataProtocol implements Protocol {
 
 	@Override
 	public String getName() {
-		return "Firmata";
+		return NAME;
 	}
 
 	@Override
