@@ -591,7 +591,7 @@ public abstract class LinkManager {
 		}
 
 		private Stream<LinkFactory> getConnectionFactories() {
-			return services(LinkFactoriesProvider.class, moduleClassloader()).stream()
+			return services(LinkFactoriesProvider.class, moduleClassloader())
 					.map(LinkFactoriesProvider::loadLinkFactories).flatMap(Collection::stream);
 		}
 

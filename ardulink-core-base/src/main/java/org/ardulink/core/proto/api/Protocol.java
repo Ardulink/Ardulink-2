@@ -27,6 +27,10 @@ import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
  *
  */
 public interface Protocol {
+	
+	default boolean isActive() {
+		return true;
+	}
 
 	String getName();
 

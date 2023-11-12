@@ -97,6 +97,7 @@
 		<module>ardulink-console</module>
 		<module>ardulink-mail</module>
 		<module>ardulink-rest</module>
+		<module>ardulink-core-firmata-proto</module>
 		<module>deploy-dist</module>
 	</modules>
 

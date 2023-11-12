@@ -18,8 +18,8 @@ package org.ardulink.util;
 
 import static org.ardulink.util.anno.LapsedWith.JDK9;
 
-import java.util.List;
 import java.util.ServiceLoader;
+import java.util.stream.Stream;
 
 import org.ardulink.util.anno.LapsedWith;
 
@@ -38,16 +38,18 @@ public final class ServiceLoaders {
 	}
 
 	@LapsedWith(module = JDK9, value = "ServiceLoader#stream")
-	public static <T> List<T> services(Class<T> type) {
-		return asList(ServiceLoader.load(type));
+	public static <T> Stream<T> services(Class<T> type) {
+		return toStream(ServiceLoader.load(type));
 	}
 
 	@LapsedWith(module = JDK9, value = "ServiceLoader#stream")
-	public static <T> List<T> services(Class<T> type, ClassLoader classloader) {
-		return asList(ServiceLoader.load(type, classloader));
+	public static <T> Stream<T> services(Class<T> type, ClassLoader classloader) {
+		return toStream(ServiceLoader.load(type, classloader));
 	}
 
-	private static <T> List<T> asList(ServiceLoader<T> serviceLoader) {
-		return Lists.newArrayList(serviceLoader.iterator());
+	@LapsedWith(module = JDK9, value = "ServiceLoader#stream")
+	private static <T> Stream<T> toStream(ServiceLoader<T> serviceLoader) {
+		return Iterators.stream(serviceLoader.iterator());
 	}
+
 }

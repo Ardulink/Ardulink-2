@@ -48,7 +48,7 @@ public final class Protocols {
 	 * @see #protocolNames()
 	 */
 	public static List<Protocol> protocols() {
-		return services(Protocol.class);
+		return services(Protocol.class).filter(Protocol::isActive).collect(toList());
 	}
 
 	/**
