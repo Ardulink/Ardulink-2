@@ -44,7 +44,7 @@ public final class MessageIdHolders {
 	public static class MessageIdHolderInvocationHandler implements InvocationHandler {
 
 		private static final Method messageIdHolderGetIdMethod = getMessageIdHolderGetIdMethod();
-
+		
 		private final Object delegate;
 		private final Long messageId;
 
@@ -68,7 +68,7 @@ public final class MessageIdHolders {
 
 	}
 
-	private static Method getMessageIdHolderGetIdMethod() {
+	public static Method getMessageIdHolderGetIdMethod() {
 		try {
 			return MessageIdHolder.class.getMethod("getId");
 		} catch (SecurityException | NoSuchMethodException e) {
@@ -107,8 +107,20 @@ public final class MessageIdHolders {
 		return (T[]) Array.newInstance(type, length);
 	}
 
-	public static Optional<MessageIdHolder> toHolder(Object msg) {
-		return msg instanceof MessageIdHolder ? Optional.of((MessageIdHolder) msg) : Optional.empty();
+	/**
+	 * Returns an Optional holding the {@link MessageIdHolder} if the passed
+	 * <code>msg</code> implements {@link MessageIdHolder}.
+	 * 
+	 * @param msg the message
+	 * @return Optional holding the {@link MessageIdHolder} or empty if
+	 *         <code>msg</code> is no {@link MessageIdHolder}.
+	 */
+	private static Optional<MessageIdHolder> toHolder(Object msg) {
+		return Optional.of(msg).filter(MessageIdHolder.class::isInstance).map(MessageIdHolder.class::cast);
+	}
+
+	public static long messageIdOf(Object msg) {
+			return toHolder(msg).orElse(NO_ID).getId();
 	}
 
 }

@@ -29,9 +29,8 @@ import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChan
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening.toDeviceMessageStartListening;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening.toDeviceMessageStopListening;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
-import static org.ardulink.core.proto.api.MessageIdHolders.NO_ID;
 import static org.ardulink.core.proto.api.MessageIdHolders.addMessageId;
-import static org.ardulink.core.proto.api.MessageIdHolders.toHolder;
+import static org.ardulink.core.proto.api.MessageIdHolders.messageIdOf;
 import static org.ardulink.util.StopWatch.Countdown.createStarted;
 
 import java.io.IOException;
@@ -84,7 +83,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	public ConnectionBasedLink(Connection connection, ByteStreamProcessor byteStreamProcessor) {
 		this.connection = connection;
 		this.byteStreamProcessor = byteStreamProcessor;
-		this.byteStreamProcessor.addListener(m -> ConnectionBasedLink.this.received(m));
+		this.byteStreamProcessor.addListener(this::received);
 	}
 
 	public Connection getConnection() {
@@ -286,10 +285,6 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 
 	private long nextId() {
 		return ++messageId;
-	}
-
-	private long messageIdOf(Object msg) {
-		return toHolder(msg).orElse(NO_ID).getId();
 	}
 
 	@Override
