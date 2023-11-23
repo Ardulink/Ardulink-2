@@ -25,7 +25,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 class PinTest {
 
 	@Test
-	public void equalsContract() {
+	void equalsContract() {
 		assertDoesNotThrow(EqualsVerifier.forClass(Pin.class)::verify);
 	}
 }
