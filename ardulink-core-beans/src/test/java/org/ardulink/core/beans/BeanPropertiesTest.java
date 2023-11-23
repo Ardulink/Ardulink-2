@@ -23,7 +23,6 @@ import static org.ardulink.core.beans.finder.impl.FindByFieldAccess.directFieldA
 import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.lang.annotation.Retention;
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
