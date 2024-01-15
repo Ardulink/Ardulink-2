@@ -36,7 +36,7 @@ jobs:
       run: mvn -B org.jacoco:jacoco-maven-plugin:prepare-agent compile jib:dockerBuild verify --file pom.xml
     - name: Distribute build results
       if: matrix.java-version == matrix.java-version[0]
-      uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 # v4.0.0
+      uses: actions/upload-artifact@1eb3cb2b3e0f29609092a73eb033bb759a334595 # v4.1.0
       with:
         name: jars
         path: "*/target/*.jar"
