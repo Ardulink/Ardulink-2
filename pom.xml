@@ -60,7 +60,7 @@
 		<!--
     	<maven.compiler.release>${compilerVersion}</maven.compiler.release>
 		-->
-		<args4j.version>2.33</args4j.version>
+		<args4j.version>2.37</args4j.version>
 		<slf4j.version>2.0.12</slf4j.version>
 		<junit.version>5.10.2</junit.version>
 		<assertj.version>3.25.3</assertj.version>
