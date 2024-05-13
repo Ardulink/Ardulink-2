@@ -12,6 +12,8 @@ This is the repository for Ardulink 2. Ardulink 2 is a complete, open source, ja
 		}
 	}
 
+**Examples have moved to https://github.com/Ardulink/Ardulink-2-Samples**
+
 Recommended way of using Ardulink-2 inside your own application is declaring a dependency on “ardulink-core-base” using your favorite build system. When using maven please add 
 ```xml
 <dependency>
