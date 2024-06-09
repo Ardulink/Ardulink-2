@@ -32,11 +32,6 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.fusesource.mqtt-client</groupId>
-			<artifactId>mqtt-client</artifactId>
-			<version>1.14</version>
-		</dependency>
-		<dependency>
 			<groupId>io.moquette</groupId>
 			<artifactId>moquette-broker</artifactId>
 			<version>0.17</version>
