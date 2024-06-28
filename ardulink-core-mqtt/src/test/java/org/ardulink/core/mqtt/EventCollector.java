@@ -75,7 +75,7 @@ public class EventCollector implements EventListener {
 	public void awaitEvents(Type type, Predicate<? super List<? extends PinValueChangedEvent>> predicate) {
 		conditionFactory().pollInterval(ofMillis(100)).untilAsserted(() -> {
 			List<PinValueChangedEvent> eventsOfType = eventsOfType(type);
-			assertThat(eventsOfType).matches(predicate).describedAs("Received events: %s", eventsOfType);
+			assertThat(eventsOfType).describedAs("Received events: %s", eventsOfType).matches(predicate);
 		});
 	}
 
