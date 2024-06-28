@@ -20,6 +20,7 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static java.awt.GraphicsEnvironment.isHeadless;
 import static java.lang.Boolean.parseBoolean;
+import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
@@ -48,6 +49,7 @@ import com.microsoft.playwright.junit.Options;
 import com.microsoft.playwright.junit.OptionsFactory;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
+import com.microsoft.playwright.options.RecordVideoSize;
 
 import io.restassured.RestAssured;
 
@@ -138,11 +140,19 @@ class ArdulinkRestSwaggerTest {
 		private Options options() {
 			Options options = new Options().setHeadless(headless());
 			String videoPath = System.getProperty(SYS_PROP_PREFIX + "playwright.video.path");
-			if (!nullOrEmpty(videoPath)) {
-				options.setContextOptions(
-						new NewContextOptions().setRecordVideoDir(Paths.get(videoPath)).setRecordVideoSize(1024, 800));
+			return nullOrEmpty(videoPath) //
+					? options //
+					: options.setContextOptions(new NewContextOptions().setRecordVideoDir(Paths.get(videoPath))
+							.setRecordVideoSize(recordVideoSize()));
+		}
+
+		private RecordVideoSize recordVideoSize() {
+			String videoSize = System.getProperty(SYS_PROP_PREFIX + "playwright.video.size");
+			if (nullOrEmpty(videoSize)) {
+				return new RecordVideoSize(1024, 800);
 			}
-			return options;
+			String[] values = videoSize.split("[ ,x*]");
+			return new RecordVideoSize(parseInt(values[0]), parseInt(values[1]));
 		}
 
 		private boolean headless() {
