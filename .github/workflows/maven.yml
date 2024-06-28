@@ -33,7 +33,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn -B org.jacoco:jacoco-maven-plugin:prepare-agent compile jib:dockerBuild verify --file pom.xml
+      run: mvn -B -DargLine="-Dardulink.test.playwright.video.path=target/videos" org.jacoco:jacoco-maven-plugin:prepare-agent compile jib:dockerBuild verify --file pom.xml
     - name: Distribute build results
       if: matrix.java-version == matrix.java-version[0]
       uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
@@ -47,5 +47,11 @@ jobs:
         name: Tests Report JDK ${{ matrix.java-version }}
         path: "*/target/surefire-reports/*.xml"
         reporter: java-junit
+    - name: Distribute video records
+      if: matrix.java-version == matrix.java-version[0]
+      uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+      with:
+        name: videos
+        path: "*/target/videos/*"
     - name: Codecov
       uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4.5.0

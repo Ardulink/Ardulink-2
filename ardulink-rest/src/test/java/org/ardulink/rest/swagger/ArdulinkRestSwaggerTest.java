@@ -20,11 +20,13 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static java.awt.GraphicsEnvironment.isHeadless;
 import static java.lang.Boolean.parseBoolean;
+import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.mockito.Mockito.timeout;
@@ -108,7 +110,7 @@ class ArdulinkRestSwaggerTest {
 				Page page = context.newPage();
 
 				page.navigate("http://localhost:" + RestAssured.port + "/api-browser");
-			    page.getByText("PUT/pin/analog/{pin}").click();
+				page.getByText("PUT/pin/analog/{pin}").click();
 
 				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Try it out")).click();
 				page.getByPlaceholder("pin").click();
@@ -121,6 +123,9 @@ class ArdulinkRestSwaggerTest {
 				try (Link mock = getMock(Links.getLink(MOCK_URI))) {
 					verify(mock, timeout(TIMEOUT)).switchAnalogPin(analogPin(pin), value);
 				}
+
+				// do a click into the result field (for the video)
+				page.locator(format("pre:has-text(\"alp://ared/%d/%d=OK\")", pin, value)).click();
 
 				page.close();
 				context.close();
@@ -137,15 +142,12 @@ class ArdulinkRestSwaggerTest {
 		return !isHeadless() && parseBoolean(System.getProperty(SYS_PROP_PREFIX + "playwright.showbrowser"));
 	}
 
-	private static boolean doVideo() {
-		return parseBoolean(System.getProperty(SYS_PROP_PREFIX + "playwright.video"));
-	}
-
 	private static BrowserContext browserContext(Browser browser) {
 		Browser.NewContextOptions newContextOptions = new Browser.NewContextOptions();
-		return browser.newContext(
-				doVideo() ? newContextOptions.setRecordVideoDir(Paths.get("videos/")).setRecordVideoSize(1024, 800)
-						: newContextOptions);
+		String videoPath = System.getProperty(SYS_PROP_PREFIX + "playwright.video.path");
+		return browser.newContext(nullOrEmpty(videoPath) //
+				? newContextOptions //
+				: newContextOptions.setRecordVideoDir(Paths.get(videoPath)).setRecordVideoSize(1024, 800));
 	}
 
 	private RestMain runRestComponent() throws Exception {
