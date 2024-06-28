@@ -41,12 +41,12 @@ import org.ardulink.rest.main.RestMain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.microsoft.playwright.Browser;
-import com.microsoft.playwright.BrowserContext;
-import com.microsoft.playwright.BrowserType;
+import com.microsoft.playwright.Browser.NewContextOptions;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.junit.Options;
+import com.microsoft.playwright.junit.OptionsFactory;
+import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 
 import io.restassured.RestAssured;
@@ -59,6 +59,7 @@ import io.restassured.RestAssured;
  * [adsense]
  *
  */
+@UsePlaywright(ArdulinkRestSwaggerTest.CustomOptions.class)
 class ArdulinkRestSwaggerTest {
 
 	private static final long TIMEOUT = SECONDS.toMillis(5);
@@ -82,72 +83,38 @@ class ArdulinkRestSwaggerTest {
 	}
 
 	@Test
-	void canAccesApiUi_GotoApiDocs() throws Exception {
+	void canAccesApiUi_GotoApiDocs(Page page) throws Exception {
 		try (RestMain main = runRestComponent()) {
-			try (Playwright playwright = Playwright.create()) {
-				Browser browser = browser(playwright.chromium());
-				BrowserContext context = browserContext(browser);
-
-				Page page = context.newPage();
-
-				page.navigate(format("http://localhost:%d/api-browser", RestAssured.port));
-
-				Page page1 = page.waitForPopup(() -> {
-					page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("/api-docs")).click();
-				});
-			}
+			page.navigate(format("http://localhost:%d/api-browser", RestAssured.port));
+			page.waitForPopup(page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("/api-docs"))::click);
 		}
 	}
 
 	@Test
-	void canAccesApiUi_ExecPutRequestViaApiBrowser() throws Exception {
+	void canAccesApiUi_ExecPutRequestViaApiBrowser(Page page) throws Exception {
 		int pin = 13;
 		int value = 42;
 		try (RestMain main = runRestComponent()) {
-			try (Playwright playwright = Playwright.create(); //
-					Browser browser = browser(playwright.chromium()); //
-					BrowserContext context = browserContext(browser); //
-					Page page = context.newPage() //
-			) {
-				page.navigate(format("http://localhost:%d/api-browser", RestAssured.port));
-				page.getByRole(AriaRole.BUTTON,
-						new Page.GetByRoleOptions().setName("PUT /pin/analog/{pin}").setExact(true)).click();
-				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Try it out")).click();
-				page.getByPlaceholder("pin").click();
-				page.getByPlaceholder("pin").fill("13");
-				page.getByLabel("Edit Value").getByText("string").click();
-				page.getByLabel("Edit Value").getByText("string").press("ControlOrMeta+a");
-				page.getByLabel("Edit Value").getByText("string").fill("42");
-				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Execute")).click();
+			page.navigate(format("http://localhost:%d/api-browser", RestAssured.port));
+			page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("PUT /pin/analog/{pin}").setExact(true))
+					.click();
+			page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Try it out")).click();
+			page.getByPlaceholder("pin").click();
+			page.getByPlaceholder("pin").fill("13");
+			page.getByLabel("Edit Value").getByText("string").click();
+			page.getByLabel("Edit Value").getByText("string").press("ControlOrMeta+a");
+			page.getByLabel("Edit Value").getByText("string").fill("42");
+			page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Execute")).click();
 
-				try (Link mock = getMock(Links.getLink(MOCK_URI))) {
-					verify(mock, timeout(TIMEOUT)).switchAnalogPin(analogPin(pin), value);
-				}
-
-				// do a click into the result field (for the video)
-				page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName("200")).first().click();
-				page.locator("pre")
-						.filter(new Locator.FilterOptions().setHasText(format("alp://ared/%d/%d=OK", pin, value)))
-						.click();
-
+			try (Link mock = getMock(Links.getLink(MOCK_URI))) {
+				verify(mock, timeout(TIMEOUT)).switchAnalogPin(analogPin(pin), value);
 			}
+
+			// do a click into the result field (for the video)
+			page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName("200")).first().click();
+			page.locator("pre")
+					.filter(new Locator.FilterOptions().setHasText(format("alp://ared/%d/%d=OK", pin, value))).click();
 		}
-	}
-
-	private static Browser browser(BrowserType browserType) {
-		return browserType.launch(new BrowserType.LaunchOptions().setHeadless(!showBrowser()));
-	}
-
-	private static boolean showBrowser() {
-		return !isHeadless() && parseBoolean(System.getProperty(SYS_PROP_PREFIX + "playwright.showbrowser"));
-	}
-
-	private static BrowserContext browserContext(Browser browser) {
-		Browser.NewContextOptions newContextOptions = new Browser.NewContextOptions();
-		String videoPath = System.getProperty(SYS_PROP_PREFIX + "playwright.video.path");
-		return browser.newContext(nullOrEmpty(videoPath) //
-				? newContextOptions //
-				: newContextOptions.setRecordVideoDir(Paths.get(videoPath)).setRecordVideoSize(1024, 800));
 	}
 
 	private RestMain runRestComponent() throws Exception {
@@ -157,4 +124,26 @@ class ArdulinkRestSwaggerTest {
 		return new RestMain(args);
 	}
 
+	public static class CustomOptions implements OptionsFactory {
+
+		@Override
+		public Options getOptions() {
+			return options();
+		}
+
+		private Options options() {
+			Options options = new Options().setHeadless(headless());
+			String videoPath = System.getProperty(SYS_PROP_PREFIX + "playwright.video.path");
+			if (!nullOrEmpty(videoPath)) {
+				options.setContextOptions(
+						new NewContextOptions().setRecordVideoDir(Paths.get(videoPath)).setRecordVideoSize(1024, 800));
+			}
+			return options;
+		}
+
+		private boolean headless() {
+			return isHeadless() || !parseBoolean(System.getProperty(SYS_PROP_PREFIX + "playwright.showbrowser"));
+		}
+
+	}
 }
