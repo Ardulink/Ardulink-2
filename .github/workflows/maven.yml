@@ -34,6 +34,9 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+
     - name: Build with Maven
       run: mvn -B -Pwith-video org.jacoco:jacoco-maven-plugin:prepare-agent compile jib:dockerBuild verify --file pom.xml
 
