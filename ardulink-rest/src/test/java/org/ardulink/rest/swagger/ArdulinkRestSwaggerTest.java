@@ -44,6 +44,7 @@ import org.junit.jupiter.api.Test;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.AriaRole;
@@ -89,7 +90,7 @@ class ArdulinkRestSwaggerTest {
 
 				Page page = context.newPage();
 
-				page.navigate("http://localhost:" + RestAssured.port + "/api-browser");
+				page.navigate(format("http://localhost:%d/api-browser", RestAssured.port));
 
 				Page page1 = page.waitForPopup(() -> {
 					page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("/api-docs")).click();
@@ -103,21 +104,20 @@ class ArdulinkRestSwaggerTest {
 		int pin = 13;
 		int value = 42;
 		try (RestMain main = runRestComponent()) {
-			try (Playwright playwright = Playwright.create()) {
-				Browser browser = browser(playwright.chromium());
-				BrowserContext context = browserContext(browser);
-
-				Page page = context.newPage();
-
-				page.navigate("http://localhost:" + RestAssured.port + "/api-browser");
-				page.getByText("PUT/pin/analog/{pin}").click();
-
+			try (Playwright playwright = Playwright.create(); //
+					Browser browser = browser(playwright.chromium()); //
+					BrowserContext context = browserContext(browser); //
+					Page page = context.newPage() //
+			) {
+				page.navigate(format("http://localhost:%d/api-browser", RestAssured.port));
+				page.getByRole(AriaRole.BUTTON,
+						new Page.GetByRoleOptions().setName("PUT /pin/analog/{pin}").setExact(true)).click();
 				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Try it out")).click();
 				page.getByPlaceholder("pin").click();
-				page.getByPlaceholder("pin").fill(String.valueOf(pin));
-				page.locator("textarea:has-text(\"string\")").click();
-				page.locator("textarea:has-text(\"string\")").press("Control+a");
-				page.locator("textarea:has-text(\"string\")").fill(String.valueOf(value));
+				page.getByPlaceholder("pin").fill("13");
+				page.getByLabel("Edit Value").getByText("string").click();
+				page.getByLabel("Edit Value").getByText("string").press("ControlOrMeta+a");
+				page.getByLabel("Edit Value").getByText("string").fill("42");
 				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Execute")).click();
 
 				try (Link mock = getMock(Links.getLink(MOCK_URI))) {
@@ -125,11 +125,11 @@ class ArdulinkRestSwaggerTest {
 				}
 
 				// do a click into the result field (for the video)
-				page.locator(format("pre:has-text(\"alp://ared/%d/%d=OK\")", pin, value)).click();
+				page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName("200")).first().click();
+				page.locator("pre")
+						.filter(new Locator.FilterOptions().setHasText(format("alp://ared/%d/%d=OK", pin, value)))
+						.click();
 
-				page.close();
-				context.close();
-				browser.close();
 			}
 		}
 	}
