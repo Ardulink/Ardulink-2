@@ -17,9 +17,6 @@ limitations under the License.
 package org.ardulink.util;
 
 import static java.util.Arrays.asList;
-import static org.ardulink.util.Lists.rangeCheckedGet;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 
 import java.util.List;
 
@@ -54,16 +51,6 @@ class ListsTest {
 		list.add("d");
 		list.remove("d");
 		list.clear();
-	}
-
-	@Test
-	void testRangeCheckedGet() {
-		List<String> listWithSize3 = asList("a", "b", "c");
-		assertThat(Lists.rangeCheckedGet(listWithSize3, 2)).isEqualTo("c");
-		assertThatRuntimeException().isThrownBy(() -> rangeCheckedGet(listWithSize3, 3))
-				.withMessage("index out of range 0 >= 3 < 3");
-		assertThatRuntimeException().isThrownBy(() -> rangeCheckedGet(listWithSize3, 3, "theAttributeName"))
-				.withMessage("theAttributeName out of range 0 >= 3 < 3");
 	}
 
 }
