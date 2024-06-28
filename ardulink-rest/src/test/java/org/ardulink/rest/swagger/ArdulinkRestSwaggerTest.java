@@ -99,11 +99,15 @@ class ArdulinkRestSwaggerTest {
 			page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("PUT /pin/analog/{pin}").setExact(true))
 					.click();
 			page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Try it out")).click();
-			page.getByPlaceholder("pin").click();
-			page.getByPlaceholder("pin").fill("13");
-			page.getByLabel("Edit Value").getByText("string").click();
-			page.getByLabel("Edit Value").getByText("string").press("ControlOrMeta+a");
-			page.getByLabel("Edit Value").getByText("string").fill("42");
+
+			Locator pinLocator = page.getByPlaceholder("pin");
+			pinLocator.click();
+			pinLocator.fill(String.valueOf(pin));
+
+			Locator editValueLocator = page.getByLabel("Edit Value").getByText("string");
+			editValueLocator.click();
+			editValueLocator.press("ControlOrMeta+a");
+			editValueLocator.fill(String.valueOf(value));
 			page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Execute")).click();
 
 			try (Link mock = getMock(Links.getLink(MOCK_URI))) {
