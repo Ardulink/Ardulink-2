@@ -201,6 +201,12 @@
 
 	<profiles>
 		<profile>
+			<id>with-video</id>
+			<properties>
+				<argLine>-Dardulink.test.playwright.video.path=target/videos</argLine>
+			</properties>
+		</profile>
+		<profile>
 			<id>makerelease</id>
 			<build>
 				<plugins>
