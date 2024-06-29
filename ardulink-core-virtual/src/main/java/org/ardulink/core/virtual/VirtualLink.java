@@ -41,7 +41,6 @@ public class VirtualLink extends AbstractListenerLink {
 	private VirtualLinkConfig config;
 
 	public VirtualLink(VirtualLinkConfig config) {
-		super();
 		this.config = config;
 		this.thread.setDaemon(true);
 		this.thread.start();
