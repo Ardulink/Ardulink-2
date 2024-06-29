@@ -66,6 +66,7 @@ class ConsoleTest {
 	}
 
 	@Test
+	@DisabledIf(IS_HEADLESS)
 	void approvalsVerify() throws InvocationTargetException, InterruptedException {
 		invokeAndWait(() -> {
 			Console console = newConsole();
