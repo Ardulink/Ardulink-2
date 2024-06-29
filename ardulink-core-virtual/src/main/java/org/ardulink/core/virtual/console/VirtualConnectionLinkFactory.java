@@ -30,9 +30,11 @@ import org.ardulink.core.linkmanager.LinkFactory;
  */
 public class VirtualConnectionLinkFactory implements LinkFactory<VirtualConnectionConfig> {
 
+	public static final String VIRTUAL_CONSOLE_NAME = "virtual-console";
+
 	@Override
 	public String getName() {
-		return "virtual-console";
+		return VIRTUAL_CONSOLE_NAME;
 	}
 
 	@Override

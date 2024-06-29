@@ -106,6 +106,12 @@
 			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.approvaltests</groupId>
+			<artifactId>approvaltests</artifactId>
+			<version>23.0.0</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
