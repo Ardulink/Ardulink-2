@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.rest.swagger;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static java.awt.GraphicsEnvironment.isHeadless;
@@ -152,6 +153,7 @@ class ArdulinkRestSwaggerTest {
 				return new RecordVideoSize(1024, 800);
 			}
 			String[] values = videoSize.split("[ ,x*]");
+			checkArgument(values.length == 2, "Cannot split %s into two parts (got %s)", videoSize, values.length);
 			return new RecordVideoSize(parseInt(values[0]), parseInt(values[1]));
 		}
 
