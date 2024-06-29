@@ -9,17 +9,19 @@ import static javax.swing.SwingUtilities.invokeLater;
 import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.core.virtual.console.VirtualConnectionLinkFactory.VIRTUAL_CONSOLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 
 import org.approvaltests.awt.AwtApprovals;
@@ -67,17 +69,20 @@ class ConsoleTest {
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
-	void approvalsVerify() throws InvocationTargetException, InterruptedException {
-		invokeAndWait(() -> {
-			Console console = newConsole();
-			String name = format("%s://%s", ARDULINK_SCHEME, VIRTUAL_CONSOLE_NAME);
-			findComboBoxContainingItem(console, name).setSelectedItem(name);
-			try {
-				invokeLater(() -> AwtApprovals.verify(console.getContentPane()));
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		});
+	void approvalsVerify() throws Exception {
+		Console console = newConsole();
+		String name = format("%s://%s", ARDULINK_SCHEME, VIRTUAL_CONSOLE_NAME);
+
+		JComboBox<?> comboBox = findComboBoxContainingItem(console, name);
+		comboBox.setSelectedItem(name);
+		repaint(console);
+
+		AwtApprovals.verify(console.getContentPane());
+	}
+
+	private void repaint(Console console) {
+		console.repaint();
+		await().until(console::isOpaque);
 	}
 
 	private static JComboBox<?> findComboBoxContainingItem(Container container, Object item) {
