@@ -50,7 +50,6 @@ import org.ardulink.gui.Linkable;
 import org.ardulink.gui.facility.UtilityGeometry;
 import org.ardulink.legacy.Link;
 import org.ardulink.util.Lists;
-import org.ardulink.util.URIs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
