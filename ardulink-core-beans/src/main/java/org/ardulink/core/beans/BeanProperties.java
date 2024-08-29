@@ -121,7 +121,7 @@ public class BeanProperties {
 		private Annotation[] computeAnnotations() {
 			Set<Annotation> annos = new LinkedHashSet<>();
 			Stream.of(reader, writer).filter(Objects::nonNull).forEach(p -> p.addAnnotations(annos));
-			return annos.toArray(Annotation[]::new);
+			return annos.toArray(new Annotation[annos.size()]);
 		}
 
 		@Override
