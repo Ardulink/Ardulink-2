@@ -17,10 +17,13 @@ limitations under the License.
 package org.ardulink.core.proto.impl;
 
 import static java.util.Collections.addAll;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static org.ardulink.util.Preconditions.checkArgument;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.ardulink.util.Joiner;
@@ -44,21 +47,40 @@ public class ALProtoBuilder {
 
 	public enum ALPProtocolKey {
 
-		POWER_PIN_SWITCH("ppsw"), POWER_PIN_INTENSITY("ppin"), DIGITAL_PIN_READ("dred"), ANALOG_PIN_READ("ared"),
-		START_LISTENING_DIGITAL("srld"), START_LISTENING_ANALOG("srla"), STOP_LISTENING_DIGITAL("spld"),
-		STOP_LISTENING_ANALOG("spla"), CHAR_PRESSED("kprs"), TONE("tone"), NOTONE("notn"), CUSTOM_MESSAGE("cust"),
-		RPLY("rply"), INFO("info"), CUSTOM_EVENT("cevnt");
+		POWER_PIN_SWITCH("ppsw"), //
+		POWER_PIN_INTENSITY("ppin"), //
+		DIGITAL_PIN_READ("dred"), //
+		ANALOG_PIN_READ("ared"), //
+		START_LISTENING_DIGITAL("srld"), //
+		START_LISTENING_ANALOG("srla"), //
+		STOP_LISTENING_DIGITAL("spld"), //
+		STOP_LISTENING_ANALOG("spla"), //
+		CHAR_PRESSED("kprs"), //
+		TONE("tone"), //
+		NOTONE("notn"), //
+		CUSTOM_MESSAGE("cust"), //
+		RPLY("rply"), //
+		INFO("info"), //
+		CUSTOM_EVENT("cevnt"), //
+		;
 
-		private String proto;
+		private final String proto;
 
-		ALPProtocolKey(String proto) {
+		private ALPProtocolKey(String proto) {
 			this.proto = proto;
 		}
 
-		public static Optional<ALPProtocolKey> fromString(String string) {
-			return Arrays.stream(values()).filter(k -> k.proto.equals(string)).findFirst();
-
+		private String getProto() {
+			return proto;
 		}
+
+		private static final Map<String, ALPProtocolKey> stringToKeyCache = Arrays.stream(values())
+				.collect(toMap(ALPProtocolKey::getProto, identity()));
+
+		public static Optional<ALPProtocolKey> fromString(String string) {
+			return Optional.ofNullable(stringToKeyCache.get(string));
+		}
+
 	}
 
 	public static ALProtoBuilder alpProtocolMessage(ALPProtocolKey command) {
