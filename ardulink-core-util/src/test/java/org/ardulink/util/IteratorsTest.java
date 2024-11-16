@@ -55,7 +55,8 @@ class IteratorsTest {
 		assertThat(Iterators.stream(iteratorOf())).isEmpty();
 	}
 
-	private <T> Iterator<T> iteratorOf(T... elements) {
+	@SafeVarargs
+	private final <T> Iterator<T> iteratorOf(T... elements) {
 		return Arrays.asList(elements).iterator();
 	}
 
