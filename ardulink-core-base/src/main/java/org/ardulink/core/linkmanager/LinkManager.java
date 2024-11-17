@@ -273,6 +273,7 @@ public abstract class LinkManager {
 
 	}
 
+	@LapsedWith(value = JDK14, module = "records") // but we have to name the getters according the interface
 	private static final class HardCodedValues implements AttributeReader {
 
 		private final String name;
@@ -296,7 +297,7 @@ public abstract class LinkManager {
 		}
 
 		@Override
-		public Object getValue() throws Exception {
+		public Object getValue() {
 			return value;
 		}
 
