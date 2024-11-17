@@ -26,6 +26,8 @@ import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
+import static org.ardulink.util.Collectors.toUnmodifiableMap;
+import static org.ardulink.util.Maps.entry;
 import static org.ardulink.util.Numbers.convertTo;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
@@ -42,11 +44,11 @@ import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.BiFunction;
@@ -468,13 +470,9 @@ public abstract class LinkManager {
 
 			public CacheKey() throws Exception {
 				this.factoryType = DefaultConfigurer.this.linkFactory.getClass();
-				this.values = Collections.unmodifiableMap(extractData());
-			}
-
-			private Map<String, Object> extractData() {
-				// values can be null, https://bugs.openjdk.java.net/browse/JDK-8148463
-				return DefaultConfigurer.this.getAttributes().stream().collect(HashMap::new,
-						(m, v) -> m.put(v, getAttribute(v).getValue()), HashMap::putAll);
+				this.values = getAttributes().stream().map(k -> entry(k, getAttribute(k).getValue())) //
+						.filter(v -> v.getValue() != null) //
+						.collect(toUnmodifiableMap(Entry::getKey, Entry::getValue));
 			}
 
 			@Override
