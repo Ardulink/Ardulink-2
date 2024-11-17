@@ -52,7 +52,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-virtual</artifactId>
+			<artifactId>ardulink-link-virtual</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>

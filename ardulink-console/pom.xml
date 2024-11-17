@@ -23,63 +23,63 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-serial-rxtx</artifactId>
+			<artifactId>ardulink-link-serial-rxtx</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-serial-jssc</artifactId>
+			<artifactId>ardulink-link-serial-jssc</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-proxy</artifactId>
+			<artifactId>ardulink-link-proxy</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-mqtt</artifactId>
+			<artifactId>ardulink-link-mqtt</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-bluetooth</artifactId>
+			<artifactId>ardulink-link-bluetooth</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-digispark</artifactId>
+			<artifactId>ardulink-link-digispark</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-raspberry</artifactId>
+			<artifactId>ardulink-link-raspberry</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-nodemcu</artifactId>
+			<artifactId>ardulink-link-nodemcu</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-core-virtual</artifactId>
+			<artifactId>ardulink-link-virtual</artifactId>
 			<version>${project.version}</version>
 			<optional>true</optional>
 		</dependency>

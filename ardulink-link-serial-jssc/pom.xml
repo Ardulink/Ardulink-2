@@ -1,7 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ardulink-core-bluetooth</artifactId>
+	<artifactId>ardulink-link-serial-jssc</artifactId>
 
 	<parent>
 		<groupId>org.ardulink</groupId>
@@ -16,9 +17,18 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-		    <groupId>net.sf.bluecove</groupId>
-		    <artifactId>bluecove</artifactId>
-		    <version>2.1.0</version>
+			<groupId>io.github.java-native</groupId>
+			<artifactId>jssc</artifactId>
+			<version>2.9.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -29,6 +39,13 @@
                     <groupId>org.assertj</groupId>
                     <artifactId>assertj-core</artifactId>
 		    <scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ardulink</groupId>
+			<artifactId>ardulink-core-base</artifactId>
+			<type>test-jar</type>
+			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
