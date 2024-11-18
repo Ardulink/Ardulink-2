@@ -46,7 +46,10 @@ public class RestMain implements AutoCloseable {
 	}
 
 	private static Properties toCamelProperties(CommandLineArguments args) {
-		return newMapBuilder().put(VAR_TARGET, args.connection).put(VAR_BIND, args.bind).put(VAR_PORT, args.port)
+		return newMapBuilder() //
+				.put(VAR_TARGET, args.connection) //
+				.put(VAR_BIND, args.bind) //
+				.put(VAR_PORT, args.port) //
 				.asProperties();
 	}
 

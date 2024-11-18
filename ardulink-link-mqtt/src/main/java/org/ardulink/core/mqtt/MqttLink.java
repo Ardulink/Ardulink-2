@@ -15,6 +15,7 @@ limitations under the License.
  */
 
 package org.ardulink.core.mqtt;
+
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Boolean.parseBoolean;
@@ -75,7 +76,7 @@ public class MqttLink extends AbstractListenerLink {
 	private static final String ANALOG = "A";
 	private static final String DIGITAL = "D";
 
-	@LapsedWith(value = JDK9, module = "List#of")
+	@LapsedWith(value = JDK9, module = "Map#of")
 	private static final Map<Connection, String> prefixes = unmodifiableMap(
 			new EnumMap<>(MapBuilder.<Connection, String>newMapBuilder() //
 					.put(TCP, "tcp") //
@@ -83,7 +84,7 @@ public class MqttLink extends AbstractListenerLink {
 					.put(TLS, "tls") //
 					.build()));
 
-	@LapsedWith(value = JDK9, module = "List#of")
+	@LapsedWith(value = JDK9, module = "Map#of")
 	private static final Map<Type, String> typeMap = unmodifiableMap(
 			new EnumMap<>(MapBuilder.<Type, String>newMapBuilder() //
 					.put(Type.ANALOG, ANALOG) //

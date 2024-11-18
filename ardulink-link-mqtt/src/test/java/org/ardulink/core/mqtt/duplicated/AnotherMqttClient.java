@@ -25,6 +25,7 @@ import static org.ardulink.util.Throwables.propagate;
 import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -40,7 +41,6 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -62,10 +62,11 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 	private final List<Message> messagesView = unmodifiableList(messages);
 	private final String topic;
 
-	private static final Map<Type, String> typeMap = unmodifiableMap(MapBuilder.<Type, String>newMapBuilder() //
-			.put(ANALOG, "A") //
-			.put(DIGITAL, "D") //
-			.build());
+	private static final Map<Type, String> typeMap = unmodifiableMap(
+			new EnumMap<>(MapBuilder.<Type, String>newMapBuilder() //
+					.put(ANALOG, "A") //
+					.put(DIGITAL, "D") //
+					.build()));
 
 	private static final int QOS_LEVEL = 1;
 
@@ -102,11 +103,11 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 	}
 
 	@Override
-	public void beforeEach(ExtensionContext context) throws MqttSecurityException, MqttException {
+	public void beforeEach(ExtensionContext context) throws MqttException {
 		connect();
 	}
 
-	public AnotherMqttClient connect() throws MqttSecurityException, MqttException {
+	public AnotherMqttClient connect() throws MqttException {
 		this.mqttClient.setCallback(resubsriber());
 		this.mqttClient.connect(options());
 		subscribe();

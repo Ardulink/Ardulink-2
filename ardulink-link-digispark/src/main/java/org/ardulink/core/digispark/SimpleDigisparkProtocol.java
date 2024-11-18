@@ -1,10 +1,10 @@
 package org.ardulink.core.digispark;
 
+import static java.util.Collections.unmodifiableMap;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.util.Preconditions.checkState;
 
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -117,9 +117,10 @@ public class SimpleDigisparkProtocol implements Protocol {
 		public abstract byte getValue(ToDeviceMessagePinStateChange pinStateChange);
 	}
 
-	private static final Map<Type, Message> messages = Collections
-			.unmodifiableMap(new EnumMap<>(MapBuilder.<Type, Message>newMapBuilder()
-					.put(ANALOG, Message.POWER_PIN_INTENSITY).put(DIGITAL, Message.POWER_PIN_SWITCH).build()));
+	private static final Map<Type, Message> messages = unmodifiableMap( //
+			new EnumMap<>(MapBuilder.<Type, Message>newMapBuilder() //
+					.put(ANALOG, Message.POWER_PIN_INTENSITY) //
+					.put(DIGITAL, Message.POWER_PIN_SWITCH).build()));
 
 	@Override
 	public String getName() {

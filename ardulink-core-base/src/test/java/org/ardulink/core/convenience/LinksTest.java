@@ -340,7 +340,7 @@ class LinksTest {
 
 	@Test
 	void handlesChoiceValuesCorrectly() throws Throwable {
-		String randomName = "factory-" + randomUUID().toString();
+		String randomName = "factory-" + randomUUID();
 		LinkFactoryForTest linkFactory = factory(randomName, () -> new MyLinkConfig());
 		withRegistered(linkFactory).execute(() -> {
 			try (Link link = link(randomName)) {

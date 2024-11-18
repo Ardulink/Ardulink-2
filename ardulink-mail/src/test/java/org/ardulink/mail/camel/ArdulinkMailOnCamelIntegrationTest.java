@@ -225,7 +225,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 
 	private String imapUri(String username, String password) {
 		ImapServer imapd = mailMock.getImap();
-		return makeURI("imap://" + imapd.getBindTo() + ":" + imapd.getPort(), newMapBuilder() //
+		return makeURI(format("imap://%s:%d", imapd.getBindTo(), imapd.getPort()), newMapBuilder() //
 				.put("username", username) //
 				.put("password", password) //
 				.put("delete", true) //
@@ -238,7 +238,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 
 	private String smtpUri(String username, String password) {
 		SmtpServer smtpd = mailMock.getSmtp();
-		return makeURI("smtp://" + smtpd.getBindTo() + ":" + smtpd.getPort(), newMapBuilder() //
+		return makeURI(format("smtp://%s:%d", smtpd.getBindTo(), smtpd.getPort()), newMapBuilder() //
 				.put("username", username) //
 				.put("password", password) //
 				.put("debugMode", true) //

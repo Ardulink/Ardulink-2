@@ -89,8 +89,10 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 					while ((line = in.readLine()) != null) {
 						logger.info("Read {}", line);
 						received.add(line);
-						answers.getOrDefault(line, emptyList()).stream().peek(m -> logger.info("Responding {}", m))
-								.map(m -> m + "\n").forEach(out::print);
+						answers.getOrDefault(line, emptyList()).stream() //
+								.peek(m -> logger.info("Responding {}", m)) //
+								.map(m -> m + "\n") //
+								.forEach(out::print);
 						out.flush();
 					}
 				} catch (IOException e) {
@@ -137,9 +139,10 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 	}
 
 	private Map<String, List<String>> makeMap(int numberOfPorts) {
-		return MapBuilder.<String, List<String>>newMapBuilder()
-				.put(proxyMessage("get_port_list"), portList(numberOfPorts))
-				.put(proxyMessage("connect"), singletonList(OK)).build();
+		return MapBuilder.<String, List<String>>newMapBuilder() //
+				.put(proxyMessage("get_port_list"), portList(numberOfPorts)) //
+				.put(proxyMessage("connect"), singletonList(OK)) //
+				.build();
 	}
 
 	public List<String> received() {

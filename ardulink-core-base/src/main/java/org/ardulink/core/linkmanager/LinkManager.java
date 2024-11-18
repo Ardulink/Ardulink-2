@@ -43,14 +43,8 @@ import static org.ardulink.util.anno.LapsedWith.JDK14;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.ResourceBundle;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -502,7 +496,7 @@ public abstract class LinkManager {
 				} else if (!factoryType.equals(other.factoryType)) {
 					return false;
 				}
-				return values == null ? other.values == null : values.equals(other.values);
+				return Objects.equals(values, other.values);
 			}
 
 			@Override

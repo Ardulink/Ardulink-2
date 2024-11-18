@@ -46,11 +46,7 @@ public final class SwingSelector {
 	public static <T extends Component> T findComponent(Container container, Class<T> type,
 			Predicate<? super T> predicate) {
 		return findComponentRecursively(container, type) //
-				.filter(predicate) //
-				.map(type::cast) //
-				.findFirst() //
-				.orElse(null) //
-		;
+				.filter(predicate).findFirst().orElse(null);
 	}
 
 	private static <T extends Component> Stream<T> findComponentRecursively(Container container, Class<T> clazz) {
