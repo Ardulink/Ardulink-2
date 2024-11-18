@@ -54,11 +54,11 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>${env.JAVA_VERSION:-8}</java.version>
-		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<compilerVersion>8</compilerVersion>
+		<maven.compiler.source>${compilerVersion}</maven.compiler.source>
+		<maven.compiler.target>${compilerVersion}</maven.compiler.target>
 		<!--
-		<maven.compiler.release>${java.version}</maven.compiler.release>
+    	<maven.compiler.release>${compilerVersion}</maven.compiler.release>
 		-->
 		<args4j.version>2.33</args4j.version>
 		<slf4j.version>2.0.16</slf4j.version>
@@ -107,12 +107,6 @@
 				<plugin>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.13.0</version>
-					<configuration>
-						<compilerArgs>
-							<arg>-Xlint:deprecation</arg>
-							<arg>-Xlint:unchecked</arg>
-						</compilerArgs>
-					</configuration>
 				</plugin>
 				<plugin>
 					<artifactId>maven-jar-plugin</artifactId>
