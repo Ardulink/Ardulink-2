@@ -62,13 +62,13 @@ public class NetworkProxyServer {
 					new Thread(newConnection(serverSocket)).start();
 				}
 			} finally {
-				logger.info(NAME + " stops");
+				logger.info("{} stops", NAME);
 				serverSocket.close();
 			}
 		}
 
 		protected void serverIsUp(int portNumber) {
-			logger.info(NAME + " listening on port {}", portNumber);
+			logger.info("{} listening on port {}", NAME, portNumber);
 		}
 
 		protected NetworkProxyServerConnection newConnection(ServerSocket serverSocket) throws IOException {
@@ -88,7 +88,7 @@ public class NetworkProxyServer {
 					writer.println(STOP_SERVER_CMD);
 				}
 			}
-			logger.info(NAME + NAME + " stop requested");
+			logger.info("{} stop requested", NAME);
 		}
 
 	}
