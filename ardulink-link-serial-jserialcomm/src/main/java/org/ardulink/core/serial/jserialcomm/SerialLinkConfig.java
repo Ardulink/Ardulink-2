@@ -26,6 +26,7 @@ import static org.ardulink.util.Optionals.or;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Positive;
@@ -78,8 +79,8 @@ public class SerialLinkConfig implements LinkConfig {
 	}
 
 	@ChoiceFor(NAMED_PORT)
-	public String[] listPorts() {
-		return Arrays.stream(getCommPorts()).map(SerialPort::getSystemPortPath).toArray(String[]::new);
+	public Stream<String> listPorts() {
+		return Arrays.stream(getCommPorts()).map(SerialPort::getSystemPortPath);
 	}
 
 	@ChoiceFor(NAMED_PROTO)
