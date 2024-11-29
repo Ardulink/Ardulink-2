@@ -43,7 +43,7 @@ class ListMultiMapTest {
 
 	@Test
 	void iteratorOnSingleElement() {
-		sut.put(1, "foo");
+		assertThat(sut.put(1, "foo")).isTrue();
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();
 		Entry<Integer, String> next = iterator.next();
 		assertThat(next.getKey()).isEqualTo(1);
@@ -53,8 +53,8 @@ class ListMultiMapTest {
 
 	@Test
 	void iteratorOnCollisionElement() {
-		sut.put(1, "foo");
-		sut.put(1, "bar");
+		assertThat(sut.put(1, "foo")).isTrue();
+		assertThat(sut.put(1, "bar")).isTrue();
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();
 		Entry<Integer, String> next = iterator.next();
 		assertThat(next.getKey()).isEqualTo(1);

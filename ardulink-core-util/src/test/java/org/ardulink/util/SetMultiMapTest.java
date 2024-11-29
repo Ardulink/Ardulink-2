@@ -16,8 +16,6 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singleton;
 import static org.ardulink.util.Maps.entry;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,35 +36,35 @@ class SetMultiMapTest {
 
 	@Test
 	void canPut() {
-		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
+		assertThat(sut.put(1, "foo")).isTrue();
 		assertThat(sut.asMap()).containsExactly(entry(1, singleton("foo")));
 	}
 
 	@Test
 	void canPutTwice() {
-		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
-		assertThat(sut.put(1, "foo")).isEqualTo(FALSE);
+		assertThat(sut.put(1, "foo")).isTrue();
+		assertThat(sut.put(1, "foo")).isFalse();
 		assertThat(sut.asMap()).containsExactly(entry(1, singleton("foo")));
 	}
 
 	@Test
 	void canRemoveExistingValue() {
-		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
-		assertThat(sut.remove(1, "foo")).isEqualTo(TRUE);
+		assertThat(sut.put(1, "foo")).isTrue();
+		assertThat(sut.remove(1, "foo")).isTrue();
 		assertThat(sut.asMap()).isEmpty();
 	}
 
 	@Test
 	void canHandleRemovesOfNonExistingValues() {
-		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
-		assertThat(sut.remove(1, "bar")).isEqualTo(FALSE);
+		assertThat(sut.put(1, "foo")).isTrue();
+		assertThat(sut.remove(1, "bar")).isFalse();
 		assertThat(sut.asMap()).containsExactly(entry(1, singleton("foo")));
 	}
 
 	@Test
 	void canHandleRemovesOfNonExistingKeys() {
-		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
-		assertThat(sut.remove(2, "foo")).isEqualTo(FALSE);
+		assertThat(sut.put(1, "foo")).isTrue();
+		assertThat(sut.remove(2, "foo")).isFalse();
 		assertThat(sut.asMap()).containsExactly(entry(1, singleton("foo")));
 	}
 
