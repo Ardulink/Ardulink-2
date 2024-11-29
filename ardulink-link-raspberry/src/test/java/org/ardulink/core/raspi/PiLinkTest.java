@@ -20,6 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.condition.OS.LINUX;
 
+import java.io.IOException;
+
+import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
@@ -43,8 +46,10 @@ class PiLinkTest {
 
 	@Test
 	@EnabledOnOs(value = LINUX, architectures = "aarch64")
-	void creatingInstanceWillWorkOnLinuxAarch64() {
-		assertThat(Links.getLink("ardulink://raspberry")).isNotNull();
+	void creatingInstanceWillWorkOnLinuxAarch64() throws IOException {
+		try (Link link = Links.getLink("ardulink://raspberry")) {
+			assertThat(link).isNotNull();
+		}
 	}
 
 }
