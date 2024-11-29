@@ -45,8 +45,8 @@ public final class Maps {
 		return properties;
 	}
 
-	@LapsedWith(module = JDK9, value = "Map#entry")
 	public static <K, V> Entry<K, V> entry(K k, V v) {
+		// do not replace by JDK9's Map#entry since it does not support null values
 		return new AbstractMap.SimpleEntry<>(k, v);
 	}
 
