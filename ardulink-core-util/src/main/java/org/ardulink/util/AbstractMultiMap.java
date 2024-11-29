@@ -68,7 +68,7 @@ public abstract class AbstractMultiMap<K, V, T extends Collection<V>> implements
 	}
 
 	public boolean put(K key, V value) {
-		return this.data.computeIfAbsent(key, k -> make()).add(value);
+		return this.data.computeIfAbsent(key, __ -> make()).add(value);
 	}
 
 	public boolean remove(K key, V value) {
