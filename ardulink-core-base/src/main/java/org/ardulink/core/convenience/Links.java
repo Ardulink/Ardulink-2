@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
@@ -130,12 +131,12 @@ public final class Links {
 	}
 
 	public static Configurer getDefaultConfigurer() {
-		return getConfigurerWithDefaultsSet(getFirst(sorted(linkManager.listURIs()))
-				.orElseThrow(() -> new IllegalStateException("No factory registered")));
+		return getConfigurerWithDefaultsSet(
+				sortedURIs().findFirst().orElseThrow(() -> new IllegalStateException("No factory registered")));
 	}
 
-	private static List<URI> sorted(List<URI> uris) {
-		return uris.stream().sorted(serialsFirst()).collect(toList());
+	private static Stream<URI> sortedURIs() {
+		return linkManager.listURIs().stream().sorted(serialsFirst());
 	}
 
 	private static Comparator<URI> serialsFirst() {
@@ -183,11 +184,14 @@ public final class Links {
 	}
 
 	private static URI aliasReplacement(URI uri) {
-		List<URI> availableUris = sorted(linkManager.listURIs());
+		List<URI> availableUris = sortedURIs().collect(toList());
 		String name = extractNameFromURI(uri);
-		return containsName(availableUris, name) ? uri
-				: findAlias(name).map(a -> isAliasFor(availableUris, a).orElse(null))
-						.map(r -> replaceName(uri, extractNameFromURI(r))).orElse(uri);
+		return containsName(availableUris, name) //
+				? uri //
+				: findAlias(name) //
+						.map(a -> isAliasFor(availableUris, a).orElse(null)) //
+						.map(r -> replaceName(uri, extractNameFromURI(r))) //
+						.orElse(uri);
 	}
 
 	private static Optional<URI> isAliasFor(List<URI> availableUris, Alias alias) {
@@ -195,7 +199,7 @@ public final class Links {
 	}
 
 	private static Optional<Alias> findAlias(String name) {
-		return aliases.stream().filter(alias -> alias.isAliasName(name)).findFirst();
+		return aliases.stream().filter(a -> a.isAliasName(name)).findFirst();
 	}
 
 	private static boolean containsName(List<URI> uris, String name) {
