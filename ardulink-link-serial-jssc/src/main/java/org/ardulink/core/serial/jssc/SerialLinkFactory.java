@@ -52,9 +52,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 
 	@Override
 	public LinkDelegate newLink(SerialLinkConfig config) throws SerialPortException, IOException {
-		String portIdentifier = config.port;
-		SerialPort serialPort = serialPort(config, portIdentifier);
-
+		SerialPort serialPort = serialPort(config);
 		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(
 				new StreamConnection(new SerialInputStream(serialPort), new SerialOutputStream(serialPort),
 						config.protocol().newByteStreamProcessor()));
@@ -92,8 +90,8 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		return false;
 	}
 
-	private SerialPort serialPort(SerialLinkConfig config, String portIdentifier) throws SerialPortException {
-		SerialPort serialPort = new SerialPort(portIdentifier);
+	private SerialPort serialPort(SerialLinkConfig config) throws SerialPortException {
+		SerialPort serialPort = new SerialPort(config.port);
 		serialPort.openPort();
 		serialPort.setParams(config.baudrate, DATABITS_8, STOPBITS_1, PARITY_NONE);
 		return serialPort;

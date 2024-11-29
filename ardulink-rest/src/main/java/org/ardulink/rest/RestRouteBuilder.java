@@ -6,7 +6,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.regex.Matcher.quoteReplacement;
-import static java.util.stream.Collectors.joining;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -25,9 +24,9 @@ import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Primitives.tryParseAs;
 import static org.ardulink.util.StopWatch.Countdown.createStarted;
+import static org.ardulink.util.Throwables.propagate;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -149,9 +148,11 @@ public class RestRouteBuilder extends RouteBuilder {
 	}
 
 	private static String content(String in) {
-		return new BufferedReader(
-				new InputStreamReader(RestRouteBuilder.class.getClassLoader().getResourceAsStream(in), UTF_8)).lines()
-				.collect(joining("\n"));
+		try {
+			return new String(RestRouteBuilder.class.getClassLoader().getResourceAsStream(in).readAllBytes(), UTF_8);
+		} catch (IOException e) {
+			throw propagate(e);
+		}
 	}
 
 	private static Predicate isGet(String initializer) {
@@ -181,7 +182,7 @@ public class RestRouteBuilder extends RouteBuilder {
 		message.setHeader(HTTP_RESPONSE_CODE, 302);
 		message.setHeader("location", location);
 	}
-	
+
 	private static void readQueue(Exchange exchange, AtomicReference<FromDeviceMessagePinStateChanged> messageRef,
 			CountDownLatch latch) throws InterruptedException {
 		Message message = exchange.getMessage();
