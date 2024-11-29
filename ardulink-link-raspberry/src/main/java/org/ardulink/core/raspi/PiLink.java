@@ -22,6 +22,7 @@ import static com.pi4j.io.gpio.PinMode.PWM_OUTPUT;
 import static com.pi4j.io.gpio.RaspiPin.getPinByName;
 import static com.pi4j.io.gpio.event.PinEventType.ANALOG_VALUE_CHANGE;
 import static com.pi4j.io.gpio.event.PinEventType.DIGITAL_STATE_CHANGE;
+import static java.lang.String.format;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -29,7 +30,6 @@ import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
 import static org.ardulink.util.Preconditions.checkNotNull;
-import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
 import java.util.List;
@@ -111,20 +111,16 @@ public class PiLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public long switchAnalogPin(AnalogPin analogPin, int value)
-			throws IOException {
-		GpioPinPwmOutput pin = (GpioPinPwmOutput) getOrCreate(
-				analogPin.pinNum(), DIGITAL_OUTPUT);
+	public long switchAnalogPin(AnalogPin analogPin, int value) throws IOException {
+		GpioPinPwmOutput pin = (GpioPinPwmOutput) getOrCreate(analogPin.pinNum(), DIGITAL_OUTPUT);
 		pin.setMode(PWM_OUTPUT);
 		pin.setPwm(value);
 		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public long switchDigitalPin(DigitalPin digitalPin, boolean value)
-			throws IOException {
-		GpioPinDigitalOutput pin = (GpioPinDigitalOutput) getOrCreate(
-				digitalPin.pinNum(), DIGITAL_OUTPUT);
+	public long switchDigitalPin(DigitalPin digitalPin, boolean value) throws IOException {
+		GpioPinDigitalOutput pin = (GpioPinDigitalOutput) getOrCreate(digitalPin.pinNum(), DIGITAL_OUTPUT);
 		if (value) {
 			pin.high();
 		} else {
@@ -134,8 +130,8 @@ public class PiLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public long sendKeyPressEvent(char keychar, int keycode, int keylocation,
-			int keymodifiers, int keymodifiersex) throws IOException {
+	public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers, int keymodifiersex)
+			throws IOException {
 		throw notSupported();
 	}
 
@@ -155,29 +151,26 @@ public class PiLink extends AbstractListenerLink {
 	}
 
 	private GpioPin getOrCreate(int address, PinMode pinMode) {
-		for (GpioPin gpioPin : gpioController.getProvisionedPins()) {
-			com.pi4j.io.gpio.Pin pin = gpioPin.getPin();
-			if (pin.getAddress() == address) {
-				checkState(pin.getSupportedPinModes().contains(pinMode),
-						"Pin %s does not provide %s", pin, pinMode);
-				return gpioPin;
-			}
-		}
-		return create(address, pinMode);
+		return gpioController.getProvisionedPins().stream() //
+				.filter(g -> g.getPin().getAddress() == address) //
+				.peek(g -> {
+					com.pi4j.io.gpio.Pin pin = g.getPin();
+					if (!pin.getSupportedPinModes().contains(pinMode)) {
+						throw new IllegalStateException(format("Pin %s does not provide %s", pin, pinMode));
+					}
+				}).findFirst().orElseGet(() -> create(address, pinMode));
 	}
 
 	private GpioPin create(int address, PinMode pinMode) {
 		String name = "GPIO " + address;
-		return gpioController.provisionPin(
-				checkNotNull(getPinByName(name),
-						"Pin with name %s does not exist", name), pinMode);
+		return gpioController.provisionPin(checkNotNull(getPinByName(name), "Pin with name %s does not exist", name),
+				pinMode);
 	}
 
 	private GpioPinListenerDigital digitalAdapter() {
 		return new GpioPinListenerDigital() {
 			@Override
-			public void handleGpioPinDigitalStateChangeEvent(
-					GpioPinDigitalStateChangeEvent event) {
+			public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
 				if (event.getEventType() == DIGITAL_STATE_CHANGE) {
 					fireStateChanged(digitalPinValueChanged(digitalPin(event.getPin().getPin().getAddress()),
 							event.getState().isHigh()));
@@ -189,10 +182,10 @@ public class PiLink extends AbstractListenerLink {
 	private GpioPinListenerAnalog analogAdapter() {
 		return new GpioPinListenerAnalog() {
 			@Override
-			public void handleGpioPinAnalogValueChangeEvent(
-					GpioPinAnalogValueChangeEvent event) {
+			public void handleGpioPinAnalogValueChangeEvent(GpioPinAnalogValueChangeEvent event) {
 				if (event.getEventType() == ANALOG_VALUE_CHANGE) {
-					fireStateChanged(analogPinValueChanged(analogPin(event.getPin().getPin().getAddress()), (int) event.getValue()));
+					fireStateChanged(analogPinValueChanged(analogPin(event.getPin().getPin().getAddress()),
+							(int) event.getValue()));
 				}
 			}
 		};
