@@ -37,6 +37,13 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ardulink</groupId>
+			<artifactId>ardulink-link-serial-jserialcomm</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-link-proxy</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>

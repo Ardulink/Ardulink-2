@@ -84,6 +84,7 @@
 		<module>ardulink-link-nodemcu</module>
 		<module>ardulink-link-serial-rxtx</module>
 		<module>ardulink-link-serial-jssc</module>
+		<module>ardulink-link-serial-jserialcomm</module>
 		<module>ardulink-link-bluetooth</module>
 		<module>ardulink-link-digispark</module>
 		<module>ardulink-link-raspberry</module>
