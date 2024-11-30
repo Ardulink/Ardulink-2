@@ -17,10 +17,7 @@ package org.ardulink.core.virtual.console;
 
 import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.core.proto.api.Protocols.protocolNames;
-import static org.ardulink.core.proto.api.Protocols.protocols;
-import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
-import static org.ardulink.util.Iterables.getFirst;
-import static org.ardulink.util.Optionals.or;
+import static org.ardulink.core.proto.api.Protocols.tryProtoByNameWithFallback;
 
 import java.util.List;
 
@@ -43,7 +40,7 @@ public class VirtualConnectionConfig implements LinkConfig {
 	private Protocol protocol = useProtoOrFallback(ArdulinkProtocol2.NAME);
 
 	private Protocol useProtoOrFallback(String prefered) {
-		return or(tryProtoByName(prefered), () -> getFirst(protocols())).orElse(null);
+		return tryProtoByNameWithFallback(prefered).orElse(null);
 	}
 
 	@Named(NAMED_PROTO)

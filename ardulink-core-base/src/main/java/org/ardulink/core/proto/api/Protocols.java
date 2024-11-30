@@ -19,6 +19,8 @@ package org.ardulink.core.proto.api;
 import static java.lang.String.format;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
+import static org.ardulink.util.Iterables.getFirst;
+import static org.ardulink.util.Optionals.or;
 import static org.ardulink.util.Predicates.attribute;
 import static org.ardulink.util.ServiceLoaders.services;
 
@@ -85,6 +87,19 @@ public final class Protocols {
 	 */
 	public static Optional<Protocol> tryProtoByName(String name) {
 		return withName(protocols(), name);
+	}
+
+	/**
+	 * Tries to load the passed proto, if this fails, the first available protocol
+	 * is returned. Since there could be no available protocols an {@link Optional}
+	 * is returned.
+	 * 
+	 * @param name the name of the protocol
+	 * @return Optional holding the protocol with the given name or empty if not
+	 *         found
+	 */
+	public static Optional<Protocol> tryProtoByNameWithFallback(String name) {
+		return or(tryProtoByName(name), () -> getFirst(protocols()));
 	}
 
 	private static Optional<Protocol> withName(List<Protocol> protocols, String name) {

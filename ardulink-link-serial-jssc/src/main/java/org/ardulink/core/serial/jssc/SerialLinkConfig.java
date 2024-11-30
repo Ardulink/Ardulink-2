@@ -19,10 +19,7 @@ package org.ardulink.core.serial.jssc;
 import static jssc.SerialPortList.getPortNames;
 import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.core.proto.api.Protocols.protocolNames;
-import static org.ardulink.core.proto.api.Protocols.protocols;
-import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
-import static org.ardulink.util.Iterables.getFirst;
-import static org.ardulink.util.Optionals.or;
+import static org.ardulink.core.proto.api.Protocols.tryProtoByNameWithFallback;
 
 import java.util.List;
 
@@ -71,7 +68,7 @@ public class SerialLinkConfig implements LinkConfig {
 	public boolean pingprobe = true;
 
 	private Protocol useProtoOrFallback(String prefered) {
-		return or(tryProtoByName(prefered), () -> getFirst(protocols())).orElse(null);
+		return tryProtoByNameWithFallback(prefered).orElse(null);
 	}
 
 	@ChoiceFor(NAMED_PORT)
