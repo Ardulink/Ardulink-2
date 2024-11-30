@@ -17,8 +17,12 @@ limitations under the License.
 package org.ardulink.util;
 
 import static java.util.Arrays.asList;
+import static org.ardulink.util.Lists.mapList;
+import static org.ardulink.util.Maps.entry;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -45,6 +49,12 @@ class ListsTest {
 	@Test
 	void testNewArrayListTArray() {
 		verifyIsMutable(Lists.newArrayList("a", "b", "c"));
+	}
+
+	@Test
+	void testMapList() {
+		assertThat(mapList(asList(entry(1, "A"), entry(3, "C"), entry(2, "B")), Map.Entry::getKey)) //
+				.containsExactly(1, 3, 2);
 	}
 
 	private static void verifyIsMutable(List<String> list) {

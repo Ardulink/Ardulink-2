@@ -20,14 +20,13 @@ import static java.lang.String.format;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.util.Iterables.getFirst;
+import static org.ardulink.util.Lists.mapList;
 import static org.ardulink.util.Optionals.or;
 import static org.ardulink.util.Predicates.attribute;
 import static org.ardulink.util.ServiceLoaders.services;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -44,7 +43,7 @@ public final class Protocols {
 	}
 
 	/**
-	 * List all registered protocols
+	 * List all registered protocols.
 	 * 
 	 * @return list of all registered protocols
 	 * @see #protocolNames()
@@ -54,13 +53,13 @@ public final class Protocols {
 	}
 
 	/**
-	 * List all registered protocols names
+	 * List all registered protocols names.
 	 * 
 	 * @return list of all registered protocols names
 	 * @see #protocols()
 	 */
 	public static List<String> protocolNames() {
-		return names(protocols());
+		return extractNames(protocols());
 	}
 
 	/**
@@ -74,7 +73,7 @@ public final class Protocols {
 	public static Protocol protoByName(String name) {
 		List<Protocol> availables = protocols();
 		return withName(availables, name).orElseThrow(() -> new IllegalStateException(
-				format("No protocol with name %s registered. Available names are %s", name, names(availables))));
+				format("No protocol with name %s registered. Available names are %s", name, extractNames(availables))));
 	}
 
 	/**
@@ -90,9 +89,9 @@ public final class Protocols {
 	}
 
 	/**
-	 * Tries to load the passed proto, if this fails, the first available protocol
-	 * is returned. Since there could be no available protocols an {@link Optional}
-	 * is returned.
+	 * Tries to load the passed protocol, if this fails, the first available
+	 * protocol is returned. Since there could be no available protocols an
+	 * {@link Optional} is returned.
 	 * 
 	 * @param name the name of the protocol
 	 * @return Optional holding the protocol with the given name or empty if not
@@ -103,15 +102,11 @@ public final class Protocols {
 	}
 
 	private static Optional<Protocol> withName(List<Protocol> protocols, String name) {
-		return withAttribute(protocols, attribute(Protocol::getName, isEqual(name)));
+		return protocols.stream().filter(attribute(Protocol::getName, isEqual(name))).findFirst();
 	}
 
-	private static <T> Optional<Protocol> withAttribute(Collection<Protocol> protocols, Predicate<Protocol> predicate) {
-		return protocols.stream().filter(predicate).findFirst();
-	}
-
-	private static List<String> names(List<Protocol> protocols) {
-		return protocols.stream().map(Protocol::getName).collect(toList());
+	private static List<String> extractNames(List<Protocol> protocols) {
+		return mapList(protocols, Protocol::getName);
 	}
 
 }

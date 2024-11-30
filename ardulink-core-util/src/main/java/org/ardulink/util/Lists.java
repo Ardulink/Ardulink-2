@@ -26,6 +26,7 @@ import static org.ardulink.util.anno.LapsedWith.JDK9;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 import org.ardulink.util.anno.LapsedWith;
 
@@ -55,6 +56,10 @@ public final class Lists {
 	@SafeVarargs
 	public static <T> List<T> newArrayList(T... values) {
 		return new ArrayList<>(asList(values));
+	}
+
+	public static <T, R> List<R> mapList(List<T> values, Function<T, R> mapper) {
+		return values.stream().map(mapper).collect(toList());
 	}
 
 }
