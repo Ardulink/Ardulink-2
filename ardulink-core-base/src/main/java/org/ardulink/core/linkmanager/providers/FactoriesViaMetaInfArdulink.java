@@ -58,7 +58,7 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 		 * {@link Link} that has a constructor accepting the {@link LinkConfig}.<br>
 		 * Creating {@link Link} without {@link LinkConfig}s is also supported, when
 		 * passing "null" as <code>configClassName</code> and the {@link Link} has a
-		 * public zero arg constructor.
+		 * public zero args constructor.
 		 */
 		private static final class GenericLinkFactory implements LinkFactory<LinkConfig> {
 
@@ -127,10 +127,11 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 			@Override
 			public LinkConfig newLinkConfig() {
 				try {
-					return isNullConfig(configClass) ? NO_ATTRIBUTES : configClass.newInstance();
-				} catch (InstantiationException e) {
-					throw propagate(e);
-				} catch (IllegalAccessException e) {
+					return isNullConfig(configClass) //
+							? NO_ATTRIBUTES //
+							: configClass.getConstructor().newInstance();
+				} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException | NoSuchMethodException | SecurityException e) {
 					throw propagate(e);
 				}
 			}
