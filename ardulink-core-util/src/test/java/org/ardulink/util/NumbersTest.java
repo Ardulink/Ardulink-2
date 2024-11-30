@@ -19,8 +19,8 @@ package org.ardulink.util;
 import static org.ardulink.util.Numbers.convertTo;
 import static org.ardulink.util.Numbers.numberType;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
-import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -68,14 +68,14 @@ class NumbersTest {
 	}
 
 	private void convert(Number value) {
-		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-			softly.assertThat(convertTo(value, Integer.class)).isEqualTo(value.intValue());
-			softly.assertThat(convertTo(value, Byte.class)).isEqualTo(value.byteValue());
-			softly.assertThat(convertTo(value, Short.class)).isEqualTo(value.shortValue());
-			softly.assertThat(convertTo(value, Long.class)).isEqualTo(value.longValue());
-			softly.assertThat(convertTo(value, Float.class)).isEqualTo(value.floatValue());
-			softly.assertThat(convertTo(value, Double.class)).isEqualTo(value.doubleValue());
-		}
+		assertSoftly(s -> {
+			s.assertThat(convertTo(value, Integer.class)).isEqualTo(value.intValue());
+			s.assertThat(convertTo(value, Byte.class)).isEqualTo(value.byteValue());
+			s.assertThat(convertTo(value, Short.class)).isEqualTo(value.shortValue());
+			s.assertThat(convertTo(value, Long.class)).isEqualTo(value.longValue());
+			s.assertThat(convertTo(value, Float.class)).isEqualTo(value.floatValue());
+			s.assertThat(convertTo(value, Double.class)).isEqualTo(value.doubleValue());
+		});
 	}
 
 	@ParameterizedTest

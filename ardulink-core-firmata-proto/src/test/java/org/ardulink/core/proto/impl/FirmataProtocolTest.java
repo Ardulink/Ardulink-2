@@ -19,6 +19,7 @@ import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.INPUT
 import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.PWM;
 import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.SERVO;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.firmata4j.firmata.parser.FirmataToken.ANALOG_MESSAGE;
 import static org.firmata4j.firmata.parser.FirmataToken.DIGITAL_MESSAGE;
 
@@ -47,7 +48,6 @@ import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin;
 import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode;
-import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ClearSystemProperty;
 import org.junitpioneer.jupiter.ExpectedToFail;
@@ -193,11 +193,10 @@ class FirmataProtocolTest {
 	@Test
 	void canSetDigitalPin() {
 		DigitalPin pin = digitalPin(13);
-		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-			softly.assertThat(sut.toDevice(toDeviceMessagePinStateChange(pin, true))).containsExactly(0x91, 0x20, 0x00);
-			softly.assertThat(sut.toDevice(toDeviceMessagePinStateChange(pin, false))).containsExactly(0x91, 0x00,
-					0x00);
-		}
+		assertSoftly(s -> {
+			s.assertThat(sut.toDevice(toDeviceMessagePinStateChange(pin, true))).containsExactly(0x91, 0x20, 0x00);
+			s.assertThat(sut.toDevice(toDeviceMessagePinStateChange(pin, false))).containsExactly(0x91, 0x00, 0x00);
+		});
 	}
 
 	@Test
@@ -235,13 +234,13 @@ class FirmataProtocolTest {
 	@Test
 	void canSendToneAndNoTone() {
 		AnalogPin pin = analogPin(1);
-		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-			Tone tone = Tone.forPin(pin).withHertz(234).withDuration(5, SECONDS);
-			softly.assertThat(sut.toDevice(toDeviceMessageTone(tone))) //
+		Tone tone = Tone.forPin(pin).withHertz(234).withDuration(5, SECONDS);
+		assertSoftly(s -> {
+			s.assertThat(sut.toDevice(toDeviceMessageTone(tone))) //
 					.containsExactly(0xF0, 0x5F, 0x00, pin.pinNum(), 0x6A, 0x01, 0x08, 0x27, 0xF7);
-			softly.assertThat(sut.toDevice(toDeviceMessageNoTone(pin))) //
+			s.assertThat(sut.toDevice(toDeviceMessageNoTone(pin))) //
 					.containsExactly(0xF0, 0x5F, 0x01, pin.pinNum(), 0xF7);
-		}
+		});
 	}
 
 	// -------------------------------------------------------------------------
@@ -250,20 +249,20 @@ class FirmataProtocolTest {
 	void canEnableDisableAnalogListening() {
 		byte pinNumber = 2;
 		Pin pin = analogPin(pinNumber);
-		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-			softly.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(0xC2, 0x01);
-			softly.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(0xC2, 0x00);
-		}
+		assertSoftly(s -> {
+			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(0xC2, 0x01);
+			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(0xC2, 0x00);
+		});
 	}
 
 	@Test
 	void canEnableDisableDigitalListening() {
 		byte pinNumber = 12;
 		Pin pin = digitalPin(pinNumber);
-		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-			softly.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(0xD1, 0x01);
-			softly.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(0xD1, 0x00);
-		}
+		assertSoftly(s -> {
+			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(0xD1, 0x01);
+			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(0xD1, 0x00);
+		});
 	}
 
 	// -------------------------------------------------------------------------
@@ -286,10 +285,10 @@ class FirmataProtocolTest {
 
 	private void thenMessageIs(Pin pin, Object value) {
 		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessagePinStateChanged.class, e -> {
-			try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-				softly.assertThat(e.getPin()).isEqualTo(pin);
-				softly.assertThat(e.getValue()).isEqualTo(value);
-			}
+			assertSoftly(s -> {
+				s.assertThat(e.getPin()).isEqualTo(pin);
+				s.assertThat(e.getValue()).isEqualTo(value);
+			});
 		});
 	}
 
@@ -298,12 +297,12 @@ class FirmataProtocolTest {
 		for (FromDeviceMessage message : messages) {
 			FromDeviceMessagePinStateChanged pinStateChanged = (FromDeviceMessagePinStateChanged) message;
 			Object object = expectedStates.get(pinStateChanged.getPin());
-			try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-				softly.assertThat(object).withFailMessage("No expected state for pin " + pinStateChanged.getPin())
+			assertSoftly(s -> {
+				s.assertThat(object).withFailMessage("No expected state for pin " + pinStateChanged.getPin())
 						.isNotNull();
-				softly.assertThat(pinStateChanged.getValue()).withFailMessage("Pin " + pinStateChanged.getPin())
+				s.assertThat(pinStateChanged.getValue()).withFailMessage("Pin " + pinStateChanged.getPin())
 						.isEqualTo(object);
-			}
+			});
 		}
 	}
 
