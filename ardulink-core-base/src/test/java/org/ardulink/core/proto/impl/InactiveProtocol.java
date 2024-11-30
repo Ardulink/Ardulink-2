@@ -31,14 +31,16 @@ public class InactiveProtocol implements Protocol {
 
 	public static final String NAME = "inactiveProto";
 
+	public static final ThreadLocal<Boolean> isActive = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
 	@Override
 	public String getName() {
 		return NAME;
 	}
-	
+
 	@Override
 	public boolean isActive() {
-		return false;
+		return isActive.get();
 	}
 
 	@Override

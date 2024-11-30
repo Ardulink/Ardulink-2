@@ -9,6 +9,7 @@ import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone.toDeviceMessageNoTone;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange.toDeviceMessagePinStateChange;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
+import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
 import static org.ardulink.core.proto.impl.FirmataProtocol.FIRMATA_ENABLED_PROPERTY_FEATURE;
 import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.ANALOG_INPUT;
@@ -44,7 +45,6 @@ import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin;
 import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode;
@@ -73,7 +73,7 @@ class FirmataProtocolTest {
 	}
 
 	private static Optional<Protocol> loadFirmata() {
-		return Protocols.tryProtoByName(FirmataProtocol.NAME);
+		return tryProtoByName(FirmataProtocol.NAME);
 	}
 
 	@Test
