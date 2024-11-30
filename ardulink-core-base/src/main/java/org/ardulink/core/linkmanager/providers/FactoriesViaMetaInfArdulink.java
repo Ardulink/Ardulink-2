@@ -51,6 +51,8 @@ import org.ardulink.core.linkmanager.LinkFactory;
  */
 public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 
+	private static final String RESOURCE_NAME = "META-INF/services/ardulink/linkfactory";
+
 	static class LineProcessor {
 
 		/**
@@ -166,14 +168,16 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 		ClassLoader classloader = moduleClassloader();
 		LineProcessor lineParser = new LineProcessor(classloader);
 		try {
-			return getResources(classloader, "META-INF/services/ardulink/linkfactory").stream()
-					.map(url -> loadLinkFactories(lineParser, url)).flatMap(Collection::stream).collect(toList());
+			return getResources(classloader, RESOURCE_NAME).stream() //
+					.map(u -> loadLinkFactories(lineParser, u)) //
+					.flatMap(Collection::stream) //
+					.collect(toList());
 		} catch (Exception e) {
 			throw propagate(e);
 		}
 	}
 
-	private List<LinkFactory<LinkConfig>> loadLinkFactories(LineProcessor lineProcessor, URL url) {
+	private static List<LinkFactory<LinkConfig>> loadLinkFactories(LineProcessor lineProcessor, URL url) {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
 			return reader.lines().filter(not(String::isEmpty)).map(lineProcessor::processLine).collect(toList());
 		} catch (IOException e) {
