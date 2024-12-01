@@ -82,7 +82,7 @@ class SerialLinkFactoryIntegrationTest {
 		attribute(configurer, "qos").setValue(anyBoolean());
 		attribute(configurer, "waitsecs").setValue(anyInt());
 		attribute(configurer, "secret").setValue(anyString());
-}
+	}
 
 	@Test
 	void cantConnectWithoutPort() {
