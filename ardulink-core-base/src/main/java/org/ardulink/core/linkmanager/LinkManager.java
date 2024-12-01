@@ -33,6 +33,7 @@ import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Predicates.attribute;
+import static org.ardulink.util.Predicates.not;
 import static org.ardulink.util.Primitives.findPrimitiveFor;
 import static org.ardulink.util.Primitives.wrap;
 import static org.ardulink.util.ServiceLoaders.services;
@@ -43,8 +44,15 @@ import static org.ardulink.util.anno.LapsedWith.JDK14;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -517,7 +525,7 @@ public abstract class LinkManager {
 
 		@Override
 		public Collection<String> getAttributes() {
-			return beanProperties.attributeNames().stream().filter(linkConfig::isEnabled).collect(toList());
+			return beanProperties.attributeNames().stream().filter(not(linkConfig::isDisabled)).collect(toList());
 		}
 
 		@Override
