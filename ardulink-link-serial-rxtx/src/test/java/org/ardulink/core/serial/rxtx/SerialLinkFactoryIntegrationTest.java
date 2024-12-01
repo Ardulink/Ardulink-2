@@ -20,8 +20,6 @@ import static java.net.URI.create;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.List;
@@ -31,7 +29,6 @@ import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -59,7 +56,7 @@ class SerialLinkFactoryIntegrationTest {
 		Configurer configurer = connectionManager.getConfigurer(
 				create(PREFIX + "?port=" + portNames.get(0) + "&baudrate=9600&pingprobe=false&waitsecs=1"));
 		try (Link link = configurer.newLink()) {
-			assertNotNull(link);
+			assertThat(link).isNotNull();
 		}
 	}
 

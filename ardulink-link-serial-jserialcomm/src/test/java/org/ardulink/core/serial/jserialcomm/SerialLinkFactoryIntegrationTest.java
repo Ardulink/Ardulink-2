@@ -19,7 +19,6 @@ package org.ardulink.core.serial.jserialcomm;
 import static java.net.URI.create;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.ardulink.core.Link;
@@ -52,7 +51,7 @@ class SerialLinkFactoryIntegrationTest {
 		Configurer configurer = connectionManager.getConfigurer(create(
 				PREFIX + "?port=" + portNames[0].getSystemPortPath() + "&baudrate=9600&pingprobe=false&waitsecs=1"));
 		try (Link link = configurer.newLink()) {
-			assertNotNull(link);
+			assertThat(link).isNotNull();
 		}
 	}
 
