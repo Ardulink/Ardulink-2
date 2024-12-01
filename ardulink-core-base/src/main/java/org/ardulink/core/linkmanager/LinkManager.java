@@ -517,7 +517,7 @@ public abstract class LinkManager {
 
 		@Override
 		public Collection<String> getAttributes() {
-			return beanProperties.attributeNames();
+			return beanProperties.attributeNames().stream().filter(linkConfig::isEnabled).collect(toList());
 		}
 
 		@Override

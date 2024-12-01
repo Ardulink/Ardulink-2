@@ -16,13 +16,17 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static java.net.URI.create;
 import static java.util.Arrays.asList;
+import static org.ardulink.core.linkmanager.DummyLinkConfig.XXX;
 import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
@@ -124,6 +128,20 @@ class LinkManagerTest {
 					verify(nameFactorySpy, times(1)).newLink(any(DummyLinkConfig.class));
 				});
 			}
+		});
+	}
+
+	@Test
+	void canProgramaticallyDisable() throws Throwable {
+		DummyLinkFactory factory = new DummyLinkFactory();
+		withRegistered(factory).execute(() -> {
+			Configurer configurer = sut.getConfigurer(create(format("%s://%s", ARDULINK_SCHEME, factory.getName())));
+			assertSoftly(s -> {
+				DummyLinkConfig.doDisableXXX.set(FALSE);
+				s.assertThat(configurer.getAttributes()).contains(XXX);
+				DummyLinkConfig.doDisableXXX.set(TRUE);
+				s.assertThat(configurer.getAttributes()).doesNotContain(XXX);
+			});
 		});
 	}
 
