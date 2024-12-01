@@ -19,6 +19,7 @@ package org.ardulink.core.serial.rxtx;
 import static gnu.io.CommPortIdentifier.PORT_SERIAL;
 import static gnu.io.CommPortIdentifier.getPortIdentifiers;
 import static java.util.Collections.list;
+import static org.ardulink.core.featureflags.PreviewFeature.isBoardPasswordFeatureEnabled;
 import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.core.proto.api.Protocols.protocolNames;
 import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
@@ -50,11 +51,13 @@ import gnu.io.CommPortIdentifier;
  */
 @I18n("message")
 public class SerialLinkConfig implements LinkConfig {
-
+	
 	private static final String NAMED_PROTO = "proto";
 
 	private static final String NAMED_PORT = "port";
 
+	private static final String NAMED_SECRET = "secret";
+	
 	@Named(NAMED_PORT)
 	public String port;
 
@@ -75,7 +78,7 @@ public class SerialLinkConfig implements LinkConfig {
 	@Named("pingprobe")
 	public boolean pingprobe = true;
 
-	@Named("secret")
+	@Named(NAMED_SECRET)
 	public String secret;
 
 	private Protocol useProtoOrFallback(String prefered) {
@@ -113,6 +116,11 @@ public class SerialLinkConfig implements LinkConfig {
 	@SuppressWarnings("unchecked")
 	private List<CommPortIdentifier> portIdentifiers() {
 		return list(getPortIdentifiers());
+	}
+
+	@Override
+	public boolean isDisabled(String attributeName) {
+		return !isBoardPasswordFeatureEnabled() && NAMED_SECRET.equals(attributeName);
 	}
 
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.serial.jserialcomm;
 
 import static com.fazecast.jSerialComm.SerialPort.getCommPorts;
+import static org.ardulink.core.featureflags.PreviewFeature.isBoardPasswordFeatureEnabled;
 import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.core.proto.api.Protocols.protocolNames;
 import static org.ardulink.core.proto.api.Protocols.tryProtoByNameWithFallback;
@@ -51,6 +52,8 @@ public class SerialLinkConfig implements LinkConfig {
 
 	private static final String NAMED_PORT = "port";
 
+	private static final String NAMED_SECRET = "secret";
+	
 	@Named(NAMED_PORT)
 	public String port;
 
@@ -71,7 +74,7 @@ public class SerialLinkConfig implements LinkConfig {
 	@Named("pingprobe")
 	public boolean pingprobe = true;
 
-	@Named("secret")
+	@Named(NAMED_SECRET)
 	public String secret;
 
 	private Protocol useProtoOrFallback(String prefered) {
@@ -100,6 +103,11 @@ public class SerialLinkConfig implements LinkConfig {
 
 	public Protocol protocol() {
 		return protocol;
+	}
+
+	@Override
+	public boolean isDisabled(String attributeName) {
+		return !isBoardPasswordFeatureEnabled() && NAMED_SECRET.equals(attributeName);
 	}
 
 }

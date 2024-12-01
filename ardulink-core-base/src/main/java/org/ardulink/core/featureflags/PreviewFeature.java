@@ -35,6 +35,13 @@ public final class PreviewFeature {
 	 */
 	public static final String FIRMATA_ENABLED_PROPERTY_FEATURE = "protocol.firmata.enabled";
 
+	/**
+	 * To enable the board password feature (work in progress) set the system
+	 * property {@value #BOARDPASSWORD_ENABLED_PROPERTY_FEATURE} to any non-empty
+	 * value.
+	 */
+	public static final String BOARDPASSWORD_ENABLED_PROPERTY_FEATURE = "feature.boardpassword.enabled";
+
 	private PreviewFeature() {
 		super();
 	}
@@ -45,6 +52,10 @@ public final class PreviewFeature {
 
 	public static boolean isFirmataProtocolFeatureEnabled() {
 		return isPropertySet(FIRMATA_ENABLED_PROPERTY_FEATURE);
+	}
+
+	public static boolean isBoardPasswordFeatureEnabled() {
+		return isPropertySet(BOARDPASSWORD_ENABLED_PROPERTY_FEATURE);
 	}
 
 }
