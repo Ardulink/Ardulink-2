@@ -67,6 +67,9 @@ public class SerialLinkConfig implements LinkConfig {
 	@Named("pingprobe")
 	public boolean pingprobe = true;
 
+	@Named("secret")
+	public String secret;
+	
 	private Protocol useProtoOrFallback(String prefered) {
 		return tryProtoByNameWithFallback(prefered).orElse(null);
 	}

@@ -23,6 +23,7 @@ import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
+import org.ardulink.core.messages.api.ToDeviceMessageUnlock;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -63,5 +64,7 @@ public interface ByteStreamProcessor {
 	byte[] toDevice(ToDeviceMessageNoTone noTone);
 
 	byte[] toDevice(ToDeviceMessageCustom custom);
+	
+	byte[] toDevice(ToDeviceMessageUnlock unlock);
 
 }

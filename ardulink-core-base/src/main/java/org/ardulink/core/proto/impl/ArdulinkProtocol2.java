@@ -47,6 +47,7 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_L
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.TONE;
+import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.UNLOCK;
 import static org.ardulink.util.Booleans.toBoolean;
 import static org.ardulink.util.Maps.entry;
 import static org.ardulink.util.Preconditions.checkNotNull;
@@ -66,6 +67,7 @@ import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
+import org.ardulink.core.messages.api.ToDeviceMessageUnlock;
 import org.ardulink.core.proto.api.MessageIdHolder;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProcessor;
@@ -444,6 +446,11 @@ public class ArdulinkProtocol2 implements Protocol {
 		@Override
 		public byte[] toDevice(ToDeviceMessageCustom custom) {
 			return toBytes(builder(custom, CUSTOM_MESSAGE).withValues(custom.getMessages()));
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageUnlock unlock) {
+			return toBytes(builder(unlock, UNLOCK).withValue(unlock.getSecret()));
 		}
 
 		/**

@@ -21,6 +21,7 @@ import static gnu.io.SerialPort.PARITY_NONE;
 import static gnu.io.SerialPort.STOPBITS_1;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Strings.nullOrEmpty;
 
 import java.io.IOException;
 
@@ -70,6 +71,10 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		if (!waitForArdulink(config, connectionBasedLink)) {
 			connection.close();
 			throw new IllegalStateException("Waited for arduino to boot but no response received");
+		}
+
+		if (!nullOrEmpty(config.secret)) {
+			link.unlock(config.secret);
 		}
 
 		return new LinkDelegate(link) {

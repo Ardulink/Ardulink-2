@@ -140,4 +140,10 @@ public class VirtualLink extends AbstractListenerLink {
 		return -1;
 	}
 
+	@Override
+	public long unlock(String secret) throws IOException {
+		logger.info("unlock {}", secret);
+		return MessageIdHolders.NO_ID.getId();
+	}
+	
 }

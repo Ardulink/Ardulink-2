@@ -19,7 +19,6 @@ package org.ardulink.core.serial.jssc;
 import static java.net.URI.create;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -28,7 +27,6 @@ import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import jssc.SerialPortList;
@@ -64,19 +62,21 @@ class SerialLinkFactoryIntegrationTest {
 		Configurer configurer = connectionManager.getConfigurer(create(PREFIX));
 
 		assertThat(configurer.getAttributes()).containsExactlyInAnyOrder( //
-				"port", "baudrate", "proto", "qos", "waitsecs", "pingprobe");
+				"port", "baudrate", "proto", "qos", "waitsecs", "pingprobe", "secret");
 
 		assertThat(attribute(configurer, "port").hasChoiceValues()).isTrue();
 		assertThat(attribute(configurer, "proto").hasChoiceValues()).isTrue();
 		assertThat(attribute(configurer, "baudrate").hasChoiceValues()).isFalse();
 		assertThat(attribute(configurer, "qos").hasChoiceValues()).isFalse();
 		assertThat(attribute(configurer, "waitsecs").hasChoiceValues()).isFalse();
+		assertThat(attribute(configurer, "secret").hasChoiceValues()).isFalse();
 
 		attribute(configurer, "port").setValue(anyString());
 		attribute(configurer, "proto").setValue(validProtoName());
 		attribute(configurer, "baudrate").setValue(anyInt());
 		attribute(configurer, "qos").setValue(anyBoolean());
 		attribute(configurer, "waitsecs").setValue(anyInt());
+		attribute(configurer, "secret").setValue(anyString());
 	}
 
 	@Test

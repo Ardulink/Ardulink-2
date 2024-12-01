@@ -21,6 +21,7 @@ import static com.fazecast.jSerialComm.SerialPort.ONE_STOP_BIT;
 import static com.fazecast.jSerialComm.SerialPort.TIMEOUT_READ_SEMI_BLOCKING;
 import static com.fazecast.jSerialComm.SerialPort.getCommPort;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.ardulink.util.Strings.nullOrEmpty;
 
 import java.io.IOException;
 
@@ -61,6 +62,10 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 		if (!waitForArdulink(config, connectionBasedLink)) {
 			connectionBasedLink.close();
 			throw new IllegalStateException("Waited for arduino to boot but no response received");
+		}
+
+		if (!nullOrEmpty(config.secret)) {
+			link.unlock(config.secret);
 		}
 
 		return new LinkDelegate(link) {

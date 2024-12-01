@@ -83,14 +83,12 @@ public class LinkDelegate implements Link {
 	}
 
 	@Override
-	public long switchAnalogPin(AnalogPin analogPin, int value)
-			throws IOException {
+	public long switchAnalogPin(AnalogPin analogPin, int value) throws IOException {
 		return getDelegate().switchAnalogPin(analogPin, value);
 	}
 
 	@Override
-	public long switchDigitalPin(DigitalPin digitalPin, boolean value)
-			throws IOException {
+	public long switchDigitalPin(DigitalPin digitalPin, boolean value) throws IOException {
 		return getDelegate().switchDigitalPin(digitalPin, value);
 	}
 
@@ -110,11 +108,16 @@ public class LinkDelegate implements Link {
 	}
 
 	@Override
-	public long sendKeyPressEvent(char keychar, int keycode, int keylocation,
-			int keymodifiers, int keymodifiersex) throws IOException {
-		return getDelegate().sendKeyPressEvent(keychar, keycode, keylocation,
-				keymodifiers, keymodifiersex);
+	public long unlock(String secret) throws IOException {
+		return getDelegate().unlock(secret);
 	}
+
+	@Override
+	public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers, int keymodifiersex)
+			throws IOException {
+		return getDelegate().sendKeyPressEvent(keychar, keycode, keylocation, keymodifiers, keymodifiersex);
+	}
+
 	@Override
 	public Link addCustomListener(CustomListener listener) throws IOException {
 		return getDelegate().addCustomListener(listener);

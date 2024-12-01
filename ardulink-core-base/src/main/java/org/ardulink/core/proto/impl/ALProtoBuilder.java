@@ -59,6 +59,7 @@ public class ALProtoBuilder {
 		TONE("tone"), //
 		NOTONE("notn"), //
 		CUSTOM_MESSAGE("cust"), //
+		UNLOCK("ulck"), //
 		RPLY("rply"), //
 		INFO("info"), //
 		CUSTOM_EVENT("cevnt"), //

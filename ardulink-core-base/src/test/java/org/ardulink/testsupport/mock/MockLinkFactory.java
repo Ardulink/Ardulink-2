@@ -18,6 +18,8 @@ package org.ardulink.testsupport.mock;
 
 import static org.mockito.Mockito.spy;
 
+import java.io.IOException;
+
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
@@ -78,6 +80,11 @@ public class MockLinkFactory implements LinkFactory<MockLinkConfig> {
 
 		@Override
 		public long sendCustomMessage(String... messages) {
+			return 0;
+		}
+
+		@Override
+		public long unlock(String secret) throws IOException {
 			return 0;
 		}
 	}

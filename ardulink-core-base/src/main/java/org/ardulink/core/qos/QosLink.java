@@ -150,6 +150,11 @@ public class QosLink implements Link {
 				delegate.sendCustomMessage(messages)));
 	}
 
+	@Override
+	public long unlock(String secret) throws IOException {
+		return extractId(newAwaiter().waitForResponse(delegate.unlock(secret)));
+	}
+
 	private ResponseAwaiter newAwaiter() throws IOException {
 		ResponseAwaiter awaiter = onLink(delegate);
 		return timeout == NO_TIMEOUT || timeUnit == NO_TIMEOUT_UNIT ? awaiter : awaiter

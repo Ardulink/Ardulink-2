@@ -265,6 +265,11 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	@Override
+	public long unlock(String secret) throws IOException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public void close() {
 		try {
 			deregisterAllEventListeners();

@@ -223,6 +223,12 @@ class ConnectionBasedLinkTest {
 	}
 
 	@Test
+	void canUnlock() throws IOException {
+		arduinoStub.link().unlock("theSecret");
+		assertToArduinoWasSent("alp://ulck/theSecret");
+	}
+
+	@Test
 	void canReadRawMessagesRead() throws Exception {
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(anyPositive(int.class)).withState(true);
 		assertThat(arduinoStub.withListener(new StringBuilderListenerAdapter(),

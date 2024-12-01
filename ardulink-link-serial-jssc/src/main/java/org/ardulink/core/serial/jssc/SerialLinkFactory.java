@@ -20,6 +20,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static jssc.SerialPort.DATABITS_8;
 import static jssc.SerialPort.PARITY_NONE;
 import static jssc.SerialPort.STOPBITS_1;
+import static org.ardulink.util.Strings.nullOrEmpty;
 
 import java.io.IOException;
 
@@ -28,6 +29,7 @@ import org.ardulink.core.Link;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.convenience.LinkDelegate;
 import org.ardulink.core.linkmanager.LinkFactory;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.qos.QosLink;
 
 import jssc.SerialPort;
@@ -53,15 +55,19 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 	@Override
 	public LinkDelegate newLink(SerialLinkConfig config) throws SerialPortException, IOException {
 		SerialPort serialPort = serialPort(config);
-		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(
-				new StreamConnection(new SerialInputStream(serialPort), new SerialOutputStream(serialPort),
-						config.protocol().newByteStreamProcessor()));
+		ByteStreamProcessor byteStreamProcessor = config.protocol().newByteStreamProcessor();
+		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(new StreamConnection(
+				new SerialInputStream(serialPort), new SerialOutputStream(serialPort), byteStreamProcessor));
 
 		Link link = config.qos ? new QosLink(connectionBasedLink) : connectionBasedLink;
 
 		if (!waitForArdulink(config, connectionBasedLink)) {
 			connectionBasedLink.close();
 			throw new IllegalStateException("Waited for arduino to boot but no response received");
+		}
+
+		if (!nullOrEmpty(config.secret)) {
+			link.unlock(config.secret);
 		}
 
 		return new LinkDelegate(link) {

@@ -29,6 +29,7 @@ import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChan
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening.toDeviceMessageStartListening;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening.toDeviceMessageStopListening;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageUnlock.toDeviceMessageUnlock;
 import static org.ardulink.core.proto.api.MessageIdHolders.addMessageId;
 import static org.ardulink.core.proto.api.MessageIdHolders.messageIdOf;
 import static org.ardulink.util.StopWatch.Countdown.createStarted;
@@ -54,6 +55,7 @@ import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
+import org.ardulink.core.messages.api.ToDeviceMessageUnlock;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.util.StopWatch.Countdown;
 import org.slf4j.Logger;
@@ -254,6 +256,15 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	public long sendCustomMessage(String... messages) throws IOException {
 		synchronized (connection) {
 			ToDeviceMessageCustom msg = addMessageIdIfNeeded(toDeviceMessageCustom(messages));
+			send(this.byteStreamProcessor.toDevice(msg));
+			return messageIdOf(msg);
+		}
+	}
+
+	@Override
+	public long unlock(String secret) throws IOException {
+		synchronized (connection) {
+			ToDeviceMessageUnlock msg = addMessageIdIfNeeded(toDeviceMessageUnlock(secret));
 			send(this.byteStreamProcessor.toDevice(msg));
 			return messageIdOf(msg);
 		}

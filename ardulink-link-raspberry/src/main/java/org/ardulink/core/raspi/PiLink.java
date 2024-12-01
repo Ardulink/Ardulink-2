@@ -150,6 +150,11 @@ public class PiLink extends AbstractListenerLink {
 		throw notSupported();
 	}
 
+	@Override
+	public long unlock(String secret) throws IOException {
+		throw notSupported();
+	}
+
 	private GpioPin getOrCreate(int address, PinMode pinMode) {
 		return gpioController.getProvisionedPins().stream() //
 				.filter(g -> g.getPin().getAddress() == address) //
