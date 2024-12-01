@@ -22,6 +22,14 @@ you code useful for a specific purpose. In this case you have to modify it to su
 your needs.
 */
 
+// #define PROTECTED_BY_SECRET theSecretPassword
+
+#ifdef PROTECTED_BY_SECRET
+boolean locked = true;
+#else
+boolean locked = false;
+#endif
+
 // int intensity = 0;               // led intensity this is needed just as example for this sketch
 String inputString = "";         // a string to hold incoming data (this is general code you can reuse)
 boolean stringComplete = false;  // whether the string is complete (this is general code you can reuse)
@@ -78,6 +86,20 @@ void loop() {
     
       boolean msgRecognized = true;
       
+#ifdef PROTECTED_BY_SECRET
+      if(inputString.substring(6,10) == "ulck") { // unlock
+        String secret = inputString.substring(11);
+        if (secret == PROTECTED_BY_SECRET) {
+          boolean locked = false;
+        }
+      } else if(inputString.substring(6,10) == "lock") { // lock
+        boolean locked = true;
+      }
+#endif
+
+      if (locked) {
+        msgRecognized = false;
+      } else {
       if(inputString.substring(6,10) == "kprs") { // KeyPressed
         // here you can write your own code. For instance the commented code change pin intensity if you press 'a' or 's'
         // take the command and change intensity on pin 11 this is needed just as example for this sketch
@@ -139,6 +161,7 @@ void loop() {
           analogPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
       } else {
         msgRecognized = false; // this sketch doesn't know other messages in this case command is ko (not ok)
+      }
       }
       
       // Prepare reply message if caller supply a message id (this is general code you can reuse)
