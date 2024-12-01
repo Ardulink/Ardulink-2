@@ -17,17 +17,16 @@ limitations under the License.
 package org.ardulink.core.proto.impl;
 
 import static java.lang.Boolean.TRUE;
-import static java.lang.System.getProperty;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.featureflags.PreviewFeature.isFirmataProtocolFeatureEnabled;
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageInfo.fromDeviceMessageInfo;
 import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.PWM;
 import static org.ardulink.util.Primitives.tryParseAs;
-import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.firmata4j.firmata.parser.FirmataEventType.ANALOG_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.DIGITAL_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.FIRMWARE_MESSAGE;
@@ -80,12 +79,6 @@ import org.firmata4j.fsm.FiniteStateMachine;
 public class FirmataProtocol implements Protocol {
 
 	public static final String NAME = "Firmata";
-
-	/**
-	 * To enable Firmata protocol (work in progress) set the system property
-	 * {@value #FIRMATA_ENABLED_PROPERTY_FEATURE} to any non-empty value.
-	 */
-	public static final String FIRMATA_ENABLED_PROPERTY_FEATURE = "protocol.firmata.enabled";
 
 	// TODO visible for testing
 	public static class FirmataPin {
@@ -162,7 +155,7 @@ public class FirmataProtocol implements Protocol {
 
 	@Override
 	public boolean isActive() {
-		return !nullOrEmpty(getProperty(FIRMATA_ENABLED_PROPERTY_FEATURE));
+		return isFirmataProtocolFeatureEnabled();
 	}
 
 	private static class FirmataByteStreamProcessor extends AbstractByteStreamProcessor {
