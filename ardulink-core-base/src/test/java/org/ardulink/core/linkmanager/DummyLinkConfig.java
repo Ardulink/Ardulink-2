@@ -240,8 +240,8 @@ public class DummyLinkConfig implements LinkConfig {
 	public String xxxDisabled;
 
 	@Override
-	public boolean isEnabled(String attributeName) {
-		return !doDisableXXX.get() || !XXX.equals(attributeName);
+	public boolean isDisabled(String attributeName) {
+		return doDisableXXX.get() && XXX.equals(attributeName);
 	}
 
 }

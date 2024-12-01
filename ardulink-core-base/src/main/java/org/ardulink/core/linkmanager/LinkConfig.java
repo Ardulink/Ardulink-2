@@ -78,8 +78,8 @@ public interface LinkConfig {
 	 * @param attributeName the attribute to check
 	 * @return <code>true</code> if the attribute is available
 	 */
-	default boolean isEnabled(String attributeName) {
-		return true;
+	default boolean isDisabled(String attributeName) {
+		return false;
 	}
 
 }
