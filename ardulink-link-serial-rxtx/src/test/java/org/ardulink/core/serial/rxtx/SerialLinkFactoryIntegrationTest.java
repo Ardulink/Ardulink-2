@@ -67,21 +67,19 @@ class SerialLinkFactoryIntegrationTest {
 		Configurer configurer = connectionManager.getConfigurer(create(PREFIX));
 
 		assertThat(configurer.getAttributes()).containsExactlyInAnyOrder( //
-				"port", "baudrate", "proto", "qos", "waitsecs", "pingprobe", "secret");
+				"port", "baudrate", "proto", "qos", "waitsecs", "pingprobe");
 
 		assertThat(attribute(configurer, "port").hasChoiceValues()).isTrue();
 		assertThat(attribute(configurer, "proto").hasChoiceValues()).isTrue();
 		assertThat(attribute(configurer, "baudrate").hasChoiceValues()).isFalse();
 		assertThat(attribute(configurer, "qos").hasChoiceValues()).isFalse();
 		assertThat(attribute(configurer, "waitsecs").hasChoiceValues()).isFalse();
-		assertThat(attribute(configurer, "secret").hasChoiceValues()).isFalse();
 
 		attribute(configurer, "port").setValue(anyString());
 		attribute(configurer, "proto").setValue(validProtoName());
 		attribute(configurer, "baudrate").setValue(anyInt());
 		attribute(configurer, "qos").setValue(anyBoolean());
 		attribute(configurer, "waitsecs").setValue(anyInt());
-		attribute(configurer, "secret").setValue(anyString());
 	}
 
 	@Test
