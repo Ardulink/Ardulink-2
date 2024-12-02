@@ -68,7 +68,7 @@
 		<jqwik.version>1.9.1</jqwik.version>
 		<awaitility.version>4.2.2</awaitility.version>
 		<junit-pioneer.version>1.9.1</junit-pioneer.version>
-		<equalsverifier.version>3.17.3</equalsverifier.version>
+		<equalsverifier.version>3.17.4</equalsverifier.version>
 		<!-- The next LTS release Camel 3.14, scheduled for December 2021, will be the last release to support Java 8 -->
 		<!-- https://camel.apache.org/blog/2021/09/eol-java8/ -->
 		<camel.version>3.14.0</camel.version>
