@@ -51,24 +51,38 @@ import org.ardulink.legacy.Link;
  */
 public class RGBController extends JPanel implements Linkable {
 
-	private final transient DocumentListener colorTextFieldDocumentListener = new DocumentListener() {
+	private final transient DefaultDocumentListener colorTextFieldDocumentListener = new DefaultDocumentListener();
 
-		@Override
-		public void removeUpdate(DocumentEvent e) {
-			updateColor();
+	private final class DefaultDocumentListener implements DocumentListener {
+		
+		private boolean enabled;
+
+		private void setEnabled(boolean enabled) {
+			this.enabled = enabled;
 		}
 
 		@Override
-		public void insertUpdate(DocumentEvent e) {
-			updateColor();
+		public void removeUpdate(DocumentEvent documentEvent) {
+			doUpdate();
 		}
 
 		@Override
-		public void changedUpdate(DocumentEvent e) {
-			updateColor();
+		public void insertUpdate(DocumentEvent documentEvent) {
+			doUpdate();
 		}
 
-	};
+		@Override
+		public void changedUpdate(DocumentEvent documentEvent) {
+			doUpdate();
+		}
+
+		private void doUpdate() {
+			if (!enabled) {
+				return;
+			}
+			updateColor();
+		}
+	}
 
 	private class DefaultPWMControllerListener implements PWMControllerListener {
 		
@@ -89,14 +103,16 @@ public class RGBController extends JPanel implements Linkable {
 			if (!enabled) {
 				return;
 			}
-			colorTextField.getDocument().removeDocumentListener(colorTextFieldDocumentListener);
-
-			int value = event.getPwmValue();
-			Color color = colorMaker.apply(coloredPanel.getBackground(),
-					chckbxInverted.isSelected() ? invert(value) : value);
-			coloredPanel.setBackground(color);
-			colorTextField.setText(Colors.toString(color));
-			colorTextField.getDocument().addDocumentListener(colorTextFieldDocumentListener);
+			colorTextFieldDocumentListener.setEnabled(false);
+			try {
+				int value = event.getPwmValue();
+				Color color = colorMaker.apply(coloredPanel.getBackground(),
+						chckbxInverted.isSelected() ? invert(value) : value);
+				coloredPanel.setBackground(color);
+				colorTextField.setText(Colors.toString(color));
+			} finally {
+				colorTextFieldDocumentListener.setEnabled(true);
+			}
 		}
 
 	}
