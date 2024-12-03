@@ -42,9 +42,12 @@ import org.ardulink.gui.facility.Colors;
 import org.ardulink.legacy.Link;
 
 /**
- * [ardulinktitle] [ardulinkversion] This class can manage three power with
- * modulation arduino pins sending specific messages to the arduino board. It is
- * usually used to manage RGB LEDs project Ardulink http://www.ardulink.org/
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * This class can manage three power with modulation arduino pins sending
+ * specific messages to the arduino board. It is usually used to manage RGB LEDs. 
+ * 
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *
@@ -187,7 +190,7 @@ public class RGBController extends JPanel implements Linkable {
 		});
 		
 		chckbxInverted = new JCheckBox("Inverted");
-		chckbxInverted.addActionListener(e -> {
+		chckbxInverted.addActionListener(__ -> {
 			Color newColor = Colors.invert(coloredPanel.getBackground());
 			coloredPanel.setBackground(newColor);
 			colorTextField.setText(Colors.toString(newColor));
