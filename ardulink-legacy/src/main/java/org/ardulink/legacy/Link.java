@@ -38,10 +38,9 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
  * 
  * An adapter for the old legacy link (Ardulink 1 compatibility issue). Users
  * should migrate to new new API. project Ardulink http://www.ardulink.org/
- * @deprecated this is just an adapter for the old Ardulink-1 Link tpye
+ * @deprecated this is just an adapter for the old Ardulink-1 Link type. 
  * 
  * [adsense]
- * 
  */
 @Deprecated
 public abstract class Link {

@@ -38,6 +38,7 @@ import javax.swing.event.DocumentListener;
 
 import org.ardulink.gui.event.PWMChangeEvent;
 import org.ardulink.gui.event.PWMControllerListener;
+import org.ardulink.gui.facility.AbstractDocumentListenerAdapter;
 import org.ardulink.gui.facility.Colors;
 import org.ardulink.legacy.Link;
 
@@ -56,30 +57,16 @@ public class RGBController extends JPanel implements Linkable {
 
 	private final transient DefaultDocumentListener colorTextFieldDocumentListener = new DefaultDocumentListener();
 
-	private final class DefaultDocumentListener implements DocumentListener {
+	private final class DefaultDocumentListener extends AbstractDocumentListenerAdapter {
 		
 		private boolean enabled;
 
 		private void setEnabled(boolean enabled) {
 			this.enabled = enabled;
 		}
-
+		
 		@Override
-		public void removeUpdate(DocumentEvent documentEvent) {
-			doUpdate();
-		}
-
-		@Override
-		public void insertUpdate(DocumentEvent documentEvent) {
-			doUpdate();
-		}
-
-		@Override
-		public void changedUpdate(DocumentEvent documentEvent) {
-			doUpdate();
-		}
-
-		private void doUpdate() {
+		protected void updated(DocumentEvent documentEvent) {
 			if (!enabled) {
 				return;
 			}

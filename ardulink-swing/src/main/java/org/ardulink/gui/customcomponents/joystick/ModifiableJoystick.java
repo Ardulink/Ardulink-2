@@ -29,11 +29,11 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import org.ardulink.gui.Linkable;
 import org.ardulink.gui.event.PositionEvent;
 import org.ardulink.gui.event.PositionListener;
+import org.ardulink.gui.facility.AbstractDocumentListenerAdapter;
 import org.ardulink.legacy.Link;
 
 /**
@@ -79,20 +79,9 @@ public class ModifiableJoystick extends JPanel implements Linkable, PositionList
 		
 		idTextField = new JTextField();
 		idTextField.setText("none");
-		idTextField.getDocument().addDocumentListener(new DocumentListener() {
-			
+		idTextField.getDocument().addDocumentListener(new AbstractDocumentListenerAdapter() {
 			@Override
-			public void removeUpdate(DocumentEvent e) {
-				joy.setId(idTextField.getText());
-			}
-			
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				joy.setId(idTextField.getText());
-			}
-			
-			@Override
-			public void changedUpdate(DocumentEvent e) {
+			protected void updated(DocumentEvent documentEvent) {
 				joy.setId(idTextField.getText());
 			}
 		});

@@ -25,7 +25,6 @@ import javax.swing.ComboBoxModel;
  * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
- *
  */
 public class IntMinMaxModel extends AbstractListModel<Integer> implements
 		ComboBoxModel<Integer> {
