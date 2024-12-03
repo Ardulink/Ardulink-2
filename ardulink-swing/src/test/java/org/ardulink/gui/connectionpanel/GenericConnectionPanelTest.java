@@ -26,7 +26,6 @@ import javax.swing.JPanel;
 
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.gui.DummyLinkConfig;
-import org.ardulink.util.URIs;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 

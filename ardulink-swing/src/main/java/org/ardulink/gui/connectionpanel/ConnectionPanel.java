@@ -23,6 +23,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.gui.connectionpanel.GridBagConstraintsBuilder.constraints;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.ServiceLoaders.services;
 import static org.ardulink.util.Throwables.getRootCause;
 import static org.ardulink.util.Throwables.propagate;
 
@@ -30,7 +31,6 @@ import java.awt.Component;
 import java.awt.GridBagLayout;
 import java.awt.Window;
 import java.net.URI;
-import java.util.ServiceLoader;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -49,7 +49,6 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.gui.Linkable;
 import org.ardulink.gui.facility.UtilityGeometry;
 import org.ardulink.legacy.Link;
-import org.ardulink.util.Lists;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -114,7 +113,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 
 	private Component refreshButton() {
 		JButton refreshButton = new JButton("refresh");
-		refreshButton.addActionListener(e -> {
+		refreshButton.addActionListener(__ -> {
 			if (uris.getItemCount() > 0) {
 				replaceSubpanel();
 			}
@@ -176,7 +175,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 
 			private void displayIn(WaitDialog waitDialog,
 								   int timeout, TimeUnit tu) {
-				newCachedThreadPool().execute(()->{
+				newCachedThreadPool().execute(() -> {
 						try {
 							tu.sleep(timeout);
 							synchronized (this) {
@@ -206,14 +205,12 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		// an own module (e.g. ardulink-ui-support) so ardulink-console would
 		// depend on ardulink-ui-support and the module providing a specific
 		// PanelBuilder would depend on ardulink-ui-support, too.
-		for (PanelBuilder panelBuilder : Lists.newArrayList(ServiceLoader.load(
-				PanelBuilder.class).iterator())) {
-			if (panelBuilder.canHandle(uri)) {
-				return panelBuilder;
-			}
-		}
-		checkState(fallback.canHandle(uri), "No PanelBuilder found for %s", uri);
-		return fallback;
+		PanelBuilder panelBuilder = services(PanelBuilder.class) //
+				.filter(b -> b.canHandle(uri)) //
+				.findFirst() //
+				.orElse(fallback);
+		checkState(panelBuilder.canHandle(uri), "No PanelBuilder found for %s", uri);
+		return panelBuilder;
 	}
 
 	public Link createLink() {

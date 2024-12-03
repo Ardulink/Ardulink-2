@@ -21,25 +21,31 @@ import javax.swing.JPanel;
 
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public interface PanelBuilder {
 
 	/**
 	 * Query if this PanelBuilder can create Panels for the passed URI.
 	 * 
-	 * @param uri
-	 *            the URI to create a Panel for
+	 * @param uri the URI to create a Panel for
 	 * @return <code>true</code> if this PanelBuilder can create a Panel for the
 	 *         passed URI
 	 */
 	boolean canHandle(URI uri);
 
 	/**
-	 * Creates a Panel that should intercate with the passed Configurer.
+	 * Creates a Panel that should interact with the passed Configurer.
 	 * 
-	 * @param configurer
-	 *            Configurer that was created for the supported URI
-	 * @return a newly created Panel with components that can modify the
-	 *         attributes found in the passed Configurer
+	 * @param configurer Configurer that was created for the supported URI
+	 * @return a newly created Panel with components that can modify the attributes
+	 *         found in the passed Configurer
 	 */
 	JPanel createPanel(Configurer configurer);
 
