@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Spliterators;
@@ -45,6 +46,11 @@ public final class Streams {
 
 	public static <T> Iterator<T> iterator(Stream<T> stream) {
 		return Spliterators.iterator(stream.spliterator());
+	}
+
+	@SafeVarargs
+	public static Stream<String> concat(Stream<String>... streams) {
+		return Arrays.stream(streams).reduce(Stream::concat).orElse(Stream.empty());
 	}
 
 }
