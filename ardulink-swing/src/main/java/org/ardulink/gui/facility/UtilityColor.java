@@ -54,4 +54,12 @@ public final class UtilityColor {
 		return "#" + toHexString(color.getRGB()).substring(2).toUpperCase();
 	}
 
+	public static int invert(int value) {
+		return 255 - value;
+	}
+
+	public static Color invert(Color color) {
+		return new Color(invert(color.getRed()), invert(color.getGreen()), invert(color.getBlue()));
+	}
+
 }

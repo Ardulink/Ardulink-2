@@ -19,12 +19,15 @@ limitations under the License.
 package org.ardulink.gui;
 
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
+import static org.ardulink.gui.facility.UtilityColor.invert;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -68,27 +71,34 @@ public class RGBController extends JPanel implements Linkable {
 
 	};
 
-	public abstract class AbstractPWMControllerListener implements
-			PWMControllerListener {
+	private class DefaultPWMControllerListener implements PWMControllerListener {
+		
+		private boolean enabled = true;
+		
+		private final BiFunction<Color, Integer, Color> colorMaker;
+
+		private DefaultPWMControllerListener(BiFunction<Color, Integer, Color> colorMaker) {
+			this.colorMaker = colorMaker;
+		}
+		
+		public void setEnabled(boolean enabled) {
+			this.enabled = enabled;
+		}
 
 		@Override
 		public void pwmChanged(PWMChangeEvent event) {
-			colorTextField.getDocument().removeDocumentListener(
-					colorTextFieldDocumentListener);
-
-			Color color = coloredPanel.getBackground();
-			int value = event.getPwmValue();
-			if (chckbxInverted.isSelected()) {
-				value = 255 - value;
+			if (!enabled) {
+				return;
 			}
-			Color newColor = makeColor(color, value);
-			coloredPanel.setBackground(newColor);
-			colorTextField.setText(UtilityColor.toString(newColor));
-			colorTextField.getDocument().addDocumentListener(
-					colorTextFieldDocumentListener);
-		}
+			colorTextField.getDocument().removeDocumentListener(colorTextFieldDocumentListener);
 
-		protected abstract Color makeColor(Color color, int value);
+			int value = event.getPwmValue();
+			Color color = colorMaker.apply(coloredPanel.getBackground(),
+					chckbxInverted.isSelected() ? invert(value) : value);
+			coloredPanel.setBackground(color);
+			colorTextField.setText(UtilityColor.toString(color));
+			colorTextField.getDocument().addDocumentListener(colorTextFieldDocumentListener);
+		}
 
 	}
 
@@ -105,32 +115,14 @@ public class RGBController extends JPanel implements Linkable {
 	private JTextField colorTextField;
 	private JCheckBox chckbxInverted;
 
-	private final transient PWMControllerListener redListener = new AbstractPWMControllerListener() {
+	private final transient DefaultPWMControllerListener redListener = new DefaultPWMControllerListener(
+			(c, v) -> new Color(v, c.getGreen(), c.getBlue()));
 
-		@Override
-		protected Color makeColor(Color color, int value) {
-			return new Color(value, color.getGreen(), color.getBlue());
-		}
+	private final transient DefaultPWMControllerListener greenListener = new DefaultPWMControllerListener(
+			(c, v) -> new Color(c.getRed(), v, c.getBlue()));
 
-	};
-
-	private final transient AbstractPWMControllerListener greenListener = new AbstractPWMControllerListener() {
-
-		@Override
-		protected Color makeColor(Color color, int value) {
-			return new Color(color.getRed(), value, color.getBlue());
-		}
-
-	};
-
-	private final transient AbstractPWMControllerListener blueListener = new AbstractPWMControllerListener() {
-
-		@Override
-		protected Color makeColor(Color color, int value) {
-			return new Color(color.getRed(), color.getGreen(), value);
-		}
-
-	};
+	private final transient DefaultPWMControllerListener blueListener = new DefaultPWMControllerListener(
+			(c, v) -> new Color(c.getRed(), c.getGreen(), v));
 
 	/**
 	 * Create the panel.
@@ -181,7 +173,7 @@ public class RGBController extends JPanel implements Linkable {
 		
 		chckbxInverted = new JCheckBox("Inverted");
 		chckbxInverted.addActionListener(e -> {
-			Color newColor = invert(coloredPanel.getBackground());
+			Color newColor = UtilityColor.invert(coloredPanel.getBackground());
 			coloredPanel.setBackground(newColor);
 			colorTextField.setText(UtilityColor.toString(newColor));
 		});
@@ -213,28 +205,33 @@ public class RGBController extends JPanel implements Linkable {
 	private void updateColor() {
 		Color color = UtilityColor.toColor(colorTextField.getText());
 		coloredPanel.setBackground(color);
-		redController.removePWMControllerListener(redListener);
-		greenController.removePWMControllerListener(greenListener);
-		blueController.removePWMControllerListener(blueListener);
-		if (chckbxInverted.isSelected()) {
-			color = invert(color);
-		}
-		redController.setValue(color.getRed());
-		greenController.setValue(color.getGreen());
-		blueController.setValue(color.getBlue());
-		redController.addPWMControllerListener(redListener);
-		greenController.addPWMControllerListener(greenListener);
-		blueController.addPWMControllerListener(blueListener);
+		withoutListeners(color, c -> {
+			if (chckbxInverted.isSelected()) {
+				c = UtilityColor.invert(c);
+			}
+			redController.setValue(c.getRed());
+			greenController.setValue(c.getGreen());
+			blueController.setValue(c.getBlue());
+		});
 	}
 
-	private Color invert(Color color) {
-		return new Color(255 - color.getRed(), 255 - color.getGreen(),
-				255 - color.getBlue());
+	private void withoutListeners(Color color, Consumer<Color> runnable) {
+		enableListeners(false);
+		try {
+			runnable.accept(color);
+		} finally {
+			enableListeners(true);
+		}
+	}
+
+	private void enableListeners(boolean state) {
+		redListener.setEnabled(state);
+		greenListener.setEnabled(state);
+		blueListener.setEnabled(state);
 	}
 
 	public void setColor(Color color) {
-		String colorString = UtilityColor.toString(color);
-		colorTextField.setText(colorString);
+		colorTextField.setText(UtilityColor.toString(color));
 		updateColor();
 	}
 
