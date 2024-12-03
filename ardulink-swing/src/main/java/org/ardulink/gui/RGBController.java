@@ -27,7 +27,6 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -205,20 +204,14 @@ public class RGBController extends JPanel implements Linkable {
 	private void updateColor() {
 		Color color = Colors.toColor(colorTextField.getText());
 		coloredPanel.setBackground(color);
-		withoutListeners(color, c -> {
-			if (chckbxInverted.isSelected()) {
-				c = Colors.invert(c);
-			}
-			redController.setValue(c.getRed());
-			greenController.setValue(c.getGreen());
-			blueController.setValue(c.getBlue());
-		});
-	}
-
-	private void withoutListeners(Color color, Consumer<Color> runnable) {
 		enableListeners(false);
 		try {
-			runnable.accept(color);
+			if (chckbxInverted.isSelected()) {
+				color = Colors.invert(color);
+			}
+			redController.setValue(color.getRed());
+			greenController.setValue(color.getGreen());
+			blueController.setValue(color.getBlue());
 		} finally {
 			enableListeners(true);
 		}
