@@ -85,7 +85,7 @@ public class IntMinMaxModel extends AbstractListModel<Integer> implements
 	private void selectIndex(int index) {
 		int size = getSize();
 		if (size != 0 && index >= 0 && index < size) {
-			withSelectedItem(getElementAt(index));
+			setSelectedItem(getElementAt(index));
 		}
 	}
 
