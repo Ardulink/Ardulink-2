@@ -31,7 +31,6 @@ import java.awt.Component;
 import java.awt.GridBagLayout;
 import java.awt.Window;
 import java.net.URI;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
