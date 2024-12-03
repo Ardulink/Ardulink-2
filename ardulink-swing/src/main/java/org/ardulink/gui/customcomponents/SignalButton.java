@@ -56,7 +56,7 @@ public class SignalButton extends JPanel implements Linkable {
 		setLayout(new BorderLayout(0, 0));
 		
 		signalButton = new JButton("Send");
-		signalButton.addActionListener(e -> link.sendCustomMessage(getId(), getValue()));
+		signalButton.addActionListener(__ -> link.sendCustomMessage(getId(), getValue()));
 		add(signalButton);
 		
 		valuePanel = new JPanel();
@@ -78,52 +78,56 @@ public class SignalButton extends JPanel implements Linkable {
 	}
 
 	/**
-	 * @return the string label for value parameter
+	 * @return the string label for value parameter. 
 	 */
 	public String getValueLabel() {
 		return valueLabel.getText();
 	}
 
 	/**
-	 * Set the string label for value parameter
-	 * @param valueLabel
+	 * Set the string label for value parameter.
+	 * 
+	 * @param label
 	 */
-	public void setValueLabel(String valueLabel) {
-		this.valueLabel.setText(valueLabel);
+	public void setValueLabel(String label) {
+		this.valueLabel.setText(label);
 	}
 
 	/**
-	 * Set the value to be sent
-	 * @param t
+	 * Set the value to be sent.
+	 * 
+	 * @param value
 	 */
-	public void setValue(String t) {
-		textField.setText(t);
+	public void setValue(String value) {
+		textField.setText(value);
 	}
 
 	/**
-	 * @return the value to be sent
+	 * @return the value to be sent.
 	 */
 	public String getValue() {
 		return textField.getText();
 	}
 
 	/**
-	 * @return value text field visibility
+	 * @return value text field visibility.
 	 */
 	public boolean isValueVisible() {
 		return valuePanel.isVisible();
 	}
 
 	/**
-	 * Set value text field visibility
-	 * @param aFlag
+	 * Set value text field visibility.
+	 * 
+	 * @param flag
 	 */
-	public void setValueVisible(boolean aFlag) {
-		valuePanel.setVisible(aFlag);
+	public void setValueVisible(boolean flag) {
+		valuePanel.setVisible(flag);
 	}
 
 	/**
-	 * Set value text field columns size
+	 * Set value text field columns size.
+	 * 
 	 * @param columns
 	 */
 	public void setValueColumns(int columns) {
@@ -131,7 +135,8 @@ public class SignalButton extends JPanel implements Linkable {
 	}
 
 	/**
-	 * Set button's text
+	 * Set button's text.
+	 * 
 	 * @param text
 	 */
 	public void setButtonText(String text) {
@@ -139,14 +144,15 @@ public class SignalButton extends JPanel implements Linkable {
 	}
 
 	/**
-	 * @return id for this component
+	 * @return id for this component. 
 	 */
 	public String getId() {
 		return id;
 	}
 
 	/**
-	 * Set an id for this component, used in composing custom message for Arduino
+	 * Set an id for this component, used in composing custom message for Arduino.
+	 * 
 	 * @param id
 	 */
 	public void setId(String id) {
@@ -185,21 +191,21 @@ public class SignalButton extends JPanel implements Linkable {
 		signalButton.setIconTextGap(iconTextGap);
 	}
 
-	public void setRolloverEnabled(boolean b) {
-		signalButton.setRolloverEnabled(b);
+	public void setRolloverEnabled(boolean rollover) {
+		signalButton.setRolloverEnabled(rollover);
 	}
 
 	@Override
-	public void setForeground(Color fg) {
-		if(signalButton != null) {
-			signalButton.setForeground(fg);
+	public void setForeground(Color color) {
+		if (signalButton != null) {
+			signalButton.setForeground(color);
 		}
 	}
 
 	@Override
-	public void setBackground(Color bg) {
-		if(signalButton != null) {
-			signalButton.setBackground(bg);
+	public void setBackground(Color color) {
+		if (signalButton != null) {
+			signalButton.setBackground(color);
 		}
 	}
 	
