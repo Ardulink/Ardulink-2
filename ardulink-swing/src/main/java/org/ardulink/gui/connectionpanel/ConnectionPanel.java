@@ -31,6 +31,7 @@ import java.awt.Component;
 import java.awt.GridBagLayout;
 import java.awt.Window;
 import java.net.URI;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -87,8 +88,8 @@ public class ConnectionPanel extends JPanel implements Linkable {
 						isSelected, cellHasFocus);
 			}
 		});
-		uris.addItemListener(event -> {
-			if (event.getStateChange() == SELECTED) {
+		uris.addItemListener(e -> {
+			if (e.getStateChange() == SELECTED) {
 				replaceSubpanel();
 			}
 		});
@@ -103,12 +104,9 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		add(new JLabel("Type"), constraints(0, 0).build());
 		add(uris, constraints(0, 1).fillHorizontal().build());
 		add(refreshButton(), constraints(0, 2).build());
-
-		LinkManager linkManager = LinkManager.getInstance();
-		for (URI uri : linkManager.listURIs()) {
-			uris.addItem(uri.toASCIIString());
-		}
-
+		LinkManager.getInstance().listURIs().stream() //
+				.map(URI::toASCIIString) //
+				.forEach(u -> uris.addItem(u));
 	}
 
 	private Component refreshButton() {
