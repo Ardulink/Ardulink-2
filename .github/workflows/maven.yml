@@ -43,7 +43,7 @@ jobs:
     - name: Set first matrix job environment variable
       id: set-first-job
       if: ${{ matrix.java-version == '8' }}
-      run: echo "::set-output name=first_job::true"
+      run: echo "{first_job}={true}" >> $GITHUB_STATE
 
     - name: Distribute build results
       if: steps.set-first-job.outputs.first_job == 'true'
