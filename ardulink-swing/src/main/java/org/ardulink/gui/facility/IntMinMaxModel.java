@@ -49,12 +49,16 @@ public class IntMinMaxModel extends AbstractListModel<Integer> implements
 
 	@Override
 	public Integer getElementAt(int index) {
-		return Integer.valueOf(index + this.low);
+		return index + this.low;
 	}
 
 	@Override
 	public void setSelectedItem(Object selectedItem) {
-		this.selectedItem = (Integer) selectedItem;
+		setSelectedItem((Integer) selectedItem);
+	}
+
+	public void setSelectedItem(Integer value) {
+		this.selectedItem = value;
 		fireContentsChanged(this, -1, -1);
 	}
 
@@ -64,7 +68,7 @@ public class IntMinMaxModel extends AbstractListModel<Integer> implements
 	}
 
 	public IntMinMaxModel withSelectedItem(int selectedItem) {
-		setSelectedItem(Integer.valueOf(selectedItem));
+		setSelectedItem(selectedItem);
 		return this;
 	}
 
