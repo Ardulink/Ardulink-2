@@ -18,7 +18,7 @@ import net.jqwik.api.ArbitrarySupplier;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 
-class UtilityColorTest {
+class ColorsTest {
 
 	private static class ColorSupplier implements ArbitrarySupplier<Color> {
 		@Override
@@ -42,38 +42,38 @@ class UtilityColorTest {
 
 	private void assertColorIs(String hex, Color color) {
 		assertSoftly(s -> {
-			s.assertThat(UtilityColor.toColor(hex)).isEqualTo(color);
-			s.assertThat(UtilityColor.toColor("#" + hex)).isEqualTo(color);
+			s.assertThat(Colors.toColor(hex)).isEqualTo(color);
+			s.assertThat(Colors.toColor("#" + hex)).isEqualTo(color);
 		});
 	}
 
 	@Test
 	void emptyIsBlack() {
-		assertThat(UtilityColor.toColor(null)).isEqualTo(BLACK);
-		assertThat(UtilityColor.toColor("")).isEqualTo(BLACK);
-		assertThat(UtilityColor.toColor("#")).isEqualTo(BLACK);
+		assertThat(Colors.toColor(null)).isEqualTo(BLACK);
+		assertThat(Colors.toColor("")).isEqualTo(BLACK);
+		assertThat(Colors.toColor("#")).isEqualTo(BLACK);
 	}
 
 	@Test
 	void testToString() throws Exception {
-		assertThat(UtilityColor.toString(BLACK)).isEqualTo("#000000");
-		assertThat(UtilityColor.toString(RED)).isEqualTo("#FF0000");
-		assertThat(UtilityColor.toString(GREEN)).isEqualTo("#00FF00");
-		assertThat(UtilityColor.toString(BLUE)).isEqualTo("#0000FF");
+		assertThat(Colors.toString(BLACK)).isEqualTo("#000000");
+		assertThat(Colors.toString(RED)).isEqualTo("#FF0000");
+		assertThat(Colors.toString(GREEN)).isEqualTo("#00FF00");
+		assertThat(Colors.toString(BLUE)).isEqualTo("#0000FF");
 	}
 
 	@Test
 	void testInvert() throws Exception {
-		assertThat(UtilityColor.invert(BLACK)).isEqualTo(Color.WHITE);
-		assertThat(UtilityColor.invert(RED)).isEqualTo(Color.decode("#00FFFF"));
-		assertThat(UtilityColor.invert(GREEN)).isEqualTo(Color.decode("#FF00FF"));
-		assertThat(UtilityColor.invert(BLUE)).isEqualTo(Color.decode("#FFFF00"));
+		assertThat(Colors.invert(BLACK)).isEqualTo(Color.WHITE);
+		assertThat(Colors.invert(RED)).isEqualTo(Color.decode("#00FFFF"));
+		assertThat(Colors.invert(GREEN)).isEqualTo(Color.decode("#FF00FF"));
+		assertThat(Colors.invert(BLUE)).isEqualTo(Color.decode("#FFFF00"));
 	}
 
 	@Property
 	void invertingAnInvertedColorResultsInOriginalColor(@ForAll(supplier = ColorSupplier.class) Color color) {
-		Color inverted = UtilityColor.invert(color);
-		assertThat(UtilityColor.invert(inverted)).isEqualTo(color);
+		Color inverted = Colors.invert(color);
+		assertThat(Colors.invert(inverted)).isEqualTo(color);
 	}
 
 }

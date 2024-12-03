@@ -19,7 +19,7 @@ limitations under the License.
 package org.ardulink.gui;
 
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
-import static org.ardulink.gui.facility.UtilityColor.invert;
+import static org.ardulink.gui.facility.Colors.invert;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -39,7 +39,7 @@ import javax.swing.event.DocumentListener;
 
 import org.ardulink.gui.event.PWMChangeEvent;
 import org.ardulink.gui.event.PWMControllerListener;
-import org.ardulink.gui.facility.UtilityColor;
+import org.ardulink.gui.facility.Colors;
 import org.ardulink.legacy.Link;
 
 /**
@@ -96,7 +96,7 @@ public class RGBController extends JPanel implements Linkable {
 			Color color = colorMaker.apply(coloredPanel.getBackground(),
 					chckbxInverted.isSelected() ? invert(value) : value);
 			coloredPanel.setBackground(color);
-			colorTextField.setText(UtilityColor.toString(color));
+			colorTextField.setText(Colors.toString(color));
 			colorTextField.getDocument().addDocumentListener(colorTextFieldDocumentListener);
 		}
 
@@ -173,9 +173,9 @@ public class RGBController extends JPanel implements Linkable {
 		
 		chckbxInverted = new JCheckBox("Inverted");
 		chckbxInverted.addActionListener(e -> {
-			Color newColor = UtilityColor.invert(coloredPanel.getBackground());
+			Color newColor = Colors.invert(coloredPanel.getBackground());
 			coloredPanel.setBackground(newColor);
-			colorTextField.setText(UtilityColor.toString(newColor));
+			colorTextField.setText(Colors.toString(newColor));
 		});
 		southPanel.add(chckbxInverted);
 
@@ -187,7 +187,7 @@ public class RGBController extends JPanel implements Linkable {
 		southPanel.add(lblColor);
 
 		colorTextField = new JTextField();
-		colorTextField.setText(UtilityColor.toString(coloredPanel
+		colorTextField.setText(Colors.toString(coloredPanel
 				.getBackground()));
 		southPanel.add(colorTextField);
 		colorTextField.setColumns(10);
@@ -203,11 +203,11 @@ public class RGBController extends JPanel implements Linkable {
 	}
 
 	private void updateColor() {
-		Color color = UtilityColor.toColor(colorTextField.getText());
+		Color color = Colors.toColor(colorTextField.getText());
 		coloredPanel.setBackground(color);
 		withoutListeners(color, c -> {
 			if (chckbxInverted.isSelected()) {
-				c = UtilityColor.invert(c);
+				c = Colors.invert(c);
 			}
 			redController.setValue(c.getRed());
 			greenController.setValue(c.getGreen());
@@ -231,7 +231,7 @@ public class RGBController extends JPanel implements Linkable {
 	}
 
 	public void setColor(Color color) {
-		colorTextField.setText(UtilityColor.toString(color));
+		colorTextField.setText(Colors.toString(color));
 		updateColor();
 	}
 

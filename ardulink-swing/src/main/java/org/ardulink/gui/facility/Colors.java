@@ -32,9 +32,9 @@ import java.awt.Color;
  * [adsense]
  *
  */
-public final class UtilityColor {
+public final class Colors {
 
-	private UtilityColor() {
+	private Colors() {
 		super();
 	}
 
