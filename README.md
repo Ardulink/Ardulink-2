@@ -3,12 +3,16 @@
 This is the repository for Ardulink 2. Ardulink 2 is a complete, open source, java solution for the control and coordination of Arduino boards. This repository contains Ardulink Version 0.6.2 and all upcoming releases.
 
 ```java
-public static void main(String... args) throws Exception{
+public static void main(String... args) throws Exception {
 	try (Link link = Links.getDefault()) {
-		DigitalPin pin = Pin.digitalPin(2);
-		for (boolean power = true;; power = !power) {
-			System.out.println("Send power: " + power);
-			link.switchDigitalPin(pin, power);
+		DigitalPin pin = Pin.digitalPin(13);
+		while (true) {
+			link.switchDigitalPin(pin, true);
+			System.out.println("pin switched on");
+			TimeUnit.SECONDS.sleep(1);
+
+			link.switchDigitalPin(pin, false);
+			System.out.println("pin switched off");
 			TimeUnit.SECONDS.sleep(1);
 		}
 	}
