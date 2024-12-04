@@ -14,7 +14,6 @@ import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LI
 import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Primitives.tryParseAs;
-import static org.ardulink.util.anno.LapsedWith.JDK9;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,6 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.ValueBuilder;
 import org.apache.camel.model.language.HeaderExpression;
 import org.ardulink.mqtt.Topics;
-import org.ardulink.util.anno.LapsedWith;
 
 public final class ToArdulinkProtocol implements Processor {
 
@@ -178,12 +176,8 @@ public final class ToArdulinkProtocol implements Processor {
 		extractedForAnnotation(createMessage(topic(exchange), body(exchange.getIn())), exchange);
 	}
 
-	@LapsedWith(module = JDK9, value = "Optional#ifPresentOrElse")
 	private void extractedForAnnotation(Optional<String> message, Exchange exchange) {
-		message.ifPresent(b -> exchange.getIn().setBody(b, String.class));
-		if (!message.isPresent()) {
-			exchange.setRouteStop(true);
-		}
+		message.ifPresentOrElse(b -> exchange.getIn().setBody(b, String.class), () -> exchange.setRouteStop(true));
 	}
 
 	private String topic(Exchange exchange) {
