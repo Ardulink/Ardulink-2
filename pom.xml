@@ -65,7 +65,7 @@
 		<junit.version>5.11.3</junit.version>
 		<assertj.version>3.26.3</assertj.version>
 		<mockito.version>4.11.0</mockito.version>
-		<jqwik.version>1.9.1</jqwik.version>
+		<jqwik.version>1.9.2</jqwik.version>
 		<awaitility.version>4.2.2</awaitility.version>
 		<junit-pioneer.version>1.9.1</junit-pioneer.version>
 		<equalsverifier.version>3.17.4</equalsverifier.version>
