@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static org.ardulink.util.Maps.toProperties;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
@@ -37,7 +38,7 @@ class MapsTest {
 
 	@Test
 	void testToProperties() {
-		assertThat(Maps.toProperties(map)).containsExactlyInAnyOrderEntriesOf(map);
+		assertThat(toProperties(map)).containsExactlyInAnyOrderEntriesOf(map);
 	}
 
 	@Test

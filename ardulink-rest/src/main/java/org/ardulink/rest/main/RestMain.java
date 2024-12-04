@@ -3,6 +3,7 @@ package org.ardulink.rest.main;
 import static org.ardulink.rest.RestRouteBuilder.VAR_BIND;
 import static org.ardulink.rest.RestRouteBuilder.VAR_PORT;
 import static org.ardulink.rest.RestRouteBuilder.VAR_TARGET;
+import static org.ardulink.util.Maps.toProperties;
 
 import java.util.Map;
 import java.util.Optional;
@@ -10,7 +11,6 @@ import java.util.Properties;
 
 import org.apache.camel.main.Main;
 import org.ardulink.rest.RestRouteBuilder;
-import org.ardulink.util.Maps;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
@@ -47,7 +47,7 @@ public class RestMain implements AutoCloseable {
 	}
 
 	private static Properties toCamelProperties(CommandLineArguments args) {
-		return Maps.toProperties(Map.of( //
+		return toProperties(Map.of( //
 				VAR_TARGET, args.connection, //
 				VAR_BIND, args.bind, //
 				VAR_PORT, args.port //
