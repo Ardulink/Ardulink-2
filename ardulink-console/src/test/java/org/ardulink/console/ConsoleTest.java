@@ -13,15 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.ardulink.gui;
+package org.ardulink.console;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
+import static org.ardulink.console.SwingSelector.containsItem;
+import static org.ardulink.console.SwingSelector.findComponent;
 import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.core.virtual.console.VirtualConnectionLinkFactory.VIRTUAL_CONSOLE_NAME;
-import static org.ardulink.gui.SwingSelector.containsItem;
-import static org.ardulink.gui.SwingSelector.findComponent;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
@@ -29,6 +29,7 @@ import static org.mockito.Mockito.mock;
 import javax.swing.JComboBox;
 
 import org.approvaltests.awt.AwtApprovals;
+import org.ardulink.console.Console;
 import org.ardulink.legacy.Link;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;

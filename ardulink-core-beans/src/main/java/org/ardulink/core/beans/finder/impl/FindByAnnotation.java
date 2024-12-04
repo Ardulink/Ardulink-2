@@ -20,7 +20,7 @@ import static java.lang.reflect.Modifier.isPublic;
 import static java.util.Arrays.stream;
 import static java.util.Collections.addAll;
 import static java.util.stream.Stream.concat;
-import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
+import static org.ardulink.core.beans.finder.api.AttributeFinder.beanAttributes;
 import static org.ardulink.util.Iterables.stream;
 import static org.ardulink.util.Streams.iterable;
 import static org.ardulink.util.Throwables.propagate;
@@ -131,29 +131,16 @@ public class FindByAnnotation implements AttributeFinder {
 	private final Class<? extends Annotation> annotationClass;
 	private final Method getAnnotationsAttributeReadMethod;
 
-	private <T extends Annotation> FindByAnnotation(Class<T> annotationClass,
+	public <T extends Annotation> FindByAnnotation(Class<T> annotationClass,
 			Method getAnnotationsAttributeReadMethod) {
 		this.annotationClass = annotationClass;
 		this.getAnnotationsAttributeReadMethod = getAnnotationsAttributeReadMethod;
 	}
 
-	private static Method toMethod(Class<? extends Annotation> annotationClass, String annotationAttribute) {
+	public static Method toMethod(Class<? extends Annotation> annotationClass, String annotationAttribute) {
 		return stream(annotationClass.getMethods()).filter(m -> m.getName().equals(annotationAttribute)).findFirst()
 				.orElseThrow(() -> new IllegalArgumentException(
 						String.format("%s has no attribute named %s", annotationClass.getName(), annotationAttribute)));
-	}
-
-	public static AttributeFinder propertyAnnotated(Class<? extends Annotation> annotationClass) {
-		return propertyAnnotated(annotationClass, "value");
-	}
-
-	public static AttributeFinder propertyAnnotated(Class<? extends Annotation> annotationClass,
-			String annotationAttribute) {
-		return propertyAnnotated(annotationClass, toMethod(annotationClass, annotationAttribute));
-	}
-
-	public static <T extends Annotation> AttributeFinder propertyAnnotated(Class<T> annotationClass, Method method) {
-		return new FindByAnnotation(annotationClass, method);
 	}
 
 	@Override

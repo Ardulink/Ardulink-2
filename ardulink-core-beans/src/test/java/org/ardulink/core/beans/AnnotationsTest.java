@@ -1,8 +1,8 @@
 package org.ardulink.core.beans;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
-import static org.ardulink.core.beans.finder.impl.FindByFieldAccess.directFieldAccess;
+import static org.ardulink.core.beans.finder.api.AttributeFinder.directFieldAccess;
+import static org.ardulink.core.beans.finder.api.AttributeFinder.propertyAnnotated;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 

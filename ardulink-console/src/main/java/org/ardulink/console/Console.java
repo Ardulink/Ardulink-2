@@ -13,10 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.ardulink.gui;
+package org.ardulink.console;
 
 import static java.awt.EventQueue.invokeLater;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import static org.ardulink.gui.Icons.icon;
 import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
 import static org.ardulink.util.Throwables.getCauses;
 
@@ -32,7 +33,6 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -45,6 +45,15 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.ardulink.core.ConnectionListener;
+import org.ardulink.gui.AnalogPinStatus;
+import org.ardulink.gui.ConnectionStatus;
+import org.ardulink.gui.DigitalPinStatus;
+import org.ardulink.gui.KeyPressController;
+import org.ardulink.gui.Linkable;
+import org.ardulink.gui.PWMController;
+import org.ardulink.gui.RGBController;
+import org.ardulink.gui.SwitchController;
+import org.ardulink.gui.ToneController;
 import org.ardulink.gui.connectionpanel.ConnectionPanel;
 import org.ardulink.gui.customcomponents.ModifiableSignalButton;
 import org.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
@@ -154,7 +163,7 @@ public class Console extends JFrame implements Linkable {
 	 * Create the frame.
 	 */
 	public Console() {
-		setIconImage(loadImage(Console.class, "icons/logo_icon.png").getImage());
+		setIconImage(icon("icons/logo_icon.png").getImage());
 		setTitle("Ardulink Console");
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setBounds(100, 100, 730, 620);
@@ -299,10 +308,6 @@ public class Console extends JFrame implements Linkable {
 		this.connectionListener.connectionLost();
 		setEnabled(false);
 		pack();
-	}
-
-	private ImageIcon loadImage(Class<Console> clazz, String name) {
-		return new ImageIcon(clazz.getResource(name));
 	}
 
 	private JButton connectButton() {

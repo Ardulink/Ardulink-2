@@ -1,4 +1,4 @@
-package org.ardulink.core.proto.impl;
+package org.ardulink.core.proto.firmata;
 
 import static java.lang.Math.pow;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -12,13 +12,13 @@ import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChan
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
 import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
-import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.ANALOG_INPUT;
-import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.DIGITAL_INPUT;
-import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.DIGITAL_OUTPUT;
-import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.I2C;
-import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.INPUT_PULLUP;
-import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.PWM;
-import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.SERVO;
+import static org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode.ANALOG_INPUT;
+import static org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode.DIGITAL_INPUT;
+import static org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode.DIGITAL_OUTPUT;
+import static org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode.I2C;
+import static org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode.INPUT_PULLUP;
+import static org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode.PWM;
+import static org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode.SERVO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.firmata4j.firmata.parser.FirmataToken.ANALOG_MESSAGE;
@@ -46,8 +46,8 @@ import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin;
-import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode;
+import org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin;
+import org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ClearSystemProperty;
 import org.junitpioneer.jupiter.ExpectedToFail;

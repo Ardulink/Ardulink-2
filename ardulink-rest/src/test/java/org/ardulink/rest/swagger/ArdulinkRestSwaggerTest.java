@@ -16,7 +16,7 @@ limitations under the License.
 
 package org.ardulink.rest.swagger;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.ardulink.util.Preconditions.checkArgument;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static java.awt.GraphicsEnvironment.isHeadless;

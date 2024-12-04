@@ -32,12 +32,10 @@ import org.ardulink.core.beans.finder.api.AttributeFinder;
  */
 public class FindByFieldAccess implements AttributeFinder {
 
+	public static final FindByFieldAccess instance = new FindByFieldAccess();
+
 	private FindByFieldAccess() {
 		super();
-	}
-
-	public static AttributeFinder directFieldAccess() {
-		return new FindByFieldAccess();
 	}
 
 	@Override

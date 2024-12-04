@@ -41,11 +41,7 @@ import org.ardulink.core.beans.finder.api.AttributeFinder;
  */
 public class FindByIntrospection implements AttributeFinder {
 
-	private static final FindByIntrospection instance = new FindByIntrospection();
-
-	public static FindByIntrospection beanAttributes() {
-		return instance;
-	}
+	public static final FindByIntrospection instance = new FindByIntrospection();
 
 	private FindByIntrospection() {
 		super();
