@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.ardulink.gui.customcomponents.joystick;
 
+import static org.ardulink.gui.facility.AbstractDocumentListenerAdapter.addDocumentListener;
+
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 
@@ -26,19 +28,16 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
 
 import org.ardulink.gui.Linkable;
 import org.ardulink.gui.event.PositionEvent;
 import org.ardulink.gui.event.PositionListener;
-import org.ardulink.gui.facility.AbstractDocumentListenerAdapter;
 import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
-* project Ardulink http://www.ardulink.org/
+ * 
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  */
@@ -79,12 +78,7 @@ public class ModifiableJoystick extends JPanel implements Linkable, PositionList
 		
 		idTextField = new JTextField();
 		idTextField.setText("none");
-		idTextField.getDocument().addDocumentListener(new AbstractDocumentListenerAdapter() {
-			@Override
-			protected void updated(DocumentEvent documentEvent) {
-				joy.setId(idTextField.getText());
-			}
-		});
+		addDocumentListener(idTextField, __ -> joy.setId(idTextField.getText()));
 		idPanel.add(idTextField);
 		idTextField.setColumns(10);
 		
@@ -92,13 +86,7 @@ public class ModifiableJoystick extends JPanel implements Linkable, PositionList
 		idPanel.add(lblMaxValue);
 		
 		JSpinner maxValueSpinner = new JSpinner();
-		maxValueSpinner.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				JSpinner spinner = (JSpinner)e.getSource();
-				joy.setJoyOutputRange((Integer)spinner.getValue());
-			}
-		});
+		maxValueSpinner.addChangeListener(e -> joy.setJoyOutputRange((Integer) ((JSpinner) e.getSource()).getValue()));
 		maxValueSpinner.setModel(new SpinnerNumberModel(Integer.valueOf(255), Integer.valueOf(1), null, Integer.valueOf(1)));
 		((JSpinner.DefaultEditor)maxValueSpinner.getEditor()).getTextField().setColumns(4);
 		idPanel.add(maxValueSpinner);

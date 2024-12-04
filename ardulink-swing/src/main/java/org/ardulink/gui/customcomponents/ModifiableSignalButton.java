@@ -18,6 +18,9 @@ limitations under the License.
 
 package org.ardulink.gui.customcomponents;
 
+import static org.ardulink.gui.facility.AbstractDocumentListenerAdapter.addDocumentListener;
+import static org.ardulink.util.Primitives.tryParseAs;
+
 import java.awt.BorderLayout;
 
 import javax.swing.JCheckBox;
@@ -26,10 +29,8 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.event.DocumentEvent;
 
 import org.ardulink.gui.Linkable;
-import org.ardulink.gui.facility.AbstractDocumentListenerAdapter;
 import org.ardulink.legacy.Link;
 
 /**
@@ -81,17 +82,9 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 		columnsTextField.setBounds(62, 30, 80, 28);
 		configPanel.add(columnsTextField);
 		columnsTextField.setColumns(10);
-		columnsTextField.getDocument().addDocumentListener(new AbstractDocumentListenerAdapter() {
-			@Override
-			protected void updated(DocumentEvent documentEvent) {
-				try {
-					int columns = Integer.parseInt(columnsTextField.getText());
-					signalButton.setValueColumns(columns);
-				}
-				catch(NumberFormatException e) {}
-			}
-		});
-		
+		addDocumentListener(columnsTextField,
+				__ -> tryParseAs(Integer.class, columnsTextField.getText()).ifPresent(signalButton::setValueColumns));
+
 		JLabel lblBtnText = new JLabel("Btn. Text:");
 		lblBtnText.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblBtnText.setBounds(6, 70, 55, 16);
@@ -102,12 +95,7 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 		buttonTextField.setColumns(10);
 		buttonTextField.setBounds(62, 64, 80, 28);
 		configPanel.add(buttonTextField);
-		buttonTextField.getDocument().addDocumentListener(new AbstractDocumentListenerAdapter() {
-			@Override
-			protected void updated(DocumentEvent documentEvent) {
-				signalButton.setButtonText(buttonTextField.getText());
-			}
-		});
+		addDocumentListener(buttonTextField, __ -> signalButton.setButtonText(buttonTextField.getText()));
 		
 		JLabel lblId = new JLabel("Id:");
 		lblId.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -119,12 +107,7 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 		idTextField.setColumns(10);
 		idTextField.setBounds(62, 98, 80, 28);
 		configPanel.add(idTextField);
-		idTextField.getDocument().addDocumentListener(new AbstractDocumentListenerAdapter() {
-			@Override
-			protected void updated(DocumentEvent documentEvent) {
-				signalButton.setId(idTextField.getText());
-			}
-		});
+		addDocumentListener(idTextField, __ -> signalButton.setId(idTextField.getText()));		
 		
 		signalButton.setValueColumns(Integer.parseInt(columnsTextField.getText()));
 		signalButton.setButtonText(buttonTextField.getText());

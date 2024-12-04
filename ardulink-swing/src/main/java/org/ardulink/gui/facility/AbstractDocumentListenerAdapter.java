@@ -16,6 +16,9 @@ limitations under the License.
  */
 package org.ardulink.gui.facility;
 
+import java.util.function.Consumer;
+
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -27,6 +30,19 @@ import javax.swing.event.DocumentListener;
  * [adsense]
  */
 public abstract class AbstractDocumentListenerAdapter implements DocumentListener {
+
+	public static void addDocumentListener(JTextField textField, Consumer<DocumentEvent> consumer) {
+		textField.getDocument().addDocumentListener(adapter(consumer));
+	}
+
+	public static AbstractDocumentListenerAdapter adapter(Consumer<DocumentEvent> consumer) {
+		return new AbstractDocumentListenerAdapter() {
+			@Override
+			protected void updated(DocumentEvent documentEvent) {
+				consumer.accept(documentEvent);
+			}
+		};
+	}
 
 	@Override
 	public void insertUpdate(DocumentEvent documentEvent) {

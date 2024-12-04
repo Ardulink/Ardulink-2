@@ -18,6 +18,7 @@ limitations under the License.
 
 package org.ardulink.gui.customcomponents;
 
+import static org.ardulink.gui.facility.AbstractDocumentListenerAdapter.addDocumentListener;
 import static org.ardulink.util.Primitives.tryParseAs;
 
 import java.awt.BorderLayout;
@@ -116,24 +117,14 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 		buttonOnTextField.setColumns(10);
 		buttonOnTextField.setBounds(90, 96, 80, 28);
 		configPanel.add(buttonOnTextField);
-		buttonOnTextField.getDocument().addDocumentListener(new AbstractDocumentListenerAdapter() {
-			@Override
-			protected void updated(DocumentEvent documentEvent) {
-				signalButton.setButtonTextOn(buttonOnTextField.getText());
-			}
-		});
+		addDocumentListener(buttonOnTextField, __ -> signalButton.setButtonTextOn(buttonOnTextField.getText()));
 
 		buttonOffTextField = new JTextField();
 		buttonOffTextField.setText("Send");
 		buttonOffTextField.setColumns(10);
 		buttonOffTextField.setBounds(90, 132, 80, 28);
 		configPanel.add(buttonOffTextField);
-		buttonOffTextField.getDocument().addDocumentListener(new AbstractDocumentListenerAdapter() {
-			@Override
-			protected void updated(DocumentEvent documentEvent) {
-				signalButton.setButtonTextOff(buttonOffTextField.getText());
-			}
-		});
+		addDocumentListener(buttonOffTextField, __ -> signalButton.setButtonTextOff(buttonOffTextField.getText()));
 
 		JLabel lblId = new JLabel("Id:");
 		lblId.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -145,12 +136,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 		idTextField.setColumns(10);
 		idTextField.setBounds(90, 168, 80, 28);
 		configPanel.add(idTextField);
-		idTextField.getDocument().addDocumentListener(new AbstractDocumentListenerAdapter() {
-			@Override
-			protected void updated(DocumentEvent documentEvent) {
-				signalButton.setId(idTextField.getText());
-			}
-		});
+		addDocumentListener(idTextField, __ -> signalButton.setId(idTextField.getText()));
 
 		signalButton.setValueOnColumns(Integer.parseInt(columnsTextField.getText()));
 		signalButton.setButtonTextOn(buttonOnTextField.getText());
