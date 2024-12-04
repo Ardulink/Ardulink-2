@@ -54,7 +54,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<compilerVersion>8</compilerVersion>
+		<compilerVersion>9</compilerVersion>
 		<maven.compiler.source>${compilerVersion}</maven.compiler.source>
 		<maven.compiler.target>${compilerVersion}</maven.compiler.target>
 		<!--
