@@ -21,6 +21,8 @@ import static org.ardulink.util.Numbers.numberType;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+import java.util.Map;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -93,25 +95,25 @@ class NumbersTest {
 	}
 
 	static Object minValue(Class<Number> type) {
-		return MapBuilder.newMapBuilder() //
-				.put(Integer.class, Integer.MIN_VALUE) //
-				.put(Byte.class, Byte.MIN_VALUE) //
-				.put(Short.class, Short.MIN_VALUE) //
-				.put(Long.class, Long.MIN_VALUE) //
-				.put(Float.class, Float.MIN_VALUE) //
-				.put(Double.class, Double.MIN_VALUE) //
-				.build().get(type);
+		return Map.of( //
+				Integer.class, Integer.MIN_VALUE, //
+				Byte.class, Byte.MIN_VALUE, //
+				Short.class, Short.MIN_VALUE, //
+				Long.class, Long.MIN_VALUE, //
+				Float.class, Float.MIN_VALUE, //
+				Double.class, Double.MIN_VALUE) //
+				.get(type);
 	}
 
 	static Object maxValue(Class<Number> type) {
-		return MapBuilder.newMapBuilder() //
-				.put(Integer.class, Integer.MAX_VALUE) //
-				.put(Byte.class, Byte.MAX_VALUE) //
-				.put(Short.class, Short.MAX_VALUE) //
-				.put(Long.class, Long.MAX_VALUE) //
-				.put(Float.class, Float.MAX_VALUE) //
-				.put(Double.class, Double.MAX_VALUE) //
-				.build().get(type);
+		return Map.of( //
+				Integer.class, Integer.MAX_VALUE, //
+				Byte.class, Byte.MAX_VALUE, //
+				Short.class, Short.MAX_VALUE, //
+				Long.class, Long.MAX_VALUE, //
+				Float.class, Float.MAX_VALUE, //
+				Double.class, Double.MAX_VALUE) //
+				.get(type);
 	}
 
 }

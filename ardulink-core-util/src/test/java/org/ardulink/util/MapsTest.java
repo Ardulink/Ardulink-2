@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
  */
 class MapsTest {
 
-	Map<Integer, String> map = MapBuilder.<Integer, String>newMapBuilder().put(1, "a").put(2, "b").put(3, "c").build();
+	Map<Integer, String> map = Map.of(1, "a", 2, "b", 3, "c");
 
 	@Test
 	void testToProperties() {

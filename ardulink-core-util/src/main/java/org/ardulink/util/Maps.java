@@ -16,14 +16,10 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static org.ardulink.util.anno.LapsedWith.JDK9;
-
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]

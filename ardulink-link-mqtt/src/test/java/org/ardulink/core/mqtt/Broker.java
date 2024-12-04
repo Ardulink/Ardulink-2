@@ -16,7 +16,12 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
-import static io.moquette.broker.config.IConfig.*;
+import static io.moquette.broker.config.IConfig.ALLOW_ANONYMOUS_PROPERTY_NAME;
+import static io.moquette.broker.config.IConfig.ENABLE_TELEMETRY_NAME;
+import static io.moquette.broker.config.IConfig.HOST_PROPERTY_NAME;
+import static io.moquette.broker.config.IConfig.PERSISTENCE_ENABLED_PROPERTY_NAME;
+import static io.moquette.broker.config.IConfig.PORT_PROPERTY_NAME;
+import static io.moquette.broker.config.IConfig.WEB_SOCKET_PORT_PROPERTY_NAME;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toMap;
 import static org.ardulink.util.Maps.toProperties;
@@ -32,7 +37,6 @@ import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.ardulink.core.mqtt.duplicated.Message;
-import org.ardulink.util.MapBuilder;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -104,14 +108,14 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 	}
 
 	private Map<String, Object> propertyMap() {
-		return MapBuilder.<String, Object>newMapBuilder() //
-				.put(HOST_PROPERTY_NAME, host) //
-				.put(PORT_PROPERTY_NAME, port) //
-				.put(PERSISTENCE_ENABLED_PROPERTY_NAME, Boolean.FALSE) //
-				.put(ENABLE_TELEMETRY_NAME, Boolean.FALSE) //
-				.put(WEB_SOCKET_PORT_PROPERTY_NAME, 0) //
-				.put(ALLOW_ANONYMOUS_PROPERTY_NAME, isAnonymousLoginAllowed()) //
-				.build();
+		return Map.of( //
+				HOST_PROPERTY_NAME, host, //
+				PORT_PROPERTY_NAME, port, //
+				PERSISTENCE_ENABLED_PROPERTY_NAME, Boolean.FALSE, //
+				ENABLE_TELEMETRY_NAME, Boolean.FALSE, //
+				WEB_SOCKET_PORT_PROPERTY_NAME, 0, //
+				ALLOW_ANONYMOUS_PROPERTY_NAME, isAnonymousLoginAllowed() //
+		);
 	}
 
 	private boolean isAnonymousLoginAllowed() {
@@ -128,7 +132,7 @@ public class Broker implements BeforeEachCallback, AfterEachCallback {
 			public String getID() {
 				return getClass().getName();
 			}
-			
+
 			@Override
 			public void onPublish(InterceptPublishMessage message) {
 				messages.add(new Message(message.getTopicName(), new String(message.getPayload().array())));

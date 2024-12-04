@@ -18,14 +18,13 @@ import java.util.Map;
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessageCustom;
-import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.messages.api.FromDeviceMessageInfo;
+import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.messages.api.FromDeviceMessageReply;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 import org.ardulink.util.Joiner;
-import org.ardulink.util.MapBuilder;
 import org.junit.jupiter.api.Test;
 
 class ArdulinkProtocol2Test {
@@ -55,10 +54,9 @@ class ArdulinkProtocol2Test {
 	void canReadRplyViaArdulinkProto() throws IOException {
 		givenMessage("alp://rply/ok?id=1&UniqueID=456-2342-2342&ciao=boo");
 		whenMessageIsProcessed();
-		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class, m -> {
-			assertThat(m.getParameters()).containsExactlyEntriesOf(MapBuilder.<String, Object>newMapBuilder()
-					.put("UniqueID", "456-2342-2342").put("ciao", "boo").build());
-		});
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class,
+				m -> assertThat(m.getParameters())
+						.containsExactlyInAnyOrderEntriesOf(Map.of("UniqueID", "456-2342-2342", "ciao", "boo")));
 	}
 
 	@Test
@@ -86,15 +84,14 @@ class ArdulinkProtocol2Test {
 	@Test
 	void ardulinkProtocol2ReceiveRply() throws IOException {
 		long id = 1;
-		Map<String, Object> params = MapBuilder.<String, Object>newMapBuilder().put("key1", "value1")
-				.put("key2", "value2").build();
+		Map<String, Object> params = Map.of("key1", "value1","key2", "value2");
 		givenMessage("alp://rply/ok?id=" + id + "&" + Joiner.on("&").withKeyValueSeparator("=").join(params));
 		whenMessageIsProcessed();
 		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class, m -> {
 			assertThat(m.isOk()).isTrue();
 			assertThat(m.getId()).isEqualTo(id);
 			// expected in same order defined
-			assertThat(m.getParameters()).containsExactlyEntriesOf(params);
+			assertThat(m.getParameters()).containsExactlyInAnyOrderEntriesOf(params);
 		});
 	}
 

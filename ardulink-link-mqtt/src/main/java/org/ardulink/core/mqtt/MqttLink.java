@@ -52,7 +52,6 @@ import org.ardulink.core.Pin.Type;
 import org.ardulink.core.Tone;
 import org.ardulink.core.mqtt.MqttLinkConfig.Connection;
 import org.ardulink.core.proto.api.MessageIdHolders;
-import org.ardulink.util.MapBuilder;
 import org.ardulink.util.anno.LapsedWith;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -77,19 +76,19 @@ public class MqttLink extends AbstractListenerLink {
 	private static final String DIGITAL = "D";
 
 	@LapsedWith(value = JDK9, module = "Map#of")
-	private static final Map<Connection, String> prefixes = unmodifiableMap(
-			new EnumMap<>(MapBuilder.<Connection, String>newMapBuilder() //
-					.put(TCP, "tcp") //
-					.put(SSL, "ssl") //
-					.put(TLS, "tls") //
-					.build()));
+	private static final Map<Connection, String> prefixes = unmodifiableMap( //
+			new EnumMap<>(Map.of( //
+					TCP, "tcp", //
+					SSL, "ssl", //
+					TLS, "tls" //
+			)));
 
 	@LapsedWith(value = JDK9, module = "Map#of")
-	private static final Map<Type, String> typeMap = unmodifiableMap(
-			new EnumMap<>(MapBuilder.<Type, String>newMapBuilder() //
-					.put(Type.ANALOG, ANALOG) //
-					.put(Type.DIGITAL, DIGITAL) //
-					.build()));
+	private static final Map<Type, String> typeMap = unmodifiableMap( //
+			new EnumMap<>(Map.of( //
+					Type.ANALOG, ANALOG, //
+					Type.DIGITAL, DIGITAL) //
+			));
 
 	private final int qos;
 	private final String topic;

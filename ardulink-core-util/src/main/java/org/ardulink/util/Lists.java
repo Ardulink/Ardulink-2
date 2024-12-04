@@ -21,14 +21,11 @@ import static java.util.Spliterator.ORDERED;
 import static java.util.Spliterators.spliteratorUnknownSize;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
-import static org.ardulink.util.anno.LapsedWith.JDK9;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
-
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -38,7 +35,6 @@ import org.ardulink.util.anno.LapsedWith;
  * [adsense]
  *
  */
-@LapsedWith(value = JDK9, module = "List#of")
 public final class Lists {
 
 	private Lists() {
