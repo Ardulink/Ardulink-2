@@ -39,42 +39,40 @@ import org.junit.jupiter.params.provider.ValueSource;
  */
 class PrimitivesTest {
 
-	@Test
-	void canParseIntAsInt() {
-		assertThat(Primitives.parseAs(Integer.class, "123")).isEqualTo(Integer.valueOf(123));
-		assertThat(Primitives.parseAs(int.class, "123")).isEqualTo(Integer.valueOf(123));
+	@ParameterizedTest
+	@ValueSource(classes = { Integer.class, int.class })
+	void canParseIntAsInt(Class<?> target) {
+		assertThat(Primitives.parseAs(target, "123")).isEqualTo(Integer.valueOf(123));
 	}
 
-	@Test
-	void canParseIntAsDouble() {
-		assertThat(Primitives.parseAs(Double.class, "123")).isEqualTo(Double.valueOf(123));
-		assertThat(Primitives.parseAs(double.class, "123")).isEqualTo(Double.valueOf(123));
+	@ParameterizedTest
+	@ValueSource(classes = { Double.class, double.class })
+	void canParseIntAsDouble(Class<?> target) {
+		assertThat(Primitives.parseAs(target, "123")).isEqualTo(Double.valueOf(123));
 	}
 
-	@Test
-	void canParseDoubleAsDouble() {
-		assertThat(Primitives.parseAs(Double.class, "123.456")).isEqualTo(Double.valueOf(123.456));
-		assertThat(Primitives.parseAs(double.class, "123.456")).isEqualTo(Double.valueOf(123.456));
+	@ParameterizedTest
+	@ValueSource(classes = { Double.class, double.class })
+	void canParseDoubleAsDouble(Class<?> target) {
+		assertThat(Primitives.parseAs(target, "123.456")).isEqualTo(Double.valueOf(123.456));
 	}
 
-	@Test
-	void cannotParseDoubleAsInt() {
-		assertThatExceptionOfType(NumberFormatException.class)
-				.isThrownBy(() -> Primitives.parseAs(Integer.class, "123.456"));
-		assertThatExceptionOfType(NumberFormatException.class)
-				.isThrownBy(() -> Primitives.parseAs(int.class, "123.456"));
+	@ParameterizedTest
+	@ValueSource(classes = { Integer.class, int.class })
+	void cannotParseDoubleAsInt(Class<?> target) {
+		assertThatExceptionOfType(NumberFormatException.class).isThrownBy(() -> Primitives.parseAs(target, "123.456"));
 	}
 
-	@Test
-	void parseOnNonPrimitiveTypes() {
-		assertThat(Primitives.parseAs(Object.class, "42")).isNull();
-		assertThat(Primitives.parseAs(String.class, "42")).isNull();
+	@ParameterizedTest
+	@ValueSource(classes = { Object.class, String.class, List.class })
+	void parseOnNonPrimitiveTypes(Class<?> target) {
+		assertThat(Primitives.parseAs(target, "42")).isNull();
 	}
 
-	@Test
-	void tryParseOnNonPrimitiveTypes() {
-		assertThat(Primitives.tryParseAs(Object.class, "42")).isEmpty();
-		assertThat(Primitives.tryParseAs(String.class, "42")).isEmpty();
+	@ParameterizedTest
+	@ValueSource(classes = { Object.class, String.class, List.class })
+	void tryParseOnNonPrimitiveTypes(Class<?> target) {
+		assertThat(Primitives.tryParseAs(target, "42")).isEmpty();
 	}
 
 	@Test
