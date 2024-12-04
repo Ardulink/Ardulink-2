@@ -21,9 +21,7 @@ import static gnu.io.CommPortIdentifier.getPortIdentifiers;
 import static java.util.Collections.list;
 import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.core.proto.api.Protocols.protocolNames;
-import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
-import static org.ardulink.util.Iterables.getFirst;
-import static org.ardulink.util.Optionals.or;
+import static org.ardulink.core.proto.api.Protocols.tryProtoByNameWithFallback;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -35,7 +33,6 @@ import javax.validation.constraints.PositiveOrZero;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.api.Protocols;
 import org.ardulink.core.proto.impl.ArdulinkProtocol2;
 
 import gnu.io.CommPortIdentifier;
@@ -62,7 +59,7 @@ public class SerialLinkConfig implements LinkConfig {
 	@Positive
 	public int baudrate = 115200;
 
-	private Protocol protocol = useProtoOrFallback(ArdulinkProtocol2.NAME);
+	private Protocol protocol = tryProtoByNameWithFallback(ArdulinkProtocol2.NAME).orElse(null);
 
 	@Named("qos")
 	public boolean qos;
@@ -74,10 +71,6 @@ public class SerialLinkConfig implements LinkConfig {
 
 	@Named("pingprobe")
 	public boolean pingprobe = true;
-
-	private Protocol useProtoOrFallback(String prefered) {
-		return or(tryProtoByName(prefered), () -> getFirst(Protocols.protocols())).orElse(null);
-	}
 
 	@ChoiceFor(NAMED_PORT)
 	public Stream<String> listPorts() {

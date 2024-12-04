@@ -21,7 +21,6 @@ import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Lists.mapList;
-import static org.ardulink.util.Optionals.or;
 import static org.ardulink.util.Predicates.attribute;
 import static org.ardulink.util.ServiceLoaders.services;
 
@@ -98,7 +97,7 @@ public final class Protocols {
 	 *         found
 	 */
 	public static Optional<Protocol> tryProtoByNameWithFallback(String name) {
-		return or(tryProtoByName(name), () -> getFirst(protocols()));
+		return tryProtoByName(name).or(() -> getFirst(protocols()));
 	}
 
 	private static Optional<Protocol> withName(List<Protocol> protocols, String name) {
