@@ -34,7 +34,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2.ALPByteStreamProcessor;
+import org.ardulink.core.proto.ardulink.ArdulinkProtocol2.ALPByteStreamProcessor;
 import org.ardulink.util.Bytes;
 
 /**

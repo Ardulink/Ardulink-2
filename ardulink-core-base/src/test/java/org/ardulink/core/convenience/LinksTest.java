@@ -57,7 +57,7 @@ import org.ardulink.core.linkmanager.DummyLinkConfig;
 import org.ardulink.core.linkmanager.DummyLinkFactory;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
 import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.ardulink.util.Closeables;
 import org.ardulink.util.ListMultiMap;

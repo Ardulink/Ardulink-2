@@ -22,9 +22,9 @@ import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
-import org.ardulink.core.proto.impl.DummyProtocol;
-import org.ardulink.core.proto.impl.InactiveProtocol;
+import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
+import org.ardulink.core.proto.dummy.DummyProtocol;
+import org.ardulink.core.proto.inactive.InactiveProtocol;
 import org.junit.jupiter.api.Test;
 
 /**

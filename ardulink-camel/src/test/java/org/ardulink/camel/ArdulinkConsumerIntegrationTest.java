@@ -21,9 +21,9 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static org.ardulink.testsupport.mock.TestSupport.fireEvent;
 
 import org.apache.camel.CamelContext;

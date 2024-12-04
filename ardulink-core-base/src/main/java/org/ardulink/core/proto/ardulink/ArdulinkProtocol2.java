@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package org.ardulink.core.proto.impl;
+package org.ardulink.core.proto.ardulink;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
@@ -31,22 +31,22 @@ import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageCustom.fro
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageInfo.fromDeviceMessageInfo;
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessagePinStateChanged.fromDeviceMessagePinStateChanged;
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageReply.fromDeviceMessageReply;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.CHAR_PRESSED;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.CUSTOM_EVENT;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.CUSTOM_MESSAGE;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.INFO;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.NOTONE;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.RPLY;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.TONE;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.CHAR_PRESSED;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.CUSTOM_EVENT;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.CUSTOM_MESSAGE;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.INFO;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.NOTONE;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.RPLY;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.TONE;
 import static org.ardulink.util.Booleans.toBoolean;
 import static org.ardulink.util.Maps.entry;
 import static org.ardulink.util.Preconditions.checkNotNull;
@@ -72,7 +72,7 @@ import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProces
 import org.ardulink.core.proto.api.bytestreamproccesors.AbstractState;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.api.bytestreamproccesors.State;
-import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
+import org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey;
 import org.ardulink.util.Bytes;
 
 /**

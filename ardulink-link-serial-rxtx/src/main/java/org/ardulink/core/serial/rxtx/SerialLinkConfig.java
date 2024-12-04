@@ -33,7 +33,7 @@ import javax.validation.constraints.PositiveOrZero;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
 
 import gnu.io.CommPortIdentifier;
 

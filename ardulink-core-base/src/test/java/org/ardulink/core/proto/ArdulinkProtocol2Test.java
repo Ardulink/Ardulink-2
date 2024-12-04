@@ -3,9 +3,9 @@ package org.ardulink.core.proto;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
@@ -23,7 +23,7 @@ import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.messages.api.FromDeviceMessageReply;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
 import org.ardulink.util.Joiner;
 import org.junit.jupiter.api.Test;
 

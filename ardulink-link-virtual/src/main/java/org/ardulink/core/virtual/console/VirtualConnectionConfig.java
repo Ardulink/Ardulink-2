@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]

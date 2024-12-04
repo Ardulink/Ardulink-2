@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package org.ardulink.core.proto.impl;
+package org.ardulink.core.proto.inactive;
 
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
