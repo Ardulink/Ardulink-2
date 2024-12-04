@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -62,6 +63,18 @@ class PrimitivesTest {
 				.isThrownBy(() -> Primitives.parseAs(Integer.class, "123.456"));
 		assertThatExceptionOfType(NumberFormatException.class)
 				.isThrownBy(() -> Primitives.parseAs(int.class, "123.456"));
+	}
+
+	@Test
+	void parseOnNonPrimitiveTypes() {
+		assertThat(Primitives.parseAs(Object.class, "42")).isNull();
+		assertThat(Primitives.parseAs(String.class, "42")).isNull();
+	}
+
+	@Test
+	void tryParseOnNonPrimitiveTypes() {
+		assertThat(Primitives.tryParseAs(Object.class, "42")).isEmpty();
+		assertThat(Primitives.tryParseAs(String.class, "42")).isEmpty();
 	}
 
 	@Test

@@ -81,7 +81,7 @@ public enum Primitives {
 
 	public static <T> Optional<T> tryParseAs(Class<T> type, String value) {
 		try {
-			return Optional.of(parseAs(type, value));
+			return Optional.ofNullable(parseAs(type, value));
 		} catch (NumberFormatException e) {
 			return Optional.empty();
 		}
