@@ -49,7 +49,7 @@ public final class Streams {
 	}
 
 	@SafeVarargs
-	public static Stream<String> concat(Stream<String>... streams) {
+	public static <T> Stream<T> concat(Stream<T>... streams) {
 		return Arrays.stream(streams).reduce(Stream::concat).orElse(Stream.empty());
 	}
 
