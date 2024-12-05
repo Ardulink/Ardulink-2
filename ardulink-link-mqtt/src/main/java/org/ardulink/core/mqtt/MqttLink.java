@@ -20,6 +20,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
+import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.regex.Pattern.quote;
@@ -190,7 +191,7 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	private String serverUrl(MqttLinkConfig config) {
-		return connectionPrefix(config) + "://" + config.getHost() + ":" + config.port;
+		return format("%s://%s:%d", connectionPrefix(config), config.getHost(), config.port);
 	}
 
 	private static String connectionPrefix(MqttLinkConfig config) {
