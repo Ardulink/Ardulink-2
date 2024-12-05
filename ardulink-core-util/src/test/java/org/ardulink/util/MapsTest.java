@@ -48,4 +48,12 @@ class MapsTest {
 		assertThat(entry).hasSameHashCodeAs(otherEntry).isEqualTo(otherEntry);
 	}
 
+	@Test
+	void testMerge() {
+		Map<Integer, String> map1 = Map.of(1, "m1-A", 2, "m1-B", 3, "m1-C");
+		Map<Integer, String> map2 = Map.of(2, "m2-B", 4, "m2-D");
+		Map<Integer, String> merged = Maps.merge(map1, map2);
+		assertThat(merged).containsExactlyEntriesOf(Map.of(1, "m1-A", 2, "m2-B", 3, "m1-C", 4, "m2-D"));
+	}
+
 }
