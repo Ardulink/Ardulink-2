@@ -106,8 +106,7 @@ public class MqttLink extends AbstractListenerLink {
 		this.topic = config.getTopic();
 		this.mqttReceivePattern = regex(MqttLink.this.topic + "([aAdD])(\\d+)" + quote(appendixSub()));
 		this.mqttClient = newClient(config);
-		MqttCallback callback = callback();
-		this.mqttClient.setCallback(callback);
+		this.mqttClient.setCallback(callback());
 		this.mqttClient.connect(options(config));
 		subscribe();
 		fireReconnected();
