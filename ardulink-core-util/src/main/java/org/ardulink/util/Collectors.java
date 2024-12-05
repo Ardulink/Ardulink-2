@@ -24,6 +24,7 @@ import static org.ardulink.util.anno.LapsedWith.JDK10;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
@@ -52,6 +53,12 @@ public final class Collectors {
 	public static <T, K, U> Collector<T, ?, Map<K, U>> toUnmodifiableMap(Function<? super T, ? extends K> keyMapper,
 			Function<? super T, ? extends U> valueMapper) {
 		return collectingAndThen(toMap(keyMapper, valueMapper), Collections::unmodifiableMap);
+	}
+
+	@LapsedWith(module = JDK10, value = "Collectors#toUnmodifiableMap")
+	public static <T, K, U> Collector<T, ?, Map<K, U>> toUnmodifiableMap(Function<? super T, ? extends K> keyMapper,
+			Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+		return collectingAndThen(toMap(keyMapper, valueMapper, mergeFunction), Collections::unmodifiableMap);
 	}
 
 }
