@@ -474,7 +474,7 @@ public abstract class LinkManager {
 			public CacheKey() throws Exception {
 				this.factoryType = DefaultConfigurer.this.linkFactory.getClass();
 				this.values = getAttributes().stream().map(k -> entry(k, getAttribute(k).getValue())) //
-						.filter(v -> v.getValue() != null) //
+						.filter(attribute(Entry::getValue, Objects::nonNull)) //
 						.collect(toUnmodifiableMap(Entry::getKey, Entry::getValue));
 			}
 
