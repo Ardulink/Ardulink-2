@@ -320,7 +320,7 @@ public abstract class LinkManager {
 				checkArgument(attribute != null, "Could not determine attribute %s. Available attributes are %s", key,
 						beanProperties.attributeNames());
 				this.getChoicesFor = choicesFor(linkConfig);
-				this.dependsOn = this.getChoicesFor == null ? emptyList() : resolveDeps(this.getChoicesFor);
+				this.dependsOn = resolveDeps(this.getChoicesFor);
 				Class<?> linkConfigClass = linkConfig.getClass();
 				I18n nls = linkConfigClass.getAnnotation(I18n.class);
 				this.nls = nls == null ? null : resourceBundle(linkConfigClass, nls);
@@ -354,9 +354,10 @@ public abstract class LinkManager {
 			}
 
 			private List<ConfigAttribute> resolveDeps(Attribute choiceFor) {
-				ChoiceFor cfa = choiceFor.getAnnotation(ChoiceFor.class);
-				return cfa == null ? emptyList()
-						: stream(cfa.dependsOn()).map(name -> getAttribute(name)).collect(toList());
+				return Optional.ofNullable(choiceFor) //
+						.map(c -> c.getAnnotation(ChoiceFor.class)) //
+						.map(c -> stream(c.dependsOn()).map(n -> getAttribute(n)).collect(toList())) //
+						.orElse(emptyList());
 			}
 
 			@Override
