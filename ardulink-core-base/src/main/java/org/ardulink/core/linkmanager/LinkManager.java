@@ -20,7 +20,6 @@ import static java.lang.String.format;
 import static java.net.URI.create;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
-import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
@@ -356,8 +355,10 @@ public abstract class LinkManager {
 			private List<ConfigAttribute> resolveDeps(Attribute choiceFor) {
 				return Optional.ofNullable(choiceFor) //
 						.map(c -> c.getAnnotation(ChoiceFor.class)) //
-						.map(c -> stream(c.dependsOn()).map(n -> getAttribute(n)).collect(toList())) //
-						.orElse(emptyList());
+						.map(c -> stream(c.dependsOn())) //
+						.orElse(Stream.empty()) //
+						.map(n -> getAttribute(n)) //
+						.collect(toList());
 			}
 
 			@Override
