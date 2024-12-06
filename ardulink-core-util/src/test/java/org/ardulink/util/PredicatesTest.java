@@ -16,8 +16,8 @@ limitations under the License.
 package org.ardulink.util;
 
 import static java.util.function.Predicate.isEqual;
+import static java.util.function.Predicate.not;
 import static org.ardulink.util.Predicates.attribute;
-import static org.ardulink.util.Predicates.not;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.stream.Stream;

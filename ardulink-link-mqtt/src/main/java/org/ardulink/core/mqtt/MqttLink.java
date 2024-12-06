@@ -22,6 +22,7 @@ import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.unmodifiableMap;
+import static java.util.function.Predicate.not;
 import static java.util.regex.Pattern.quote;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -32,7 +33,6 @@ import static org.ardulink.core.mqtt.MqttLinkConfig.Connection.TCP;
 import static org.ardulink.core.mqtt.MqttLinkConfig.Connection.TLS;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
-import static org.ardulink.util.Predicates.not;
 import static org.ardulink.util.Regex.regex;
 import static org.ardulink.util.Throwables.propagate;
 
