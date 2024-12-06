@@ -16,8 +16,7 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static org.ardulink.util.Collectors.toUnmodifiableMap;
-
+import static java.util.stream.Collectors.toUnmodifiableMap;
 
 import java.util.AbstractMap;
 import java.util.Collection;
