@@ -23,8 +23,8 @@ import static java.util.Optional.ofNullable;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import org.ardulink.core.classloader.ModuleClassLoader;
 
@@ -52,7 +52,7 @@ public final class Classloaders {
 	}
 
 	public static Collection<URL> getResources(ClassLoader classloader, String name) throws IOException {
-		return new HashSet<>(list(classloader.getResources(name)));
+		return Set.copyOf(list(classloader.getResources(name)));
 	}
 
 }
