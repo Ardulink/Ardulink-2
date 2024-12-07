@@ -16,9 +16,9 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 /**
@@ -36,11 +36,7 @@ public final class URIs {
 	}
 
 	public static String encode(String asciiString) {
-		try {
-			return URLEncoder.encode(checkNotNull(asciiString, "asciiString must not be null"), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw Throwables.propagate(e);
-		}
+		return URLEncoder.encode(checkNotNull(asciiString, "asciiString must not be null"), UTF_8);
 	}
 
 }
