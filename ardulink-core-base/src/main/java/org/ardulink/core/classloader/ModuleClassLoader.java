@@ -27,6 +27,14 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ModuleClassLoader extends URLClassLoader {
 
 	public ModuleClassLoader(String moduleDir) {
@@ -64,10 +72,10 @@ public class ModuleClassLoader extends URLClassLoader {
 
 	private static List<File> list(File dir) {
 		checkState(dir.exists(), "Directory %s not found", dir);
-		return stream(dir.list(jarFiler())).map(f -> new File(dir, f)).collect(toList());
+		return stream(dir.list(isJar())).map(f -> new File(dir, f)).collect(toList());
 	}
 
-	private static FilenameFilter jarFiler() {
+	private static FilenameFilter isJar() {
 		return (dir, name) -> name.toLowerCase().endsWith(".jar");
 	}
 

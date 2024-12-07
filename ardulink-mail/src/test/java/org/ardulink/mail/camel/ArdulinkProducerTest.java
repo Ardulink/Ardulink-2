@@ -19,9 +19,9 @@ package org.ardulink.mail.camel;
 import static java.lang.System.identityHashCode;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
 import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Throwables.propagate;
 

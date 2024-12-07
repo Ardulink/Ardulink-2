@@ -16,6 +16,9 @@ limitations under the License.
 
 package org.ardulink.core;
 
+import static java.util.function.Predicate.isEqual;
+import static org.ardulink.util.Predicates.attribute;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -166,13 +169,10 @@ public abstract class AbstractListenerLink implements Link {
 	}
 
 	private boolean hasListenerForPin(Pin pin) {
-		for (EventListener listener : this.eventListeners) {
-			if (listener instanceof FilteredEventListenerAdapter
-					&& pin.equals(((FilteredEventListenerAdapter) listener).getPin())) {
-				return true;
-			}
-		}
-		return false;
+		return this.eventListeners.stream() //
+				.filter(FilteredEventListenerAdapter.class::isInstance) //
+				.map(FilteredEventListenerAdapter.class::cast) //
+				.anyMatch(attribute(FilteredEventListenerAdapter::getPin, isEqual(pin)));
 	}
 
 	private void logError(Object event, String eventType, Exception e) {

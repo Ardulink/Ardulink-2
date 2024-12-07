@@ -20,9 +20,10 @@ import static java.util.Arrays.stream;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Stream.concat;
-import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
+import static org.ardulink.core.beans.finder.api.AttributeFinder.beanAttributes;
 import static org.ardulink.util.Iterables.stream;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Suppliers.memoize;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.lang.annotation.Annotation;
@@ -31,6 +32,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.ardulink.core.beans.Attribute.AttributeReader;
@@ -74,12 +76,14 @@ public class BeanProperties {
 		private final Class<?> type;
 		private final AttributeReader reader;
 		private final AttributeWriter writer;
+		private final Supplier<Annotation[]> annotations;
 
 		public DefaultAttribute(String name, Class<?> type, AttributeReader reader, AttributeWriter writer) {
 			this.name = name;
 			this.type = type;
 			this.reader = reader;
 			this.writer = writer;
+			this.annotations = memoize(this::computeAnnotations);
 		}
 
 		@Override
@@ -114,17 +118,24 @@ public class BeanProperties {
 			writer.setValue(value);
 		}
 
-		@Override
-		public Annotation[] getAnnotations() {
+		private Annotation[] computeAnnotations() {
 			Set<Annotation> annos = new LinkedHashSet<>();
 			Stream.of(reader, writer).filter(Objects::nonNull).forEach(p -> p.addAnnotations(annos));
 			return annos.toArray(new Annotation[annos.size()]);
 		}
 
 		@Override
+		public Annotation[] getAnnotations() {
+			return annotations.get();
+		}
+
+		@Override
 		public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-			return stream(getAnnotations()).filter(a -> a.annotationType().equals(annotationClass)).findFirst()
-					.map(annotationClass::cast).orElse(null);
+			return stream(getAnnotations()) //
+					.filter(a -> a.annotationType().equals(annotationClass)) //
+					.findFirst() //
+					.map(annotationClass::cast) //
+					.orElse(null);
 		}
 
 	}

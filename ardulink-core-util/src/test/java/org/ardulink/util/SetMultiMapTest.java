@@ -16,8 +16,6 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singleton;
 import static org.ardulink.util.Maps.entry;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,38 +34,46 @@ class SetMultiMapTest {
 
 	SetMultiMap<Integer, String> sut = new SetMultiMap<>();
 
+	private static final int key = 1;
+	private static final String element1 = "foo";
+	private static final String element2 = "bar";
+
 	@Test
 	void canPut() {
-		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
-		assertThat(sut.asMap()).containsExactly(entry(1, singleton("foo")));
+		assertThat(sut.put(key, element1)).isTrue();
+		assertThat(sut.asMap()).containsExactly(entry(key, singleton(element1)));
 	}
 
 	@Test
 	void canPutTwice() {
-		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
-		assertThat(sut.put(1, "foo")).isEqualTo(FALSE);
-		assertThat(sut.asMap()).containsExactly(entry(1, singleton("foo")));
+		assertThat(sut.put(key, element1)).isTrue();
+		assertThat(sut.put(key, element1)).isFalse();
+		assertThat(sut.asMap()).containsExactly(entry(key, singleton(element1)));
 	}
 
 	@Test
 	void canRemoveExistingValue() {
-		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
-		assertThat(sut.remove(1, "foo")).isEqualTo(TRUE);
+		assertThat(sut.put(key, element1)).isTrue();
+		assertThat(sut.remove(key, element1)).isTrue();
 		assertThat(sut.asMap()).isEmpty();
 	}
 
 	@Test
 	void canHandleRemovesOfNonExistingValues() {
-		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
-		assertThat(sut.remove(1, "bar")).isEqualTo(FALSE);
-		assertThat(sut.asMap()).containsExactly(entry(1, singleton("foo")));
+		assertThat(sut.put(key, element1)).isTrue();
+		assertThat(sut.remove(key, element2)).isFalse();
+		assertThat(sut.asMap()).containsExactly(entry(key, singleton(element1)));
 	}
 
 	@Test
 	void canHandleRemovesOfNonExistingKeys() {
-		assertThat(sut.put(1, "foo")).isEqualTo(TRUE);
-		assertThat(sut.remove(2, "foo")).isEqualTo(FALSE);
-		assertThat(sut.asMap()).containsExactly(entry(1, singleton("foo")));
+		assertThat(sut.put(key, element1)).isTrue();
+		assertThat(sut.remove(not(key), element1)).isFalse();
+		assertThat(sut.asMap()).containsExactly(entry(key, singleton(element1)));
+	}
+
+	private int not(int value) {
+		return value + 1;
 	}
 
 }

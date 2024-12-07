@@ -17,13 +17,13 @@ limitations under the License.
 package org.ardulink.core.linkmanager.providers;
 
 import static java.lang.String.format;
+import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.linkmanager.Classloaders.getResources;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
 import static org.ardulink.core.linkmanager.LinkConfig.NO_ATTRIBUTES;
 import static org.ardulink.util.Classes.constructor;
 import static org.ardulink.util.Preconditions.checkState;
-import static org.ardulink.util.Predicates.not;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.Throwables.propagateIfInstanceOf;
@@ -51,6 +51,8 @@ import org.ardulink.core.linkmanager.LinkFactory;
  */
 public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 
+	private static final String RESOURCE_NAME = "META-INF/services/ardulink/linkfactory";
+
 	static class LineProcessor {
 
 		/**
@@ -58,7 +60,7 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 		 * {@link Link} that has a constructor accepting the {@link LinkConfig}.<br>
 		 * Creating {@link Link} without {@link LinkConfig}s is also supported, when
 		 * passing "null" as <code>configClassName</code> and the {@link Link} has a
-		 * public zero arg constructor.
+		 * public zero args constructor.
 		 */
 		private static final class GenericLinkFactory implements LinkFactory<LinkConfig> {
 
@@ -127,10 +129,11 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 			@Override
 			public LinkConfig newLinkConfig() {
 				try {
-					return isNullConfig(configClass) ? NO_ATTRIBUTES : configClass.newInstance();
-				} catch (InstantiationException e) {
-					throw propagate(e);
-				} catch (IllegalAccessException e) {
+					return isNullConfig(configClass) //
+							? NO_ATTRIBUTES //
+							: configClass.getConstructor().newInstance();
+				} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException | NoSuchMethodException | SecurityException e) {
 					throw propagate(e);
 				}
 			}
@@ -165,14 +168,16 @@ public class FactoriesViaMetaInfArdulink implements LinkFactoriesProvider {
 		ClassLoader classloader = moduleClassloader();
 		LineProcessor lineParser = new LineProcessor(classloader);
 		try {
-			return getResources(classloader, "META-INF/services/ardulink/linkfactory").stream()
-					.map(url -> loadLinkFactories(lineParser, url)).flatMap(Collection::stream).collect(toList());
+			return getResources(classloader, RESOURCE_NAME).stream() //
+					.map(u -> loadLinkFactories(lineParser, u)) //
+					.flatMap(Collection::stream) //
+					.collect(toList());
 		} catch (Exception e) {
 			throw propagate(e);
 		}
 	}
 
-	private List<LinkFactory<LinkConfig>> loadLinkFactories(LineProcessor lineProcessor, URL url) {
+	private static List<LinkFactory<LinkConfig>> loadLinkFactories(LineProcessor lineProcessor, URL url) {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
 			return reader.lines().filter(not(String::isEmpty)).map(lineProcessor::processLine).collect(toList());
 		} catch (IOException e) {

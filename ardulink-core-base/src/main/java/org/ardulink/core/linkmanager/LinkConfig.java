@@ -35,12 +35,12 @@ public interface LinkConfig {
 	};
 
 	@Retention(RUNTIME)
-    @interface Named {
+	@interface Named {
 		String value();
 	}
 
 	@Retention(RUNTIME)
-    @interface ChoiceFor {
+	@interface ChoiceFor {
 		/**
 		 * The name of the attribute the values are choices for.
 		 * 
@@ -49,8 +49,8 @@ public interface LinkConfig {
 		String value();
 
 		/**
-		 * Attributes this attribute depends on. If this attribute depends on no
-		 * other attributes an empty array is returned.
+		 * Attributes this attribute depends on. If this attribute depends on no other
+		 * attributes an empty array is returned.
 		 * 
 		 * @return attributes this attribute depends on
 		 */
@@ -58,15 +58,28 @@ public interface LinkConfig {
 	}
 
 	@Retention(RUNTIME)
-    @interface I18n {
+	@interface I18n {
 		/**
-		 * Name of the property file holding the i18n texts. If omitted the name
-		 * has to have the same name like the LinkConfig class. In both cases
-		 * the file has to resist in the same package like the LinkConfig class.
+		 * Name of the property file holding the i18n texts. If omitted the name has to
+		 * have the same name like the LinkConfig class. In both cases the file has to
+		 * resist in the same package like the LinkConfig class.
 		 * 
 		 * @return the name of the i18n property file
 		 */
 		String value() default "";
+	}
+
+	/**
+	 * If the {@link LinkConfig} want to disable certain attributes (e.g. because of
+	 * feature flags or because they are not available in some conditions) they can
+	 * programmatically disabled by returning <code>false</code> for these
+	 * attributes.
+	 * 
+	 * @param attributeName the attribute to check
+	 * @return <code>true</code> if the attribute is available
+	 */
+	default boolean isDisabled(String attributeName) {
+		return false;
 	}
 
 }

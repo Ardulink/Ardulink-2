@@ -67,7 +67,7 @@ public class Tone {
 	private final AnalogPin analogPin;
 	private final Long durationInMillis;
 
-	public Tone(Builder builder) {
+	private Tone(Builder builder) {
 		this.analogPin = builder.analogPin;
 		this.hertz = builder.hertz;
 		this.durationInMillis = builder.durationInMillis;
@@ -82,9 +82,7 @@ public class Tone {
 	}
 
 	public Optional<Long> getDuration(TimeUnit target) {
-		return durationInMillis == null //
-				? Optional.empty() //
-				: Optional.of(target.convert(durationInMillis, MILLISECONDS));
+		return Optional.ofNullable(durationInMillis).map(d -> target.convert(d, MILLISECONDS));
 	}
 
 }

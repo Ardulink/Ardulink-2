@@ -18,6 +18,9 @@ limitations under the License.
 
 package org.ardulink.gui.customcomponents;
 
+import static org.ardulink.gui.facility.AbstractDocumentListenerAdapter.addDocumentListener;
+import static org.ardulink.util.Primitives.tryParseAs;
+
 import java.awt.BorderLayout;
 
 import javax.swing.JCheckBox;
@@ -26,10 +29,6 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import org.ardulink.gui.Linkable;
 import org.ardulink.legacy.Link;
@@ -68,12 +67,7 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 		configPanel.setLayout(null);
 		
 		chckbxValueFieldIs = new JCheckBox("Value field is visible");
-		chckbxValueFieldIs.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				signalButton.setValueVisible(chckbxValueFieldIs.isSelected());
-			}
-		});
+		chckbxValueFieldIs.addChangeListener(__ -> signalButton.setValueVisible(chckbxValueFieldIs.isSelected()));
 		chckbxValueFieldIs.setSelected(true);
 		chckbxValueFieldIs.setBounds(6, 6, 136, 18);
 		configPanel.add(chckbxValueFieldIs);
@@ -88,31 +82,9 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 		columnsTextField.setBounds(62, 30, 80, 28);
 		configPanel.add(columnsTextField);
 		columnsTextField.setColumns(10);
-		columnsTextField.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				updateColumns();
-			}
-			
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				updateColumns();
-			}
-			
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				updateColumns();
-			}
-			
-			private void updateColumns() {
-				try {
-					int columns = Integer.parseInt(columnsTextField.getText());
-					signalButton.setValueColumns(columns);
-				}
-				catch(NumberFormatException e) {}
-			}
-		});
-		
+		addDocumentListener(columnsTextField,
+				__ -> tryParseAs(Integer.class, columnsTextField.getText()).ifPresent(signalButton::setValueColumns));
+
 		JLabel lblBtnText = new JLabel("Btn. Text:");
 		lblBtnText.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblBtnText.setBounds(6, 70, 55, 16);
@@ -123,26 +95,7 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 		buttonTextField.setColumns(10);
 		buttonTextField.setBounds(62, 64, 80, 28);
 		configPanel.add(buttonTextField);
-		buttonTextField.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				updateButtonLabel();
-			}
-			
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				updateButtonLabel();
-			}
-			
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				updateButtonLabel();
-			}
-			
-			private void updateButtonLabel() {
-				signalButton.setButtonText(buttonTextField.getText());
-			}
-		});
+		addDocumentListener(buttonTextField, __ -> signalButton.setButtonText(buttonTextField.getText()));
 		
 		JLabel lblId = new JLabel("Id:");
 		lblId.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -154,26 +107,7 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 		idTextField.setColumns(10);
 		idTextField.setBounds(62, 98, 80, 28);
 		configPanel.add(idTextField);
-		idTextField.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				updateId();
-			}
-			
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				updateId();
-			}
-			
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				updateId();
-			}
-			
-			private void updateId() {
-				signalButton.setId(idTextField.getText());
-			}
-		});
+		addDocumentListener(idTextField, __ -> signalButton.setId(idTextField.getText()));		
 		
 		signalButton.setValueColumns(Integer.parseInt(columnsTextField.getText()));
 		signalButton.setButtonText(buttonTextField.getText());
@@ -191,37 +125,40 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 	}
 	
 	/**
-	 * Set the value to be sent
-	 * @param t
+	 * Set the value to be sent.
+	 * 
+	 * @param value
 	 */
-	public void setValue(String t) {
-		signalButton.setValue(t);
+	public void setValue(String value) {
+		signalButton.setValue(value);
 	}
 
 	/**
-	 * @return the value to be sent
+	 * @return the value to be sent. 
 	 */
 	public String getValue() {
 		return signalButton.getValue();
 	}
 
 	/**
-	 * @return value text field visibility
+	 * @return value text field visibility. 
 	 */
 	public boolean isValueVisible() {
 		return signalButton.isValueVisible();
 	}
 
 	/**
-	 * Set value text field visibility
-	 * @param aFlag
+	 * Set value text field visibility.
+	 * 
+	 * @param flag
 	 */
-	public void setValueVisible(boolean aFlag) {
-		chckbxValueFieldIs.setSelected(aFlag);
+	public void setValueVisible(boolean flag) {
+		chckbxValueFieldIs.setSelected(flag);
 	}
 
 	/**
-	 * Set value text field columns size
+	 * Set value text field columns size.
+	 * 
 	 * @param columns
 	 */
 	public void setValueColumns(int columns) {
@@ -229,7 +166,8 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 	}
 
 	/**
-	 * Set button's text
+	 * Set button's text.
+	 * 
 	 * @param text
 	 */
 	public void setButtonText(String text) {
@@ -237,14 +175,15 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 	}
 
 	/**
-	 * @return id for this component
+	 * @return id for this component.
 	 */
 	public String getId() {
 		return signalButton.getId();
 	}
 
 	/**
-	 * Set an id for this component, used in composing custom message for Arduino
+	 * Set an id for this component, used in composing custom message for Arduino.
+	 * 
 	 * @param id
 	 */
 	public void setId(String id) {

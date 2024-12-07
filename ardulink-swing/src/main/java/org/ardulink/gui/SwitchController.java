@@ -21,7 +21,6 @@ package org.ardulink.gui;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -33,12 +32,13 @@ import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
- * This class can manage digital arduino pins sending specific messages to
- * the arduino board.
-* project Ardulink http://www.ardulink.org/
+ * 
+ * This class can manage digital arduino pins sending specific messages to the
+ * arduino board.
+ * 
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
- *
  */
 public class SwitchController extends JPanel implements Linkable {
 
@@ -66,17 +66,14 @@ public class SwitchController extends JPanel implements Linkable {
 		add(label);
 		
 		switchToggleButton = new JToggleButton("Off");
-		switchToggleButton.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				int pin = pinComboBoxModel.getSelectedItem().intValue();
-				if(e.getStateChange() == ItemEvent.SELECTED) {
-					switchToggleButton.setText("On");
-					link.sendPowerPinSwitch(pin, true);
-				} else if(e.getStateChange() == ItemEvent.DESELECTED) {
-					switchToggleButton.setText("Off");
-					link.sendPowerPinSwitch(pin, false);
-				}
+		switchToggleButton.addItemListener(e -> {
+			int pin = pinComboBoxModel.getSelectedItem().intValue();
+			if(e.getStateChange() == ItemEvent.SELECTED) {
+				switchToggleButton.setText("On");
+				link.sendPowerPinSwitch(pin, true);
+			} else if(e.getStateChange() == ItemEvent.DESELECTED) {
+				switchToggleButton.setText("Off");
+				link.sendPowerPinSwitch(pin, false);
 			}
 		});
 		switchToggleButton.setBounds(10, 38, 103, 23);
@@ -84,7 +81,8 @@ public class SwitchController extends JPanel implements Linkable {
 	}
 	
 	/**
-	 * Set the pin to control
+	 * Set the pin to control.
+	 * 
 	 * @param pin
 	 */
 	public void setPin(int pin) {

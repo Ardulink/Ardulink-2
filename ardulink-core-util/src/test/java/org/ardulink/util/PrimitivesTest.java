@@ -18,8 +18,16 @@ package org.ardulink.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -31,30 +39,40 @@ import org.junit.jupiter.api.Test;
  */
 class PrimitivesTest {
 
-	@Test
-	void canParseIntAsInt() {
-		assertThat(Primitives.parseAs(Integer.class, "123")).isEqualTo(Integer.valueOf(123));
-		assertThat(Primitives.parseAs(int.class, "123")).isEqualTo(Integer.valueOf(123));
+	@ParameterizedTest
+	@ValueSource(classes = { Integer.class, int.class })
+	void canParseIntAsInt(Class<?> target) {
+		assertThat(Primitives.parseAs(target, "123")).isEqualTo(Integer.valueOf(123));
 	}
 
-	@Test
-	void canParseIntAsDouble() {
-		assertThat(Primitives.parseAs(Double.class, "123")).isEqualTo(Double.valueOf(123));
-		assertThat(Primitives.parseAs(double.class, "123")).isEqualTo(Double.valueOf(123));
+	@ParameterizedTest
+	@ValueSource(classes = { Double.class, double.class })
+	void canParseIntAsDouble(Class<?> target) {
+		assertThat(Primitives.parseAs(target, "123")).isEqualTo(Double.valueOf(123));
 	}
 
-	@Test
-	void canParseDoubleAsDouble() {
-		assertThat(Primitives.parseAs(Double.class, "123.456")).isEqualTo(Double.valueOf(123.456));
-		assertThat(Primitives.parseAs(double.class, "123.456")).isEqualTo(Double.valueOf(123.456));
+	@ParameterizedTest
+	@ValueSource(classes = { Double.class, double.class })
+	void canParseDoubleAsDouble(Class<?> target) {
+		assertThat(Primitives.parseAs(target, "123.456")).isEqualTo(Double.valueOf(123.456));
 	}
 
-	@Test
-	void cannotParseDoubleAsInt() {
-		assertThatExceptionOfType(NumberFormatException.class)
-				.isThrownBy(() -> Primitives.parseAs(Integer.class, "123.456"));
-		assertThatExceptionOfType(NumberFormatException.class)
-				.isThrownBy(() -> Primitives.parseAs(int.class, "123.456"));
+	@ParameterizedTest
+	@ValueSource(classes = { Integer.class, int.class })
+	void cannotParseDoubleAsInt(Class<?> target) {
+		assertThatExceptionOfType(NumberFormatException.class).isThrownBy(() -> Primitives.parseAs(target, "123.456"));
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = { Object.class, String.class, List.class })
+	void parseOnNonPrimitiveTypes(Class<?> target) {
+		assertThat(Primitives.parseAs(target, "42")).isNull();
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = { Object.class, String.class, List.class })
+	void tryParseOnNonPrimitiveTypes(Class<?> target) {
+		assertThat(Primitives.tryParseAs(target, "42")).isEmpty();
 	}
 
 	@Test
@@ -100,31 +118,35 @@ class PrimitivesTest {
 		assertThat(Primitives.wrap(int.class)).isEqualTo(Integer.class);
 	}
 
-	@Test
-	void findPrimitiveFor() {
-		assertThat(Primitives.findPrimitiveFor(Boolean.class)).isEmpty();
-		assertThat(Primitives.findPrimitiveFor(String.class)).isEmpty();
-
-		assertThat(Primitives.findPrimitiveFor(boolean.class)).hasValue(Primitives.BOOLEAN);
-		assertThat(Primitives.findPrimitiveFor(byte.class)).hasValue(Primitives.BYTE);
-		assertThat(Primitives.findPrimitiveFor(char.class)).hasValue(Primitives.CHAR);
-		assertThat(Primitives.findPrimitiveFor(double.class)).hasValue(Primitives.DOUBLE);
-		assertThat(Primitives.findPrimitiveFor(float.class)).hasValue(Primitives.FLOAT);
-		assertThat(Primitives.findPrimitiveFor(int.class)).hasValue(Primitives.INT);
-		assertThat(Primitives.findPrimitiveFor(long.class)).hasValue(Primitives.LONG);
-		assertThat(Primitives.findPrimitiveFor(short.class)).hasValue(Primitives.SHORT);
+	@ParameterizedTest
+	@ValueSource(classes = { Boolean.class, String.class })
+	void noPrimitiveForNonPrimitives(Class<?> clazz) {
+		assertThat(Primitives.findPrimitiveFor(clazz)).isEmpty();
 	}
 
-	@Test
-	void defaults() {
-		assertThat(Primitives.BOOLEAN.defaultValue()).isEqualTo(false);
-		assertThat(Primitives.BYTE.defaultValue()).isEqualTo((byte) 0);
-		assertThat(Primitives.CHAR.defaultValue()).isEqualTo((char) 0);
-		assertThat(Primitives.DOUBLE.defaultValue()).isEqualTo((double) 0);
-		assertThat(Primitives.FLOAT.defaultValue()).isEqualTo((float) 0);
-		assertThat(Primitives.INT.defaultValue()).isEqualTo((int) 0);
-		assertThat(Primitives.LONG.defaultValue()).isEqualTo((long) 0);
-		assertThat(Primitives.SHORT.defaultValue()).isEqualTo((short) 0);
+	@ParameterizedTest
+	@MethodSource("primitives")
+	void findPrimitiveFor(Primitives value, Object __, Class<?> type) {
+		assertThat(Primitives.findPrimitiveFor(type)).hasValue(value);
+	}
+
+	@ParameterizedTest
+	@MethodSource("primitives")
+	void defaults(Primitives value, Object defaultValue, Class<?> __) {
+		assertThat(value.defaultValue()).isEqualTo(defaultValue);
+	}
+
+	static Stream<Arguments> primitives() {
+		return Stream.of( //
+				arguments(Primitives.BOOLEAN, false, boolean.class), //
+				arguments(Primitives.BYTE, (byte) 0, byte.class), //
+				arguments(Primitives.CHAR, (char) 0, char.class), //
+				arguments(Primitives.DOUBLE, (double) 0, double.class), //
+				arguments(Primitives.FLOAT, (float) 0, float.class), //
+				arguments(Primitives.INT, (int) 0, int.class), //
+				arguments(Primitives.LONG, (long) 0, long.class), //
+				arguments(Primitives.SHORT, (short) 0, short.class) //
+		);
 	}
 
 }

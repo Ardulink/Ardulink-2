@@ -21,14 +21,11 @@ import static java.util.Spliterator.ORDERED;
 import static java.util.Spliterators.spliteratorUnknownSize;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
-import static org.ardulink.util.Preconditions.checkArgument;
-import static org.ardulink.util.anno.LapsedWith.JDK9;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.ardulink.util.anno.LapsedWith;
+import java.util.function.Function;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -38,7 +35,6 @@ import org.ardulink.util.anno.LapsedWith;
  * [adsense]
  *
  */
-@LapsedWith(value = JDK9, module = "List#of")
 public final class Lists {
 
 	private Lists() {
@@ -58,13 +54,8 @@ public final class Lists {
 		return new ArrayList<>(asList(values));
 	}
 
-	public static <T> T rangeCheckedGet(List<T> list, int index) {
-		return rangeCheckedGet(list, index, "index");
-	}
-
-	public static <T> T rangeCheckedGet(List<T> list, int index, String name) {
-		checkArgument(index >= 0 && index < list.size(), "%s out of range %d >= %d < %d", name, 0, index, list.size());
-		return list.get(index);
+	public static <T, R> List<R> mapList(List<T> values, Function<T, R> mapper) {
+		return values.stream().map(mapper).collect(toList());
 	}
 
 }

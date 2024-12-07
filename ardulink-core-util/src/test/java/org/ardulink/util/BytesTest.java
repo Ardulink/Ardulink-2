@@ -16,7 +16,7 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import org.junit.jupiter.api.Test;
 
@@ -63,8 +63,10 @@ class BytesTest {
 	}
 
 	private void areEqual(byte[] bytes1, byte[] bytes2, int len, boolean expected) {
-		assertThat(Bytes.equals(bytes1, bytes2, len)).isEqualTo(expected);
-		assertThat(Bytes.equals(bytes2, bytes1, len)).isEqualTo(expected);
+		assertSoftly(s -> {
+			s.assertThat(Bytes.equals(bytes1, bytes2, len)).isEqualTo(expected);
+			s.assertThat(Bytes.equals(bytes2, bytes1, len)).isEqualTo(expected);
+		});
 	}
 
 }

@@ -25,7 +25,6 @@ import javax.swing.ComboBoxModel;
  * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
- *
  */
 public class IntMinMaxModel extends AbstractListModel<Integer> implements
 		ComboBoxModel<Integer> {
@@ -49,12 +48,16 @@ public class IntMinMaxModel extends AbstractListModel<Integer> implements
 
 	@Override
 	public Integer getElementAt(int index) {
-		return Integer.valueOf(index + this.low);
+		return index + this.low;
 	}
 
 	@Override
 	public void setSelectedItem(Object selectedItem) {
-		this.selectedItem = (Integer) selectedItem;
+		setSelectedItem((Integer) selectedItem);
+	}
+
+	public void setSelectedItem(Integer value) {
+		this.selectedItem = value;
 		fireContentsChanged(this, -1, -1);
 	}
 
@@ -64,7 +67,7 @@ public class IntMinMaxModel extends AbstractListModel<Integer> implements
 	}
 
 	public IntMinMaxModel withSelectedItem(int selectedItem) {
-		setSelectedItem(Integer.valueOf(selectedItem));
+		setSelectedItem(selectedItem);
 		return this;
 	}
 
@@ -81,7 +84,7 @@ public class IntMinMaxModel extends AbstractListModel<Integer> implements
 	private void selectIndex(int index) {
 		int size = getSize();
 		if (size != 0 && index >= 0 && index < size) {
-			withSelectedItem(getElementAt(index));
+			setSelectedItem(getElementAt(index));
 		}
 	}
 

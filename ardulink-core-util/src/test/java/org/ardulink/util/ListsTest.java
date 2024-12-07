@@ -17,11 +17,12 @@ limitations under the License.
 package org.ardulink.util;
 
 import static java.util.Arrays.asList;
-import static org.ardulink.util.Lists.rangeCheckedGet;
+import static org.ardulink.util.Lists.mapList;
+import static org.ardulink.util.Maps.entry;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -50,20 +51,16 @@ class ListsTest {
 		verifyIsMutable(Lists.newArrayList("a", "b", "c"));
 	}
 
+	@Test
+	void testMapList() {
+		assertThat(mapList(asList(entry(1, "A"), entry(3, "C"), entry(2, "B")), Map.Entry::getKey)) //
+				.containsExactly(1, 3, 2);
+	}
+
 	private static void verifyIsMutable(List<String> list) {
 		list.add("d");
 		list.remove("d");
 		list.clear();
-	}
-
-	@Test
-	void testRangeCheckedGet() {
-		List<String> listWithSize3 = asList("a", "b", "c");
-		assertThat(Lists.rangeCheckedGet(listWithSize3, 2)).isEqualTo("c");
-		assertThatRuntimeException().isThrownBy(() -> rangeCheckedGet(listWithSize3, 3))
-				.withMessage("index out of range 0 >= 3 < 3");
-		assertThatRuntimeException().isThrownBy(() -> rangeCheckedGet(listWithSize3, 3, "theAttributeName"))
-				.withMessage("theAttributeName out of range 0 >= 3 < 3");
 	}
 
 }

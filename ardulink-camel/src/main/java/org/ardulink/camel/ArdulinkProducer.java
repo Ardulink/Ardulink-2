@@ -36,7 +36,7 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceChangeListeningState;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2.ALPByteStreamProcessor;
+import org.ardulink.core.proto.ardulink.ArdulinkProtocol2.ALPByteStreamProcessor;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -213,9 +213,9 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 		try {
 			executable.execute();
 			return listener;
-		} catch (Throwable t) {
-			propagateIfInstanceOf(t, Exception.class);
-			throw propagate(t);
+		} catch (Throwable throwable) {
+			propagateIfInstanceOf(throwable, Exception.class);
+			throw propagate(throwable);
 		} finally {
 			this.connection.removeListener(listener);
 		}

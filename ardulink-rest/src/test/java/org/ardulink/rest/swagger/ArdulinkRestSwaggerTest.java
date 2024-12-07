@@ -16,15 +16,19 @@ limitations under the License.
 
 package org.ardulink.rest.swagger;
 
+import static org.ardulink.util.Preconditions.checkArgument;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static java.awt.GraphicsEnvironment.isHeadless;
 import static java.lang.Boolean.parseBoolean;
+import static java.lang.Integer.parseInt;
+import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.mockito.Mockito.timeout;
@@ -39,12 +43,14 @@ import org.ardulink.rest.main.RestMain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.microsoft.playwright.Browser;
-import com.microsoft.playwright.BrowserContext;
-import com.microsoft.playwright.BrowserType;
+import com.microsoft.playwright.Browser.NewContextOptions;
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.junit.Options;
+import com.microsoft.playwright.junit.OptionsFactory;
+import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
+import com.microsoft.playwright.options.RecordVideoSize;
 
 import io.restassured.RestAssured;
 
@@ -56,6 +62,7 @@ import io.restassured.RestAssured;
  * [adsense]
  *
  */
+@UsePlaywright(ArdulinkRestSwaggerTest.CustomOptions.class)
 class ArdulinkRestSwaggerTest {
 
 	private static final long TIMEOUT = SECONDS.toMillis(5);
@@ -79,73 +86,42 @@ class ArdulinkRestSwaggerTest {
 	}
 
 	@Test
-	void canAccesApiUi_GotoApiDocs() throws Exception {
+	void canAccesApiUi_GotoApiDocs(Page page) throws Exception {
 		try (RestMain main = runRestComponent()) {
-			try (Playwright playwright = Playwright.create()) {
-				Browser browser = browser(playwright.chromium());
-				BrowserContext context = browserContext(browser);
-
-				Page page = context.newPage();
-
-				page.navigate("http://localhost:" + RestAssured.port + "/api-browser");
-
-				Page page1 = page.waitForPopup(() -> {
-					page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("/api-docs")).click();
-				});
-			}
+			page.navigate(format("http://localhost:%d/api-browser", RestAssured.port));
+			page.waitForPopup(page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("/api-docs"))::click);
 		}
 	}
 
 	@Test
-	void canAccesApiUi_ExecPutRequestViaApiBrowser() throws Exception {
+	void canAccesApiUi_ExecPutRequestViaApiBrowser(Page page) throws Exception {
 		int pin = 13;
 		int value = 42;
 		try (RestMain main = runRestComponent()) {
-			try (Playwright playwright = Playwright.create()) {
-				Browser browser = browser(playwright.chromium());
-				BrowserContext context = browserContext(browser);
+			page.navigate(format("http://localhost:%d/api-browser", RestAssured.port));
+			page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("PUT /pin/analog/{pin}").setExact(true))
+					.click();
+			page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Try it out")).click();
 
-				Page page = context.newPage();
+			Locator pinLocator = page.getByPlaceholder("pin");
+			pinLocator.click();
+			pinLocator.fill(String.valueOf(pin));
 
-				page.navigate("http://localhost:" + RestAssured.port + "/api-browser");
-			    page.getByText("PUT/pin/analog/{pin}").click();
+			Locator editValueLocator = page.getByLabel("Edit Value").getByText("string");
+			editValueLocator.click();
+			editValueLocator.press("ControlOrMeta+a");
+			editValueLocator.fill(String.valueOf(value));
+			page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Execute")).click();
 
-				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Try it out")).click();
-				page.getByPlaceholder("pin").click();
-				page.getByPlaceholder("pin").fill(String.valueOf(pin));
-				page.locator("textarea:has-text(\"string\")").click();
-				page.locator("textarea:has-text(\"string\")").press("Control+a");
-				page.locator("textarea:has-text(\"string\")").fill(String.valueOf(value));
-				page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Execute")).click();
-
-				try (Link mock = getMock(Links.getLink(MOCK_URI))) {
-					verify(mock, timeout(TIMEOUT)).switchAnalogPin(analogPin(pin), value);
-				}
-
-				page.close();
-				context.close();
-				browser.close();
+			try (Link mock = getMock(Links.getLink(MOCK_URI))) {
+				verify(mock, timeout(TIMEOUT)).switchAnalogPin(analogPin(pin), value);
 			}
+
+			// do a click into the result field (for the video)
+			page.getByRole(AriaRole.CELL, new Page.GetByRoleOptions().setName("200")).first().click();
+			page.locator("pre")
+					.filter(new Locator.FilterOptions().setHasText(format("alp://ared/%d/%d=OK", pin, value))).click();
 		}
-	}
-
-	private static Browser browser(BrowserType browserType) {
-		return browserType.launch(new BrowserType.LaunchOptions().setHeadless(!showBrowser()));
-	}
-
-	private static boolean showBrowser() {
-		return !isHeadless() && parseBoolean(System.getProperty(SYS_PROP_PREFIX + "playwright.showbrowser"));
-	}
-
-	private static boolean doVideo() {
-		return parseBoolean(System.getProperty(SYS_PROP_PREFIX + "playwright.video"));
-	}
-
-	private static BrowserContext browserContext(Browser browser) {
-		Browser.NewContextOptions newContextOptions = new Browser.NewContextOptions();
-		return browser.newContext(
-				doVideo() ? newContextOptions.setRecordVideoDir(Paths.get("videos/")).setRecordVideoSize(1024, 800)
-						: newContextOptions);
 	}
 
 	private RestMain runRestComponent() throws Exception {
@@ -155,4 +131,35 @@ class ArdulinkRestSwaggerTest {
 		return new RestMain(args);
 	}
 
+	public static class CustomOptions implements OptionsFactory {
+
+		@Override
+		public Options getOptions() {
+			return options();
+		}
+
+		private Options options() {
+			Options options = new Options().setHeadless(headless());
+			String videoPath = System.getProperty(SYS_PROP_PREFIX + "playwright.video.path");
+			return nullOrEmpty(videoPath) //
+					? options //
+					: options.setContextOptions(new NewContextOptions().setRecordVideoDir(Paths.get(videoPath))
+							.setRecordVideoSize(recordVideoSize()));
+		}
+
+		private RecordVideoSize recordVideoSize() {
+			String videoSize = System.getProperty(SYS_PROP_PREFIX + "playwright.video.size");
+			if (nullOrEmpty(videoSize)) {
+				return new RecordVideoSize(1024, 800);
+			}
+			String[] values = videoSize.split("[ ,x*]");
+			checkArgument(values.length == 2, "Cannot split %s into two parts (got %s)", videoSize, values.length);
+			return new RecordVideoSize(parseInt(values[0]), parseInt(values[1]));
+		}
+
+		private boolean headless() {
+			return isHeadless() || !parseBoolean(System.getProperty(SYS_PROP_PREFIX + "playwright.showbrowser"));
+		}
+
+	}
 }

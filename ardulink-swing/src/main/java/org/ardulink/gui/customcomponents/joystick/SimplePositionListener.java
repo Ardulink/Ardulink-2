@@ -32,7 +32,8 @@ import org.ardulink.gui.event.PositionListener;
 
 /**
  * [ardulinktitle] [ardulinkversion]
-* project Ardulink http://www.ardulink.org/
+ * 
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  */

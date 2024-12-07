@@ -19,8 +19,10 @@ package org.ardulink.util;
 import static org.ardulink.util.Numbers.convertTo;
 import static org.ardulink.util.Numbers.numberType;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
-import org.assertj.core.api.AutoCloseableSoftAssertions;
+import java.util.Map;
+
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -68,14 +70,14 @@ class NumbersTest {
 	}
 
 	private void convert(Number value) {
-		try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-			softly.assertThat(convertTo(value, Integer.class)).isEqualTo(value.intValue());
-			softly.assertThat(convertTo(value, Byte.class)).isEqualTo(value.byteValue());
-			softly.assertThat(convertTo(value, Short.class)).isEqualTo(value.shortValue());
-			softly.assertThat(convertTo(value, Long.class)).isEqualTo(value.longValue());
-			softly.assertThat(convertTo(value, Float.class)).isEqualTo(value.floatValue());
-			softly.assertThat(convertTo(value, Double.class)).isEqualTo(value.doubleValue());
-		}
+		assertSoftly(s -> {
+			s.assertThat(convertTo(value, Integer.class)).isEqualTo(value.intValue());
+			s.assertThat(convertTo(value, Byte.class)).isEqualTo(value.byteValue());
+			s.assertThat(convertTo(value, Short.class)).isEqualTo(value.shortValue());
+			s.assertThat(convertTo(value, Long.class)).isEqualTo(value.longValue());
+			s.assertThat(convertTo(value, Float.class)).isEqualTo(value.floatValue());
+			s.assertThat(convertTo(value, Double.class)).isEqualTo(value.doubleValue());
+		});
 	}
 
 	@ParameterizedTest
@@ -93,25 +95,25 @@ class NumbersTest {
 	}
 
 	static Object minValue(Class<Number> type) {
-		return MapBuilder.newMapBuilder() //
-				.put(Integer.class, Integer.MIN_VALUE) //
-				.put(Byte.class, Byte.MIN_VALUE) //
-				.put(Short.class, Short.MIN_VALUE) //
-				.put(Long.class, Long.MIN_VALUE) //
-				.put(Float.class, Float.MIN_VALUE) //
-				.put(Double.class, Double.MIN_VALUE) //
-				.build().get(type);
+		return Map.of( //
+				Integer.class, Integer.MIN_VALUE, //
+				Byte.class, Byte.MIN_VALUE, //
+				Short.class, Short.MIN_VALUE, //
+				Long.class, Long.MIN_VALUE, //
+				Float.class, Float.MIN_VALUE, //
+				Double.class, Double.MIN_VALUE) //
+				.get(type);
 	}
 
 	static Object maxValue(Class<Number> type) {
-		return MapBuilder.newMapBuilder() //
-				.put(Integer.class, Integer.MAX_VALUE) //
-				.put(Byte.class, Byte.MAX_VALUE) //
-				.put(Short.class, Short.MAX_VALUE) //
-				.put(Long.class, Long.MAX_VALUE) //
-				.put(Float.class, Float.MAX_VALUE) //
-				.put(Double.class, Double.MAX_VALUE) //
-				.build().get(type);
+		return Map.of( //
+				Integer.class, Integer.MAX_VALUE, //
+				Byte.class, Byte.MAX_VALUE, //
+				Short.class, Short.MAX_VALUE, //
+				Long.class, Long.MAX_VALUE, //
+				Float.class, Float.MAX_VALUE, //
+				Double.class, Double.MAX_VALUE) //
+				.get(type);
 	}
 
 }

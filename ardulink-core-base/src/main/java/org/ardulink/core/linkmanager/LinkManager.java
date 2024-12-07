@@ -20,12 +20,14 @@ import static java.lang.String.format;
 import static java.net.URI.create;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
-import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.function.Predicate.isEqual;
+import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toList;
-import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
+import static java.util.stream.Collectors.toUnmodifiableMap;
+import static org.ardulink.core.beans.finder.api.AttributeFinder.propertyAnnotated;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
+import static org.ardulink.util.Maps.entry;
 import static org.ardulink.util.Numbers.convertTo;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
@@ -33,7 +35,6 @@ import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Predicates.attribute;
 import static org.ardulink.util.Primitives.findPrimitiveFor;
 import static org.ardulink.util.Primitives.wrap;
-import static org.ardulink.util.ServiceLoaders.services;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK14;
@@ -42,13 +43,16 @@ import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -271,6 +275,7 @@ public abstract class LinkManager {
 
 	}
 
+	@LapsedWith(value = JDK14, module = "records") // but we have to name the getters according the interface
 	private static final class HardCodedValues implements AttributeReader {
 
 		private final String name;
@@ -294,7 +299,7 @@ public abstract class LinkManager {
 		}
 
 		@Override
-		public Object getValue() throws Exception {
+		public Object getValue() {
 			return value;
 		}
 
@@ -315,7 +320,7 @@ public abstract class LinkManager {
 				checkArgument(attribute != null, "Could not determine attribute %s. Available attributes are %s", key,
 						beanProperties.attributeNames());
 				this.getChoicesFor = choicesFor(linkConfig);
-				this.dependsOn = this.getChoicesFor == null ? emptyList() : resolveDeps(this.getChoicesFor);
+				this.dependsOn = resolveDeps(this.getChoicesFor);
 				Class<?> linkConfigClass = linkConfig.getClass();
 				I18n nls = linkConfigClass.getAnnotation(I18n.class);
 				this.nls = nls == null ? null : resourceBundle(linkConfigClass, nls);
@@ -349,9 +354,12 @@ public abstract class LinkManager {
 			}
 
 			private List<ConfigAttribute> resolveDeps(Attribute choiceFor) {
-				ChoiceFor cfa = choiceFor.getAnnotation(ChoiceFor.class);
-				return cfa == null ? emptyList()
-						: stream(cfa.dependsOn()).map(name -> getAttribute(name)).collect(toList());
+				return Optional.ofNullable(choiceFor) //
+						.map(c -> c.getAnnotation(ChoiceFor.class)) //
+						.map(c -> stream(c.dependsOn())) //
+						.orElse(Stream.empty()) //
+						.map(n -> getAttribute(n)) //
+						.collect(toList());
 			}
 
 			@Override
@@ -468,13 +476,9 @@ public abstract class LinkManager {
 
 			public CacheKey() throws Exception {
 				this.factoryType = DefaultConfigurer.this.linkFactory.getClass();
-				this.values = Collections.unmodifiableMap(extractData());
-			}
-
-			private Map<String, Object> extractData() {
-				// values can be null, https://bugs.openjdk.java.net/browse/JDK-8148463
-				return DefaultConfigurer.this.getAttributes().stream().collect(HashMap::new,
-						(m, v) -> m.put(v, getAttribute(v).getValue()), HashMap::putAll);
+				this.values = getAttributes().stream().map(k -> entry(k, getAttribute(k).getValue())) //
+						.filter(attribute(Entry::getValue, Objects::nonNull)) //
+						.collect(toUnmodifiableMap(Entry::getKey, Entry::getValue));
 			}
 
 			@Override
@@ -503,7 +507,7 @@ public abstract class LinkManager {
 				} else if (!factoryType.equals(other.factoryType)) {
 					return false;
 				}
-				return values == null ? other.values == null : values.equals(other.values);
+				return Objects.equals(values, other.values);
 			}
 
 			@Override
@@ -524,7 +528,7 @@ public abstract class LinkManager {
 
 		@Override
 		public Collection<String> getAttributes() {
-			return beanProperties.attributeNames();
+			return beanProperties.attributeNames().stream().filter(not(linkConfig::isDisabled)).collect(toList());
 		}
 
 		@Override
@@ -591,8 +595,10 @@ public abstract class LinkManager {
 		}
 
 		private Stream<LinkFactory> getLinkFactories() {
-			return services(LinkFactoriesProvider.class, moduleClassloader())
-					.map(LinkFactoriesProvider::loadLinkFactories).flatMap(Collection::stream)
+			return ServiceLoader.load(LinkFactoriesProvider.class, moduleClassloader()).stream() //
+					.map(Provider::get) //
+					.map(LinkFactoriesProvider::loadLinkFactories) //
+					.flatMap(Collection::stream) //
 					.filter(LinkFactory::isActive);
 		}
 

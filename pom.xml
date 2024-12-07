@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.ardulink</groupId>
 	<artifactId>parent</artifactId>
-	<version>2.1.2-SNAPSHOT</version>
+	<version>2.2.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<url>http://www.ardulink.org</url>
 
@@ -54,24 +54,26 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<compilerVersion>8</compilerVersion>
+		<compilerVersion>11</compilerVersion>
 		<maven.compiler.source>${compilerVersion}</maven.compiler.source>
 		<maven.compiler.target>${compilerVersion}</maven.compiler.target>
 		<!--
     	<maven.compiler.release>${compilerVersion}</maven.compiler.release>
 		-->
 		<args4j.version>2.37</args4j.version>
-		<slf4j.version>2.0.12</slf4j.version>
-		<junit.version>5.10.2</junit.version>
-		<assertj.version>3.25.3</assertj.version>
+		<slf4j.version>2.0.16</slf4j.version>
+		<junit.version>5.11.3</junit.version>
+		<assertj.version>3.26.3</assertj.version>
 		<mockito.version>4.11.0</mockito.version>
-		<jqwik.version>1.8.3</jqwik.version>
-		<awaitility.version>4.2.0</awaitility.version>
+		<jqwik.version>1.9.2</jqwik.version>
+		<awaitility.version>4.2.2</awaitility.version>
 		<junit-pioneer.version>1.9.1</junit-pioneer.version>
-		<equalsverifier.version>3.15.8</equalsverifier.version>
+		<equalsverifier.version>3.17.4</equalsverifier.version>
 		<!-- The next LTS release Camel 3.14, scheduled for December 2021, will be the last release to support Java 8 -->
 		<!-- https://camel.apache.org/blog/2021/09/eol-java8/ -->
-		<camel.version>3.14.0</camel.version>
+		<!-- camel3 is the last version that supports java 11, camel4 needs java 17 -->
+		<camel.version>3.22.2</camel.version>
+
 		<!-- default image name for JIB -->
 		<image>docker.io/ardulink/${project.artifactId}:${project.version}</image>
 	</properties>
@@ -79,16 +81,17 @@
 	<modules>
 		<module>ardulink-core-util</module>
 		<module>ardulink-core-base</module>
-		<module>ardulink-core-virtual</module>
-		<module>ardulink-core-nodemcu</module>
-		<module>ardulink-core-serial-rxtx</module>
-		<module>ardulink-core-serial-jssc</module>
-		<module>ardulink-core-bluetooth</module>
-		<module>ardulink-core-digispark</module>
-		<module>ardulink-core-raspberry</module>
 		<module>ardulink-core-beans</module>
-		<module>ardulink-core-proxy</module>
-		<module>ardulink-core-mqtt</module>
+		<module>ardulink-link-virtual</module>
+		<module>ardulink-link-nodemcu</module>
+		<module>ardulink-link-serial-rxtx</module>
+		<module>ardulink-link-serial-jssc</module>
+		<module>ardulink-link-serial-jserialcomm</module>
+		<module>ardulink-link-bluetooth</module>
+		<module>ardulink-link-digispark</module>
+		<module>ardulink-link-raspberry</module>
+		<module>ardulink-link-proxy</module>
+		<module>ardulink-link-mqtt</module>
 		<module>ardulink-legacy</module>
 		<module>ardulink-camel</module>
 		<module>ardulink-networkproxyserver</module>
@@ -106,19 +109,25 @@
 			<plugins>
 				<plugin>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.12.1</version>
+					<version>3.13.0</version>
+                                        <configuration>
+                                                <compilerArgs>
+                                                        <arg>-Xlint:deprecation</arg>
+                                                        <arg>-Xlint:unchecked</arg>
+                                                </compilerArgs>
+                                        </configuration>
 				</plugin>
 				<plugin>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>3.4.2</version>
 				</plugin>
 				<plugin>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.2.5</version>
+					<version>3.5.2</version>
 				</plugin>
 				<plugin>
 					<artifactId>maven-assembly-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>3.7.1</version>
 					<configuration>
 						<descriptors>
 							<descriptor>assembly.xml</descriptor>
@@ -128,7 +137,7 @@
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.8.11</version>
+					<version>0.8.12</version>
 					<executions>
 						<execution>
 							<goals>
@@ -191,7 +200,7 @@
 			<plugin>
 				<groupId>com.google.cloud.tools</groupId>
 				<artifactId>jib-maven-plugin</artifactId>
-				<version>3.4.1</version>
+				<version>3.4.4</version>
 				<configuration>
 					<skip>true</skip>
 				</configuration>
@@ -201,12 +210,18 @@
 
 	<profiles>
 		<profile>
+			<id>with-video</id>
+			<properties>
+				<argLine>-Dardulink.test.playwright.video.path=target/videos</argLine>
+			</properties>
+		</profile>
+		<profile>
 			<id>makerelease</id>
 			<build>
 				<plugins>
 					<plugin>
 						<artifactId>maven-source-plugin</artifactId>
-						<version>3.3.0</version>
+						<version>3.3.1</version>
 						<executions>
 							<execution>
 								<id>attach-sources</id>
@@ -218,7 +233,7 @@
 					</plugin>
 					<plugin>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.6.3</version>
+						<version>3.11.1</version>
 						<configuration>
 							<show>public</show>
 							<failOnError>false</failOnError>
@@ -246,7 +261,7 @@
 				<plugins>
 					<plugin>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>3.1.0</version>
+						<version>3.2.7</version>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>

@@ -18,6 +18,7 @@ limitations under the License.
 
 package org.ardulink.gui.customcomponents;
 
+import static org.ardulink.gui.facility.AbstractDocumentListenerAdapter.addDocumentListener;
 import static org.ardulink.util.Primitives.tryParseAs;
 
 import java.awt.BorderLayout;
@@ -29,9 +30,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import org.ardulink.gui.Linkable;
+import org.ardulink.gui.facility.AbstractDocumentListenerAdapter;
 import org.ardulink.legacy.Link;
 
 /**
@@ -40,7 +41,6 @@ import org.ardulink.legacy.Link;
  * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
- *
  */
 public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 
@@ -92,23 +92,9 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 		columnsTextField.setBounds(90, 60, 80, 28);
 		configPanel.add(columnsTextField);
 		columnsTextField.setColumns(10);
-		columnsTextField.getDocument().addDocumentListener(new DocumentListener() {
+		columnsTextField.getDocument().addDocumentListener(new AbstractDocumentListenerAdapter() {
 			@Override
-			public void removeUpdate(DocumentEvent e) {
-				updateColumns();
-			}
-
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				updateColumns();
-			}
-
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				updateColumns();
-			}
-
-			private void updateColumns() {
+			protected void updated(DocumentEvent documentEvent) {
 				tryParseAs(Integer.class, columnsTextField.getText()).ifPresent(v -> {
 					signalButton.setValueOnColumns(v);
 					signalButton.setValueOffColumns(v);
@@ -131,52 +117,14 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 		buttonOnTextField.setColumns(10);
 		buttonOnTextField.setBounds(90, 96, 80, 28);
 		configPanel.add(buttonOnTextField);
-		buttonOnTextField.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				updateButtonLabel();
-			}
-
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				updateButtonLabel();
-			}
-
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				updateButtonLabel();
-			}
-
-			private void updateButtonLabel() {
-				signalButton.setButtonTextOn(buttonOnTextField.getText());
-			}
-		});
+		addDocumentListener(buttonOnTextField, __ -> signalButton.setButtonTextOn(buttonOnTextField.getText()));
 
 		buttonOffTextField = new JTextField();
 		buttonOffTextField.setText("Send");
 		buttonOffTextField.setColumns(10);
 		buttonOffTextField.setBounds(90, 132, 80, 28);
 		configPanel.add(buttonOffTextField);
-		buttonOffTextField.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				updateButtonLabel();
-			}
-
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				updateButtonLabel();
-			}
-
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				updateButtonLabel();
-			}
-
-			private void updateButtonLabel() {
-				signalButton.setButtonTextOff(buttonOffTextField.getText());
-			}
-		});
+		addDocumentListener(buttonOffTextField, __ -> signalButton.setButtonTextOff(buttonOffTextField.getText()));
 
 		JLabel lblId = new JLabel("Id:");
 		lblId.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -188,26 +136,7 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 		idTextField.setColumns(10);
 		idTextField.setBounds(90, 168, 80, 28);
 		configPanel.add(idTextField);
-		idTextField.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				updateId();
-			}
-
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				updateId();
-			}
-
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				updateId();
-			}
-
-			private void updateId() {
-				signalButton.setId(idTextField.getText());
-			}
-		});
+		addDocumentListener(idTextField, __ -> signalButton.setId(idTextField.getText()));
 
 		signalButton.setValueOnColumns(Integer.parseInt(columnsTextField.getText()));
 		signalButton.setButtonTextOn(buttonOnTextField.getText());

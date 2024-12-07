@@ -17,12 +17,13 @@ package org.ardulink.gui.connectionpanel;
 
 import static java.awt.Color.RED;
 import static java.awt.event.ItemEvent.SELECTED;
+import static java.lang.String.format;
 import static java.net.URI.create;
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Stream.concat;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.gui.connectionpanel.GridBagConstraintsBuilder.constraints;
-import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Throwables.getRootCause;
 import static org.ardulink.util.Throwables.propagate;
 
@@ -31,8 +32,10 @@ import java.awt.GridBagLayout;
 import java.awt.Window;
 import java.net.URI;
 import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -49,8 +52,6 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.gui.Linkable;
 import org.ardulink.gui.facility.UtilityGeometry;
 import org.ardulink.legacy.Link;
-import org.ardulink.util.Lists;
-import org.ardulink.util.URIs;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -81,16 +82,15 @@ public class ConnectionPanel extends JPanel implements Linkable {
 			private static final long serialVersionUID = 2756587449741341859L;
 
 			@Override
-			public Component getListCellRendererComponent(JList list,
-					Object value, int index, boolean isSelected,
+			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
-				return value == null ? null : super.getListCellRendererComponent(list,
-						extractNameFromURI(create((String) value)), index,
-						isSelected, cellHasFocus);
+				return value == null ? null
+						: super.getListCellRendererComponent(list, extractNameFromURI(create((String) value)), index,
+								isSelected, cellHasFocus);
 			}
 		});
-		uris.addItemListener(event -> {
-			if (event.getStateChange() == SELECTED) {
+		uris.addItemListener(e -> {
+			if (e.getStateChange() == SELECTED) {
 				replaceSubpanel();
 			}
 		});
@@ -105,17 +105,14 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		add(new JLabel("Type"), constraints(0, 0).build());
 		add(uris, constraints(0, 1).fillHorizontal().build());
 		add(refreshButton(), constraints(0, 2).build());
-
-		LinkManager linkManager = LinkManager.getInstance();
-		for (URI uri : linkManager.listURIs()) {
-			uris.addItem(uri.toASCIIString());
-		}
-
+		LinkManager.getInstance().listURIs().stream() //
+				.map(URI::toASCIIString) //
+				.forEach(u -> uris.addItem(u));
 	}
 
 	private Component refreshButton() {
 		JButton refreshButton = new JButton("refresh");
-		refreshButton.addActionListener(e -> {
+		refreshButton.addActionListener(__ -> {
 			if (uris.getItemCount() > 0) {
 				replaceSubpanel();
 			}
@@ -125,9 +122,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 
 	private void replaceSubpanel() {
 		Component windowAncestor = SwingUtilities.getRoot(this);
-		WaitDialog waitDialog = new WaitDialog(
-				windowAncestor instanceof Window ? (Window) windowAncestor
-						: null);
+		WaitDialog waitDialog = new WaitDialog(windowAncestor instanceof Window ? (Window) windowAncestor : null);
 		UtilityGeometry.setAlignmentCentered(waitDialog);
 
 		new SwingWorker<JPanel, Void>() {
@@ -141,8 +136,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 				} catch (ExecutionException e) {
 					errorPanel(e);
 				} finally {
-					add(ConnectionPanel.this.panel, constraints(1, 0)
-							.gridwidth(3).fillBoth().build());
+					add(ConnectionPanel.this.panel, constraints(1, 0).gridwidth(3).fillBoth().build());
 					synchronized (this) {
 						waitDialog.dispose();
 					}
@@ -153,8 +147,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 				JPanel newPanel = new JPanel();
 				newPanel.setBackground(RED);
 				Throwable rootCause = getRootCause(e);
-				newPanel.add(new JLabel(rootCause.getClass().getName() + ": "
-						+ rootCause.getMessage()));
+				newPanel.add(new JLabel(rootCause.getClass().getName() + ": " + rootCause.getMessage()));
 				exchangePanel(newPanel);
 				throw propagate(e);
 			}
@@ -164,8 +157,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 					remove(ConnectionPanel.this.panel);
 				}
 				ConnectionPanel.this.panel = newPanel;
-				add(ConnectionPanel.this.panel, constraints(1, 0).fillBoth()
-						.build());
+				add(ConnectionPanel.this.panel, constraints(1, 0).fillBoth().build());
 				revalidate();
 			}
 
@@ -175,19 +167,18 @@ public class ConnectionPanel extends JPanel implements Linkable {
 				return createSubpanel();
 			}
 
-			private void displayIn(WaitDialog waitDialog,
-								   int timeout, TimeUnit tu) {
-				newCachedThreadPool().execute(()->{
-						try {
-							tu.sleep(timeout);
-							synchronized (this) {
-								if (!isDone()) {
-									waitDialog.setVisible(true);
-								}
+			private void displayIn(WaitDialog waitDialog, int timeout, TimeUnit tu) {
+				newCachedThreadPool().execute(() -> {
+					try {
+						tu.sleep(timeout);
+						synchronized (this) {
+							if (!isDone()) {
+								waitDialog.setVisible(true);
 							}
-						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt();
 						}
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
 				});
 			}
 
@@ -196,8 +187,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 
 	private JPanel createSubpanel() {
 		URI uri = create(String.valueOf(uris.getSelectedItem()));
-		JPanel subpanel = findPanelBuilder(uri).createPanel(
-				configurer = LinkManager.getInstance().getConfigurer(uri));
+		JPanel subpanel = findPanelBuilder(uri).createPanel(configurer = LinkManager.getInstance().getConfigurer(uri));
 		subpanel.setBorder(BorderFactory.createLoweredBevelBorder());
 		return subpanel;
 	}
@@ -207,19 +197,15 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		// an own module (e.g. ardulink-ui-support) so ardulink-console would
 		// depend on ardulink-ui-support and the module providing a specific
 		// PanelBuilder would depend on ardulink-ui-support, too.
-		for (PanelBuilder panelBuilder : Lists.newArrayList(ServiceLoader.load(
-				PanelBuilder.class).iterator())) {
-			if (panelBuilder.canHandle(uri)) {
-				return panelBuilder;
-			}
-		}
-		checkState(fallback.canHandle(uri), "No PanelBuilder found for %s", uri);
-		return fallback;
+		return concat(ServiceLoader.load(PanelBuilder.class).stream() //
+				.map(Provider::get), Stream.of(fallback)) //
+				.filter(b -> b.canHandle(uri)) //
+				.findFirst() //
+				.orElseThrow(() -> new IllegalStateException(format("No PanelBuilder found for %s", uri)));
 	}
 
 	public Link createLink() {
-		return this.configurer == null ? null : legacyAdapt(this.configurer
-				.newLink());
+		return this.configurer == null ? null : legacyAdapt(this.configurer.newLink());
 	}
 
 	private Link legacyAdapt(org.ardulink.core.Link link) {

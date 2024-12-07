@@ -35,6 +35,10 @@ class ListMultiMapTest {
 
 	ListMultiMap<Integer, String> sut = new ListMultiMap<>();
 
+	private static final int key = 1;
+	private static final String element1 = "foo";
+	private static final String element2 = "bar";
+
 	@Test
 	void iteratorOnEmpty() {
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();
@@ -43,25 +47,25 @@ class ListMultiMapTest {
 
 	@Test
 	void iteratorOnSingleElement() {
-		sut.put(1, "foo");
+		assertThat(sut.put(key, element1)).isTrue();
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();
 		Entry<Integer, String> next = iterator.next();
-		assertThat(next.getKey()).isEqualTo(1);
-		assertThat(next.getValue()).isEqualTo("foo");
+		assertThat(next.getKey()).isEqualTo(key);
+		assertThat(next.getValue()).isEqualTo(element1);
 		assertThat(iterator).isExhausted();
 	}
 
 	@Test
 	void iteratorOnCollisionElement() {
-		sut.put(1, "foo");
-		sut.put(1, "bar");
+		assertThat(sut.put(key, element1)).isTrue();
+		assertThat(sut.put(key, element2)).isTrue();
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();
 		Entry<Integer, String> next = iterator.next();
-		assertThat(next.getKey()).isEqualTo(1);
-		assertThat(next.getValue()).isEqualTo("foo");
+		assertThat(next.getKey()).isEqualTo(key);
+		assertThat(next.getValue()).isEqualTo(element1);
 		next = iterator.next();
-		assertThat(next.getKey()).isEqualTo(1);
-		assertThat(next.getValue()).isEqualTo("bar");
+		assertThat(next.getKey()).isEqualTo(key);
+		assertThat(next.getValue()).isEqualTo(element2);
 		assertThat(iterator).isExhausted();
 	}
 

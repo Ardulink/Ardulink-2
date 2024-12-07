@@ -50,4 +50,10 @@ class StreamsTest {
 		assertThat(Streams.iterable(Stream.empty())).isEmpty();
 	}
 
+	@Test
+	void concat() {
+		assertThat(Streams.concat(Stream.of("a"), Stream.of("b"), Stream.of("c"))).containsExactly("a", "b", "c");
+		assertThat(Streams.concat()).isEmpty();
+	}
+
 }

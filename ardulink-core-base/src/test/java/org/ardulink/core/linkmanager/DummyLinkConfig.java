@@ -44,10 +44,12 @@ import javax.validation.constraints.PositiveOrZero;
 
 import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
 
 @I18n("message")
 public class DummyLinkConfig implements LinkConfig {
+	
+	public static final String XXX = "xxx";
 
 	public String a;
 
@@ -151,6 +153,7 @@ public class DummyLinkConfig implements LinkConfig {
 	public Integer i4 = 42;
 	
 	public static final ThreadLocal<String[]> choiceValuesOfD = ThreadLocal.withInitial(() -> new String[] { "---unconfigured---" });
+	public static final ThreadLocal<Boolean> doDisableXXX = ThreadLocal.withInitial(() -> Boolean.TRUE);
 
 	@Named("a")
 	public void setPort(String a) {
@@ -231,6 +234,14 @@ public class DummyLinkConfig implements LinkConfig {
 	@ChoiceFor("d")
 	public static String[] choiceValuesCanBeSetViaThreadLocalForTesting() {
 		return choiceValuesOfD.get();
+	}
+
+	@Named(XXX)
+	public String xxxDisabled;
+
+	@Override
+	public boolean isDisabled(String attributeName) {
+		return doDisableXXX.get() && XXX.equals(attributeName);
 	}
 
 }
