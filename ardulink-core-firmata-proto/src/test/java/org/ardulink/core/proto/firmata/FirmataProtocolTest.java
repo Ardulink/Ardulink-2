@@ -174,7 +174,7 @@ class FirmataProtocolTest {
 	}
 
 	@Test
-	public void canReadDigitalPinViaFirmataProto() throws IOException {
+	void canReadDigitalPinViaFirmataProto() throws IOException {
 		byte command = DIGITAL_MESSAGE;
 		byte port = 4;
 		byte valueLow = 0b0100101;

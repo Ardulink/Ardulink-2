@@ -89,7 +89,7 @@ public class FirmataProtocol implements Protocol {
 		private Mode currentMode;
 
 		// TODO visible for testing
-		public static enum Mode {
+		public enum Mode {
 			DIGITAL_INPUT, DIGITAL_OUTPUT, ANALOG_INPUT, PWM, SERVO, SHIFT, I2C, ONEWIRE, STEPPER, ENCODER, SERIAL,
 			INPUT_PULLUP,
 			// Extended modes
