@@ -60,7 +60,7 @@
 		<!--
     	<maven.compiler.release>${compilerVersion}</maven.compiler.release>
 		-->
-		<args4j.version>2.33</args4j.version>
+		<args4j.version>2.37</args4j.version>
 		<slf4j.version>2.0.16</slf4j.version>
 		<junit.version>5.11.3</junit.version>
 		<assertj.version>3.26.3</assertj.version>
@@ -71,8 +71,8 @@
 		<equalsverifier.version>3.17.4</equalsverifier.version>
 		<!-- The next LTS release Camel 3.14, scheduled for December 2021, will be the last release to support Java 8 -->
 		<!-- https://camel.apache.org/blog/2021/09/eol-java8/ -->
-		<!-- camel3 is the last version that supports java 11, camel4 needs java 17 -->^M
-		<camel.version>3.22.2</camel.version>^M
+		<!-- camel3 is the last version that supports java 11, camel4 needs java 17 -->
+		<camel.version>3.22.2</camel.version>
 
 		<!-- default image name for JIB -->
 		<image>docker.io/ardulink/${project.artifactId}:${project.version}</image>
