@@ -96,8 +96,10 @@ public class NetworkProxyServer {
 	private static final int DEFAULT_LISTENING_PORT = 4478;
 
 	@Argument(required = true, usage = "command", handler = SubCommandHandler.class)
-	@SubCommands({ @SubCommand(name = "start", impl = StartCommand.class),
-			@SubCommand(name = "stop", impl = StopCommand.class) })
+	@SubCommands({ //
+			@SubCommand(name = "start", impl = StartCommand.class), //
+			@SubCommand(name = "stop", impl = StopCommand.class) //
+	})
 	private Command command;
 
 	@Option(name = "-p", aliases = "--port", usage = "Local port to bind to")
