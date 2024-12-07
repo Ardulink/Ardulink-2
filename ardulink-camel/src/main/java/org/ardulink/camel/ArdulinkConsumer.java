@@ -1,7 +1,7 @@
 package org.ardulink.camel;
 
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 
 import java.io.IOException;
 
@@ -15,7 +15,7 @@ import org.ardulink.core.Link;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
-import org.ardulink.core.proto.impl.ALProtoBuilder;
+import org.ardulink.core.proto.ardulink.ALProtoBuilder;
 
 public class ArdulinkConsumer extends DefaultConsumer {
 

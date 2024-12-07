@@ -21,12 +21,12 @@ import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Lists.mapList;
-import static org.ardulink.util.Optionals.or;
 import static org.ardulink.util.Predicates.attribute;
-import static org.ardulink.util.ServiceLoaders.services;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -49,7 +49,10 @@ public final class Protocols {
 	 * @see #protocolNames()
 	 */
 	public static List<Protocol> protocols() {
-		return services(Protocol.class).filter(Protocol::isActive).collect(toList());
+		return ServiceLoader.load(Protocol.class) //
+				.stream().map(Provider::get) //
+				.filter(Protocol::isActive) //
+				.collect(toList());
 	}
 
 	/**
@@ -98,7 +101,7 @@ public final class Protocols {
 	 *         found
 	 */
 	public static Optional<Protocol> tryProtoByNameWithFallback(String name) {
-		return or(tryProtoByName(name), () -> getFirst(protocols()));
+		return tryProtoByName(name).or(() -> getFirst(protocols()));
 	}
 
 	private static Optional<Protocol> withName(List<Protocol> protocols, String name) {

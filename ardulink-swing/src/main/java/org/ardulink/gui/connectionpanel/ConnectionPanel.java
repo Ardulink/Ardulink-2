@@ -24,7 +24,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Stream.concat;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.gui.connectionpanel.GridBagConstraintsBuilder.constraints;
-import static org.ardulink.util.ServiceLoaders.services;
 import static org.ardulink.util.Throwables.getRootCause;
 import static org.ardulink.util.Throwables.propagate;
 
@@ -32,6 +31,8 @@ import java.awt.Component;
 import java.awt.GridBagLayout;
 import java.awt.Window;
 import java.net.URI;
+import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -196,7 +197,8 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		// an own module (e.g. ardulink-ui-support) so ardulink-console would
 		// depend on ardulink-ui-support and the module providing a specific
 		// PanelBuilder would depend on ardulink-ui-support, too.
-		return concat(services(PanelBuilder.class), Stream.of(fallback)) //
+		return concat(ServiceLoader.load(PanelBuilder.class).stream() //
+				.map(Provider::get), Stream.of(fallback)) //
 				.filter(b -> b.canHandle(uri)) //
 				.findFirst() //
 				.orElseThrow(() -> new IllegalStateException(format("No PanelBuilder found for %s", uri)));

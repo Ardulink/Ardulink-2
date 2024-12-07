@@ -16,8 +16,14 @@ limitations under the License.
 
 package org.ardulink.core.beans.finder.api;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+
 import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.Attribute.AttributeWriter;
+import org.ardulink.core.beans.finder.impl.FindByAnnotation;
+import org.ardulink.core.beans.finder.impl.FindByFieldAccess;
+import org.ardulink.core.beans.finder.impl.FindByIntrospection;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -32,5 +38,26 @@ public interface AttributeFinder {
 	Iterable<? extends AttributeReader> listReaders(Object bean);
 
 	Iterable<? extends AttributeWriter> listWriters(Object bean);
+
+	public static AttributeFinder directFieldAccess() {
+		return FindByFieldAccess.instance;
+	}
+
+	public static AttributeFinder beanAttributes() {
+		return FindByIntrospection.instance;
+	}
+
+	public static AttributeFinder propertyAnnotated(Class<? extends Annotation> annotationClass) {
+		return propertyAnnotated(annotationClass, "value");
+	}
+
+	public static AttributeFinder propertyAnnotated(Class<? extends Annotation> annotationClass,
+			String annotationAttribute) {
+		return propertyAnnotated(annotationClass, FindByAnnotation.toMethod(annotationClass, annotationAttribute));
+	}
+
+	public static <T extends Annotation> AttributeFinder propertyAnnotated(Class<T> annotationClass, Method method) {
+		return new FindByAnnotation(annotationClass, method);
+	}
 
 }

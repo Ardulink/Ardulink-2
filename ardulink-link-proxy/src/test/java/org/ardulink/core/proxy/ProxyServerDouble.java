@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.ardulink.util.MapBuilder;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -139,10 +138,10 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 	}
 
 	private Map<String, List<String>> makeMap(int numberOfPorts) {
-		return MapBuilder.<String, List<String>>newMapBuilder() //
-				.put(proxyMessage("get_port_list"), portList(numberOfPorts)) //
-				.put(proxyMessage("connect"), singletonList(OK)) //
-				.build();
+		return Map.of( //
+				proxyMessage("get_port_list"), portList(numberOfPorts), //
+				proxyMessage("connect"), singletonList(OK) //
+		);
 	}
 
 	public List<String> received() {

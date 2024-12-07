@@ -16,14 +16,11 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static java.util.stream.Stream.concat;
-import static java.util.stream.Stream.empty;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Streams.getLast;
 
+import java.util.Objects;
 import java.util.stream.Stream;
-
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -47,9 +44,8 @@ public final class Throwables {
 		return _getCauses(throwable);
 	}
 
-	@LapsedWith(module = LapsedWith.JDK9, value = "Stream#iterate(throwable, Objects::nonNull, Throwable::getCause)")
 	private static Stream<Throwable> _getCauses(Throwable throwable) {
-		return concat(Stream.of(throwable), throwable.getCause() == null ? empty() : _getCauses(throwable.getCause()));
+		return Stream.iterate(throwable, Objects::nonNull, Throwable::getCause);
 	}
 
 	public static RuntimeException propagate(Throwable throwable) {

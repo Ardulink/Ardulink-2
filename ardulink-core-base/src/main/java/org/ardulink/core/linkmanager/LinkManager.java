@@ -22,20 +22,19 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Optional.empty;
 import static java.util.function.Predicate.isEqual;
+import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toList;
-import static org.ardulink.core.beans.finder.impl.FindByAnnotation.propertyAnnotated;
+import static java.util.stream.Collectors.toUnmodifiableMap;
+import static org.ardulink.core.beans.finder.api.AttributeFinder.propertyAnnotated;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
-import static org.ardulink.util.Collectors.toUnmodifiableMap;
 import static org.ardulink.util.Maps.entry;
 import static org.ardulink.util.Numbers.convertTo;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Predicates.attribute;
-import static org.ardulink.util.Predicates.not;
 import static org.ardulink.util.Primitives.findPrimitiveFor;
 import static org.ardulink.util.Primitives.wrap;
-import static org.ardulink.util.ServiceLoaders.services;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK14;
@@ -52,6 +51,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -594,8 +595,10 @@ public abstract class LinkManager {
 		}
 
 		private Stream<LinkFactory> getLinkFactories() {
-			return services(LinkFactoriesProvider.class, moduleClassloader())
-					.map(LinkFactoriesProvider::loadLinkFactories).flatMap(Collection::stream)
+			return ServiceLoader.load(LinkFactoriesProvider.class, moduleClassloader()).stream() //
+					.map(Provider::get) //
+					.map(LinkFactoriesProvider::loadLinkFactories) //
+					.flatMap(Collection::stream) //
 					.filter(LinkFactory::isActive);
 		}
 

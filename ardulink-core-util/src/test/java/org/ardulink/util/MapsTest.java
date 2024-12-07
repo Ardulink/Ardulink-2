@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static org.ardulink.util.Maps.toProperties;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
@@ -33,11 +34,11 @@ import org.junit.jupiter.api.Test;
  */
 class MapsTest {
 
-	Map<Integer, String> map = MapBuilder.<Integer, String>newMapBuilder().put(1, "a").put(2, "b").put(3, "c").build();
+	Map<Integer, String> map = Map.of(1, "a", 2, "b", 3, "c");
 
 	@Test
 	void testToProperties() {
-		assertThat(Maps.toProperties(map)).containsExactlyInAnyOrderEntriesOf(map);
+		assertThat(toProperties(map)).containsExactlyInAnyOrderEntriesOf(map);
 	}
 
 	@Test
@@ -45,6 +46,14 @@ class MapsTest {
 		Entry<Integer, String> entry = Maps.entry(1, "a");
 		Entry<Integer, String> otherEntry = Maps.entry(1, "a");
 		assertThat(entry).hasSameHashCodeAs(otherEntry).isEqualTo(otherEntry);
+	}
+
+	@Test
+	void testMerge() {
+		Map<Integer, String> map1 = Map.of(1, "m1-A", 2, "m1-B", 3, "m1-C");
+		Map<Integer, String> map2 = Map.of(2, "m2-B", 4, "m2-D");
+		Map<Integer, String> merged = Maps.merge(map1, map2);
+		assertThat(merged).containsExactlyInAnyOrderEntriesOf(Map.of(1, "m1-A", 2, "m2-B", 3, "m1-C", 4, "m2-D"));
 	}
 
 }

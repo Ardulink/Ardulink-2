@@ -20,7 +20,7 @@ import static java.util.Arrays.stream;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Stream.concat;
-import static org.ardulink.core.beans.finder.impl.FindByIntrospection.beanAttributes;
+import static org.ardulink.core.beans.finder.api.AttributeFinder.beanAttributes;
 import static org.ardulink.util.Iterables.stream;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Suppliers.memoize;

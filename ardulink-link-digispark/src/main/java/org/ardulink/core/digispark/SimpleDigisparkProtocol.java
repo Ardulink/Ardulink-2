@@ -19,7 +19,6 @@ import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.util.MapBuilder;
 
 public class SimpleDigisparkProtocol implements Protocol {
 
@@ -118,9 +117,10 @@ public class SimpleDigisparkProtocol implements Protocol {
 	}
 
 	private static final Map<Type, Message> messages = unmodifiableMap( //
-			new EnumMap<>(MapBuilder.<Type, Message>newMapBuilder() //
-					.put(ANALOG, Message.POWER_PIN_INTENSITY) //
-					.put(DIGITAL, Message.POWER_PIN_SWITCH).build()));
+			new EnumMap<>(Map.of( //
+					ANALOG, Message.POWER_PIN_INTENSITY, //
+					DIGITAL, Message.POWER_PIN_SWITCH //
+			)));
 
 	@Override
 	public String getName() {

@@ -30,7 +30,7 @@ import org.ardulink.core.ByteStreamProcessorProvider;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.StreamConnection;
 import org.ardulink.core.linkmanager.LinkFactory;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2;
+import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
 
 /**
  * [ardulinktitle] [ardulinkversion]

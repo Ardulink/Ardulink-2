@@ -13,16 +13,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.ardulink.core.proto.impl;
+package org.ardulink.core.proto.lua;
 
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
-import static org.ardulink.core.proto.impl.LuaProtoBuilder.getBuilder;
-import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.CUSTOM_MESSAGE;
-import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.POWER_PIN_INTENSITY;
-import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.POWER_PIN_SWITCH;
-import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.START_LISTENING_DIGITAL;
-import static org.ardulink.core.proto.impl.LuaProtoBuilder.LuaProtocolKey.STOP_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.lua.LuaProtoBuilder.getBuilder;
+import static org.ardulink.core.proto.lua.LuaProtoBuilder.LuaProtocolKey.CUSTOM_MESSAGE;
+import static org.ardulink.core.proto.lua.LuaProtoBuilder.LuaProtocolKey.POWER_PIN_INTENSITY;
+import static org.ardulink.core.proto.lua.LuaProtoBuilder.LuaProtocolKey.POWER_PIN_SWITCH;
+import static org.ardulink.core.proto.lua.LuaProtoBuilder.LuaProtocolKey.START_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.lua.LuaProtoBuilder.LuaProtocolKey.STOP_LISTENING_DIGITAL;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
@@ -34,7 +34,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2.ALPByteStreamProcessor;
+import org.ardulink.core.proto.ardulink.ArdulinkProtocol2.ALPByteStreamProcessor;
 import org.ardulink.util.Bytes;
 
 /**

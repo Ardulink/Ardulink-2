@@ -18,7 +18,7 @@ package org.ardulink.util;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.function.Function.identity;
-import static org.ardulink.util.Collectors.toUnmodifiableMap;
+import static java.util.stream.Collectors.toUnmodifiableMap;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.util.EnumSet;

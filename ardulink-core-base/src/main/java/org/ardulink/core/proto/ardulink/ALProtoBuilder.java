@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
  */
-package org.ardulink.core.proto.impl;
+package org.ardulink.core.proto.ardulink;
 
 import static java.util.Collections.addAll;
 import static java.util.function.Function.identity;

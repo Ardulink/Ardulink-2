@@ -28,13 +28,13 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.camel.builder.AggregationStrategies.string;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static org.ardulink.mail.test.MailSender.mailFrom;
 import static org.ardulink.mail.test.MailSender.send;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
-import static org.ardulink.util.MapBuilder.newMapBuilder;
+import static org.ardulink.util.Maps.toProperties;
 import static org.ardulink.util.Strings.swapUpperLower;
 import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,7 +63,6 @@ import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.ardulink.util.Joiner;
-import org.ardulink.util.MapBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -140,7 +139,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 		String commandName = "usedScenario";
 		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText(commandName));
 
-		String ardulink = makeURI(mockUri, newMapBuilder().build());
+		String ardulink = makeURI(mockUri, emptyMap());
 
 		String switchDigitalPin = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
 		String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
@@ -225,24 +224,23 @@ class ArdulinkMailOnCamelIntegrationTest {
 
 	private String imapUri(String username, String password) {
 		ImapServer imapd = mailMock.getImap();
-		return makeURI(format("imap://%s:%d", imapd.getBindTo(), imapd.getPort()), newMapBuilder() //
-				.put("username", username) //
-				.put("password", password) //
-				.put("delete", true) //
-				.put("initialDelay", 0) //
-				.put("delay", 10) //
-				.put("timeUnit", MINUTES.name()) //
-				.build() //
-		);
+		return makeURI(format("imap://%s:%d", imapd.getBindTo(), imapd.getPort()), Map.of( //
+				"username", username, //
+				"password", password, //
+				"delete", true, //
+				"initialDelay", 0, //
+				"delay", 10, //
+				"timeUnit", MINUTES.name() //
+		));
 	}
 
 	private String smtpUri(String username, String password) {
 		SmtpServer smtpd = mailMock.getSmtp();
-		return makeURI(format("smtp://%s:%d", smtpd.getBindTo(), smtpd.getPort()), newMapBuilder() //
-				.put("username", username) //
-				.put("password", password) //
-				.put("debugMode", true) //
-				.build());
+		return makeURI(format("smtp://%s:%d", smtpd.getBindTo(), smtpd.getPort()), Map.of( //
+				"username", username, //
+				"password", password, //
+				"debugMode", true //
+		));
 	}
 
 	private void runInBackground(Main main) {
@@ -269,10 +267,10 @@ class ArdulinkMailOnCamelIntegrationTest {
 
 	private List<Message> retrieveViaImap(String host, int port, String user, String password)
 			throws MessagingException {
-		Session session = Session.getInstance(MapBuilder.<String, String>newMapBuilder() //
-				.put("mail.store.protocol", "imap") //
-				.put("mail.imap.port", String.valueOf(port)) //
-				.asProperties(), null);
+		Session session = Session.getInstance(toProperties(Map.of( //
+				"mail.store.protocol", "imap", //
+				"mail.imap.port", String.valueOf(port)) //
+		), null);
 		Store store = session.getStore();
 		store.connect(host, user, password);
 		Folder inbox = store.getFolder("INBOX");

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-package org.ardulink.core.proto.impl;
+package org.ardulink.core.proto.firmata;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.unmodifiableSet;
@@ -25,7 +25,7 @@ import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.featureflags.PreviewFeature.isFirmataProtocolFeatureEnabled;
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageInfo.fromDeviceMessageInfo;
-import static org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode.PWM;
+import static org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode.PWM;
 import static org.ardulink.util.Primitives.tryParseAs;
 import static org.firmata4j.firmata.parser.FirmataEventType.ANALOG_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.DIGITAL_MESSAGE_RESPONSE;
@@ -59,7 +59,7 @@ import org.ardulink.core.messages.impl.DefaultFromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProcessor;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.core.proto.impl.FirmataProtocol.FirmataPin.Mode;
+import org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode;
 import org.ardulink.util.ByteArray;
 import org.firmata4j.Consumer;
 import org.firmata4j.firmata.FirmataMessageFactory;

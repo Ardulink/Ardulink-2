@@ -18,6 +18,7 @@ package org.ardulink.util;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.ardulink.util.Joiner.MapJoiner;
@@ -44,7 +45,7 @@ class JoinerTest {
 
 	@Test
 	void joinMap() {
-		Map<Object, Object> map = MapBuilder.newMapBuilder().put("A", 42).put(2, null).put(3, "3").build();
+		Map<Object, Object> map = mapWithNullValue();
 		String separator = "|&>";
 		String kvSeparator = " =>";
 		MapJoiner withKeyValueSeparator = Joiner.on(separator).withKeyValueSeparator(kvSeparator);
@@ -52,6 +53,14 @@ class JoinerTest {
 				"A" + kvSeparator + "42" + separator //
 						+ "2" + kvSeparator + "null" + separator //
 						+ "3" + kvSeparator + "3");
+	}
+
+	private static Map<Object, Object> mapWithNullValue() {
+		Map<Object, Object> map = new HashMap<>();
+		map.put("A", 42);
+		map.put(2, null);
+		map.put(3, "3");
+		return map;
 	}
 
 }

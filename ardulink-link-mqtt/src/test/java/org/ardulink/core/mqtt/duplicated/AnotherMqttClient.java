@@ -32,7 +32,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
-import org.ardulink.util.MapBuilder;
 import org.ardulink.util.Throwables;
 import org.assertj.core.api.ThrowingConsumer;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -62,11 +61,10 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 	private final List<Message> messagesView = unmodifiableList(messages);
 	private final String topic;
 
-	private static final Map<Type, String> typeMap = unmodifiableMap(
-			new EnumMap<>(MapBuilder.<Type, String>newMapBuilder() //
-					.put(ANALOG, "A") //
-					.put(DIGITAL, "D") //
-					.build()));
+	private static final Map<Type, String> typeMap = unmodifiableMap(new EnumMap<>(Map.of( //
+			ANALOG, "A", //
+			DIGITAL, "D") //
+	));
 
 	private static final int QOS_LEVEL = 1;
 

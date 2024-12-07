@@ -4,17 +4,16 @@ import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Primitives.tryParseAs;
-import static org.ardulink.util.anno.LapsedWith.JDK9;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,6 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.ValueBuilder;
 import org.apache.camel.model.language.HeaderExpression;
 import org.ardulink.mqtt.Topics;
-import org.ardulink.util.anno.LapsedWith;
 
 public final class ToArdulinkProtocol implements Processor {
 
@@ -178,12 +176,8 @@ public final class ToArdulinkProtocol implements Processor {
 		extractedForAnnotation(createMessage(topic(exchange), body(exchange.getIn())), exchange);
 	}
 
-	@LapsedWith(module = JDK9, value = "Optional#ifPresentOrElse")
 	private void extractedForAnnotation(Optional<String> message, Exchange exchange) {
-		message.ifPresent(b -> exchange.getIn().setBody(b, String.class));
-		if (!message.isPresent()) {
-			exchange.setRouteStop(true);
-		}
+		message.ifPresentOrElse(b -> exchange.getIn().setBody(b, String.class), () -> exchange.setRouteStop(true));
 	}
 
 	private String topic(Exchange exchange) {

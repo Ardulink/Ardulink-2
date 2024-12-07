@@ -16,12 +16,8 @@ limitations under the License.
  */
 package org.ardulink.util;
 
-import static org.ardulink.util.anno.LapsedWith.JDK11;
-
 import java.util.function.Function;
 import java.util.function.Predicate;
-
-import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -35,11 +31,6 @@ public final class Predicates {
 
 	private Predicates() {
 		super();
-	}
-
-	@LapsedWith(module = JDK11, value = "Predicate#not")
-	public static <T> Predicate<T> not(Predicate<T> predicate) {
-		return predicate.negate();
 	}
 
 	public static <I, O> Predicate<I> attribute(Function<I, O> function, Predicate<O> predicate) {

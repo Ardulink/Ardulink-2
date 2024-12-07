@@ -6,31 +6,27 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.regex.Matcher.quoteReplacement;
-import static java.util.stream.Collectors.joining;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.alpProtocolMessage;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
-import static org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Primitives.tryParseAs;
 import static org.ardulink.util.StopWatch.Countdown.createStarted;
 import static org.ardulink.util.Throwables.propagate;
-import static org.ardulink.util.anno.LapsedWith.JDK9;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -45,10 +41,9 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.Type;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
-import org.ardulink.core.proto.impl.ALProtoBuilder.ALPProtocolKey;
-import org.ardulink.core.proto.impl.ArdulinkProtocol2.ALPByteStreamProcessor;
+import org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey;
+import org.ardulink.core.proto.ardulink.ArdulinkProtocol2.ALPByteStreamProcessor;
 import org.ardulink.util.StopWatch.Countdown;
-import org.ardulink.util.anno.LapsedWith;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.resource.EmptyResource;
 import org.eclipse.jetty.util.resource.Resource;
@@ -152,11 +147,9 @@ public class RestRouteBuilder extends RouteBuilder {
 				.replaceAll(quoteReplacement("https://petstore.swagger.io/v2/swagger.json"), apidocs);
 	}
 
-	@LapsedWith(module = JDK9, value = "new String(RestRouteBuilder.class.getClassLoader().getResourceAsStream(in).readAllBytes(), UTF_8)")
 	private static String content(String in) {
-		try (BufferedReader reader = new BufferedReader(
-				new InputStreamReader(RestRouteBuilder.class.getClassLoader().getResourceAsStream(in), UTF_8))) {
-			return reader.lines().collect(joining("\n"));
+		try {
+			return new String(RestRouteBuilder.class.getClassLoader().getResourceAsStream(in).readAllBytes(), UTF_8);
 		} catch (IOException e) {
 			throw propagate(e);
 		}
