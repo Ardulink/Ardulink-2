@@ -22,10 +22,11 @@ import static java.util.stream.Collectors.toList;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Lists.mapList;
 import static org.ardulink.util.Predicates.attribute;
-import static org.ardulink.util.ServiceLoaders.services;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -48,7 +49,10 @@ public final class Protocols {
 	 * @see #protocolNames()
 	 */
 	public static List<Protocol> protocols() {
-		return services(Protocol.class).filter(Protocol::isActive).collect(toList());
+		return ServiceLoader.load(Protocol.class) //
+				.stream().map(Provider::get) //
+				.filter(Protocol::isActive) //
+				.collect(toList());
 	}
 
 	/**

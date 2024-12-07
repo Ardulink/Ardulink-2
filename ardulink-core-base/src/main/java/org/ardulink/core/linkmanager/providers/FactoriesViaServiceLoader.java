@@ -18,9 +18,10 @@ package org.ardulink.core.linkmanager.providers;
 
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
-import static org.ardulink.util.ServiceLoaders.services;
 
 import java.util.Collection;
+import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
 
 import org.ardulink.core.linkmanager.LinkFactory;
 
@@ -36,7 +37,9 @@ public class FactoriesViaServiceLoader implements LinkFactoriesProvider {
 
 	@Override
 	public Collection<LinkFactory> loadLinkFactories() {
-		return services(LinkFactory.class, moduleClassloader()).collect(toList());
+		return ServiceLoader.load(LinkFactory.class, moduleClassloader()).stream() //
+				.map(Provider::get) //
+				.collect(toList());
 	}
 
 }
