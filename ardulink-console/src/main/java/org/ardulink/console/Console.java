@@ -186,8 +186,8 @@ public class Console extends JFrame implements Linkable {
 
 		JPanel allConnectionsPanel = new JPanel();
 		configurationPanel.add(allConnectionsPanel, BorderLayout.CENTER);
-		GridBagLayout gbl_allConnectionsPanel = new GridBagLayout();
-		allConnectionsPanel.setLayout(gbl_allConnectionsPanel);
+		GridBagLayout gblAllConnectionsPanel = new GridBagLayout();
+		allConnectionsPanel.setLayout(gblAllConnectionsPanel);
 
 		connectionPanel = new ConnectionPanel();
 		connectionPanel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
