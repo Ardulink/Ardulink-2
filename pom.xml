@@ -108,12 +108,12 @@
 				<plugin>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.13.0</version>
-                                        <configuration>
-                                                <compilerArgs>
-                                                        <arg>-Xlint:deprecation</arg>
-                                                        <arg>-Xlint:unchecked</arg>
-                                                </compilerArgs>
-                                        </configuration>
+					<configuration>
+						<compilerArgs>
+							<arg>-Xlint:deprecation</arg>
+							<arg>-Xlint:unchecked</arg>
+						</compilerArgs>
+					</configuration>
 				</plugin>
 				<plugin>
 					<artifactId>maven-jar-plugin</artifactId>
