@@ -69,8 +69,6 @@
 		<awaitility.version>4.2.2</awaitility.version>
 		<junit-pioneer.version>1.9.1</junit-pioneer.version>
 		<equalsverifier.version>3.17.4</equalsverifier.version>
-		<!-- The next LTS release Camel 3.14, scheduled for December 2021, will be the last release to support Java 8 -->
-		<!-- https://camel.apache.org/blog/2021/09/eol-java8/ -->
 		<!-- camel3 is the last version that supports java 11, camel4 needs java 17 -->
 		<camel.version>3.22.2</camel.version>
 
@@ -133,6 +131,23 @@
 							<descriptor>assembly.xml</descriptor>
 						</descriptors>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.gaul</groupId>
+					<artifactId>modernizer-maven-plugin</artifactId>
+					<version>2.7.0</version>
+					<configuration>
+						<javaVersion>${compilerVersion}</javaVersion>
+					</configuration>
+					<executions>
+						<execution>
+							<id>modernizer</id>
+							<phase>verify</phase>
+							<goals>
+								<goal>modernizer</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.jacoco</groupId>
