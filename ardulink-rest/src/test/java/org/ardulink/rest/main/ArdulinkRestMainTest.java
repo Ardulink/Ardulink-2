@@ -51,7 +51,7 @@ class ArdulinkRestMainTest {
 	@Test
 	void canParseArgs() throws IOException, CmdLineException {
 		CommandLineArguments args = RestMain
-				.tryParse("-connection", "ardulink://abc", "-bind", "someHost", "-port", "123").get();
+				.tryParse("-connection", "ardulink://abc", "-bind", "someHost", "-port", "123").orElseThrow();
 		assertThat(args.connection).isEqualTo("ardulink://abc");
 		assertThat(args.bind).isEqualTo("someHost");
 		assertThat(args.port).isEqualTo(123);

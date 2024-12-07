@@ -178,10 +178,10 @@ public class BeanProperties {
 		if (!readerType.isPresent()) {
 			return writerType;
 		}
-		if (!writerType.isPresent() || readerType.get().isAssignableFrom(writerType.get())) {
+		if (!writerType.isPresent() || readerType.orElseThrow().isAssignableFrom(writerType.orElseThrow())) {
 			return readerType;
 		}
-		if (writerType.get().isAssignableFrom(readerType.get())) {
+		if (writerType.orElseThrow().isAssignableFrom(readerType.orElseThrow())) {
 			return writerType;
 		}
 		return Optional.empty();
