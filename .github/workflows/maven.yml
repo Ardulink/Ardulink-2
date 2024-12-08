@@ -43,10 +43,10 @@ jobs:
     - name: Set first matrix job environment variable
       id: set-first-job
       if: ${{ matrix.java-version == '11' }}
-      run: echo "{first_job}={true}" >> $GITHUB_STATE
+      run: echo "FIRST_JOB=true" >> $GITHUB_STATE
 
     - name: Distribute build results
-      if: ${{ env.first_job == 'true' }}
+      if: ${{ env.FIRST_JOB == 'true' }}
       uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
       with:
         name: jars
@@ -61,7 +61,7 @@ jobs:
         reporter: java-junit
 
     - name: Distribute video records
-      if: ${{ env.first_job == 'true' }}
+      if: ${{ env.FIRST_JOB == 'true' }}
       uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
       with:
         name: videos
