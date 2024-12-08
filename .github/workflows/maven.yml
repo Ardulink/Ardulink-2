@@ -43,7 +43,7 @@ jobs:
     - name: Set first matrix job environment variable
       id: set-first-job
       if: ${{ matrix.java-version == '11' }}
-      run: echo "FIRST_JOB=true" >> $GITHUB_STATE
+      run: echo "FIRST_JOB=true" >> $GITHUB_ENV
 
     - name: Distribute build results
       if: ${{ env.FIRST_JOB == 'true' }}
