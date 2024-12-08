@@ -35,9 +35,9 @@ import org.ardulink.core.beans.finder.impl.FindByIntrospection;
  */
 public interface AttributeFinder {
 
-	Iterable<? extends AttributeReader> listReaders(Object bean);
+	Iterable<AttributeReader> listReaders(Object bean);
 
-	Iterable<? extends AttributeWriter> listWriters(Object bean);
+	Iterable<AttributeWriter> listWriters(Object bean);
 
 	public static AttributeFinder directFieldAccess() {
 		return FindByFieldAccess.instance;

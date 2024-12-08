@@ -48,9 +48,9 @@ public class FindByIntrospection implements AttributeFinder {
 	}
 
 	@Override
-	public Iterable<? extends AttributeReader> listReaders(Object bean) {
+	public Iterable<AttributeReader> listReaders(Object bean) {
 		try {
-			return propertyDescriptors(bean).filter(pd -> isReadMethod(pd.getReadMethod()))
+			return propertyDescriptors(bean).filter(p -> isReadMethod(p.getReadMethod()))
 					.map(pd -> new ReadMethod(bean, pd.getName(), pd.getReadMethod())).collect(toList());
 		} catch (IntrospectionException e) {
 			throw propagate(e);
@@ -58,9 +58,9 @@ public class FindByIntrospection implements AttributeFinder {
 	}
 
 	@Override
-	public Iterable<? extends AttributeWriter> listWriters(Object bean) {
+	public Iterable<AttributeWriter> listWriters(Object bean) {
 		try {
-			return propertyDescriptors(bean).filter(pd -> isWriteMethod(pd.getWriteMethod()))
+			return propertyDescriptors(bean).filter(p -> isWriteMethod(p.getWriteMethod()))
 					.map(pd -> new WriteMethod(bean, pd.getName(), pd.getWriteMethod())).collect(toList());
 		} catch (IntrospectionException e) {
 			throw propagate(e);

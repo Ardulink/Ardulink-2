@@ -144,18 +144,16 @@ public class FindByAnnotation implements AttributeFinder {
 	}
 
 	@Override
-	public Iterable<? extends AttributeReader> listReaders(Object bean) {
+	public Iterable<AttributeReader> listReaders(Object bean) {
 		try {
 			Stream<ReadMethod> methods = annotatedMethods(bean) //
 					.filter(ReadMethod::isReadMethod) //
 					.map(m -> readMethod(bean, m));
-
 			Stream<AttributeReader> fields = stream(bean.getClass().getDeclaredFields()) //
 					.filter(f -> f.isAnnotationPresent(annotationClass)) //
 					.map(f -> readMethodForAttribute(bean, f.getName()) //
 							.map(r -> AttributeReaderDelegate.attributeReaderDelegate(r, annoValue(f), f))
 							.orElseGet(() -> fieldAccess(bean, f)));
-
 			return iterable(concat(methods, fields));
 		} catch (Exception e) {
 			throw propagate(e);
@@ -168,13 +166,11 @@ public class FindByAnnotation implements AttributeFinder {
 			Stream<WriteMethod> methods = annotatedMethods(bean) //
 					.filter(WriteMethod::isWriteMethod) //
 					.map(m -> writeMethod(bean, m));
-
 			Stream<AttributeWriter> fields = stream(bean.getClass().getDeclaredFields())
 					.filter(f -> f.isAnnotationPresent(annotationClass)) //
 					.map(f -> writeMethodForAttribute(bean, f.getName()) //
 							.map(w -> AttributeWriterDelegate.attributeWriterDelegate(w, annoValue(f), f))
 							.orElseGet(() -> fieldAccess(bean, f)));
-
 			return iterable(concat(methods, fields));
 		} catch (Exception e) {
 			throw propagate(e);
@@ -210,11 +206,11 @@ public class FindByAnnotation implements AttributeFinder {
 		}
 	}
 
-	private Optional<? extends AttributeReader> readMethodForAttribute(Object bean, String name) {
+	private Optional<AttributeReader> readMethodForAttribute(Object bean, String name) {
 		return findWithName(name, stream(beanAttributes().listReaders(bean)));
 	}
 
-	private Optional<? extends AttributeWriter> writeMethodForAttribute(Object bean, String name) {
+	private Optional<AttributeWriter> writeMethodForAttribute(Object bean, String name) {
 		return findWithName(name, stream(beanAttributes().listWriters(bean)));
 	}
 

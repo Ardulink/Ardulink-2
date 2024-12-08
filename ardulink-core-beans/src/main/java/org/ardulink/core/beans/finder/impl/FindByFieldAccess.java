@@ -20,6 +20,8 @@ import static java.lang.reflect.Modifier.isPublic;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 
+import org.ardulink.core.beans.Attribute.AttributeReader;
+import org.ardulink.core.beans.Attribute.AttributeWriter;
 import org.ardulink.core.beans.finder.api.AttributeFinder;
 
 /**
@@ -39,18 +41,21 @@ public class FindByFieldAccess implements AttributeFinder {
 	}
 
 	@Override
-	public Iterable<FieldAccess> listReaders(Object bean) {
-		return find(bean);
+	public Iterable<AttributeReader> listReaders(Object bean) {
+		return find(bean, AttributeReader.class);
 	}
 
 	@Override
-	public Iterable<FieldAccess> listWriters(Object bean) {
-		return find(bean);
+	public Iterable<AttributeWriter> listWriters(Object bean) {
+		return find(bean, AttributeWriter.class);
 	}
 
-	private Iterable<FieldAccess> find(Object bean) {
-		return stream(bean.getClass().getDeclaredFields()).filter(f -> isPublic(f.getModifiers()))
-				.map(f -> new FieldAccess(bean, f.getName(), f)).collect(toList());
+	private <T> Iterable<T> find(Object bean, Class<T> castTo) {
+		return stream(bean.getClass().getDeclaredFields()) //
+				.filter(f -> isPublic(f.getModifiers())) //
+				.map(f -> new FieldAccess(bean, f.getName(), f)) //
+				.map(castTo::cast) //
+				.collect(toList());
 	}
 
 }
