@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.util;
 
 import static java.util.stream.Collectors.toUnmodifiableMap;
+import static org.ardulink.util.BinaryOperators.right;
 
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -52,7 +53,7 @@ public final class Maps {
 
 	public static <K, V> Map<K, V> merge(Map<K, V> map1, Map<K, V> map2) {
 		return Stream.of(map1, map2).map(Map::entrySet).flatMap(Collection::stream)
-				.collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue, (__, second) -> second));
+				.collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue, right()));
 	}
 
 }

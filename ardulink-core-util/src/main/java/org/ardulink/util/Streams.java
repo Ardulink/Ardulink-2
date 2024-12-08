@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.util;
 
 import static java.util.stream.Stream.empty;
+import static org.ardulink.util.BinaryOperators.right;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -39,7 +40,7 @@ public final class Streams {
 	}
 
 	public static <T> Optional<T> getLast(Stream<T> stream) {
-		return stream.reduce((first, second) -> second);
+		return stream.reduce(right());
 	}
 
 	public static <T> Iterable<T> iterable(Stream<T> stream) {
