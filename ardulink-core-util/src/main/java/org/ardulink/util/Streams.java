@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static java.util.stream.Stream.empty;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
@@ -50,7 +52,7 @@ public final class Streams {
 
 	@SafeVarargs
 	public static <T> Stream<T> concat(Stream<T>... streams) {
-		return Arrays.stream(streams).reduce(Stream::concat).orElse(Stream.empty());
+		return Arrays.stream(streams).reduce(Stream::concat).orElse(empty());
 	}
 
 }
