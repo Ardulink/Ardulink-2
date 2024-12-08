@@ -30,7 +30,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.ardulink.core.beans.finder.api.AttributeFinder;
 import org.junit.jupiter.api.Test;
 
 /**
