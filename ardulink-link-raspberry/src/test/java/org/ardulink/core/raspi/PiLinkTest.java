@@ -41,7 +41,9 @@ class PiLinkTest {
 	@Test
 	@DisabledOnOs(value = LINUX, architectures = "aarch64")
 	void creatingInstanceWillFailOnX86withUnsatisfiedLinkError() {
-		assertThatExceptionOfType(UnsatisfiedLinkError.class).isThrownBy(() -> Links.getLink("ardulink://raspberry"));
+		assertThatExceptionOfType(ExceptionInInitializerError.class)
+				.isThrownBy(() -> Links.getLink("ardulink://raspberry"))
+				.withRootCauseExactlyInstanceOf(IllegalStateException.class);
 	}
 
 	@Test
