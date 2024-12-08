@@ -15,6 +15,7 @@ limitations under the License.
  */
 package org.ardulink.core.proto.lua;
 
+import static java.lang.String.format;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom.toDeviceMessageCustom;
@@ -37,7 +38,7 @@ class LuaProtocolTest {
 
 	DigitalPin anyDigitalPin = digitalPin(anyPin());
 	AnalogPin anyAnalogPin = analogPin(anyPin());
-	int anyValue = anyValue(int.class);
+	int anyValue = anyInt();
 
 	@Test
 	void generatePowerPinSwitchMessageHigh() {
@@ -80,11 +81,11 @@ class LuaProtocolTest {
 	}
 
 	private static String powerPinMessage(int pin, String state) {
-		return String.format("gpio.mode(%s,gpio.OUTPUT) gpio.write(%s,gpio.%s)", pin, pin, state);
+		return format("gpio.mode(%s,gpio.OUTPUT) gpio.write(%s,gpio.%s)", pin, pin, state);
 	}
 
 	private static String pinStateChangeMessage(int pin, int value) {
-		return String.format("pwm.setup(%s,1000,1023) pwm.start(%s) pwm.setduty(%s,%s)", pin, pin, pin, value);
+		return format("pwm.setup(%s,1000,1023) pwm.start(%s) pwm.setduty(%s,%s)", pin, pin, pin, value);
 	}
 
 	private String customMessage(String... values) {
@@ -95,7 +96,7 @@ class LuaProtocolTest {
 		return 42;
 	}
 
-	private int anyValue(Class<?> type) {
+	private int anyInt() {
 		return 1023;
 	}
 

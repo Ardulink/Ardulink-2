@@ -354,7 +354,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			return b == SLASH;
 		}
 
-		private static IllegalStateException illegalPinType(Pin pin) {
+		protected static IllegalStateException illegalPinType(Pin pin) {
 			return new IllegalStateException("Illegal type " + pin.getType() + " of pin " + pin);
 		}
 

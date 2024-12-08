@@ -55,6 +55,87 @@ import org.ardulink.util.Bytes;
  */
 public class LuaProtocol implements Protocol {
 
+	private final class LuaProtocolByteStreamProcessor extends ALPByteStreamProcessor {
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageStartListening startListening) {
+			Pin pin = startListening.getPin();
+			if (pin.is(DIGITAL)) {
+				return toBytes(getBuilder(START_LISTENING_DIGITAL).forPin(pin.pinNum()).build());
+			}
+			if (pin.is(ANALOG)) {
+				throw notSupported("Start Listening");
+			}
+			throw illegalPinType(pin);
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
+			Pin pin = stopListening.getPin();
+			if (pin.is(DIGITAL)) {
+				return toBytes(getBuilder(STOP_LISTENING_DIGITAL).forPin(pin.pinNum()).build());
+			}
+			if (pin.is(ANALOG)) {
+				throw notSupported("Stop Listening");
+			}
+			throw illegalPinType(pin);
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
+			if (pinStateChange.getPin().is(ANALOG)) {
+				return toBytes(getBuilder(POWER_PIN_INTENSITY).forPin(pinStateChange.getPin().pinNum())
+						.withValue(pinStateChange.getValue()).build());
+			}
+			if (pinStateChange.getPin().is(DIGITAL)) {
+				return toBytes(getBuilder(POWER_PIN_SWITCH).forPin(pinStateChange.getPin().pinNum())
+						.withValue(pinStateChange.getValue()).build());
+			}
+			throw illegalPinType(pinStateChange.getPin());
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
+			throw noSense();
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageTone tone) {
+			throw noSense();
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageNoTone noTone) {
+			throw noSense();
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessageCustom custom) {
+			return toBytes(getBuilder(CUSTOM_MESSAGE).withValues((Object[]) custom.getMessages()).build());
+		}
+
+		/**
+		 * Appends the separator to the passed message. This is not done using string
+		 * concatenations but in a byte[] for performance reasons.
+		 * 
+		 * @param message the message to send
+		 * @return byte[] holding the passed message and the protocol's divider
+		 */
+		@Override
+		public byte[] toBytes(String message) {
+			return Bytes.concat(message.getBytes(), SEPARATOR);
+		}
+
+		private UnsupportedOperationException notSupported(String type) {
+			return new UnsupportedOperationException(type + " message not supported for " + getName() + " protocol");
+		}
+
+		private UnsupportedOperationException noSense() {
+			return new UnsupportedOperationException("This message has no sense for " + getName() + " protocol");
+		}
+
+	}
+
 	public static final String NAME = "LUA";
 	private static final byte[] SEPARATOR = "\r\n".getBytes();
 
@@ -65,89 +146,7 @@ public class LuaProtocol implements Protocol {
 
 	@Override
 	public ByteStreamProcessor newByteStreamProcessor() {
-		return new ALPByteStreamProcessor() {
-			@Override
-			public byte[] toDevice(ToDeviceMessageStartListening startListening) {
-				Pin pin = startListening.getPin();
-				if (pin.is(DIGITAL)) {
-					return toBytes(getBuilder(START_LISTENING_DIGITAL).forPin(pin.pinNum()).build());
-				}
-				if (pin.is(ANALOG)) {
-					throw notSupported("Start Listening");
-				}
-				throw illegalPinType(pin);
-			}
-
-			@Override
-			public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
-				Pin pin = stopListening.getPin();
-				if (pin.is(DIGITAL)) {
-					return toBytes(getBuilder(STOP_LISTENING_DIGITAL).forPin(pin.pinNum()).build());
-				}
-				if (pin.is(ANALOG)) {
-					throw notSupported("Stop Listening");
-				}
-				throw illegalPinType(pin);
-			}
-
-			@Override
-			public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
-				if (pinStateChange.getPin().is(ANALOG)) {
-					return toBytes(getBuilder(POWER_PIN_INTENSITY).forPin(pinStateChange.getPin().pinNum())
-							.withValue(pinStateChange.getValue()).build());
-				}
-				if (pinStateChange.getPin().is(DIGITAL)) {
-					return toBytes(getBuilder(POWER_PIN_SWITCH).forPin(pinStateChange.getPin().pinNum())
-							.withValue(pinStateChange.getValue()).build());
-				}
-				throw illegalPinType(pinStateChange.getPin());
-			}
-
-			@Override
-			public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
-				throw noSense();
-			}
-
-			@Override
-			public byte[] toDevice(ToDeviceMessageTone tone) {
-				throw noSense();
-			}
-
-			@Override
-			public byte[] toDevice(ToDeviceMessageNoTone noTone) {
-				throw noSense();
-			}
-
-			@Override
-			public byte[] toDevice(ToDeviceMessageCustom custom) {
-				return toBytes(getBuilder(CUSTOM_MESSAGE).withValues((Object[]) custom.getMessages()).build());
-			}
-
-			/**
-			 * Appends the separator to the passed message. This is not done using string
-			 * concatenations but in a byte[] for performance reasons.
-			 * 
-			 * @param message the message to send
-			 * @return byte[] holding the passed message and the protocol's divider
-			 */
-			@Override
-			public byte[] toBytes(String message) {
-				return Bytes.concat(message.getBytes(), SEPARATOR);
-			}
-
-			private UnsupportedOperationException notSupported(String type) {
-				return new UnsupportedOperationException(
-						type + " message not supported for " + getName() + " protocol");
-			}
-
-			private IllegalStateException illegalPinType(Pin pin) {
-				return new IllegalStateException("Illegal type " + pin.getType() + " of pin " + pin);
-			}
-
-			private UnsupportedOperationException noSense() {
-				return new UnsupportedOperationException("This message has no sense for " + getName() + " protocol");
-			}
-
-		};
+		return new LuaProtocolByteStreamProcessor();
 	}
+
 }
