@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.ardulink.core.beans.finder.api.AttributeFinder;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -237,6 +238,14 @@ class BeanPropertiesTest {
 		Class<ThisAnnotationHasNoValueAttribute> clazz = ThisAnnotationHasNoValueAttribute.class;
 		assertThatIllegalArgumentException().isThrownBy(() -> propertyAnnotated(clazz))
 				.withMessageContainingAll(clazz.getName(), "has no attribute named value");
+	}
+
+	@Test
+	void throwsExceptionsIfAnnotationHasNoAttributeWithThatName() {
+		Class<ThisAnnotationHasNoValueAttribute> clazz = ThisAnnotationHasNoValueAttribute.class;
+		String attributeName = "XXX-attribute-does-not-exist-XXX";
+		assertThatIllegalArgumentException().isThrownBy(() -> propertyAnnotated(clazz, attributeName))
+				.withMessageContainingAll(clazz.getName(), "has no attribute named " + attributeName);
 	}
 
 	@Test
