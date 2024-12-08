@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static java.util.stream.Stream.iterate;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Streams.getLast;
 
@@ -41,11 +42,7 @@ public final class Throwables {
 	}
 
 	public static Stream<Throwable> getCauses(Throwable throwable) {
-		return _getCauses(throwable);
-	}
-
-	private static Stream<Throwable> _getCauses(Throwable throwable) {
-		return Stream.iterate(throwable, Objects::nonNull, Throwable::getCause);
+		return iterate(throwable, Objects::nonNull, Throwable::getCause);
 	}
 
 	public static RuntimeException propagate(Throwable throwable) {
