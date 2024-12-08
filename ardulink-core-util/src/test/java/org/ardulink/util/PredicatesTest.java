@@ -16,11 +16,10 @@ limitations under the License.
 package org.ardulink.util;
 
 import static java.util.function.Predicate.isEqual;
-import static java.util.function.Predicate.not;
 import static org.ardulink.util.Predicates.attribute;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
-import java.util.stream.Stream;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 
@@ -35,17 +34,13 @@ import org.junit.jupiter.api.Test;
 class PredicatesTest {
 
 	@Test
-	void testNot() {
-		assertThat(stream().filter(not(isEqual("22")))).containsExactly("1", "333");
-	}
-
-	@Test
 	void testAttribute() {
-		assertThat(stream().filter(attribute(String::length, isEqual(3)))).containsExactly("333");
-	}
-
-	Stream<String> stream() {
-		return Stream.of("1", "22", "333");
+		Predicate<String> sut = attribute(String::length, isEqual(2));
+		assertSoftly(s -> {
+			s.assertThat(sut.test("#")).isFalse();
+			s.assertThat(sut.test("##")).isTrue();
+			s.assertThat(sut.test("###")).isFalse();
+		});
 	}
 
 }
