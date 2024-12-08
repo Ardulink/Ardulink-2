@@ -6,14 +6,12 @@ This is the repository for Ardulink 2. Ardulink 2 is a complete, open source, ja
 public static void main(String... args) throws Exception {
 	try (Link link = Links.getDefault()) {
 		DigitalPin pin = Pin.digitalPin(13);
+		boolean state = true;
 		while (true) {
-			link.switchDigitalPin(pin, true);
-			System.out.println("pin switched on");
+			link.switchDigitalPin(pin, state);
+			System.out.printf("pin switched %s%n", (state ? "on" : "off"));
 			TimeUnit.SECONDS.sleep(1);
-
-			link.switchDigitalPin(pin, false);
-			System.out.println("pin switched off");
-			TimeUnit.SECONDS.sleep(1);
+			state = !state;
 		}
 	}
 }
