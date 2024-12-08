@@ -20,11 +20,11 @@ import static java.util.stream.Collectors.toUnmodifiableMap;
 import static org.ardulink.util.BinaryOperators.right;
 
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.stream.Stream;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -51,8 +51,11 @@ public final class Maps {
 		return new AbstractMap.SimpleEntry<>(k, v);
 	}
 
-	public static <K, V> Map<K, V> merge(Map<K, V> map1, Map<K, V> map2) {
-		return Stream.of(map1, map2).map(Map::entrySet).flatMap(Collection::stream)
+	@SafeVarargs
+	public static <K, V> Map<K, V> merge(Map<K, V>... maps) {
+		return Arrays.stream(maps) //
+				.map(Map::entrySet) //
+				.flatMap(Collection::stream)
 				.collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue, right()));
 	}
 
