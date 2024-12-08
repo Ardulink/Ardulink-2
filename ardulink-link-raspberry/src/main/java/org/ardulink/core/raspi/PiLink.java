@@ -22,7 +22,6 @@ import static com.pi4j.io.gpio.PinMode.PWM_OUTPUT;
 import static com.pi4j.io.gpio.RaspiPin.getPinByName;
 import static com.pi4j.io.gpio.event.PinEventType.ANALOG_VALUE_CHANGE;
 import static com.pi4j.io.gpio.event.PinEventType.DIGITAL_STATE_CHANGE;
-import static java.lang.String.format;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -30,6 +29,7 @@ import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
 import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.Preconditions.checkState;
 
 import java.io.IOException;
 import java.util.List;
@@ -153,12 +153,14 @@ public class PiLink extends AbstractListenerLink {
 	private GpioPin getOrCreate(int address, PinMode pinMode) {
 		return gpioController.getProvisionedPins().stream() //
 				.filter(g -> g.getPin().getAddress() == address) //
-				.peek(g -> {
-					com.pi4j.io.gpio.Pin pin = g.getPin();
-					if (!pin.getSupportedPinModes().contains(pinMode)) {
-						throw new IllegalStateException(format("Pin %s does not provide %s", pin, pinMode));
-					}
-				}).findFirst().orElseGet(() -> create(address, pinMode));
+				.peek(g -> checkSupportsMode(g, pinMode)) //
+				.findFirst() //
+				.orElseGet(() -> create(address, pinMode));
+	}
+
+	private static void checkSupportsMode(GpioPin gpioPin, PinMode pinMode) {
+		com.pi4j.io.gpio.Pin pin = gpioPin.getPin();
+		checkState(pin.getSupportedPinModes().contains(pinMode), "Pin %s does not provide %s", pin, pinMode);
 	}
 
 	private GpioPin create(int address, PinMode pinMode) {
