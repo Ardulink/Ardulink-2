@@ -15,6 +15,7 @@ limitations under the License.
  */
 package org.ardulink.util;
 
+import static java.lang.System.lineSeparator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -33,8 +34,6 @@ import org.junit.jupiter.api.Test;
  */
 class ReadersTest {
 
-	String lineSeparator = System.getProperty("line.separator");
-
 	Reader empty() {
 		return new StringReader("");
 	}
@@ -52,7 +51,7 @@ class ReadersTest {
 	@Test
 	void testToString() throws IOException {
 		assertThat(Readers.toString(empty())).isEmpty();
-		assertThat(Readers.toString(fooBar())).isEqualTo("foo" + lineSeparator + "bar");
+		assertThat(Readers.toString(fooBar())).isEqualTo("foo" + lineSeparator() + "bar");
 	}
 
 }

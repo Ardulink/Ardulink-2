@@ -19,6 +19,8 @@ import static java.awt.EventQueue.invokeLater;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import static org.ardulink.gui.Icons.icon;
 import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
+import static org.ardulink.util.Predicates.attribute;
+import static org.ardulink.util.Streams.getLast;
 import static org.ardulink.util.Throwables.getCauses;
 
 import java.awt.BorderLayout;
@@ -32,6 +34,7 @@ import java.awt.Insets;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -61,7 +64,6 @@ import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.ardulink.gui.serial.SerialMonitor;
 import org.ardulink.legacy.Link;
-import org.ardulink.util.Streams;
 import org.ardulink.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,7 +153,9 @@ public class Console extends JFrame implements Linkable {
 			}
 
 			private Throwable rootCauseWithMessage(Throwable throwable) {
-				return Streams.getLast(getCauses(throwable).filter(t -> t.getMessage() != null)).orElse(throwable);
+				return getLast(getCauses(throwable) //
+						.filter(attribute(Throwable::getMessage, Objects::nonNull))) //
+						.orElse(throwable);
 			}
 
 		};

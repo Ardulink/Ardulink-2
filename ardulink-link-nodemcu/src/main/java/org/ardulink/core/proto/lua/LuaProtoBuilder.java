@@ -24,10 +24,9 @@ import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Throwables.propagate;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-
-import org.ardulink.util.InputStreams;
+import java.io.InputStreamReader;
 
 public class LuaProtoBuilder {
 
@@ -99,14 +98,12 @@ public class LuaProtoBuilder {
 		public abstract String message(LuaProtoBuilder luaProtoBuilder);
 
 		private static String loadSnippet(String snippet) {
-			try (InputStream is = LuaProtoBuilder.class.getResourceAsStream(snippet)) {
-				// Scripts on more than on line cause random error on NodeMCU
-				// because its echo
-				// We should investigate on ESPlorer code to understand how
-				// improve this code.
-				// Actually we remove CR and LF sending the script on a single
-				// line.
-				return InputStreams.lines(is).map(String::trim).collect(joining(" "));
+			try (BufferedReader reader = new BufferedReader(
+					new InputStreamReader(LuaProtoBuilder.class.getResourceAsStream(snippet)))) {
+				// Scripts on more than on line cause random error on NodeMCU because its echo
+				// We should investigate on ESPlorer code to understand how improve this code.
+				// Actually we remove CR and LF sending the script on a single line.
+				return reader.lines().map(String::trim).collect(joining(" "));
 			} catch (IOException e) {
 				throw propagate(e);
 			}
