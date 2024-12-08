@@ -95,18 +95,6 @@ public class ArdulinkProtocol2 implements Protocol {
 		return NAME;
 	}
 
-	private static boolean isNewline(byte b) {
-		return b == NEWLINE;
-	}
-
-	private static boolean isSlash(byte b) {
-		return b == SLASH;
-	}
-
-	private static IllegalStateException illegalPinType(Pin pin) {
-		return new IllegalStateException("Illegal type " + pin.getType() + " of pin " + pin);
-	}
-
 	public static class ALPByteStreamProcessor extends AbstractByteStreamProcessor {
 
 		private static class WaitingForAlpPrefix extends AbstractState {
@@ -357,6 +345,18 @@ public class ArdulinkProtocol2 implements Protocol {
 		protected static final State RESET_STATE = null;
 
 		private State state;
+
+		private static boolean isNewline(byte b) {
+			return b == NEWLINE;
+		}
+
+		private static boolean isSlash(byte b) {
+			return b == SLASH;
+		}
+
+		private static IllegalStateException illegalPinType(Pin pin) {
+			return new IllegalStateException("Illegal type " + pin.getType() + " of pin " + pin);
+		}
 
 		@Override
 		public void process(byte b) {

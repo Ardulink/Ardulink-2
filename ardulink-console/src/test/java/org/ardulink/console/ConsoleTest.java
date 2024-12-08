@@ -84,7 +84,7 @@ class ConsoleTest {
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
-	void approvalsVerify() throws Exception {
+	void approvalsVerify() {
 		Console console = newConsole();
 		String name = format("%s://%s", ARDULINK_SCHEME, VIRTUAL_CONSOLE_NAME);
 		findComponent(console, JComboBox.class, c -> containsItem(c, name)).setSelectedItem(name);

@@ -29,6 +29,7 @@ import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.Strings.nullOrEmpty;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.mockito.Mockito.timeout;
@@ -87,10 +88,13 @@ class ArdulinkRestSwaggerTest {
 
 	@Test
 	void canAccesApiUi_GotoApiDocs(Page page) throws Exception {
-		try (RestMain main = runRestComponent()) {
-			page.navigate(format("http://localhost:%d/api-browser", RestAssured.port));
-			page.waitForPopup(page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("/api-docs"))::click);
-		}
+		assertThatNoException().isThrownBy(() -> {
+			try (RestMain main = runRestComponent()) {
+				page.navigate(format("http://localhost:%d/api-browser", RestAssured.port));
+				page.waitForPopup(
+						page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("/api-docs"))::click);
+			}
+		});
 	}
 
 	@Test

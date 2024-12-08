@@ -70,7 +70,7 @@ public class PWMController extends JPanel implements Linkable {
 	private JComboBox<Integer> pinComboBox;
 	private JLabel lblPowerPinController;
 
-	private List<PWMControllerListener> pwmControllerListeners = new ArrayList<>();
+	private transient List<PWMControllerListener> pwmControllerListeners = new ArrayList<>();
 
 	private transient Link link;
 

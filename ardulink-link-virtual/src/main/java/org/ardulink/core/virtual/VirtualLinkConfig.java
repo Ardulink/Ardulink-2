@@ -19,7 +19,7 @@ public class VirtualLinkConfig implements LinkConfig {
 	@Named(DELAY_UNIT)
 	public TimeUnit delayUnit = MILLISECONDS;
 
-	public void delay() {
+	public void sleep() {
 		try {
 			this.delayUnit.sleep(delay);
 		} catch (InterruptedException e) {

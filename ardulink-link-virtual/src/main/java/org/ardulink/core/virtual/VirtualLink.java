@@ -48,7 +48,7 @@ public class VirtualLink extends AbstractListenerLink {
 
 	protected void sendRandomMessagesAndSleep() {
 		sendRandomPinStates();
-		config.delay();
+		config.sleep();
 	}
 
 	protected void sendRandomPinStates() {
