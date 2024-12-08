@@ -43,18 +43,18 @@ public class FindByFieldAccess implements AttributeFinder {
 
 	@Override
 	public Iterable<AttributeReader> listReaders(Object bean) {
-		return () -> find(bean).map(AttributeReader.class::cast).iterator();
+		return find(bean, AttributeReader.class);
 	}
 
 	@Override
 	public Iterable<AttributeWriter> listWriters(Object bean) {
-		return () -> find(bean).map(AttributeWriter.class::cast).iterator();
+		return find(bean, AttributeWriter.class);
 	}
 
-	private static Stream<FieldAccess> find(Object bean) {
+	private static <T> Iterable<T> find(Object bean, Class<T> castTo) {
 		return stream(bean.getClass().getDeclaredFields()) //
 				.filter(f -> isPublic(f.getModifiers())) //
-				.map(f -> new FieldAccess(bean, f.getName(), f));
+				.map(f -> new FieldAccess(bean, f.getName(), f)).map(castTo::cast)::iterator;
 	}
 
 }
