@@ -19,8 +19,6 @@ package org.ardulink.core.beans.finder.impl;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.util.Arrays.stream;
 
-import java.util.stream.Stream;
-
 import org.ardulink.core.beans.Attribute.AttributeReader;
 import org.ardulink.core.beans.Attribute.AttributeWriter;
 import org.ardulink.core.beans.finder.api.AttributeFinder;
@@ -54,7 +52,9 @@ public class FindByFieldAccess implements AttributeFinder {
 	private static <T> Iterable<T> find(Object bean, Class<T> castTo) {
 		return stream(bean.getClass().getDeclaredFields()) //
 				.filter(f -> isPublic(f.getModifiers())) //
-				.map(f -> new FieldAccess(bean, f.getName(), f)).map(castTo::cast)::iterator;
+				.map(f -> new FieldAccess(bean, f.getName(), f)) //
+				.map(castTo::cast) //
+		::iterator;
 	}
 
 }
