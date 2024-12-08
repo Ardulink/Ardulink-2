@@ -1,8 +1,8 @@
 package org.ardulink.core.beans;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static org.ardulink.core.beans.finder.api.AttributeFinder.directFieldAccess;
-import static org.ardulink.core.beans.finder.api.AttributeFinder.propertyAnnotated;
+import static org.ardulink.core.beans.finder.api.AttributeFinders.directFieldAccess;
+import static org.ardulink.core.beans.finder.api.AttributeFinders.propertyAnnotated;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -125,12 +125,12 @@ class AnnotationsTest {
 		assertHasBothAnnotations(BeanProperties.forBean(new AnotherAnnoOnTheGetterAndSetter()));
 	}
 
-	@SuppressWarnings("unchecked")
 	private void assertHasBothAnnotations(BeanProperties beanProperties) {
 		hasAnnotations(checkNotNull(beanProperties.getAttribute("string"), "no attribute named \"string\" found in %s",
 				beanProperties), SomeAnno.class, AnotherAnno.class);
 	}
 
+	@SafeVarargs
 	private void hasAnnotations(Attribute attribute, Class<? extends Annotation>... annoClasses) {
 		assertThat(annoClasses).allSatisfy(e -> assertThat(attribute.getAnnotation(e))
 				.withFailMessage(() -> e.getSimpleName() + " not found").isNotNull());

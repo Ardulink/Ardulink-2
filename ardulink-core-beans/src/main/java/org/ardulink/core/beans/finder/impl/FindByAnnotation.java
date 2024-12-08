@@ -16,12 +16,15 @@ limitations under the License.
 
 package org.ardulink.core.beans.finder.impl;
 
+import static java.lang.String.format;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.util.Arrays.stream;
 import static java.util.Collections.addAll;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Stream.concat;
-import static org.ardulink.core.beans.finder.api.AttributeFinder.beanAttributes;
+import static org.ardulink.core.beans.finder.api.AttributeFinders.beanAttributes;
 import static org.ardulink.util.Iterables.stream;
+import static org.ardulink.util.Predicates.attribute;
 import static org.ardulink.util.Streams.iterable;
 import static org.ardulink.util.Throwables.propagate;
 
@@ -131,16 +134,17 @@ public class FindByAnnotation implements AttributeFinder {
 	private final Class<? extends Annotation> annotationClass;
 	private final Method getAnnotationsAttributeReadMethod;
 
-	public <T extends Annotation> FindByAnnotation(Class<T> annotationClass,
-			Method getAnnotationsAttributeReadMethod) {
+	public <T extends Annotation> FindByAnnotation(Class<T> annotationClass, Method getAnnotationsAttributeReadMethod) {
 		this.annotationClass = annotationClass;
 		this.getAnnotationsAttributeReadMethod = getAnnotationsAttributeReadMethod;
 	}
 
 	public static Method toMethod(Class<? extends Annotation> annotationClass, String annotationAttribute) {
-		return stream(annotationClass.getMethods()).filter(m -> m.getName().equals(annotationAttribute)).findFirst()
+		return stream(annotationClass.getMethods()) //
+				.filter(attribute(Method::getName, isEqual(annotationAttribute))) //
+				.findFirst() //
 				.orElseThrow(() -> new IllegalArgumentException(
-						String.format("%s has no attribute named %s", annotationClass.getName(), annotationAttribute)));
+						format("%s has no attribute named %s", annotationClass.getName(), annotationAttribute)));
 	}
 
 	@Override

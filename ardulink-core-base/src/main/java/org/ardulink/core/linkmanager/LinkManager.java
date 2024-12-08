@@ -25,7 +25,7 @@ import static java.util.function.Predicate.isEqual;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toUnmodifiableMap;
-import static org.ardulink.core.beans.finder.api.AttributeFinder.propertyAnnotated;
+import static org.ardulink.core.beans.finder.api.AttributeFinders.propertyAnnotated;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
 import static org.ardulink.util.Maps.entry;
 import static org.ardulink.util.Numbers.convertTo;

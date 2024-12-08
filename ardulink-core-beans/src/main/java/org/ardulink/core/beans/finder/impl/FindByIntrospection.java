@@ -41,17 +41,13 @@ import org.ardulink.core.beans.finder.api.AttributeFinder;
  */
 public class FindByIntrospection implements AttributeFinder {
 
-	public static final FindByIntrospection instance = new FindByIntrospection();
-
-	private FindByIntrospection() {
-		super();
-	}
-
 	@Override
 	public Iterable<AttributeReader> listReaders(Object bean) {
 		try {
-			return propertyDescriptors(bean).filter(p -> isReadMethod(p.getReadMethod()))
-					.map(pd -> new ReadMethod(bean, pd.getName(), pd.getReadMethod())).collect(toList());
+			return propertyDescriptors(bean) //
+					.filter(p -> isReadMethod(p.getReadMethod())) //
+					.map(pd -> new ReadMethod(bean, pd.getName(), pd.getReadMethod())) //
+					.collect(toList());
 		} catch (IntrospectionException e) {
 			throw propagate(e);
 		}
@@ -60,8 +56,10 @@ public class FindByIntrospection implements AttributeFinder {
 	@Override
 	public Iterable<AttributeWriter> listWriters(Object bean) {
 		try {
-			return propertyDescriptors(bean).filter(p -> isWriteMethod(p.getWriteMethod()))
-					.map(pd -> new WriteMethod(bean, pd.getName(), pd.getWriteMethod())).collect(toList());
+			return propertyDescriptors(bean) //
+					.filter(p -> isWriteMethod(p.getWriteMethod())) //
+					.map(pd -> new WriteMethod(bean, pd.getName(), pd.getWriteMethod())) //
+					.collect(toList());
 		} catch (IntrospectionException e) {
 			throw propagate(e);
 		}

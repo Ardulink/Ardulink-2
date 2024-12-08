@@ -18,9 +18,9 @@ package org.ardulink.core.beans;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.util.Arrays.asList;
-import static org.ardulink.core.beans.finder.api.AttributeFinder.beanAttributes;
-import static org.ardulink.core.beans.finder.api.AttributeFinder.directFieldAccess;
-import static org.ardulink.core.beans.finder.api.AttributeFinder.propertyAnnotated;
+import static org.ardulink.core.beans.finder.api.AttributeFinders.beanAttributes;
+import static org.ardulink.core.beans.finder.api.AttributeFinders.directFieldAccess;
+import static org.ardulink.core.beans.finder.api.AttributeFinders.propertyAnnotated;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
