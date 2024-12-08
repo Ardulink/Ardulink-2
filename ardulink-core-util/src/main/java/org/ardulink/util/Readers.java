@@ -15,6 +15,7 @@ limitations under the License.
  */
 package org.ardulink.util;
 
+import static java.lang.System.lineSeparator;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
@@ -25,14 +26,12 @@ import java.util.stream.Stream;
 
 public final class Readers {
 
-	private static final String lineSeparator = System.getProperty("line.separator");
-
 	private Readers() {
 		super();
 	}
 
 	public static String toString(Reader reader) throws IOException {
-		return lines(reader).collect(joining(lineSeparator));
+		return lines(reader).collect(joining(lineSeparator()));
 	}
 
 	public static Stream<String> lines(Reader reader) throws IOException {
