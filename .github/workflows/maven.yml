@@ -46,7 +46,7 @@ jobs:
       run: echo "{first_job}={true}" >> $GITHUB_STATE
 
     - name: Distribute build results
-      if: steps.set-first-job.outputs.first_job == 'true'
+      if: ${{ env.first_job == 'true' }}
       uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
       with:
         name: jars
@@ -61,7 +61,7 @@ jobs:
         reporter: java-junit
 
     - name: Distribute video records
-      if: steps.set-first-job.outputs.first_job == 'true'
+      if: ${{ env.first_job == 'true' }}
       uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
       with:
         name: videos
