@@ -476,9 +476,14 @@ public abstract class LinkManager {
 
 			public CacheKey() throws Exception {
 				this.factoryType = DefaultConfigurer.this.linkFactory.getClass();
-				this.values = getAttributes().stream().map(k -> entry(k, getAttribute(k).getValue())) //
+				this.values = getAttributes().stream() //
+						.map(this::toMapEntry) //
 						.filter(attribute(Entry::getValue, Objects::nonNull)) //
 						.collect(toUnmodifiableMap(Entry::getKey, Entry::getValue));
+			}
+
+			private Entry<String, Object> toMapEntry(String key) {
+				return entry(key, getAttribute(key).getValue());
 			}
 
 			@Override
