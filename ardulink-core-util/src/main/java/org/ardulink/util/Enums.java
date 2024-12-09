@@ -17,12 +17,10 @@ limitations under the License.
 package org.ardulink.util;
 
 import static java.util.Arrays.stream;
-import static java.util.function.Predicate.isEqual;
 import static org.ardulink.util.Predicates.attribute;
 
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -38,16 +36,16 @@ public final class Enums {
 		super();
 	}
 
-	public static <T extends Enum<?>> Optional<T> enumWithName(Class<T> targetType, String value) {
-		return findEnumWithName(targetType, value::equals);
+	public static <T extends Enum<?>> Optional<T> enumWithName(Class<T> enumClass, String name) {
+		return findEnumWithName(enumClass, name::equals);
 	}
 
-	public static <T extends Enum<?>> Optional<T> enumWithNameIgnoreCase(Class<T> targetType, String value) {
-		return findEnumWithName(targetType, value::equalsIgnoreCase);
+	public static <T extends Enum<?>> Optional<T> enumWithNameIgnoreCase(Class<T> enumClass, String name) {
+		return findEnumWithName(enumClass, name::equalsIgnoreCase);
 	}
 
-	private static <T extends Enum<?>> Optional<T> findEnumWithName(Class<T> targetType, Predicate<String> equal) {
-		return stream(targetType.getEnumConstants()).filter(attribute(Enum::name, equal)).findFirst();
+	private static <T extends Enum<?>> Optional<T> findEnumWithName(Class<T> enumClass, Predicate<String> predicate) {
+		return stream(enumClass.getEnumConstants()).filter(attribute(Enum::name, predicate)).findFirst();
 	}
 
 }
