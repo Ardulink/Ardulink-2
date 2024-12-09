@@ -17,7 +17,7 @@ This sketch is an example to understand how Digispark/PicoDuino can recognize AL
 However, it can easily be reused for your own purposes or as a base for a library. 
 
 This sketch is for Digispark/PicoDuino that doesn't support Serial library. Actually it manages
-SimpleBynaryProtocol (without responses from Digispark) but just for PIN Power Switch messages.
+SimpleBinaryProtocol (without responses from Digispark) but just for PIN Power Switch messages.
 If you have different needs you have to modify this sketch accordingly.
 
 Remember: Digispark/PicoDuino has just 6.012 bytes memory available for sketches.
@@ -32,7 +32,7 @@ void setup() {
   DigiUSB.begin();
 }
 
-void get_input() {
+void readSerial() {
   char lastRead;
   // when there are no characters to read, or the character isn't a newline
   while (true) { // loop forever
@@ -55,32 +55,23 @@ void get_input() {
 
 void loop() {
   
-  get_input();
+  readSerial();
   
-    if(inputString.startsWith("alp://")) { // OK is a message I know (this is general code you can reuse)
-      
-      if(inputString.substring(6,10) == "ppsw") { // Power Pin Switch (this is general code you can reuse)
-        int separatorPosition = inputString.indexOf('/', 11 );
-        String pin = inputString.substring(11,separatorPosition);
-        String power = inputString.substring(separatorPosition + 1);
-        int pinInt = pin.toInt();
-        pinMode(pinInt, OUTPUT);
-        if(power.toInt() == 1) {
-          digitalWrite(pinInt, HIGH);
-        } else {
-          digitalWrite(pinInt, LOW);
-        }
-//      } else 
-//      if(inputString.substring(6,10) == "ppin") { // Power Pin Intensity (this is general code you can reuse)
-//          int separatorPosition = inputString.indexOf('/', 11 );
-//          String pin = inputString.substring(11,separatorPosition);
-//          String intens = inputString.substring(separatorPosition + 1);
-//          int pinInt = pin.toInt();
-//          pinMode(pinInt, OUTPUT);
-//          analogWrite(pinInt, intens.toInt());
-      }
-    
-   } 
+  if (inputString.startsWith("alp://")) { // OK is a message I know (this is general code you can reuse)
+    if (inputString.substring(6,10) == "ppsw") { // Power Pin Switch (this is general code you can reuse)
+      int separatorPosition = inputString.indexOf('/', 11 );
+      int pin = inputString.substring(11,separatorPosition).toInt();
+      int power = inputString.substring(separatorPosition + 1).toInt();
+      pinMode(pin, OUTPUT);
+      digitalWrite(pin, power == 1 ? HIGH : LOW);
+    } else if (inputString.substring(6,10) == "ppin") { // Power Pin Intensity (this is general code you can reuse)
+      int separatorPosition = inputString.indexOf('/', 11 );
+      int pin = inputString.substring(11,separatorPosition).toInt();
+      int intens = inputString.substring(separatorPosition + 1).toInt();
+      pinMode(pin, OUTPUT);
+      analogWrite(pin, intens);
+    }
+  } 
 
   inputString = "";
 }
