@@ -19,15 +19,12 @@ package org.ardulink.core.digispark;
 import static java.util.Arrays.asList;
 import static org.ardulink.core.digispark.DigisparkDiscoveryUtil.getDevices;
 import static org.ardulink.util.Iterables.getFirst;
-import static org.ardulink.util.Throwables.propagate;
 
 import java.util.List;
 import java.util.Set;
 
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.proto.api.Protocol;
-
-import ch.ntb.usb.USBException;
 
 public class DigisparkLinkConfig implements LinkConfig {
 
@@ -47,12 +44,8 @@ public class DigisparkLinkConfig implements LinkConfig {
 	public Protocol protocol = getFirst(VALID_PROTOS).orElseThrow(() -> new RuntimeException("valid protos is empty"));
 
 	@ChoiceFor(NAMED_DEVICE_NAME)
-	public Set<String> listdeviceNames() {
-		try {
-			return getDevices().keySet();
-		} catch (USBException e) {
-			throw propagate(e);
-		}
+	public Set<String> deviceNames() {
+		return getDevices().keySet();
 	}
 
 	@ChoiceFor(NAMED_PROTO)

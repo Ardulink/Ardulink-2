@@ -15,128 +15,72 @@ limitations under the License.
  */
 package org.ardulink.core.digispark;
 
-import static ch.ntb.usb.LibusbJava.usb_claim_interface;
-import static ch.ntb.usb.LibusbJava.usb_close;
-import static ch.ntb.usb.LibusbJava.usb_control_msg;
-import static ch.ntb.usb.LibusbJava.usb_open;
-import static ch.ntb.usb.LibusbJava.usb_release_interface;
-import static ch.ntb.usb.LibusbJava.usb_set_configuration;
-import static ch.ntb.usb.LibusbJava.usb_strerror;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.util.Preconditions.checkState;
-import static org.ardulink.util.Throwables.propagate;
+import static org.usb4java.LibUsb.RECIPIENT_INTERFACE;
+import static org.usb4java.LibUsb.REQUEST_TYPE_CLASS;
+import static org.usb4java.LibUsb.SUCCESS;
 
-import java.io.IOException;
-import java.util.Map;
+import java.nio.ByteBuffer;
 
 import org.ardulink.core.AbstractConnection;
-
-import ch.ntb.usb.USBException;
-import ch.ntb.usb.Usb_Device;
+import org.usb4java.Device;
+import org.usb4java.DeviceHandle;
+import org.usb4java.LibUsb;
 
 public class DigisparkConnection extends AbstractConnection {
 
-	private static final byte[] ZERO_BYTES = new byte[0];
-
 	private final String deviceName;
-	private Usb_Device usbDevice;
+	private Device usbDevice;
+	private boolean connected;
 
-	private long usbDevHandle;
+	private DeviceHandle usbDevHandle = new DeviceHandle();
 
 	public DigisparkConnection(DigisparkLinkConfig config) {
 		this.deviceName = config.deviceName;
-		this.usbDevice = getDevices().get(deviceName);
-		checkState(usbDevice != null, "No device with portName %s found",
-				deviceName);
+		this.usbDevice = DigisparkDiscoveryUtil.getDevices().get(deviceName);
+		checkState(usbDevice != null, "No device with portName %s found", deviceName);
 		connect();
-	}
-
-	private Map<String, Usb_Device> getDevices() {
-		try {
-			return DigisparkDiscoveryUtil.getDevices();
-		} catch (USBException e) {
-			throw propagate(e);
-		}
 	}
 
 	private void connect() {
 		disconnect();
-		usbDevHandle = usb_open(usbDevice);
-		checkState(usbDevHandle != 0, "usb_open: %s", usb_strerror());
-		checkState(isConnected(), "USB Digispark device not found on USB");
-		claimInterface(usbDevHandle, 1, 0);
-	}
-
-	private void claimInterface(long usb_dev_handle, int configuration,
-			int interface_) {
-		if (usb_set_configuration(usb_dev_handle, configuration) < 0) {
-			usbDevHandle = 0;
-			throw new RuntimeException("usb_set_configuration: "
-					+ usb_strerror());
-		}
-		if (usb_claim_interface(usb_dev_handle, interface_) < 0) {
-			usbDevHandle = 0;
-			throw new RuntimeException("usb_claim_interface: " + usb_strerror());
-		}
+		int rc = LibUsb.open(usbDevice, usbDevHandle);
+		checkState(rc == SUCCESS, "open: %s", LibUsb.strError(rc));
+		rc = LibUsb.setConfiguration(usbDevHandle, 1);
+		checkState(rc == SUCCESS, "setConfiguration: %s", LibUsb.strError(rc));
+		rc = LibUsb.claimInterface(usbDevHandle, 0);
+		checkState(rc == SUCCESS, "claimInterface: %s", LibUsb.strError(rc));
+		connected = true;
 	}
 
 	private boolean disconnect() {
-		if (isConnected()) {
-			if (usb_release_interface(usbDevHandle, 0) < 0) {
-				usbDevHandle = 0;
-				throw new RuntimeException("usb_release_interface: "
-						+ usb_strerror());
-			}
+		if (connected) {
+			int rc = LibUsb.releaseInterface(usbDevHandle, 0);
+			checkState(rc == SUCCESS, "releaseInterface: %s", LibUsb.strError(rc));
 
-			if (usb_close(usbDevHandle) < 0) {
-				usbDevHandle = 0;
-				throw new RuntimeException("usb_close: " + usb_strerror());
-			}
+			LibUsb.close(usbDevHandle);
+			connected = false;
 		}
-		usbDevHandle = 0;
 		return true;
 	}
 
-	private boolean isConnected() {
-		return usbDevHandle != 0;
+	@Override
+	public void close() {
+		disconnect();
 	}
 
 	@Override
-	public void close() throws IOException {
-		try {
-			disconnect();
-		} catch (Exception e) {
-			throw new IOException(e);
-		}
-	}
-
-	@Override
-	public void write(byte[] bytes) throws IOException {
-		for (byte element : bytes) {
-			if (send(element) < 0) {
-				tryRecover();
-				checkState(send(element) >= 0, "controlMsg: %s", usb_strerror());
-			}
-		}
+	public void write(byte[] bytes) {
+		int rc = LibUsb.controlTransfer(usbDevHandle, (byte) (REQUEST_TYPE_CLASS | RECIPIENT_INTERFACE), (byte) 0x09,
+				(short) 2, (short) 1, byteBuffer(bytes), 0);
+		checkState(rc >= 0, "controlTransfer: %s", LibUsb.strError(rc));
 		fireSent(bytes);
 	}
 
-	private int send(byte b) {
-		return usb_control_msg(usbDevHandle, (0x01 << 5), 0x09, 0, b, ZERO_BYTES, 0, 0);
+	private ByteBuffer byteBuffer(byte[] bytes) {
+		ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.length);
+		buffer.put(bytes);
+		return buffer;
 	}
 
-	private void tryRecover() throws USBException {
-		try {
-			MILLISECONDS.sleep(10);
-			Map<String, Usb_Device> deviceMap = getDevices();
-			usbDevice = deviceMap.get(deviceName);
-			checkState(usbDevice != null, "No device with portName %s found",
-					deviceName);
-			MILLISECONDS.sleep(10);
-			connect();
-			MILLISECONDS.sleep(10);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
-	}
 }
