@@ -20,6 +20,7 @@ import static java.lang.String.format;
 import static java.net.URI.create;
 import static java.util.Arrays.asList;
 import static java.util.Comparator.comparing;
+import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
@@ -247,13 +248,19 @@ public final class Links {
 	}
 
 	public static Configurer setChoiceValues(Configurer configurer) {
-		configurer.getAttributes().stream().map(k -> configurer.getAttribute(k))
-				.filter(a -> a.hasChoiceValues() && !isConfigured(a))
-				.forEach(a -> getFirst(asList(a.getChoiceValues())).ifPresent(a::setValue));
+		configurer.getAttributes().stream() //
+				.map(configurer::getAttribute) //
+				.filter(not(Links::isConfigured)) //
+				.filter(ConfigAttribute::hasChoiceValues) //
+				.forEach(Links::setFirstValue);
 		return configurer;
 	}
 
-	public static boolean isConfigured(ConfigAttribute attribute) {
+	private static void setFirstValue(ConfigAttribute attribute) {
+		getFirst(asList(attribute.getChoiceValues())).ifPresent(attribute::setValue);
+	}
+
+	private static boolean isConfigured(ConfigAttribute attribute) {
 		return attribute.getValue() != null;
 	}
 
