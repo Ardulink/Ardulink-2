@@ -26,7 +26,7 @@
 #	- View the last log lines       tail /var/log/ardulink-proxy.log
 #	If this file has syntax error ensure that TABs aren't replaced by Spaces.
 ### END INIT INFO
-APP_VERSION="2.0.1"
+APP_VERSION="2.2.0"
 APP_NAME=ardulink-proxy
 SERVICE_NAME="ARDUlink Network Proxy Server"
 JAR_COMMAND="/var/ardulink/lib/ardulink-networkproxyserver-$APP_VERSION.jar start"
@@ -52,7 +52,7 @@ case $1 in
 		echo "Starting $SERVICE_NAME..."
 		if [ ! -f $PID_FILE ]; then
 			nohup java -jar $JAR_COMMAND >> $LOG 2>&1&
-						echo $! > $PID_FILE
+			echo $! > $PID_FILE
 			echo "$SERVICE_NAME started."
 		else
 			echo "$SERVICE_NAME is already running."
