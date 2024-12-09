@@ -3,6 +3,7 @@ package org.ardulink.core.digispark;
 import static java.util.Collections.unmodifiableMap;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
+import static org.ardulink.core.featureflags.PreviewFeature.isSimpleProtocolFeatureEnabledInGeneral;
 import static org.ardulink.util.Preconditions.checkState;
 
 import java.util.EnumMap;
@@ -27,6 +28,7 @@ public class SimpleDigisparkProtocol implements Protocol {
 	private static class SimpleDigisparkProtocolByteStreamProcessor implements ByteStreamProcessor {
 
 		private static final byte separator = (byte) 255;
+		private static final byte[] NO_MESSAGE = new byte[0];
 
 		@Override
 		public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {
@@ -44,52 +46,52 @@ public class SimpleDigisparkProtocol implements Protocol {
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
-			throw new UnsupportedOperationException();
+			return NO_MESSAGE;
 		}
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageTone tone) {
-			throw new UnsupportedOperationException();
+			return NO_MESSAGE;
 		}
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageNoTone noTone) {
-			throw new UnsupportedOperationException();
+			return NO_MESSAGE;
 		}
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageCustom custom) {
-			throw new UnsupportedOperationException();
+			return NO_MESSAGE;
 		}
 
 		@Override
 		public void addListener(FromDeviceListener listener) {
-			throw new UnsupportedOperationException();
+			// ignore
 		}
 
 		@Override
 		public void removeListener(FromDeviceListener listener) {
-			throw new UnsupportedOperationException();
+			// ignore
 		}
 
 		@Override
 		public void process(byte[] read) {
-			throw new UnsupportedOperationException();
+			// ignore
 		}
 
 		@Override
 		public void process(byte read) {
-			throw new UnsupportedOperationException();
+			// ignore
 		}
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageStartListening startListening) {
-			throw new UnsupportedOperationException();
+			return NO_MESSAGE;
 		}
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageStopListening stopListening) {
-			throw new UnsupportedOperationException();
+			return NO_MESSAGE;
 		}
 	}
 
@@ -125,6 +127,11 @@ public class SimpleDigisparkProtocol implements Protocol {
 	@Override
 	public String getName() {
 		return NAME;
+	}
+
+	@Override
+	public boolean isActive() {
+		return isSimpleProtocolFeatureEnabledInGeneral();
 	}
 
 	@Override

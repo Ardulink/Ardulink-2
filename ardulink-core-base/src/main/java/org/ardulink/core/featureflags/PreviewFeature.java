@@ -35,6 +35,15 @@ public final class PreviewFeature {
 	 */
 	public static final String FIRMATA_ENABLED_PROPERTY_FEATURE = "protocol.firmata.enabled";
 
+	/**
+	 * To enable SimpleProtocol in general set the system property
+	 * {@value #SIMPLE_PROTOCOL_ENABLED_PROPERTY_FEATURE} to any non-empty value.
+	 * 
+	 * That way you can use SimpleProtocol in general and not only within the
+	 * DigisparkConnection.
+	 */
+	public static final String SIMPLE_PROTOCOL_ENABLED_PROPERTY_FEATURE = "protocol.simple.enabled";
+
 	private PreviewFeature() {
 		super();
 	}
@@ -45,6 +54,10 @@ public final class PreviewFeature {
 
 	public static boolean isFirmataProtocolFeatureEnabled() {
 		return isPropertySet(FIRMATA_ENABLED_PROPERTY_FEATURE);
+	}
+
+	public static boolean isSimpleProtocolFeatureEnabledInGeneral() {
+		return isPropertySet(SIMPLE_PROTOCOL_ENABLED_PROPERTY_FEATURE);
 	}
 
 }

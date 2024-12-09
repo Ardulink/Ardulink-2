@@ -33,8 +33,8 @@ public class DigisparkLinkConfig implements LinkConfig {
 	private static final String NAMED_DEVICE_NAME = "deviceName";
 
 	// at the moment the only supported protocol is SimpleDigisparkProtocol
-	// SimpleDigisparkProtocol is NOT registered as available protocol so don't try
-	// to load it by name!
+	// SimpleDigisparkProtocol is NOT active (if not forced via feature flag so
+	// don't try to load it by name! 
 	private static final List<Protocol> VALID_PROTOS = asList(new SimpleDigisparkProtocol());
 
 	@Named(NAMED_DEVICE_NAME)
