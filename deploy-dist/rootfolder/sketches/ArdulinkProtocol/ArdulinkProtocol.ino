@@ -198,17 +198,17 @@ void loop() {
 
 // Reads 4 times and computes the average value
 int highPrecisionAnalogRead(int pin) {
-  int value1 = analogRead(pin);
-  int value2 = analogRead(pin);
-  int value3 = analogRead(pin);
-  int value4 = analogRead(pin);
-  
-  int retvalue = (value1 + value2 + value3 + value4) / 4;
-  return retvalue;
+    const int numReadings = 4;
+    int sum = 0;
+    for (int i = 0; i < numReadings; i++) {
+        sum += analogRead(pin);
+    }
+    return sum / numReadings;
 }
 
+
 /*
-  SerialEvent occurs whenever a new data comes in the
+ SerialEvent occurs whenever a new data comes in the
  hardware serial RX.  This routine is run between each
  time loop() runs, so using delay inside loop can delay
  response.  Multiple bytes of data may be available.
