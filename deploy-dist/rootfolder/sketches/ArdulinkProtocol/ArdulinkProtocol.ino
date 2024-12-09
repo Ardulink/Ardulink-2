@@ -78,6 +78,7 @@ void loop() {
     
       boolean msgRecognized = true;
       
+      int idPosition = inputString.indexOf("?id=");
       if(inputString.substring(6,10) == "kprs") { // KeyPressed
         // here you can write your own code. For instance the commented code change pin intensity if you press 'a' or 's'
         // take the command and change intensity on pin 11 this is needed just as example for this sketch
@@ -121,20 +122,21 @@ void loop() {
           int pin = inputString.substring(11,firstSlashPosition).toInt();
           noTone(pin);
       } else if(inputString.substring(6,10) == "srld") { // Start Listen Digital Pin (this is general code you can reuse)
-          String pin = inputString.substring(11);
+          String pin = idPosition < 0 ? inputString.substring(11) : inputString.substring(11, idPosition);
           digitalPinListening[pin.toInt()] = true;
           digitalPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
           pinMode(pin.toInt(), INPUT);
       } else if(inputString.substring(6,10) == "spld") { // Stop Listen Digital Pin (this is general code you can reuse)
-          String pin = inputString.substring(11);
+          String pin = idPosition < 0 ? inputString.substring(11) : inputString.substring(11, idPosition);
+          digitalPinListening[pin.toInt()] = true;
           digitalPinListening[pin.toInt()] = false;
           digitalPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
       } else if(inputString.substring(6,10) == "srla") { // Start Listen Analog Pin (this is general code you can reuse)
-          String pin = inputString.substring(11);
+          String pin = idPosition < 0 ? inputString.substring(11) : inputString.substring(11, idPosition);
           analogPinListening[pin.toInt()] = true;
           analogPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
       } else if(inputString.substring(6,10) == "spla") { // Stop Listen Analog Pin (this is general code you can reuse)
-          String pin = inputString.substring(11);
+          String pin = idPosition < 0 ? inputString.substring(11) : inputString.substring(11, idPosition);
           analogPinListening[pin.toInt()] = false;
           analogPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
       } else {
@@ -142,7 +144,6 @@ void loop() {
       }
       
       // Prepare reply message if caller supply a message id (this is general code you can reuse)
-      int idPosition = inputString.indexOf("?id=");
       if(idPosition != -1) {
         String id = inputString.substring(idPosition + 4);
         // print the reply
