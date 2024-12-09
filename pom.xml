@@ -19,17 +19,31 @@
 
 	<developers>
 		<developer>
+			<name>Peter Fichtner</name>
+			<organization>Ardulink</organization>
+			<organizationUrl>http://www.ardulink.org</organizationUrl>
+			<roles>
+				<role>developer</role>
+				<role>maintainer</role>
+				<role>lead</role>
+				<role>architect</role>
+				<role>release manager</role>
+			</roles>
+		</developer>
+	</developers>
+
+	<contributors>
+		<contributor>
 			<name>Luciano Zu</name>
 			<email>luciano.zu@gmail.com</email>
 			<organization>Ardulink</organization>
 			<organizationUrl>http://www.ardulink.org</organizationUrl>
-		</developer>
-		<developer>
-			<name>Peter Fichtner</name>
-			<organization>Ardulink</organization>
-			<organizationUrl>http://www.ardulink.org</organizationUrl>
-		</developer>
-	</developers>
+			<roles>
+				<role>founder</role>
+				<role>former developer</role>
+			</roles>
+		</contributor>
+	</contributors>
 
 	<scm>
 		<url>https://github.com/Ardulink/Ardulink-2</url>
