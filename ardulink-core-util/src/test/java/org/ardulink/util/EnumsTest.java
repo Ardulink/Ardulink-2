@@ -16,12 +16,8 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static org.ardulink.util.Closeables.closeQuietly;
-import static org.assertj.core.api.Assertions.assertThatRuntimeException;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
-import java.io.Closeable;
-import java.io.IOException;
+import static org.ardulink.util.Strings.swapUpperLower;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
@@ -33,22 +29,25 @@ import org.junit.jupiter.api.Test;
  * [adsense]
  *
  */
-class CloseablesTest {
+class EnumsTest {
+
+	enum TestEnum {
+		A, B, C;
+	}
+
+	String cName = TestEnum.C.name();
+	String swappedCName = swapUpperLower(cName);
 
 	@Test
-	void closeQuietlyOk() {
-		Closeable noop = () -> {
-		};
-		assertDoesNotThrow(() -> closeQuietly(noop));
+	void testEnumWithName() {
+		assertThat(Enums.enumWithName(TestEnum.class, cName)).hasValue(TestEnum.C);
+		assertThat(Enums.enumWithName(TestEnum.class, swappedCName)).isEmpty();
 	}
 
 	@Test
-	void closeQuietlyException() {
-		IOException ioex = new IOException("close error");
-		Closeable closeable = () -> {
-			throw ioex;
-		};
-		assertThatRuntimeException().isThrownBy(() -> closeQuietly(closeable)).withCause(ioex);
+	void testEnumWithNameIgnoreCase() {
+		assertThat(Enums.enumWithNameIgnoreCase(TestEnum.class, cName)).hasValue(TestEnum.C);
+		assertThat(Enums.enumWithNameIgnoreCase(TestEnum.class, swappedCName)).hasValue(TestEnum.C);
 	}
 
 }

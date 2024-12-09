@@ -27,6 +27,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 import static org.ardulink.core.beans.finder.api.AttributeFinders.propertyAnnotated;
 import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
+import static org.ardulink.util.Enums.enumWithName;
 import static org.ardulink.util.Maps.entry;
 import static org.ardulink.util.Numbers.convertTo;
 import static org.ardulink.util.Preconditions.checkArgument;
@@ -635,17 +636,14 @@ public abstract class LinkManager {
 			} else if (targetType.isEnum()) {
 				@SuppressWarnings("unchecked")
 				Class<Enum<?>> enumClass = (Class<Enum<?>>) targetType;
-				return enumWithName(enumClass, value);
+				return enumWithName(enumClass, value).orElse(null);
 			} else {
-				return findPrimitiveFor(targetType).map(p -> nullOrEmpty(value) ? p.defaultValue() : p.parse(value))
+				return findPrimitiveFor(targetType) //
+						.map(p -> nullOrEmpty(value) ? p.defaultValue() : p.parse(value)) //
 						.orElse(value);
 			}
 		}
 
-		private Object enumWithName(Class<Enum<?>> targetType, String value) {
-			return stream(targetType.getEnumConstants()).filter(attribute(Enum::name, isEqual(value))).findFirst()
-					.orElse(null);
-		}
 
 	};
 
