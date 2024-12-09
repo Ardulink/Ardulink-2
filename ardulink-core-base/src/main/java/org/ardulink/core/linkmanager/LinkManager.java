@@ -637,11 +637,10 @@ public abstract class LinkManager {
 				@SuppressWarnings("unchecked")
 				Class<Enum<?>> enumClass = (Class<Enum<?>>) targetType;
 				return enumWithName(enumClass, value).orElse(null);
-			} else {
-				return findPrimitiveFor(targetType) //
-						.map(p -> nullOrEmpty(value) ? p.defaultValue() : p.parse(value)) //
-						.orElse(value);
 			}
+			return findPrimitiveFor(targetType) //
+					.map(p -> nullOrEmpty(value) ? p.defaultValue() : p.parse(value)) //
+					.orElse(value);
 		}
 
 
