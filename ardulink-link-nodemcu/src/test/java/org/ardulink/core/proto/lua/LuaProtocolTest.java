@@ -16,6 +16,7 @@ limitations under the License.
 package org.ardulink.core.proto.lua;
 
 import static java.lang.String.format;
+import static java.lang.String.join;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom.toDeviceMessageCustom;
@@ -29,7 +30,6 @@ import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.util.Joiner;
 import org.junit.jupiter.api.Test;
 
 class LuaProtocolTest {
@@ -89,7 +89,7 @@ class LuaProtocolTest {
 	}
 
 	private String customMessage(String... values) {
-		return Joiner.on(" ").join(values);
+		return join(" ", values);
 	}
 
 	private int anyPin() {

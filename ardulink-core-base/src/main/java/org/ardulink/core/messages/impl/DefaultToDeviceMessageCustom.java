@@ -15,8 +15,9 @@ limitations under the License.
 */
 package org.ardulink.core.messages.impl;
 
+import static java.lang.String.join;
+
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
-import org.ardulink.util.Joiner;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -45,7 +46,7 @@ public class DefaultToDeviceMessageCustom implements ToDeviceMessageCustom {
 
 	@Override
 	public String toString() {
-		return Joiner.on(" ").join(messages);
+		return join(" ", messages);
 	}
 
 }

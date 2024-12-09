@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core;
 
 import static java.lang.String.format;
+import static java.lang.String.join;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -40,7 +41,6 @@ import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.FilteredEventListenerAdapter;
 import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.testsupport.junit5.ArduinoStubExt;
-import org.ardulink.util.Joiner;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -285,7 +285,7 @@ class ConnectionBasedLinkTest {
 	}
 
 	private void assertToArduinoWasSent(String... messages) {
-		assertToArduinoWasSent(Joiner.on("\n").join(messages));
+		assertToArduinoWasSent(join("\n", messages));
 	}
 
 	private void assertToArduinoWasSent(String message) {

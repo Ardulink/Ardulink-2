@@ -16,6 +16,7 @@ limitations under the License.
  */
 package org.ardulink.core.proto.ardulink;
 
+import static java.lang.String.join;
 import static java.util.Collections.addAll;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.ardulink.util.Joiner;
 import org.ardulink.util.Lists;
 
 /**
@@ -38,8 +38,6 @@ import org.ardulink.util.Lists;
  *
  */
 public class ALProtoBuilder {
-
-	private static final Joiner joiner = Joiner.on("/");
 
 	private Long messageId;
 	private final String command;
@@ -104,12 +102,12 @@ public class ALProtoBuilder {
 	}
 
 	public String withValues(String... values) {
-		List<Object> concat = Lists.newArrayList(command);
+		List<String> concat = Lists.newArrayList(command);
 		if (pin != null) {
-			concat.add(pin);
+			concat.add(String.valueOf(pin));
 		}
 		addAll(concat, values);
-		String message = "alp://" + joiner.join(concat);
+		String message = "alp://" + join("/", concat);
 		return messageId == null ? message : message + "?id=" + messageId.longValue();
 	}
 
