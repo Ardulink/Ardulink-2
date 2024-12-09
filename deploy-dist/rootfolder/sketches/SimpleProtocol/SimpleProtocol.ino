@@ -24,18 +24,33 @@ Remember: Digispark/PicoDuino has just 6.012 bytes memory available for sketches
 
 */
 
+// define DIGISPARK for Digispark/PicoDuino otherwise comment out
+#define DIGISPARK
+
+#ifdef DIGISPARK
 #include <DigiUSB.h>
+#else
+#define digitalPinListeningNum 14 // Change 14 if you have a different number of pins.
+#endif
 
 #define POWER_PIN_INTENSITY_MESSAGE 11
 #define POWER_PIN_SWITCH_MESSAGE 12
-#define digitalPinListeningNum 14 // Change 14 if you have a different number of pins.
 
 byte inputMessage[10];
 byte position = 0;
 
+#ifdef DIGISPARK
+void setup() {
+  DigiUSB.begin();
+  pinMode(0,OUTPUT);
+  pinMode(1,OUTPUT);
+  pinMode(2,OUTPUT);
+}
+#else
 void setup() {
   // initialize serial: (this is general code you can reuse)
   Serial.begin(115200);
+  while (!Serial); // Wait until Serial is connected
 
   // Turn off everything (not on RXTX)
   int index = 0;
@@ -43,10 +58,33 @@ void setup() {
     pinMode(index, OUTPUT);
     digitalWrite(index, LOW);
   }
-  
 }
+#endif
 
-void get_input() {
+#ifdef DIGISPARK
+void readSerial() {
+  position = 0;
+  byte lastRead;
+  // when there are no characters to read, or the character isn't a newline
+  while (true) { // loop forever
+    if (DigiUSB.available()) {
+      // something to read
+      lastRead = DigiUSB.read();
+      DigiUSB.print(lastRead);
+      if (lastRead == 255) {
+        break; // when we get a divider message, break out of loop
+      } else {
+        // add it to the inputString:
+        inputMessage[position++] = lastRead;
+      }
+    }
+    
+    // refresh the usb port for 10 milliseconds
+    DigiUSB.delay(10);
+  }
+}
+#else
+void readSerial() {
   position = 0;
   byte lastRead;
   // when there are no characters to read, or the character isn't a newline
@@ -54,7 +92,7 @@ void get_input() {
     if (Serial.available()) {
       // something to read
       lastRead = Serial.read();
-      if (lastRead == '\n') {
+      if (lastRead == 255) {
         break; // when we get a divider message, break out of loop
       } else {
         // add it to the inputString:
@@ -65,14 +103,13 @@ void get_input() {
     
   }
 }
+#endif
 
 void loop() {
-  
-  get_input();
-        
-  if(inputMessage[0] == POWER_PIN_SWITCH_MESSAGE) { // Power Pin Switch (this is general code you can reuse)
+  readSerial();
+  if (inputMessage[0] == POWER_PIN_SWITCH_MESSAGE) { // Power Pin Switch (this is general code you can reuse)
      digitalWrite(inputMessage[1], inputMessage[2]);
-  } else if(inputMessage[0] == POWER_PIN_INTENSITY_MESSAGE) { // Power Pin Intensity (this is general code you can reuse)
+  } else if (inputMessage[0] == POWER_PIN_INTENSITY_MESSAGE) { // Power Pin Intensity (this is general code you can reuse)
       analogWrite(inputMessage[1], inputMessage[2]);          
   }
 }

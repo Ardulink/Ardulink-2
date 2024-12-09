@@ -43,18 +43,17 @@ void setup() {
   Serial.flush();
   
   //set to false all listen variable
-  int index = 0;
-  for (index = 0; index < digitalPinListeningNum; index++) {
+  for (int index = 0; index < digitalPinListeningNum; index++) {
     digitalPinListening[index] = false;
     digitalPinListenedValue[index] = -1;
   }
-  for (index = 0; index < analogPinListeningNum; index++) {
+  for (int index = 0; index < analogPinListeningNum; index++) {
     analogPinListening[index] = false;
     analogPinListenedValue[index] = -1;
   }
 
   // Turn off everything (not on RXTX)
-  for (index = 2; index < digitalPinListeningNum; index++) {
+  for (int index = 2; index < digitalPinListeningNum; index++) {
     pinMode(index, OUTPUT);
     digitalWrite(index, LOW);
   }
@@ -165,8 +164,7 @@ void loop() {
   }
   
   // Send listen messages
-  int index = 0;
-  for (index = 0; index < digitalPinListeningNum; index++) {
+  for (int index = 0; index < digitalPinListeningNum; index++) {
     if (digitalPinListening[index]) {
       int value = digitalRead(index);
       if (value != digitalPinListenedValue[index]) {
@@ -175,7 +173,7 @@ void loop() {
       }
     }
   }
-  for (index = 0; index < analogPinListeningNum; index++) {
+  for (int index = 0; index < analogPinListeningNum; index++) {
     if (analogPinListening[index]) {
       int value = highPrecisionAnalogRead(index);
       if (value != analogPinListenedValue[index]) {
@@ -201,7 +199,7 @@ void sendPinReading(const char* type, int pin, int value) {
 int highPrecisionAnalogRead(int pin) {
     const int numReadings = 4;
     int sum = 0;
-    for (int i = 0; i < numReadings; i++) {
+    for (int index = 0; index < numReadings; index++) {
         sum += analogRead(pin);
     }
     return sum / numReadings;
