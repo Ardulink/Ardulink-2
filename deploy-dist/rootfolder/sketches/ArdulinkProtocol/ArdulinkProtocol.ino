@@ -222,7 +222,7 @@ int highPrecisionAnalogRead(int pin) {
 void serialEvent() {
   while (Serial.available() && !stringComplete) {
     // get the new byte:
-    char inChar = (char)Serial.read();
+    char inChar = (char) Serial.read();
     // if the incoming character is a newline, set a flag
     // so the main loop can do something about it:
     if (inChar == '\n') {
