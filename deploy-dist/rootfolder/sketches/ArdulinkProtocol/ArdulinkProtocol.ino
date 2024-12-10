@@ -91,17 +91,19 @@ void loop() {
           pinMode(pin.toInt(), INPUT);
       } else if (inputString.substring(6,10) == "spld") { // Stop Listen Digital Pin (this is general code you can reuse)
           String pin = inputString.substring(11, idPosition < 0 ? inputString.length() : idPosition);
-          digitalPinListening[pin.toInt()] = true;
           digitalPinListening[pin.toInt()] = false;
           digitalPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
+          pinMode(pin.toInt(), OUTPUT);
       } else if (inputString.substring(6,10) == "srla") { // Start Listen Analog Pin (this is general code you can reuse)
           String pin = inputString.substring(11, idPosition < 0 ? inputString.length() : idPosition);
           analogPinListening[pin.toInt()] = true;
           analogPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
+          pinMode(pin.toInt(), INPUT);
       } else if (inputString.substring(6,10) == "spla") { // Stop Listen Analog Pin (this is general code you can reuse)
           String pin = inputString.substring(11, idPosition < 0 ? inputString.length() : idPosition);
           analogPinListening[pin.toInt()] = false;
           analogPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
+          pinMode(pin.toInt(), OUTPUT);
       } else if (inputString.substring(6,10) == "cust") { // Custom Message
           int firstSlashPosition = inputString.indexOf('/', 11 );
           String customId = inputString.substring(11, firstSlashPosition);
