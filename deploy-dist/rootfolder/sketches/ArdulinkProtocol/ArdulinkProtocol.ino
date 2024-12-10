@@ -22,7 +22,6 @@ you code useful for a specific purpose. In this case you have to modify it to su
 your needs.
 */
 
-// int intensity = 0;               // led intensity this is needed just as example for this sketch
 String inputString = "";         // a string to hold incoming data (this is general code you can reuse)
 boolean stringComplete = false;  // whether the string is complete (this is general code you can reuse)
 String rplyResult = "";
@@ -70,17 +69,8 @@ void loop() {
       
       int idPosition = inputString.indexOf("?id=");
       if (inputString.substring(6,10) == "kprs") { // KeyPressed
-        msgRecognized = false; // remove this line
-        // here you can write your own code. For instance the commented code change pin intensity if you press 'a' or 's'
-        // take the command and change intensity on pin 11 this is needed just as example for this sketch
-        //char commandChar = inputString.charAt(14);
-        //if (commandChar == 'a' and intensity > 0) { // If press 'a' less intensity
-        //  intensity--;
-        //  analogWrite(11,intensity);
-        //} else if (commandChar == 's' and intensity < 125) { // If press 's' more intensity
-        //  intensity++;
-        //  analogWrite(11,intensity);
-        //}
+          String message = inputString.substring(11, idPosition < 0 ? inputString.length() : idPosition);
+          return handleKeyPressed(message);
       } else if (inputString.substring(6,10) == "ppin") { // Power Pin Intensity (this is general code you can reuse)
           int separatorPosition = inputString.indexOf('/', 11 );
           String pin = inputString.substring(11,separatorPosition);
@@ -188,6 +178,22 @@ void sendPinReading(const char* type, int pin, int value) {
     Serial.print(value);
     Serial.print('\n'); // End of Message
     Serial.flush();
+}
+
+bool handleKeyPressed(String message) {
+  // here you can write your own code. For instance the commented code change pin intensity if you press 'a' or 's'
+  // take the command and change intensity on pin 11 this is needed just as example for this sketch
+  
+  // static int intensity = 0;
+  // char commandChar = message.charAt(3);
+  // if (commandChar == 'a') { // If press 'a' less intensity
+  //   analogWrite(11, max(0, --intensity));
+  //   return true;
+  // } else if (commandChar == 's') { // If press 's' more intensity
+  //   analogWrite(11, min(125, ++intensity));
+  //   return true;
+  // }
+  return false;
 }
 
 bool handleCustomMessage(String customId, String value) {
