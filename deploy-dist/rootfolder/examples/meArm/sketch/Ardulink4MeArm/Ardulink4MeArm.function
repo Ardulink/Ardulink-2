@@ -1,0 +1,75 @@
+/*
+Copyright 2013 project Ardulink http://www.ardulink.org/
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+This sketch is an example to understand how Arduino can recognize ALProtocol. 
+However, it can easily be reused for their own purposes or as a base for a library. 
+Read carefully the comments. When you find "this is general code you can reuse"
+then it means that it is generic code that you can use to manage the ALProtocol. 
+When you find "this is needed just as example for this sketch" then it means that 
+you code useful for a specific purpose. In this case you have to modify it to suit 
+your needs.
+*/
+
+/**
+ * This Sketch should work if your Arduino library supports more than two servo motors see here: http://www.arduino.cc/en/Reference/ServoAttach
+ * Otherwise you can use the sketch version with Servo Software library
+ */
+
+#include <Servo.h> 
+
+Servo servoHand;
+int   servoHandPin = 9;  // pwm pin used to control the servo
+
+Servo servoRotor;
+int   servoRotorPin = 10;  // pwm pin used to control the servo
+
+Servo servoArm1;
+int   servoArm1Pin = 11;  // pwm pin used to control the servo
+
+Servo servoArm2;
+int   servoArm2Pin = 5;  // pwm pin used to control the servo
+
+void setup() {
+  // add this to setup
+
+  servoHand.attach(servoHandPin);  // attaches the servo on pin servopin to the servo object 
+  servoHand.write(170); // move hand to its default position (it depends on your calibration)
+  
+  servoRotor.attach(servoRotorPin);  // attaches the servo on pin servopin to the servo object 
+  servoRotor.write(70); // move it to its default position (it depends on your calibration)
+
+  servoArm1.attach(servoArm1Pin);  // attaches the servo on pin servopin to the servo object 
+  servoArm1.write(90); // move it to its default position (it depends on your calibration)
+
+  servoArm2.attach(servoArm2Pin);  // attaches the servo on pin servopin to the servo object 
+  servoArm2.write(90); // move it to its default position (it depends on your calibration)
+}
+
+bool handleCustomMessage(String customId, String value) {                
+  if (customId == "servoHand") {
+    servoHand.write(value.toInt());
+    return true;
+  } else if (customId == "servoRotor") {
+    servoRotor.write(value.toInt());
+    return true;
+  } else if (customId == "servoArm1") {
+    servoArm1.write(value.toInt());
+    return true;
+  } else if (customId == "servoArm2") {
+    servoArm2.write(value.toInt());
+    return true;
+  }
+  return false;
+}

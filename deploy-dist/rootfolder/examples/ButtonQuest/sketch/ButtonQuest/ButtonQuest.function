@@ -1,0 +1,113 @@
+/*
+Copyright 2013 Luciano Zu project Ardulink http://www.ardulink.org/
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+This sketch is an example to understand how Arduino can recognize ALProtocol. 
+However, it can easily be reused for their own purposes or as a base for a library. 
+Read carefully the comments. When you find "this is general code you can reuse"
+then it means that it is generic code that you can use to manage the ALProtocol. 
+When you find "this is needed just as example for this sketch" then it means that 
+you code useful for a specific purpose. In this case you have to modify it to suit 
+your needs.
+*/
+
+/*
+This example is written to work with a chipKIT UNO32 and its chipKIT Basic I/O shield
+but to let use it with other boards you have to modify it just a little.
+See just OLED management and pin button mapping.
+*/
+
+#include <IOShieldOled.h>
+#include <stdio.h>
+
+#define BUFFER_SIZE 64
+#define BUTTON_NUMBER 4
+#define BUTTON_PIN_1 35
+#define BUTTON_PIN_2 8
+#define BUTTON_PIN_3 7
+#define BUTTON_PIN_4 2
+
+boolean toBePressed[BUTTON_NUMBER];
+
+String inputString = "";         // a string to hold incoming data (this is general code you can reuse)
+boolean stringComplete = false;  // whether the string is complete (this is general code you can reuse)
+
+void setup() {
+  // add this to setup
+  IOShieldOled.begin();
+}
+
+bool handleCustomMessage(String customId, String value) {                
+  if (customId == "setbutton") {
+    if (value.startsWith("on/")) {
+      value = value.substring(3, value.length());
+      setToBePressed(value.toInt(), true);
+      return true;
+    } else if (value.startsWith("off/")) {
+      value = value.substring(4, value.length());
+      setToBePressed(value.toInt(), false);
+      return true;
+    }
+  } else if (customId == "getResult") {
+    rplyResult = "result=" + getResult();
+    return true;
+  }
+  return false;
+}
+
+void setToBePressed(int index, boolean b) {
+  toBePressed[index - 1] = b;
+  
+  static char buffer[BUFFER_SIZE];
+  buffer[0] = '\0';
+  int pos = 0;
+  for (int i = 0; i < BUTTON_NUMBER; i++) {
+    if (toBePressed[i]) {
+      sprintf(&buffer[pos++], "%d", (i + 1));
+      buffer[pos++] = ' ';
+    }
+  }
+  buffer[pos] = '\0';
+  
+  //Clear the virtual buffer
+  IOShieldOled.clearBuffer();
+  //Chosing Fill pattern 0
+  IOShieldOled.setFillPattern(IOShieldOled.getStdPattern(0));
+  //Turn automatic updating off
+  IOShieldOled.setCharUpdate(0);
+  IOShieldOled.setCursor(0, 0);
+  IOShieldOled.putString(buffer);
+  IOShieldOled.updateDisplay();
+}
+
+String getResult() {
+  String result = "";
+  boolean pressed[BUTTON_NUMBER];
+  int buttonPins[BUTTON_NUMBER] = {BUTTON_PIN_1, BUTTON_PIN_2, BUTTON_PIN_3, BUTTON_PIN_4};
+
+  for (int i = 0; i < BUTTON_NUMBER; i++) {
+    pressed[i] = digitalRead(buttonPins[i]) == HIGH;
+    result += "Button " + String(i + 1) + (pressed[i] ? " on " : " off ");
+  }
+
+  String summary = " RIGHT!";
+  for (int i = 0; i < BUTTON_NUMBER; i++) {
+    if (pressed[i] != toBePressed[i]) {
+      summary = " WRONG!";
+      break; // No need to check further if already wrong
+    }
+  }
+
+  return result + summary;
+}

@@ -1,0 +1,130 @@
+/*
+Copyright 2013 project Ardulink http://www.ardulink.org/
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+This sketch is an example to understand how Arduino can recognize ALProtocol. 
+However, it can easily be reused for their own purposes or as a base for a library. 
+Read carefully the comments. When you find "this is general code you can reuse"
+then it means that it is generic code that you can use to manage the ALProtocol. 
+When you find "this is needed just as example for this sketch" then it means that 
+you code useful for a specific purpose. In this case you have to modify it to suit 
+your needs.
+*/
+
+#include <AFMotor.h>
+
+AF_DCMotor motorLeft(3);
+AF_DCMotor motorRight(4);
+
+void setup() {
+  // add this to setup
+  motorLeft.setSpeed(200);
+  motorRight.setSpeed(200);
+ 
+  motorLeft.run(RELEASE);
+  motorRight.run(RELEASE);  
+}
+
+bool handleCustomMessage(String customId, String value) {
+  if(customId == "ahead") {
+    goAhead(value.toInt());
+    return true;
+  } else if(customId == "back") {
+    goBack(value.toInt());
+    return true;
+  } else if(customId == "right") {
+    goRight(value.toInt());
+    return true;
+  } else if(customId == "left") {
+    goLeft(value.toInt());
+    return true;
+  }
+  return false;
+}
+
+void goAhead(int value) {
+  uint8_t i;
+  motorLeft.run(FORWARD);
+  motorRight.run(FORWARD);
+  for (i = 0; i < value; i++) {
+    motorLeft.setSpeed(i);  
+    motorRight.setSpeed(i);  
+    delay(10);
+  }
+  for (i = value; i > 0; i--) {
+    motorLeft.setSpeed(i);  
+    motorRight.setSpeed(i);  
+    delay(10);
+  }
+  motorLeft.run(RELEASE);
+  motorRight.run(RELEASE);
+  delay(1000);
+}
+
+void goBack(int value) {
+  uint8_t i;
+  motorLeft.run(BACKWARD);
+  motorRight.run(BACKWARD);
+  for (i = 0; i < value; i++) {
+    motorLeft.setSpeed(i);  
+    motorRight.setSpeed(i);  
+    delay(10);
+  }
+  for (i = value; i > 0; i--) {
+    motorLeft.setSpeed(i);  
+    motorRight.setSpeed(i);  
+    delay(10);
+  }
+  motorLeft.run(RELEASE);
+  motorRight.run(RELEASE);
+  delay(1000);
+}
+
+void goRight(int value) {
+  uint8_t i;
+  motorLeft.run(FORWARD);
+  motorRight.run(BACKWARD);
+  for (i = 0; i < value; i++) {
+    motorLeft.setSpeed(i);  
+    motorRight.setSpeed(i);  
+    delay(10);
+  }
+  for (i = value; i > 0; i--) {
+    motorLeft.setSpeed(i);  
+    motorRight.setSpeed(i);  
+    delay(10);
+  }
+  motorLeft.run(RELEASE);
+  motorRight.run(RELEASE);
+  delay(1000);
+}
+
+void goLeft(int value) {
+  uint8_t i;
+  motorLeft.run(BACKWARD);
+  motorRight.run(FORWARD);
+  for (i = 0; i < value; i++) {
+    motorLeft.setSpeed(i);  
+    motorRight.setSpeed(i);  
+    delay(10);
+  }
+  for (i = value; i > 0; i--) {
+    motorLeft.setSpeed(i);  
+    motorRight.setSpeed(i);  
+    delay(10);
+  }
+  motorLeft.run(RELEASE);
+  motorRight.run(RELEASE);
+  delay(1000);
+}

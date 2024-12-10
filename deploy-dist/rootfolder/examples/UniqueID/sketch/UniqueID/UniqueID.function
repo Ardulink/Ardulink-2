@@ -37,19 +37,28 @@ So the final length to store the unique id is 38 bytes.
 #define UNIQUE_ID_MAGIC_NUMBER_HIGH 76
 #define UNIQUE_ID_MAGIC_NUMBER_LOW 90
 
-void resetUniqueID() {
+bool handleCustomMessage(String customId, String value) {
+  static boolean initialized = false;
+  if (!initialized && customCommand == "getUniqueID") {
+    rplyResult = "&UniqueID=" + getUniqueID(value);
+    initialized = true;
+    return true;
+  }  
+  return false;
+}
 
+String getUniqueID(String suggested) {
   char buffer[UNIQUE_ID_LENGTH + 1];
-  for(int i = 0; i < UNIQUE_ID_LENGTH + 1; i++) {
-    buffer[i] = 0;
+
+  EEPROM.get(UNIQUE_ID_EEPROM_ADDRESS, buffer);
+  if (buffer[0] == UNIQUE_ID_MAGIC_NUMBER_HIGH && buffer[1] == UNIQUE_ID_MAGIC_NUMBER_LOW) {
+    // already set
+    return String(&buffer[2]);
   }
-  EEPROM.put( UNIQUE_ID_EEPROM_ADDRESS, buffer );
+  // write
+  buffer[0] = UNIQUE_ID_MAGIC_NUMBER_HIGH;
+  buffer[1] = UNIQUE_ID_MAGIC_NUMBER_LOW;
+  suggested.toCharArray(&buffer[2], UNIQUE_ID_LENGTH - 1);
+  EEPROM.put(UNIQUE_ID_EEPROM_ADDRESS, buffer);
+  return suggested;
 }
-
-void setup(){
-  resetUniqueID();
-}
-
-void loop(){
-}
-

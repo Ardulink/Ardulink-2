@@ -25,13 +25,14 @@ your needs.
 // int intensity = 0;               // led intensity this is needed just as example for this sketch
 String inputString = "";         // a string to hold incoming data (this is general code you can reuse)
 boolean stringComplete = false;  // whether the string is complete (this is general code you can reuse)
+String rplyResult = "";
 
 #define digitalPinListeningNum 14 // Change 14 if you have a different number of pins.
 #define analogPinListeningNum 6 // Change 6 if you have a different number of pins.
-boolean digitalPinListening[digitalPinListeningNum]; // Array used to know which pins on the Arduino must be listening.
-boolean analogPinListening[analogPinListeningNum]; // Array used to know which pins on the Arduino must be listening.
-int digitalPinListenedValue[digitalPinListeningNum]; // Array used to know which value is read last time.
-int analogPinListenedValue[analogPinListeningNum]; // Array used to know which value is read last time.
+boolean digitalPinListening[digitalPinListeningNum] = { false }; // Array used to know which pins on the Arduino must be listening.
+boolean analogPinListening[analogPinListeningNum] = { false }; // Array used to know which pins on the Arduino must be listening.
+int digitalPinListenedValue[digitalPinListeningNum] = { -1 }; // Array used to know which value is read last time.
+int analogPinListenedValue[analogPinListeningNum] = { -1 }; // Array used to know which value is read last time.
 
 void setup() {
   Serial.begin(115200);
@@ -41,21 +42,11 @@ void setup() {
   Serial.print("ok?id=0");
   Serial.print('\n'); // End of Message
   Serial.flush();
-  
-  //set to false all listen variable
-  for (int index = 0; index < digitalPinListeningNum; index++) {
-    digitalPinListening[index] = false;
-    digitalPinListenedValue[index] = -1;
-  }
-  for (int index = 0; index < analogPinListeningNum; index++) {
-    analogPinListening[index] = false;
-    analogPinListenedValue[index] = -1;
-  }
 
   // Turn off everything (not on RXTX)
-  for (int index = 2; index < digitalPinListeningNum; index++) {
-    pinMode(index, OUTPUT);
-    digitalWrite(index, LOW);
+  for (int i = 2; i < digitalPinListeningNum; i++) {
+    pinMode(i, OUTPUT);
+    digitalWrite(i, LOW);
   }
   
   // Turn off LED this is needed just as example for this sketch
@@ -118,28 +109,30 @@ void loop() {
           int pin = inputString.substring(11,firstSlashPosition).toInt();
           noTone(pin);
       } else if (inputString.substring(6,10) == "srld") { // Start Listen Digital Pin (this is general code you can reuse)
-          String pin = idPosition < 0 ? inputString.substring(11) : inputString.substring(11, idPosition);
+          String pin = inputString.substring(11, idPosition < 0 ? inputString.length() : idPosition);
           digitalPinListening[pin.toInt()] = true;
           digitalPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
           pinMode(pin.toInt(), INPUT);
       } else if (inputString.substring(6,10) == "spld") { // Stop Listen Digital Pin (this is general code you can reuse)
-          String pin = idPosition < 0 ? inputString.substring(11) : inputString.substring(11, idPosition);
+          String pin = inputString.substring(11, idPosition < 0 ? inputString.length() : idPosition);
           digitalPinListening[pin.toInt()] = true;
           digitalPinListening[pin.toInt()] = false;
           digitalPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
       } else if (inputString.substring(6,10) == "srla") { // Start Listen Analog Pin (this is general code you can reuse)
-          String pin = idPosition < 0 ? inputString.substring(11) : inputString.substring(11, idPosition);
+          String pin = inputString.substring(11, idPosition < 0 ? inputString.length() : idPosition);
           analogPinListening[pin.toInt()] = true;
           analogPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
       } else if (inputString.substring(6,10) == "spla") { // Stop Listen Analog Pin (this is general code you can reuse)
-          String pin = idPosition < 0 ? inputString.substring(11) : inputString.substring(11, idPosition);
+          String pin = inputString.substring(11, idPosition < 0 ? inputString.length() : idPosition);
           analogPinListening[pin.toInt()] = false;
           analogPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
       } else if (inputString.substring(6,10) == "cust") { // Custom Message
-        msgRecognized = false; // remove this line
-        // here you can write your own code. 
+          int firstSlashPosition = inputString.indexOf('/', 11 );
+          String customId = inputString.substring(11, firstSlashPosition);
+          String value = inputString.substring(firstSlashPosition + 1, idPosition < 0 ? inputString.length() : idPosition);
+          msgRecognized = handleCustomMessage(customId, value);
       } else {
-        msgRecognized = false; // this sketch doesn't know other messages in this case command is ko (not ok)
+          msgRecognized = false; // this sketch doesn't know other messages in this case command is ko (not ok)
       }
       
       // Prepare reply message if caller supply a message id (this is general code you can reuse)
@@ -147,12 +140,14 @@ void loop() {
         String id = inputString.substring(idPosition + 4);
         // print the reply
         Serial.print("alp://rply/");
-        if (msgRecognized) { // this sketch doesn't know other messages in this case command is ko (not ok)
-          Serial.print("ok?id=");
-        } else {
-          Serial.print("ko?id=");
-        }
+        Serial.print(msgRecognized ? "ok" : "ko");
+        Serial.print("?id=");
         Serial.print(id);
+        if (rplyResult.length() > 0) {
+          Serial.print("&");
+          Serial.print(rplyResult);
+          rplyResult = "";
+        }        
         Serial.print('\n'); // End of Message
         Serial.flush();
       }
@@ -164,21 +159,21 @@ void loop() {
   }
   
   // Send listen messages
-  for (int index = 0; index < digitalPinListeningNum; index++) {
-    if (digitalPinListening[index]) {
-      int value = digitalRead(index);
-      if (value != digitalPinListenedValue[index]) {
-        digitalPinListenedValue[index] = value;
-        sendPinReading("dred", index, value);
+  for (int i = 0; i < digitalPinListeningNum; i++) {
+    if (digitalPinListening[i]) {
+      int value = digitalRead(i);
+      if (value != digitalPinListenedValue[i]) {
+        digitalPinListenedValue[i] = value;
+        sendPinReading("dred", i, value);
       }
     }
   }
-  for (int index = 0; index < analogPinListeningNum; index++) {
-    if (analogPinListening[index]) {
-      int value = highPrecisionAnalogRead(index);
-      if (value != analogPinListenedValue[index]) {
-        analogPinListenedValue[index] = value;
-        sendPinReading("ared", index, value);
+  for (int i = 0; i < analogPinListeningNum; i++) {
+    if (analogPinListening[i]) {
+      int value = highPrecisionAnalogRead(i);
+      if (value != analogPinListenedValue[i]) {
+        analogPinListenedValue[i] = value;
+        sendPinReading("ared", i, value);
       }
     }
   }
@@ -186,7 +181,7 @@ void loop() {
 
 void sendPinReading(const char* type, int pin, int value) {
     Serial.print("alp://");
-    Serial.print(type);  // "dred" for digital, "ared" for analog
+    Serial.print(type);
     Serial.print("/");
     Serial.print(pin);
     Serial.print("/");
@@ -195,11 +190,16 @@ void sendPinReading(const char* type, int pin, int value) {
     Serial.flush();
 }
 
+bool handleCustomMessage(String customId, String value) {
+    // here you can write your own code. 
+  return false;
+}
+
 // Reads 4 times and computes the average value
 int highPrecisionAnalogRead(int pin) {
     const int numReadings = 4;
     int sum = 0;
-    for (int index = 0; index < numReadings; index++) {
+    for (int i = 0; i < numReadings; i++) {
         sum += analogRead(pin);
     }
     return sum / numReadings;
