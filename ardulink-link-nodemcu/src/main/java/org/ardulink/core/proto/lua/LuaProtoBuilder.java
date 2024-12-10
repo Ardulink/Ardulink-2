@@ -16,6 +16,7 @@ limitations under the License.
 package org.ardulink.core.proto.lua;
 
 import static java.lang.Boolean.TRUE;
+import static java.lang.String.format;
 import static java.util.Arrays.stream;
 import static java.util.regex.Pattern.quote;
 import static java.util.stream.Collectors.joining;
@@ -53,7 +54,7 @@ public class LuaProtoBuilder {
 			@Override
 			public String message(LuaProtoBuilder builder) {
 				Integer pinNumber = checkNotNull(builder.pin, PIN_HAS_TO_BE_SPECIFIED);
-				return String.format("gpio.mode(%s,gpio.OUTPUT) gpio.write(%s,gpio.%s)", pinNumber, pinNumber,
+				return format("gpio.mode(%s,gpio.OUTPUT) gpio.write(%s,gpio.%s)", pinNumber, pinNumber,
 						TRUE.equals(firstValue(builder.values, Boolean.class)) ? "HIGH" : "LOW");
 
 			}
@@ -62,7 +63,7 @@ public class LuaProtoBuilder {
 			@Override
 			public String message(LuaProtoBuilder builder) {
 				Integer pinNumber = checkNotNull(builder.pin, PIN_HAS_TO_BE_SPECIFIED);
-				return String.format("pwm.setup(%s,1000,1023) pwm.start(%s) pwm.setduty(%s,%s)", pinNumber, pinNumber,
+				return format("pwm.setup(%s,1000,1023) pwm.start(%s) pwm.setduty(%s,%s)", pinNumber, pinNumber,
 						pinNumber, firstValue(builder.values, Integer.class));
 			}
 		}, //
@@ -91,7 +92,7 @@ public class LuaProtoBuilder {
 			public String message(LuaProtoBuilder builder) {
 				Integer pinNumber = checkNotNull(builder.pin, PIN_HAS_TO_BE_SPECIFIED);
 				checkState(builder.values == null, VALUE_MUST_NOT_SPECIFIED);
-				return String.format("gpio.mode(%s,gpio.OUTPUT)", pinNumber);
+				return format("gpio.mode(%s,gpio.OUTPUT)", pinNumber);
 			}
 		}; //
 
