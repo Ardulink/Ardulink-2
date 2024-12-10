@@ -18,6 +18,7 @@ package org.ardulink.core.proto.ardulink;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -426,13 +427,13 @@ public class ArdulinkProtocol2 implements Protocol {
 		@Override
 		public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
 			return toBytes(builder(keyPress, CHAR_PRESSED)
-					.withValue(String.format("chr%scod%sloc%smod%smex%s", keyPress.getKeychar(), keyPress.getKeycode(),
+					.withValue(format("chr%scod%sloc%smod%smex%s", keyPress.getKeychar(), keyPress.getKeycode(),
 							keyPress.getKeylocation(), keyPress.getKeymodifiers(), keyPress.getKeymodifiersex())));
 		}
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageTone tone) {
-			return toBytes(builder(tone, TONE).withValue(String.format("%d/%d/%d", tone.getTone().getPin().pinNum(),
+			return toBytes(builder(tone, TONE).withValue(format("%d/%d/%d", tone.getTone().getPin().pinNum(),
 					tone.getTone().getHertz(), tone.getTone().getDuration(MILLISECONDS).orElse(-1L))));
 		}
 
