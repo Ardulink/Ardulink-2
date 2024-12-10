@@ -35,28 +35,14 @@ int analogPinListenedValue[analogPinListeningNum] = { -1 }; // Array used to kno
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial); // Wait until Serial is connected
-  
-  Serial.print("alp://rply/");
-  Serial.print("ok?id=0");
-  Serial.print('\n'); // End of Message
-  Serial.flush();
+  while (!Serial); // Wait until Serial is connected  
+  sendRply("0", true); // Send Rply to signal ready state
 
   // Turn off everything (not on RXTX)
   for (int i = 2; i < digitalPinListeningNum; i++) {
     pinMode(i, OUTPUT);
     digitalWrite(i, LOW);
   }
-  
-  // Turn off LED this is needed just as example for this sketch
-//  analogWrite(11, intensity);
-  
-  // Read from 4 this is needed just as example for this sketch
-//  pinMode(4, INPUT);
-
-  // In order to work with analog input signal you have to set pinMode to INPUT please add Ax pinMode statement if you need for it
-  //pinMode(A0, INPUT);
-
 }
 
 void loop() {
@@ -128,18 +114,7 @@ void loop() {
       // Prepare reply message if caller supply a message id (this is general code you can reuse)
       if (idPosition != -1) {
         String id = inputString.substring(idPosition + 4);
-        // print the reply
-        Serial.print("alp://rply/");
-        Serial.print(msgRecognized ? "ok" : "ko");
-        Serial.print("?id=");
-        Serial.print(id);
-        if (rplyResult.length() > 0) {
-          Serial.print("&");
-          Serial.print(rplyResult);
-          rplyResult = "";
-        }        
-        Serial.print('\n'); // End of Message
-        Serial.flush();
+        sendRply(id, msgRecognized);
       }
     }
     
@@ -178,6 +153,21 @@ void sendPinReading(const char* type, int pin, int value) {
     Serial.print(value);
     Serial.print('\n'); // End of Message
     Serial.flush();
+}
+
+void sendRply(String id, boolean ok) {
+  // print the reply
+  Serial.print("alp://rply/");
+  Serial.print(ok ? "ok" : "ko");
+  Serial.print("?id=");
+  Serial.print(id);
+  if (rplyResult.length() > 0) {
+    Serial.print("&");
+    Serial.print(rplyResult);
+    rplyResult = "";
+  }        
+  Serial.print('\n'); // End of Message
+  Serial.flush();
 }
 
 bool handleKeyPressed(String message) {
