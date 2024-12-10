@@ -38,7 +38,7 @@ void readSerial() {
   while (true) { // loop forever
     if (DigiUSB.available()) {
       // something to read
-      lastRead = (char)DigiUSB.read();
+      lastRead = (char) DigiUSB.read();
       
       if (lastRead == '\n') {
         break; // when we get a newline, break out of loop
