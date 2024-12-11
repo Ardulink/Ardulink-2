@@ -28,6 +28,36 @@ Remember: Digispark/PicoDuino has just 6.012 bytes memory available for sketches
 
 String inputString = "";
 
+struct CommandHandler {
+    const char* command;
+    bool (*handler)(const char* params, size_t length);
+};
+
+bool handlePpin(const char* cParams, size_t length) {
+  const char* separator = strchr(cParams, '/');
+  if (!separator) return false;
+  int pin = atoi(cParams);
+  int value = atoi(separator + 1);
+  pinMode(pin, OUTPUT);
+  analogWrite(pin, value);
+  return true;
+}
+
+bool handlePpsw(const char* cParams, size_t length) {
+  const char* separator = strchr(cParams, '/');
+  if (!separator) return false;
+  int pin = atoi(cParams);
+  int value = atoi(separator + 1);
+  pinMode(pin, OUTPUT);
+  digitalWrite(pin, value == 1 ? HIGH : LOW);
+  return true;
+}
+
+const CommandHandler commandHandlers[] = {
+    {"ppin", handlePpin},
+    {"ppsw", handlePpsw}
+};
+
 void setup() {
   DigiUSB.begin();
 }
@@ -57,21 +87,27 @@ void loop() {
   
   readSerial();
   
-  if (inputString.startsWith("alp://")) { // OK is a message I know (this is general code you can reuse)
-    if (inputString.substring(6,10) == "ppsw") { // Power Pin Switch (this is general code you can reuse)
-      int separatorPosition = inputString.indexOf('/', 11 );
-      int pin = inputString.substring(11,separatorPosition).toInt();
-      int power = inputString.substring(separatorPosition + 1).toInt();
-      pinMode(pin, OUTPUT);
-      digitalWrite(pin, power == 1 ? HIGH : LOW);
-    } else if (inputString.substring(6,10) == "ppin") { // Power Pin Intensity (this is general code you can reuse)
-      int separatorPosition = inputString.indexOf('/', 11 );
-      int pin = inputString.substring(11,separatorPosition).toInt();
-      int intens = inputString.substring(separatorPosition + 1).toInt();
-      pinMode(pin, OUTPUT);
-      analogWrite(pin, intens);
+  const char* inputCStr = inputString.c_str();
+  
+  if (strncmp(inputCStr, "alp://", 6) == 0) {
+    const char* commandAndParamsC = inputCStr + 6; // Skip "alp://"
+
+    for (const auto& handler : commandHandlers) {
+      if (strncmp(commandAndParamsC, handler.command, strlen(handler.command)) == 0) {
+        const char* paramsStart = commandAndParamsC + strlen(handler.command) + 1; // Skip command name
+
+        const char* idPositionPtr = strstr(paramsStart, "?id=");
+        if (idPositionPtr) {
+          bool ok = handler.handler(paramsStart, idPositionPtr);
+          int id = atoi(idPositionPtr + 4); // Skip "?id=" part
+          sendRply(id, ok);
+        } else {
+          handler.handler(paramsStart, strlen(paramsStart));
+        }
+        break;
+      }
     }
-  } 
+  }
 
   inputString = "";
 }

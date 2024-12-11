@@ -33,10 +33,128 @@ boolean analogPinListening[analogPinListeningNum] = { false }; // Array used to 
 int digitalPinListenedValue[digitalPinListeningNum] = { -1 }; // Array used to know which value is read last time.
 int analogPinListenedValue[analogPinListeningNum] = { -1 }; // Array used to know which value is read last time.
 
+struct CommandHandler {
+    const char* command;
+    bool (*handler)(const char* params, size_t length);
+};
+
+
+bool handleKprs(const String& params, size_t length) {
+  // here you can write your own code. For instance the commented code change pin intensity if you press 'a' or 's'
+  // take the command and change intensity on pin 11 this is needed just as example for this sketch
+  
+//  static int intensity = 0;
+//  char commandChar = params.charAt(3);
+//  if (commandChar == 'a') { // If press 'a' less intensity
+//    intensity = max(0, intensity - 1);
+//    analogWrite(11, intensity );
+//    return true;
+//   } else if (commandChar == 's') { // If press 's' more intensity
+//    intensity = min(125, intensity + 1);
+//    analogWrite(11, intensity );
+//    return true;
+//  }
+  return false;
+}
+
+bool handlePpin(const char* cParams, size_t length) {
+  const char* separator = strchr(cParams, '/');
+  if (!separator) return false;
+  int pin = atoi(cParams);
+  int value = atoi(separator + 1);
+  pinMode(pin, OUTPUT);
+  analogWrite(pin, value);
+  return true;
+}
+
+bool handlePpsw(const char* cParams, size_t length) {
+  const char* separator = strchr(cParams, '/');
+  if (!separator) return false;
+  int pin = atoi(cParams);
+  int value = atoi(separator + 1);
+  pinMode(pin, OUTPUT);
+  digitalWrite(pin, value == 1 ? HIGH : LOW);
+  return true;
+}
+
+bool handleTone(const char* cParams, size_t length) {
+  const char* separator1 = strchr(cParams, '/');
+  if (!separator1) return false;
+  const char* separator2 = strchr(separator1 + 1, '/');
+  if (!separator2) return false;
+
+  int pin = atoi(cParams);
+  int frequency = atoi(separator1 + 1);
+  int duration = atoi(separator2 + 1);
+
+  if (duration == -1) {
+    tone(pin, frequency);
+  } else {
+    tone(pin, frequency, duration);
+  }
+  return true;
+}
+
+bool handleNotn(const char* cParams, size_t length) {
+  int pin = atoi(cParams);
+  noTone(pin);
+  return true;
+}
+
+bool handleSrld(const char* cParams, size_t length) {
+  int pin = atoi(cParams);
+  digitalPinListening[pin] = true;
+  digitalPinListenedValue[pin] = -1; // Ensure a message back when start listen happens.
+  pinMode(pin, INPUT);
+  return true;
+}
+
+bool handleSpld(const char* cParams, size_t length) {
+  int pin = atoi(cParams);
+  digitalPinListening[pin] = false;
+  digitalPinListenedValue[pin] = -1; // Ensure a message back when start listen happens.
+  return true;
+}
+
+bool handleSrla(const char* cParams, size_t length) {
+  int pin = atoi(cParams);
+  analogPinListening[pin] = true;
+  analogPinListenedValue[pin] = -1; // Ensure a message back when start listen happens.
+  return true;
+}
+
+bool handleSpla(const char* cParams, size_t length) {
+  int pin = atoi(cParams);
+  analogPinListening[pin] = false;
+  analogPinListenedValue[pin] = -1; // Ensure a message back when start listen happens.
+  return true;
+}
+
+bool handleCust(const char* cParams, size_t length) {
+  String params = String(cParams).substring(0, length);
+  int separator = params.indexOf('/');
+  String customId = params.substring(0, separator);
+  String value = params.substring(separator + 1);
+  return handleCustomMessage(customId, value);
+}
+
+const CommandHandler commandHandlers[] = {
+    {"kprs", handleKprs},
+    {"ppin", handlePpin},
+    {"ppsw", handlePpsw},
+    {"tone", handleTone},
+    {"notn", handleNotn},
+    {"srld", handleSrld},
+    {"spld", handleSpld},
+    {"srla", handleSrla},
+    {"spla", handleSpla},
+    {"cust", handleCust}
+};
+
 void setup() {
   Serial.begin(115200);
   while (!Serial); // Wait until Serial is connected  
-  sendRply("0", true); // Send Rply to signal ready state
+  sendRply(0, true); // Send Rply to signal ready state
 
   // Turn off everything (not on RXTX)
   for (int i = 2; i < digitalPinListeningNum; i++) {
@@ -46,77 +164,26 @@ void setup() {
 }
 
 void loop() {
-  // when a newline arrives:
   if (stringComplete) {
+    const char* inputCStr = inputString.c_str();
     
-    if (inputString.startsWith("alp://")) { // OK is a message I know (this is general code you can reuse)
-    
-      boolean msgRecognized = true;
-      
-      int idPosition = inputString.indexOf("?id=");
-      if (inputString.substring(6,10) == "kprs") { // KeyPressed
-          String message = inputString.substring(11, idPosition < 0 ? inputString.length() : idPosition);
-          return handleKeyPressed(message);
-      } else if (inputString.substring(6,10) == "ppin") { // Power Pin Intensity (this is general code you can reuse)
-          int separatorPosition = inputString.indexOf('/', 11 );
-          String pin = inputString.substring(11,separatorPosition);
-          String intens = inputString.substring(separatorPosition + 1);
-          pinMode(pin.toInt(), OUTPUT);
-          analogWrite(pin.toInt(),intens.toInt());
-      } else if (inputString.substring(6,10) == "ppsw") { // Power Pin Switch (this is general code you can reuse)
-          int separatorPosition = inputString.indexOf('/', 11 );
-          String pin = inputString.substring(11,separatorPosition);
-          String power = inputString.substring(separatorPosition + 1);
-          pinMode(pin.toInt(), OUTPUT);
-          digitalWrite(pin.toInt(), power.toInt() == 1 ? HIGH : LOW);
-      } else if (inputString.substring(6,10) == "tone") { // tone request (this is general code you can reuse)
-          int firstSlashPosition = inputString.indexOf('/', 11 );
-          int secondSlashPosition = inputString.indexOf('/', firstSlashPosition + 1 );
-          int pin = inputString.substring(11,firstSlashPosition).toInt();
-          int frequency = inputString.substring(firstSlashPosition + 1, secondSlashPosition).toInt();
-          int duration = inputString.substring(secondSlashPosition + 1).toInt();
-          if (duration == -1) {
-          	tone(pin, frequency);
+    if (strncmp(inputCStr, "alp://", 6) == 0) {
+      const char* commandAndParamsC = inputCStr + 6; // Skip "alp://"
+  
+      for (const auto& handler : commandHandlers) {
+        if (strncmp(commandAndParamsC, handler.command, strlen(handler.command)) == 0) {
+          const char* paramsStart = commandAndParamsC + strlen(handler.command) + 1; // Skip command name
+  
+          const char* idPositionPtr = strstr(paramsStart, "?id=");
+          if (idPositionPtr) {
+            bool ok = handler.handler(paramsStart, idPositionPtr);
+            int id = atoi(idPositionPtr + 4); // Skip "?id=" part
+            sendRply(id, ok);
           } else {
-          	tone(pin, frequency, duration);
+            handler.handler(paramsStart, strlen(paramsStart));
           }
-      } else if (inputString.substring(6,10) == "notn") { // no tone request (this is general code you can reuse)
-          int firstSlashPosition = inputString.indexOf('/', 11 );
-          int pin = inputString.substring(11,firstSlashPosition).toInt();
-          noTone(pin);
-      } else if (inputString.substring(6,10) == "srld") { // Start Listen Digital Pin (this is general code you can reuse)
-          String pin = inputString.substring(11, idPosition < 0 ? inputString.length() : idPosition);
-          digitalPinListening[pin.toInt()] = true;
-          digitalPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
-          pinMode(pin.toInt(), INPUT);
-      } else if (inputString.substring(6,10) == "spld") { // Stop Listen Digital Pin (this is general code you can reuse)
-          String pin = inputString.substring(11, idPosition < 0 ? inputString.length() : idPosition);
-          digitalPinListening[pin.toInt()] = false;
-          digitalPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
-          pinMode(pin.toInt(), OUTPUT);
-      } else if (inputString.substring(6,10) == "srla") { // Start Listen Analog Pin (this is general code you can reuse)
-          String pin = inputString.substring(11, idPosition < 0 ? inputString.length() : idPosition);
-          analogPinListening[pin.toInt()] = true;
-          analogPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
-          pinMode(pin.toInt(), INPUT);
-      } else if (inputString.substring(6,10) == "spla") { // Stop Listen Analog Pin (this is general code you can reuse)
-          String pin = inputString.substring(11, idPosition < 0 ? inputString.length() : idPosition);
-          analogPinListening[pin.toInt()] = false;
-          analogPinListenedValue[pin.toInt()] = -1; // Ensure a message back when start listen happens.
-          pinMode(pin.toInt(), OUTPUT);
-      } else if (inputString.substring(6,10) == "cust") { // Custom Message
-          int firstSlashPosition = inputString.indexOf('/', 11 );
-          String customId = inputString.substring(11, firstSlashPosition);
-          String value = inputString.substring(firstSlashPosition + 1, idPosition < 0 ? inputString.length() : idPosition);
-          msgRecognized = handleCustomMessage(customId, value);
-      } else {
-          msgRecognized = false; // this sketch doesn't know other messages in this case command is ko (not ok)
-      }
-      
-      // Prepare reply message if caller supply a message id (this is general code you can reuse)
-      if (idPosition != -1) {
-        String id = inputString.substring(idPosition + 4);
-        sendRply(id, msgRecognized);
+          break;
+        }
       }
     }
     
@@ -157,8 +224,7 @@ void sendPinReading(const char* type, int pin, int value) {
     Serial.flush();
 }
 
-void sendRply(String id, boolean ok) {
-  // print the reply
+void sendRply(int id, boolean ok) {
   Serial.print("alp://rply/");
   Serial.print(ok ? "ok" : "ko");
   Serial.print("?id=");
@@ -170,22 +236,6 @@ void sendRply(String id, boolean ok) {
   }        
   Serial.print('\n'); // End of Message
   Serial.flush();
-}
-
-bool handleKeyPressed(String message) {
-  // here you can write your own code. For instance the commented code change pin intensity if you press 'a' or 's'
-  // take the command and change intensity on pin 11 this is needed just as example for this sketch
-  
-  // static int intensity = 0;
-  // char commandChar = message.charAt(3);
-  // if (commandChar == 'a') { // If press 'a' less intensity
-  //   analogWrite(11, max(0, --intensity));
-  //   return true;
-  // } else if (commandChar == 's') { // If press 's' more intensity
-  //   analogWrite(11, min(125, ++intensity));
-  //   return true;
-  // }
-  return false;
 }
 
 bool handleCustomMessage(String customId, String value) {
