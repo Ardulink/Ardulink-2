@@ -168,22 +168,23 @@ void loop() {
     const char* inputCStr = inputString.c_str();
     
     if (strncmp(inputCStr, "alp://", 6) == 0) {
-      const char* commandAndParamsC = inputCStr + 6; // Skip "alp://"
-  
+      const char* commandAndParams = inputCStr + 6; // Skip "alp://"
+      const char* idPositionPtr = strstr(commandAndParams, "?id=");
+
+      bool ok = false;
       for (const auto& handler : commandHandlers) {
-        if (strncmp(commandAndParamsC, handler.command, strlen(handler.command)) == 0) {
-          const char* paramsStart = commandAndParamsC + strlen(handler.command) + 1; // Skip command name
-  
-          const char* idPositionPtr = strstr(paramsStart, "?id=");
-          if (idPositionPtr) {
-            bool ok = handler.handler(paramsStart, idPositionPtr);
-            int id = atoi(idPositionPtr + 4); // Skip "?id=" part
-            sendRply(id, ok);
-          } else {
-            handler.handler(paramsStart, strlen(paramsStart));
-          }
+        int commandLength = strlen(handler.command);
+        if (strncmp(commandAndParams, handler.command, commandLength) == 0) {
+          const char* paramsStart = commandAndParams + commandLength + 1; // Skip command name
+          size_t paramsLength = idPositionPtr ? idPositionPtr - paramsStart : strlen(paramsStart);
+          ok = handler.handler(paramsStart, paramsLength);
           break;
         }
+      }
+
+      if (idPositionPtr) {
+        int id = idPositionPtr ? atoi(idPositionPtr + 4) : -1; // Skip "?id=" part
+        sendRply(id, ok);
       }
     }
     
@@ -224,7 +225,7 @@ void sendPinReading(const char* type, int pin, int value) {
     Serial.flush();
 }
 
-void sendRply(int id, boolean ok) {
+void sendRply(int id, bool ok) {
   Serial.print("alp://rply/");
   Serial.print(ok ? "ok" : "ko");
   Serial.print("?id=");
