@@ -28,10 +28,13 @@ String rplyResult = "";
 
 #define digitalPinListeningNum 14 // Change 14 if you have a different number of pins.
 #define analogPinListeningNum 6 // Change 6 if you have a different number of pins.
+
 boolean digitalPinListening[digitalPinListeningNum] = { false }; // Array used to know which pins on the Arduino must be listening.
 boolean analogPinListening[analogPinListeningNum] = { false }; // Array used to know which pins on the Arduino must be listening.
 int digitalPinListenedValue[digitalPinListeningNum] = { -1 }; // Array used to know which value is read last time.
 int analogPinListenedValue[analogPinListeningNum] = { -1 }; // Array used to know which value is read last time.
+
+#define UNLIMITED_LENGTH ((size_t)-1)
 
 struct CommandHandler {
     const char* command;
@@ -131,7 +134,8 @@ bool handleSpla(const char* cParams, size_t length) {
 }
 
 bool handleCust(const char* cParams, size_t length) {
-  String params = String(cParams).substring(0, length);
+  String params = String(cParams);
+  if (length != UNLIMITED_LENGTH) params = params.substring(0, length);
   int separator = params.indexOf('/');
   String customId = params.substring(0, separator);
   String value = params.substring(separator + 1);
@@ -176,8 +180,7 @@ void loop() {
         int commandLength = strlen(handler.command);
         if (strncmp(commandAndParams, handler.command, commandLength) == 0) {
           const char* paramsStart = commandAndParams + commandLength + 1; // Skip command name
-          size_t paramsLength = idPositionPtr ? idPositionPtr - paramsStart : strlen(paramsStart);
-          ok = handler.handler(paramsStart, paramsLength);
+          ok = handler.handler(paramsStart, idPositionPtr ? idPositionPtr - paramsStart : UNLIMITED_LENGTH);
           break;
         }
       }

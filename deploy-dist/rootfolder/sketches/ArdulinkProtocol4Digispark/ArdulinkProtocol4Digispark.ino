@@ -28,6 +28,8 @@ Remember: Digispark/PicoDuino has just 6.012 bytes memory available for sketches
 
 String inputString = "";
 
+#define UNLIMITED_LENGTH ((size_t)-1)
+
 struct CommandHandler {
     const char* command;
     bool (*handler)(const char* params, size_t length);
@@ -97,8 +99,7 @@ void loop() {
       int commandLength = strlen(handler.command);
       if (strncmp(commandAndParams, handler.command, commandLength) == 0) {
         const char* paramsStart = commandAndParams + commandLength + 1; // Skip command name
-        size_t paramsLength = idPositionPtr ? idPositionPtr - paramsStart : strlen(paramsStart);
-        ok = handler.handler(paramsStart, paramsLength);
+        ok = handler.handler(paramsStart, idPositionPtr ? idPositionPtr - paramsStart : UNLIMITED_LENGTH);
         break;
       }
     }
