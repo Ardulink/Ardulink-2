@@ -187,7 +187,7 @@ void loop() {
       }
 
       if (idPositionPtr) {
-        int id = idPositionPtr ? atoi(idPositionPtr + 4) : -1; // Skip "?id=" part
+        int id = atoi(idPositionPtr + 4); // Skip "?id=" part
         sendRply(id, ok);
       }
     }
