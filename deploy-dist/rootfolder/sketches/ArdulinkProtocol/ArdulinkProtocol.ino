@@ -42,6 +42,14 @@ struct CommandHandler {
 };
 
 
+bool parseIntPair(const char* cParams, int& first, int& second, char separator = '/') {
+  const char* separatorPos = strchr(cParams, separator);
+  if (!separatorPos) return false;
+  first = atoi(cParams);
+  second = atoi(separatorPos + 1);
+  return true;
+}
+
 bool handleKprs(const String& params, size_t length) {
   // here you can write your own code. For instance the commented code change pin intensity if you press 'a' or 's'
   // take the command and change intensity on pin 11 this is needed just as example for this sketch
@@ -61,20 +69,16 @@ bool handleKprs(const String& params, size_t length) {
 }
 
 bool handlePpin(const char* cParams, size_t length) {
-  const char* separator = strchr(cParams, '/');
-  if (!separator) return false;
-  int pin = atoi(cParams);
-  int value = atoi(separator + 1);
+  int pin, value;
+  if (!parseIntPair(cParams, pin, value)) return false;
   pinMode(pin, OUTPUT);
   analogWrite(pin, value);
   return true;
 }
 
 bool handlePpsw(const char* cParams, size_t length) {
-  const char* separator = strchr(cParams, '/');
-  if (!separator) return false;
-  int pin = atoi(cParams);
-  int value = atoi(separator + 1);
+  int pin, value;
+  if (!parseIntPair(cParams, pin, value)) return false;
   pinMode(pin, OUTPUT);
   digitalWrite(pin, value == 1 ? HIGH : LOW);
   return true;
@@ -116,6 +120,7 @@ bool handleSpld(const char* cParams, size_t length) {
   int pin = atoi(cParams);
   digitalPinListening[pin] = false;
   digitalPinListenedValue[pin] = -1; // Ensure a message back when start listen happens.
+  pinMode(pin, OUTPUT);
   return true;
 }
 
@@ -123,6 +128,7 @@ bool handleSrla(const char* cParams, size_t length) {
   int pin = atoi(cParams);
   analogPinListening[pin] = true;
   analogPinListenedValue[pin] = -1; // Ensure a message back when start listen happens.
+  pinMode(pin, INPUT);
   return true;
 }
 
@@ -130,6 +136,7 @@ bool handleSpla(const char* cParams, size_t length) {
   int pin = atoi(cParams);
   analogPinListening[pin] = false;
   analogPinListenedValue[pin] = -1; // Ensure a message back when start listen happens.
+  pinMode(pin, OUTPUT);
   return true;
 }
 
