@@ -22,17 +22,15 @@ you code useful for a specific purpose. In this case you have to modify it to su
 your needs.
 */
 
+#define DIGITAL_PIN_LISTENING_NUM 14 // Change 14 if you have a different number of pins.
+#define ANALOG_PIN_LISTENING_NUM 6 // Change 6 if you have a different number of pins.
+
 String inputString = "";         // a string to hold incoming data (this is general code you can reuse)
 boolean stringComplete = false;  // whether the string is complete (this is general code you can reuse)
 String rplyResult = "";
 
-#define digitalPinListeningNum 14 // Change 14 if you have a different number of pins.
-#define analogPinListeningNum 6 // Change 6 if you have a different number of pins.
-
-boolean digitalPinListening[digitalPinListeningNum] = { false }; // Array used to know which pins on the Arduino must be listening.
-boolean analogPinListening[analogPinListeningNum] = { false }; // Array used to know which pins on the Arduino must be listening.
-int digitalPinListenedValue[digitalPinListeningNum] = { -1 }; // Array used to know which value is read last time.
-int analogPinListenedValue[analogPinListeningNum] = { -1 }; // Array used to know which value is read last time.
+boolean pinListening[DIGITAL_PIN_LISTENING_NUM + ANALOG_PIN_LISTENING_NUM] = { false }; // Array used to know which pins on the Arduino must be listening.
+int pinListenedValue[DIGITAL_PIN_LISTENING_NUM + ANALOG_PIN_LISTENING_NUM] = { -1 }; // Array used to know which value is read last time.
 
 #define UNLIMITED_LENGTH ((size_t)-1)
 
@@ -47,6 +45,13 @@ bool parseIntPair(const char* cParams, int& first, int& second, char separator =
   if (!separatorPos) return false;
   first = atoi(cParams);
   second = atoi(separatorPos + 1);
+  return true;
+}
+
+bool setListeningState(int pinIndex, bool listening) {
+  pinListening[pinIndex] = listening;
+  pinListenedValue[pinIndex] = -1; // Reset the listened value to -1.
+  pinMode(pinIndex, listening ? INPUT : OUTPUT);
   return true;
 }
 
@@ -110,34 +115,22 @@ bool handleNotn(const char* cParams, size_t length) {
 
 bool handleSrld(const char* cParams, size_t length) {
   int pin = atoi(cParams);
-  digitalPinListening[pin] = true;
-  digitalPinListenedValue[pin] = -1; // Ensure a message back when start listen happens.
-  pinMode(pin, INPUT);
-  return true;
+  return setListeningState(pin, true);
 }
 
 bool handleSpld(const char* cParams, size_t length) {
   int pin = atoi(cParams);
-  digitalPinListening[pin] = false;
-  digitalPinListenedValue[pin] = -1; // Ensure a message back when start listen happens.
-  pinMode(pin, OUTPUT);
-  return true;
+  return setListeningState(pin, false);
 }
 
 bool handleSrla(const char* cParams, size_t length) {
   int pin = atoi(cParams);
-  analogPinListening[pin] = true;
-  analogPinListenedValue[pin] = -1; // Ensure a message back when start listen happens.
-  pinMode(pin, INPUT);
-  return true;
+  return setListeningState(DIGITAL_PIN_LISTENING_NUM + pin, true);
 }
 
 bool handleSpla(const char* cParams, size_t length) {
   int pin = atoi(cParams);
-  analogPinListening[pin] = false;
-  analogPinListenedValue[pin] = -1; // Ensure a message back when start listen happens.
-  pinMode(pin, OUTPUT);
-  return true;
+  return setListeningState(DIGITAL_PIN_LISTENING_NUM + pin, false);
 }
 
 bool handleCust(const char* cParams, size_t length) {
@@ -168,7 +161,7 @@ void setup() {
   sendRply(0, true); // Send Rply to signal ready state
 
   // Turn off everything (not on RXTX)
-  for (int i = 2; i < digitalPinListeningNum; i++) {
+  for (int i = 2; i < DIGITAL_PIN_LISTENING_NUM; i++) {
     pinMode(i, OUTPUT);
     digitalWrite(i, LOW);
   }
@@ -204,35 +197,29 @@ void loop() {
   }
   
   // Send listen messages
-  for (int i = 0; i < digitalPinListeningNum; i++) {
-    if (digitalPinListening[i]) {
-      int value = digitalRead(i);
-      if (value != digitalPinListenedValue[i]) {
-        digitalPinListenedValue[i] = value;
-        sendPinReading("dred", i, value);
-      }
-    }
-  }
-  for (int i = 0; i < analogPinListeningNum; i++) {
-    if (analogPinListening[i]) {
-      int value = highPrecisionAnalogRead(i);
-      if (value != analogPinListenedValue[i]) {
-        analogPinListenedValue[i] = value;
-        sendPinReading("ared", i, value);
-      }
-    }
-  }
-}
+  for (int i = 0; i < (DIGITAL_PIN_LISTENING_NUM + ANALOG_PIN_LISTENING_NUM); i++) {
+    bool isAnalog = i >= DIGITAL_PIN_LISTENING_NUM;
+    int pinIndex = isAnalog ? i - DIGITAL_PIN_LISTENING_NUM : i;
 
-void sendPinReading(const char* type, int pin, int value) {
-    Serial.print("alp://");
-    Serial.print(type);
-    Serial.print("/");
-    Serial.print(pin);
-    Serial.print("/");
-    Serial.print(value);
-    Serial.print('\n'); // End of Message
-    Serial.flush();
+    // Check if the pin is being listened to
+    if (pinListening[i]) {
+      int value = isAnalog ? highPrecisionAnalogRead(pinIndex) : digitalRead(pinIndex);
+
+      // If the value has changed, update and send the new value
+      if (value != pinListenedValue[i]) {
+        pinListenedValue[i] = value;
+
+        Serial.print("alp://");
+        Serial.print(isAnalog ? "ared" : "dred");
+        Serial.print("/");
+        Serial.print(pinIndex);
+        Serial.print("/");
+        Serial.print(value);
+        Serial.print('\n');
+        Serial.flush();
+      }
+    }
+  }
 }
 
 void sendRply(int id, bool ok) {
