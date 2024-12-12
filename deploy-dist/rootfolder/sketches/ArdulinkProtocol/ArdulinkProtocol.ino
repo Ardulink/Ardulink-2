@@ -158,13 +158,14 @@ const CommandHandler commandHandlers[] = {
 void setup() {
   Serial.begin(115200);
   while (!Serial); // Wait until Serial is connected  
-  sendRply(0, true); // Send Rply to signal ready state
 
   // Turn off everything (not on RXTX)
   for (int i = 2; i < DIGITAL_PIN_LISTENING_NUM; i++) {
     pinMode(i, OUTPUT);
     digitalWrite(i, LOW);
   }
+
+  sendRply(0, true); // Send Rply to signal ready state
 }
 
 void loop() {
