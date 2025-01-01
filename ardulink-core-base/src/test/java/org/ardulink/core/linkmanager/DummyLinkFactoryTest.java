@@ -25,6 +25,7 @@ import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.io.IOException;
 import java.net.URI;
@@ -37,7 +38,6 @@ import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import org.ardulink.core.proto.dummy.DummyProtocol;
-import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.DefaultLocale;
 
@@ -87,17 +87,17 @@ class DummyLinkFactoryTest {
 			assertThat(link).isInstanceOf(ConnectionBasedLink.class);
 			DummyConnection connection = (DummyConnection) ((ConnectionBasedLink) link).getConnection();
 			DummyLinkConfig config = connection.getConfig();
-			try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-				softly.assertThat(config.a).isEqualTo(aValue);
-				softly.assertThat(config.b).isEqualTo(bValue);
-				softly.assertThat(config.c).isEqualTo(cValue);
-				softly.assertThat(config.protocol).isExactlyInstanceOf(DummyProtocol.class);
-				softly.assertThat(config.e).isEqualTo(eValue);
-				softly.assertThat(config.i1).isNull();
-				softly.assertThat(config.i2).isNull();
-				softly.assertThat(config.i3).isZero();
-				softly.assertThat(config.i4).isNull();
-			}
+			assertSoftly(s -> {
+				s.assertThat(config.a).isEqualTo(aValue);
+				s.assertThat(config.b).isEqualTo(bValue);
+				s.assertThat(config.c).isEqualTo(cValue);
+				s.assertThat(config.protocol).isExactlyInstanceOf(DummyProtocol.class);
+				s.assertThat(config.e).isEqualTo(eValue);
+				s.assertThat(config.i1).isNull();
+				s.assertThat(config.i2).isNull();
+				s.assertThat(config.i3).isZero();
+				s.assertThat(config.i4).isNull();
+			});
 		}
 	}
 
@@ -259,19 +259,19 @@ class DummyLinkFactoryTest {
 
 	private void hasMinMax(ConfigAttribute attribute, long min, long max) {
 		assertThat(attribute.getValidationInfo()).isInstanceOfSatisfying(NumberValidationInfo.class, nvi -> {
-			try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-				softly.assertThat(nvi.min()).isEqualTo(min);
-				softly.assertThat(nvi.max()).isEqualTo(max);
-			}
+			assertSoftly(s -> {
+				s.assertThat(nvi.min()).isEqualTo(min);
+				s.assertThat(nvi.max()).isEqualTo(max);
+			});
 		});
 	}
 
 	private void isNan(ConfigAttribute attribute) {
 		assertThat(attribute.getValidationInfo()).isInstanceOfSatisfying(NumberValidationInfo.class, nvi -> {
-			try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-				softly.assertThat(nvi.min()).isNaN();
-				softly.assertThat(nvi.max()).isNaN();
-			}
+			assertSoftly(s -> {
+				s.assertThat(nvi.min()).isNaN();
+				s.assertThat(nvi.max()).isNaN();
+			});
 		});
 	}
 

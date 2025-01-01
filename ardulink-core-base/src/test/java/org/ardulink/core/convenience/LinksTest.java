@@ -33,6 +33,7 @@ import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -61,7 +62,6 @@ import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
 import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.ardulink.util.Closeables;
 import org.ardulink.util.ListMultiMap;
-import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
@@ -124,13 +124,13 @@ class LinksTest {
 		DummyLinkConfig.choiceValuesOfD.set(new String[] { dVal1, "dVal2" });
 		try (Link link = Links.getDefault()) {
 			DummyLinkConfig config = getConfig(link);
-			try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-				softly.assertThat(config.getProtocol()).isExactlyInstanceOf(ArdulinkProtocol2.class);
-				softly.assertThat(config.getA()).isEqualTo("aVal1");
-				softly.assertThat(config.getD()).isEqualTo(dVal1);
-				softly.assertThat(config.getF1()).isEqualTo(NANOSECONDS);
-				softly.assertThat(config.getF2()).isEqualTo(MINUTES);
-			}
+			assertSoftly(s -> {
+				s.assertThat(config.getProtocol()).isExactlyInstanceOf(ArdulinkProtocol2.class);
+				s.assertThat(config.getA()).isEqualTo("aVal1");
+				s.assertThat(config.getD()).isEqualTo(dVal1);
+				s.assertThat(config.getF1()).isEqualTo(NANOSECONDS);
+				s.assertThat(config.getF2()).isEqualTo(MINUTES);
+			});
 		}
 	}
 
@@ -346,13 +346,13 @@ class LinksTest {
 			try (Link link = link(randomName)) {
 				assertThat(linkFactory.configsAndLinks.asMap().keySet()).singleElement()
 						.isInstanceOfSatisfying(MyLinkConfig.class, c -> {
-							try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
-								softly.assertThat(c.keepsNull).isNull();
-								softly.assertThat(c.turnsFirstChoiceValue).isEqualTo("Choice1");
-								softly.assertThat(c.getsNullAndSoKeepsNull).isNull();
-								softly.assertThat(c.keepsOldValue1).isEqualTo("keepsValue_noChoice");
-								softly.assertThat(c.keepsOldValue2).isEqualTo("keepsValue_withChoice");
-							}
+							assertSoftly(s -> {
+								s.assertThat(c.keepsNull).isNull();
+								s.assertThat(c.turnsFirstChoiceValue).isEqualTo("Choice1");
+								s.assertThat(c.getsNullAndSoKeepsNull).isNull();
+								s.assertThat(c.keepsOldValue1).isEqualTo("keepsValue_noChoice");
+								s.assertThat(c.keepsOldValue2).isEqualTo("keepsValue_withChoice");
+							});
 						});
 			}
 		});
