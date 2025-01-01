@@ -19,6 +19,8 @@ package org.ardulink.util;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.junit.jupiter.api.Test;
@@ -35,9 +37,9 @@ class ListMultiMapTest {
 
 	ListMultiMap<Integer, String> sut = new ListMultiMap<>();
 
-	private static final int key = 1;
-	private static final String element1 = "foo";
-	private static final String element2 = "bar";
+	private static final int keyOne = 1;
+	private static final String element1 = "one";
+	private static final String element2 = "two";
 
 	@Test
 	void iteratorOnEmpty() {
@@ -47,26 +49,35 @@ class ListMultiMapTest {
 
 	@Test
 	void iteratorOnSingleElement() {
-		assertThat(sut.put(key, element1)).isTrue();
+		assertThat(sut.put(keyOne, element1)).isTrue();
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();
 		Entry<Integer, String> next = iterator.next();
-		assertThat(next.getKey()).isEqualTo(key);
+		assertThat(next.getKey()).isEqualTo(keyOne);
 		assertThat(next.getValue()).isEqualTo(element1);
 		assertThat(iterator).isExhausted();
 	}
 
 	@Test
 	void iteratorOnCollisionElement() {
-		assertThat(sut.put(key, element1)).isTrue();
-		assertThat(sut.put(key, element2)).isTrue();
+		assertThat(sut.put(keyOne, element1)).isTrue();
+		assertThat(sut.put(keyOne, element2)).isTrue();
 		Iterator<Entry<Integer, String>> iterator = sut.iterator();
 		Entry<Integer, String> next = iterator.next();
-		assertThat(next.getKey()).isEqualTo(key);
+		assertThat(next.getKey()).isEqualTo(keyOne);
 		assertThat(next.getValue()).isEqualTo(element1);
 		next = iterator.next();
-		assertThat(next.getKey()).isEqualTo(key);
+		assertThat(next.getKey()).isEqualTo(keyOne);
 		assertThat(next.getValue()).isEqualTo(element2);
 		assertThat(iterator).isExhausted();
+	}
+
+	@Test
+	void asMap() {
+		sut.put(keyOne, element1);
+		sut.put(keyOne, element2);
+		sut.put(2, "three");
+		Map<Integer, List<String>> expected = Map.of(keyOne, List.of(element1, element2), 2, List.of("three"));
+		assertThat(sut.asMap()).containsExactlyInAnyOrderEntriesOf(expected);
 	}
 
 }

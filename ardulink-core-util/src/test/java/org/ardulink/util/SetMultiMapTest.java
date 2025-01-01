@@ -20,6 +20,9 @@ import static java.util.Collections.singleton;
 import static org.ardulink.util.Maps.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 
 /**
@@ -34,42 +37,51 @@ class SetMultiMapTest {
 
 	SetMultiMap<Integer, String> sut = new SetMultiMap<>();
 
-	private static final int key = 1;
-	private static final String element1 = "foo";
-	private static final String element2 = "bar";
+	private static final int keyOne = 1;
+	private static final String element1 = "one";
+	private static final String element2 = "two";
 
 	@Test
 	void canPut() {
-		assertThat(sut.put(key, element1)).isTrue();
-		assertThat(sut.asMap()).containsExactly(entry(key, singleton(element1)));
+		assertThat(sut.put(keyOne, element1)).isTrue();
+		assertThat(sut.asMap()).containsExactly(entry(keyOne, singleton(element1)));
 	}
 
 	@Test
 	void canPutTwice() {
-		assertThat(sut.put(key, element1)).isTrue();
-		assertThat(sut.put(key, element1)).isFalse();
-		assertThat(sut.asMap()).containsExactly(entry(key, singleton(element1)));
+		assertThat(sut.put(keyOne, element1)).isTrue();
+		assertThat(sut.put(keyOne, element1)).isFalse();
+		assertThat(sut.asMap()).containsExactly(entry(keyOne, singleton(element1)));
 	}
 
 	@Test
 	void canRemoveExistingValue() {
-		assertThat(sut.put(key, element1)).isTrue();
-		assertThat(sut.remove(key, element1)).isTrue();
+		assertThat(sut.put(keyOne, element1)).isTrue();
+		assertThat(sut.remove(keyOne, element1)).isTrue();
 		assertThat(sut.asMap()).isEmpty();
 	}
 
 	@Test
 	void canHandleRemovesOfNonExistingValues() {
-		assertThat(sut.put(key, element1)).isTrue();
-		assertThat(sut.remove(key, element2)).isFalse();
-		assertThat(sut.asMap()).containsExactly(entry(key, singleton(element1)));
+		assertThat(sut.put(keyOne, element1)).isTrue();
+		assertThat(sut.remove(keyOne, element2)).isFalse();
+		assertThat(sut.asMap()).containsExactly(entry(keyOne, singleton(element1)));
 	}
 
 	@Test
 	void canHandleRemovesOfNonExistingKeys() {
-		assertThat(sut.put(key, element1)).isTrue();
-		assertThat(sut.remove(not(key), element1)).isFalse();
-		assertThat(sut.asMap()).containsExactly(entry(key, singleton(element1)));
+		assertThat(sut.put(keyOne, element1)).isTrue();
+		assertThat(sut.remove(not(keyOne), element1)).isFalse();
+		assertThat(sut.asMap()).containsExactly(entry(keyOne, singleton(element1)));
+	}
+
+	@Test
+	void asMap() {
+		sut.put(keyOne, element1);
+		sut.put(keyOne, element2);
+		sut.put(2, "three");
+		Map<Integer, Set<String>> expected = Map.of(keyOne, Set.of(element1, element2), 2, Set.of("three"));
+		assertThat(sut.asMap()).containsExactlyInAnyOrderEntriesOf(expected);
 	}
 
 	private int not(int value) {
