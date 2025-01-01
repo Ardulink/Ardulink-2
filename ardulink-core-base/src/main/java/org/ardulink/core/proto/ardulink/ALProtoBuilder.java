@@ -19,7 +19,7 @@ package org.ardulink.core.proto.ardulink;
 import static java.lang.String.join;
 import static java.util.Collections.addAll;
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 import static org.ardulink.util.Preconditions.checkArgument;
 
 import java.util.Arrays;
@@ -62,18 +62,18 @@ public class ALProtoBuilder {
 		CUSTOM_EVENT("cevnt"), //
 		;
 
-		private final String proto;
+		private final String command;
 
-		private ALPProtocolKey(String proto) {
-			this.proto = proto;
+		private ALPProtocolKey(String command) {
+			this.command = command;
 		}
 
-		private String getProto() {
-			return proto;
+		private String command() {
+			return command;
 		}
 
 		private static final Map<String, ALPProtocolKey> stringToKeyCache = Arrays.stream(values())
-				.collect(toMap(ALPProtocolKey::getProto, identity()));
+				.collect(toUnmodifiableMap(ALPProtocolKey::command, identity()));
 
 		public static Optional<ALPProtocolKey> fromString(String string) {
 			return Optional.ofNullable(stringToKeyCache.get(string));
@@ -81,8 +81,8 @@ public class ALProtoBuilder {
 
 	}
 
-	public static ALProtoBuilder alpProtocolMessage(ALPProtocolKey command) {
-		return new ALProtoBuilder(command.proto);
+	public static ALProtoBuilder alpProtocolMessage(ALPProtocolKey protocolKey) {
+		return arduinoCommand(protocolKey.command);
 	}
 
 	public static ALProtoBuilder arduinoCommand(String command) {
@@ -107,8 +107,14 @@ public class ALProtoBuilder {
 			concat.add(String.valueOf(pin));
 		}
 		addAll(concat, values);
-		String message = "alp://" + join("/", concat);
-		return messageId == null ? message : message + "?id=" + messageId.longValue();
+		return appendMessageIdIfNeeded("alp://" + join("/", concat));
+	}
+
+	private String appendMessageIdIfNeeded(String message) {
+		if (messageId == null) {
+			return message;
+		}
+		return message + "?id=" + messageId.longValue();
 	}
 
 	public String withState(boolean value) {
