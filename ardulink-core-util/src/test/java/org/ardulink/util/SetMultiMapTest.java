@@ -77,9 +77,9 @@ class SetMultiMapTest {
 
 	@Test
 	void asMap() {
-		sut.put(keyOne, element1);
-		sut.put(keyOne, element2);
-		sut.put(2, "three");
+		assertThat(sut.put(keyOne, element1)).isTrue();
+		assertThat(sut.put(keyOne, element2)).isTrue();
+		assertThat(sut.put(2, "three")).isTrue();
 		Map<Integer, Set<String>> expected = Map.of(keyOne, Set.of(element1, element2), 2, Set.of("three"));
 		assertThat(sut.asMap()).containsExactlyInAnyOrderEntriesOf(expected);
 	}
