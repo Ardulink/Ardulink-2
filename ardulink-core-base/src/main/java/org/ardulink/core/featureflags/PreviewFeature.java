@@ -44,6 +44,13 @@ public final class PreviewFeature {
 	 */
 	public static final String SIMPLE_PROTOCOL_ENABLED_PROPERTY_FEATURE = "protocol.simple.enabled";
 
+	/**
+	 * To enable listing of <code>/dev/serial-by-id</code> serial links set the
+	 * system property {@value #SERIAL_LINKS_BY_ID_ENABLED_PROPERTY_FEATURE} to any
+	 * non-empty value.
+	 */
+	public static final String SERIAL_LINKS_BY_ID_ENABLED_PROPERTY_FEATURE = "with.serial.links.byid";
+
 	private PreviewFeature() {
 		super();
 	}
@@ -58,6 +65,10 @@ public final class PreviewFeature {
 
 	public static boolean isSimpleProtocolFeatureEnabledInGeneral() {
 		return isPropertySet(SIMPLE_PROTOCOL_ENABLED_PROPERTY_FEATURE);
+	}
+
+	public static boolean isSerialLinksByIdFeatureEnabled() {
+		return isPropertySet(SERIAL_LINKS_BY_ID_ENABLED_PROPERTY_FEATURE);
 	}
 
 }

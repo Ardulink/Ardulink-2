@@ -16,10 +16,16 @@ limitations under the License.
 
 package org.ardulink.core.serial.jssc;
 
+import static java.util.Arrays.stream;
+import static jssc.SerialNativeInterface.OS_LINUX;
+import static jssc.SerialNativeInterface.getOsType;
 import static jssc.SerialPortList.getPortNames;
+import static org.ardulink.core.featureflags.PreviewFeature.isSerialLinksByIdFeatureEnabled;
 import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.core.proto.api.Protocols.protocolNames;
 import static org.ardulink.core.proto.api.Protocols.tryProtoByNameWithFallback;
+import static org.ardulink.util.Regex.regex;
+import static org.ardulink.util.Streams.concat;
 
 import java.util.List;
 
@@ -73,7 +79,14 @@ public class SerialLinkConfig implements LinkConfig {
 
 	@ChoiceFor(NAMED_PORT)
 	public String[] listPorts() {
-		return getPortNames();
+		String[] portNames = getPortNames();
+		if (isSerialLinksByIdFeatureEnabled() && getOsType() == OS_LINUX) {
+			return concat( //
+					stream(portNames), //
+					stream(getPortNames("/dev/serial/by-id/", regex(".*"))) //
+			).toArray(String[]::new);
+		}
+		return portNames;
 	}
 
 	@ChoiceFor(NAMED_PROTO)
