@@ -1,8 +1,11 @@
+
 #!/bin/bash
 
 # Define some paths
 TEMP_DIR=$(mktemp -d)
 ARDULINK_DIR="$TEMP_DIR/ArdulinkProtocol"
+DEVICE="/dev/ttyVirtualUSB-$(uuid)"
+PIN="12"
 
 # Function to clean up containers and processes on exit
 cleanup() {
@@ -21,8 +24,8 @@ cleanup() {
 }
 
 find_unused_port() {
-    local base_port=${1:-8000}  # Default start port is 8000
-    local max_port=9000  # Max port to check
+    local base_port=${1:-49152}
+    local max_port=65535
     for port in $(seq $base_port $max_port); do
         if ! nc -z localhost "$port" 2>/dev/null; then
             echo "$port"
@@ -68,9 +71,9 @@ fi
 
 # Step 2: Run the Docker container that emulates the Arduino
 echo "Running Docker container for ArdulinkProtocol..."
-VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=/dev/ttyUSBVirtual0 -e FILENAME=ArdulinkProtocol.ino -v /dev:/dev -v ~/git/Ardulink-2/deploy-dist/rootfolder/sketches/ArdulinkProtocol:/sketch pfichtner/virtualavr)
+VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=$DEVICE -e FILENAME=ArdulinkProtocol.ino -v /dev:/dev -v ~/git/Ardulink-2/deploy-dist/rootfolder/sketches/ArdulinkProtocol:/sketch pfichtner/virtualavr)
 
-#VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=/dev/ttyUSBVirtual0 -e FILENAME=ArdulinkProtocol.ino -v /dev:/dev -v "$ARDULINK_DIR":/sketch pfichtner/virtualavr)
+#VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=$DEVICE -e FILENAME=ArdulinkProtocol.ino -v /dev:/dev -v "$ARDULINK_DIR":/sketch pfichtner/virtualavr)
 
 if wait_for_port $WS_PORT 10; then
     echo "WebSocket server is ready on port $WS_PORT."
@@ -85,8 +88,8 @@ echo "Running WebSocket container in detached mode and connecting to ws://localh
 WS_CONTAINER_ID=$(docker run --rm --net=host -d -i solsson/websocat ws://localhost:$WS_PORT)
 echo "WebSocket container started with ID: $WS_CONTAINER_ID"
 
-# Enable listening on pin 12
-echo '{ "type": "pinMode", "pin": "12", "mode": "digital" }' | docker run --rm --net=host -i solsson/websocat ws://localhost:$WS_PORT
+# Enable listening on pin $PIN
+echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker run --rm --net=host -i solsson/websocat ws://localhost:$WS_PORT
 
 # Step 4: Run the Java application in the background (detached mode)
 REST_PORT=$(find_unused_port 8080)
@@ -97,7 +100,7 @@ fi
 
 echo "Starting Ardulink REST service..."
 cd ./deploy-dist/target/ardulink/lib/
-java -jar ardulink-rest-2.2.1-SNAPSHOT.jar -port=$REST_PORT -connection 'ardulink://serial?port=/dev/ttyUSBVirtual0' &
+java -jar ardulink-rest-2.2.1-SNAPSHOT.jar -port=$REST_PORT -connection "ardulink://serial?port=$DEVICE" &
 JAVA_PID=$!
 echo "Ardulink-REST started"
 cd - > /dev/null
@@ -112,13 +115,13 @@ fi
 # Step 5: Call the API endpoint
 echo "Calling the API endpoint to set pin state..."
 RESPONSE=$(curl -s -X 'PUT' \
-  "http://localhost:$REST_PORT/pin/digital/12" \
+  "http://localhost:$REST_PORT/pin/digital/$PIN" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/text' \
   -d 'true')
 
 # this is an e2e-/systemtest so we don't check the response here
-#if [[ "$RESPONSE" == *"alp://dred/12/1=OK"* ]]; then
+#if [[ "$RESPONSE" == *"alp://dred/$PIN/1=OK"* ]]; then
 #    echo "Test passed. Received the expected response."
 #else
 #    echo "Test failed. Expected response not found, received: $RESPONSE."
@@ -132,7 +135,7 @@ TIMEOUT=10
 
 while true; do
     # Check the WebSocket output file for the expected message
-    if docker logs "$WS_CONTAINER_ID" | jq -e '. | select(.type == "pinState" and .pin == "12" and .state == true)' > /dev/null 2>&1; then
+    if docker logs "$WS_CONTAINER_ID" | jq -e '. | select(.type == "pinState" and .pin == "'$PIN'" and .state == true)' > /dev/null 2>&1; then
         echo "Test passed. Received the expected WebSocket message."
         break
     fi
