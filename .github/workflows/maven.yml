@@ -67,6 +67,12 @@ jobs:
         name: videos
         path: "*/target/videos/*"
 
+    - name: Unzip artifact
+      run: unzip deploy-dist/target/ardulink-V*.zip -d deploy-dist/target/
+    - name: Run the systemtest
+      run: |
+        bash deploy-dist/systemtest.sh
+
     - name: Codecov
       uses: codecov/codecov-action@0da7aa657d958d32c117fc47e1f977e7524753c7 # v5.3.0
 
