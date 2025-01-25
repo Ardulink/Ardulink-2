@@ -1,0 +1,35 @@
+name: Create Release on Tag
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger on tags like v1.0.0, v2.2.0, etc.
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up JDK 11 (or your version)
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+
+    - name: Build with Maven
+      run: mvn -B -Pwith-video org.jacoco:jacoco-maven-plugin:prepare-agent compile jib:dockerBuild verify --file pom.xml
+
+    - name: Create GitHub Release and Upload Artifact
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: deploy-dist/target/*.zip
+        tag: ${{ github.ref }}
+        release_name: "Release ${{ github.ref }}"
+        body: |
+          Release notes for ${{ github.ref }}.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
