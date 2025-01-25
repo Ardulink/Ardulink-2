@@ -101,7 +101,7 @@ fi
 
 echo "Starting Ardulink REST service on port $REST_PORT..."
 cd ./deploy-dist/target/ardulink/lib/
-java -jar ardulink-rest-*.jar -port=$REST_PORT -connection "ardulink://serial?port=$DEVICE" &
+java -jar ardulink-rest-*.jar -port=$REST_PORT -connection "ardulink://serial-jssc?port=$DEVICE" &
 JAVA_PID=$!
 echo "Ardulink-REST started"
 cd - > /dev/null
