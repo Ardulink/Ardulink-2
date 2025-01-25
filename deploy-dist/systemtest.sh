@@ -4,7 +4,7 @@
 # Define some paths
 TEMP_DIR=$(mktemp -d)
 ARDULINK_DIR="$TEMP_DIR/ArdulinkProtocol"
-DEVICE="/dev/ttyVirtualUSB-$(uuid)"
+DEVICE="/dev/ttyVUSB-$(uuid)"
 PIN="12"
 
 # Function to clean up containers and processes on exit
@@ -86,7 +86,7 @@ fi
 # Run WebSocket container in detached mode and connect to WebSocket server with the -c option
 echo "Running WebSocket container in detached mode and connecting to ws://localhost:$WS_PORT..."
 WS_CONTAINER_ID=$(docker run --rm --net=host -d -i solsson/websocat ws://localhost:$WS_PORT)
-echo "WebSocket container started with ID: $WS_CONTAINER_ID"
+echo "WebSocket container started"
 
 # Enable listening on pin $PIN
 echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker run --rm --net=host -i solsson/websocat ws://localhost:$WS_PORT
@@ -98,7 +98,7 @@ if [ -z "$REST_PORT" ]; then
     exit 1
 fi
 
-echo "Starting Ardulink REST service..."
+echo "Starting Ardulink REST service on port $REST_PORT..."
 cd ./deploy-dist/target/ardulink/lib/
 java -jar ardulink-rest-2.2.1-SNAPSHOT.jar -port=$REST_PORT -connection "ardulink://serial?port=$DEVICE" &
 JAVA_PID=$!
@@ -148,7 +148,6 @@ while true; do
         exit 1
     fi
     
-    # Wait for a short time before checking again
     sleep 1
 done
 
