@@ -5,7 +5,7 @@
 TEMP_DIR=$(mktemp -d)
 ARDULINK_DIR="$TEMP_DIR/ArdulinkProtocol"
 #DEVICE="/dev/ttyVUSB-$(uuidgen)"
-DEVICE="/dev/ttyUSB0"
+DEVICE="/dev/ttyUSB42"
 PIN="12"
 
 # Function to clean up containers and processes on exit
