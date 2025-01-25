@@ -12,14 +12,14 @@ cleanup() {
     echo "Cleaning up..."
     
     if [ -n "$JAVA_PID" ]; then
-        echo "Stopping Java process."
+        echo "Stopping Java process..."
         kill $JAVA_PID
     fi
         
-    echo "Stopping WebSocket container."
+    echo "Stopping WebSocket container..."
     docker stop $WS_CONTAINER_ID > /dev/null
     
-    echo "Stopping virtualavr container."
+    echo "Stopping virtualavr container..."
     docker stop $VIRTUALAVR_CONTAINER_ID > /dev/null
 }
 
