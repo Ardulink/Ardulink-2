@@ -4,7 +4,7 @@
 # Define some paths
 TEMP_DIR=$(mktemp -d)
 ARDULINK_DIR="$TEMP_DIR/ArdulinkProtocol"
-DEVICE="/dev/ttyVUSB-$(uuid)"
+DEVICE="/dev/ttyVUSB-$(uuidgen)"
 PIN="12"
 
 # Function to clean up containers and processes on exit
@@ -71,7 +71,7 @@ fi
 
 # Step 2: Run the Docker container that emulates the Arduino
 echo "Running Docker container for ArdulinkProtocol..."
-VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=$DEVICE -e FILENAME=ArdulinkProtocol.ino -v /dev:/dev -v ~/git/Ardulink-2/deploy-dist/rootfolder/sketches/ArdulinkProtocol:/sketch pfichtner/virtualavr)
+VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=$DEVICE -e DEVICEUSER=$UID -e FILENAME=ArdulinkProtocol.ino -v /dev:/dev -v ~/git/Ardulink-2/deploy-dist/rootfolder/sketches/ArdulinkProtocol:/sketch pfichtner/virtualavr)
 
 #VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=$DEVICE -e FILENAME=ArdulinkProtocol.ino -v /dev:/dev -v "$ARDULINK_DIR":/sketch pfichtner/virtualavr)
 
