@@ -128,19 +128,17 @@ else
     echo "Failed to detect Ardulink-MQTT server on port $MQTT_PORT."
     exit 1
 fi
-sleep 2
 
-# Step 6: Publish MQTT message
-echo "Publishing MQTT message to set pin state..."
-docker pull $DOCKER_IMAGE_MQTT_PUB # download or update (if cached an newer version is available)
-docker run --rm --net=host $DOCKER_IMAGE_MQTT_PUB pub -h localhost -p $MQTT_PORT -i 'efrecon-mqtt-client' -t "home/devices/ardulink/D$PIN" -m 'true'
-
-# Step 7: Verify the response in the WebSocket container log file with a timeout
+# Step 6: Publish MQTT message and verify the response in the WebSocket container log file with a timeout
 echo "Verifying WebSocket container response within 10 seconds..."
 START_TIME=$(date +%s)
 TIMEOUT=10
 
 while true; do
+    echo "Publishing MQTT message to set pin state..."
+    docker pull $DOCKER_IMAGE_MQTT_PUB # download or update (if cached an newer version is available)
+    docker run --rm --net=host $DOCKER_IMAGE_MQTT_PUB pub -h localhost -p $MQTT_PORT -i 'efrecon-mqtt-client' -t "home/devices/ardulink/D$PIN" -m 'true'
+
     # Check the WebSocket output file for the expected message
     if docker logs "$WS_CONTAINER_ID" | jq -e '. | select(.type == "pinState" and .pin == "'$PIN'" and .state == true)' > /dev/null 2>&1; then
         echo "Test passed. Received the expected WebSocket message."

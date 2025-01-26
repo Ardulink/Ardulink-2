@@ -128,28 +128,27 @@ else
     exit 1
 fi
 
-# Step 5: Call the API endpoint
-echo "Calling the API endpoint to set pin state..."
-RESPONSE=$(curl -s -X 'PUT' \
-  "http://localhost:$REST_PORT/pin/digital/$PIN" \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/text' \
-  -d 'true')
-
-# this is an e2e-/systemtest so we don't check the response here
-#if [[ "$RESPONSE" == *"alp://dred/$PIN/1=OK"* ]]; then
-#    echo "Test passed. Received the expected response."
-#else
-#    echo "Test failed. Expected response not found, received: $RESPONSE."
-#    exit 1
-#fi
-
-# Step 6: Verify the response in the WebSocket container log file with a timeout
+# Step 5: Call the API endpoint and verify the response in the WebSocket container log file with a timeout
 echo "Verifying WebSocket container response within 10 seconds..."
 START_TIME=$(date +%s)
 TIMEOUT=10
 
 while true; do
+    echo "Calling the API endpoint to set pin state..."
+    RESPONSE=$(curl -s -X 'PUT' \
+        "http://localhost:$REST_PORT/pin/digital/$PIN" \
+        -H 'accept: application/json' \
+        -H 'Content-Type: application/text' \
+        -d 'true')
+
+    # this is an e2e-/systemtest so we don't check the response here
+    #if [[ "$RESPONSE" == *"alp://dred/$PIN/1=OK"* ]]; then
+    #    echo "Test passed. Received the expected response."
+    #else
+    #    echo "Test failed. Expected response not found, received: $RESPONSE."
+    #    exit 1
+    #fi
+
     # Check the WebSocket output file for the expected message
     if docker logs "$WS_CONTAINER_ID" | jq -e '. | select(.type == "pinState" and .pin == "'$PIN'" and .state == true)' > /dev/null 2>&1; then
         echo "Test passed. Received the expected WebSocket message."
