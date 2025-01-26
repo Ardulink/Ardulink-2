@@ -52,12 +52,19 @@ jobs:
         name: jars
         path: "*/target/*.jar"
 
+    # colons are not allowed by upload-artifact, so we have to move (better copy) the file
+    # https://github.com/actions/upload-artifact/issues/546
+    - name: Copy zip to /tmp
+      run: |
+        for file in deploy-dist/target/ardulink-V*.zip; do 
+          cp "$file" "/tmp/$(echo "$file" | sed 's/-SNAPSHOT-[0-9\-T:]\+Z\.zip$/-SNAPSHOT.zip/')"
+        done
     - name: Distribute zip created
       if: ${{ env.FIRST_JOB == 'true' }}
       uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
       with:
         name: ardulink-zip
-        path: "deploy-dist/target/ardulink-V*.zip"
+        path: "/tmp/ardulink-V*.zip"
 
     - name: Test Report JDK ${{ matrix.java-version }}
       uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5 # v1
