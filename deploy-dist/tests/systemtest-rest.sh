@@ -23,15 +23,15 @@ DOCKER_IMAGE_WEBSOCAT="solsson/websocat"
 # Function to clean up containers and processes on exit
 cleanup() {
     echo "Cleaning up..."
-    
+
     echo "Stopping Java process..."
     kill $JAVA_PID
-        
+
     echo "Stopping WebSocket container..."
-    docker stop $WS_CONTAINER_ID > /dev/null
-    
+    docker stop $WS_CONTAINER_ID >/dev/null
+
     echo "Stopping virtualavr container..."
-    docker stop $VIRTUALAVR_CONTAINER_ID > /dev/null
+    docker stop $VIRTUALAVR_CONTAINER_ID >/dev/null
 
     echo "Removing temporary directory..."
     rm -rf "$TEMP_DIR"
@@ -119,7 +119,7 @@ cd ./deploy-dist/target/ardulink/lib/
 java -jar ardulink-rest-*.jar -port=$REST_PORT -connection "ardulink://serial?port=$DEVICE" &
 JAVA_PID=$!
 echo "Ardulink-REST started"
-cd - > /dev/null
+cd - >/dev/null
 
 if wait_for_port $REST_PORT 10; then
     echo "Ardulink-REST server is ready on port $REST_PORT."
@@ -150,11 +150,11 @@ while true; do
     #fi
 
     # Check the WebSocket output file for the expected message
-    if docker logs "$WS_CONTAINER_ID" | jq -e '. | select(.type == "pinState" and .pin == "'$PIN'" and .state == true)' > /dev/null 2>&1; then
+    if docker logs "$WS_CONTAINER_ID" | jq -e '. | select(.type == "pinState" and .pin == "'$PIN'" and .state == true)' >/dev/null 2>&1; then
         echo "Test passed. Received the expected WebSocket message."
         break
     fi
-    
+
     # Check if we exceeded the timeout (10 seconds)
     CURRENT_TIME=$(date +%s)
     ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
@@ -162,10 +162,9 @@ while true; do
         echo "Test failed. Timeout reached without receiving the expected message."
         exit 1
     fi
-    
+
     sleep 1
 done
-
 
 # If everything is successful, cleanup will be called automatically when the script exits
 echo "Test completed successfully."

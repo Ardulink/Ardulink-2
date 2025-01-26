@@ -24,15 +24,15 @@ DOCKER_IMAGE_MQTT_PUB="efrecon/mqtt-client"
 # Function to clean up containers and processes on exit
 cleanup() {
     echo "Cleaning up..."
-    
+
     echo "Stopping Java process..."
     kill $JAVA_PID
-        
+
     echo "Stopping WebSocket container..."
-    docker stop $WS_CONTAINER_ID > /dev/null
-    
+    docker stop $WS_CONTAINER_ID >/dev/null
+
     echo "Stopping virtualavr container..."
-    docker stop $VIRTUALAVR_CONTAINER_ID > /dev/null
+    docker stop $VIRTUALAVR_CONTAINER_ID >/dev/null
 
     echo "Removing temporary directory..."
     rm -rf "$TEMP_DIR"
@@ -120,7 +120,7 @@ cd ./deploy-dist/target/ardulink/lib/
 java -jar ardulink-mqtt-*.jar -standalone -brokerPort=$MQTT_PORT -connection "ardulink://serial?port=$DEVICE" &
 JAVA_PID=$!
 echo "Ardulink-MQTT started"
-cd - > /dev/null
+cd - >/dev/null
 
 if wait_for_port $MQTT_PORT 10; then
     echo "Ardulink-MQTT server is ready on port $MQTT_PORT."
@@ -140,11 +140,11 @@ while true; do
     docker run --rm --net=host $DOCKER_IMAGE_MQTT_PUB pub -h localhost -p $MQTT_PORT -i 'efrecon-mqtt-client' -t "home/devices/ardulink/D$PIN" -m 'true'
 
     # Check the WebSocket output file for the expected message
-    if docker logs "$WS_CONTAINER_ID" | jq -e '. | select(.type == "pinState" and .pin == "'$PIN'" and .state == true)' > /dev/null 2>&1; then
+    if docker logs "$WS_CONTAINER_ID" | jq -e '. | select(.type == "pinState" and .pin == "'$PIN'" and .state == true)' >/dev/null 2>&1; then
         echo "Test passed. Received the expected WebSocket message."
         break
     fi
-    
+
     # Check if we exceeded the timeout (10 seconds)
     CURRENT_TIME=$(date +%s)
     ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
@@ -152,10 +152,9 @@ while true; do
         echo "Test failed. Timeout reached without receiving the expected message."
         exit 1
     fi
-    
+
     sleep 1
 done
-
 
 # If everything is successful, cleanup will be called automatically when the script exits
 echo "Test completed successfully."
