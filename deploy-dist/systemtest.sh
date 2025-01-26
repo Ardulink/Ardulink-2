@@ -12,10 +12,8 @@ PIN="12"
 cleanup() {
     echo "Cleaning up..."
     
-    if [ -n "$JAVA_PID" ]; then
-        echo "Stopping Java process..."
-        kill $JAVA_PID
-    fi
+    echo "Stopping Java process..."
+    kill $JAVA_PID
         
     echo "Stopping WebSocket container..."
     docker stop $WS_CONTAINER_ID > /dev/null
@@ -101,7 +99,7 @@ fi
 
 echo "Starting Ardulink REST service on port $REST_PORT..."
 cd ./deploy-dist/target/ardulink/lib/
-java -jar ardulink-rest-*.jar -port=$REST_PORT -connection "ardulink://serial-jssc?port=$DEVICE" &
+java -jar ardulink-rest-*.jar -port=$REST_PORT -connection "ardulink://serial-jssc  ?port=$DEVICE" &
 JAVA_PID=$!
 echo "Ardulink-REST started"
 cd - > /dev/null
