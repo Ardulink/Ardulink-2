@@ -17,6 +17,9 @@ ARDULINK_DIR="$TEMP_DIR/ArdulinkProtocol"
 DEVICE=$(find_first_unused_device "/dev/ttyUSB")
 PIN="12"
 
+DOCKER_IMAGEN_WEBSOCKET="solsson/websocat"
+DOCKER_IMAGE_VIRTUALAVR="pfichtner/virtualavr"
+
 # Function to clean up containers and processes on exit
 cleanup() {
     echo "Cleaning up..."
@@ -82,10 +85,10 @@ fi
 
 # Step 2: Run the Docker container that emulates the Arduino
 echo "Running Docker container for ArdulinkProtocol..."
-docker pull pfichtner/virtualavr # download or update (if cached an newer version is available)
-VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=$DEVICE -e DEVICEUSER=$UID -e FILENAME=ArdulinkProtocol.ino -v /dev:/dev -v ./deploy-dist/rootfolder/sketches/ArdulinkProtocol:/sketch pfichtner/virtualavr)
+docker pull $DOCKER_IMAGE_VIRTUALAVR # download or update (if cached an newer version is available)
+VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=$DEVICE -e DEVICEUSER=$UID -e FILENAME=ArdulinkProtocol.ino -v /dev:/dev -v ./deploy-dist/rootfolder/sketches/ArdulinkProtocol:/sketch $DOCKER_IMAGE_VIRTUALAVR)
 
-#VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=$DEVICE -e FILENAME=ArdulinkProtocol.ino -v /dev:/dev -v "$ARDULINK_DIR":/sketch pfichtner/virtualavr)
+#VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=$DEVICE -e FILENAME=ArdulinkProtocol.ino -v /dev:/dev -v "$ARDULINK_DIR":/sketch $DOCKER_IMAGE_VIRTUALAVR)
 
 if wait_for_port $WS_PORT 10; then
     echo "WebSocket server is ready on port $WS_PORT."
@@ -97,12 +100,12 @@ fi
 # Step 3: Run the WebSocket container in the background (detached mode)
 # Run WebSocket container in detached mode and connect to WebSocket server with the -c option
 echo "Running WebSocket container in detached mode and connecting to ws://localhost:$WS_PORT..."
-docker pull solsson/websocat # download or update (if cached an newer version is available)
-WS_CONTAINER_ID=$(docker run --rm --net=host -d -i solsson/websocat ws://localhost:$WS_PORT)
+docker pull $DOCKER_IMAGEN_WEBSOCKET # download or update (if cached an newer version is available)
+WS_CONTAINER_ID=$(docker run --rm --net=host -d -i $DOCKER_IMAGEN_WEBSOCKET ws://localhost:$WS_PORT)
 echo "WebSocket container started"
 
 # Enable listening on pin $PIN
-echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker run --rm --net=host -i solsson/websocat ws://localhost:$WS_PORT
+echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker run --rm --net=host -i $DOCKER_IMAGEN_WEBSOCKET ws://localhost:$WS_PORT
 
 # Step 4: Run the Java application in the background (detached mode)
 REST_PORT=$(find_unused_port 8080)
