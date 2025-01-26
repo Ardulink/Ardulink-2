@@ -1,11 +1,20 @@
-
 #!/bin/bash
 
-# Define some paths
+find_first_unused_device() {
+    local base_path="$1"
+    local index=0
+    while true; do
+        if [ ! -e "${base_path}${index}" ]; then
+            echo "${base_path}${index}"
+            return 0
+        fi
+        index=$((index + 1))
+    done
+}
+
 TEMP_DIR=$(mktemp -d)
 ARDULINK_DIR="$TEMP_DIR/ArdulinkProtocol"
-#DEVICE="/dev/ttyVUSB-$(uuidgen)"
-DEVICE="/dev/ttyUSB0"
+DEVICE=$(find_first_unused_device "/dev/ttyUSB")
 PIN="12"
 
 # Function to clean up containers and processes on exit
