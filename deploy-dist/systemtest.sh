@@ -17,8 +17,8 @@ ARDULINK_DIR="$TEMP_DIR/ArdulinkProtocol"
 DEVICE=$(find_first_unused_device "/dev/ttyUSB")
 PIN="12"
 
-DOCKER_IMAGEN_WEBSOCKET="solsson/websocat"
 DOCKER_IMAGE_VIRTUALAVR="pfichtner/virtualavr"
+DOCKER_IMAGE_WEBSOCAT="solsson/websocat"
 
 # Function to clean up containers and processes on exit
 cleanup() {
@@ -100,12 +100,12 @@ fi
 # Step 3: Run the WebSocket container in the background (detached mode)
 # Run WebSocket container in detached mode and connect to WebSocket server with the -c option
 echo "Running WebSocket container in detached mode and connecting to ws://localhost:$WS_PORT..."
-docker pull $DOCKER_IMAGEN_WEBSOCKET # download or update (if cached an newer version is available)
-WS_CONTAINER_ID=$(docker run --rm --net=host -d -i $DOCKER_IMAGEN_WEBSOCKET ws://localhost:$WS_PORT)
+docker pull $DOCKER_IMAGE_WEBSOCAT # download or update (if cached an newer version is available)
+WS_CONTAINER_ID=$(docker run --rm --net=host -d -i $DOCKER_IMAGE_WEBSOCAT ws://localhost:$WS_PORT)
 echo "WebSocket container started"
 
 # Enable listening on pin $PIN
-echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker run --rm --net=host -i $DOCKER_IMAGEN_WEBSOCKET ws://localhost:$WS_PORT
+echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker run --rm --net=host -i $DOCKER_IMAGE_WEBSOCAT ws://localhost:$WS_PORT
 
 # Step 4: Run the Java application in the background (detached mode)
 REST_PORT=$(find_unused_port 8080)
