@@ -57,7 +57,7 @@ jobs:
     - name: Copy zip to /tmp
       run: |
         for file in deploy-dist/target/ardulink-V*.zip; do 
-          cp "$file" "/tmp/$(echo "$file" | sed 's/-SNAPSHOT-[0-9\-T:]\+Z\.zip$/-SNAPSHOT.zip/')"
+          cp "$file" "/tmp/$(echo "$file" | sed 's/-SNAPSHOT-[0-9T:.\-]\+Z\.zip$/-SNAPSHOT.zip/')"
         done
     - name: Distribute zip created
       if: ${{ env.FIRST_JOB == 'true' }}
