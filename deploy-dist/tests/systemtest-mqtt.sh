@@ -128,6 +128,7 @@ else
     echo "Failed to detect Ardulink-MQTT server on port $MQTT_PORT."
     exit 1
 fi
+sleep 2
 
 # Step 6: Publish MQTT message
 echo "Publishing MQTT message to set pin state..."
