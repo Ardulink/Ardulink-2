@@ -45,12 +45,19 @@ jobs:
       if: ${{ matrix.java-version == '11' }}
       run: echo "FIRST_JOB=true" >> $GITHUB_ENV
 
-    - name: Distribute build results
+    - name: Distribute jars built
       if: ${{ env.FIRST_JOB == 'true' }}
       uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
       with:
         name: jars
         path: "*/target/*.jar"
+
+    - name: Distribute zip created
+      if: ${{ env.FIRST_JOB == 'true' }}
+      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+      with:
+        name: ardulink-zip
+        patch: "deploy-dist/target/ardulink-V*.zip"
 
     - name: Test Report JDK ${{ matrix.java-version }}
       uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5 # v1
