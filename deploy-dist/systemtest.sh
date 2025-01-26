@@ -29,6 +29,9 @@ cleanup() {
     
     echo "Stopping virtualavr container..."
     docker stop $VIRTUALAVR_CONTAINER_ID > /dev/null
+
+    echo "Removing temporary directory..."
+    rm -rf "$TEMP_DIR"
 }
 
 find_unused_port() {
