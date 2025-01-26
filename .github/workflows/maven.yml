@@ -70,6 +70,7 @@ jobs:
     - name: Unzip artifact
       run: unzip deploy-dist/target/ardulink-V*.zip -d deploy-dist/target/
     - name: Cache docker images
+      if: ${{ env.FIRST_JOB == 'true' }}
       uses: ScribeMD/docker-cache@0.5.0
       with:
         key: docker-${{ runner.os }}-dockerimages
