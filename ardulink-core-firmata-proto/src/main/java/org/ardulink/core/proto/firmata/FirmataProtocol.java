@@ -52,6 +52,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
 import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
 import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
+import org.ardulink.core.messages.api.ToDeviceMessagePing;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
@@ -251,6 +252,11 @@ public class FirmataProtocol implements Protocol {
 		@Override
 		public void process(byte b) {
 			delegate.process(b);
+		}
+
+		@Override
+		public byte[] toDevice(ToDeviceMessagePing ping) {
+			throw notYetImplemented();
 		}
 
 		@Override

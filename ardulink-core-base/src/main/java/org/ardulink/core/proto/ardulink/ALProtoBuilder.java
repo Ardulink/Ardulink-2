@@ -45,6 +45,7 @@ public class ALProtoBuilder {
 
 	public enum ALPProtocolKey {
 
+		PING("ping"), //
 		POWER_PIN_SWITCH("ppsw"), //
 		POWER_PIN_INTENSITY("ppin"), //
 		DIGITAL_PIN_READ("dred"), //

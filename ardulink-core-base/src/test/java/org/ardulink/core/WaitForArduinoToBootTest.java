@@ -49,14 +49,14 @@ class WaitForArduinoToBootTest {
 
 	@Test
 	void ifNoResponseReceivedWithin3SecondsWaitWillReturnFalse() throws IOException {
-		onNoTone().doNotRespond();
+		onPing().doNotRespond();
 		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS)).describedAs("Arduino did respond but shouldn't")
 				.isFalse();
 	}
 
 	@Test
 	void noNeedToWaitIfArduinoDoesRespond() throws IOException {
-		onNoTone().respondWith(lf("alp://rply/ok?id={0}"));
+		onPing().respondWith(lf("alp://rply/ok?id={0}"));
 		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS)).describedAs("Arduino did not respond")
 				.isTrue();
 	}
@@ -75,8 +75,8 @@ class WaitForArduinoToBootTest {
 				.describedAs("Arduino did respond but shouldn't").isFalse();
 	}
 
-	private RegexAdder onNoTone() {
-		return arduinoStub.onReceive(regex(lf("alp:\\/\\/notn\\/0\\?id\\=(\\d)")));
+	private RegexAdder onPing() {
+		return arduinoStub.onReceive(regex(lf("alp:\\/\\/ping\\?id\\=(\\d)")));
 	}
 
 	private void simulateArduinoSendsInOneSecond(String message) {

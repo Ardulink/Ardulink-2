@@ -15,6 +15,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
 import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
 import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
+import org.ardulink.core.messages.api.ToDeviceMessagePing;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
@@ -29,6 +30,11 @@ public class SimpleDigisparkProtocol implements Protocol {
 
 		private static final byte separator = (byte) 255;
 		private static final byte[] NO_MESSAGE = new byte[0];
+
+		@Override
+		public byte[] toDevice(ToDeviceMessagePing ping) {
+			return NO_MESSAGE;
+		}
 
 		@Override
 		public byte[] toDevice(ToDeviceMessagePinStateChange pinStateChange) {

@@ -40,6 +40,7 @@ import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.CUS
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.INFO;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.NOTONE;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.PING;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.RPLY;
@@ -64,6 +65,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
 import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
 import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
+import org.ardulink.core.messages.api.ToDeviceMessagePing;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
@@ -380,6 +382,11 @@ public class ArdulinkProtocol2 implements Protocol {
 		}
 
 		// -- out
+
+		@Override
+		public byte[] toDevice(ToDeviceMessagePing ping) {
+			return toBytes(builder(ping, PING).withoutValue());
+		}
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageStartListening startListening) {

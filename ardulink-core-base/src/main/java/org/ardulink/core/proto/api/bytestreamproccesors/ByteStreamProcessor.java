@@ -20,6 +20,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
 import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
 import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
+import org.ardulink.core.messages.api.ToDeviceMessagePing;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
@@ -49,6 +50,8 @@ public interface ByteStreamProcessor {
 	void process(byte read);
 	
 	// -- out
+
+	byte[] toDevice(ToDeviceMessagePing ping);
 
 	byte[] toDevice(ToDeviceMessageStartListening startListening);
 

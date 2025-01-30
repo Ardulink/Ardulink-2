@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.core;
 
 import static org.ardulink.core.ConnectionBasedLink.Mode.ANY_MESSAGE_RECEIVED;
-import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
@@ -26,6 +25,7 @@ import static org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom.toDev
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageKeyPress.toDeviceMessageKeyPress;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone.toDeviceMessageNoTone;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange.toDeviceMessagePinStateChange;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePing.toDeviceMessageNoTone;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening.toDeviceMessageStartListening;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening.toDeviceMessageStopListening;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
@@ -182,10 +182,8 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	}
 
 	private void ping() {
-		// this is not really a ping message since such a message does not exist
-		// (yet). So let's write something that the arduino tries to respond to.
 		try {
-			connection.write(this.byteStreamProcessor.toDevice(addMessageId(toDeviceMessageNoTone(analogPin(0)), 0)));
+			connection.write(this.byteStreamProcessor.toDevice(addMessageId(toDeviceMessageNoTone(), 0)));
 		} catch (IOException e) {
 			// ignore
 		}
