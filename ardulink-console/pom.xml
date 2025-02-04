@@ -122,7 +122,7 @@
 		<dependency>
 			<groupId>com.approvaltests</groupId>
 			<artifactId>approvaltests</artifactId>
-			<version>24.15.0</version>
+			<version>24.16.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
