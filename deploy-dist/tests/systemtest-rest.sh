@@ -85,7 +85,7 @@ fi
 
 # Step 2: Run the Docker container that emulates the Arduino
 echo "Running Docker container for ArdulinkProtocol..."
-docker pull $DOCKER_IMAGE_VIRTUALAVR # download or update (if cached an newer version is available)
+[ -z "$DO_NOT_PULL" ] && docker pull $DOCKER_IMAGE_VIRTUALAVR # download or update (if cached an newer version is available)
 VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=$DEVICE -e DEVICEUSER=$UID -e FILENAME=ArdulinkProtocol.ino -v /dev:/dev -v ./deploy-dist/rootfolder/sketches/ArdulinkProtocol:/sketch $DOCKER_IMAGE_VIRTUALAVR)
 
 #VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=$DEVICE -e FILENAME=ArdulinkProtocol.ino -v /dev:/dev -v "$ARDULINK_DIR":/sketch $DOCKER_IMAGE_VIRTUALAVR)
@@ -100,7 +100,7 @@ fi
 # Step 3: Run the WebSocket container in the background (detached mode)
 # Run WebSocket container in detached mode and connect to WebSocket server with the -c option
 echo "Running WebSocket container in detached mode and connecting to ws://localhost:$WS_PORT..."
-docker pull $DOCKER_IMAGE_WEBSOCAT # download or update (if cached an newer version is available)
+[ -z "$DO_NOT_PULL" ] && docker pull $DOCKER_IMAGE_WEBSOCAT # download or update (if cached an newer version is available)
 WS_CONTAINER_ID=$(docker run --rm --net=host -d -i $DOCKER_IMAGE_WEBSOCAT ws://localhost:$WS_PORT)
 echo "WebSocket container started"
 
