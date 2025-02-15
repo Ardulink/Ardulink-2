@@ -83,14 +83,12 @@ fi
 # Step 1: Download the file and place it in the "ArdulinkProtocol" directory
 echo "Downloading ArdulinkProtocol.ino..."
 mkdir -p "$ARDULINK_DIR"
-curl -so "$ARDULINK_DIR/ArdulinkProtocol.ino.hex" https://github.com/Ardulink/Firmware/releases/download/v1.2.0/ArdulinkProtocol.ino.hex
-
-ls -l "$ARDULINK_DIR/ArdulinkProtocol.ino.hex"
+wget -qO "$ARDULINK_DIR/ArdulinkProtocol.ino.hex" https://github.com/Ardulink/Firmware/releases/download/v1.2.0/ArdulinkProtocol.ino.hex
 
 # Step 2: Run the Docker container that emulates the Arduino
 echo "Running Docker container for ArdulinkProtocol..."
 [ -z "$DO_NOT_PULL" ] && docker pull $DOCKER_IMAGE_VIRTUALAVR # download or update (if cached an newer version is available)
-VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=$DEVICE -e DEVICEUSER=$UID -e FILENAME=ArdulinkProtocol.ino -v /dev:/dev -v ./deploy-dist/rootfolder/sketches/ArdulinkProtocol:/sketch $DOCKER_IMAGE_VIRTUALAVR)
+VIRTUALAVR_CONTAINER_ID=$(docker run --rm -d -p $WS_PORT:8080 -e VIRTUALDEVICE=$DEVICE -e DEVICEUSER=$UID -e FILENAME=ArdulinkProtocol.ino.hex -v /dev:/dev -v $ARDULINK_DIR:/sketch $DOCKER_IMAGE_VIRTUALAVR)
 
 if wait_for_port $WS_PORT 10; then
     echo "WebSocket server is ready on port $WS_PORT."
