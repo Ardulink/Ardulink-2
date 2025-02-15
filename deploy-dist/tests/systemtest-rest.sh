@@ -31,6 +31,7 @@ cleanup() {
     docker stop $WS_CONTAINER_ID >/dev/null
 
     echo "Stopping virtualavr container..."
+    docker logs $VIRTUALAVR_CONTAINER_ID
     docker stop $VIRTUALAVR_CONTAINER_ID >/dev/null
 
     echo "Removing temporary directory..."
@@ -81,7 +82,7 @@ fi
 # Step 1: Download the file and place it in the "ArdulinkProtocol" directory
 echo "Downloading ArdulinkProtocol.ino..."
 mkdir -p "$ARDULINK_DIR"
-curl -o "$ARDULINK_DIR/ArdulinkProtocol.ino.hex" https://github.com/Ardulink/Firmware/releases/download/v1.2.0/ArdulinkProtocol.ino.hex
+curl -so "$ARDULINK_DIR/ArdulinkProtocol.ino.hex" https://github.com/Ardulink/Firmware/releases/download/v1.2.0/ArdulinkProtocol.ino.hex
 
 # Step 2: Run the Docker container that emulates the Arduino
 echo "Running Docker container for ArdulinkProtocol..."
