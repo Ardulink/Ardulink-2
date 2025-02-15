@@ -63,7 +63,7 @@ class WaitForArduinoToBootTest {
 
 	@Test
 	void canDetectInfoPaketFirmwarVersion2xSendingAfterBoot() throws IOException {
-		simulateArduinoSendsInOneSecond(lf("alp://info/"));
+		simulateArduinoSendsInOneSecond(lf("alp://info/x=42/foo=abc"));
 		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, INFO_MESSAGE_ONLY))
 				.describedAs("Arduino did not respond").isTrue();
 	}
