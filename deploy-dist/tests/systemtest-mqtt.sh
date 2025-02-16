@@ -12,14 +12,13 @@ find_first_unused_device() {
     done
 }
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
+
 TEMP_DIR=$(mktemp -d)
 ARDULINK_DIR="$TEMP_DIR/ArdulinkProtocol"
 DEVICE=$(find_first_unused_device "/dev/ttyUSB")
 PIN="12"
-
-DOCKER_IMAGE_VIRTUALAVR="pfichtner/virtualavr"
-DOCKER_IMAGE_WEBSOCAT="solsson/websocat"
-DOCKER_IMAGE_MQTT_PUB="efrecon/mqtt-client"
 
 # Function to clean up containers and processes on exit
 cleanup() {
@@ -28,13 +27,8 @@ cleanup() {
     echo "Stopping Java process..."
     kill $JAVA_PID
 
-    echo "Stopping WebSocket container..."
-    docker stop $WS_CONTAINER_ID >/dev/null
-
-    echo "Stopping virtualavr container..."
-    docker logs $VIRTUALAVR_CONTAINER_ID
-    docker stop $VIRTUALAVR_CONTAINER_ID >/dev/null
-    docker rm $VIRTUALAVR_CONTAINER_ID >/dev/null
+    echo "Stopping Docker Compose services..."
+    docker compose -f "$COMPOSE_FILE" down
 
     echo "Removing temporary directory..."
     rm -rf "$TEMP_DIR"
@@ -88,35 +82,34 @@ wget -qO "$ARDULINK_DIR/ArdulinkProtocol.ino.hex" https://github.com/Ardulink/Fi
 
 # Step 2: Run the Docker container that emulates the Arduino
 echo "Running Docker container for ArdulinkProtocol..."
-[ -z "$DO_NOT_PULL" ] && docker pull $DOCKER_IMAGE_VIRTUALAVR # download or update (if cached an newer version is available)
-VIRTUALAVR_CONTAINER_ID=$(docker run -d -p $WS_PORT:8080 -e VIRTUALDEVICE=$DEVICE -e DEVICEUSER=$UID -e FILENAME=ArdulinkProtocol.ino.hex -v /dev:/dev -v $ARDULINK_DIR:/sketch $DOCKER_IMAGE_VIRTUALAVR)
+export WS_PORT
+export DEVICE
+export UID
+export ARDULINK_DIR
+docker compose -f "$COMPOSE_FILE" up -d virtualavr
 
-if wait_for_port $WS_PORT 10; then
-    echo "WebSocket server is ready on port $WS_PORT."
-else
-    echo "Failed to detect WebSocket server on port $WS_PORT."
-    exit 1
-fi
+echo "Waiting for virtualavr to become healthy..."
+until [ "$(docker inspect --format='{{.State.Health.Status}}' virtualavr)" == "healthy" ]; do
+    sleep 1
+done
 
 # Step 3: Run the WebSocket container in the background (detached mode)
-# Run WebSocket container in detached mode and connect to WebSocket server with the -c option
 echo "Running WebSocket container in detached mode and connecting to ws://localhost:$WS_PORT..."
-[ -z "$DO_NOT_PULL" ] && docker pull $DOCKER_IMAGE_WEBSOCAT # download or update (if cached an newer version is available)
-WS_CONTAINER_ID=$(docker run --rm --net=host -d -i $DOCKER_IMAGE_WEBSOCAT ws://localhost:$WS_PORT)
+docker compose -f "$COMPOSE_FILE" up -d websocat
 echo "WebSocket container started"
 
 # Enable listening on pin $PIN
-echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker run --rm --net=host -i $DOCKER_IMAGE_WEBSOCAT ws://localhost:$WS_PORT
+echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker compose -f "$COMPOSE_FILE" run --rm -T websocat-send-once "cat - | websocat ws://localhost:$WS_PORT"
 
+# Step 4: Run the Java application in the background (detached mode)
 MQTT_PORT=$(find_unused_port 1883)
 if [ -z "$MQTT_PORT" ]; then
     echo "Could not find an available port."
     exit 1
 fi
 
-# Step 4: Run the Java application in the background (detached mode)
 echo "Starting Ardulink MQTT service on port $MQTT_PORT..."
-cd ./deploy-dist/target/ardulink/lib/
+cd $SCRIPT_DIR/../target/ardulink/lib/
 java -jar ardulink-mqtt-*.jar -standalone -brokerPort=$MQTT_PORT -connection "ardulink://serial?port=$DEVICE" &
 JAVA_PID=$!
 echo "Ardulink-MQTT started"
@@ -129,18 +122,23 @@ else
     exit 1
 fi
 
-# Step 6: Publish MQTT message and verify the response in the WebSocket container log file with a timeout
+# Step 5: Publish MQTT message and verify the response in the WebSocket container log file with a timeout
 echo "Verifying WebSocket container response within 10 seconds..."
 START_TIME=$(date +%s)
 TIMEOUT=10
 
+# Step 6: Define the MQTT topic and message dynamically
+export MQTT_HOST="localhost"
+export MQTT_PORT
+export MQTT_TOPIC="home/devices/ardulink/D$PIN"
+export MQTT_MESSAGE="true"
+
 while true; do
     echo "Publishing MQTT message to set pin state..."
-    [ -z "$DO_NOT_PULL" ] && docker pull $DOCKER_IMAGE_MQTT_PUB # download or update (if cached an newer version is available)
-    docker run --rm --net=host $DOCKER_IMAGE_MQTT_PUB pub -h localhost -p $MQTT_PORT -i 'efrecon-mqtt-client' -t "home/devices/ardulink/D$PIN" -m 'true'
+    docker compose -f "$COMPOSE_FILE" run --rm mqtt-pub-once
 
     # Check the WebSocket output file for the expected message
-    if docker logs "$WS_CONTAINER_ID" | jq -e '. | select(.type == "pinState" and .pin == "'$PIN'" and .state == true)' >/dev/null 2>&1; then
+    if docker compose -f "$COMPOSE_FILE" logs websocat | jq -R -e 'split(" | ") | .[1] | fromjson? | select(.type == "pinState" and .pin == "'$PIN'" and .state == true)' >/dev/null 2>&1; then
         echo "Test passed. Received the expected WebSocket message."
         break
     fi

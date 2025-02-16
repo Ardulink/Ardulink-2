@@ -86,7 +86,7 @@ jobs:
     - name: Cache docker images
       uses: ScribeMD/docker-cache@0.5.0
       with:
-        key: docker-${{ runner.os }}-${{ matrix.java-version }}-dockerimages
+        key: docker-${{ runner.os }}-${{ matrix.java-version }}-${{ hashFiles('deploy-dist/tests/docker-compose.yml') }}
     - name: Run the systemtests
       run: |
         bash deploy-dist/tests/systemtest-mqtt.sh

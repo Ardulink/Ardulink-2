@@ -1,0 +1,37 @@
+services:
+  virtualavr:
+    image: pfichtner/virtualavr:0.1.3
+    container_name: virtualavr
+    ports:
+      - "${WS_PORT}:8080"
+    environment:
+      - VIRTUALDEVICE=${DEVICE}
+      - DEVICEUSER=${UID}
+      - FILENAME=ArdulinkProtocol.ino.hex
+    volumes:
+      - /dev:/dev
+      - ${ARDULINK_DIR}:/sketch
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8080"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+      timeout: 5s
+  websocat:
+    #image: solsson/websocat
+    image: ghcr.io/vi/websocat:v1.14.0
+    network_mode: host
+    stdin_open: true  # Equivalent to -i
+    command: ["ws://localhost:${WS_PORT}"]
+    restart: unless-stopped
+  websocat-send-once:
+    #image: solsson/websocat
+    image: ghcr.io/vi/websocat:v1.14.0
+    network_mode: host
+    stdin_open: true
+    entrypoint: ["sh", "-c"]  # Allow us to pass custom commands
+  mqtt-pub-once:
+    image: efrecon/mqtt-client:2.0.11
+    network_mode: host
+    command: ["pub", "-h", "${MQTT_HOST:-}", "-p", "${MQTT_PORT:-}", "-i", "efrecon-mqtt-client", "-t", "${MQTT_TOPIC:-}", "-m", "${MQTT_MESSAGE:-}"]
