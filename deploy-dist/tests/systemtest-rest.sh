@@ -80,8 +80,8 @@ echo "Downloading ArdulinkProtocol.ino..."
 mkdir -p "$ARDULINK_DIR"
 wget -qO "$ARDULINK_DIR/ArdulinkProtocol.ino.hex" https://github.com/Ardulink/Firmware/releases/download/v1.2.0/ArdulinkProtocol.ino.hex
 
-# Step 2: Start virtualavr container
-echo "Starting virtualavr container with Docker Compose..."
+# Step 2: Run the Docker container that emulates the Arduino
+echo "Running Docker container for ArdulinkProtocol..."
 export WS_PORT
 export DEVICE
 export UID
@@ -93,17 +93,9 @@ until [ "$(docker inspect --format='{{.State.Health.Status}}' virtualavr)" == "h
     sleep 1
 done
 
-echo "virtualavr is healthy. Proceeding to start websocat."
-
-# Step 3: Start websocat container
+# Step 3: Start websocat container (listening for messages sent by virtualavr)
 docker compose -f "$COMPOSE_FILE" up -d websocat
-
-if wait_for_port $WS_PORT 10; then
-    echo "WebSocket server is ready on port $WS_PORT."
-else
-    echo "Failed to detect WebSocket server on port $WS_PORT."
-    exit 1
-fi
+echo "WebSocket container started"
 
 # Enable listening on pin $PIN
 echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker compose -f "$COMPOSE_FILE" run --rm -T websocat-send-once "cat - | websocat ws://localhost:$WS_PORT"

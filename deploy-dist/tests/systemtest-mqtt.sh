@@ -93,8 +93,7 @@ until [ "$(docker inspect --format='{{.State.Health.Status}}' virtualavr)" == "h
     sleep 1
 done
 
-# Step 3: Run the WebSocket container in the background (detached mode)
-echo "Running WebSocket container in detached mode and connecting to ws://localhost:$WS_PORT..."
+# Step 3: Start websocat container
 docker compose -f "$COMPOSE_FILE" up -d websocat
 echo "WebSocket container started"
 

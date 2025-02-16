@@ -19,14 +19,12 @@ services:
       start_period: 5s
       timeout: 5s
   websocat:
-    #image: solsson/websocat
     image: ghcr.io/vi/websocat:v1.14.0
     network_mode: host
     stdin_open: true  # Equivalent to -i
     command: ["ws://localhost:${WS_PORT}"]
     restart: unless-stopped
   websocat-send-once:
-    #image: solsson/websocat
     image: ghcr.io/vi/websocat:v1.14.0
     network_mode: host
     stdin_open: true
