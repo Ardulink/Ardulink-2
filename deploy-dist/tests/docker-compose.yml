@@ -1,23 +1,23 @@
 services:
   virtualavr:
     image: pfichtner/virtualavr:0.1.3
-    container_name: virtualavr
     ports:
       - "${WS_PORT}:8080"
     environment:
-      - VIRTUALDEVICE=${DEVICE}
-      - DEVICEUSER=${UID}
+      - VIRTUALDEVICE=${VIRTUALDEVICE}
+      - DEVICEUSER=${DEVICEUSER}
       - FILENAME=ArdulinkProtocol.ino.hex
     volumes:
       - /dev:/dev
       - ${ARDULINK_DIR}:/sketch
     restart: unless-stopped
     healthcheck:
+      # we define healthcheck by ourself for using a very short interval
       test: ["CMD", "nc", "-z", "localhost", "8080"]
-      interval: 10s
+      interval: 1s
       retries: 5
-      start_period: 5s
-      timeout: 5s
+      start_period: 3s
+      timeout: 3s
   websocat:
     image: ghcr.io/vi/websocat:v1.14.0
     network_mode: host

@@ -7,13 +7,13 @@ source "$SCRIPT_DIR/common.sh"
 COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
 
 TEMP_DIR=$(mktemp -d)
-ARDULINK_DIR="$TEMP_DIR/ArdulinkProtocol"
-DEVICE=$(find_first_unused_device "/dev/ttyUSB")
+export ARDULINK_DIR="$TEMP_DIR/ArdulinkProtocol"
+export VIRTUALDEVICE=$(find_first_unused_device "/dev/ttyUSB")
 PIN="12"
 
 trap cleanup EXIT INT TERM
 
-WS_PORT=$(find_unused_port 8000)
+export WS_PORT=$(find_unused_port 8000)
 [ -z "$WS_PORT" ] && die "Could not find an available port."
 
 # Step 1: Download the file and place it in the "ArdulinkProtocol" directory
@@ -23,10 +23,7 @@ wget -qO "$ARDULINK_DIR/ArdulinkProtocol.ino.hex" https://github.com/Ardulink/Fi
 
 # Step 2: Run the Docker container that emulates the Arduino
 echo "Running Docker container for ArdulinkProtocol..."
-export WS_PORT
-export DEVICE
-export UID
-export ARDULINK_DIR
+export DEVICEUSER=$UID
 docker compose -f "$COMPOSE_FILE" up -d virtualavr
 wait_for_container_healthy virtualavr
 
@@ -38,12 +35,12 @@ echo "WebSocket container started"
 echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker compose -f "$COMPOSE_FILE" run --rm -T websocat-send-once "cat - | websocat ws://localhost:$WS_PORT"
 
 # Step 4: Run the Java application in the background (detached mode)
-MQTT_PORT=$(find_unused_port 1883)
+export MQTT_PORT=$(find_unused_port 1883)
 [ -z "$MQTT_PORT" ] && die "Could not find an available port."
 
 echo "Starting Ardulink MQTT service on port $MQTT_PORT..."
 cd $SCRIPT_DIR/../target/ardulink/lib/
-java -jar ardulink-mqtt-*.jar -standalone -brokerPort=$MQTT_PORT -connection "ardulink://serial?port=$DEVICE" &
+java -jar ardulink-mqtt-*.jar -standalone -brokerPort=$MQTT_PORT -connection "ardulink://serial?port=$VIRTUALDEVICE" &
 JAVA_PID=$!
 echo "Ardulink-MQTT started"
 cd - >/dev/null
@@ -58,7 +55,6 @@ TIMEOUT=10
 
 # Step 6: Define the MQTT topic and message dynamically
 export MQTT_HOST="localhost"
-export MQTT_PORT
 export MQTT_TOPIC="home/devices/ardulink/D$PIN"
 export MQTT_MESSAGE="true"
 
