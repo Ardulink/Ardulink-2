@@ -4,7 +4,7 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
-COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
+export COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
 
 TEMP_DIR=$(mktemp -d)
 export ARDULINK_DIR="$TEMP_DIR/ArdulinkProtocol"
@@ -58,23 +58,10 @@ export MQTT_HOST="localhost"
 export MQTT_TOPIC="home/devices/ardulink/D$PIN"
 export MQTT_MESSAGE="true"
 
-while true; do
-    echo "Publishing MQTT message to set pin state..."
-    docker compose -f "$COMPOSE_FILE" run --rm mqtt-pub-once
-
-    # Check the WebSocket output file for the expected message
-    if docker compose -f "$COMPOSE_FILE" logs websocat | jq -R -e 'split(" | ") | .[1] | fromjson? | select(.type == "pinState" and .pin == "'$PIN'" and .state == true)' >/dev/null 2>&1; then
-        echo "Test passed. Received the expected WebSocket message."
-        break
-    fi
-
-    # Check if we exceeded the timeout (10 seconds)
-    CURRENT_TIME=$(date +%s)
-    ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
-    [ $ELAPSED_TIME -ge $TIMEOUT ] && die "Test failed. Timeout reached without receiving the expected message."
-
-    sleep 1
-done
+json_pattern=".type == \"pinState\" and .pin == \"$PIN\" and .state == true"
+check_websocket_message \
+    "docker compose run --rm mqtt-pub-once" \
+    "$json_pattern"
 
 # If everything is successful, cleanup will be called automatically when the script exits
 echo "Test completed successfully."

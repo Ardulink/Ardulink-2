@@ -6,6 +6,20 @@ die() {
     exit 1
 }
 
+# Function to clean up containers and processes on exit
+cleanup() {
+    echo "Cleaning up..."
+
+    echo "Stopping Java process..."
+    kill $JAVA_PID 2>/dev/null
+
+    echo "Stopping Docker Compose services..."
+    docker compose -f "$COMPOSE_FILE" down
+
+    echo "Removing temporary directory..."
+    rm -rf "$TEMP_DIR"
+}
+
 # Function to find the first unused device
 find_first_unused_device() {
     local base_path="$1"
@@ -61,17 +75,30 @@ wait_for_container_healthy() {
     echo "$container_name is healthy."
 }
 
+check_websocket_message() {
+    local action="$1"         # Command to execute the action
+    local json_pattern="$2"   # JQ pattern to match in the WebSocket message
+    local timeout="${3:-10}"  # Default timeout of 10 seconds if not specified
 
-# Function to clean up containers and processes on exit
-cleanup() {
-    echo "Cleaning up..."
+    echo "Verifying WebSocket container response within $timeout seconds..."
+    START_TIME=$(date +%s)
 
-    echo "Stopping Java process..."
-    kill $JAVA_PID 2>/dev/null
+    while true; do
+        eval "$action"
 
-    echo "Stopping Docker Compose services..."
-    docker compose -f "$COMPOSE_FILE" down
+        # Check WebSocket logs for the expected message using the provided jq pattern
+        if docker compose -f "$COMPOSE_FILE" logs websocat | jq -R -e \
+            "split(\" | \") | .[1] | fromjson? | select($json_pattern)" \
+            >/dev/null 2>&1; then
+            echo "Test passed. Received WebSocket message matching $json_pattern."
+            break
+        fi
 
-    echo "Removing temporary directory..."
-    rm -rf "$TEMP_DIR"
+        # Timeout check
+        CURRENT_TIME=$(date +%s)
+        ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
+        [ $ELAPSED_TIME -ge $timeout ] && die "Test failed. Timeout reached without receiving the expected message."
+
+        sleep 1
+    done
 }

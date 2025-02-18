@@ -4,7 +4,7 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
-COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
+export COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
 
 TEMP_DIR=$(mktemp -d)
 export ARDULINK_DIR="$TEMP_DIR/ArdulinkProtocol"
@@ -54,24 +54,10 @@ echo "Verifying WebSocket container response within 10 seconds..."
 START_TIME=$(date +%s)
 TIMEOUT=10
 
-while true; do
-    echo "Calling the API endpoint to set pin state..."
-    RESPONSE=$(curl -s -X 'PUT' \
-        "http://localhost:$REST_PORT/pin/digital/$PIN" \
-        -H 'accept: application/json' \
-        -H 'Content-Type: application/text' \
-        -d 'true')
-    if docker compose -f "$COMPOSE_FILE" logs websocat | jq -R -e 'split(" | ") | .[1] | fromjson? | select(.type == "pinState" and .pin == "'$PIN'" and .state == true)' >/dev/null 2>&1; then
-        echo "Test passed. Received the expected WebSocket message."
-        break
-    fi
-
-    CURRENT_TIME=$(date +%s)
-    ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
-    [ $ELAPSED_TIME -ge $TIMEOUT ] && die "Test failed. Timeout reached without receiving the expected message."
-
-    sleep 1
-done
+json_pattern=".type == \"pinState\" and .pin == \"$PIN\" and .state == true"
+check_websocket_message \
+    "curl -s -X 'PUT' 'http://localhost:$REST_PORT/pin/digital/$PIN' -H 'accept: application/json' -H 'Content-Type: application/text' -d 'true'" \
+    "$json_pattern"
 
 # If everything is successful, cleanup will be called automatically when the script exits
 echo "Test completed successfully."
