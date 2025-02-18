@@ -5,20 +5,20 @@ updates:
   schedule:
     # Check for updates to GitHub Actions every weekday
     interval: "daily"
-    time: "04:00"
+    time: "04:42"
   assignees:
   - pfichtner
 - package-ecosystem: maven
   directory: "/"
   schedule:
     interval: "daily"
-    time: "04:00"
+    time: "04:42"
   assignees:
   - pfichtner
 - package-ecosystem: docker
   directory: "/"
   schedule:
     interval: "daily"
-    time: "04:00"
+    time: "04:42"
   assignees:
   - pfichtner
