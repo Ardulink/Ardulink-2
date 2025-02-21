@@ -15,10 +15,3 @@ updates:
     time: "04:42"
   assignees:
   - pfichtner
-- package-ecosystem: docker
-  directory: "/deploy-dist/tests"
-  schedule:
-    interval: "daily"
-    time: "04:42"
-  assignees:
-  - pfichtner
