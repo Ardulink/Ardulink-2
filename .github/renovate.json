@@ -1,6 +1,5 @@
 {
-  "extends": ["config:base"],
-  "automerge": false,
+  "extends": ["config:recommended"],
   "labels": ["dependencies"],
   "packageRules": [
     {
