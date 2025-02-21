@@ -1,6 +1,10 @@
 {
   "extends": ["config:recommended"],
-  "enabledManagers": ["maven", "docker-compose"],
+  "docker-compose": {
+    "fileMatch": [
+      "^deploy-dist/tests/docker-compose\\.yml$"
+    ]
+  },
   "labels": ["dependencies"],
   "packageRules": [
     {
