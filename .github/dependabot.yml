@@ -16,7 +16,7 @@ updates:
   assignees:
   - pfichtner
 - package-ecosystem: docker
-  directory: "/"
+  directory: "/deploy-dist/tests"
   schedule:
     interval: "daily"
     time: "04:42"
