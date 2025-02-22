@@ -29,10 +29,7 @@ import java.util.stream.Stream;
 import javax.swing.JComboBox;
 
 /**
- * [ardulinktitle] [ardulinkversion] This is the ready ardulink console a
- * complete SWING application to manage an Arduino board. Console has several
- * tabs with all ready arduino components. Each tab is able to do a specific
- * action sending or listening for messages to arduino or from arduino board.
+ * [ardulinktitle] [ardulinkversion]
  * 
  * project Ardulink http://www.ardulink.org/
  * 

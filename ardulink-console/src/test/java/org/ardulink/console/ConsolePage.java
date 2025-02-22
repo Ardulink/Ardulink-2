@@ -44,6 +44,14 @@ import org.ardulink.gui.PWMController;
 import org.ardulink.gui.SwitchController;
 import org.ardulink.gui.connectionpanel.ConnectionPanel;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * project Ardulink http://www.ardulink.org/
+ * 
+ * [adsense]
+ *
+ */
 public class ConsolePage {
 
 	private final Console console;
