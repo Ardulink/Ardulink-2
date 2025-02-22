@@ -15,11 +15,11 @@ limitations under the License.
  */
 package org.ardulink.console;
 
+import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 
-import java.net.URI;
-
 import javax.swing.JComboBox;
+import javax.swing.JSlider;
 import javax.swing.JToggleButton;
 
 import org.junit.jupiter.api.Disabled;
@@ -43,20 +43,47 @@ class ConsoleIT {
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
+	void canConnectToVirtualRandom() {
+		String connection = "ardulink://virtual-console";
+
+		ConsolePage page = new ConsolePage(new Console());
+		page.useConnection(connection);
+
+		page.connect();
+		JToggleButton toggle = page.digitalSwitch(digitalPin(12));
+		toggle.doClick(); // on
+		toggle.doClick(); // off
+
+		JSlider slider = page.analogSlider(analogPin(11));
+		slider.setValue(42);
+		slider.setValue(0);
+
+		page.disconnect();
+
+		// TODO verify the link interaction (console output)
+	}
+
+	@Test
+	@DisabledIf(IS_HEADLESS)
 	@Disabled("we need to spawn up the virtualavr first (prefered using testcontainers)")
 	void canConnectToVirtualAvr() {
 		String connection = "ardulink://serial-jssc";
 		String virtualAvrDevice = "/dev/ttyUSB0";
 
 		ConsolePage page = new ConsolePage(new Console());
-		page.useConnection(URI.create(connection));
+		page.useConnection(connection);
 		JComboBox<?> port = page.attributeChooser("port", JComboBox.class);
 		port.setSelectedItem(virtualAvrDevice);
 
 		page.connect();
-		JToggleButton onOffSwitch = page.digitalSwitch(digitalPin(12));
-		onOffSwitch.doClick(); // on
-		onOffSwitch.doClick(); // off
+		JToggleButton toggle = page.digitalSwitch(digitalPin(12));
+		toggle.doClick(); // on
+		toggle.doClick(); // off
+
+		JSlider slider = page.analogSlider(analogPin(11));
+		slider.setValue(42);
+		slider.setValue(0);
+
 		// TODO disconnect fails on jssc
 		page.disconnect();
 	}
