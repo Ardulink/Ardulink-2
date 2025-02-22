@@ -23,6 +23,7 @@ import static org.ardulink.core.Pin.digitalPin;
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.IOException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
@@ -31,12 +32,13 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
+import org.ardulink.core.Link;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.EventListenerAdapter;
 import org.ardulink.core.events.FilteredEventListenerAdapter;
 import org.ardulink.gui.facility.IntMinMaxModel;
-import org.ardulink.legacy.Link;
+import org.ardulink.util.Throwables;
 
 /**
  * [ardulinktitle] [ardulinkversion] This class implements the
@@ -49,6 +51,7 @@ import org.ardulink.legacy.Link;
  */
 public class DigitalPinStatus extends JPanel implements Linkable {
 
+	private static final String SENSOR_ON = "Sensor on";
 	private static final String SENSOR_OFF = "Sensor off";
 
 	private static final long serialVersionUID = -7773514191770737230L;
@@ -114,21 +117,25 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				if (e.getStateChange() == ItemEvent.SELECTED) {
-					link.addDigitalReadChangeListener((listener = listener()));
+				try {
+					if (e.getStateChange() == ItemEvent.SELECTED) {
+						link.addListener((listener = listener()));
 
-					tglbtnSensor.setText("Sensor on");
-					pinComboBox.setEnabled(false);
+						tglbtnSensor.setText(SENSOR_ON);
+						pinComboBox.setEnabled(false);
 
-					lblStatelabel.setEnabled(true);
+						lblStatelabel.setEnabled(true);
 
-				} else if (e.getStateChange() == ItemEvent.DESELECTED) {
-					link.removeDigitalReadChangeListener(listener);
+					} else if (e.getStateChange() == ItemEvent.DESELECTED) {
+						link.removeListener(listener);
 
-					tglbtnSensor.setText(SENSOR_OFF);
-					pinComboBox.setEnabled(true);
+						tglbtnSensor.setText(SENSOR_OFF);
+						pinComboBox.setEnabled(true);
 
-					lblStatelabel.setEnabled(false);
+						lblStatelabel.setEnabled(false);
+					}
+				} catch (IOException ex) {
+					throw Throwables.propagate(ex);
 				}
 			}
 		});
@@ -142,7 +149,11 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 	@Override
 	public void setLink(Link link) {
 		if (this.link != null && listener != null) {
-			this.link.removeDigitalReadChangeListener(listener);
+			try {
+				this.link.removeListener(listener);
+			} catch (IOException e) {
+				Throwables.propagate(e);
+			}
 		}
 		tglbtnSensor.setText(SENSOR_OFF);
 		pinComboBox.setEnabled(true);

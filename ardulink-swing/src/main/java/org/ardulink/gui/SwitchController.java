@@ -18,17 +18,22 @@ limitations under the License.
 
 package org.ardulink.gui;
 
+import static org.ardulink.core.Pin.digitalPin;
+
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ItemEvent;
+import java.io.IOException;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
+import org.ardulink.core.Link;
+import org.ardulink.core.Pin;
 import org.ardulink.gui.facility.IntMinMaxModel;
-import org.ardulink.legacy.Link;
+import org.ardulink.util.Throwables;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -67,13 +72,17 @@ public class SwitchController extends JPanel implements Linkable {
 		
 		switchToggleButton = new JToggleButton("Off");
 		switchToggleButton.addItemListener(e -> {
-			int pin = pinComboBoxModel.getSelectedItem().intValue();
-			if(e.getStateChange() == ItemEvent.SELECTED) {
-				switchToggleButton.setText("On");
-				link.sendPowerPinSwitch(pin, true);
-			} else if(e.getStateChange() == ItemEvent.DESELECTED) {
-				switchToggleButton.setText("Off");
-				link.sendPowerPinSwitch(pin, false);
+			try {
+				int pin = pinComboBoxModel.getSelectedItem().intValue();
+				if(e.getStateChange() == ItemEvent.SELECTED) {
+					switchToggleButton.setText("On");
+					link.switchDigitalPin(digitalPin(pin), true);
+				} else if(e.getStateChange() == ItemEvent.DESELECTED) {
+					switchToggleButton.setText("Off");
+					link.switchDigitalPin(digitalPin(pin), false);
+				}
+			} catch (IOException ex) {
+				Throwables.propagate(ex);
 			}
 		});
 		switchToggleButton.setBounds(10, 38, 103, 23);

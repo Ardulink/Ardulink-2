@@ -29,7 +29,7 @@ import static org.mockito.Mockito.mock;
 import javax.swing.JComboBox;
 
 import org.approvaltests.awt.AwtApprovals;
-import org.ardulink.legacy.Link;
+import org.ardulink.core.Link;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 

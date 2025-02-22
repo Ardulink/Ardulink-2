@@ -30,8 +30,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import org.ardulink.core.Link;
 import org.ardulink.gui.Linkable;
-import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

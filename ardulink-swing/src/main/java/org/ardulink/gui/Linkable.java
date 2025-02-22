@@ -18,7 +18,7 @@ limitations under the License.
 
 package org.ardulink.gui;
 
-import org.ardulink.legacy.Link;
+import org.ardulink.core.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

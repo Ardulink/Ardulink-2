@@ -31,6 +31,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,6 +49,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.ardulink.core.ConnectionListener;
+import org.ardulink.core.Link;
 import org.ardulink.gui.AnalogPinStatus;
 import org.ardulink.gui.ConnectionStatus;
 import org.ardulink.gui.DigitalPinStatus;
@@ -63,7 +65,6 @@ import org.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
 import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.ardulink.gui.serial.SerialMonitor;
-import org.ardulink.legacy.Link;
 import org.ardulink.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -333,7 +334,12 @@ public class Console extends JFrame implements Linkable {
 	private JButton disconnectButton() {
 		JButton button = new JButton("Disconnect");
 		button.addActionListener(e -> {
-			logger.info("Connection status: {}", !link.disconnect());
+			try {
+				link.close();
+				logger.info("Connection closed");
+			} catch (IOException ex) {
+				throw Throwables.propagate(ex);
+			}
 			setLink(null);
 		});
 		return button;
@@ -415,13 +421,7 @@ public class Console extends JFrame implements Linkable {
 
 	@Override
 	public void setLink(Link newLink) {
-		if (this.link != null) {
-			this.link.removeConnectionListener(this.connectionListener);
-		}
 		this.link = newLink;
-		if (this.link != null) {
-			this.link.addConnectionListener(this.connectionListener);
-		}
 		if (this.link != null) {
 			connectionListener.reconnected();
 		} else {

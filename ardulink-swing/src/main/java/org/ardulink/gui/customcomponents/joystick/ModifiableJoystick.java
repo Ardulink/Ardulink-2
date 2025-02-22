@@ -29,10 +29,10 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
+import org.ardulink.core.Link;
 import org.ardulink.gui.Linkable;
 import org.ardulink.gui.event.PositionEvent;
 import org.ardulink.gui.event.PositionListener;
-import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

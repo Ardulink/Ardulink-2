@@ -20,11 +20,13 @@ package org.ardulink.gui;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static org.ardulink.core.Pin.analogPin;
 
 import java.awt.ComponentOrientation;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,16 +38,18 @@ import javax.swing.JProgressBar;
 import javax.swing.JSlider;
 import javax.swing.SwingConstants;
 
+import org.ardulink.core.Link;
 import org.ardulink.gui.event.PWMChangeEvent;
 import org.ardulink.gui.event.PWMControllerListener;
 import org.ardulink.gui.facility.IntMinMaxModel;
-import org.ardulink.legacy.Link;
+import org.ardulink.util.Throwables;
 
 /**
- * [ardulinktitle] [ardulinkversion] 
+ * [ardulinktitle] [ardulinkversion]
  * 
- * This class can manage power with modulation arduino pins sending specific messages to the arduino board. 
- * It has many components to ensure maximum flexibility in the management of these pins. 
+ * This class can manage power with modulation arduino pins sending specific
+ * messages to the arduino board. It has many components to ensure maximum
+ * flexibility in the management of these pins.
  * 
  * project Ardulink http://www.ardulink.org/
  * 
@@ -195,8 +199,11 @@ public class PWMController extends JPanel implements Linkable {
 
 				notifyListeners(new PWMChangeEvent(powerValue));
 
-				int pin = ((Integer) pinComboBox.getSelectedItem()).intValue();
-				link.sendPowerPinIntensity(pin, powerValue);
+				try {
+					link.switchAnalogPin(analogPin(((int) pinComboBox.getSelectedItem())), powerValue);
+				} catch (IOException e) {
+					Throwables.propagate(e);
+				}
 			}
 		});
 
@@ -239,7 +246,7 @@ public class PWMController extends JPanel implements Linkable {
 	}
 
 	/**
-	 * Set the pin to control. 
+	 * Set the pin to control.
 	 * 
 	 * @param pin pin number
 	 */

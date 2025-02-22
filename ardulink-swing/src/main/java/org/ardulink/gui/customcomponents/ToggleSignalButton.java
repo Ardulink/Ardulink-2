@@ -22,8 +22,7 @@ import static java.awt.event.ItemEvent.SELECTED;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.io.IOException;
 
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -33,8 +32,9 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
+import org.ardulink.core.Link;
 import org.ardulink.gui.Linkable;
-import org.ardulink.legacy.Link;
+import org.ardulink.util.Throwables;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -98,13 +98,14 @@ public class ToggleSignalButton extends JPanel implements Linkable {
 		
 		
 		signalButton = new JToggleButton("Off");
-		signalButton.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
+		signalButton.addItemListener(e -> {
+			try {
 				link.sendCustomMessage(getId(),
 						e.getStateChange() == SELECTED ? getValueOn()
 								: getValueOff());
 				updateSignalButtonText();
+			} catch (IOException ex) {
+				Throwables.propagate(ex);
 			}
 		});
 		

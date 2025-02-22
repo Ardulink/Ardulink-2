@@ -24,6 +24,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.IOException;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -32,12 +33,13 @@ import javax.swing.JProgressBar;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
+import org.ardulink.core.Link;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.EventListenerAdapter;
 import org.ardulink.core.events.FilteredEventListenerAdapter;
 import org.ardulink.gui.facility.IntMinMaxModel;
-import org.ardulink.legacy.Link;
+import org.ardulink.util.Throwables;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -170,26 +172,30 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 
 			@Override
 			public void itemStateChanged(ItemEvent e) {
-				if(e.getStateChange() == ItemEvent.SELECTED) {
-					link.addAnalogReadChangeListener((listener = listener()));
-					
-					tglbtnSensor.setText("On");
-					pinComboBox.setEnabled(false);
-					minValueComboBox.setEnabled(false);
-					maxValueComboBox.setEnabled(false);
-					
-					progressBar.setEnabled(true);
-					
-					
-				} else if(e.getStateChange() == ItemEvent.DESELECTED) {
-					link.removeAnalogReadChangeListener(listener);
-					
-					tglbtnSensor.setText("Off");
-					pinComboBox.setEnabled(true);
-					minValueComboBox.setEnabled(true);
-					maxValueComboBox.setEnabled(true);
+				try {
+					if (e.getStateChange() == ItemEvent.SELECTED) {
+						link.addListener((listener = listener()));
+						
+						tglbtnSensor.setText("On");
+						pinComboBox.setEnabled(false);
+						minValueComboBox.setEnabled(false);
+						maxValueComboBox.setEnabled(false);
+						
+						progressBar.setEnabled(true);
+						
+						
+					} else if(e.getStateChange() == ItemEvent.DESELECTED) {
+						link.removeListener(listener);
+						
+						tglbtnSensor.setText("Off");
+						pinComboBox.setEnabled(true);
+						minValueComboBox.setEnabled(true);
+						maxValueComboBox.setEnabled(true);
 
-					progressBar.setEnabled(false);
+						progressBar.setEnabled(false);
+					}
+				} catch (IOException ex) {
+					throw Throwables.propagate(ex);
 				}
 			}
 		});
@@ -229,7 +235,11 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	@Override
 	public void setLink(Link link) {
 		if (this.link != null && this.listener != null) {
-			this.link.removeAnalogReadChangeListener(this.listener);
+			try {
+				this.link.removeListener(this.listener);
+			} catch (IOException e) {
+				throw Throwables.propagate(e);
+			}
 		}
 		this.link = link;
 	}

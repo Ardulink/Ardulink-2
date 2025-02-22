@@ -31,9 +31,9 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 
+import org.ardulink.core.Link;
 import org.ardulink.gui.Linkable;
 import org.ardulink.gui.facility.AbstractDocumentListenerAdapter;
-import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -20,10 +20,12 @@ package org.ardulink.gui;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 
 import javax.swing.JLabel;
 
-import org.ardulink.legacy.Link;
+import org.ardulink.core.Link;
+import org.ardulink.util.Throwables;
 
 /**
  * [ardulinktitle] [ardulinkversion] Class used by KeyPressController class to
@@ -50,11 +52,15 @@ public class KeyPressListener extends KeyAdapter {
 	}
 
 	@Override
-	public void keyPressed(KeyEvent e) {
-		keyPressedGUIInteraction(e);
+	public void keyPressed(KeyEvent keyEvent) {
+		keyPressedGUIInteraction(keyEvent);
 
-		link.sendKeyPressEvent(e.getKeyChar(), e.getKeyCode(), e.getKeyLocation(), e.getModifiers(),
-				e.getModifiersEx());
+		try {
+			link.sendKeyPressEvent(keyEvent.getKeyChar(), keyEvent.getKeyCode(), keyEvent.getKeyLocation(),
+					keyEvent.getModifiers(), keyEvent.getModifiersEx());
+		} catch (IOException e) {
+			Throwables.propagate(e);
+		}
 	}
 
 	@Override

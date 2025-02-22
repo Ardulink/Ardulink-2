@@ -47,11 +47,11 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
+import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.gui.Linkable;
 import org.ardulink.gui.facility.UtilityGeometry;
-import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -205,11 +205,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 	}
 
 	public Link createLink() {
-		return this.configurer == null ? null : legacyAdapt(this.configurer.newLink());
-	}
-
-	private Link legacyAdapt(org.ardulink.core.Link link) {
-		return new Link.LegacyLinkAdapter(link);
+		return this.configurer == null ? null : this.configurer.newLink();
 	}
 
 	public Link getLink() {

@@ -104,7 +104,6 @@
 		<module>ardulink-link-raspberry</module>
 		<module>ardulink-link-proxy</module>
 		<module>ardulink-link-mqtt</module>
-		<module>ardulink-legacy</module>
 		<module>ardulink-camel</module>
 		<module>ardulink-networkproxyserver</module>
 		<module>ardulink-mqtt</module>

@@ -24,7 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import org.ardulink.legacy.Link;
+import org.ardulink.core.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

@@ -13,11 +13,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>
-			<artifactId>ardulink-legacy</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-swing</artifactId>
 			<version>${project.version}</version>
 		</dependency>

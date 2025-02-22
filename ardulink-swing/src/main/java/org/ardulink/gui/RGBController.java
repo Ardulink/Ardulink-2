@@ -34,13 +34,12 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
+import org.ardulink.core.Link;
 import org.ardulink.gui.event.PWMChangeEvent;
 import org.ardulink.gui.event.PWMControllerListener;
 import org.ardulink.gui.facility.AbstractDocumentListenerAdapter;
 import org.ardulink.gui.facility.Colors;
-import org.ardulink.legacy.Link;
 
 /**
  * [ardulinktitle] [ardulinkversion]

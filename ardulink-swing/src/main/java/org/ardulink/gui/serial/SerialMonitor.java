@@ -38,15 +38,16 @@ import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.qos.QosLink;
 import org.ardulink.gui.Linkable;
+
 /**
- * [ardulinktitle] [ardulinkversion]
- * This class shows serial incoming messages if the Link is a ConnectionBasedLink
- * project Ardulink http://www.ardulink.org/
+ * [ardulinktitle] [ardulinkversion] This class shows serial incoming messages
+ * if the Link is a ConnectionBasedLink project Ardulink
+ * http://www.ardulink.org/
  * 
  * [adsense]
  *
  */
-public class SerialMonitor extends JPanel implements Linkable  {
+public class SerialMonitor extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = -3662905914867077959L;
 	private JTextArea sentTextArea;
@@ -66,7 +67,6 @@ public class SerialMonitor extends JPanel implements Linkable  {
 		}
 
 	};
-	
 
 	/**
 	 * Create the panel.
@@ -74,15 +74,15 @@ public class SerialMonitor extends JPanel implements Linkable  {
 	public SerialMonitor() {
 		setPreferredSize(new Dimension(640, 315));
 		setLayout(new BorderLayout(0, 0));
-		
+
 		JPanel sendPanel = new JPanel();
 		add(sendPanel, BorderLayout.NORTH);
 		sendPanel.setLayout(new BorderLayout(0, 0));
-		
+
 		messageTextField = new JTextField();
 		sendPanel.add(messageTextField, BorderLayout.CENTER);
 		messageTextField.setColumns(10);
-		
+
 		JButton sendButton = new JButton("Send");
 		sendButton.addActionListener(e -> {
 			try {
@@ -92,52 +92,52 @@ public class SerialMonitor extends JPanel implements Linkable  {
 			}
 		});
 		sendPanel.add(sendButton, BorderLayout.EAST);
-		
+
 		JSplitPane splitPane = new JSplitPane();
 		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 		add(splitPane);
-		
+
 		JPanel sentPanel = new JPanel();
 		sentPanel.setPreferredSize(new Dimension(640, 200));
 		splitPane.setLeftComponent(sentPanel);
 		sentPanel.setLayout(new BorderLayout(0, 0));
-		
+
 		JLabel sentLabel = new JLabel("Sent:");
 		sentPanel.add(sentLabel, BorderLayout.NORTH);
-		
+
 		JScrollPane sentScrollPane = new JScrollPane();
 		sentPanel.add(sentScrollPane, BorderLayout.CENTER);
-		
+
 		sentTextArea = new JTextArea();
 		sentTextArea.setEditable(false);
 		sentScrollPane.setViewportView(sentTextArea);
-		
+
 		JPanel receivedPanel = new JPanel();
 		receivedPanel.setPreferredSize(new Dimension(640, 200));
 		splitPane.setRightComponent(receivedPanel);
 		receivedPanel.setLayout(new BorderLayout(0, 0));
-		
+
 		JLabel receivedLabel = new JLabel("Received:");
 		receivedPanel.add(receivedLabel, BorderLayout.NORTH);
-		
+
 		JScrollPane receivedScrollPane = new JScrollPane();
 		receivedPanel.add(receivedScrollPane, BorderLayout.CENTER);
-		
+
 		receivedTextArea = new JTextArea();
 		receivedTextArea.setEditable(false);
 		receivedScrollPane.setViewportView(receivedTextArea);
 
 		splitPane.setDividerLocation(0.5);
-		
+
 		JPanel buttonPanel = new JPanel();
 		FlowLayout flowLayout = (FlowLayout) buttonPanel.getLayout();
 		flowLayout.setAlignment(FlowLayout.RIGHT);
 		add(buttonPanel, BorderLayout.SOUTH);
-		
+
 		JButton clearSentButton = new JButton("Clear Sent");
 		clearSentButton.addActionListener(e -> sentTextArea.setText(""));
 		buttonPanel.add(clearSentButton);
-		
+
 		JButton clearReceivedButton = new JButton("Clear Received");
 		clearReceivedButton.addActionListener(new ActionListener() {
 			@Override
@@ -149,22 +149,18 @@ public class SerialMonitor extends JPanel implements Linkable  {
 	}
 
 	@Override
-	public void setLink(org.ardulink.legacy.Link link) {
+	public void setLink(Link link) {
 		if (this.link != null) {
 			this.link.getConnection().removeListener(listener);
 			this.link = null;
 		}
 		if (link == null) {
 			this.link = null;
-		} else {
-			Link delegate = link.getDelegate();
-			if (delegate instanceof QosLink) {
-				delegate = ((QosLink) delegate).getDelegate();
-			}
-			if (delegate instanceof ConnectionBasedLink) {
-				this.link = (ConnectionBasedLink) delegate;
-				this.link.getConnection().addListener(listener);
-			}
+		} else if (link instanceof QosLink) {
+			link = ((QosLink) link).getDelegate();
+		} else if (link instanceof ConnectionBasedLink) {
+			this.link = (ConnectionBasedLink) link;
+			this.link.getConnection().addListener(listener);
 		}
 		sentTextArea.setText("");
 		receivedTextArea.setText("");

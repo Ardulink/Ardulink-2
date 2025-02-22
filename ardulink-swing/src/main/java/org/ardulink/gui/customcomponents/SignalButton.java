@@ -20,6 +20,7 @@ package org.ardulink.gui.customcomponents;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.io.IOException;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -27,8 +28,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.ardulink.core.Link;
 import org.ardulink.gui.Linkable;
-import org.ardulink.legacy.Link;
+import org.ardulink.util.Throwables;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -56,7 +58,13 @@ public class SignalButton extends JPanel implements Linkable {
 		setLayout(new BorderLayout(0, 0));
 		
 		signalButton = new JButton("Send");
-		signalButton.addActionListener(__ -> link.sendCustomMessage(getId(), getValue()));
+		signalButton.addActionListener(__ -> {
+			try {
+				link.sendCustomMessage(getId(), getValue());
+			} catch (IOException e) {
+				Throwables.propagate(e);
+			}
+		});
 		add(signalButton);
 		
 		valuePanel = new JPanel();

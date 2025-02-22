@@ -30,16 +30,18 @@ import java.awt.Stroke;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import org.ardulink.core.Link;
 import org.ardulink.gui.Linkable;
 import org.ardulink.gui.event.PositionEvent;
 import org.ardulink.gui.event.PositionListener;
-import org.ardulink.legacy.Link;
+import org.ardulink.util.Throwables;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -183,8 +185,11 @@ public class Joystick extends JPanel implements Linkable {
 
     private void sendMessage() {
 		if (link != null) {
-			link.sendCustomMessage(getId(), String.valueOf(getValueX()),
-					String.valueOf(getValueY()));
+			try {
+				link.sendCustomMessage(getId(), String.valueOf(getValueX()), String.valueOf(getValueY()));
+			} catch (IOException e) {
+				throw Throwables.propagate(e);
+			}
 		}
 	}
 
