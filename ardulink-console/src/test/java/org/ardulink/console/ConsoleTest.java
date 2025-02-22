@@ -92,15 +92,19 @@ class ConsoleTest {
 
 		JSlider pin11 = page.analogSlider(analogPin(11));
 		JToggleButton pin12 = page.digitalSwitch(digitalPin(12));
+		int initialPin11Value = pin11.getValue();
+		boolean initialPin12Value = pin12.isSelected();
 
 		page.connect();
 		pin11.setValue(42);
 		pin12.doClick();
-		page.disconnect();
+		assert pin11.getValue() != initialPin11Value;
+		assert pin12.isSelected() != initialPin12Value;
 
+		page.disconnect();
 		assertSoftly(s -> {
-			s.assertThat(pin11.getValue()).isZero();
-			s.assertThat(pin12.isSelected()).isFalse();
+			s.assertThat(pin11.getValue()).isEqualTo(initialPin11Value);
+			s.assertThat(pin12.isSelected()).isEqualTo(initialPin12Value);
 		});
 	}
 
