@@ -43,6 +43,10 @@ public final class SwingSelector {
 		super();
 	}
 
+	public static <T extends Component> T findComponent(Container container, Class<T> type) {
+		return findComponent(container, type, __ -> true);
+	}
+
 	public static <T extends Component> T findComponent(Container container, Class<T> type,
 			Predicate<? super T> predicate) {
 		return findComponentRecursively(container, type) //

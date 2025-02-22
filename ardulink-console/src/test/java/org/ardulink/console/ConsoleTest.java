@@ -53,33 +53,33 @@ class ConsoleTest {
 	@Test
 	@DisabledIf(IS_HEADLESS)
 	void whenStartedConnectIsEnabledAndDisconnnectIsDisabled() {
-		Console console = newConsole();
-		assertThat(console.getLink()).isNull();
-		assertThat(console.btnConnect.isEnabled()).isEqualTo(TRUE);
-		assertThat(console.btnDisconnect.isEnabled()).isEqualTo(FALSE);
+		ConsolePage page = new ConsolePage(newConsole());
+		assertThat(page.getLink()).isNull();
+		assertThat(page.connectButton().isEnabled()).isEqualTo(TRUE);
+		assertThat(page.disconnectButton().isEnabled()).isEqualTo(FALSE);
 	}
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
 	void whenConnectButtonIsClickedLinkIsExchangedAndPopertyChangeEventsIsFired() {
-		Console console = newConsole();
-		console.btnConnect.doClick();
+		ConsolePage page = new ConsolePage(newConsole());
+		page.connect();
 
-		assertThat(console.getLink()).isEqualTo(connectLink);
-		assertThat(console.btnConnect.isEnabled()).isEqualTo(FALSE);
-		assertThat(console.btnDisconnect.isEnabled()).isEqualTo(TRUE);
+		assertThat(page.getLink()).isEqualTo(connectLink);
+		assertThat(page.connectButton().isEnabled()).isEqualTo(FALSE);
+		assertThat(page.disconnectButton().isEnabled()).isEqualTo(TRUE);
 	}
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
 	void whenDisconnectButtonIsClickedLinkIsExchangedAndPopertyChangeEventsIsFired() {
-		Console console = newConsole();
-		console.btnConnect.doClick();
-		console.btnDisconnect.doClick();
+		ConsolePage page = new ConsolePage(newConsole());
+		page.connect();
+		page.disconnect();
 
-		assertThat(console.getLink()).isNull();
-		assertThat(console.btnConnect.isEnabled()).isEqualTo(TRUE);
-		assertThat(console.btnDisconnect.isEnabled()).isEqualTo(FALSE);
+		assertThat(page.getLink()).isNull();
+		assertThat(page.connectButton().isEnabled()).isEqualTo(TRUE);
+		assertThat(page.disconnectButton().isEnabled()).isEqualTo(FALSE);
 	}
 
 	@Test

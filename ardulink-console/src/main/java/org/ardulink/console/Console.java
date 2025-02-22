@@ -97,8 +97,8 @@ public class Console extends JFrame implements Linkable {
 
 	private ConnectionPanel connectionPanel;
 
-	protected JButton btnConnect = connectButton();
-	protected JButton btnDisconnect = disconnectButton();
+	private JButton btnConnect = connectButton();
+	private JButton btnDisconnect = disconnectButton();
 
 	private final transient ConnectionListener connectionListener = new ConnectionListener() {
 
@@ -317,7 +317,7 @@ public class Console extends JFrame implements Linkable {
 
 	private JButton connectButton() {
 		JButton button = new JButton("Connect");
-		button.addActionListener(event -> {
+		button.addActionListener(__ -> {
 			try {
 				setLink(createLink());
 			} catch (Exception e) {
@@ -333,7 +333,7 @@ public class Console extends JFrame implements Linkable {
 
 	private JButton disconnectButton() {
 		JButton button = new JButton("Disconnect");
-		button.addActionListener(e -> {
+		button.addActionListener(__ -> {
 			try {
 				link.close();
 				logger.info("Connection closed");
