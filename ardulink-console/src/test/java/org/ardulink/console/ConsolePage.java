@@ -17,11 +17,9 @@ package org.ardulink.console;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.stream.IntStream.range;
 import static org.ardulink.console.SwingSelector.findComponent;
 
 import java.awt.Component;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -115,9 +113,8 @@ public class ConsolePage {
 	}
 
 	public SwitchController pinController(DigitalPin pin) {
-		int pinNum = pin.pinNum();
 		return findComponent(switchPanel(), SwitchController.class,
-				s -> findComponent(s, JComboBox.class, c -> isPinComboBoxForPin(c, pinNum)) != null);
+				s -> findComponent(s, JComboBox.class, c -> isPinComboBoxForPin(c, pin.pinNum())) != null);
 	}
 
 	public JSlider analogSlider(AnalogPin pin) {
@@ -125,9 +122,8 @@ public class ConsolePage {
 	}
 
 	public PWMController pwmController(AnalogPin pin) {
-		int pinNum = pin.pinNum();
 		return findComponent(powerPanel(), PWMController.class,
-				p -> findComponent(p, JComboBox.class, c -> isPinComboBoxForPin(c, pinNum)) != null);
+				p -> findComponent(p, JComboBox.class, c -> isPinComboBoxForPin(c, pin.pinNum())) != null);
 	}
 
 	private boolean isPinComboBoxForPin(JComboBox<?> comboBox, int pinNum) {
