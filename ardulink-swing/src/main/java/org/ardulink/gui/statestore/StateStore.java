@@ -54,7 +54,7 @@ import javax.swing.JToggleButton;
  */
 public class StateStore {
 
-	public static class Decomposer<C extends Component> {
+	private static class Decomposer<C extends Component> {
 
 		private final Class<C> componentType;
 		private final Function<C, Stream<Component>> decomposer;
@@ -74,7 +74,7 @@ public class StateStore {
 
 	}
 
-	static class Storer<C extends Component, V> {
+	private static class Storer<C extends Component, V> {
 
 		private final Class<C> componentType;
 		private final Class<V> valueType;
