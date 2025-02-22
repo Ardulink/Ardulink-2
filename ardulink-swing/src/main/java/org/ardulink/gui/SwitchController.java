@@ -31,7 +31,6 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
 import org.ardulink.core.Link;
-import org.ardulink.core.Pin;
 import org.ardulink.gui.facility.IntMinMaxModel;
 import org.ardulink.util.Throwables;
 
@@ -49,8 +48,9 @@ public class SwitchController extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = -260988038687002762L;
 
-	private IntMinMaxModel pinComboBoxModel;
-	private JToggleButton switchToggleButton;
+	private final JComboBox<Integer> pinComboBox;
+	private final IntMinMaxModel pinComboBoxModel;
+	private final JToggleButton switchToggleButton;
 	
 	private transient Link link;
 
@@ -61,7 +61,8 @@ public class SwitchController extends JPanel implements Linkable {
 		setPreferredSize(new Dimension(125, 75));
 		setLayout(null);
 		pinComboBoxModel = new IntMinMaxModel(0, 40).withSelectedItem(3);
-		JComboBox<Integer> pinComboBox = new JComboBox<>(pinComboBoxModel);
+		pinComboBox = new JComboBox<>(pinComboBoxModel);
+		pinComboBox.setName("pinComboBox");
 		pinComboBox.setBounds(66, 11, 47, 22);
 		add(pinComboBox);
 		
@@ -95,7 +96,7 @@ public class SwitchController extends JPanel implements Linkable {
 	 * @param pin
 	 */
 	public void setPin(int pin) {
-		pinComboBoxModel.setSelectedItem(pin);
+		pinComboBox.setSelectedItem(pin);
 	}
 
 	@Override
