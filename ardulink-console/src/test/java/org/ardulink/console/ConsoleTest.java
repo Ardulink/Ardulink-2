@@ -15,8 +15,6 @@ limitations under the License.
  */
 package org.ardulink.console;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static org.ardulink.console.SwingSelector.containsItem;
 import static org.ardulink.console.SwingSelector.findComponent;
@@ -55,8 +53,8 @@ class ConsoleTest {
 	void whenStartedConnectIsEnabledAndDisconnnectIsDisabled() {
 		ConsolePage page = new ConsolePage(newConsole());
 		assertThat(page.getLink()).isNull();
-		assertThat(page.connectButton().isEnabled()).isEqualTo(TRUE);
-		assertThat(page.disconnectButton().isEnabled()).isEqualTo(FALSE);
+		assertThat(page.connectButton().isEnabled()).isTrue();
+		assertThat(page.disconnectButton().isEnabled()).isFalse();
 	}
 
 	@Test
@@ -65,9 +63,9 @@ class ConsoleTest {
 		ConsolePage page = new ConsolePage(newConsole());
 		page.connect();
 
-		assertThat(page.getLink()).isEqualTo(connectLink);
-		assertThat(page.connectButton().isEnabled()).isEqualTo(FALSE);
-		assertThat(page.disconnectButton().isEnabled()).isEqualTo(TRUE);
+		assertThat(page.getLink()).isSameAs(connectLink);
+		assertThat(page.connectButton().isEnabled()).isFalse();
+		assertThat(page.disconnectButton().isEnabled()).isTrue();
 	}
 
 	@Test
@@ -78,16 +76,16 @@ class ConsoleTest {
 		page.disconnect();
 
 		assertThat(page.getLink()).isNull();
-		assertThat(page.connectButton().isEnabled()).isEqualTo(TRUE);
-		assertThat(page.disconnectButton().isEnabled()).isEqualTo(FALSE);
+		assertThat(page.connectButton().isEnabled()).isTrue();
+		assertThat(page.disconnectButton().isEnabled()).isFalse();
 	}
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
 	void approvalsVerify() {
 		Console console = newConsole();
-		String name = format("%s://%s", ARDULINK_SCHEME, VIRTUAL_CONSOLE_NAME);
-		findComponent(console, JComboBox.class, c -> containsItem(c, name)).setSelectedItem(name);
+		ConsolePage page = new ConsolePage(console);
+		page.useConnection(format("%s://%s", ARDULINK_SCHEME, VIRTUAL_CONSOLE_NAME));
 		repaint(console);
 
 		AwtApprovals.verify(console.getContentPane());
