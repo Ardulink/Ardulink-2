@@ -22,6 +22,7 @@ import java.util.function.Predicate;
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 
 /**
  * [ardulinktitle] [ardulinkversion] This is the ready ardulink console a
@@ -44,8 +45,12 @@ public final class SwingPredicates {
 		return attribute(JComponent::getName, name::equals);
 	}
 
-	public static Predicate<AbstractButton> withText(String text) {
+	public static Predicate<AbstractButton> buttonWithText(String text) {
 		return attribute(AbstractButton::getText, text::equals);
+	}
+
+	public static Predicate<JLabel> labelWithText(String text) {
+		return attribute(JLabel::getText, text::equals);
 	}
 
 	@SuppressWarnings("rawtypes")

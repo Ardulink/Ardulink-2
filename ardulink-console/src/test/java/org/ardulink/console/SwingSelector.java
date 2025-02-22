@@ -22,6 +22,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -52,11 +53,14 @@ public final class SwingSelector {
 
 	public static <T extends Component> T findComponent(Container container, Class<T> type,
 			Predicate<? super T> predicate) {
-		return findComponentRecursively(container, type) //
-				.filter(predicate) //
-				.findFirst() //
+		return tryFindComponent(container, type, predicate) //
 				.orElseThrow(() -> new IllegalStateException(
 						format("No match in %s for type %s and predicate %s", container, type, predicate)));
+	}
+
+	public static <T extends Component> Optional<T> tryFindComponent(Container container, Class<T> type,
+			Predicate<? super T> predicate) {
+		return findComponentRecursively(container, type).filter(predicate).findFirst();
 	}
 
 	private static <T extends Component> Stream<T> findComponentRecursively(Container container, Class<T> clazz) {

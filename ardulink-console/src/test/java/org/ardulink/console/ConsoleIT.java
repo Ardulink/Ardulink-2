@@ -15,6 +15,7 @@ limitations under the License.
  */
 package org.ardulink.console;
 
+import static org.ardulink.console.ConsolePage.forceSelectItem;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 
@@ -72,8 +73,7 @@ class ConsoleIT {
 
 		ConsolePage page = new ConsolePage(new Console());
 		page.useConnection(connection);
-		JComboBox<?> port = page.attributeChooser("port", JComboBox.class);
-		port.setSelectedItem(virtualAvrDevice);
+		forceSelectItem((JComboBox<?>) page.componentWithLabel("port"), virtualAvrDevice);
 
 		page.connect();
 		JToggleButton toggle = page.digitalSwitch(digitalPin(12));
