@@ -121,7 +121,7 @@ public class StateStore {
 	);
 
 	private final Container container;
-	private final Map<Component, Object> initialStates = new HashMap<>();
+	private final Map<Component, Object> states = new HashMap<>();
 
 	private Optional<Decomposer<? extends Component>> decomposer(Component component) {
 		return decomposers.stream().filter(d -> d.canHandle(component)).findFirst();
@@ -136,7 +136,7 @@ public class StateStore {
 	}
 
 	public StateStore snapshot() {
-		initialStates.clear();
+		states.clear();
 		storeState(container);
 		return this;
 	}
@@ -154,16 +154,16 @@ public class StateStore {
 	}
 
 	public StateStore withoutStateOf(Component component) {
-		walk(component, this::withoutStateOf, __ -> initialStates.remove(component));
+		walk(component, this::withoutStateOf, __ -> states.remove(component));
 		return this;
 	}
 
 	private void storeState(Component component) {
-		walk(component, this::storeState, s -> s.saveTo(component, initialStates));
+		walk(component, this::storeState, s -> s.saveTo(component, states));
 	}
 
 	private void restoreState(Component component) {
-		walk(component, this::restoreState, s -> s.restoreFrom(component, initialStates));
+		walk(component, this::restoreState, s -> s.restoreFrom(component, states));
 	}
 
 	private void walk(Component component, Consumer<Component> decomposeConsumer,
