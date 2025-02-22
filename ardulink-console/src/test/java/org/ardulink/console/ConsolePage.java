@@ -19,7 +19,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.IntStream.range;
 import static org.ardulink.console.SwingPredicates.buttonWithText;
-import static org.ardulink.console.SwingPredicates.is;
+import static org.ardulink.console.SwingPredicates.isA;
 import static org.ardulink.console.SwingPredicates.labelWithText;
 import static org.ardulink.console.SwingPredicates.withName;
 import static org.ardulink.console.SwingPredicates.withSelectedItem;
@@ -118,7 +118,7 @@ public class ConsolePage {
 
 	public SwitchController pinController(DigitalPin pin) {
 		return findComponent(switchPanel(), SwitchController.class, s -> tryFindComponent(s, JComboBox.class,
-				withName("pinComboBox").and(is(JComboBox.class, withSelectedItem(pin.pinNum())))).isPresent());
+				withName("pinComboBox").and(isA(JComboBox.class, withSelectedItem(pin.pinNum())))).isPresent());
 	}
 
 	public JSlider analogSlider(AnalogPin pin) {
@@ -127,7 +127,7 @@ public class ConsolePage {
 
 	public PWMController pwmController(AnalogPin pin) {
 		return findComponent(powerPanel(), PWMController.class, p -> tryFindComponent(p, JComboBox.class,
-				withName("pinComboBox").and(is(JComboBox.class, withSelectedItem(pin.pinNum())))).isPresent());
+				withName("pinComboBox").and(isA(JComboBox.class, withSelectedItem(pin.pinNum())))).isPresent());
 	}
 
 }

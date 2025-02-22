@@ -15,6 +15,8 @@ limitations under the License.
  */
 package org.ardulink.console;
 
+import static java.lang.String.format;
+import static java.util.function.Predicate.isEqual;
 import static org.ardulink.util.Predicates.attribute;
 
 import java.util.function.Predicate;
@@ -42,24 +44,36 @@ public final class SwingPredicates {
 	}
 
 	public static Predicate<JComponent> withName(String name) {
-		return attribute(JComponent::getName, name::equals);
+		return attribute(JComponent::getName, isEqual(name));
 	}
 
 	public static Predicate<AbstractButton> buttonWithText(String text) {
-		return attribute(AbstractButton::getText, text::equals);
+		return attribute(AbstractButton::getText, isEqual(text));
 	}
 
 	public static Predicate<JLabel> labelWithText(String text) {
-		return attribute(JLabel::getText, text::equals);
+		return attribute(JLabel::getText, isEqual(text));
 	}
 
 	@SuppressWarnings("rawtypes")
 	public static Predicate<JComboBox> withSelectedItem(Object item) {
-		return attribute(JComboBox::getSelectedItem, item::equals);
+		return attribute(JComboBox::getSelectedItem, isEqual(item));
 	}
 
-	public static <T> Predicate<JComponent> is(Class<T> type, Predicate<? super T> predicate) {
-		return c -> type.isInstance(c) && predicate.test(type.cast(c));
+	public static <T> Predicate<Object> isA(Class<T> type, Predicate<? super T> predicate) {
+		return new Predicate<Object>() {
+
+			@Override
+			public boolean test(Object component) {
+				return type.isInstance(component) && predicate.test(type.cast(component));
+			}
+
+			@Override
+			public String toString() {
+				return format("is type: %s, predicate: %s", type, predicate);
+			}
+
+		};
 	}
 
 }
