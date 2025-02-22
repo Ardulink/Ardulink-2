@@ -55,7 +55,7 @@ public final class SwingPredicates {
 
 	@SuppressWarnings("rawtypes")
 	public static Predicate<JComboBox> withSelectedItem(Object item) {
-		return c -> item.equals(c.getSelectedItem());
+		return attribute(JComboBox::getSelectedItem, item::equals);
 	}
 
 	public static <T> Predicate<JComponent> is(Class<T> type, Predicate<? super T> predicate) {

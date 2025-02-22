@@ -105,7 +105,7 @@ public class ConsolePage {
 		JTabbedPane tabbedPane = findComponent(console, JTabbedPane.class);
 		return range(0, tabbedPane.getTabCount()) //
 				.filter(i -> title.equals(tabbedPane.getTitleAt(i))) //
-				.mapToObj(i -> tabbedPane.getComponentAt(i)) //
+				.mapToObj(tabbedPane::getComponentAt) //
 				.findFirst() //
 				.map(JPanel.class::cast) //
 				.orElseThrow(

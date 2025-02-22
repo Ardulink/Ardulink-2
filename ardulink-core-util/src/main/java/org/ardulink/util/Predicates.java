@@ -16,6 +16,8 @@ limitations under the License.
  */
 package org.ardulink.util;
 
+import static java.lang.String.format;
+
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -34,7 +36,18 @@ public final class Predicates {
 	}
 
 	public static <I, O> Predicate<I> attribute(Function<I, O> function, Predicate<O> predicate) {
-		return v -> predicate.test(function.apply(v));
+		return new Predicate<I>() {
+
+			@Override
+			public boolean test(I in) {
+				return predicate.test(function.apply(in));
+			}
+
+			public String toString() {
+				return format("AttributePredicate: function: %s, predicate: %s", function, predicate);
+			}
+
+		};
 	}
 
 }
