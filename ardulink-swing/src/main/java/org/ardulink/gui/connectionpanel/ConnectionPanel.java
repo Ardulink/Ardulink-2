@@ -77,6 +77,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 
 	private JComboBox<String> createURICombo() {
 		JComboBox<String> uris = new JComboBox<>();
+		uris.setName("uris");
 		uris.setRenderer(new DefaultListCellRenderer() {
 
 			private static final long serialVersionUID = 2756587449741341859L;

@@ -55,14 +55,6 @@ public class ConsolePage {
 		return console.getLink();
 	}
 
-	public JButton connectButton() {
-		return findComponent(console, JButton.class, withText("Connect"));
-	}
-
-	public JButton disconnectButton() {
-		return findComponent(console, JButton.class, withText("Disconnect"));
-	}
-
 	public void connect() {
 		connectButton().doClick();
 	}
@@ -71,16 +63,26 @@ public class ConsolePage {
 		disconnectButton().doClick();
 	}
 
+	public JButton connectButton() {
+		return findComponent(console, JButton.class, withText("Connect"));
+	}
+
+	public JButton disconnectButton() {
+		return findComponent(console, JButton.class, withText("Disconnect"));
+	}
+
 	private ConnectionPanel connectionPanel() {
 		return findComponent(console, ConnectionPanel.class);
 	}
 
 	public void useConnection(String connection) {
-		ConnectionPanel connectionPanel = connectionPanel();
-		JComboBox<?> comboBox = findComponent(connectionPanel, JComboBox.class);
-		comboBox.setSelectedItem(connection);
-		assert comboBox.getSelectedItem().equals(connection) : format("Failed to set %s, valid values are: %s",
-				connection, Arrays.toString(range(0, comboBox.getItemCount()).mapToObj(comboBox::getItemAt).toArray()));
+		forceSelectItem(findComponent(connectionPanel(), JComboBox.class, withName("uris")), connection);
+	}
+
+	private void forceSelectItem(JComboBox<?> comboBox, String item) {
+		comboBox.setSelectedItem(item);
+		assert comboBox.getSelectedItem().equals(item) : format("ComboBoxed refused to set '%s', valid values are: %s",
+				item, Arrays.toString(range(0, comboBox.getItemCount()).mapToObj(comboBox::getItemAt).toArray()));
 	}
 
 	public <T> T attributeChooser(String name, Class<T> type) {
