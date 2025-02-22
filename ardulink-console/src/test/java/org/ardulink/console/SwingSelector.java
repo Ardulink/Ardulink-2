@@ -15,6 +15,7 @@ limitations under the License.
  */
 package org.ardulink.console;
 
+import static java.lang.String.format;
 import static java.util.stream.IntStream.range;
 
 import java.awt.Component;
@@ -44,13 +45,18 @@ public final class SwingSelector {
 	}
 
 	public static <T extends Component> T findComponent(Container container, Class<T> type) {
-		return findComponent(container, type, __ -> true);
+		return findComponentRecursively(container, type) //
+				.findFirst()
+				.orElseThrow(() -> new IllegalStateException(format("No match in %s for type %s", container, type)));
 	}
 
 	public static <T extends Component> T findComponent(Container container, Class<T> type,
 			Predicate<? super T> predicate) {
 		return findComponentRecursively(container, type) //
-				.filter(predicate).findFirst().orElse(null);
+				.filter(predicate) //
+				.findFirst() //
+				.orElseThrow(() -> new IllegalStateException(
+						format("No match in %s for type %s and predicate %s", container, type, predicate)));
 	}
 
 	private static <T extends Component> Stream<T> findComponentRecursively(Container container, Class<T> clazz) {
@@ -65,9 +71,8 @@ public final class SwingSelector {
 	}
 
 	public static boolean containsItem(JComboBox<?> comboBox, Object item) {
-		return Arrays.stream(range(0, comboBox.getItemCount()) //
+		return range(0, comboBox.getItemCount()) //
 				.mapToObj(comboBox::getItemAt) //
-				.toArray()) //
 				.anyMatch(e -> Objects.equals(e, item)) //
 		;
 	}

@@ -17,12 +17,16 @@ package org.ardulink.console;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.stream.IntStream.range;
+import static org.ardulink.console.SwingPredicates.is;
+import static org.ardulink.console.SwingPredicates.withName;
+import static org.ardulink.console.SwingPredicates.withSelectedItem;
+import static org.ardulink.console.SwingPredicates.withText;
 import static org.ardulink.console.SwingSelector.findComponent;
 
 import java.awt.Component;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -52,11 +56,11 @@ public class ConsolePage {
 	}
 
 	public JButton connectButton() {
-		return findComponent(console, JButton.class, b -> b.getText().equals("Connect"));
+		return findComponent(console, JButton.class, withText("Connect"));
 	}
 
 	public JButton disconnectButton() {
-		return findComponent(console, JButton.class, b -> b.getText().equals("Disconnect"));
+		return findComponent(console, JButton.class, withText("Disconnect"));
 	}
 
 	public void connect() {
@@ -65,7 +69,6 @@ public class ConsolePage {
 
 	public void disconnect() {
 		disconnectButton().doClick();
-
 	}
 
 	private ConnectionPanel connectionPanel() {
@@ -77,16 +80,14 @@ public class ConsolePage {
 		JComboBox<?> comboBox = findComponent(connectionPanel, JComboBox.class);
 		comboBox.setSelectedItem(connection);
 		assert comboBox.getSelectedItem().equals(connection) : format("Failed to set %s, valid values are: %s",
-				connection,
-				Arrays.toString(IntStream.range(0, comboBox.getItemCount()).mapToObj(comboBox::getItemAt).toArray()));
+				connection, Arrays.toString(range(0, comboBox.getItemCount()).mapToObj(comboBox::getItemAt).toArray()));
 	}
 
 	public <T> T attributeChooser(String name, Class<T> type) {
-		ConnectionPanel connectionPanel = connectionPanel();
-		JPanel attributePanel = findComponent(connectionPanel, JPanel.class);
+		JPanel attributePanel = findComponent(connectionPanel(), JPanel.class);
 		JLabel label = findComponent(attributePanel, JLabel.class, l -> name.equals(l.getText()));
 		List<Component> components = asList(attributePanel.getComponents());
-		return checkCast(components.get(components.indexOf(label) + 1), type);
+		return type.cast(components.get(components.indexOf(label) + 1));
 	}
 
 	public JPanel switchPanel() {
@@ -99,13 +100,13 @@ public class ConsolePage {
 
 	private JPanel tabWithTitle(String title) {
 		JTabbedPane tabbedPane = findComponent(console, JTabbedPane.class);
-		for (int i = 0; i < tabbedPane.getTabCount(); i++) {
-			String titleAt = tabbedPane.getTitleAt(i);
-			if (title.equals(titleAt)) {
-				return (JPanel) tabbedPane.getComponentAt(i);
-			}
-		}
-		return null;
+		return range(0, tabbedPane.getTabCount()) //
+				.filter(i -> title.equals(tabbedPane.getTitleAt(i))) //
+				.mapToObj(i -> tabbedPane.getComponentAt(i)) //
+				.findFirst() //
+				.map(JPanel.class::cast) //
+				.orElseThrow(
+						() -> new IllegalStateException(format("No tab with title '%s' found in %s", title, console)));
 	}
 
 	public JToggleButton digitalSwitch(DigitalPin pin) {
@@ -113,8 +114,8 @@ public class ConsolePage {
 	}
 
 	public SwitchController pinController(DigitalPin pin) {
-		return findComponent(switchPanel(), SwitchController.class,
-				s -> findComponent(s, JComboBox.class, c -> isPinComboBoxForPin(c, pin.pinNum())) != null);
+		return findComponent(switchPanel(), SwitchController.class, s -> findComponent(s, JComboBox.class,
+				withName("pinComboBox").and(is(JComboBox.class, withSelectedItem(pin.pinNum())))) != null);
 	}
 
 	public JSlider analogSlider(AnalogPin pin) {
@@ -122,19 +123,8 @@ public class ConsolePage {
 	}
 
 	public PWMController pwmController(AnalogPin pin) {
-		return findComponent(powerPanel(), PWMController.class,
-				p -> findComponent(p, JComboBox.class, c -> isPinComboBoxForPin(c, pin.pinNum())) != null);
-	}
-
-	private boolean isPinComboBoxForPin(JComboBox<?> comboBox, int pinNum) {
-		return "pinComboBox".equals(comboBox.getName()) && comboBox.getSelectedItem().equals(pinNum);
-	}
-
-	private static <T> T checkCast(Component component, Class<T> type) {
-		if (!type.isInstance(component)) {
-			throw new IllegalStateException(format("Expected %s to be of type %s", component, type.getSimpleName()));
-		}
-		return type.cast(component);
+		return findComponent(powerPanel(), PWMController.class, p -> findComponent(p, JComboBox.class,
+				withName("pinComboBox").and(is(JComboBox.class, withSelectedItem(pin.pinNum())))) != null);
 	}
 
 }
