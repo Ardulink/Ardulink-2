@@ -1,5 +1,8 @@
 package org.ardulink.console;
 
+import static java.util.Arrays.stream;
+import static java.util.stream.IntStream.range;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.util.Arrays;
@@ -85,8 +88,15 @@ public class StateStore {
 		return this;
 	}
 
-	public StateStore removeState(Component component) {
-		walk(component, this::removeState, __ -> initialStates.remove(component));
+	public StateStore withoutStateOf(Component... components) {
+		for (Component component : components) {
+			withoutStateOf(component);
+		}
+		return this;
+	}
+
+	public StateStore withoutStateOf(Component component) {
+		walk(component, this::withoutStateOf, __ -> initialStates.remove(component));
 		return this;
 	}
 
@@ -102,13 +112,9 @@ public class StateStore {
 			Consumer<? super Storer<? extends Component, ? extends Object>> consumer) {
 		if (component instanceof JTabbedPane) {
 			JTabbedPane tabbedPane = (JTabbedPane) component;
-			for (int i = 0; i < tabbedPane.getTabCount(); i++) {
-				flatmapper.accept(tabbedPane.getComponentAt(i));
-			}
+			range(0, tabbedPane.getTabCount()).mapToObj(tabbedPane::getComponentAt).forEach(flatmapper);
 		} else if (component instanceof JPanel) {
-			for (Component child : ((JPanel) component).getComponents()) {
-				flatmapper.accept(child);
-			}
+			stream(((JPanel) component).getComponents()).forEach(flatmapper);
 		} else {
 			storeHelper(component).findFirst().ifPresent(consumer);
 		}

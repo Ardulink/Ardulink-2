@@ -314,8 +314,7 @@ public class Console extends JFrame implements Linkable {
 		this.connectionListener.connectionLost();
 		setEnabled(false);
 		pack();
-		stateStore = new StateStore(contentPane);
-		stateStore.snapshot().removeState(connectPanel).removeState(configurationPanel);
+		stateStore = new StateStore(contentPane).snapshot().withoutStateOf(connectPanel, configurationPanel);
 	}
 
 	private JButton connectButton() {
