@@ -1,5 +1,6 @@
 {
   "extends": ["config:recommended"],
+  "pruneStaleBranches": true,
   "docker-compose": {
     "fileMatch": [
       "^deploy-dist/tests/docker-compose\\.yml$"
