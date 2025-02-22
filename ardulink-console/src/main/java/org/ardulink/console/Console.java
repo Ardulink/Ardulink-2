@@ -86,6 +86,7 @@ public class Console extends JFrame implements Linkable {
 
 	private static final Logger logger = LoggerFactory.getLogger(Console.class);
 
+	private final StateStore stateStore;
 	private JPanel contentPane;
 	private JTabbedPane tabbedPane;
 	private KeyPressController keyControlPanel;
@@ -313,6 +314,8 @@ public class Console extends JFrame implements Linkable {
 		this.connectionListener.connectionLost();
 		setEnabled(false);
 		pack();
+		stateStore = new StateStore(contentPane);
+		stateStore.snapshot().removeState(connectPanel).removeState(configurationPanel);
 	}
 
 	private JButton connectButton() {
@@ -427,6 +430,7 @@ public class Console extends JFrame implements Linkable {
 		} else {
 			connectionListener.connectionLost();
 		}
+		stateStore.restore();
 		callLinkables(this.link);
 	}
 

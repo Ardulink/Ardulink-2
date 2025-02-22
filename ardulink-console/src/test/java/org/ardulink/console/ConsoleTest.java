@@ -16,11 +16,17 @@ limitations under the License.
 package org.ardulink.console;
 
 import static java.lang.String.format;
+import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.core.virtual.console.VirtualConnectionLinkFactory.VIRTUAL_CONSOLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
+
+import javax.swing.JSlider;
+import javax.swing.JToggleButton;
 
 import org.approvaltests.awt.AwtApprovals;
 import org.ardulink.core.Link;
@@ -74,6 +80,28 @@ class ConsoleTest {
 		assertThat(page.getLink()).isNull();
 		assertThat(page.connectButton().isEnabled()).isTrue();
 		assertThat(page.disconnectButton().isEnabled()).isFalse();
+	}
+
+	@Test
+	@DisabledIf(IS_HEADLESS)
+	void doesResetComponents() {
+		String connection = "ardulink://virtual-random";
+
+		ConsolePage page = new ConsolePage(new Console());
+		page.useConnection(connection);
+
+		JSlider pin11 = page.analogSlider(analogPin(11));
+		JToggleButton pin12 = page.digitalSwitch(digitalPin(12));
+
+		page.connect();
+		pin11.setValue(42);
+		pin12.doClick();
+		page.disconnect();
+
+		assertSoftly(s -> {
+			s.assertThat(pin11.getValue()).isZero();
+			s.assertThat(pin12.isSelected()).isFalse();
+		});
 	}
 
 	@Test
