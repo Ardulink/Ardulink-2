@@ -16,15 +16,11 @@ limitations under the License.
 package org.ardulink.console;
 
 import static java.lang.String.format;
-import static org.ardulink.console.SwingSelector.containsItem;
-import static org.ardulink.console.SwingSelector.findComponent;
 import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.core.virtual.console.VirtualConnectionLinkFactory.VIRTUAL_CONSOLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
-
-import javax.swing.JComboBox;
 
 import org.approvaltests.awt.AwtApprovals;
 import org.ardulink.core.Link;
