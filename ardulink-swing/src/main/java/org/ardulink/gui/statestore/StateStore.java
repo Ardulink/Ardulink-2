@@ -41,15 +41,16 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 
 /**
- * [ardulinktitle] [ardulinkversion] This is the ready ardulink console a
- * complete SWING application to manage an Arduino board. Console has several
- * tabs with all ready arduino components. Each tab is able to do a specific
- * action sending or listening for messages to arduino or from arduino board.
+ * [ardulinktitle] [ardulinkversion]
  * 
  * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *
+ * Store for states of Swing components. Can be used to store the states via
+ * {@link #snapshot()} and restores them using {@link #restore()}. Components
+ * that should get ignored can be set via {@link #withoutStateOf(Component)}
+ * which work recursively.
  */
 public class StateStore {
 
