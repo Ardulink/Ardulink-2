@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package org.ardulink.console;
+package org.ardulink.gui.statestore;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.IntStream.range;
@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -52,7 +53,27 @@ import javax.swing.JToggleButton;
  */
 public class StateStore {
 
-	private static class Storer<C extends Component, V> {
+	public static class Decomposer<C extends Component> {
+
+		private final Class<C> componentType;
+		private final Function<C, Stream<Component>> decomposer;
+
+		public Decomposer(Class<C> componentType, Function<C, Stream<Component>> decomposer) {
+			this.componentType = componentType;
+			this.decomposer = decomposer;
+		}
+
+		public boolean canHandle(Component component) {
+			return componentType.isInstance(component);
+		}
+
+		public Stream<Component> decompose(Component component) {
+			return decomposer.apply(componentType.cast(component));
+		}
+
+	}
+
+	static class Storer<C extends Component, V> {
 
 		private final Class<C> componentType;
 		private final Class<V> valueType;
@@ -66,8 +87,8 @@ public class StateStore {
 			this.writer = writer;
 		}
 
-		public Class<C> getComponentType() {
-			return componentType;
+		public boolean canHandle(Component component) {
+			return componentType.isInstance(component);
 		}
 
 		public void saveTo(Component component, Map<Component, Object> map) {
@@ -80,7 +101,13 @@ public class StateStore {
 				writer.accept(componentType.cast(component), valueType.cast(value));
 			}
 		}
+
 	}
+
+	private static final List<Decomposer<? extends Component>> decomposers = Arrays.asList(
+			new Decomposer<>(JTabbedPane.class, t -> range(0, t.getTabCount()).mapToObj(t::getComponentAt)), //
+			new Decomposer<>(JPanel.class, p -> stream(p.getComponents())) //
+	);
 
 	private static final List<Storer<? extends Component, ? extends Object>> storeHelper = Arrays.asList( //
 			new Storer<>(JSlider.class, Integer.class, JSlider::getValue, JSlider::setValue), //
@@ -95,8 +122,12 @@ public class StateStore {
 	private final Container container;
 	private final Map<Component, Object> initialStates = new HashMap<>();
 
-	private Stream<Storer<? extends Component, ? extends Object>> storeHelper(Component component) {
-		return storeHelper.stream().filter(s -> s.getComponentType().isInstance(component));
+	private Optional<Decomposer<? extends Component>> decomposer(Component component) {
+		return decomposers.stream().filter(d -> d.canHandle(component)).findFirst();
+	}
+
+	private Optional<Storer<? extends Component, ? extends Object>> storeHelper(Component component) {
+		return storeHelper.stream().filter(s -> s.canHandle(component)).findFirst();
 	}
 
 	public StateStore(Container container) {
@@ -134,16 +165,10 @@ public class StateStore {
 		walk(component, this::restoreState, s -> s.restoreFrom(component, initialStates));
 	}
 
-	private void walk(Component component, Consumer<Component> flatmapper,
-			Consumer<? super Storer<? extends Component, ? extends Object>> consumer) {
-		if (component instanceof JTabbedPane) {
-			JTabbedPane tabbedPane = (JTabbedPane) component;
-			range(0, tabbedPane.getTabCount()).mapToObj(tabbedPane::getComponentAt).forEach(flatmapper);
-		} else if (component instanceof JPanel) {
-			stream(((JPanel) component).getComponents()).forEach(flatmapper);
-		} else {
-			storeHelper(component).findFirst().ifPresent(consumer);
-		}
+	private void walk(Component component, Consumer<Component> decomposeConsumer,
+			Consumer<? super Storer<? extends Component, ? extends Object>> componentConsumer) {
+		decomposer(component).ifPresent(d -> d.decompose(component).forEach(decomposeConsumer));
+		storeHelper(component).ifPresent(componentConsumer);
 	}
 
 }

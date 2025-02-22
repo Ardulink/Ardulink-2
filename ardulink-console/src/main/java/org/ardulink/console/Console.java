@@ -65,6 +65,7 @@ import org.ardulink.gui.customcomponents.ModifiableToggleSignalButton;
 import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.ardulink.gui.serial.SerialMonitor;
+import org.ardulink.gui.statestore.StateStore;
 import org.ardulink.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
