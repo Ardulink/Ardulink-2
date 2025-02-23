@@ -18,6 +18,7 @@ package org.ardulink.gui.statestore;
 import static org.ardulink.gui.util.SwingUtilities.componentsStream;
 
 import java.awt.Component;
+import java.lang.ref.SoftReference;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -69,14 +70,17 @@ public class StateStore {
 			return componentType.isInstance(component);
 		}
 
-		public void save(Component component, Map<Component, Object> map) {
-			map.put(component, saver.apply(componentType.cast(component)));
+		public void save(Component component, Map<Component, SoftReference<Object>> map) {
+			map.put(component, new SoftReference<>(saver.apply(componentType.cast(component))));
 		}
 
-		public void restore(Component component, Map<Component, Object> map) {
-			Object value = map.get(component);
-			if (value != null) {
-				restorer.accept(componentType.cast(component), valueType.cast(value));
+		public void restore(Component component, Map<Component, SoftReference<Object>> map) {
+			SoftReference<Object> ref = map.get(component);
+			if (ref != null) {
+				Object value = ref.get();
+				if (value != null) {
+					restorer.accept(componentType.cast(component), valueType.cast(value));
+				}
 			}
 		}
 
@@ -101,7 +105,7 @@ public class StateStore {
 	);
 
 	private final Component component;
-	private final Map<Component, Object> states = new IdentityHashMap<>();
+	private final Map<Component, SoftReference<Object>> states = new IdentityHashMap<>();
 
 	private static Optional<Storer<? extends Component, ? extends Object>> storer(Component component) {
 		return storers.stream().filter(s -> s.canHandle(component)).findFirst();
