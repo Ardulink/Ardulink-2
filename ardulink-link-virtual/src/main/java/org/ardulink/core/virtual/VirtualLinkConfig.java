@@ -18,6 +18,7 @@ package org.ardulink.core.virtual;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.Positive;
 
@@ -41,5 +42,10 @@ public class VirtualLinkConfig implements LinkConfig {
 
 	@Named(DELAY_UNIT)
 	public TimeUnit delayUnit = MILLISECONDS;
+
+	@ChoiceFor(DELAY_UNIT)
+	public Stream<TimeUnit> delayUnits() {
+		return Stream.of(TimeUnit.values()).filter(u -> u.compareTo(MILLISECONDS) >= 0);
+	}
 
 }
