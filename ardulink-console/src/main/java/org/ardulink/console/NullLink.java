@@ -34,7 +34,11 @@ import org.ardulink.util.Primitives;
  * [adsense]
  *
  */
-public class NullLink {
+public final class NullLink {
+
+	private NullLink() {
+		super();
+	}
 
 	private static final class SelfReferentialInvocationHandler<T> implements InvocationHandler {
 
