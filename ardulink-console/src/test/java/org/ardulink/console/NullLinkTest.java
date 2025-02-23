@@ -17,16 +17,19 @@ limitations under the License.
 */
 package org.ardulink.console;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.IntStream.range;
 import static org.ardulink.util.Primitives.findPrimitiveFor;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 import java.lang.reflect.Method;
+import java.util.stream.Stream;
 
 import org.ardulink.core.Link;
 import org.ardulink.util.Primitives;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -40,14 +43,19 @@ class NullLinkTest {
 
 	Link sut = NullLink.NULL_LINK;
 
-	@ParameterizedTest
-	@MethodSource("declaredMethods")
-	void canBeCalledAndDoesNotReturnNull(Method method) throws Exception {
-		assertThat(method.invoke(sut, params(method))).isNotNull();
+	@TestFactory
+	Stream<DynamicTest> canBeCalledAndDoesNotReturnNull() throws Exception {
+		return Stream.of(Link.class.getDeclaredMethods()).map(m -> dynamicTest(testname(m), () -> {
+			assertThat(m.invoke(sut, params(m))).isNotNull();
+		}));
 	}
 
-	static Method[] declaredMethods() {
-		return Link.class.getDeclaredMethods();
+	static String testname(Method method) {
+		return String.format("%s(%s)", method.getName(), paramTypes(method));
+	}
+
+	static String paramTypes(Method method) {
+		return Stream.of(method.getParameterTypes()).map(Class::getSimpleName).collect(joining(","));
 	}
 
 	static Object[] params(Method method) {
