@@ -17,11 +17,11 @@ package org.ardulink.console;
 
 import static java.awt.EventQueue.invokeLater;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import static org.ardulink.console.NullLink.NULL_LINK;
 import static org.ardulink.gui.Icons.icon;
 import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Predicates.attribute;
-import static org.ardulink.util.Primitives.findPrimitiveFor;
 import static org.ardulink.util.Streams.getLast;
 import static org.ardulink.util.Throwables.getCauses;
 
@@ -35,8 +35,6 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -50,7 +48,6 @@ import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
-import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.Link;
 import org.ardulink.gui.AnalogPinStatus;
 import org.ardulink.gui.ConnectionStatus;
@@ -68,7 +65,6 @@ import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.ardulink.gui.serial.SerialMonitor;
 import org.ardulink.gui.statestore.StateStore;
-import org.ardulink.util.Primitives;
 import org.ardulink.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,13 +86,6 @@ public class Console extends JFrame implements Linkable {
 
 	private static final Logger logger = LoggerFactory.getLogger(Console.class);
 
-	private static final Link NULL_LINK = (Link) Proxy.newProxyInstance(Console.class.getClassLoader(),
-			new Class[] { Link.class }, (InvocationHandler) (proxy, method, args) -> {
-				Class<?> returnType = method.getReturnType();
-				return returnType.equals(Link.class) ? Console.NULL_LINK
-						: findPrimitiveFor(returnType).map(Primitives::defaultValue).orElse(null);
-			});
-
 	private final StateStore stateStore;
 	private JPanel contentPane;
 	private JTabbedPane tabbedPane;
@@ -111,26 +100,6 @@ public class Console extends JFrame implements Linkable {
 
 	private JButton btnConnect = connectButton();
 	private JButton btnDisconnect = disconnectButton();
-
-	private final transient ConnectionListener connectionListener = new ConnectionListener() {
-
-		@Override
-		public void connectionLost() {
-			setStates(false);
-		}
-
-		@Override
-		public void reconnected() {
-			setStates(true);
-		}
-
-		private void setStates(boolean connected) {
-			setEnabled(connected);
-			btnConnect.setEnabled(!connected);
-			btnDisconnect.setEnabled(connected);
-		}
-
-	};
 
 	/**
 	 * Launch the application.
@@ -319,8 +288,7 @@ public class Console extends JFrame implements Linkable {
 			}
 		});
 
-		this.connectionListener.connectionLost();
-		setEnabled(false);
+		setStates(false);
 		pack();
 		stateStore = new StateStore(contentPane).snapshot().removeStates(allConnectionsPanel, configurationPanel);
 	}
@@ -429,13 +397,16 @@ public class Console extends JFrame implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		if ((this.link = checkNotNull(link, "link must not be null")) == NULL_LINK) {
-			connectionListener.connectionLost();
-		} else {
-			connectionListener.reconnected();
-		}
+		this.link = checkNotNull(link, "link must not be null");
 		callLinkables(this.link);
 		stateStore.restore();
+		setStates(this.link != NULL_LINK);
+	}
+
+	private void setStates(boolean connected) {
+		setEnabled(connected);
+		btnConnect.setEnabled(!connected);
+		btnDisconnect.setEnabled(connected);
 	}
 
 	public Link getLink() {
