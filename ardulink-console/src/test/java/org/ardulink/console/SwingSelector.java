@@ -17,10 +17,10 @@ package org.ardulink.console;
 
 import static java.lang.String.format;
 import static java.util.stream.IntStream.range;
+import static org.ardulink.gui.util.SwingUtilities.componentsStream;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -61,14 +61,7 @@ public final class SwingSelector {
 	}
 
 	private static <T extends Component> Stream<T> findComponentRecursively(Container container, Class<T> clazz) {
-		return Arrays.stream(container.getComponents()).flatMap(c -> {
-			if (clazz.isInstance(c)) {
-				return Stream.of(clazz.cast(c));
-			} else if (c instanceof Container) {
-				return findComponentRecursively((Container) c, clazz);
-			}
-			return Stream.empty();
-		});
+		return componentsStream(container).filter(clazz::isInstance).map(clazz::cast);
 	}
 
 	public static boolean containsItem(JComboBox<?> comboBox, Object item) {
