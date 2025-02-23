@@ -58,12 +58,11 @@ public final class NullLink {
 
 	}
 
-	public static final Link NULL_LINK = createNullLink();
+	public static final Link NULL_LINK = createNullLink(Link.class);
 
-	private static Link createNullLink() {
-		Class<Link> proxyType = Link.class;
-		SelfReferentialInvocationHandler<Link> invocationHandler = new SelfReferentialInvocationHandler<>(proxyType);
-		Link instance = proxyType
+	private static <T> T createNullLink(Class<T> proxyType) {
+		SelfReferentialInvocationHandler<T> invocationHandler = new SelfReferentialInvocationHandler<>(proxyType);
+		T instance = proxyType
 				.cast(newProxyInstance(Console.class.getClassLoader(), new Class[] { proxyType }, invocationHandler));
 		invocationHandler.proxyInstance = instance;
 		return instance;
