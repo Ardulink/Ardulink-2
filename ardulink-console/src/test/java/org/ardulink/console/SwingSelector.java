@@ -16,12 +16,12 @@ limitations under the License.
 package org.ardulink.console;
 
 import static java.lang.String.format;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.IntStream.range;
 import static org.ardulink.gui.util.SwingUtilities.componentsStream;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -67,8 +67,7 @@ public final class SwingSelector {
 	public static boolean containsItem(JComboBox<?> comboBox, Object item) {
 		return range(0, comboBox.getItemCount()) //
 				.mapToObj(comboBox::getItemAt) //
-				.anyMatch(e -> Objects.equals(e, item)) //
-		;
+				.anyMatch(isEqual(item));
 	}
 
 }
