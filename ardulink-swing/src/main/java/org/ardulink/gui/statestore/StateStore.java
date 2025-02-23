@@ -21,7 +21,7 @@ import static java.util.stream.IntStream.range;
 import java.awt.Component;
 import java.awt.Container;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -121,7 +121,7 @@ public class StateStore {
 	);
 
 	private final Container container;
-	private final Map<Component, Object> states = new HashMap<>();
+	private final Map<Component, Object> states = new IdentityHashMap<>();
 
 	private Optional<Decomposer<? extends Component>> decomposer(Component component) {
 		return decomposers.stream().filter(d -> d.canHandle(component)).findFirst();

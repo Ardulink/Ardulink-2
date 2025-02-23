@@ -425,12 +425,12 @@ public class Console extends JFrame implements Linkable {
 	@Override
 	public void setLink(Link newLink) {
 		this.link = newLink;
-		if (this.link != null) {
-			connectionListener.reconnected();
-		} else {
+		if (this.link == null) {
+			stateStore.restore();
 			connectionListener.connectionLost();
+		} else {
+			connectionListener.reconnected();
 		}
-		stateStore.restore();
 		callLinkables(this.link);
 	}
 

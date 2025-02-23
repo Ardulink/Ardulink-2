@@ -24,8 +24,6 @@ import static org.ardulink.core.Pin.analogPin;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.IOException;
 
 import javax.swing.JComboBox;
@@ -44,10 +42,12 @@ import org.ardulink.gui.facility.IntMinMaxModel;
 import org.ardulink.util.Throwables;
 
 /**
- * [ardulinktitle] [ardulinkversion] This class implements the
- * AnalogReadChangeListener interface and is able to listen events coming from
- * arduino board about analog pin state change. project Ardulink
- * http://www.ardulink.org/
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * This class implements the AnalogReadChangeListener interface and is able to
+ * listen events coming from arduino board about analog pin state change.
+ * 
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *
@@ -171,33 +171,29 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		add(valueLabel);
 
 		tglbtnSensor = new JToggleButton("Off");
-		tglbtnSensor.addItemListener(new ItemListener() {
+		tglbtnSensor.addItemListener(e -> {
+			try {
+				if (e.getStateChange() == SELECTED) {
+					link.addListener((listener = listener()));
 
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				try {
-					if (e.getStateChange() == SELECTED) {
-						link.addListener((listener = listener()));
+					tglbtnSensor.setText("On");
+					pinComboBox.setEnabled(false);
+					minValueComboBox.setEnabled(false);
+					maxValueComboBox.setEnabled(false);
 
-						tglbtnSensor.setText("On");
-						pinComboBox.setEnabled(false);
-						minValueComboBox.setEnabled(false);
-						maxValueComboBox.setEnabled(false);
+					progressBar.setEnabled(true);
+				} else if (e.getStateChange() == DESELECTED) {
+					link.removeListener(listener);
 
-						progressBar.setEnabled(true);
-					} else if (e.getStateChange() == DESELECTED) {
-						link.removeListener(listener);
+					tglbtnSensor.setText("Off");
+					pinComboBox.setEnabled(true);
+					minValueComboBox.setEnabled(true);
+					maxValueComboBox.setEnabled(true);
 
-						tglbtnSensor.setText("Off");
-						pinComboBox.setEnabled(true);
-						minValueComboBox.setEnabled(true);
-						maxValueComboBox.setEnabled(true);
-
-						progressBar.setEnabled(false);
-					}
-				} catch (IOException ex) {
-					throw Throwables.propagate(ex);
+					progressBar.setEnabled(false);
 				}
+			} catch (IOException ex) {
+				throw Throwables.propagate(ex);
 			}
 		});
 		tglbtnSensor.setBounds(10, 177, 76, 28);
