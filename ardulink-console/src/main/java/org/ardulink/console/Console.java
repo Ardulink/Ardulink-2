@@ -19,7 +19,9 @@ import static java.awt.EventQueue.invokeLater;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import static org.ardulink.gui.Icons.icon;
 import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
+import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Predicates.attribute;
+import static org.ardulink.util.Primitives.findPrimitiveFor;
 import static org.ardulink.util.Streams.getLast;
 import static org.ardulink.util.Throwables.getCauses;
 
@@ -33,6 +35,8 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -45,8 +49,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.Link;
@@ -66,6 +68,7 @@ import org.ardulink.gui.customcomponents.joystick.ModifiableJoystick;
 import org.ardulink.gui.customcomponents.joystick.SimplePositionListener;
 import org.ardulink.gui.serial.SerialMonitor;
 import org.ardulink.gui.statestore.StateStore;
+import org.ardulink.util.Primitives;
 import org.ardulink.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +89,13 @@ public class Console extends JFrame implements Linkable {
 	private static final long serialVersionUID = -5288916405936436557L;
 
 	private static final Logger logger = LoggerFactory.getLogger(Console.class);
+
+	private static final Link NULL_LINK = (Link) Proxy.newProxyInstance(Console.class.getClassLoader(),
+			new Class[] { Link.class }, (InvocationHandler) (proxy, method, args) -> {
+				Class<?> returnType = method.getReturnType();
+				return returnType.equals(Link.class) ? Console.NULL_LINK
+						: findPrimitiveFor(returnType).map(Primitives::defaultValue).orElse(null);
+			});
 
 	private final StateStore stateStore;
 	private JPanel contentPane;
@@ -303,12 +313,9 @@ public class Console extends JFrame implements Linkable {
 		flowLayout2.setAlignment(FlowLayout.LEFT);
 		stateBar.add(connectionStatus, BorderLayout.SOUTH);
 
-		tabbedPane.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				if (tabbedPane.getSelectedComponent().equals(keyControlPanel)) {
-					keyControlPanel.requestFocus();
-				}
+		tabbedPane.addChangeListener(__ -> {
+			if (tabbedPane.getSelectedComponent().equals(keyControlPanel)) {
+				keyControlPanel.requestFocus();
 			}
 		});
 
@@ -343,7 +350,7 @@ public class Console extends JFrame implements Linkable {
 			} catch (IOException ex) {
 				throw Throwables.propagate(ex);
 			}
-			setLink(null);
+			setLink(NULL_LINK);
 		});
 		return button;
 	}
@@ -369,9 +376,9 @@ public class Console extends JFrame implements Linkable {
 	}
 
 	private ModifiableToggleSignalButton modifiableToggleSignalButton() {
-		ModifiableToggleSignalButton modifiableToggleSignalButton1 = new ModifiableToggleSignalButton();
-		linkables.add(modifiableToggleSignalButton1);
-		return modifiableToggleSignalButton1;
+		ModifiableToggleSignalButton modifiableToggleSignalButton = new ModifiableToggleSignalButton();
+		linkables.add(modifiableToggleSignalButton);
+		return modifiableToggleSignalButton;
 	}
 
 	private SwitchController switchController(int pin) {
@@ -389,16 +396,16 @@ public class Console extends JFrame implements Linkable {
 	}
 
 	private ModifiableSignalButton modifiableSignalButton() {
-		ModifiableSignalButton modifiableSignalButton1 = new ModifiableSignalButton();
-		linkables.add(modifiableSignalButton1);
-		return modifiableSignalButton1;
+		ModifiableSignalButton modifiableSignalButton = new ModifiableSignalButton();
+		linkables.add(modifiableSignalButton);
+		return modifiableSignalButton;
 	}
 
 	private DigitalPinStatus digitalPinStatus(int pin) {
-		DigitalPinStatus digitalPinStatus2 = new DigitalPinStatus();
-		digitalPinStatus2.setPin(pin);
-		linkables.add(digitalPinStatus2);
-		return digitalPinStatus2;
+		DigitalPinStatus digitalPinStatus = new DigitalPinStatus();
+		digitalPinStatus.setPin(pin);
+		linkables.add(digitalPinStatus);
+		return digitalPinStatus;
 	}
 
 	@Override
@@ -409,10 +416,8 @@ public class Console extends JFrame implements Linkable {
 	}
 
 	private void setEnabled(boolean enabled, Component component) {
-		if (component == connectionPanel) {
-			enabled = !enabled;
-		}
 		if (component != btnConnect && component != btnDisconnect) {
+			enabled ^= (component == connectionPanel);
 			if (component instanceof Container) {
 				for (Component subComp : ((Container) component).getComponents()) {
 					setEnabled(enabled, subComp);
@@ -423,15 +428,14 @@ public class Console extends JFrame implements Linkable {
 	}
 
 	@Override
-	public void setLink(Link newLink) {
-		this.link = newLink;
-		if (this.link == null) {
-			stateStore.restore();
+	public void setLink(Link link) {
+		if ((this.link = checkNotNull(link, "link must not be null")) == NULL_LINK) {
 			connectionListener.connectionLost();
 		} else {
 			connectionListener.reconnected();
 		}
 		callLinkables(this.link);
+		stateStore.restore();
 	}
 
 	public Link getLink() {
