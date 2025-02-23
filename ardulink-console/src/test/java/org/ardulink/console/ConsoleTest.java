@@ -16,6 +16,7 @@ limitations under the License.
 package org.ardulink.console;
 
 import static java.lang.String.format;
+import static org.ardulink.console.NullLink.NULL_LINK;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
@@ -34,8 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 
 /**
- * /**
- * [ardulinktitle] [ardulinkversion]
+ * /** [ardulinktitle] [ardulinkversion]
  * 
  * project Ardulink http://www.ardulink.org/
  * 
@@ -70,12 +70,12 @@ class ConsoleTest {
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
-	void whenDisconnectButtonIsClickedLinkIsExchangedAndPopertyChangeEventsIsFired() {
+	void whenDisconnectButtonIsClickedLinkIsExchangedAndConnectDisconnetButtonsAreToggled() {
 		ConsolePage page = new ConsolePage(newConsole());
 		page.connect();
 		page.disconnect();
 
-		assertThat(page.getLink()).isNull();
+		assertThat(page.getLink()).isSameAs(NULL_LINK);
 		assertThat(page.connectButton().isEnabled()).isTrue();
 		assertThat(page.disconnectButton().isEnabled()).isFalse();
 	}
