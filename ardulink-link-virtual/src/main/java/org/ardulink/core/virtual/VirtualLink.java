@@ -55,7 +55,7 @@ public class VirtualLink extends AbstractListenerLink {
 
 	private final Map<Pin, Object> listeningPins = new ConcurrentHashMap<>();
 
-	private Timer timer = new Timer();
+	private final Timer timer = new Timer();
 
 	public VirtualLink(VirtualLinkConfig config) {
 		this.timer.scheduleAtFixedRate(task(), 0, MILLISECONDS.convert(config.delay, config.delayUnit));
