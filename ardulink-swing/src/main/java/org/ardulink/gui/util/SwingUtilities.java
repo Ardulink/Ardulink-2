@@ -40,17 +40,20 @@ public final class SwingUtilities {
 	}
 
 	public static Stream<Component> componentsStream(Component component) {
-		if (component instanceof Container) {
-			Stream<Component> children = children(component);
-			return component instanceof JTabbedPane //
-					? concat(Stream.of(component), children, tabs((JTabbedPane) component)) //
-					: concat(Stream.of(component), children);
+		Stream<Component> singleStream = Stream.of(component);
+		if (component instanceof JTabbedPane) {
+			JTabbedPane tabbedPane = (JTabbedPane) component;
+			return concat(singleStream, children(tabbedPane), tabs(tabbedPane));
+		} else if (component instanceof Container) {
+			Container container = (Container) component;
+			return concat(singleStream, children(container));
+		} else {
+			return singleStream;
 		}
-		return Stream.of(component);
 	}
 
-	private static Stream<Component> children(Component component) {
-		return Stream.of(((Container) component).getComponents()) //
+	private static Stream<Component> children(Container container) {
+		return Stream.of(container.getComponents()) //
 				.flatMap(SwingUtilities::componentsStream);
 	}
 
