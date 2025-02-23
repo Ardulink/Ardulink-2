@@ -29,6 +29,8 @@ import java.util.stream.Stream;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
@@ -44,8 +46,8 @@ import javax.swing.JToggleButton;
  *
  * Store for states of Swing components. Can be used to store the states via
  * {@link #snapshot()} and restores them using {@link #restore()}. Components
- * that should get ignored can be set via {@link #withoutStateOf(Component)}
- * which work recursively.
+ * that should get ignored can be set via {@link #removeStates(Component)} which
+ * work recursively.
  */
 public class StateStore {
 
@@ -87,13 +89,15 @@ public class StateStore {
 	}
 
 	private static final List<Storer<? extends Component, ? extends Object>> storers = Arrays.asList( //
-			new Storer<>(JSlider.class, Integer.class, JSlider::getValue, JSlider::setValue), //
-			new Storer<>(JSpinner.class, Object.class, JSpinner::getValue, JSpinner::setValue), //
-			new Storer<>(JComboBox.class, Integer.class, JComboBox::getSelectedIndex, JComboBox::setSelectedIndex), //
+			new Storer<>(JLabel.class, String.class, JLabel::getText, JLabel::setText), //
 			new Storer<>(JTextField.class, String.class, JTextField::getText, JTextField::setText), //
 			new Storer<>(JCheckBox.class, Boolean.class, JCheckBox::isSelected, JCheckBox::setSelected), //
+			new Storer<>(JToggleButton.class, Boolean.class, JToggleButton::isSelected, JToggleButton::setSelected), //
 			new Storer<>(JRadioButton.class, Boolean.class, JRadioButton::isSelected, JRadioButton::setSelected), //
-			new Storer<>(JToggleButton.class, Boolean.class, JToggleButton::isSelected, JToggleButton::setSelected) //
+			new Storer<>(JComboBox.class, Integer.class, JComboBox::getSelectedIndex, JComboBox::setSelectedIndex), //
+			new Storer<>(JSlider.class, Integer.class, JSlider::getValue, JSlider::setValue), //
+			new Storer<>(JSpinner.class, Object.class, JSpinner::getValue, JSpinner::setValue), //
+			new Storer<>(JProgressBar.class, Integer.class, JProgressBar::getValue, JProgressBar::setValue) //
 	);
 
 	private final Component component;
@@ -107,13 +111,13 @@ public class StateStore {
 		this.component = component;
 	}
 
-	public StateStore withoutStateOf(Component... components) {
-		Stream.of(components).forEach(this::withoutStateOf);
+	public StateStore removeStates(Component... components) {
+		Stream.of(components).forEach(this::removeStates);
 		return this;
 	}
 
-	public StateStore withoutStateOf(Component component) {
-		return forAllComponents(component, (s, c) -> s.save(c, states));
+	public StateStore removeStates(Component component) {
+		return forAllComponents(component, (__, c) -> states.remove(c));
 	}
 
 	public StateStore snapshot() {
@@ -129,4 +133,10 @@ public class StateStore {
 		componentsStream(component).forEach(c -> storer(c).ifPresent(s -> consumer.accept(s, c)));
 		return this;
 	}
+
+	@Override
+	public String toString() {
+		return "StateStore [component=" + component + ", states=" + states + "]";
+	}
+
 }
