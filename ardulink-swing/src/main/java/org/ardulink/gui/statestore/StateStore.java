@@ -15,28 +15,23 @@ limitations under the License.
  */
 package org.ardulink.gui.statestore;
 
-import static java.util.Arrays.stream;
-import static java.util.stream.IntStream.range;
+import static org.ardulink.gui.util.SwingUtilities.componentsStream;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 
@@ -54,63 +49,44 @@ import javax.swing.JToggleButton;
  */
 public class StateStore {
 
-	private static class Decomposer<C extends Component> {
-
-		private final Class<C> componentType;
-		private final Function<C, Stream<Component>> decomposer;
-
-		public Decomposer(Class<C> componentType, Function<C, Stream<Component>> decomposer) {
-			this.componentType = componentType;
-			this.decomposer = decomposer;
-		}
-
-		public boolean canHandle(Component component) {
-			return componentType.isInstance(component);
-		}
-
-		public Stream<Component> decompose(Component component) {
-			return decomposer.apply(componentType.cast(component));
-		}
-
-	}
-
 	private static class Storer<C extends Component, V> {
 
 		private final Class<C> componentType;
 		private final Class<V> valueType;
-		private final Function<C, V> reader;
-		private final BiConsumer<C, V> writer;
+		private final Function<C, V> saver;
+		private final BiConsumer<C, V> restorer;
 
-		public Storer(Class<C> componentType, Class<V> valueType, Function<C, V> reader, BiConsumer<C, V> writer) {
+		public Storer(Class<C> componentType, Class<V> valueType, Function<C, V> saver, BiConsumer<C, V> restorer) {
 			this.componentType = componentType;
 			this.valueType = valueType;
-			this.reader = reader;
-			this.writer = writer;
+			this.saver = saver;
+			this.restorer = restorer;
 		}
 
 		public boolean canHandle(Component component) {
 			return componentType.isInstance(component);
 		}
 
-		public void saveTo(Component component, Map<Component, Object> map) {
-			map.put(component, reader.apply(componentType.cast(component)));
+		public void save(Component component, Map<Component, Object> map) {
+			map.put(component, saver.apply(componentType.cast(component)));
 		}
 
-		public void restoreFrom(Component component, Map<Component, Object> map) {
+		public void restore(Component component, Map<Component, Object> map) {
 			Object value = map.get(component);
 			if (value != null) {
-				writer.accept(componentType.cast(component), valueType.cast(value));
+				restorer.accept(componentType.cast(component), valueType.cast(value));
 			}
+		}
+
+		@Override
+		public String toString() {
+			return "Storer [componentType=" + componentType + ", valueType=" + valueType + ", saver=" + saver
+					+ ", restorer=" + restorer + "]";
 		}
 
 	}
 
-	private static final List<Decomposer<? extends Component>> decomposers = Arrays.asList(
-			new Decomposer<>(JTabbedPane.class, t -> range(0, t.getTabCount()).mapToObj(t::getComponentAt)), //
-			new Decomposer<>(JPanel.class, p -> stream(p.getComponents())) //
-	);
-
-	private static final List<Storer<? extends Component, ? extends Object>> storeHelper = Arrays.asList( //
+	private static final List<Storer<? extends Component, ? extends Object>> storers = Arrays.asList( //
 			new Storer<>(JSlider.class, Integer.class, JSlider::getValue, JSlider::setValue), //
 			new Storer<>(JSpinner.class, Object.class, JSpinner::getValue, JSpinner::setValue), //
 			new Storer<>(JComboBox.class, Integer.class, JComboBox::getSelectedIndex, JComboBox::setSelectedIndex), //
@@ -120,56 +96,37 @@ public class StateStore {
 			new Storer<>(JToggleButton.class, Boolean.class, JToggleButton::isSelected, JToggleButton::setSelected) //
 	);
 
-	private final Container container;
+	private final Component component;
 	private final Map<Component, Object> states = new IdentityHashMap<>();
 
-	private Optional<Decomposer<? extends Component>> decomposer(Component component) {
-		return decomposers.stream().filter(d -> d.canHandle(component)).findFirst();
+	private static Optional<Storer<? extends Component, ? extends Object>> storer(Component component) {
+		return storers.stream().filter(s -> s.canHandle(component)).findFirst();
 	}
 
-	private Optional<Storer<? extends Component, ? extends Object>> storeHelper(Component component) {
-		return storeHelper.stream().filter(s -> s.canHandle(component)).findFirst();
-	}
-
-	public StateStore(Container container) {
-		this.container = container;
-	}
-
-	public StateStore snapshot() {
-		states.clear();
-		storeState(container);
-		return this;
-	}
-
-	public StateStore restore() {
-		restoreState(container);
-		return this;
+	public StateStore(Component component) {
+		this.component = component;
 	}
 
 	public StateStore withoutStateOf(Component... components) {
-		for (Component component : components) {
-			withoutStateOf(component);
-		}
+		Stream.of(components).forEach(this::withoutStateOf);
 		return this;
 	}
 
 	public StateStore withoutStateOf(Component component) {
-		walk(component, this::withoutStateOf, __ -> states.remove(component));
+		return forAllComponents(component, (s, c) -> s.save(c, states));
+	}
+
+	public StateStore snapshot() {
+		states.clear();
+		return forAllComponents(component, (s, c) -> s.save(c, states));
+	}
+
+	public StateStore restore() {
+		return forAllComponents(component, (s, c) -> s.restore(c, states));
+	}
+
+	private StateStore forAllComponents(Component component, BiConsumer<Storer<?, ?>, Component> consumer) {
+		componentsStream(component).forEach(c -> storer(c).ifPresent(s -> consumer.accept(s, c)));
 		return this;
 	}
-
-	private void storeState(Component component) {
-		walk(component, this::storeState, s -> s.saveTo(component, states));
-	}
-
-	private void restoreState(Component component) {
-		walk(component, this::restoreState, s -> s.restoreFrom(component, states));
-	}
-
-	private void walk(Component component, Consumer<Component> decomposeConsumer,
-			Consumer<? super Storer<? extends Component, ? extends Object>> componentConsumer) {
-		decomposer(component).ifPresent(d -> d.decompose(component).forEach(decomposeConsumer));
-		storeHelper(component).ifPresent(componentConsumer);
-	}
-
 }
