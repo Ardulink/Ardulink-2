@@ -45,7 +45,15 @@ class NullLinkTest {
 
 	@TestFactory
 	Stream<DynamicTest> canBeCalledAndDoesNotReturnNull() throws Exception {
-		return Stream.of(Link.class.getDeclaredMethods()).map(m -> dynamicTest(testname(m), () -> invoke(sut, m)));
+		return Stream.of(Link.class.getDeclaredMethods()) //
+				.map(m -> dynamicTest(testname(m), () -> assertThat(m.invoke(sut, params(m))).isNotNull()));
+	}
+
+	@TestFactory
+	Stream<DynamicTest> doesReturnItself() throws Exception {
+		return Stream.of(Link.class.getDeclaredMethods()) //
+				.filter(m -> sut.getClass().equals(m.getReturnType())) //
+				.map(m -> dynamicTest(testname(m), () -> assertThat(m.invoke(sut, params(m))).isSameAs(sut)));
 	}
 
 	static void invoke(Link sut, Method method) throws Exception {
