@@ -24,6 +24,7 @@ import static org.ardulink.console.SwingPredicates.labelWithText;
 import static org.ardulink.console.SwingPredicates.withName;
 import static org.ardulink.console.SwingPredicates.withSelectedItem;
 import static org.ardulink.console.SwingSelector.*;
+import static org.awaitility.Awaitility.await;
 
 import java.awt.Component;
 import java.util.Arrays;
@@ -85,7 +86,19 @@ public class ConsolePage {
 	}
 
 	public void useConnection(String connection) {
-		forceSelectItem(findComponent(connectionPanel(), JComboBox.class, withName("uris")), connection);
+		JComboBox<?> uris = findComponent(connectionPanel(), JComboBox.class, withName("uris"));
+		int oldSelection = uris.getSelectedIndex();
+		forceSelectItem(uris, connection);
+		if (oldSelection != uris.getSelectedIndex()) {
+			// exchange of panel runs in separate thread, wait for the panel to get
+			// replaced
+			JPanel connectionSubPanel = linkconfig(console);
+			await().until(() -> linkconfig(console) != connectionSubPanel);
+		}
+	}
+
+	private JPanel linkconfig(Console console) {
+		return findComponent(findComponent(console, ConnectionPanel.class), JPanel.class, withName("linkconfig"));
 	}
 
 	public static void forceSelectItem(JComboBox<?> comboBox, String item) {
