@@ -25,6 +25,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
+import java.io.IOException;
 
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
@@ -104,6 +110,30 @@ class ConsoleTest {
 			s.assertThat(pin11.getValue()).isEqualTo(initialPin11Value);
 			s.assertThat(pin12.isSelected()).isEqualTo(initialPin12Value);
 		});
+	}
+
+	@Test
+	@DisabledIf(IS_HEADLESS)
+	void noInteractionAfterReconnectWhenRestoringFromStateStore() throws IOException {
+		ConsolePage page = new ConsolePage(newConsole());
+
+		JSlider pin11 = page.analogSlider(analogPin(11));
+		JToggleButton pin12 = page.digitalSwitch(digitalPin(12));
+
+		page.connect();
+		pin11.setValue(42);
+		pin12.doClick();
+
+		verify(connectLink).switchAnalogPin(analogPin(11), 42);
+		verify(connectLink).switchDigitalPin(digitalPin(12), true);
+		verifyNoMoreInteractions(connectLink);
+
+		// disconnect restores the states, e.g. sets pin 11 and 12 to 0 (but this must
+		// not be done on the old (previous) link
+		reset(connectLink);
+		page.disconnect();
+		verify(connectLink).close();
+		verifyNoMoreInteractions(connectLink);
 	}
 
 	@Test
