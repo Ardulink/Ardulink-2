@@ -60,7 +60,7 @@ export MQTT_MESSAGE="true"
 
 json_pattern=".type == \"pinState\" and .pin == \"$PIN\" and .state == true"
 check_websocket_message \
-    "docker compose run --rm mqtt-pub-once" \
+    "docker compose -f "$COMPOSE_FILE" run --rm mqtt-pub-once" \
     "$json_pattern"
 
 # If everything is successful, cleanup will be called automatically when the script exits
