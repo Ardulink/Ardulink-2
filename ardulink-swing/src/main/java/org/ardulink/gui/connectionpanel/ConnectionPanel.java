@@ -83,7 +83,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 			private static final long serialVersionUID = 2756587449741341859L;
 
 			@Override
-			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+			public Component getListCellRendererComponent(@SuppressWarnings("rawtypes") JList list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
 				return value == null ? null
 						: super.getListCellRendererComponent(list, extractNameFromURI(create((String) value)), index,
@@ -157,6 +157,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 				if (ConnectionPanel.this.panel != null) {
 					remove(ConnectionPanel.this.panel);
 				}
+				newPanel.setName("linkconfig");
 				ConnectionPanel.this.panel = newPanel;
 				add(ConnectionPanel.this.panel, constraints(1, 0).fillBoth().build());
 				revalidate();
