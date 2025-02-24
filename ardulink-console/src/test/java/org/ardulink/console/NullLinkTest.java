@@ -45,9 +45,11 @@ class NullLinkTest {
 
 	@TestFactory
 	Stream<DynamicTest> canBeCalledAndDoesNotReturnNull() throws Exception {
-		return Stream.of(Link.class.getDeclaredMethods()).map(m -> dynamicTest(testname(m), () -> {
-			assertThat(m.invoke(sut, params(m))).isNotNull();
-		}));
+		return Stream.of(Link.class.getDeclaredMethods()).map(m -> dynamicTest(testname(m), () -> invoke(sut, m)));
+	}
+
+	static void invoke(Link sut, Method method) throws Exception {
+		assertThat(method.invoke(sut, params(method))).isNotNull();
 	}
 
 	static String testname(Method method) {
