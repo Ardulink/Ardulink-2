@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 import java.lang.reflect.Method;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.ardulink.core.Link;
@@ -45,15 +46,24 @@ class NullLinkTest {
 
 	@TestFactory
 	Stream<DynamicTest> canBeCalledAndDoesNotReturnNull() throws Exception {
-		return Stream.of(Link.class.getDeclaredMethods()) //
-				.map(m -> dynamicTest(testname(m), () -> assertThat(m.invoke(sut, params(m))).isNotNull()));
+		return methodsOfLink().map(m -> dynamicTest(testname(m), () -> {
+			assertThat(m.invoke(sut, params(m))).isNotNull();
+		}));
 	}
 
 	@TestFactory
 	Stream<DynamicTest> doesReturnItself() throws Exception {
-		return Stream.of(Link.class.getDeclaredMethods()) //
-				.filter(m -> sut.getClass().equals(m.getReturnType())) //
-				.map(m -> dynamicTest(testname(m), () -> assertThat(m.invoke(sut, params(m))).isSameAs(sut)));
+		return methodsOfLink().filter(returnTypeIs(sut.getClass())).map(m -> dynamicTest(testname(m), () -> {
+			assertThat(m.invoke(sut, params(m))).isSameAs(sut);
+		}));
+	}
+
+	Predicate<Method> returnTypeIs(Class<?> clazz) {
+		return m -> clazz.equals(m.getReturnType());
+	}
+
+	Stream<Method> methodsOfLink() {
+		return Stream.of(Link.class.getDeclaredMethods());
 	}
 
 	static void invoke(Link sut, Method method) throws Exception {
