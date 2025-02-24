@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.testsupport.mock;
 
+import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static org.ardulink.testsupport.mock.MockLinkFactory.MockLinkConfig.NAME_ATTRIBUTE;
 
@@ -49,7 +50,7 @@ public final class TestSupport {
 	}
 
 	public static String mockUriWithName(String name) {
-		return String.format(mockUriUnnamed() + "?%s=%s", NAME_ATTRIBUTE, name);
+		return format(mockUriUnnamed() + "?%s=%s", NAME_ATTRIBUTE, name);
 	}
 
 	public static Link getMock(Link link) {
