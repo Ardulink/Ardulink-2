@@ -84,7 +84,7 @@
 		<junit-pioneer.version>1.9.1</junit-pioneer.version>
 		<equalsverifier.version>3.19.1</equalsverifier.version>
 		<!-- camel3 is the last version that supports java 11, camel4 needs java 17 -->
-		<camel.version>3.22.3</camel.version>
+		<camel.version>4.10.0</camel.version>
 
 		<!-- default image name for JIB -->
 		<image>docker.io/ardulink/${project.artifactId}:${project.version}</image>
