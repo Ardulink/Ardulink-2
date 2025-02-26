@@ -30,6 +30,7 @@ import static org.awaitility.Awaitility.await;
 import java.awt.Component;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -54,7 +55,7 @@ import org.ardulink.gui.connectionpanel.ConnectionPanel;
  * [adsense]
  *
  */
-public class ConsolePage {
+public class ConsolePage implements AutoCloseable {
 
 	private final Console console;
 
@@ -79,7 +80,11 @@ public class ConsolePage {
 	}
 
 	public JButton disconnectButton() {
-		return findComponent(console, JButton.class, buttonWithText("Disconnect"));
+		return tryDisconnectButton().orElseThrow();
+	}
+
+	private Optional<JButton> tryDisconnectButton() {
+		return tryFindComponent(console, JButton.class, buttonWithText("Disconnect"));
 	}
 
 	private ConnectionPanel connectionPanel() {
@@ -158,6 +163,11 @@ public class ConsolePage {
 	public PWMController pwmController(AnalogPin pin) {
 		return findComponent(powerPanel(), PWMController.class, p -> tryFindComponent(p, JComboBox.class,
 				withName("pinComboBox").and(isA(JComboBox.class, withSelectedItem(pin.pinNum())))).isPresent());
+	}
+
+	@Override
+	public void close() {
+		tryDisconnectButton().filter(JButton::isEnabled).ifPresent(JButton::doClick);
 	}
 
 }
