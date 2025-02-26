@@ -43,7 +43,6 @@ import javax.swing.JToggleButton;
 
 import org.approvaltests.awt.AwtApprovals;
 import org.ardulink.core.Link;
-import org.ardulink.core.Pin;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.util.Throwables;
 import org.junit.jupiter.api.Test;
@@ -80,33 +79,36 @@ class ConsoleTest {
 	@Test
 	@DisabledIf(IS_HEADLESS)
 	void whenStartedConnectIsEnabledAndDisconnnectIsDisabled() {
-		ConsolePage page = new ConsolePage(newConsole());
-		assertThat(isNullLink(page.getLink())).isTrue();
-		assertThat(page.connectButton().isEnabled()).isTrue();
-		assertThat(page.disconnectButton().isEnabled()).isFalse();
+		try (ConsolePage page = new ConsolePage(newConsole())) {
+			assertThat(isNullLink(page.getLink())).isTrue();
+			assertThat(page.connectButton().isEnabled()).isTrue();
+			assertThat(page.disconnectButton().isEnabled()).isFalse();
+		}
 	}
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
 	void whenConnectButtonIsClickedLinkIsExchangedAndPopertyChangeEventsIsFired() {
-		ConsolePage page = new ConsolePage(newConsole());
-		page.connect();
+		try (ConsolePage page = new ConsolePage(newConsole())) {
+			page.connect();
 
-		assertThat(page.getLink()).isSameAs(connectLink);
-		assertThat(page.connectButton().isEnabled()).isFalse();
-		assertThat(page.disconnectButton().isEnabled()).isTrue();
+			assertThat(page.getLink()).isSameAs(connectLink);
+			assertThat(page.connectButton().isEnabled()).isFalse();
+			assertThat(page.disconnectButton().isEnabled()).isTrue();
+		}
 	}
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
 	void whenDisconnectButtonIsClickedLinkIsExchangedAndConnectDisconnetButtonsAreToggled() {
-		ConsolePage page = new ConsolePage(newConsole());
-		page.connect();
-		page.disconnect();
+		try (ConsolePage page = new ConsolePage(newConsole())) {
+			page.connect();
+			page.disconnect();
 
-		assertThat(isNullLink(page.getLink())).isTrue();
-		assertThat(page.connectButton().isEnabled()).isTrue();
-		assertThat(page.disconnectButton().isEnabled()).isFalse();
+			assertThat(isNullLink(page.getLink())).isTrue();
+			assertThat(page.connectButton().isEnabled()).isTrue();
+			assertThat(page.disconnectButton().isEnabled()).isFalse();
+		}
 	}
 
 	@Test
@@ -114,67 +116,91 @@ class ConsoleTest {
 	void doesResetComponents() {
 		String connection = "ardulink://virtual-random";
 
-		ConsolePage page = new ConsolePage(new Console());
-		page.useConnection(connection);
+		try (ConsolePage page = new ConsolePage(new Console())) {
+			page.useConnection(connection);
 
-		JSlider pin11 = page.analogSlider(analogPin(11));
-		JToggleButton pin12 = page.digitalSwitch(digitalPin(12));
-		int initialPin11Value = pin11.getValue();
-		boolean initialPin12Value = pin12.isSelected();
+			JSlider pin11 = page.analogSlider(analogPin(11));
+			JToggleButton pin12 = page.digitalSwitch(digitalPin(12));
+			int initialPin11Value = pin11.getValue();
+			boolean initialPin12Value = pin12.isSelected();
 
-		page.connect();
-		pin11.setValue(42);
-		pin12.doClick();
-		assert pin11.getValue() != initialPin11Value;
-		assert pin12.isSelected() != initialPin12Value;
+			page.connect();
+			pin11.setValue(42);
+			pin12.doClick();
+			assert pin11.getValue() != initialPin11Value;
+			assert pin12.isSelected() != initialPin12Value;
 
-		page.disconnect();
-		assertSoftly(s -> {
-			s.assertThat(pin11.getValue()).isEqualTo(initialPin11Value);
-			s.assertThat(pin12.isSelected()).isEqualTo(initialPin12Value);
-		});
+			page.disconnect();
+			assertSoftly(s -> {
+				s.assertThat(pin11.getValue()).isEqualTo(initialPin11Value);
+				s.assertThat(pin12.isSelected()).isEqualTo(initialPin12Value);
+			});
+		}
 	}
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
 	void noInteractionAfterReconnectWhenRestoringFromStateStore() throws IOException {
-		ConsolePage page = new ConsolePage(newConsole());
+		try (ConsolePage page = new ConsolePage(newConsole())) {
+			JSlider pin11 = page.analogSlider(analogPin(11));
+			JToggleButton pin12 = page.digitalSwitch(digitalPin(12));
 
-		JSlider pin11 = page.analogSlider(analogPin(11));
-		JToggleButton pin12 = page.digitalSwitch(digitalPin(12));
+			page.connect();
+			pin11.setValue(42);
+			pin12.doClick();
 
-		page.connect();
-		pin11.setValue(42);
-		pin12.doClick();
+			verify(connectLink).switchAnalogPin(analogPin(11), 42);
+			verify(connectLink).switchDigitalPin(digitalPin(12), true);
+			verifyNoMoreInteractions(connectLink);
 
-		verify(connectLink).switchAnalogPin(analogPin(11), 42);
-		verify(connectLink).switchDigitalPin(digitalPin(12), true);
-		verifyNoMoreInteractions(connectLink);
+			// disconnect restores the states, e.g. sets pin 11 and 12 to 0 (but this must
+			// not be done on the old (previous) link
+			reset(connectLink);
+			page.disconnect();
 
-		// disconnect restores the states, e.g. sets pin 11 and 12 to 0 (but this must
-		// not be done on the old (previous) link
-		reset(connectLink);
-		page.disconnect();
-		verify(connectLink).close();
-		verifyNoMoreInteractions(connectLink);
+			verify(connectLink).close();
+			verifyNoMoreInteractions(connectLink);
+		}
 	}
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
 	void approvalsVerify() {
 		Console console = newConsole();
-		ConsolePage page = new ConsolePage(console);
-		page.useConnection(format("%s://%s", ARDULINK_SCHEME, VIRTUAL_CONSOLE_NAME));
+		try (ConsolePage page = new ConsolePage(console)) {
+			page.useConnection(format("%s://%s", ARDULINK_SCHEME, VIRTUAL_CONSOLE_NAME));
+			repaint(console);
+			AwtApprovals.verify(console.getContentPane());
+		}
+	}
 
-		repaint(console);
-		AwtApprovals.verify(console.getContentPane());
+	@Test
+	@DisabledIf(IS_HEADLESS)
+	void approvalsJustToEnsureThatTheSliderWasChanged() {
+		Console console = newConsole();
+		try (ConsolePage page = new ConsolePage(console)) {
+			analogSensor0WithValue241(page);
+
+			repaint(console);
+			AwtApprovals.verify(console.getContentPane());
+		}
 	}
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
 	void approvalsComponentsAreDisabledAfterDisconnect() {
+		// when restoring states AFTER the connectionListener get called in Console, the
+		// components previously activated still are enabled.
 		Console console = newConsole();
-		ConsolePage page = new ConsolePage(console);
+		try (ConsolePage page = new ConsolePage(console)) {
+			analogSensor0WithValue241(page);
+			page.disconnect();
+			repaint(console);
+			AwtApprovals.verify(console.getContentPane());
+		}
+	}
+
+	private void analogSensor0WithValue241(ConsolePage page) {
 		page.useConnection(format("%s://%s", ARDULINK_SCHEME, VIRTUAL_CONSOLE_NAME));
 
 		page.connect();
@@ -182,11 +208,7 @@ class ConsoleTest {
 		page.showTab(analogSensorPanel);
 
 		findComponent(analogSensorPanel, JToggleButton.class).doClick();
-		eventListeners.forEach(l-> l.stateChanged(analogPinValueChanged(Pin.analogPin(0), 241)));
-		page.disconnect();
-
-		repaint(console);
-		AwtApprovals.verify(console.getContentPane());
+		eventListeners.forEach(l -> l.stateChanged(analogPinValueChanged(analogPin(0), 241)));
 	}
 
 	private void repaint(Console console) {
