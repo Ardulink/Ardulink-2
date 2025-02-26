@@ -148,7 +148,7 @@ public class ToneController extends JPanel implements Linkable {
 							updateToneButtonText();
 						}
 					} catch (IOException ex) {
-						Throwables.propagate(ex);
+						throw Throwables.propagate(ex);
 					}
 				}
 			}

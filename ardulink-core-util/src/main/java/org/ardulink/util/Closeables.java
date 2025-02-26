@@ -39,7 +39,7 @@ public final class Closeables {
 		try {
 			closeable.close();
 		} catch (IOException e) {
-			propagate(e);
+			throw propagate(e);
 		}
 	}
 

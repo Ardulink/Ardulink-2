@@ -135,7 +135,7 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 				try {
 					subscribe();
 				} catch (MqttException e) {
-					propagate(e);
+					throw propagate(e);
 				}
 			}
 		};

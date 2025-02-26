@@ -15,7 +15,7 @@ limitations under the License.
 
 
 */
-package org.ardulink.console;
+package org.ardulink.core;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.IntStream.range;
@@ -27,7 +27,6 @@ import java.lang.reflect.Method;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.ardulink.core.Link;
 import org.ardulink.util.Primitives;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;

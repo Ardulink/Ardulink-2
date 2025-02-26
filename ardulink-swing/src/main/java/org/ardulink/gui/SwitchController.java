@@ -83,7 +83,7 @@ public class SwitchController extends JPanel implements Linkable {
 					link.switchDigitalPin(digitalPin(pin), false);
 				}
 			} catch (IOException ex) {
-				Throwables.propagate(ex);
+				throw Throwables.propagate(ex);
 			}
 		});
 		switchToggleButton.setBounds(10, 38, 103, 23);

@@ -203,7 +203,7 @@ public class PWMController extends JPanel implements Linkable {
 				try {
 					link.switchAnalogPin(analogPin(((int) pinComboBox.getSelectedItem())), powerValue);
 				} catch (IOException e) {
-					Throwables.propagate(e);
+					throw Throwables.propagate(e);
 				}
 			}
 		});

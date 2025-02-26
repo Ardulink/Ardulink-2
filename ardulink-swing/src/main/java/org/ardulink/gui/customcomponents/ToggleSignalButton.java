@@ -105,7 +105,7 @@ public class ToggleSignalButton extends JPanel implements Linkable {
 								: getValueOff());
 				updateSignalButtonText();
 			} catch (IOException ex) {
-				Throwables.propagate(ex);
+				throw Throwables.propagate(ex);
 			}
 		});
 		

@@ -158,7 +158,7 @@ class NetworkProxyServerTest {
 						}
 					}.execute(freePort);
 				} catch (IOException e) {
-					propagate(e);
+					throw propagate(e);
 				}
 			}
 		}.start();

@@ -248,7 +248,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 			try {
 				main.run();
 			} catch (Exception e) {
-				propagate(e);
+				throw propagate(e);
 			}
 		});
 	}

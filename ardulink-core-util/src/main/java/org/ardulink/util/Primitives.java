@@ -55,7 +55,7 @@ public enum Primitives {
 	private final Function<String, Object> parseFunction;
 	private final Object defaultValue;
 
-	Primitives(Class<?> type, Class<?> wrapperType, Function<String, Object> parseFunction, Object defaultValue) {
+	private Primitives(Class<?> type, Class<?> wrapperType, Function<String, Object> parseFunction, Object defaultValue) {
 		this.type = type;
 		this.wrapperType = wrapperType;
 		this.parseFunction = parseFunction;

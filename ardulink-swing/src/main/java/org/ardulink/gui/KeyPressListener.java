@@ -59,7 +59,7 @@ public class KeyPressListener extends KeyAdapter {
 			link.sendKeyPressEvent(keyEvent.getKeyChar(), keyEvent.getKeyCode(), keyEvent.getKeyLocation(),
 					keyEvent.getModifiers(), keyEvent.getModifiersEx());
 		} catch (IOException e) {
-			Throwables.propagate(e);
+			throw Throwables.propagate(e);
 		}
 	}
 
