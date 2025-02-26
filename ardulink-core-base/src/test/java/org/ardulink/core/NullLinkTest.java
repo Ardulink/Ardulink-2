@@ -19,6 +19,7 @@ package org.ardulink.core;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.IntStream.range;
+import static org.ardulink.core.NullLink.NULL_LINK;
 import static org.ardulink.util.Primitives.findPrimitiveFor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
@@ -41,7 +42,7 @@ import org.junit.jupiter.api.TestFactory;
  */
 class NullLinkTest {
 
-	Link sut = NullLink.NULL_LINK;
+	Link sut = NULL_LINK;
 
 	@TestFactory
 	Stream<DynamicTest> canBeCalledAndDoesNotReturnNull() throws Exception {

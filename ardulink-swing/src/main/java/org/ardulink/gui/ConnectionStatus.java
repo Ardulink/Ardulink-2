@@ -18,7 +18,7 @@ limitations under the License.
 
 package org.ardulink.gui;
 
-import static org.ardulink.core.NullLink.NULL_LINK;
+import static org.ardulink.core.NullLink.isNullLink;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -51,10 +51,8 @@ public class ConnectionStatus extends JPanel implements Linkable {
 	private static final ImageIcon CONNECTED_ICON = loadIcon("connect_established.png");
 	private static final ImageIcon DISCONNECTED_ICON = loadIcon("connect_no.png");
 
-
 	private static ImageIcon loadIcon(String iconName) {
-		return new ImageIcon(ConnectionStatus.class.getResource(ICON_FOLDER
-				+ iconName));
+		return new ImageIcon(ConnectionStatus.class.getResource(ICON_FOLDER + iconName));
 	}
 
 	private transient Link link;
@@ -94,7 +92,7 @@ public class ConnectionStatus extends JPanel implements Linkable {
 			((AbstractListenerLink) this.link).addConnectionListener(connectionListener);
 		}
 
-		if (this.link == NULL_LINK) {
+		if (isNullLink(this.link)) {
 			connectionListener.connectionLost();
 		} else {
 			connectionListener.reconnected();

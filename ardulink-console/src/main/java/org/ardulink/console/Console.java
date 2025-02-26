@@ -18,6 +18,7 @@ package org.ardulink.console;
 import static java.awt.EventQueue.invokeLater;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import static org.ardulink.core.NullLink.NULL_LINK;
+import static org.ardulink.core.NullLink.isNullLink;
 import static org.ardulink.gui.Icons.icon;
 import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
 import static org.ardulink.util.Predicates.attribute;
@@ -423,7 +424,7 @@ public class Console extends JFrame implements Linkable {
 		}
 		callLinkables(this.link);
 		stateStore.restore();
-		if (this.link == NULL_LINK) {
+		if (isNullLink(this.link)) {
 			connectionListener.connectionLost();
 		} else {
 			connectionListener.reconnected();

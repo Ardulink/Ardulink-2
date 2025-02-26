@@ -16,7 +16,7 @@ limitations under the License.
 package org.ardulink.console;
 
 import static java.lang.String.format;
-import static org.ardulink.core.NullLink.NULL_LINK;
+import static org.ardulink.core.NullLink.isNullLink;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
@@ -57,7 +57,7 @@ class ConsoleTest {
 	@DisabledIf(IS_HEADLESS)
 	void whenStartedConnectIsEnabledAndDisconnnectIsDisabled() {
 		ConsolePage page = new ConsolePage(newConsole());
-		assertThat(page.getLink()).isSameAs(NULL_LINK);
+		assertThat(isNullLink(page.getLink())).isTrue();
 		assertThat(page.connectButton().isEnabled()).isTrue();
 		assertThat(page.disconnectButton().isEnabled()).isFalse();
 	}
@@ -80,7 +80,7 @@ class ConsoleTest {
 		page.connect();
 		page.disconnect();
 
-		assertThat(page.getLink()).isSameAs(NULL_LINK);
+		assertThat(isNullLink(page.getLink())).isTrue();
 		assertThat(page.connectButton().isEnabled()).isTrue();
 		assertThat(page.disconnectButton().isEnabled()).isFalse();
 	}

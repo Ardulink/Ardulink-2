@@ -39,6 +39,10 @@ public final class NullLink {
 		super();
 	}
 
+	public static boolean isNullLink(Link link) {
+		return link == NULL_LINK;
+	}
+
 	private static final class SelfReferentialInvocationHandler<T> implements InvocationHandler {
 
 		private final Class<T> proxyType;
