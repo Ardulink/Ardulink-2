@@ -429,7 +429,6 @@ public class Console extends JFrame implements Linkable {
 		} else {
 			connectionListener.reconnected();
 		}
-
 	}
 
 	public Link getLink() {
