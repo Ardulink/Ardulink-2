@@ -17,10 +17,9 @@ package org.ardulink.console;
 
 import static java.awt.EventQueue.invokeLater;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
-import static org.ardulink.console.NullLink.NULL_LINK;
+import static org.ardulink.core.NullLink.NULL_LINK;
 import static org.ardulink.gui.Icons.icon;
 import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
-import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Predicates.attribute;
 import static org.ardulink.util.Streams.getLast;
 import static org.ardulink.util.Throwables.getCauses;
@@ -48,6 +47,8 @@ import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
+import org.ardulink.core.ConnectionBasedLink;
+import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.Link;
 import org.ardulink.gui.AnalogPinStatus;
 import org.ardulink.gui.ConnectionStatus;
@@ -100,6 +101,22 @@ public class Console extends JFrame implements Linkable {
 
 	private JButton btnConnect = connectButton();
 	private JButton btnDisconnect = disconnectButton();
+	private final ConnectionListener connectionListener = new ConnectionListener() {
+
+		@Override
+		public void reconnected() {
+			setEnabled(true);
+			btnConnect.setEnabled(false);
+			btnDisconnect.setEnabled(true);
+		}
+
+		@Override
+		public void connectionLost() {
+			setEnabled(false);
+			btnConnect.setEnabled(true);
+			btnDisconnect.setEnabled(false);
+		}
+	};
 
 	/**
 	 * Launch the application.
@@ -288,9 +305,9 @@ public class Console extends JFrame implements Linkable {
 			}
 		});
 
-		setStates(false);
 		pack();
 		stateStore = new StateStore(contentPane).snapshot().removeStates(allConnectionsPanel, configurationPanel);
+		setLink(NULL_LINK);
 	}
 
 	private JButton connectButton() {
@@ -397,16 +414,21 @@ public class Console extends JFrame implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		this.link = checkNotNull(link, "link must not be null");
+		if (this.link instanceof ConnectionBasedLink) {
+			((ConnectionBasedLink) this.link).removeConnectionListener(connectionListener);
+		}
+		this.link = link;
+		if (this.link instanceof ConnectionBasedLink) {
+			((ConnectionBasedLink) this.link).addConnectionListener(connectionListener);
+		}
 		callLinkables(this.link);
 		stateStore.restore();
-		setStates(this.link != NULL_LINK);
-	}
+		if (this.link == NULL_LINK) {
+			connectionListener.connectionLost();
+		} else {
+			connectionListener.reconnected();
+		}
 
-	private void setStates(boolean connected) {
-		setEnabled(connected);
-		btnConnect.setEnabled(!connected);
-		btnDisconnect.setEnabled(connected);
 	}
 
 	public Link getLink() {

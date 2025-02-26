@@ -15,7 +15,7 @@ limitations under the License.
 
 
 */
-package org.ardulink.console;
+package org.ardulink.core;
 
 import static java.lang.reflect.Proxy.newProxyInstance;
 import static org.ardulink.util.Primitives.findPrimitiveFor;
@@ -23,7 +23,6 @@ import static org.ardulink.util.Primitives.findPrimitiveFor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
-import org.ardulink.core.Link;
 import org.ardulink.util.Primitives;
 
 /**
@@ -63,7 +62,7 @@ public final class NullLink {
 	private static <T> T createNullLink(Class<T> proxyType) {
 		SelfReferentialInvocationHandler<T> invocationHandler = new SelfReferentialInvocationHandler<>(proxyType);
 		T instance = proxyType
-				.cast(newProxyInstance(Console.class.getClassLoader(), new Class[] { proxyType }, invocationHandler));
+				.cast(newProxyInstance(NullLink.class.getClassLoader(), new Class[] { proxyType }, invocationHandler));
 		invocationHandler.proxyInstance = instance;
 		return instance;
 	}
