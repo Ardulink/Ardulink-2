@@ -23,7 +23,8 @@ import static org.ardulink.console.SwingPredicates.isA;
 import static org.ardulink.console.SwingPredicates.labelWithText;
 import static org.ardulink.console.SwingPredicates.withName;
 import static org.ardulink.console.SwingPredicates.withSelectedItem;
-import static org.ardulink.console.SwingSelector.*;
+import static org.ardulink.console.SwingSelector.findComponent;
+import static org.ardulink.console.SwingSelector.tryFindComponent;
 import static org.awaitility.Awaitility.await;
 
 import java.awt.Component;
@@ -122,6 +123,10 @@ public class ConsolePage {
 		return tabWithTitle("Power Panel");
 	}
 
+	public JPanel analogSensorPanel() {
+		return tabWithTitle("Analog Sensor Panel");
+	}
+
 	private JPanel tabWithTitle(String title) {
 		JTabbedPane tabbedPane = findComponent(console, JTabbedPane.class);
 		return range(0, tabbedPane.getTabCount()) //
@@ -131,6 +136,10 @@ public class ConsolePage {
 				.map(JPanel.class::cast) //
 				.orElseThrow(
 						() -> new IllegalStateException(format("No tab with title '%s' found in %s", title, console)));
+	}
+
+	public void showTab(JPanel panel) {
+		findComponent(console, JTabbedPane.class).setSelectedComponent(panel);
 	}
 
 	public JToggleButton digitalSwitch(DigitalPin pin) {
