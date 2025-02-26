@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.ardulink.gui;
 
+import static org.ardulink.core.NullLink.NULL_LINK;
+
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -25,6 +27,7 @@ import javax.swing.JPanel;
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.Link;
+import org.ardulink.core.NullLink;
 
 /**
  * [ardulinktitle] [ardulinkversion] This component listens for connection or
@@ -78,21 +81,21 @@ public class ConnectionStatus extends JPanel implements Linkable {
 	 */
 	public ConnectionStatus() {
 		lblStatelabel = new JLabel();
-		this.connectionListener.connectionLost();
+		connectionListener.connectionLost();
 		add(lblStatelabel);
 	}
 
 	@Override
-	public void setLink(Link newLink) {
-		if (link instanceof AbstractListenerLink) {
-			((AbstractListenerLink) link).removeConnectionListener(connectionListener);
+	public void setLink(Link link) {
+		if (this.link instanceof AbstractListenerLink) {
+			((AbstractListenerLink) this.link).removeConnectionListener(connectionListener);
 		}
-		link = newLink;
-		if (link instanceof AbstractListenerLink) {
-			((AbstractListenerLink) link).addConnectionListener(connectionListener);
+		this.link = link;
+		if (this.link instanceof AbstractListenerLink) {
+			((AbstractListenerLink) this.link).addConnectionListener(connectionListener);
 		}
 
-		if (link == null) {
+		if (this.link == NULL_LINK) {
 			connectionListener.connectionLost();
 		} else {
 			connectionListener.reconnected();

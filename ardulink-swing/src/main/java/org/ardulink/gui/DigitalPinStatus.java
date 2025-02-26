@@ -152,7 +152,7 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 			try {
 				this.link.removeListener(listener);
 			} catch (IOException e) {
-				Throwables.propagate(e);
+				throw Throwables.propagate(e);
 			}
 		}
 		tglbtnSensor.setText(SENSOR_OFF);

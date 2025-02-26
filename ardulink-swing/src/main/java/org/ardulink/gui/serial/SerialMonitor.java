@@ -21,8 +21,6 @@ import static org.ardulink.util.Throwables.propagate;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 
 import javax.swing.JButton;
@@ -40,9 +38,12 @@ import org.ardulink.core.qos.QosLink;
 import org.ardulink.gui.Linkable;
 
 /**
- * [ardulinktitle] [ardulinkversion] This class shows serial incoming messages
- * if the Link is a ConnectionBasedLink project Ardulink
- * http://www.ardulink.org/
+ * [ardulinktitle] [ardulinkversion]
+ * 
+ * This class shows serial incoming messages if the Link is a
+ * ConnectionBasedLink.
+ * 
+ * project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  *
@@ -84,11 +85,11 @@ public class SerialMonitor extends JPanel implements Linkable {
 		messageTextField.setColumns(10);
 
 		JButton sendButton = new JButton("Send");
-		sendButton.addActionListener(e -> {
+		sendButton.addActionListener(__ -> {
 			try {
 				link.getConnection().write((messageTextField.getText() + "\n").getBytes());
-			} catch (IOException e1) {
-				propagate(e1);
+			} catch (IOException ex) {
+				throw propagate(ex);
 			}
 		});
 		sendPanel.add(sendButton, BorderLayout.EAST);
@@ -135,16 +136,11 @@ public class SerialMonitor extends JPanel implements Linkable {
 		add(buttonPanel, BorderLayout.SOUTH);
 
 		JButton clearSentButton = new JButton("Clear Sent");
-		clearSentButton.addActionListener(e -> sentTextArea.setText(""));
+		clearSentButton.addActionListener(__ -> sentTextArea.setText(""));
 		buttonPanel.add(clearSentButton);
 
 		JButton clearReceivedButton = new JButton("Clear Received");
-		clearReceivedButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				receivedTextArea.setText("");
-			}
-		});
+		clearReceivedButton.addActionListener(__ -> receivedTextArea.setText(""));
 		buttonPanel.add(clearReceivedButton);
 	}
 
@@ -152,13 +148,11 @@ public class SerialMonitor extends JPanel implements Linkable {
 	public void setLink(Link link) {
 		if (this.link != null) {
 			this.link.getConnection().removeListener(listener);
-			this.link = null;
 		}
-		if (link == null) {
-			this.link = null;
-		} else if (link instanceof QosLink) {
-			link = ((QosLink) link).getDelegate();
-		} else if (link instanceof ConnectionBasedLink) {
+		link = link instanceof QosLink ? ((QosLink) link).getDelegate() : link;
+
+		this.link = null;
+		if (link instanceof ConnectionBasedLink) {
 			this.link = (ConnectionBasedLink) link;
 			this.link.getConnection().addListener(listener);
 		}
