@@ -27,7 +27,6 @@ import javax.swing.JPanel;
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.Link;
-import org.ardulink.core.NullLink;
 
 /**
  * [ardulinktitle] [ardulinkversion] This component listens for connection or
