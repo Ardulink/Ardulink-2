@@ -16,26 +16,36 @@ limitations under the License.
 package org.ardulink.console;
 
 import static java.lang.String.format;
+import static org.ardulink.console.SwingSelector.findComponent;
 import static org.ardulink.core.NullLink.isNullLink;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
 import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.core.virtual.console.VirtualConnectionLinkFactory.VIRTUAL_CONSOLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
 
 import org.approvaltests.awt.AwtApprovals;
 import org.ardulink.core.Link;
+import org.ardulink.core.Pin;
+import org.ardulink.core.events.EventListener;
+import org.ardulink.util.Throwables;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 
@@ -51,7 +61,21 @@ class ConsoleTest {
 
 	private static final String IS_HEADLESS = "java.awt.GraphicsEnvironment#isHeadless";
 
-	private final Link connectLink = mock(Link.class);
+	private final List<EventListener> eventListeners = new ArrayList<>();
+	private final Link connectLink = createMock();
+
+	private Link createMock() {
+		try {
+			Link link = mock(Link.class);
+			doAnswer(invocation -> {
+				eventListeners.add((EventListener) invocation.getArgument(0));
+				return link;
+			}).when(link).addListener(any(EventListener.class));
+			return link;
+		} catch (IOException e) {
+			throw Throwables.propagate(e);
+		}
+	}
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
@@ -141,8 +165,27 @@ class ConsoleTest {
 		Console console = newConsole();
 		ConsolePage page = new ConsolePage(console);
 		page.useConnection(format("%s://%s", ARDULINK_SCHEME, VIRTUAL_CONSOLE_NAME));
-		repaint(console);
 
+		repaint(console);
+		AwtApprovals.verify(console.getContentPane());
+	}
+
+	@Test
+	@DisabledIf(IS_HEADLESS)
+	void approvalsComponentsAreDisabledAfterDisconnect() {
+		Console console = newConsole();
+		ConsolePage page = new ConsolePage(console);
+		page.useConnection(format("%s://%s", ARDULINK_SCHEME, VIRTUAL_CONSOLE_NAME));
+
+		page.connect();
+		JPanel analogSensorPanel = page.analogSensorPanel();
+		page.showTab(analogSensorPanel);
+
+		findComponent(analogSensorPanel, JToggleButton.class).doClick();
+		eventListeners.forEach(l-> l.stateChanged(analogPinValueChanged(Pin.analogPin(0), 241)));
+		page.disconnect();
+
+		repaint(console);
 		AwtApprovals.verify(console.getContentPane());
 	}
 
