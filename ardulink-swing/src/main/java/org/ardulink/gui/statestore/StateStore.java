@@ -15,9 +15,13 @@ limitations under the License.
  */
 package org.ardulink.gui.statestore;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.ardulink.gui.util.SwingUtilities.componentsStream;
 
 import java.awt.Component;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 import java.lang.ref.SoftReference;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
@@ -30,13 +34,18 @@ import java.util.stream.Stream;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
+
+import org.ardulink.gui.util.SwingUtilities;
+import org.ardulink.util.Throwables;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -51,6 +60,12 @@ import javax.swing.JToggleButton;
  * work recursively.
  */
 public class StateStore {
+
+	@Retention(RUNTIME)
+	@Target(FIELD)
+	public static @interface Restorable {
+
+	}
 
 	private static class Storer<C extends Component, V> {
 
@@ -104,6 +119,7 @@ public class StateStore {
 			new Storer<>(JProgressBar.class, Integer.class, JProgressBar::getValue, JProgressBar::setValue) //
 	);
 
+	private final Function<Component, Stream<Component>> componentStreamer;
 	private final Component component;
 	private final Map<Component, SoftReference<Object>> states = new IdentityHashMap<>();
 
@@ -111,8 +127,32 @@ public class StateStore {
 		return storers.stream().filter(s -> s.canHandle(component)).findFirst();
 	}
 
+	public static Function<Component, Stream<Component>> restorables() {
+		return c -> componentsStream(c).filter(JPanel.class::isInstance).map(JPanel.class::cast)
+				.flatMap(StateStore::restorables);
+	}
+
+	private static Stream<JComponent> restorables(JPanel panel) {
+		return Stream.of(panel.getClass().getDeclaredFields()) //
+				.filter(f -> f.isAnnotationPresent(Restorable.class)) //
+				.filter(f -> JComponent.class.isAssignableFrom(f.getType())) //
+				.map(f -> {
+					f.setAccessible(true);
+					try {
+						return (JComponent) f.get(panel);
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						throw Throwables.propagate(e);
+					}
+				});
+	}
+
 	public StateStore(Component component) {
+		this(component, SwingUtilities::componentsStream);
+	}
+
+	public StateStore(Component component, Function<Component, Stream<Component>> componentStreamer) {
 		this.component = component;
+		this.componentStreamer = componentStreamer;
 	}
 
 	public StateStore removeStates(Component... components) {
@@ -134,7 +174,7 @@ public class StateStore {
 	}
 
 	private StateStore forAllComponents(Component component, BiConsumer<Storer<?, ?>, Component> consumer) {
-		componentsStream(component).forEach(c -> storer(c).ifPresent(s -> consumer.accept(s, c)));
+		componentStreamer.apply(component).forEach(c -> storer(c).ifPresent(s -> consumer.accept(s, c)));
 		return this;
 	}
 
