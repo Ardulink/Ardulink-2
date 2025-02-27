@@ -68,21 +68,21 @@ class ConsoleIT {
 		String connection = "ardulink://serial-jssc";
 		String virtualAvrDevice = "/dev/ttyUSB0";
 
-		ConsolePage page = new ConsolePage(new Console());
-		page.useConnection(connection);
-		forceSelectItem((JComboBox<?>) page.componentWithLabel("port"), virtualAvrDevice);
+		try (ConsolePage page = new ConsolePage(new Console())) {
+			page.useConnection(connection);
+			forceSelectItem((JComboBox<?>) page.componentWithLabel("port"), virtualAvrDevice);
 
-		page.connect();
-		JToggleButton toggle = page.digitalSwitch(digitalPin(12));
-		toggle.doClick(); // on
-		toggle.doClick(); // off
+			page.connect();
+			JToggleButton toggle = page.digitalSwitch(digitalPin(12));
+			toggle.doClick(); // on
+			toggle.doClick(); // off
 
-		JSlider slider = page.analogSlider(analogPin(11));
-		slider.setValue(42);
-		slider.setValue(0);
+			JSlider slider = page.analogSlider(analogPin(11));
+			slider.setValue(42);
+			slider.setValue(0);
 
-		// TODO disconnect fails on jssc
-		page.disconnect();
+			// TODO disconnect fails on jssc
+		}
 	}
 
 }
