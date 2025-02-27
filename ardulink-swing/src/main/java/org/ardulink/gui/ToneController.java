@@ -29,7 +29,6 @@ import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -43,7 +42,6 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 
 import org.ardulink.core.Link;
-import org.ardulink.core.Pin;
 import org.ardulink.core.Tone;
 import org.ardulink.core.Tone.Builder;
 import org.ardulink.gui.facility.IntMinMaxModel;
