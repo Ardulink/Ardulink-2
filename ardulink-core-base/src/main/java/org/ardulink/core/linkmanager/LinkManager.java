@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.linkmanager;
 
 import static java.lang.String.format;
+import static java.lang.reflect.Proxy.newProxyInstance;
 import static java.net.URI.create;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -37,10 +38,12 @@ import static org.ardulink.util.Predicates.attribute;
 import static org.ardulink.util.Primitives.findPrimitiveFor;
 import static org.ardulink.util.Primitives.wrap;
 import static org.ardulink.util.Strings.nullOrEmpty;
+import static org.ardulink.util.Suppliers.memoize;
 import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK14;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationHandler;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -55,6 +58,7 @@ import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.validation.constraints.Max;
@@ -341,6 +345,13 @@ public abstract class LinkManager {
 				return clazz.getPackage().getName() + "." + nls.value();
 			}
 
+			/**
+			 * Returns the {@link ChoiceFor} attribute of this {@link #attribute}.
+			 * 
+			 * @param linkConfig the {@link LinkConfig} to search in
+			 * @return choiceFor this attribute or <code>null</code> if this attribute has
+			 *         no choices.
+			 */
 			private Attribute choicesFor(C linkConfig) {
 				Attribute choiceFor = BeanProperties.builder(linkConfig).using(propertyAnnotated(ChoiceFor.class))
 						.build().getAttribute(attribute.getName());
@@ -354,13 +365,28 @@ public abstract class LinkManager {
 						attribute.getType().getEnumConstants());
 			}
 
+			/**
+			 * Returns all attributes the argument depends on.
+			 * 
+			 * @param choiceFor the choiceFor attribute for which the dependent attributes
+			 *                  should be determined.
+			 * @return list of dependent attributes
+			 */
 			private List<ConfigAttribute> resolveDeps(Attribute choiceFor) {
 				return Optional.ofNullable(choiceFor) //
 						.map(c -> c.getAnnotation(ChoiceFor.class)) //
 						.map(c -> stream(c.dependsOn())) //
 						.orElse(Stream.empty()) //
-						.map(n -> getAttribute(n)) //
+						.map(n -> lazy(ConfigAttribute.class, () -> getAttribute(n))) //
 						.collect(toList());
+			}
+
+			private <X> X lazy(Class<X> clazz, Supplier<X> delegate) {
+				// we must not call getAttribute (which call Map#computeIfAbsent) since we are
+				// ourself within a Map#computeIfAbsent call
+				Supplier<X> memoized = memoize(delegate);
+				return clazz.cast(newProxyInstance(getClass().getClassLoader(), new Class[] { clazz },
+						(InvocationHandler) (__, m, a) -> m.invoke(memoized.get(), a)));
 			}
 
 			@Override
@@ -540,7 +566,6 @@ public abstract class LinkManager {
 		@Override
 		public ConfigAttribute getAttribute(String key) {
 			return cache.computeIfAbsent(key, k -> new ConfigAttributeAdapter<>(linkConfig, beanProperties, k));
-
 		}
 
 		@Override
@@ -642,7 +667,6 @@ public abstract class LinkManager {
 					.map(p -> nullOrEmpty(value) ? p.defaultValue() : p.parse(value)) //
 					.orElse(value);
 		}
-
 
 	};
 
