@@ -15,6 +15,7 @@ limitations under the License.
  */
 package org.ardulink.gui.statestore;
 
+import static java.lang.String.format;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.ardulink.gui.statestore.StateStore.Storer.storer;
@@ -134,7 +135,7 @@ public class StateStore {
 						.of(Introspector.getBeanInfo(componentType).getPropertyDescriptors())
 						.filter(pd -> pd.getName().equals(attribute)).findFirst()
 						.orElseThrow(() -> new IllegalComponentStateException(
-								componentType.getName() + " does not define attribute named " + attribute));
+								format("%s does not define attribute named %s", componentType.getName(), attribute)));
 				Class<V> propertyType = (Class<V>) Primitives.wrap(propertyDescriptor.getPropertyType());
 				Method readMethod = propertyDescriptor.getReadMethod();
 				Method writeMethod = propertyDescriptor.getWriteMethod();
