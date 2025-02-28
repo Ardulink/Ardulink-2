@@ -17,12 +17,19 @@ package org.ardulink.gui.statestore;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static org.ardulink.gui.statestore.StateStore.Storer.storer;
 import static org.ardulink.gui.util.SwingUtilities.componentsStream;
 
 import java.awt.Component;
+import java.awt.IllegalComponentStateException;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -32,7 +39,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -46,6 +52,7 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 
 import org.ardulink.gui.util.SwingUtilities;
+import org.ardulink.util.Primitives;
 import org.ardulink.util.Throwables;
 
 /**
@@ -62,13 +69,10 @@ import org.ardulink.util.Throwables;
  */
 public class StateStore {
 
-	private static final Class<Integer> INTEGER_TYPE = Integer.class;
-	private static final Class<Boolean> BOOLEAN_TYPE = Boolean.class;
-	private static final Class<String> STRING_TYPE = String.class;
-
 	private static final String TEXT = "text";
 	private static final String ICON = "icon";
 	private static final String SELECT = "selected";
+	private static final String SELECTED_ITEM = "selectedItem";
 	private static final String VALUE = "value";
 
 	@Retention(RUNTIME)
@@ -77,7 +81,7 @@ public class StateStore {
 
 	}
 
-	private static class Storer<C extends Component, V> {
+	public static class Storer<C extends Component, V> {
 
 		private final Class<C> componentType;
 		private final String valueName;
@@ -123,21 +127,48 @@ public class StateStore {
 					+ ", restorer=" + restorer + "]";
 		}
 
+		@SuppressWarnings("unchecked")
+		public static <C extends Component, V> Storer<C, V> storer(Class<C> componentType, String attribute) {
+			try {
+				PropertyDescriptor propertyDescriptor = Stream
+						.of(Introspector.getBeanInfo(componentType).getPropertyDescriptors())
+						.filter(pd -> pd.getName().equals(attribute)).findFirst()
+						.orElseThrow(() -> new IllegalComponentStateException(
+								componentType.getName() + " does not define attribute named " + attribute));
+				Class<V> propertyType = (Class<V>) Primitives.wrap(propertyDescriptor.getPropertyType());
+				Method readMethod = propertyDescriptor.getReadMethod();
+				Method writeMethod = propertyDescriptor.getWriteMethod();
+				return new Storer<>(componentType, propertyDescriptor.getName(), propertyType, c -> {
+					try {
+						return (V) readMethod.invoke(c);
+					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+						throw Throwables.propagate(e);
+					}
+				}, (c, v) -> {
+					try {
+						writeMethod.invoke(c, v);
+					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+						throw Throwables.propagate(e);
+					}
+				});
+			} catch (IntrospectionException e) {
+				throw Throwables.propagate(e);
+			}
+		}
+
 	}
 
 	private static final List<Storer<? extends Component, ? extends Object>> storers = Arrays.asList( //
-			new Storer<>(JLabel.class, TEXT, STRING_TYPE, JLabel::getText, JLabel::setText), //
-			new Storer<>(JLabel.class, ICON, Icon.class, JLabel::getIcon, JLabel::setIcon), //
-			new Storer<>(JTextField.class, TEXT, STRING_TYPE, JTextField::getText, JTextField::setText), //
-			new Storer<>(JCheckBox.class, SELECT, BOOLEAN_TYPE, JCheckBox::isSelected, JCheckBox::setSelected), //
-			new Storer<>(JToggleButton.class, SELECT, BOOLEAN_TYPE, JToggleButton::isSelected,
-					JToggleButton::setSelected), //
-			new Storer<>(JRadioButton.class, SELECT, BOOLEAN_TYPE, JRadioButton::isSelected, JRadioButton::setSelected), //
-			new Storer<>(JComboBox.class, SELECT, INTEGER_TYPE, JComboBox::getSelectedIndex,
-					JComboBox::setSelectedIndex), //
-			new Storer<>(JSlider.class, VALUE, INTEGER_TYPE, JSlider::getValue, JSlider::setValue), //
-			new Storer<>(JSpinner.class, VALUE, Object.class, JSpinner::getValue, JSpinner::setValue), //
-			new Storer<>(JProgressBar.class, VALUE, INTEGER_TYPE, JProgressBar::getValue, JProgressBar::setValue) //
+			storer(JLabel.class, TEXT), //
+			storer(JLabel.class, ICON), //
+			storer(JTextField.class, TEXT), //
+			storer(JCheckBox.class, SELECT), //
+			storer(JToggleButton.class, SELECT), //
+			storer(JRadioButton.class, SELECT), //
+			storer(JComboBox.class, SELECTED_ITEM), //
+			storer(JSlider.class, VALUE), //
+			storer(JSpinner.class, VALUE), //
+			storer(JProgressBar.class, VALUE) //
 	);
 
 	private final Function<Component, Stream<Component>> componentStreamer;
