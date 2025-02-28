@@ -90,7 +90,7 @@ public class GenericPanelBuilder implements PanelBuilder {
 		JButton discoverButton = new JButton(loadIcon());
 		discoverButton.setToolTipText("Discover");
 		discoverButton
-				.addActionListener(e -> comboBox.setModel(new DefaultComboBoxModel<>(attribute.getChoiceValues())));
+				.addActionListener(__ -> comboBox.setModel(new DefaultComboBoxModel<>(attribute.getChoiceValues())));
 		return discoverButton;
 	}
 
@@ -112,7 +112,7 @@ public class GenericPanelBuilder implements PanelBuilder {
 
 	private static JComponent createCheckBox(ConfigAttribute attribute) {
 		JCheckBox checkBox = new JCheckBox();
-		checkBox.addActionListener(e -> attribute.setValue(checkBox.isSelected()));
+		checkBox.addActionListener(__ -> attribute.setValue(checkBox.isSelected()));
 		return setState(checkBox, attribute);
 	}
 
@@ -124,11 +124,11 @@ public class GenericPanelBuilder implements PanelBuilder {
 					(list, value, index, isSelected, cellHasFocus) -> delegate.getListCellRendererComponent(list,
 							value == null ? null : resolveText(attribute, value), index, isSelected, cellHasFocus));
 		}
-		jComboBox.addActionListener(e -> attribute.setValue(jComboBox.getSelectedItem()));
+		jComboBox.addActionListener(__ -> attribute.setValue(jComboBox.getSelectedItem()));
 		boolean nullIsAvalidItem = asList(attribute.getChoiceValues()).contains(null);
 		// raise a selection event on model changes
 		jComboBox.addPropertyChangeListener("model",
-				pce -> setSelection(jComboBox, attribute.getValue(), nullIsAvalidItem));
+				__ -> setSelection(jComboBox, attribute.getValue(), nullIsAvalidItem));
 		setSelection(jComboBox, attribute.getValue(), nullIsAvalidItem);
 		return jComboBox;
 	}
@@ -145,7 +145,7 @@ public class GenericPanelBuilder implements PanelBuilder {
 		editor.getFormat().setGroupingUsed(false);
 		spinner.setEditor(editor);
 		spinner.setValue(attribute.getValue());
-		spinner.addChangeListener(e -> attribute.setValue(spinner.getValue()));
+		spinner.addChangeListener(__ -> attribute.setValue(spinner.getValue()));
 		return spinner;
 	}
 
