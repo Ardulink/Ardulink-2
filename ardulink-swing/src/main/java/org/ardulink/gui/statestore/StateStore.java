@@ -24,14 +24,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.lang.ref.SoftReference;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -61,6 +62,15 @@ import org.ardulink.util.Throwables;
  */
 public class StateStore {
 
+	private static final Class<Integer> INTEGER_TYPE = Integer.class;
+	private static final Class<Boolean> BOOLEAN_TYPE = Boolean.class;
+	private static final Class<String> STRING_TYPE = String.class;
+
+	private static final String TEXT = "text";
+	private static final String ICON = "icon";
+	private static final String SELECT = "selected";
+	private static final String VALUE = "value";
+
 	@Retention(RUNTIME)
 	@Target(FIELD)
 	public static @interface Restorable {
@@ -70,12 +80,15 @@ public class StateStore {
 	private static class Storer<C extends Component, V> {
 
 		private final Class<C> componentType;
+		private final String valueName;
 		private final Class<V> valueType;
 		private final Function<C, V> saver;
 		private final BiConsumer<C, V> restorer;
 
-		public Storer(Class<C> componentType, Class<V> valueType, Function<C, V> saver, BiConsumer<C, V> restorer) {
+		public Storer(Class<C> componentType, String valueName, Class<V> valueType, Function<C, V> saver,
+				BiConsumer<C, V> restorer) {
 			this.componentType = componentType;
+			this.valueName = valueName;
 			this.valueType = valueType;
 			this.saver = saver;
 			this.restorer = restorer;
@@ -85,16 +98,21 @@ public class StateStore {
 			return componentType.isInstance(component);
 		}
 
-		public void save(Component component, Map<Component, SoftReference<Object>> map) {
-			map.put(component, new SoftReference<>(saver.apply(componentType.cast(component))));
+		public void save(Component component, Map<Component, SoftReference<Map<String, Object>>> states) {
+			SoftReference<Map<String, Object>> ref = states.computeIfAbsent(component,
+					__ -> new SoftReference<Map<String, Object>>(new HashMap<String, Object>()));
+			Map<String, Object> map = ref.get();
+			if (map != null) {
+				map.put(valueName, saver.apply(componentType.cast(component)));
+			}
 		}
 
-		public void restore(Component component, Map<Component, SoftReference<Object>> map) {
-			SoftReference<Object> ref = map.get(component);
+		public void restore(Component component, Map<Component, SoftReference<Map<String, Object>>> states) {
+			SoftReference<Map<String, Object>> ref = states.get(component);
 			if (ref != null) {
-				Object value = ref.get();
-				if (value != null) {
-					restorer.accept(componentType.cast(component), valueType.cast(value));
+				Map<String, Object> map = ref.get();
+				if (map != null) {
+					restorer.accept(componentType.cast(component), valueType.cast(map.get(valueName)));
 				}
 			}
 		}
@@ -108,23 +126,26 @@ public class StateStore {
 	}
 
 	private static final List<Storer<? extends Component, ? extends Object>> storers = Arrays.asList( //
-			new Storer<>(JLabel.class, String.class, JLabel::getText, JLabel::setText), //
-			new Storer<>(JTextField.class, String.class, JTextField::getText, JTextField::setText), //
-			new Storer<>(JCheckBox.class, Boolean.class, JCheckBox::isSelected, JCheckBox::setSelected), //
-			new Storer<>(JToggleButton.class, Boolean.class, JToggleButton::isSelected, JToggleButton::setSelected), //
-			new Storer<>(JRadioButton.class, Boolean.class, JRadioButton::isSelected, JRadioButton::setSelected), //
-			new Storer<>(JComboBox.class, Integer.class, JComboBox::getSelectedIndex, JComboBox::setSelectedIndex), //
-			new Storer<>(JSlider.class, Integer.class, JSlider::getValue, JSlider::setValue), //
-			new Storer<>(JSpinner.class, Object.class, JSpinner::getValue, JSpinner::setValue), //
-			new Storer<>(JProgressBar.class, Integer.class, JProgressBar::getValue, JProgressBar::setValue) //
+			new Storer<>(JLabel.class, TEXT, STRING_TYPE, JLabel::getText, JLabel::setText), //
+			new Storer<>(JLabel.class, ICON, Icon.class, JLabel::getIcon, JLabel::setIcon), //
+			new Storer<>(JTextField.class, TEXT, STRING_TYPE, JTextField::getText, JTextField::setText), //
+			new Storer<>(JCheckBox.class, SELECT, BOOLEAN_TYPE, JCheckBox::isSelected, JCheckBox::setSelected), //
+			new Storer<>(JToggleButton.class, SELECT, BOOLEAN_TYPE, JToggleButton::isSelected,
+					JToggleButton::setSelected), //
+			new Storer<>(JRadioButton.class, SELECT, BOOLEAN_TYPE, JRadioButton::isSelected, JRadioButton::setSelected), //
+			new Storer<>(JComboBox.class, SELECT, INTEGER_TYPE, JComboBox::getSelectedIndex,
+					JComboBox::setSelectedIndex), //
+			new Storer<>(JSlider.class, VALUE, INTEGER_TYPE, JSlider::getValue, JSlider::setValue), //
+			new Storer<>(JSpinner.class, VALUE, Object.class, JSpinner::getValue, JSpinner::setValue), //
+			new Storer<>(JProgressBar.class, VALUE, INTEGER_TYPE, JProgressBar::getValue, JProgressBar::setValue) //
 	);
 
 	private final Function<Component, Stream<Component>> componentStreamer;
 	private final Component component;
-	private final Map<Component, SoftReference<Object>> states = new IdentityHashMap<>();
+	private final Map<Component, SoftReference<Map<String, Object>>> states = new IdentityHashMap<>();
 
-	private static Optional<Storer<? extends Component, ? extends Object>> storer(Component component) {
-		return storers.stream().filter(s -> s.canHandle(component)).findFirst();
+	private static Stream<Storer<? extends Component, ? extends Object>> storers(Component component) {
+		return storers.stream().filter(s -> s.canHandle(component));
 	}
 
 	public static Function<Component, Stream<Component>> restorables() {
@@ -174,7 +195,7 @@ public class StateStore {
 	}
 
 	private StateStore forAllComponents(Component component, BiConsumer<Storer<?, ?>, Component> consumer) {
-		componentStreamer.apply(component).forEach(c -> storer(c).ifPresent(s -> consumer.accept(s, c)));
+		componentStreamer.apply(component).forEach(c -> storers(c).forEach(s -> consumer.accept(s, c)));
 		return this;
 	}
 
