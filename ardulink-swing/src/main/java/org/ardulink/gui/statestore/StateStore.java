@@ -137,21 +137,23 @@ public class StateStore {
 						.orElseThrow(() -> new IllegalComponentStateException(
 								format("%s does not define attribute named %s", componentType.getName(), attribute)));
 				Class<V> propertyType = (Class<V>) Primitives.wrap(propertyDescriptor.getPropertyType());
-				Method readMethod = propertyDescriptor.getReadMethod();
-				Method writeMethod = propertyDescriptor.getWriteMethod();
-				return new Storer<>(componentType, propertyDescriptor.getName(), propertyType, c -> {
+				Function<C, V> saver = c -> {
+					Method readMethod = propertyDescriptor.getReadMethod();
 					try {
 						return (V) readMethod.invoke(c);
 					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 						throw Throwables.propagate(e);
 					}
-				}, (c, v) -> {
+				};
+				BiConsumer<C, V> restorer = (c, v) -> {
+					Method writeMethod = propertyDescriptor.getWriteMethod();
 					try {
 						writeMethod.invoke(c, v);
 					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 						throw Throwables.propagate(e);
 					}
-				});
+				};
+				return new Storer<>(componentType, propertyDescriptor.getName(), propertyType, saver, restorer);
 			} catch (IntrospectionException e) {
 				throw Throwables.propagate(e);
 			}
