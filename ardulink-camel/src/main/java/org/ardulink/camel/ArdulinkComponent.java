@@ -17,16 +17,16 @@ package org.ardulink.camel;
 
 import static java.lang.Character.toUpperCase;
 import static java.lang.Integer.parseInt;
-import static java.util.Collections.list;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toCollection;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
-import java.util.StringTokenizer;
+import java.util.Set;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.spi.UriEndpoint;
@@ -47,15 +47,16 @@ public class ArdulinkComponent extends DefaultComponent {
 	@Override
 	protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
 		EndpointConfig config = new EndpointConfig().type(remaining)
-				.listenTo(parsePins(getOptional(parameters, "listenTo").orElse(""))).linkParams(parameters);
+				.listenTo(getOptional(parameters, "listenTo").map(ArdulinkComponent::parsePins).orElse(emptySet()))
+				.linkParams(parameters);
 		parameters.clear();
 		ArdulinkEndpoint endpoint = new ArdulinkEndpoint(uri, this, config);
 		setProperties(endpoint, parameters);
 		return endpoint;
 	}
 
-	private Collection<Pin> parsePins(String pinsString) {
-		return list(new StringTokenizer(pinsString, ",")).stream() //
+	private static Set<Pin> parsePins(String pinsString) {
+		return asList(pinsString.split(",")).stream() //
 				.map(String::valueOf) //
 				.map(String::trim) //
 				.map(ArdulinkComponent::toPin) //
@@ -75,8 +76,8 @@ public class ArdulinkComponent extends DefaultComponent {
 		throw new IllegalStateException("Cannot parse " + pin + " as pin");
 	}
 
-	private Optional<String> getOptional(Map<String, Object> parameters, String key) {
-		return parameters.containsKey(key) ? Optional.of(String.valueOf(parameters.remove(key))) : Optional.empty();
+	private static Optional<String> getOptional(Map<String, Object> parameters, String key) {
+		return Optional.ofNullable(parameters.remove(key)).map(String::valueOf);
 	}
 
 }

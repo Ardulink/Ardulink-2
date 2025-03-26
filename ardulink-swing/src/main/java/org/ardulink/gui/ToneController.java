@@ -51,37 +51,38 @@ public class ToneController extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = 1754259889096759199L;
 
+	private static final String TONE_BUTTON_ON_TEXT = "On";
+	private static final String TONE_BUTTON_OFF_TEXT = "Off";
+
 	private transient Link link;
 
-	private JSpinner frequencySpinner;
-	private JToggleButton toneButton;
-	private JPanel frequencyPanel;
-	private JLabel frequencyLabel;
-	private JPanel configPanel;
-	private JPanel durationPanel;
-	private JLabel durationLabel;
-	private JSpinner durationSpinner;
+	private final JSpinner frequencySpinner;
+	private final JToggleButton toneButton;
+	private final JPanel frequencyPanel;
+	private final JLabel frequencyLabel;
+	private final JPanel configPanel;
+	private final JPanel durationPanel;
+	private final JLabel durationLabel;
+	private final JSpinner durationSpinner;
 
-	private String toneButtonOnText = "On";
-	private String toneButtonOffText = "Off";
-	private JCheckBox durationCheckBox;
-	private IntMinMaxModel pinComboBoxModel;
-	private JLabel pinLabel;
-	private JPanel pinPanel;
+	private final JCheckBox durationCheckBox;
+	private final IntMinMaxModel pinComboBoxModel;
+	private final JLabel pinLabel;
+	private final JPanel pinPanel;
 
 	/**
-	 * Create the valuePanelOff.
+	 * Create the ToneController.
 	 */
 	public ToneController() {
-		setLayout(new BorderLayout(0, 0));
+		setLayout(new BorderLayout());
 
 		configPanel = new JPanel();
 		add(configPanel, BorderLayout.NORTH);
 		configPanel.setLayout(new BoxLayout(configPanel, BoxLayout.Y_AXIS));
 
-		pinPanel = new JPanel();
-		FlowLayout flowLayout = (FlowLayout) pinPanel.getLayout();
+		FlowLayout flowLayout = new FlowLayout();
 		flowLayout.setAlignment(FlowLayout.LEFT);
+		pinPanel = new JPanel(flowLayout);
 		configPanel.add(pinPanel);
 
 		pinLabel = new JLabel("Pin:");
@@ -89,8 +90,7 @@ public class ToneController extends JPanel implements Linkable {
 		pinLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
 
 		pinComboBoxModel = new IntMinMaxModel(0, 40);
-		JComboBox<Integer> pinComboBox = new JComboBox<>(pinComboBoxModel);
-		pinPanel.add(pinComboBox);
+		pinPanel.add(new JComboBox<>(pinComboBoxModel));
 
 		frequencyPanel = new JPanel();
 		configPanel.add(frequencyPanel);
@@ -122,38 +122,37 @@ public class ToneController extends JPanel implements Linkable {
 
 		durationCheckBox = new JCheckBox("Duration enabled");
 		durationCheckBox.setSelected(true);
-		durationCheckBox.addActionListener(e -> {
-			durationLabel.setEnabled(durationCheckBox.isSelected());
-			durationSpinner.setEnabled(durationCheckBox.isSelected());
+		durationCheckBox.addActionListener(__ -> {
+			boolean isCbSelected = durationCheckBox.isSelected();
+			durationLabel.setEnabled(isCbSelected);
+			durationSpinner.setEnabled(isCbSelected);
 		});
 		durationPanel.add(durationCheckBox);
 
-		toneButton = new JToggleButton("Off");
-		toneButton.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				Integer pin = pinComboBoxModel.getSelectedItem();
-				if (pin != null) {
-					try {
-						if (e.getStateChange() == ItemEvent.SELECTED) {
-							Builder tone = Tone.forPin(analogPin(pin)).withHertz((int) frequencySpinner.getValue());
-							link.sendTone(durationCheckBox.isSelected() //
-									? tone.withDuration((int) durationSpinner.getValue(), MILLISECONDS) //
-									: tone.endless());
-							updateToneButtonText();
-						} else if (e.getStateChange() == ItemEvent.DESELECTED) {
-							link.sendNoTone(analogPin(pin));
-							updateToneButtonText();
-						}
-					} catch (IOException ex) {
-						throw Throwables.propagate(ex);
+		toneButton = new JToggleButton(TONE_BUTTON_OFF_TEXT);
+		toneButton.addItemListener(itemListener());
+		add(toneButton);
+	}
+
+	private ItemListener itemListener() {
+		return e -> {
+			Integer pin = pinComboBoxModel.getSelectedItem();
+			if (pin != null) {
+				try {
+					if (e.getStateChange() == ItemEvent.SELECTED) {
+						Builder tone = Tone.forPin(analogPin(pin)).withHertz((int) frequencySpinner.getValue());
+						link.sendTone(durationCheckBox.isSelected() //
+								? tone.withDuration((int) durationSpinner.getValue(), MILLISECONDS) //
+								: tone.endless());
+					} else if (e.getStateChange() == ItemEvent.DESELECTED) {
+						link.sendNoTone(analogPin(pin));
 					}
+					toneButton.setText(toneButton.isSelected() ? TONE_BUTTON_ON_TEXT : TONE_BUTTON_OFF_TEXT);
+				} catch (IOException ex) {
+					throw Throwables.propagate(ex);
 				}
 			}
-		});
-
-		add(toneButton);
-
+		};
 	}
 
 	@Override
@@ -171,7 +170,7 @@ public class ToneController extends JPanel implements Linkable {
 	/**
 	 * Set the string valueLabelOn for value parameter
 	 * 
-	 * @param valueLabelOn
+	 * @param valueLabel
 	 */
 	public void setValueLabelOn(String valueLabel) {
 		this.frequencyLabel.setText(valueLabel);
@@ -187,7 +186,7 @@ public class ToneController extends JPanel implements Linkable {
 	/**
 	 * Set the string valueLabelOff for value parameter
 	 * 
-	 * @param valueLabelOn
+	 * @param valueLabel
 	 */
 	public void setValueLabelOff(String valueLabel) {
 		this.durationLabel.setText(valueLabel);
@@ -196,7 +195,7 @@ public class ToneController extends JPanel implements Linkable {
 	/**
 	 * Set the frequency to be sent
 	 * 
-	 * @param t
+	 * @param frequency
 	 */
 	public void setFrequency(int frequency) {
 		frequencySpinner.setValue(frequency);
@@ -212,7 +211,7 @@ public class ToneController extends JPanel implements Linkable {
 	/**
 	 * Set the duration to be sent
 	 * 
-	 * @param t
+	 * @param duration
 	 */
 	public void setDuration(int duration) {
 		durationSpinner.setValue(duration);
@@ -251,38 +250,10 @@ public class ToneController extends JPanel implements Linkable {
 	/**
 	 * Set duration visibility
 	 * 
-	 * @param aFlag
+	 * @param visible
 	 */
-	public void setDurationVisible(boolean aFlag) {
-		durationPanel.setVisible(aFlag);
-	}
-
-	/**
-	 * Set button's text (ON state)
-	 * 
-	 * @param text
-	 */
-	public void setButtonTextOn(String text) {
-		toneButtonOnText = text;
-		updateToneButtonText();
-	}
-
-	/**
-	 * Set button's text (OFF state)
-	 * 
-	 * @param text
-	 */
-	public void setButtonTextOff(String text) {
-		toneButtonOffText = text;
-		updateToneButtonText();
-	}
-
-	private void updateToneButtonText() {
-		if (toneButton.isSelected()) {
-			toneButton.setText(toneButtonOnText);
-		} else {
-			toneButton.setText(toneButtonOffText);
-		}
+	public void setDurationVisible(boolean visible) {
+		durationPanel.setVisible(visible);
 	}
 
 	public void setIcon(Icon defaultIcon) {
@@ -317,22 +288,18 @@ public class ToneController extends JPanel implements Linkable {
 		toneButton.setIconTextGap(iconTextGap);
 	}
 
-	public void setRolloverEnabled(boolean b) {
-		toneButton.setRolloverEnabled(b);
+	public void setRolloverEnabled(boolean enabled) {
+		toneButton.setRolloverEnabled(enabled);
 	}
 
 	@Override
 	public void setForeground(Color fg) {
-		if (toneButton != null) {
-			toneButton.setForeground(fg);
-		}
+		toneButton.setForeground(fg);
 	}
 
 	@Override
 	public void setBackground(Color bg) {
-		if (toneButton != null) {
-			toneButton.setBackground(bg);
-		}
+		toneButton.setBackground(bg);
 	}
 
 }
