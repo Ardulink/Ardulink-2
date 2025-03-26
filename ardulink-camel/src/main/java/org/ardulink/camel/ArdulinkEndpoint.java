@@ -1,5 +1,6 @@
 package org.ardulink.camel;
 
+import static java.lang.String.format;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.io.IOException;
@@ -37,8 +38,10 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements MultipleConsume
 
 	private Link createLink() {
 		try {
-			return Links.getLink(appendParams("ardulink://" + checkNotNull(config.getType(), "type must not be null"),
-					config.getTypeParams()));
+			String type = checkNotNull(config.getType(), "type must not be null");
+			String url = format("ardulink://%s", type);
+			Map<String, Object> typeParams = config.getTypeParams();
+			return Links.getLink(typeParams.isEmpty() ? url : url + "?" + joiner.join(typeParams));
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
@@ -47,10 +50,6 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements MultipleConsume
 	@Override
 	public Producer createProducer() throws Exception {
 		return new ArdulinkProducer(this, this.link);
-	}
-
-	private static String appendParams(String base, Map<String, Object> typeParams) {
-		return typeParams.isEmpty() ? base : base + "?" + joiner.join(typeParams);
 	}
 
 	@Override
@@ -66,10 +65,6 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements MultipleConsume
 	@Override
 	public boolean isMultipleConsumersSupported() {
 		return true;
-	}
-
-	public Link getLink() {
-		return link;
 	}
 
 	@Override
