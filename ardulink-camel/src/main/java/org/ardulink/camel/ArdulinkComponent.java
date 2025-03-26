@@ -17,11 +17,13 @@ package org.ardulink.camel;
 
 import static java.lang.Character.toUpperCase;
 import static java.lang.Integer.parseInt;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toCollection;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.util.Preconditions.checkState;
 
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -63,16 +65,18 @@ public class ArdulinkComponent extends DefaultComponent {
 	}
 
 	private static Pin toPin(String pin) {
-		if (pin.length() >= 2) {
-			char pinType = toUpperCase(pin.charAt(0));
-			int num = parseInt(pin.substring(1));
-			if (pinType == 'A') {
-				return analogPin(num);
-			} else if (pinType == 'D') {
-				return digitalPin(num);
-			}
+		checkState(pin.length() >= 2, "Pin %s has to contain at least one character followed by one ore more digits",
+				pin);
+		char pinType = toUpperCase(pin.charAt(0));
+		int num = parseInt(pin.substring(1));
+		switch (pinType) {
+		case 'A':
+			return analogPin(num);
+		case 'D':
+			return digitalPin(num);
+		default:
+			throw new IllegalStateException(format("Pin type of pin %s not 'A' nor 'D'", pin));
 		}
-		throw new IllegalStateException("Cannot parse " + pin + " as pin");
 	}
 
 	private static Optional<String> popStringValue(Map<String, Object> parameters, String key) {
