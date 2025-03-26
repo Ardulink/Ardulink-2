@@ -46,9 +46,8 @@ public class ArdulinkComponent extends DefaultComponent {
 
 	@Override
 	protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
-		EndpointConfig config = new EndpointConfig().type(remaining)
-				.listenTo(getOptional(parameters, "listenTo").map(ArdulinkComponent::parsePins).orElse(emptySet()))
-				.linkParams(parameters);
+		Set<Pin> pins = popStringValue(parameters, "listenTo").map(ArdulinkComponent::parsePins).orElse(emptySet());
+		EndpointConfig config = new EndpointConfig().type(remaining).listenTo(pins).linkParams(parameters);
 		parameters.clear();
 		ArdulinkEndpoint endpoint = new ArdulinkEndpoint(uri, this, config);
 		setProperties(endpoint, parameters);
@@ -76,7 +75,7 @@ public class ArdulinkComponent extends DefaultComponent {
 		throw new IllegalStateException("Cannot parse " + pin + " as pin");
 	}
 
-	private static Optional<String> getOptional(Map<String, Object> parameters, String key) {
+	private static Optional<String> popStringValue(Map<String, Object> parameters, String key) {
 		return Optional.ofNullable(parameters.remove(key)).map(String::valueOf);
 	}
 
