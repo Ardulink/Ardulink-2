@@ -16,7 +16,6 @@ limitations under the License.
 package org.ardulink.camel;
 
 import static java.lang.Character.toUpperCase;
-import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
@@ -24,6 +23,7 @@ import static java.util.stream.Collectors.toCollection;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Primitives.tryParseAs;
 
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -68,12 +68,14 @@ public class ArdulinkComponent extends DefaultComponent {
 		checkState(pin.length() >= 2, "Pin %s has to contain at least one character followed by one ore more digits",
 				pin);
 		char pinType = toUpperCase(pin.charAt(0));
-		int num = parseInt(pin.substring(1));
+		String pinNumString = pin.substring(1);
+		int pinNum = tryParseAs(Integer.class, pinNumString).orElseThrow(
+				() -> new IllegalStateException(format("Cannot parse %s of %s as Integer", pinNumString, pin)));
 		switch (pinType) {
 		case 'A':
-			return analogPin(num);
+			return analogPin(pinNum);
 		case 'D':
-			return digitalPin(num);
+			return digitalPin(pinNum);
 		default:
 			throw new IllegalStateException(format("Pin type of pin %s not 'A' nor 'D'", pin));
 		}
