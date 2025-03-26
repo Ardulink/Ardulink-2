@@ -220,17 +220,19 @@ class ArdulinkComponentTest {
 
 	@Test
 	void canSetLinkParameters() throws Throwable {
-		String a = "foo";
-		TimeUnit b = HOURS;
+		String aValue = "foo";
+		TimeUnit bValue = HOURS;
 		String name = "factoryName-" + randomUUID();
 
 		TestLinkConfig config = new TestLinkConfig();
 		LinkFactory<TestLinkConfig> linkFactory = new TestLinkFactory(name, newArrayList(config).iterator());
-		withRegistered(linkFactory)
-				.execute(() -> context = camelContext(format("ardulink://%s?a=%s&b=%s", name, a, b), mockUri));
+		withRegistered(linkFactory).execute(
+				() -> context = camelContext(format("ardulink://%s?a=%s&b=%s", name, aValue, bValue), mockUri));
 
-		assertThat(config.a).isEqualTo(a);
-		assertThat(config.b).isEqualTo(b);
+		assertAll( //
+				() -> assertThat(config.a).isEqualTo(aValue), //
+				() -> assertThat(config.b).isEqualTo(bValue) //
+		);
 	}
 
 }
