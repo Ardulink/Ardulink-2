@@ -265,6 +265,7 @@ public class MqttLink extends AbstractListenerLink {
 			deregisterAllEventListeners();
 			if (this.mqttClient.isConnected()) {
 				this.mqttClient.disconnect();
+				this.mqttClient.close();
 			}
 			super.close();
 		} catch (Exception e) {
