@@ -15,7 +15,7 @@ import org.ardulink.core.Pin;
 import org.ardulink.mqtt.MqttCamelRouteBuilder;
 import org.ardulink.mqtt.MqttCamelRouteBuilder.CompactStrategy;
 import org.ardulink.mqtt.Topics;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.Test;
 
 class AggregateThrottleTest {
@@ -25,12 +25,8 @@ class AggregateThrottleTest {
 	private static final String IN = "direct:in";
 	private static final String OUT = "mock:result";
 
+	@AutoClose("stop")
 	private CamelContext context;
-
-	@AfterEach
-	void testDown() throws Exception {
-		context.stop();
-	}
 
 	@Test
 	void doesAggregateAnalogsUsingLastAndKeepsDigitals() throws Exception {

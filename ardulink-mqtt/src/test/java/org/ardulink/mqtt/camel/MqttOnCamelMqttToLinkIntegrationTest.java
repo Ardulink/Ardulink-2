@@ -1,6 +1,5 @@
 package org.ardulink.mqtt.camel;
 
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.apache.camel.builder.AdviceWith.adviceWith;
 import static org.ardulink.core.Pin.analogPin;
@@ -34,7 +33,7 @@ import org.ardulink.mqtt.Topics;
 import org.ardulink.mqtt.util.AnotherMqttClient;
 import org.ardulink.mqtt.util.AnotherMqttClient.Builder;
 import org.ardulink.util.Throwables;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -63,10 +62,13 @@ class MqttOnCamelMqttToLinkIntegrationTest {
 
 	private static final String TOPIC = "any/topic-" + System.currentTimeMillis();
 
+	@AutoClose
 	private MqttBroker broker;
+	@AutoClose
 	private AnotherMqttClient mqttClient;
 	private Topics topics;
 
+	@AutoClose("stop")
 	private CamelContext context;
 
 	private static List<TestConfig> data() {
@@ -89,13 +91,6 @@ class MqttOnCamelMqttToLinkIntegrationTest {
 
 	private int brokerPort() {
 		return this.broker.getPort();
-	}
-
-	@AfterEach
-	void tearDown() throws Exception {
-		mqttClient.close();
-		ofNullable(context).ifPresent(CamelContext::stop);
-		broker.close();
 	}
 
 	@ParameterizedTest(name = "{index} {0}")

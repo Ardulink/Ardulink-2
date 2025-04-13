@@ -55,6 +55,7 @@ import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ExpectedToFail;
@@ -72,7 +73,9 @@ class ArdulinkComponentTest {
 	String in = "direct:in";
 
 	String mockUri;
+	@AutoClose
 	Link link;
+	@AutoClose("stop")
 	CamelContext context;
 
 	@BeforeEach
@@ -80,12 +83,6 @@ class ArdulinkComponentTest {
 		this.mockUri = mockUri;
 		this.context = camelContext(in, mockUri);
 		this.link = Links.getLink(mockUri);
-	}
-
-	@AfterEach
-	void tearDown() throws Exception {
-		this.link.close();
-		this.context.stop();
 	}
 
 	@Test

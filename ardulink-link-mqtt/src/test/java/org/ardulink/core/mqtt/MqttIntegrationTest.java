@@ -87,6 +87,7 @@ class MqttIntegrationTest {
 	@RegisterExtension
 	AnotherMqttClient mqttClient = newClient(TOPIC, broker.port());
 
+	// TODO why does @AutoClose not work here?
 	Link link;
 
 	String messageFormat;
