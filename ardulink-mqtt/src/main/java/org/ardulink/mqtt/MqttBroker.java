@@ -59,6 +59,10 @@ public class MqttBroker implements Closeable {
 		private Integer port;
 		private boolean ssl;
 
+		private Builder() {
+			super();
+		}
+
 		public Builder host(String host) {
 			this.host = host;
 			return this;
