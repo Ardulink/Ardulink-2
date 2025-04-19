@@ -16,6 +16,9 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 import java.util.Collection;
 
 /**
@@ -38,6 +41,10 @@ public final class Integers {
 
 	public static int sum(Collection<Integer> values) {
 		return values.stream().mapToInt(Integer::intValue).sum();
+	}
+
+	public static int constrain(int value, int min, int max) {
+		return max(min(value, max), min);
 	}
 
 }
