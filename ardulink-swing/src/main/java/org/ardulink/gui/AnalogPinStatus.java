@@ -17,9 +17,8 @@ package org.ardulink.gui;
 
 import static java.awt.event.ItemEvent.DESELECTED;
 import static java.awt.event.ItemEvent.SELECTED;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.util.Integers.constrain;
 
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -251,7 +250,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	}
 
 	public void setValue(int value) {
-		valueLabel.setText(String.valueOf(max(getMinValue(), min(value, getMaxValue()))));
+		valueLabel.setText(String.valueOf(constrain(value, getMinValue(), getMaxValue())));
 	}
 
 	public int getMinValue() {

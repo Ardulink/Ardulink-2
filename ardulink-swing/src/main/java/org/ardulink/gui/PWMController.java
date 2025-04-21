@@ -18,9 +18,8 @@ limitations under the License.
 
 package org.ardulink.gui;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.util.Integers.constrain;
 
 import java.awt.ComponentOrientation;
 import java.awt.Cursor;
@@ -279,7 +278,7 @@ public class PWMController extends JPanel implements Linkable {
 	public void setValue(int value) {
 		int maximum = maxValueComboBoxModel.getSelectedItem().intValue();
 		int minimum = minValueComboBoxModel.getSelectedItem().intValue();
-		valueComboBoxModel.setSelectedItem(max(min(value, maximum), minimum));
+		valueComboBoxModel.setSelectedItem(constrain(value, minimum, maximum));
 	}
 
 }
