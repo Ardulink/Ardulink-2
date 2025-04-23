@@ -150,11 +150,11 @@ public class Console extends JFrame implements Linkable {
 					Throwable rootCause = rootCauseWithMessage(throwable);
 					JOptionPane.showMessageDialog(console,
 							rootCause.getClass().getName() + ": " + rootCause.getMessage(), "Error", ERROR_MESSAGE);
-				} catch (Throwable t2) {
+				} catch (Throwable throwable2) {
 					/*
 					 * don't let the Throwable get thrown out, will cause infinite looping!
 					 */
-					logger.error("Exception in ExceptionHandler", t2);
+					logger.error("Exception in ExceptionHandler", throwable2);
 				}
 			}
 
