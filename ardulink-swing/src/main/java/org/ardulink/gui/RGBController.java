@@ -94,7 +94,7 @@ public class RGBController extends JPanel implements Linkable {
 			}
 			colorTextFieldDocumentListener.setEnabled(false);
 			try {
-				int value = event.getPwmValue();
+				int value = event.pwmValue();
 				Color color = colorMaker.apply(coloredPanel.getBackground(),
 						chckbxInverted.isSelected() ? invert(value) : value);
 				coloredPanel.setBackground(color);

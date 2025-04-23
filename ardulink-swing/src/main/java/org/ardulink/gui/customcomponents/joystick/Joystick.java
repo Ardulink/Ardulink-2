@@ -23,7 +23,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
@@ -40,6 +39,7 @@ import javax.swing.SwingUtilities;
 import org.ardulink.core.Link;
 import org.ardulink.gui.Linkable;
 import org.ardulink.gui.event.PositionEvent;
+import org.ardulink.gui.event.PositionEvent.Point;
 import org.ardulink.gui.event.PositionListener;
 import org.ardulink.util.Throwables;
 
@@ -56,26 +56,26 @@ public class Joystick extends JPanel implements Linkable {
 	private final List<PositionListener> positionListeners = new ArrayList<>();
 	private String id = "none";
 	
-	// TODO rendere parametrico il border size e trasformare questo in un valore di defalut
+	// TODO Make the border size parametric and turn this into a default value
 	private static final int BORDER_SIZE = 40;
 	
 	private static final long serialVersionUID = 3725139510642524282L;
-	//Maximum value for full horiz or vert position where centered is 0:
+	// Maximum value for full horizontal or vertical position where centered is 0:
     private int joyOutputRange;
-    private float joySize;     //joystick icon size
+    private float joySize; // Joystick icon size
     private float joyWidth;
     private float joyHeight;
-    private float joyCenterX;  //Joystick displayed Center
-    private float joyCenterY;  //Joystick displayed Center
+    private float joyCenterX; // Joystick displayed Center
+    private float joyCenterY; // Joystick displayed Center
 
-    private float curJoyAngle;    //Current joystick angle
-    private float curJoySize;     //Current joystick size
+    private float curJoyAngle; // Current joystick angle
+    private float curJoySize;  // Current joystick size
     private boolean isMouseTracking;
     private boolean leftMouseButton;
     private int mouseX;
     private int mouseY;
     private transient Stroke lineStroke = new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-    private final Point position;
+    private Point position = new Point(0, 0);
     
     public Joystick() {
     	this(255, 128);
@@ -83,24 +83,23 @@ public class Joystick extends JPanel implements Linkable {
 
     public Joystick(int joyOutputRange, int joySize) {
         this.joyOutputRange = joyOutputRange;
-        this.position = new Point();
         setJoySize(joySize);
 
         MouseAdapter mouseAdapter = new MouseAdapter() {
 
             @Override
-            public void mousePressed(MouseEvent e) {
-                leftMouseButton = SwingUtilities.isLeftMouseButton(e);
-                mouseCheck(e);
+            public void mousePressed(MouseEvent event) {
+                leftMouseButton = SwingUtilities.isLeftMouseButton(event);
+                mouseCheck(event);
             }
 
 			@Override
-			public void mouseDragged(MouseEvent e) {
-				mousePressed(e);
+			public void mouseDragged(MouseEvent event) {
+				mousePressed(event);
 			}
 
 			@Override
-			public void mouseReleased(MouseEvent e) {
+			public void mouseReleased(MouseEvent __) {
 				mouseRestore();
 			}
             
@@ -153,10 +152,11 @@ public class Joystick extends JPanel implements Linkable {
         if (curJoySize > joySize) {
             curJoySize = joySize;
         }
-        position.x = (int) (joyOutputRange * (Math.cos(curJoyAngle)
+        int x = (int) (joyOutputRange * (Math.cos(curJoyAngle)
                 * curJoySize) / joySize);
-        position.y = (int) (joyOutputRange * (-(Math.sin(curJoyAngle)
+        int y = (int) (joyOutputRange * (-(Math.sin(curJoyAngle)
                 * curJoySize) / joySize));
+        this.position = new Point(x, y);
 		repaint();
 		callPositionListeners();
 		sendMessage();
@@ -164,8 +164,7 @@ public class Joystick extends JPanel implements Linkable {
     
 	private void mouseRestore() {
 		leftMouseButton = false;
-		position.x = 0;
-		position.y = 0;
+		position = new Point(0, 0);
 		mouseX = 0;
 		mouseY = 0;
 		curJoyAngle = 0;
@@ -176,7 +175,7 @@ public class Joystick extends JPanel implements Linkable {
     }
 
     private void callPositionListeners() {
-    	PositionEvent event = new PositionEvent(new Point(position), joyOutputRange, id);
+    	PositionEvent event = new PositionEvent(new Point(position.x, position.y), joyOutputRange, id);
     	for (PositionListener positionListener : positionListeners) {
 			positionListener.positionChanged(event);
 		}

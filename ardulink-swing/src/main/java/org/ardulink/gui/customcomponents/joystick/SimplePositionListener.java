@@ -14,20 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-*/
+ */
 
 package org.ardulink.gui.customcomponents.joystick;
 
-import java.awt.Color;
+import static java.awt.Color.RED;
+import static java.awt.RenderingHints.KEY_ANTIALIASING;
+import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
+import static java.lang.Math.min;
+
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.RenderingHints;
 
 import javax.swing.JPanel;
 
 import org.ardulink.gui.event.PositionEvent;
+import org.ardulink.gui.event.PositionEvent.Point;
 import org.ardulink.gui.event.PositionListener;
 
 /**
@@ -40,33 +43,32 @@ import org.ardulink.gui.event.PositionListener;
 public class SimplePositionListener extends JPanel implements PositionListener {
 
 	private static final long serialVersionUID = -315437517373209646L;
+
 	private Point position;
-	private int internalMaxSize = 1;
-	
+	private int internalMaxSize;
+
 	private static final int POINT_DIM = 15;
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D g2 = (Graphics2D) g;
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(Color.RED);
-        int x = 0;
-        int y = 0;
-        Dimension dimension = getSize();
-        int dim = Math.min(dimension.width, dimension.height) / 2;
-        if(position != null) {
-        	x = position.x * dim / internalMaxSize;
-        	y = position.y * dim / internalMaxSize;
-        }
-        g2.fillOval((dimension.width / 2) + x - (POINT_DIM / 2), (dimension.height / 2) - y - (POINT_DIM / 2), POINT_DIM, POINT_DIM);
-    }
+	@Override
+	protected void paintComponent(Graphics graphics) {
+		super.paintComponent(graphics);
+		Graphics2D g2 = (Graphics2D) graphics;
+		g2.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON);
+		g2.setColor(RED);
+		Dimension dimension = getSize();
+		int dim = min(dimension.width, dimension.height) / 2;
+
+		boolean canCalc = position != null && internalMaxSize != 0;
+		int x = canCalc ? position.x * dim / internalMaxSize : 0;
+		int y = canCalc ? position.y * dim / internalMaxSize : 0;
+		g2.fillOval((dimension.width / 2) + x - (POINT_DIM / 2), (dimension.height / 2) - y - (POINT_DIM / 2),
+				POINT_DIM, POINT_DIM);
+	}
 
 	@Override
-	public void positionChanged(PositionEvent e) {
-		position = e.getPosition();
-		internalMaxSize = e.getMaxSize();
+	public void positionChanged(PositionEvent event) {
+		position = event.position();
+		internalMaxSize = event.maxSize();
 		repaint();
 	}
 }

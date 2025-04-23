@@ -32,6 +32,7 @@ import javax.swing.SpinnerNumberModel;
 import org.ardulink.core.Link;
 import org.ardulink.gui.Linkable;
 import org.ardulink.gui.event.PositionEvent;
+import org.ardulink.gui.event.PositionEvent.Point;
 import org.ardulink.gui.event.PositionListener;
 
 /**
@@ -108,9 +109,10 @@ public class ModifiableJoystick extends JPanel implements Linkable, PositionList
 	}
 
 	@Override
-	public void positionChanged(PositionEvent e) {
-		horizontalLabel.setText("Horizontal: " + e.getPosition().x);
-		verticalLabel.setText("Vertical: " + e.getPosition().y);
+	public void positionChanged(PositionEvent event) {
+		Point position = event.position();
+		horizontalLabel.setText("Horizontal: " + position.x);
+		verticalLabel.setText("Vertical: " + position.y);
 	}
 	
 	public void setId(String id) {

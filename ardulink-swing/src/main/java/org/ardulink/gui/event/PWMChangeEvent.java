@@ -18,7 +18,10 @@ limitations under the License.
 
 package org.ardulink.gui.event;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
 import org.ardulink.gui.PWMController;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion] It implements an event from PWMController
@@ -29,6 +32,7 @@ import org.ardulink.gui.PWMController;
  * @see PWMController
  * @see PWMControllerListener
  */
+@LapsedWith(value = JDK14, module = "records")
 public class PWMChangeEvent {
 
 	private final int pwmValue;
@@ -37,7 +41,7 @@ public class PWMChangeEvent {
 		this.pwmValue = pwmValue;
 	}
 
-	public int getPwmValue() {
+	public int pwmValue() {
 		return pwmValue;
 	}
 

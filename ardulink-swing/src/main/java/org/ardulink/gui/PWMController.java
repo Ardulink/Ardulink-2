@@ -28,6 +28,7 @@ import java.awt.Font;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -73,7 +74,7 @@ public class PWMController extends JPanel implements Linkable {
 	private JComboBox<Integer> pinComboBox;
 	private JLabel lblPowerPinController;
 
-	private transient List<PWMControllerListener> pwmControllerListeners = new ArrayList<>();
+	private transient List<PWMControllerListener> pwmControllerListeners = new CopyOnWriteArrayList<>();
 
 	private transient Link link;
 

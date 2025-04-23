@@ -26,6 +26,6 @@ package org.ardulink.gui.event;
  */
 public interface PositionListener {
 	
-	void positionChanged(PositionEvent e);
+	void positionChanged(PositionEvent positionEvent);
 
 }

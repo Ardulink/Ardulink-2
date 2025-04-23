@@ -18,36 +18,48 @@ limitations under the License.
 
 package org.ardulink.gui.event;
 
-import java.awt.Point;
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
+import org.ardulink.util.anno.LapsedWith;
 
 /**
- * [ardulinktitle] [ardulinkversion]
-* project Ardulink http://www.ardulink.org/
+ * [ardulinktitle] [ardulinkversion] project Ardulink http://www.ardulink.org/
  * 
  * [adsense]
  */
+@LapsedWith(value = JDK14, module = "records")
 public class PositionEvent {
-	
-	private String id;
-	private Point position;
-	private int maxSize;
+
+	@LapsedWith(value = JDK14, module = "records")
+	public static class Point {
+		public final int x, y;
+
+		public Point(int x, int y) {
+			this.x = x;
+			this.y = y;
+		}
+
+	}
+
+	private final Point position;
+	private final int maxSize;
+	private final String id;
 
 	public PositionEvent(Point position, int maxSize, String id) {
-		super();
 		this.position = position;
 		this.maxSize = maxSize;
 		this.id = id;
 	}
 
-	public Point getPosition() {
+	public Point position() {
 		return position;
 	}
 
-	public int getMaxSize() {
+	public int maxSize() {
 		return maxSize;
 	}
 
-	public String getId() {
+	public String id() {
 		return id;
 	}
 }
