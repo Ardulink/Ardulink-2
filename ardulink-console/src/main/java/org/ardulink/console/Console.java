@@ -15,7 +15,12 @@ limitations under the License.
  */
 package org.ardulink.console;
 
+import static java.awt.BorderLayout.CENTER;
+import static java.awt.BorderLayout.SOUTH;
 import static java.awt.EventQueue.invokeLater;
+import static java.awt.FlowLayout.LEFT;
+import static java.awt.GridBagConstraints.BOTH;
+import static java.awt.GridBagConstraints.NORTH;
 import static java.util.function.Predicate.not;
 import static java.util.stream.IntStream.rangeClosed;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
@@ -49,7 +54,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
 import org.ardulink.core.ConnectionBasedLink;
@@ -140,10 +144,10 @@ public class Console extends JFrame implements Linkable {
 	private static void setupExceptionHandler(Console console) {
 		UncaughtExceptionHandler exceptionHandler = new UncaughtExceptionHandler() {
 			@Override
-			public void uncaughtException(Thread thread, Throwable t) {
+			public void uncaughtException(Thread thread, Throwable throwable) {
 				try {
-					logger.error("Uncaught Exception", t);
-					Throwable rootCause = rootCauseWithMessage(t);
+					logger.error("Uncaught Exception", throwable);
+					Throwable rootCause = rootCauseWithMessage(throwable);
 					JOptionPane.showMessageDialog(console,
 							rootCause.getClass().getName() + ": " + rootCause.getMessage(), "Error", ERROR_MESSAGE);
 				} catch (Throwable t2) {
@@ -162,7 +166,7 @@ public class Console extends JFrame implements Linkable {
 
 		};
 		Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
-		System.setProperty("sun.awt.exception.handler", exceptionHandler.getClass().getName()); //$NON-NLS-1$
+		System.setProperty("sun.awt.exception.handler", exceptionHandler.getClass().getName());
 	}
 
 	/**
@@ -171,7 +175,7 @@ public class Console extends JFrame implements Linkable {
 	public Console() {
 		setIconImage(icon("icons/logo_icon.png").getImage());
 		setTitle("Ardulink Console");
-		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setBounds(100, 100, 730, 620);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -179,7 +183,7 @@ public class Console extends JFrame implements Linkable {
 		setContentPane(contentPane);
 
 		tabbedPane = new JTabbedPane(SwingConstants.TOP);
-		contentPane.add(tabbedPane, BorderLayout.CENTER);
+		contentPane.add(tabbedPane, CENTER);
 
 		JPanel configurationPanel = new JPanel();
 		tabbedPane.addTab("Configuration", null, configurationPanel, null);
@@ -188,19 +192,19 @@ public class Console extends JFrame implements Linkable {
 		JPanel connectPanel = new JPanel();
 		connectPanel.add(btnConnect);
 		connectPanel.add(btnDisconnect);
-		configurationPanel.add(connectPanel, BorderLayout.SOUTH);
+		configurationPanel.add(connectPanel, SOUTH);
 
 		JPanel allConnectionsPanel = new JPanel();
-		configurationPanel.add(allConnectionsPanel, BorderLayout.CENTER);
+		configurationPanel.add(allConnectionsPanel, CENTER);
 		GridBagLayout gblAllConnectionsPanel = new GridBagLayout();
 		allConnectionsPanel.setLayout(gblAllConnectionsPanel);
 
 		connectionPanel = new ConnectionPanel();
-		connectionPanel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
+		connectionPanel.setAlignmentY(BOTTOM_ALIGNMENT);
 		GridBagConstraints gbcGenericConnectionPanel = new GridBagConstraints();
 		gbcGenericConnectionPanel.insets = new Insets(0, 0, 0, 10);
-		gbcGenericConnectionPanel.anchor = GridBagConstraints.NORTH;
-		gbcGenericConnectionPanel.fill = GridBagConstraints.BOTH;
+		gbcGenericConnectionPanel.anchor = NORTH;
+		gbcGenericConnectionPanel.fill = BOTH;
 		gbcGenericConnectionPanel.gridx = 0;
 		gbcGenericConnectionPanel.gridy = 1;
 		gbcGenericConnectionPanel.weightx = 1;
@@ -211,20 +215,20 @@ public class Console extends JFrame implements Linkable {
 		tabbedPane.addTab("Key Control", null, keyControlPanel, null);
 
 		JPanel powerPanel = new JPanel();
-		tabbedPane.addTab("Power Panel", null, powerPanel, null);
 		powerPanel.setLayout(new GridLayout(2, 3, 0, 0));
+		tabbedPane.addTab("Power Panel", null, powerPanel, null);
 
 		addMulti(3, 11, pin -> new PWMController().setPin(pin), powerPanel);
 
 		JPanel switchPanel = new JPanel();
-		tabbedPane.addTab("Switch Panel", null, switchPanel, null);
 		switchPanel.setLayout(new GridLayout(5, 3, 0, 0));
+		tabbedPane.addTab("Switch Panel", null, switchPanel, null);
 
 		addMulti(3, 13, pin -> new SwitchController().setPin(pin), switchPanel);
 
 		JPanel joystickPanel = new JPanel();
-		tabbedPane.addTab("Joystick Panel", null, joystickPanel, null);
 		joystickPanel.setLayout(new GridLayout(2, 2, 0, 0));
+		tabbedPane.addTab("Joystick Panel", null, joystickPanel, null);
 
 		Stream.of("Left", "Right").map(id -> {
 			ModifiableJoystick joy = new ModifiableJoystick().setId(id);
@@ -268,19 +272,15 @@ public class Console extends JFrame implements Linkable {
 		tabbedPane.addTab("Monitor Panel", null, monitorPanel, null);
 		monitorPanel.setLayout(new BorderLayout());
 
-		monitorPanel.add(new SerialMonitor(), BorderLayout.CENTER);
+		monitorPanel.add(new SerialMonitor(), CENTER);
 
 		JPanel stateBar = new JPanel();
-		FlowLayout flowLayout1 = (FlowLayout) stateBar.getLayout();
-		flowLayout1.setVgap(0);
-		flowLayout1.setAlignment(FlowLayout.LEFT);
-		contentPane.add(stateBar, BorderLayout.SOUTH);
+		stateBar.setLayout(newFlowLayout());
+		contentPane.add(stateBar, SOUTH);
 
 		connectionStatus = new ConnectionStatus();
-		FlowLayout flowLayout2 = (FlowLayout) connectionStatus.getLayout();
-		flowLayout2.setVgap(0);
-		flowLayout2.setAlignment(FlowLayout.LEFT);
-		stateBar.add(connectionStatus, BorderLayout.SOUTH);
+		connectionStatus.setLayout(newFlowLayout());
+		stateBar.add(connectionStatus, SOUTH);
 
 		tabbedPane.addChangeListener(__ -> {
 			if (tabbedPane.getSelectedComponent().equals(keyControlPanel)) {
@@ -294,7 +294,14 @@ public class Console extends JFrame implements Linkable {
 		setLink(NULL_LINK);
 	}
 
-	private void addMulti(int from, int to, IntFunction<JComponent> supplier, JComponent addTo) {
+	private static FlowLayout newFlowLayout() {
+		FlowLayout flowLayout = new FlowLayout();
+		flowLayout.setVgap(0);
+		flowLayout.setAlignment(LEFT);
+		return flowLayout;
+	}
+
+	private static void addMulti(int from, int to, IntFunction<JComponent> supplier, JComponent addTo) {
 		rangeClosed(from, to).mapToObj(supplier).forEach(addTo::add);
 	}
 
