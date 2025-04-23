@@ -17,6 +17,7 @@ package org.ardulink.console;
 
 import static java.awt.EventQueue.invokeLater;
 import static java.util.function.Predicate.not;
+import static java.util.stream.IntStream.rangeClosed;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import static org.ardulink.core.NullLink.NULL_LINK;
 import static org.ardulink.core.NullLink.isNullLink;
@@ -37,10 +38,12 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.util.List;
 import java.util.Objects;
+import java.util.function.IntFunction;
+import java.util.stream.Stream;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -211,55 +214,45 @@ public class Console extends JFrame implements Linkable {
 		tabbedPane.addTab("Power Panel", null, powerPanel, null);
 		powerPanel.setLayout(new GridLayout(2, 3, 0, 0));
 
-		for (int pin = 3; pin <= 11; pin++) {
-			powerPanel.add(new PWMController().setPin(pin));
-		}
+		addMulti(3, 11, pin -> new PWMController().setPin(pin), powerPanel);
 
 		JPanel switchPanel = new JPanel();
 		tabbedPane.addTab("Switch Panel", null, switchPanel, null);
 		switchPanel.setLayout(new GridLayout(5, 3, 0, 0));
 
-		for (int pin = 3; pin <= 13; pin++) {
-			switchPanel.add(new SwitchController().setPin(pin));
-		}
+		addMulti(3, 13, pin -> new SwitchController().setPin(pin), switchPanel);
 
 		JPanel joystickPanel = new JPanel();
 		tabbedPane.addTab("Joystick Panel", null, joystickPanel, null);
 		joystickPanel.setLayout(new GridLayout(2, 2, 0, 0));
-		
-		for (String id : List.of("Left", "Right")) {
+
+		Stream.of("Left", "Right").map(id -> {
 			ModifiableJoystick joy = new ModifiableJoystick().setId(id);
 			joystickPanel.add(joy);
-			joystickPanel.add(simplePositionListener(joy));
-		}
+			SimplePositionListener listener = new SimplePositionListener();
+			joy.addPositionListener(listener);
+			return joy;
+		}).forEach(joystickPanel::add);
 
 		JPanel sensorDigitalPanel = new JPanel();
 		tabbedPane.addTab("Digital Sensor Panel", null, sensorDigitalPanel, null);
 		sensorDigitalPanel.setLayout(new GridLayout(4, 3, 0, 0));
 
-		for (int pin = 2; pin <= 12; pin++) {
-			sensorDigitalPanel.add(new DigitalPinStatus().setPin(pin));
-		}
+		addMulti(2, 12, pin -> new DigitalPinStatus().setPin(pin), sensorDigitalPanel);
 
 		JPanel sensorAnalogPanel = new JPanel();
 		sensorAnalogPanel.setLayout(new GridLayout(2, 3, 0, 0));
 		tabbedPane.addTab("Analog Sensor Panel", null, sensorAnalogPanel, null);
 
-		for (int pin = 0; pin <= 5; pin++) {
-			sensorAnalogPanel.add(new AnalogPinStatus().setPin(pin));
-		}
+		addMulti(0, 5, pin -> new AnalogPinStatus().setPin(pin), sensorAnalogPanel);
 
 		JPanel customPanel = new JPanel();
 		tabbedPane.addTab("Custom Components", null, customPanel, null);
 		customPanel.setLayout(new GridLayout(2, 3, 10, 15));
 
-		for (int i = 0; i <= 2; i++) {
-			customPanel.add(new ModifiableSignalButton());
-		}
+		addMulti(0, 2, __ -> new ModifiableSignalButton(), customPanel);
 
-		for (int i = 0; i <= 2; i++) {
-			customPanel.add(new ModifiableToggleSignalButton());
-		}
+		addMulti(0, 2, __ -> new ModifiableToggleSignalButton(), customPanel);
 
 		JPanel tonePanel = new JPanel();
 		tabbedPane.addTab("Tone Panel", null, tonePanel, null);
@@ -301,6 +294,10 @@ public class Console extends JFrame implements Linkable {
 		setLink(NULL_LINK);
 	}
 
+	private void addMulti(int from, int to, IntFunction<JComponent> supplier, JComponent addTo) {
+		rangeClosed(from, to).mapToObj(supplier).forEach(addTo::add);
+	}
+
 	private JButton connectButton() {
 		JButton button = new JButton("Connect");
 		button.addActionListener(__ -> {
@@ -329,12 +326,6 @@ public class Console extends JFrame implements Linkable {
 			setLink(NULL_LINK);
 		});
 		return button;
-	}
-
-	private SimplePositionListener simplePositionListener(ModifiableJoystick joystick) {
-		SimplePositionListener positionListener = new SimplePositionListener();
-		joystick.addPositionListener(positionListener);
-		return positionListener;
 	}
 
 	@Override
