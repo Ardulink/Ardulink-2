@@ -294,12 +294,16 @@ public class ToneController extends JPanel implements Linkable {
 
 	@Override
 	public void setForeground(Color fg) {
-		toneButton.setForeground(fg);
+		if (toneButton != null) {
+			toneButton.setForeground(fg);
+		}
 	}
 
 	@Override
 	public void setBackground(Color bg) {
-		toneButton.setBackground(bg);
+		if (toneButton != null) {
+			toneButton.setBackground(bg);
+		}
 	}
 
 }
