@@ -94,9 +94,11 @@ public class SwitchController extends JPanel implements Linkable {
 	 * Set the pin to control.
 	 * 
 	 * @param pin
+	 * @return 
 	 */
-	public void setPin(int pin) {
+	public SwitchController setPin(int pin) {
 		pinComboBox.setSelectedItem(pin);
+		return this;
 	}
 
 	@Override

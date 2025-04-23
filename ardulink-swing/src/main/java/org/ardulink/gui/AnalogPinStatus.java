@@ -224,9 +224,11 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	 * Set the pin to control
 	 * 
 	 * @param pin the pin number to control
+	 * @return 
 	 */
-	public void setPin(int pin) {
+	public AnalogPinStatus setPin(int pin) {
 		pinComboBoxModel.setSelectedItem(pin);
+		return this;
 	}
 
 	@Override

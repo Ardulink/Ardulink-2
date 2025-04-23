@@ -249,9 +249,11 @@ public class PWMController extends JPanel implements Linkable {
 	 * Set the pin to control.
 	 * 
 	 * @param pin pin number
+	 * @return 
 	 */
-	public void setPin(int pin) {
+	public PWMController setPin(int pin) {
 		pinComboBox.setSelectedItem(Integer.valueOf(pin));
+		return this;
 	}
 
 	@Override

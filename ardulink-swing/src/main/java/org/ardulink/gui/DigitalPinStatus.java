@@ -142,8 +142,9 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 		add(tglbtnSensor);
 	}
 
-	public void setPin(int pin) {
+	public DigitalPinStatus setPin(int pin) {
 		pinComboBoxModel.setSelectedItem(pin);
+		return this;
 	}
 
 	@Override

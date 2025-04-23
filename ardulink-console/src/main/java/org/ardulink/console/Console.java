@@ -16,11 +16,13 @@ limitations under the License.
 package org.ardulink.console;
 
 import static java.awt.EventQueue.invokeLater;
+import static java.util.function.Predicate.not;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import static org.ardulink.core.NullLink.NULL_LINK;
 import static org.ardulink.core.NullLink.isNullLink;
 import static org.ardulink.gui.Icons.icon;
 import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
+import static org.ardulink.gui.util.SwingUtilities.componentsStream;
 import static org.ardulink.util.Predicates.attribute;
 import static org.ardulink.util.Streams.getLast;
 import static org.ardulink.util.Throwables.getCauses;
@@ -35,7 +37,6 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
@@ -95,8 +96,6 @@ public class Console extends JFrame implements Linkable {
 	private ConnectionStatus connectionStatus;
 
 	private transient Link link;
-
-	private final List<Linkable> linkables = new LinkedList<>();
 
 	private ConnectionPanel connectionPanel;
 
@@ -206,7 +205,6 @@ public class Console extends JFrame implements Linkable {
 		allConnectionsPanel.add(connectionPanel, gbcGenericConnectionPanel);
 
 		keyControlPanel = new KeyPressController();
-		linkables.add(keyControlPanel);
 		tabbedPane.addTab("Key Control", null, keyControlPanel, null);
 
 		JPanel powerPanel = new JPanel();
@@ -214,7 +212,7 @@ public class Console extends JFrame implements Linkable {
 		powerPanel.setLayout(new GridLayout(2, 3, 0, 0));
 
 		for (int pin = 3; pin <= 11; pin++) {
-			powerPanel.add(pwmController(pin));
+			powerPanel.add(new PWMController().setPin(pin));
 		}
 
 		JPanel switchPanel = new JPanel();
@@ -222,27 +220,25 @@ public class Console extends JFrame implements Linkable {
 		switchPanel.setLayout(new GridLayout(5, 3, 0, 0));
 
 		for (int pin = 3; pin <= 13; pin++) {
-			switchPanel.add(switchController(pin));
+			switchPanel.add(new SwitchController().setPin(pin));
 		}
 
 		JPanel joystickPanel = new JPanel();
 		tabbedPane.addTab("Joystick Panel", null, joystickPanel, null);
 		joystickPanel.setLayout(new GridLayout(2, 2, 0, 0));
-
-		ModifiableJoystick joy1 = modifiableJoystick("Left");
-		joystickPanel.add(joy1);
-		joystickPanel.add(simplePositionListener(joy1));
-
-		ModifiableJoystick joy2 = modifiableJoystick("Right");
-		joystickPanel.add(joy2);
-		joystickPanel.add(simplePositionListener(joy2));
+		
+		for (String id : List.of("Left", "Right")) {
+			ModifiableJoystick joy = new ModifiableJoystick().setId(id);
+			joystickPanel.add(joy);
+			joystickPanel.add(simplePositionListener(joy));
+		}
 
 		JPanel sensorDigitalPanel = new JPanel();
 		tabbedPane.addTab("Digital Sensor Panel", null, sensorDigitalPanel, null);
 		sensorDigitalPanel.setLayout(new GridLayout(4, 3, 0, 0));
 
 		for (int pin = 2; pin <= 12; pin++) {
-			sensorDigitalPanel.add(digitalPinStatus(pin));
+			sensorDigitalPanel.add(new DigitalPinStatus().setPin(pin));
 		}
 
 		JPanel sensorAnalogPanel = new JPanel();
@@ -250,7 +246,7 @@ public class Console extends JFrame implements Linkable {
 		tabbedPane.addTab("Analog Sensor Panel", null, sensorAnalogPanel, null);
 
 		for (int pin = 0; pin <= 5; pin++) {
-			sensorAnalogPanel.add(analogPinStatus(pin));
+			sensorAnalogPanel.add(new AnalogPinStatus().setPin(pin));
 		}
 
 		JPanel customPanel = new JPanel();
@@ -258,34 +254,28 @@ public class Console extends JFrame implements Linkable {
 		customPanel.setLayout(new GridLayout(2, 3, 10, 15));
 
 		for (int i = 0; i <= 2; i++) {
-			customPanel.add(modifiableSignalButton());
+			customPanel.add(new ModifiableSignalButton());
 		}
 
 		for (int i = 0; i <= 2; i++) {
-			customPanel.add(modifiableToggleSignalButton());
+			customPanel.add(new ModifiableToggleSignalButton());
 		}
 
 		JPanel tonePanel = new JPanel();
 		tabbedPane.addTab("Tone Panel", null, tonePanel, null);
 
-		ToneController toneController = new ToneController();
-		tonePanel.add(toneController);
-		linkables.add(toneController);
+		tonePanel.add(new ToneController());
 
 		JPanel rgbPanel = new JPanel();
 		tabbedPane.addTab("RGB Panel", null, rgbPanel, null);
 
-		RGBController rgbController = new RGBController();
-		linkables.add(rgbController);
-		rgbPanel.add(rgbController);
+		rgbPanel.add(new RGBController());
 
 		JPanel monitorPanel = new JPanel();
 		tabbedPane.addTab("Monitor Panel", null, monitorPanel, null);
 		monitorPanel.setLayout(new BorderLayout());
 
-		SerialMonitor serialMonitor = new SerialMonitor();
-		linkables.add(serialMonitor);
-		monitorPanel.add(serialMonitor, BorderLayout.CENTER);
+		monitorPanel.add(new SerialMonitor(), BorderLayout.CENTER);
 
 		JPanel stateBar = new JPanel();
 		FlowLayout flowLayout1 = (FlowLayout) stateBar.getLayout();
@@ -294,7 +284,6 @@ public class Console extends JFrame implements Linkable {
 		contentPane.add(stateBar, BorderLayout.SOUTH);
 
 		connectionStatus = new ConnectionStatus();
-		linkables.add(connectionStatus);
 		FlowLayout flowLayout2 = (FlowLayout) connectionStatus.getLayout();
 		flowLayout2.setVgap(0);
 		flowLayout2.setAlignment(FlowLayout.LEFT);
@@ -307,7 +296,8 @@ public class Console extends JFrame implements Linkable {
 		});
 
 		pack();
-		stateStore = new StateStore(contentPane).snapshot().removeStates(allConnectionsPanel, configurationPanel, connectionStatus);
+		stateStore = new StateStore(contentPane).snapshot().removeStates(allConnectionsPanel, configurationPanel,
+				connectionStatus);
 		setLink(NULL_LINK);
 	}
 
@@ -341,57 +331,10 @@ public class Console extends JFrame implements Linkable {
 		return button;
 	}
 
-	private PWMController pwmController(int pin) {
-		PWMController pwmController = new PWMController();
-		pwmController.setPin(pin);
-		linkables.add(pwmController);
-		return pwmController;
-	}
-
 	private SimplePositionListener simplePositionListener(ModifiableJoystick joystick) {
 		SimplePositionListener positionListener = new SimplePositionListener();
 		joystick.addPositionListener(positionListener);
 		return positionListener;
-	}
-
-	private ModifiableJoystick modifiableJoystick(String id) {
-		ModifiableJoystick joystick = new ModifiableJoystick();
-		joystick.setId(id);
-		linkables.add(joystick);
-		return joystick;
-	}
-
-	private ModifiableToggleSignalButton modifiableToggleSignalButton() {
-		ModifiableToggleSignalButton modifiableToggleSignalButton = new ModifiableToggleSignalButton();
-		linkables.add(modifiableToggleSignalButton);
-		return modifiableToggleSignalButton;
-	}
-
-	private SwitchController switchController(int pin) {
-		SwitchController switchController = new SwitchController();
-		switchController.setPin(pin);
-		linkables.add(switchController);
-		return switchController;
-	}
-
-	private AnalogPinStatus analogPinStatus(int pin) {
-		AnalogPinStatus analogPinStatus = new AnalogPinStatus();
-		analogPinStatus.setPin(pin);
-		linkables.add(analogPinStatus);
-		return analogPinStatus;
-	}
-
-	private ModifiableSignalButton modifiableSignalButton() {
-		ModifiableSignalButton modifiableSignalButton = new ModifiableSignalButton();
-		linkables.add(modifiableSignalButton);
-		return modifiableSignalButton;
-	}
-
-	private DigitalPinStatus digitalPinStatus(int pin) {
-		DigitalPinStatus digitalPinStatus = new DigitalPinStatus();
-		digitalPinStatus.setPin(pin);
-		linkables.add(digitalPinStatus);
-		return digitalPinStatus;
 	}
 
 	@Override
@@ -422,7 +365,11 @@ public class Console extends JFrame implements Linkable {
 		if (this.link instanceof ConnectionBasedLink) {
 			((ConnectionBasedLink) this.link).addConnectionListener(connectionListener);
 		}
-		callLinkables(this.link);
+		componentsStream(this) //
+				.filter(not(this::equals)) //
+				.filter(Linkable.class::isInstance) //
+				.map(Linkable.class::cast) //
+				.forEach(l -> l.setLink(this.link));
 		stateStore.restore();
 		if (isNullLink(this.link)) {
 			connectionListener.connectionLost();
@@ -433,12 +380,6 @@ public class Console extends JFrame implements Linkable {
 
 	public Link getLink() {
 		return link;
-	}
-
-	private void callLinkables(Link link) {
-		for (Linkable linkable : linkables) {
-			linkable.setLink(link);
-		}
 	}
 
 }

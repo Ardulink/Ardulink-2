@@ -115,8 +115,9 @@ public class ModifiableJoystick extends JPanel implements Linkable, PositionList
 		verticalLabel.setText("Vertical: " + position.y);
 	}
 	
-	public void setId(String id) {
+	public ModifiableJoystick setId(String id) {
 		idTextField.setText(id);
+		return this;
 	}
 	
 	public String getId() {
