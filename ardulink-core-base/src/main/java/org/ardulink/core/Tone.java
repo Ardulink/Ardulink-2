@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core;
 
+import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.Optional;
@@ -83,6 +84,11 @@ public class Tone {
 
 	public Optional<Long> getDuration(TimeUnit target) {
 		return Optional.ofNullable(durationInMillis).map(d -> target.convert(d, MILLISECONDS));
+	}
+
+	@Override
+	public String toString() {
+		return format("Tone [hertz=%d, analogPin=%s, durationInMillis=%s]", hertz, analogPin, durationInMillis);
 	}
 
 }
