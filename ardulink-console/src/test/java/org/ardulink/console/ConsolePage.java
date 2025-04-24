@@ -15,9 +15,11 @@ limitations under the License.
  */
 package org.ardulink.console;
 
+import static java.awt.event.WindowEvent.WINDOW_CLOSING;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.IntStream.range;
+import static javax.swing.SwingUtilities.invokeLater;
 import static org.ardulink.console.SwingPredicates.buttonWithText;
 import static org.ardulink.console.SwingPredicates.isA;
 import static org.ardulink.console.SwingPredicates.labelWithText;
@@ -28,6 +30,7 @@ import static org.ardulink.console.SwingSelector.tryFindComponent;
 import static org.awaitility.Awaitility.await;
 
 import java.awt.Component;
+import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -167,7 +170,7 @@ public class ConsolePage implements AutoCloseable {
 
 	@Override
 	public void close() {
-		tryDisconnectButton().filter(JButton::isEnabled).ifPresent(JButton::doClick);
+		invokeLater(() -> console.dispatchEvent(new WindowEvent(console, WINDOW_CLOSING)));
 	}
 
 }

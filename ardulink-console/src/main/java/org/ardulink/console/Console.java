@@ -41,6 +41,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Objects;
@@ -175,7 +177,14 @@ public class Console extends JFrame implements Linkable {
 	public Console() {
 		setIconImage(icon("icons/logo_icon.png").getImage());
 		setTitle("Ardulink Console");
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent __) {
+				closeConnection();
+				dispose();
+			}
+		});
 		setBounds(100, 100, 730, 620);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -323,7 +332,13 @@ public class Console extends JFrame implements Linkable {
 
 	private JButton disconnectButton() {
 		JButton button = new JButton("Disconnect");
-		button.addActionListener(__ -> {
+		button.addActionListener(__ -> closeConnection());
+		return button;
+	}
+
+	private void closeConnection() {
+		// not necessary but prevents info-logs
+		if (!isNullLink(link)) {
 			try {
 				link.close();
 				logger.info("Connection closed");
@@ -331,8 +346,7 @@ public class Console extends JFrame implements Linkable {
 				throw Throwables.propagate(ex);
 			}
 			setLink(NULL_LINK);
-		});
-		return button;
+		}
 	}
 
 	@Override

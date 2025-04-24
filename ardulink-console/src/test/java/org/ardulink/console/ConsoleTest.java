@@ -165,6 +165,16 @@ class ConsoleTest {
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
+	void doesCloseConnectionWhenConsoleGetsClosed() throws IOException {
+		try (ConsolePage page = new ConsolePage(newConsole())) {
+			page.connect();
+		}
+		verify(connectLink).close();
+		verifyNoMoreInteractions(connectLink);
+	}
+
+	@Test
+	@DisabledIf(IS_HEADLESS)
 	void approvalsVerify() {
 		Console console = newConsole();
 		try (ConsolePage page = new ConsolePage(console)) {
