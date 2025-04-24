@@ -77,7 +77,7 @@ public class Joystick extends JPanel implements Linkable {
     private int mouseX;
     private int mouseY;
     private transient Stroke lineStroke = new BasicStroke(10, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-    private Point position = new Point(0, 0);
+    private Point position = Point.NULL;
     
     public Joystick() {
     	this(255, 128);
@@ -166,7 +166,7 @@ public class Joystick extends JPanel implements Linkable {
     
 	private void mouseRestore() {
 		leftMouseButton = false;
-		position = new Point(0, 0);
+		position = Point.NULL;
 		mouseX = 0;
 		mouseY = 0;
 		curJoyAngle = 0;
@@ -176,12 +176,9 @@ public class Joystick extends JPanel implements Linkable {
 		sendMessage();
     }
 
-    private void callPositionListeners() {
-    	PositionEvent event = new PositionEvent(new Point(position.x, position.y), joyOutputRange, id);
-    	for (PositionListener positionListener : positionListeners) {
-			positionListener.positionChanged(event);
-		}
-		
+	private void callPositionListeners() {
+		PositionEvent event = new PositionEvent(new Point(position.x, position.y), joyOutputRange, id);
+		positionListeners.forEach(l -> l.positionChanged(event));
 	}
 
     private void sendMessage() {

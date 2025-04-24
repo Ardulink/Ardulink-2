@@ -32,6 +32,9 @@ public class PositionEvent {
 
 	@LapsedWith(value = JDK14, module = "records")
 	public static class Point {
+
+		public static final Point NULL = new Point(0, 0);
+
 		public final int x, y;
 
 		public Point(int x, int y) {
