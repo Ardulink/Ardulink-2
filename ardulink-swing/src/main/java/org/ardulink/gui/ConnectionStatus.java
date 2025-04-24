@@ -18,14 +18,12 @@ limitations under the License.
 
 package org.ardulink.gui;
 
-import static org.ardulink.core.NullLink.isNullLink;
-import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.gui.util.LinkExchanger.exchange;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.Link;
 
@@ -85,19 +83,7 @@ public class ConnectionStatus extends JPanel implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		if (this.link instanceof AbstractListenerLink) {
-			((AbstractListenerLink) this.link).removeConnectionListener(connectionListener);
-		}
-		this.link = checkNotNull(link, "link must not be null");
-		if (this.link instanceof AbstractListenerLink) {
-			((AbstractListenerLink) this.link).addConnectionListener(connectionListener);
-		}
-
-		if (isNullLink(this.link)) {
-			connectionListener.connectionLost();
-		} else {
-			connectionListener.reconnected();
-		}
+		this.link = exchange(this.link).with(link).using(connectionListener);
 	}
 
 }

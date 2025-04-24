@@ -28,6 +28,8 @@ import static org.ardulink.core.NullLink.NULL_LINK;
 import static org.ardulink.core.NullLink.isNullLink;
 import static org.ardulink.gui.Icons.icon;
 import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
+import static org.ardulink.gui.util.LinkExchanger.callConnectionListener;
+import static org.ardulink.gui.util.LinkExchanger.exchange;
 import static org.ardulink.gui.util.SwingUtilities.componentsStream;
 import static org.ardulink.util.Predicates.attribute;
 import static org.ardulink.util.Streams.getLast;
@@ -58,7 +60,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
-import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.ConnectionListener;
 import org.ardulink.core.Link;
 import org.ardulink.gui.AnalogPinStatus;
@@ -370,24 +371,14 @@ public class Console extends JFrame implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		if (this.link instanceof ConnectionBasedLink) {
-			((ConnectionBasedLink) this.link).removeConnectionListener(connectionListener);
-		}
-		this.link = link;
-		if (this.link instanceof ConnectionBasedLink) {
-			((ConnectionBasedLink) this.link).addConnectionListener(connectionListener);
-		}
+		this.link = exchange(this.link).with(link).using(connectionListener);
 		componentsStream(this) //
 				.filter(not(this::equals)) //
 				.filter(Linkable.class::isInstance) //
 				.map(Linkable.class::cast) //
 				.forEach(l -> l.setLink(this.link));
 		stateStore.restore();
-		if (isNullLink(this.link)) {
-			connectionListener.connectionLost();
-		} else {
-			connectionListener.reconnected();
-		}
+		callConnectionListener(this.link, connectionListener);
 	}
 
 	public Link getLink() {
