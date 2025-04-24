@@ -52,7 +52,7 @@ import org.ardulink.gui.facility.Colors;
  * [adsense]
  *
  */
-public class RGBController extends JPanel implements Linkable {
+public class RGBController extends JPanel {
 
 	private final transient DefaultDocumentListener colorTextFieldDocumentListener = new DefaultDocumentListener();
 
@@ -197,13 +197,6 @@ public class RGBController extends JPanel implements Linkable {
 		colorTextField.setColumns(10);
 		colorTextField.getDocument().addDocumentListener(
 				colorTextFieldDocumentListener);
-	}
-
-	@Override
-	public void setLink(Link link) {
-		redController.setLink(link);
-		greenController.setLink(link);
-		blueController.setLink(link);
 	}
 
 	private void updateColor() {

@@ -19,6 +19,7 @@ limitations under the License.
 package org.ardulink.gui;
 
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
@@ -116,9 +117,9 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 		tglbtnSensor.addItemListener(new ItemListener() {
 
 			@Override
-			public void itemStateChanged(ItemEvent e) {
+			public void itemStateChanged(ItemEvent event) {
 				try {
-					if (e.getStateChange() == ItemEvent.SELECTED) {
+					if (event.getStateChange() == ItemEvent.SELECTED) {
 						link.addListener((listener = listener()));
 
 						tglbtnSensor.setText(SENSOR_ON);
@@ -126,7 +127,7 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 
 						lblStatelabel.setEnabled(true);
 
-					} else if (e.getStateChange() == ItemEvent.DESELECTED) {
+					} else if (event.getStateChange() == ItemEvent.DESELECTED) {
 						link.removeListener(listener);
 
 						tglbtnSensor.setText(SENSOR_OFF);
@@ -149,7 +150,7 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		if (this.link != null && listener != null) {
+		if (listener != null) {
 			try {
 				this.link.removeListener(listener);
 			} catch (IOException e) {
@@ -160,7 +161,7 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 		pinComboBox.setEnabled(true);
 
 		lblStatelabel.setEnabled(false);
-		this.link = link;
+		this.link = checkNotNull(link, "link must not be null");
 	}
 
 }

@@ -18,6 +18,8 @@ limitations under the License.
 
 package org.ardulink.gui.customcomponents.joystick;
 
+import static org.ardulink.util.Preconditions.checkNotNull;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -183,12 +185,10 @@ public class Joystick extends JPanel implements Linkable {
 	}
 
     private void sendMessage() {
-		if (link != null) {
-			try {
-				link.sendCustomMessage(getId(), String.valueOf(getValueX()), String.valueOf(getValueY()));
-			} catch (IOException e) {
-				throw Throwables.propagate(e);
-			}
+		try {
+			link.sendCustomMessage(getId(), String.valueOf(getValueX()), String.valueOf(getValueY()));
+		} catch (IOException e) {
+			throw Throwables.propagate(e);
 		}
 	}
 
@@ -230,7 +230,7 @@ public class Joystick extends JPanel implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		this.link = link;
+		this.link = checkNotNull(link, "link must not be null");
 	}
 	
 	public boolean addPositionListener(PositionListener positionListener) {

@@ -20,6 +20,7 @@ package org.ardulink.gui;
 
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.util.Integers.constrain;
+import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.awt.ComponentOrientation;
 import java.awt.Cursor;
@@ -258,7 +259,7 @@ public class PWMController extends JPanel implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		this.link = link;
+		this.link = checkNotNull(link, "link must not be null");
 	}
 
 	public void setTitle(String title) {

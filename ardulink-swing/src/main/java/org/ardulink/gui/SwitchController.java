@@ -19,6 +19,7 @@ limitations under the License.
 package org.ardulink.gui;
 
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -103,7 +104,7 @@ public class SwitchController extends JPanel implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		this.link = link;
+		this.link = checkNotNull(link, "link must not be null");
 	}
 
 }

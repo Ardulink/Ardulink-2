@@ -22,6 +22,7 @@ package org.ardulink.gui;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import static org.ardulink.gui.KeyPressController.TextFragment.textFragment;
+import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.awt.BorderLayout;
 import java.awt.event.KeyAdapter;
@@ -128,7 +129,7 @@ public class KeyPressController extends JPanel implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		this.link = link;
+		this.link = checkNotNull(link, "link must not be null");
 	}
 
 }

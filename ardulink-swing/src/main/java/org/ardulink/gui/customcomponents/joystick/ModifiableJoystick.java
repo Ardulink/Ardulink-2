@@ -29,8 +29,6 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
-import org.ardulink.core.Link;
-import org.ardulink.gui.Linkable;
 import org.ardulink.gui.event.PositionEvent;
 import org.ardulink.gui.event.PositionEvent.Point;
 import org.ardulink.gui.event.PositionListener;
@@ -42,7 +40,7 @@ import org.ardulink.gui.event.PositionListener;
  * 
  * [adsense]
  */
-public class ModifiableJoystick extends JPanel implements Linkable, PositionListener {
+public class ModifiableJoystick extends JPanel implements PositionListener {
 
 	private static final long serialVersionUID = -7958194636043905634L;
 
@@ -93,11 +91,6 @@ public class ModifiableJoystick extends JPanel implements Linkable, PositionList
 		idPanel.add(maxValueSpinner);
 		
 		joy.addPositionListener(this);
-	}
-
-	@Override
-	public void setLink(Link link) {
-		joy.setLink(link);
 	}
 
 	public boolean addPositionListener(PositionListener positionListener) {

@@ -19,6 +19,7 @@ import static java.awt.event.ItemEvent.DESELECTED;
 import static java.awt.event.ItemEvent.SELECTED;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.util.Integers.constrain;
+import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -233,14 +234,14 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		if (this.link != null && this.listener != null) {
+		if (this.listener != null) {
 			try {
 				this.link.removeListener(this.listener);
 			} catch (IOException e) {
 				throw Throwables.propagate(e);
 			}
 		}
-		this.link = link;
+		this.link = checkNotNull(link, "link must not be null");
 	}
 
 	public void setTitle(String title) {

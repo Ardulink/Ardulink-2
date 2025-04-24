@@ -20,6 +20,7 @@ package org.ardulink.gui;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -157,7 +158,7 @@ public class ToneController extends JPanel implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		this.link = link;
+		this.link = checkNotNull(link, "link must not be null");
 	}
 
 	/**

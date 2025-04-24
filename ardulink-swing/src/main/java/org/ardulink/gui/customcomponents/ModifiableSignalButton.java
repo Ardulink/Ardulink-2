@@ -30,9 +30,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import org.ardulink.core.Link;
-import org.ardulink.gui.Linkable;
-
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -41,7 +38,7 @@ import org.ardulink.gui.Linkable;
  * [adsense]
  *
  */
-public class ModifiableSignalButton extends JPanel implements Linkable {
+public class ModifiableSignalButton extends JPanel {
 
 	private static final long serialVersionUID = 7024281203061769142L;
 
@@ -113,11 +110,6 @@ public class ModifiableSignalButton extends JPanel implements Linkable {
 		signalButton.setButtonText(buttonTextField.getText());
 		signalButton.setId(idTextField.getText());
 
-	}
-
-	@Override
-	public void setLink(Link link) {
-		signalButton.setLink(link);
 	}
 
 	public SignalButton getSignalButton() {

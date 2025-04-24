@@ -31,8 +31,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 
-import org.ardulink.core.Link;
-import org.ardulink.gui.Linkable;
 import org.ardulink.gui.facility.AbstractDocumentListenerAdapter;
 
 /**
@@ -42,7 +40,7 @@ import org.ardulink.gui.facility.AbstractDocumentListenerAdapter;
  * 
  * [adsense]
  */
-public class ModifiableToggleSignalButton extends JPanel implements Linkable {
+public class ModifiableToggleSignalButton extends JPanel {
 
 	private static final long serialVersionUID = 7024281203061769142L;
 
@@ -143,11 +141,6 @@ public class ModifiableToggleSignalButton extends JPanel implements Linkable {
 		signalButton.setButtonTextOff(buttonOffTextField.getText());
 		signalButton.setId(idTextField.getText());
 
-	}
-
-	@Override
-	public void setLink(Link link) {
-		signalButton.setLink(link);
 	}
 
 	public ToggleSignalButton getSignalButton() {
