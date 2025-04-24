@@ -18,6 +18,7 @@ limitations under the License.
 
 package org.ardulink.gui.customcomponents.joystick;
 
+import static java.lang.Math.min;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.awt.BasicStroke;
@@ -117,8 +118,7 @@ public class Joystick extends JPanel implements Linkable {
 	}
     
     public void setInternalSize(float width, float height) {
-    	
-    	joyWidth = Math.min(width, height) - BORDER_SIZE;
+    	joyWidth = min(width, height) - BORDER_SIZE;
         joyHeight = joyWidth;
 
         joyCenterX = width / 2;
@@ -146,13 +146,10 @@ public class Joystick extends JPanel implements Linkable {
 		isMouseTracking = leftMouseButton;
         if (isMouseTracking) {
             curJoyAngle = (float) Math.atan2(dy, dx);
-            curJoySize = (float) Point2D.distance(mouseX, mouseY,
-                    joyCenterX, joyCenterY);
+            curJoySize = min((float) Point2D.distance(mouseX, mouseY,
+                    joyCenterX, joyCenterY), joySize);
         } else {
             curJoySize = 0;
-        }
-        if (curJoySize > joySize) {
-            curJoySize = joySize;
         }
         int x = (int) (joyOutputRange * (Math.cos(curJoyAngle)
                 * curJoySize) / joySize);
@@ -259,14 +256,13 @@ public class Joystick extends JPanel implements Linkable {
 	}
 
 	public void setJoySize(float joySize) {
-        this.joySize = joySize;
         joyWidth = joySize;
-        joyHeight = joyWidth;
+        joyHeight = joySize;
         setPreferredSize(new Dimension((int) joyWidth + BORDER_SIZE,
                 (int) joyHeight + BORDER_SIZE));
         joyCenterX = ((float) getSize().width) / 2;
         joyCenterY = ((float) getSize().height) / 2;
-        this.joySize = joyWidth / 2;
+        this.joySize = joySize / 2;
 	}
 
 }
