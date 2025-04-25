@@ -19,6 +19,7 @@ limitations under the License.
 package org.ardulink.gui;
 
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.gui.Icons.icon;
 import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.awt.GridLayout;
@@ -71,10 +72,8 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 	private static final String HIGH_ICON_NAME = "icons/blue-on-32.png";
 	private static final String LOW_ICON_NAME = "icons/blue-off-32.png";
 
-	private static final ImageIcon HIGH_ICON = new ImageIcon(
-			DigitalPinStatus.class.getResource(HIGH_ICON_NAME));
-	private static final ImageIcon LOW_ICON = new ImageIcon(
-			DigitalPinStatus.class.getResource(LOW_ICON_NAME));
+	private static final ImageIcon HIGH_ICON = icon(HIGH_ICON_NAME);
+	private static final ImageIcon LOW_ICON = icon(LOW_ICON_NAME);
 	private JPanel comboPanel;
 
 	private transient EventListener listener;
