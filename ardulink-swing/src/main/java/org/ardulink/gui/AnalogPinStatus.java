@@ -56,7 +56,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 
 	private static final String TOGGLE_TEXT_ON = "On";
 	private static final String TOGGLE_TEXT_OFF = "Off";
-	
+
 	private static final Font FONT_11 = new Font("SansSerif", Font.PLAIN, 11);
 	private static final Font FONT_12 = new Font("SansSerif", Font.PLAIN, 12);
 
@@ -72,7 +72,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	private JComboBox<Integer> pinComboBox;
 	private IntMinMaxModel pinComboBoxModel;
 	private JLabel lblPowerPinController;
-	private JToggleButton tglbtnSensor;
+	private JToggleButton isActiveButton;
 
 	private transient EventListener listener;
 
@@ -173,48 +173,39 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		valueLabel.setText("0");
 		add(valueLabel);
 
-		tglbtnSensor = new JToggleButton(TOGGLE_TEXT_OFF);
-		tglbtnSensor.addItemListener(e -> {
+		isActiveButton = new JToggleButton(TOGGLE_TEXT_OFF);
+		isActiveButton.addItemListener(e -> {
 			try {
 				if (e.getStateChange() == SELECTED) {
-					link.addListener((listener = listener()));
-					tglbtnSensor.setText(TOGGLE_TEXT_ON);
+					isActiveButton.setText(TOGGLE_TEXT_ON);
+					addListener();
 				} else if (e.getStateChange() == DESELECTED) {
-					link.removeListener(listener);
-					tglbtnSensor.setText(TOGGLE_TEXT_OFF);
+					isActiveButton.setText(TOGGLE_TEXT_OFF);
+					removeListener();
 				}
 
-				if (AnalogPinStatus.this.isEnabled()) {
-					updateComponentsEnabledState();
-				}
+				updateComponentsEnabledState();
 			} catch (IOException ex) {
 				throw Throwables.propagate(ex);
 			}
 		});
 
-		tglbtnSensor.setBounds(10, 177, 76, 28);
-		add(tglbtnSensor);
+		isActiveButton.setBounds(10, 177, 76, 28);
+		add(isActiveButton);
 
-		minValueComboBox.addActionListener(__ -> {
-			int maximum = getMaxValue();
-			int minimum = getMinValue();
+		minValueComboBox.addActionListener(__ -> fixAndUpdate(minValueComboBoxModel, getMaxValue()));
+		maxValueComboBox.addActionListener(__ -> fixAndUpdate(maxValueComboBoxModel, getMinValue()));
+	}
 
-			if (minimum > maximum) {
-				minValueComboBoxModel.setSelectedItem(maximum);
-			}
-			updateValue();
-		});
+	private void fixAndUpdate(IntMinMaxModel minMaxModel, int value) {
+		fixWhenExceed(minMaxModel, value);
+		updateValue();
+	}
 
-		maxValueComboBox.addActionListener(__ -> {
-			int maximum = getMaxValue();
-			int minimum = getMinValue();
-
-			if (minimum > maximum) {
-				maxValueComboBoxModel.setSelectedItem(minimum);
-			}
-			updateValue();
-		});
-
+	private void fixWhenExceed(IntMinMaxModel minMaxModel, int value) {
+		if (getMinValue() > getMaxValue()) {
+			minMaxModel.setSelectedItem(value);
+		}
 	}
 
 	/**
@@ -230,6 +221,15 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
+		removeListener();
+		this.link = checkNotNull(link, "link must not be null");
+	}
+
+	private void addListener() throws IOException {
+		link.addListener(listener = listener());
+	}
+
+	private void removeListener() {
 		if (this.listener != null) {
 			try {
 				this.link.removeListener(this.listener);
@@ -237,7 +237,6 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 				throw Throwables.propagate(e);
 			}
 		}
-		this.link = checkNotNull(link, "link must not be null");
 	}
 
 	public void setTitle(String title) {
@@ -280,7 +279,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	 * This method ensures that the UI reflects the correct interactive state:
 	 * <ul>
 	 * <li>If the panel is disabled, all components (including the toggle) are
-	 * disabled</li>
+	 * disabled, regardless of toggle state</li>
 	 * <li>If the toggle is "On", sensor input is active and only relevant UI
 	 * remains enabled</li>
 	 * <li>If the toggle is "Off", all input fields can be edited</li>
@@ -290,10 +289,10 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	 * {@code setEnabled(boolean)} is called.
 	 */
 	private void updateComponentsEnabledState() {
-		boolean isOn = tglbtnSensor.isSelected();
 		boolean panelIsEnabled = isEnabled();
+		boolean isOn = isActiveButton.isSelected();
 
-		tglbtnSensor.setEnabled(panelIsEnabled);
+		isActiveButton.setEnabled(panelIsEnabled);
 		pinComboBox.setEnabled(panelIsEnabled && !isOn);
 		minValueComboBox.setEnabled(panelIsEnabled && !isOn);
 		maxValueComboBox.setEnabled(panelIsEnabled && !isOn);
