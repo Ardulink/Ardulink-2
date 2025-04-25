@@ -45,6 +45,7 @@ import javax.swing.JToggleButton;
 
 import org.approvaltests.awt.AwtApprovals;
 import org.ardulink.core.Link;
+import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.util.Throwables;
 import org.junit.jupiter.api.Test;
@@ -68,8 +69,8 @@ class ConsoleTest {
 	private Link createMock() {
 		try {
 			Link link = mock(Link.class);
-			doAnswer(invocation -> {
-				eventListeners.add((EventListener) invocation.getArgument(0));
+			doAnswer(i -> {
+				eventListeners.add((EventListener) i.getArgument(0));
 				return link;
 			}).when(link).addListener(any(EventListener.class));
 			return link;
@@ -213,6 +214,10 @@ class ConsoleTest {
 	}
 
 	private void analogSensor0WithValue241(ConsolePage page) {
+		setAnalogSensorValue(page, analogPin(0), 241);
+	}
+
+	private void setAnalogSensorValue(ConsolePage page, AnalogPin pin, int value) {
 		page.useConnection(format("%s://%s", ARDULINK_SCHEME, VIRTUAL_CONSOLE_NAME));
 
 		page.connect();
@@ -220,7 +225,7 @@ class ConsoleTest {
 		page.showTab(analogSensorPanel);
 
 		findComponent(analogSensorPanel, JToggleButton.class).doClick();
-		eventListeners.forEach(l -> l.stateChanged(analogPinValueChanged(analogPin(0), 241)));
+		eventListeners.forEach(l -> l.stateChanged(analogPinValueChanged(pin, value)));
 	}
 
 	private void repaint(Console console) {

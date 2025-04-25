@@ -307,13 +307,7 @@ public class Console extends JFrame implements Linkable {
 
 	private JButton connectButton() {
 		JButton button = new JButton("Connect");
-		button.addActionListener(__ -> {
-			try {
-				setLink(createLink());
-			} catch (Exception e) {
-				throw Throwables.propagate(e);
-			}
-		});
+		button.addActionListener(__ -> setLink(createLink()));
 		return button;
 	}
 
