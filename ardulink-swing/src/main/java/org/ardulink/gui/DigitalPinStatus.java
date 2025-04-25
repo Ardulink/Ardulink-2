@@ -34,6 +34,7 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
 import org.ardulink.core.Link;
+import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.EventListenerAdapter;
@@ -78,15 +79,15 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 	private transient EventListener listener;
 
 	private FilteredEventListenerAdapter listener() {
-		return new FilteredEventListenerAdapter(digitalPin(pinComboBoxModel.getSelectedItem().intValue()),
-				new EventListenerAdapter() {
-					@Override
-					public void stateChanged(DigitalPinValueChangedEvent event) {
-						boolean value = event.getValue().booleanValue();
-						lblStatelabel.setText(value ? HIGH : LOW);
-						lblStatelabel.setIcon(value ? HIGH_ICON : LOW_ICON);
-					}
-				});
+		DigitalPin pin = digitalPin(pinComboBoxModel.getSelectedItem().intValue());
+		return new FilteredEventListenerAdapter(pin, new EventListenerAdapter() {
+			@Override
+			public void stateChanged(DigitalPinValueChangedEvent event) {
+				boolean value = event.getValue().booleanValue();
+				lblStatelabel.setText(value ? HIGH : LOW);
+				lblStatelabel.setIcon(value ? HIGH_ICON : LOW_ICON);
+			}
+		});
 	}
 
 	/**

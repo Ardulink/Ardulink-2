@@ -34,6 +34,7 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 
 import org.ardulink.core.Link;
+import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.EventListenerAdapter;
@@ -77,21 +78,22 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	private transient EventListener listener;
 
 	private FilteredEventListenerAdapter listener() {
-		return new FilteredEventListenerAdapter(analogPin(pinComboBoxModel.getSelectedItem().intValue()),
-				new EventListenerAdapter() {
-					@Override
-					public void stateChanged(AnalogPinValueChangedEvent event) {
-						Integer value = event.getValue();
-						valueLabel.setText(String.valueOf(value));
+		AnalogPin pin = analogPin(pinComboBoxModel.getSelectedItem().intValue());
+		return new FilteredEventListenerAdapter(pin, new EventListenerAdapter() {
+			@Override
+			public void stateChanged(AnalogPinValueChangedEvent event) {
+				Integer value = event.getValue();
+				valueLabel.setText(String.valueOf(value));
 
-						float volt = (((float) value) * 5.0f) / 1023.0f;
-						voltValueLbl.setText(volt + "V");
+				float volt = (((float) value) * 5.0f) / 1023.0f;
+				voltValueLbl.setText(volt + "V");
 
-						float progress = ((value - getMinValue()) * 100.0f)
-								/ ((float) getMaxValue() - (float) getMinValue());
-						progressBar.setValue((int) progress);
-					}
-				});
+				int minValue = getMinValue();
+				int maxValue = getMaxValue();
+				int progress = maxValue == minValue ? 0 : (int) (((value - minValue) * 100.0) / (maxValue - minValue));
+				progressBar.setValue(progress);
+			}
+		});
 	}
 
 	private transient Link link;
