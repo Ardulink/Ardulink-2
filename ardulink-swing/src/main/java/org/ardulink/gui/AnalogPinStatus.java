@@ -88,14 +88,14 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 				int value = event.getValue();
 				valueLabel.setText(String.valueOf(value));
 				voltValueLbl.setText(voltageFormat.format(voltage(value)) + " V");
-				progressBar.setValue(progress(value));
+				progressBar.setValue(percent(value));
 			}
 
 			private float voltage(int value) {
-				return (((float) value) * 5.0f) / 1023.0f;
+				return (float) value * 5.0f / 1023.0f;
 			}
 
-			private int progress(int value) {
+			private int percent(int value) {
 				int minValue = getMinValue();
 				int maxValue = getMaxValue();
 				return maxValue == minValue //
