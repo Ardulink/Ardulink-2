@@ -18,7 +18,7 @@ limitations under the License.
 
 package org.ardulink.gui;
 
-import static org.ardulink.gui.util.LinkExchanger.exchange;
+import static org.ardulink.gui.util.LinkReplacer.withConnectionListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -83,7 +83,7 @@ public class ConnectionStatus extends JPanel implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		this.link = exchange(this.link).with(link).using(connectionListener);
+		this.link = withConnectionListener(connectionListener).replace(this.link).with(link);
 	}
 
 }

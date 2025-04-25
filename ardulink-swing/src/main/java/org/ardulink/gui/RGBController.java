@@ -35,7 +35,6 @@ import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 
-import org.ardulink.core.Link;
 import org.ardulink.gui.event.PWMChangeEvent;
 import org.ardulink.gui.event.PWMControllerListener;
 import org.ardulink.gui.facility.AbstractDocumentListenerAdapter;

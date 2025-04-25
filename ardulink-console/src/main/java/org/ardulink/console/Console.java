@@ -28,7 +28,7 @@ import static org.ardulink.core.NullLink.NULL_LINK;
 import static org.ardulink.core.NullLink.isNullLink;
 import static org.ardulink.gui.Icons.icon;
 import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
-import static org.ardulink.gui.util.LinkExchanger.exchange;
+import static org.ardulink.gui.util.LinkReplacer.*;
 import static org.ardulink.gui.util.SwingUtilities.componentsStream;
 import static org.ardulink.util.Predicates.attribute;
 import static org.ardulink.util.Streams.getLast;
@@ -355,7 +355,7 @@ public class Console extends JFrame implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		this.link = exchange(this.link).with(link).using(connectionListener);
+		this.link = withConnectionListener(connectionListener).replace(this.link).with(link);
 		componentsStream(this) //
 				.filter(not(this::equals)) //
 				.filter(Linkable.class::isInstance) //
