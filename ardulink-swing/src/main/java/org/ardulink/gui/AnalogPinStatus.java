@@ -54,6 +54,9 @@ import org.ardulink.util.Throwables;
  */
 public class AnalogPinStatus extends JPanel implements Linkable {
 
+	private static final String TOGGLE_TEXT_ON = "On";
+	private static final String TOGGLE_TEXT_OFF = "Off";
+	
 	private static final Font FONT_11 = new Font("SansSerif", Font.PLAIN, 11);
 	private static final Font FONT_12 = new Font("SansSerif", Font.PLAIN, 12);
 
@@ -170,15 +173,15 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		valueLabel.setText("0");
 		add(valueLabel);
 
-		tglbtnSensor = new JToggleButton("Off");
+		tglbtnSensor = new JToggleButton(TOGGLE_TEXT_OFF);
 		tglbtnSensor.addItemListener(e -> {
 			try {
 				if (e.getStateChange() == SELECTED) {
 					link.addListener((listener = listener()));
-					tglbtnSensor.setText("On");
+					tglbtnSensor.setText(TOGGLE_TEXT_ON);
 				} else if (e.getStateChange() == DESELECTED) {
 					link.removeListener(listener);
-					tglbtnSensor.setText("Off");
+					tglbtnSensor.setText(TOGGLE_TEXT_OFF);
 				}
 
 				if (AnalogPinStatus.this.isEnabled()) {
