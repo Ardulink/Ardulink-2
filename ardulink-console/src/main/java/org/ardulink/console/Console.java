@@ -226,13 +226,11 @@ public class Console extends JFrame implements Linkable {
 		JPanel powerPanel = new JPanel();
 		powerPanel.setLayout(new GridLayout(2, 3, 0, 0));
 		tabbedPane.addTab("Power Panel", null, powerPanel, null);
-
 		addMulti(3, 11, pin -> new PWMController().setPin(pin), powerPanel);
 
 		JPanel switchPanel = new JPanel();
 		switchPanel.setLayout(new GridLayout(5, 3, 0, 0));
 		tabbedPane.addTab("Switch Panel", null, switchPanel, null);
-
 		addMulti(3, 13, pin -> new SwitchController().setPin(pin), switchPanel);
 
 		JPanel joystickPanel = new JPanel();
@@ -248,39 +246,32 @@ public class Console extends JFrame implements Linkable {
 		}).forEach(joystickPanel::add);
 
 		JPanel sensorDigitalPanel = new JPanel();
-		tabbedPane.addTab("Digital Sensor Panel", null, sensorDigitalPanel, null);
 		sensorDigitalPanel.setLayout(new GridLayout(4, 3, 0, 0));
-
+		tabbedPane.addTab("Digital Sensor Panel", null, sensorDigitalPanel, null);
 		addMulti(2, 12, pin -> new DigitalPinStatus().setPin(pin), sensorDigitalPanel);
 
 		JPanel sensorAnalogPanel = new JPanel();
 		sensorAnalogPanel.setLayout(new GridLayout(2, 3, 0, 0));
 		tabbedPane.addTab("Analog Sensor Panel", null, sensorAnalogPanel, null);
-
 		addMulti(0, 5, pin -> new AnalogPinStatus().setPin(pin), sensorAnalogPanel);
 
 		JPanel customPanel = new JPanel();
 		tabbedPane.addTab("Custom Components", null, customPanel, null);
 		customPanel.setLayout(new GridLayout(2, 3, 10, 15));
-
 		addMulti(0, 2, __ -> new ModifiableSignalButton(), customPanel);
-
 		addMulti(0, 2, __ -> new ModifiableToggleSignalButton(), customPanel);
 
 		JPanel tonePanel = new JPanel();
 		tabbedPane.addTab("Tone Panel", null, tonePanel, null);
-
 		tonePanel.add(new ToneController());
 
 		JPanel rgbPanel = new JPanel();
 		tabbedPane.addTab("RGB Panel", null, rgbPanel, null);
-
 		rgbPanel.add(new RGBController());
 
 		JPanel monitorPanel = new JPanel();
 		tabbedPane.addTab("Monitor Panel", null, monitorPanel, null);
 		monitorPanel.setLayout(new BorderLayout());
-
 		monitorPanel.add(new SerialMonitor(), CENTER);
 
 		JPanel stateBar = new JPanel();
