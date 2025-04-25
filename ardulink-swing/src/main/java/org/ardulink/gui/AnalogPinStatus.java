@@ -85,7 +85,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
-				Integer value = event.getValue();
+				int value = event.getValue();
 				valueLabel.setText(String.valueOf(value));
 				voltValueLbl.setText(voltageFormat.format(voltage(value)) + " V");
 				progressBar.setValue(progress(value));
