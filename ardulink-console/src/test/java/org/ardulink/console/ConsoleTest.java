@@ -169,6 +169,7 @@ class ConsoleTest {
 		try (ConsolePage page = new ConsolePage(newConsole())) {
 			page.connect();
 		}
+		// if this fails, the event has not been processed (only occurred once til now)
 		verify(connectLink).close();
 		verifyNoMoreInteractions(connectLink);
 	}
