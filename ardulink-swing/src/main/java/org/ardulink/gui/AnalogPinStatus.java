@@ -25,6 +25,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.io.IOException;
+import java.text.DecimalFormat;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -76,22 +77,30 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	private JToggleButton isActiveButton;
 
 	private transient EventListener listener;
+	private final DecimalFormat voltageFormat = new DecimalFormat("#.###");
 
 	private FilteredEventListenerAdapter listener() {
 		AnalogPin pin = analogPin(pinComboBoxModel.getSelectedItem().intValue());
 		return new FilteredEventListenerAdapter(pin, new EventListenerAdapter() {
+
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
 				Integer value = event.getValue();
 				valueLabel.setText(String.valueOf(value));
+				voltValueLbl.setText(voltageFormat.format(voltage(value)) + " V");
+				progressBar.setValue(progress(value));
+			}
 
-				float volt = (((float) value) * 5.0f) / 1023.0f;
-				voltValueLbl.setText(volt + "V");
+			private float voltage(int value) {
+				return (((float) value) * 5.0f) / 1023.0f;
+			}
 
+			private int progress(int value) {
 				int minValue = getMinValue();
 				int maxValue = getMaxValue();
-				int progress = maxValue == minValue ? 0 : (int) (((value - minValue) * 100.0) / (maxValue - minValue));
-				progressBar.setValue(progress);
+				return maxValue == minValue //
+						? 0 //
+						: (int) (((value - minValue) * 100.0) / (maxValue - minValue));
 			}
 		});
 	}
@@ -177,19 +186,15 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 
 		isActiveButton = new JToggleButton(TOGGLE_TEXT_OFF);
 		isActiveButton.addItemListener(e -> {
-			try {
-				if (e.getStateChange() == SELECTED) {
-					isActiveButton.setText(TOGGLE_TEXT_ON);
-					addListener();
-				} else if (e.getStateChange() == DESELECTED) {
-					isActiveButton.setText(TOGGLE_TEXT_OFF);
-					removeListener();
-				}
-
-				updateComponentsEnabledState();
-			} catch (IOException ex) {
-				throw Throwables.propagate(ex);
+			if (e.getStateChange() == SELECTED) {
+				isActiveButton.setText(TOGGLE_TEXT_ON);
+				addListener();
+			} else if (e.getStateChange() == DESELECTED) {
+				isActiveButton.setText(TOGGLE_TEXT_OFF);
+				removeListener();
 			}
+
+			updateComponentsEnabledState();
 		});
 
 		isActiveButton.setBounds(10, 177, 76, 28);
@@ -227,8 +232,12 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		this.link = checkNotNull(link, "link must not be null");
 	}
 
-	private void addListener() throws IOException {
-		link.addListener(listener = listener());
+	private void addListener() {
+		try {
+			link.addListener(listener = listener());
+		} catch (IOException e) {
+			throw Throwables.propagate(e);
+		}
 	}
 
 	private void removeListener() {

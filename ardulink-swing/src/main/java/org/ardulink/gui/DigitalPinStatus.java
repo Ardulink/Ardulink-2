@@ -114,19 +114,14 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 
 		isActiveButton = new JToggleButton(SENSOR_OFF);
 		isActiveButton.addItemListener(e -> {
-			try {
-				if (e.getStateChange() == ItemEvent.SELECTED) {
-					isActiveButton.setText(SENSOR_ON);
-					addListener();
-					updateComponentsEnabledState();
-				} else if (e.getStateChange() == ItemEvent.DESELECTED) {
-					isActiveButton.setText(SENSOR_OFF);
-					removeListener();
-					updateComponentsEnabledState();
-				}
-			} catch (IOException ex) {
-				throw Throwables.propagate(ex);
+			if (e.getStateChange() == ItemEvent.SELECTED) {
+				isActiveButton.setText(SENSOR_ON);
+				addListener();
+			} else if (e.getStateChange() == ItemEvent.DESELECTED) {
+				isActiveButton.setText(SENSOR_OFF);
+				removeListener();
 			}
+			updateComponentsEnabledState();
 		});
 		add(isActiveButton);
 	}
@@ -142,8 +137,12 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 		this.link = checkNotNull(link, "link must not be null");
 	}
 
-	private void addListener() throws IOException {
-		link.addListener(listener = listener());
+	private void addListener() {
+		try {
+			link.addListener(listener = listener());
+		} catch (IOException e) {
+			throw Throwables.propagate(e);
+		}
 	}
 
 	private void removeListener() {
