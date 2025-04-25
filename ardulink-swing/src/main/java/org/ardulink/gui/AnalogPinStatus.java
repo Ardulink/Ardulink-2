@@ -175,27 +175,20 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 			try {
 				if (e.getStateChange() == SELECTED) {
 					link.addListener((listener = listener()));
-
 					tglbtnSensor.setText("On");
-					pinComboBox.setEnabled(false);
-					minValueComboBox.setEnabled(false);
-					maxValueComboBox.setEnabled(false);
-
-					progressBar.setEnabled(true);
 				} else if (e.getStateChange() == DESELECTED) {
 					link.removeListener(listener);
-
 					tglbtnSensor.setText("Off");
-					pinComboBox.setEnabled(true);
-					minValueComboBox.setEnabled(true);
-					maxValueComboBox.setEnabled(true);
+				}
 
-					progressBar.setEnabled(false);
+				if (AnalogPinStatus.this.isEnabled()) {
+					updateComponentsEnabledState();
 				}
 			} catch (IOException ex) {
 				throw Throwables.propagate(ex);
 			}
 		});
+
 		tglbtnSensor.setBounds(10, 177, 76, 28);
 		add(tglbtnSensor);
 
@@ -225,7 +218,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	 * Set the pin to control
 	 * 
 	 * @param pin the pin number to control
-	 * @return 
+	 * @return
 	 */
 	public AnalogPinStatus setPin(int pin) {
 		pinComboBoxModel.setSelectedItem(pin);
@@ -266,6 +259,42 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 
 	private void updateValue() {
 		setValue(getValue());
+	}
+
+	@Override
+	public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled);
+		updateComponentsEnabledState();
+	}
+
+	/**
+	 * Updates the enabled state of the internal components based on:
+	 * <ul>
+	 * <li>The current enabled state of this panel ({@code isEnabled()})</li>
+	 * <li>The current toggle state of the sensor button</li>
+	 * </ul>
+	 *
+	 * This method ensures that the UI reflects the correct interactive state:
+	 * <ul>
+	 * <li>If the panel is disabled, all components (including the toggle) are
+	 * disabled</li>
+	 * <li>If the toggle is "On", sensor input is active and only relevant UI
+	 * remains enabled</li>
+	 * <li>If the toggle is "Off", all input fields can be edited</li>
+	 * </ul>
+	 *
+	 * Should be called whenever the toggle state changes or when
+	 * {@code setEnabled(boolean)} is called.
+	 */
+	private void updateComponentsEnabledState() {
+		boolean isOn = tglbtnSensor.isSelected();
+		boolean panelIsEnabled = isEnabled();
+
+		tglbtnSensor.setEnabled(panelIsEnabled);
+		pinComboBox.setEnabled(panelIsEnabled && !isOn);
+		minValueComboBox.setEnabled(panelIsEnabled && !isOn);
+		maxValueComboBox.setEnabled(panelIsEnabled && !isOn);
+		progressBar.setEnabled(panelIsEnabled && isOn);
 	}
 
 }

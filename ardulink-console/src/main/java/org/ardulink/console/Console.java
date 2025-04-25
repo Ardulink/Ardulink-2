@@ -28,7 +28,6 @@ import static org.ardulink.core.NullLink.NULL_LINK;
 import static org.ardulink.core.NullLink.isNullLink;
 import static org.ardulink.gui.Icons.icon;
 import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
-import static org.ardulink.gui.util.LinkExchanger.callConnectionListener;
 import static org.ardulink.gui.util.LinkExchanger.exchange;
 import static org.ardulink.gui.util.SwingUtilities.componentsStream;
 import static org.ardulink.util.Predicates.attribute;
@@ -378,7 +377,6 @@ public class Console extends JFrame implements Linkable {
 				.map(Linkable.class::cast) //
 				.forEach(l -> l.setLink(this.link));
 		stateStore.restore();
-		callConnectionListener(this.link, connectionListener);
 	}
 
 	public Link getLink() {

@@ -60,7 +60,7 @@ public class LinkExchanger {
 		return newLink;
 	}
 
-	public static void callConnectionListener(Link link, ConnectionListener connectionListener) {
+	private static void callConnectionListener(Link link, ConnectionListener connectionListener) {
 		if (isNullLink(link)) {
 			connectionListener.connectionLost();
 		} else {
