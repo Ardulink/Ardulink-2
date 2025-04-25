@@ -16,6 +16,7 @@ limitations under the License.
 package org.ardulink.console;
 
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.console.SwingSelector.findComponent;
 import static org.ardulink.core.NullLink.isNullLink;
 import static org.ardulink.core.Pin.analogPin;
@@ -30,12 +31,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -169,8 +172,7 @@ class ConsoleTest {
 		try (ConsolePage page = new ConsolePage(newConsole())) {
 			page.connect();
 		}
-		// if this fails, the event has not been processed (only occurred once til now)
-		verify(connectLink).close();
+		verify(connectLink, timeout(SECONDS.toMillis(1))).close();
 		verifyNoMoreInteractions(connectLink);
 	}
 
