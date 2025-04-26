@@ -69,11 +69,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<compilerVersion>11</compilerVersion>
-		<maven.compiler.source>${compilerVersion}</maven.compiler.source>
-		<maven.compiler.target>${compilerVersion}</maven.compiler.target>
-		<!--
-    	<maven.compiler.release>${compilerVersion}</maven.compiler.release>
-		-->
+		<maven.compiler.release>${compilerVersion}</maven.compiler.release>
 		<args4j.version>2.37</args4j.version>
 		<slf4j.version>2.0.17</slf4j.version>
 		<junit.version>5.12.2</junit.version>
