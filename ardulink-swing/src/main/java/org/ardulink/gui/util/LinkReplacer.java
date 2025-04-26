@@ -61,6 +61,10 @@ public class LinkReplacer {
 		return new ConnectionListenerLinkReplacer(listener);
 	}
 
+	public static LinkReplacer doReplace(Link link) {
+		return new LinkReplacer().replace(link);
+	}
+
 	public LinkReplacer replace(Link oldLink) {
 		this.oldLink = oldLink;
 		return this;

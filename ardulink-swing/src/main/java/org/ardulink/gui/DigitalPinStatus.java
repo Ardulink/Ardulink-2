@@ -20,7 +20,7 @@ package org.ardulink.gui;
 
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.gui.Icons.icon;
-import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.gui.util.LinkReplacer.doReplace;
 
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
@@ -115,15 +115,34 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 		isActiveButton = new JToggleButton(SENSOR_OFF);
 		isActiveButton.addItemListener(e -> {
 			if (e.getStateChange() == ItemEvent.SELECTED) {
-				isActiveButton.setText(SENSOR_ON);
-				addListener();
+				startListening();
 			} else if (e.getStateChange() == ItemEvent.DESELECTED) {
-				isActiveButton.setText(SENSOR_OFF);
-				removeListener();
+				stopListening();
 			}
 			updateComponentsEnabledState();
 		});
 		add(isActiveButton);
+	}
+
+	private void startListening() {
+		isActiveButton.setText(SENSOR_ON);
+		try {
+			link.addListener(listener = listener());
+		} catch (IOException e) {
+			throw Throwables.propagate(e);
+		}
+	}
+
+	private void stopListening() {
+		isActiveButton.setText(SENSOR_OFF);
+		if (listener != null) {
+			try {
+				link.removeListener(listener);
+				listener = null;
+			} catch (IOException e) {
+				throw Throwables.propagate(e);
+			}
+		}
 	}
 
 	public DigitalPinStatus setPin(int pin) {
@@ -133,26 +152,8 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		removeListener();
-		this.link = checkNotNull(link, "link must not be null");
-	}
-
-	private void addListener() {
-		try {
-			link.addListener(listener = listener());
-		} catch (IOException e) {
-			throw Throwables.propagate(e);
-		}
-	}
-
-	private void removeListener() {
-		if (listener != null) {
-			try {
-				this.link.removeListener(listener);
-			} catch (IOException e) {
-				throw Throwables.propagate(e);
-			}
-		}
+		stopListening();
+		this.link = doReplace(this.link).with(link);
 	}
 
 	@Override

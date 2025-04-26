@@ -18,8 +18,8 @@ package org.ardulink.gui;
 import static java.awt.event.ItemEvent.DESELECTED;
 import static java.awt.event.ItemEvent.SELECTED;
 import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.gui.util.LinkReplacer.doReplace;
 import static org.ardulink.util.Integers.constrain;
-import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -187,11 +187,9 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		isActiveButton = new JToggleButton(TOGGLE_TEXT_OFF);
 		isActiveButton.addItemListener(e -> {
 			if (e.getStateChange() == SELECTED) {
-				isActiveButton.setText(TOGGLE_TEXT_ON);
-				addListener();
+				startListening();
 			} else if (e.getStateChange() == DESELECTED) {
-				isActiveButton.setText(TOGGLE_TEXT_OFF);
-				removeListener();
+				stopListening();
 			}
 
 			updateComponentsEnabledState();
@@ -204,14 +202,35 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		maxValueComboBox.addActionListener(__ -> fixAndUpdate(maxValueComboBoxModel, getMinValue()));
 	}
 
+	private void startListening() {
+		isActiveButton.setText(TOGGLE_TEXT_ON);
+		try {
+			link.addListener(listener = listener());
+		} catch (IOException e) {
+			throw Throwables.propagate(e);
+		}
+	}
+
+	private void stopListening() {
+		isActiveButton.setText(TOGGLE_TEXT_OFF);
+		if (listener != null) {
+			try {
+				link.removeListener(listener);
+				listener = null;
+			} catch (IOException e) {
+				throw Throwables.propagate(e);
+			}
+		}
+	}
+
 	private void fixAndUpdate(IntMinMaxModel minMaxModel, int value) {
 		fixWhenExceed(minMaxModel, value);
 		updateValue();
 	}
 
-	private void fixWhenExceed(IntMinMaxModel minMaxModel, int value) {
+	private void fixWhenExceed(IntMinMaxModel model, int value) {
 		if (getMinValue() > getMaxValue()) {
-			minMaxModel.setSelectedItem(value);
+			model.setSelectedItem(value);
 		}
 	}
 
@@ -228,26 +247,8 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 
 	@Override
 	public void setLink(Link link) {
-		removeListener();
-		this.link = checkNotNull(link, "link must not be null");
-	}
-
-	private void addListener() {
-		try {
-			link.addListener(listener = listener());
-		} catch (IOException e) {
-			throw Throwables.propagate(e);
-		}
-	}
-
-	private void removeListener() {
-		if (this.listener != null) {
-			try {
-				this.link.removeListener(this.listener);
-			} catch (IOException e) {
-				throw Throwables.propagate(e);
-			}
-		}
+		stopListening();
+		this.link = doReplace(this.link).with(link);
 	}
 
 	public void setTitle(String title) {
