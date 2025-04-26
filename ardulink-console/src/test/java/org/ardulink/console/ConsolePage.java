@@ -135,6 +135,10 @@ public class ConsolePage implements AutoCloseable {
 		return tabWithTitle("Analog Sensor Panel");
 	}
 
+	public JPanel digitalSensorPanel() {
+		return tabWithTitle("Digital Sensor Panel");
+	}
+
 	private JPanel tabWithTitle(String title) {
 		JTabbedPane tabbedPane = findComponent(console, JTabbedPane.class);
 		return range(0, tabbedPane.getTabCount()) //

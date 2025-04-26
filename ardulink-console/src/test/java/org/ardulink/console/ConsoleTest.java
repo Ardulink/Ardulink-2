@@ -22,6 +22,7 @@ import static org.ardulink.core.NullLink.isNullLink;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
+import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
 import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.core.virtual.console.VirtualConnectionLinkFactory.VIRTUAL_CONSOLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,6 +47,7 @@ import javax.swing.JToggleButton;
 import org.approvaltests.awt.AwtApprovals;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin.AnalogPin;
+import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.util.Throwables;
 import org.junit.jupiter.api.Test;
@@ -189,6 +191,31 @@ class ConsoleTest {
 
 	@Test
 	@DisabledIf(IS_HEADLESS)
+	void highShouldStayHighEvenAfterStopping() {
+		Console console = newConsole();
+		try (ConsolePage page = new ConsolePage(console)) {
+			setDigitalSensorValue(page, digitalPin(2), true);
+			findComponent(page.digitalSensorPanel(), JToggleButton.class).doClick();
+
+			repaint(console);
+			AwtApprovals.verify(console.getContentPane());
+		}
+	}
+
+	@Test
+	@DisabledIf(IS_HEADLESS)
+	void afterClosingAllComponentsAreResetAndDisabled() {
+		Console console = newConsole();
+		try (ConsolePage page = new ConsolePage(console)) {
+			setDigitalSensorValue(page, digitalPin(2), true);
+
+			page.disconnect();
+			AwtApprovals.verify(console.getContentPane());
+		}
+	}
+
+	@Test
+	@DisabledIf(IS_HEADLESS)
 	void approvalsJustToEnsureThatTheSliderWasChanged() {
 		Console console = newConsole();
 		try (ConsolePage page = new ConsolePage(console)) {
@@ -226,6 +253,17 @@ class ConsoleTest {
 
 		findComponent(analogSensorPanel, JToggleButton.class).doClick();
 		eventListeners.forEach(l -> l.stateChanged(analogPinValueChanged(pin, value)));
+	}
+
+	private void setDigitalSensorValue(ConsolePage page, DigitalPin pin, boolean value) {
+		page.useConnection(format("%s://%s", ARDULINK_SCHEME, VIRTUAL_CONSOLE_NAME));
+
+		page.connect();
+		JPanel digitalSensorPanel = page.digitalSensorPanel();
+		page.showTab(digitalSensorPanel);
+
+		findComponent(digitalSensorPanel, JToggleButton.class).doClick();
+		eventListeners.forEach(l -> l.stateChanged(digitalPinValueChanged(pin, value)));
 	}
 
 	private void repaint(Console console) {
