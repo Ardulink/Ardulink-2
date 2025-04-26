@@ -37,7 +37,11 @@ public class FilteredEventListenerAdapter extends EventListenerAdapter {
 	private final Pin pin;
 	private final EventListener delegate;
 
-	public FilteredEventListenerAdapter(Pin pin, EventListener delegate) {
+	public static EventListenerAdapter filter(Pin pin, EventListener delegate) {
+		return new FilteredEventListenerAdapter(pin, delegate);
+	}
+
+	private FilteredEventListenerAdapter(Pin pin, EventListener delegate) {
 		this.pin = pin;
 		this.delegate = delegate;
 	}

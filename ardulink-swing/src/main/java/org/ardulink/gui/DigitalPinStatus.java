@@ -21,6 +21,7 @@ package org.ardulink.gui;
 import static java.awt.event.ItemEvent.DESELECTED;
 import static java.awt.event.ItemEvent.SELECTED;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.events.FilteredEventListenerAdapter.filter;
 import static org.ardulink.gui.Icons.icon;
 import static org.ardulink.gui.util.LinkReplacer.doReplace;
 
@@ -39,7 +40,6 @@ import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.EventListenerAdapter;
-import org.ardulink.core.events.FilteredEventListenerAdapter;
 import org.ardulink.gui.facility.IntMinMaxModel;
 import org.ardulink.util.Throwables;
 
@@ -77,9 +77,9 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 
 	private transient EventListener listener;
 
-	private FilteredEventListenerAdapter listener() {
+	private EventListenerAdapter listener() {
 		DigitalPin pin = digitalPin(pinComboBoxModel.getSelectedItem().intValue());
-		return new FilteredEventListenerAdapter(pin, new EventListenerAdapter() {
+		return filter(pin, new EventListenerAdapter() {
 			@Override
 			public void stateChanged(DigitalPinValueChangedEvent event) {
 				boolean value = event.getValue().booleanValue();

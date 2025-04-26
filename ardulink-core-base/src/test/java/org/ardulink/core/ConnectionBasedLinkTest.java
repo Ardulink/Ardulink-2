@@ -23,6 +23,7 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
+import static org.ardulink.core.events.FilteredEventListenerAdapter.filter;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
@@ -38,7 +39,7 @@ import org.ardulink.core.Connection.Listener;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
-import org.ardulink.core.events.FilteredEventListenerAdapter;
+import org.ardulink.core.events.EventListenerAdapter;
 import org.ardulink.core.events.PinValueChangedEvent;
 import org.ardulink.testsupport.junit5.ArduinoStubExt;
 import org.junit.jupiter.api.Test;
@@ -125,7 +126,7 @@ class ConnectionBasedLinkTest {
 	@Test
 	void doesSendStartListeningAnalogCommangToArduino() throws IOException {
 		int pin = anyPositive(int.class);
-		arduinoStub.link().addListener(new FilteredEventListenerAdapter(analogPin(pin), null));
+		arduinoStub.link().addListener(filter(analogPin(pin), null));
 		assertToArduinoWasSent(format("alp://srla/%d", pin));
 	}
 
@@ -133,8 +134,8 @@ class ConnectionBasedLinkTest {
 	void doesSendStopListeningAnalogCommangToArduino() throws IOException {
 		ConnectionBasedLink link = arduinoStub.link();
 		int pin = anyPositive(int.class);
-		FilteredEventListenerAdapter l1 = new FilteredEventListenerAdapter(analogPin(pin), null);
-		FilteredEventListenerAdapter l2 = new FilteredEventListenerAdapter(analogPin(pin), null);
+		EventListenerAdapter l1 = filter(analogPin(pin), null);
+		EventListenerAdapter l2 = filter(analogPin(pin), null);
 		link.addListener(l1);
 		link.addListener(l2);
 		link.removeListener(l1);
@@ -158,7 +159,7 @@ class ConnectionBasedLinkTest {
 	@Test
 	void doesSendStartListeningDigitalCommangToArduino() throws IOException {
 		int pin = anyPositive(int.class);
-		arduinoStub.link().addListener(new FilteredEventListenerAdapter(digitalPin(pin), null));
+		arduinoStub.link().addListener(filter(digitalPin(pin), null));
 		assertToArduinoWasSent(format("alp://srld/%d", pin));
 	}
 
@@ -176,7 +177,7 @@ class ConnectionBasedLinkTest {
 	void canFilterPins() throws IOException {
 		int pin = anyPositive(int.class);
 		StateChangeCollector listener = new StateChangeCollector();
-		arduinoStub.link().addListener(new FilteredEventListenerAdapter(digitalPin(anyOtherPin(pin)), listener));
+		arduinoStub.link().addListener(filter(digitalPin(anyOtherPin(pin)), listener));
 		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(true);
 		arduinoStub.simulateArduinoSends(lf(message));
 		assertThat(listener.digitalEvents).isEmpty();

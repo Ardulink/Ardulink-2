@@ -18,6 +18,7 @@ package org.ardulink.gui;
 import static java.awt.event.ItemEvent.DESELECTED;
 import static java.awt.event.ItemEvent.SELECTED;
 import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.core.events.FilteredEventListenerAdapter.filter;
 import static org.ardulink.gui.util.LinkReplacer.doReplace;
 import static org.ardulink.util.Integers.constrain;
 
@@ -39,7 +40,6 @@ import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.core.events.EventListenerAdapter;
-import org.ardulink.core.events.FilteredEventListenerAdapter;
 import org.ardulink.gui.facility.IntMinMaxModel;
 import org.ardulink.util.Throwables;
 
@@ -79,9 +79,9 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	private transient EventListener listener;
 	private final DecimalFormat voltageFormat = new DecimalFormat("#.###");
 
-	private FilteredEventListenerAdapter listener() {
+	private EventListenerAdapter listener() {
 		AnalogPin pin = analogPin(pinComboBoxModel.getSelectedItem().intValue());
-		return new FilteredEventListenerAdapter(pin, new EventListenerAdapter() {
+		return filter(pin, new EventListenerAdapter() {
 
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {

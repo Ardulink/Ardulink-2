@@ -132,7 +132,7 @@ class MqttIntegrationTest {
 	@MethodSource("data")
 	void sendsControlMessageWhenAddingAnalogListener(TestConfig config) throws IOException {
 		init(config);
-		link.addListener(new FilteredEventListenerAdapter(analogPin(1), delegate()));
+		link.addListener(FilteredEventListenerAdapter.filter(analogPin(1), delegate()));
 		mqttClient.awaitMessages(
 				m -> assertThat(m).singleElement().isEqualTo(new Message(topic("system/listening/A1"), "true")));
 	}
@@ -141,7 +141,7 @@ class MqttIntegrationTest {
 	@MethodSource("data")
 	void sendsControlMessageWhenAddingDigitalListener(TestConfig config) throws IOException {
 		init(config);
-		link.addListener(new FilteredEventListenerAdapter(digitalPin(2), delegate()));
+		link.addListener(FilteredEventListenerAdapter.filter(digitalPin(2), delegate()));
 		mqttClient.awaitMessages(
 				m -> assertThat(m).singleElement().isEqualTo(new Message(topic("system/listening/D2"), "true")));
 	}
@@ -150,7 +150,7 @@ class MqttIntegrationTest {
 	@MethodSource("data")
 	void sendsControlMessageWhenRemovingAnalogListener(TestConfig config) throws IOException {
 		init(config);
-		EventListenerAdapter listener = new FilteredEventListenerAdapter(analogPin(1), delegate());
+		EventListenerAdapter listener = FilteredEventListenerAdapter.filter(analogPin(1), delegate());
 		link.addListener(listener);
 		link.addListener(listener);
 		Message m1 = new Message(topic("system/listening/A1"), "true");
@@ -167,7 +167,7 @@ class MqttIntegrationTest {
 	@MethodSource("data")
 	void sendsControlMessageWhenRemovingDigitalListener(TestConfig config) throws IOException {
 		init(config);
-		EventListenerAdapter listener = new FilteredEventListenerAdapter(digitalPin(1), delegate());
+		EventListenerAdapter listener = FilteredEventListenerAdapter.filter(digitalPin(1), delegate());
 		link.addListener(listener);
 		link.addListener(listener);
 		Message m1 = new Message(topic("system/listening/D1"), "true");
