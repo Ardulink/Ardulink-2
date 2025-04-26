@@ -26,6 +26,6 @@ package org.ardulink.core.events;
  */
 public interface RplyListener {
 
-	void rplyReceived(RplyEvent e);
+	void rplyReceived(RplyEvent rplyEvent);
 
 }

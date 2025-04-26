@@ -16,7 +16,10 @@ limitations under the License.
 
 package org.ardulink.core.events;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
 import org.ardulink.core.Pin;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -26,6 +29,7 @@ import org.ardulink.core.Pin;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public class FilteredEventListenerAdapter extends EventListenerAdapter {
 
 	private final Pin pin;

@@ -28,10 +28,8 @@ import org.ardulink.core.Pin.DigitalPin;
  */
 public interface DigitalPinValueChangedEvent extends PinValueChangedEvent {
 
-	@Override
 	DigitalPin getPin();
 
-	@Override
 	Boolean getValue();
 
 }
