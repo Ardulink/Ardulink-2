@@ -82,7 +82,7 @@ class ArdulinkProducerTest {
 	}
 
 	@Test
-	void doesNotAcceptMeesagesWithEmptyBody() throws Exception {
+	void doesNotAcceptMessagesWithEmptyBody() throws Exception {
 		setup("aValidUser", null, emptyList());
 		setFrom("aValidUser");
 
