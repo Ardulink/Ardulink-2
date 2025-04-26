@@ -34,7 +34,7 @@ import org.ardulink.util.anno.LapsedWith;
 @LapsedWith(value = JDK14, module = "records")
 public final class DefaultAnalogPinValueChangedEvent implements AnalogPinValueChangedEvent {
 
-	public static DefaultAnalogPinValueChangedEvent analogPinValueChanged(AnalogPin pin, int value) {
+	public static AnalogPinValueChangedEvent analogPinValueChanged(AnalogPin pin, int value) {
 		return new DefaultAnalogPinValueChangedEvent(pin, value);
 	}
 

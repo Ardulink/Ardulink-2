@@ -18,6 +18,8 @@ package org.ardulink.core.events;
 
 import static org.ardulink.util.anno.LapsedWith.JDK14;
 
+import java.util.Objects;
+
 import org.ardulink.core.Pin;
 import org.ardulink.util.anno.LapsedWith;
 
@@ -47,19 +49,19 @@ public class FilteredEventListenerAdapter extends EventListenerAdapter {
 	@Override
 	public void stateChanged(AnalogPinValueChangedEvent event) {
 		if (accept(event)) {
-			this.delegate.stateChanged(event);
+			delegate.stateChanged(event);
 		}
 	}
 
 	@Override
 	public void stateChanged(DigitalPinValueChangedEvent event) {
 		if (accept(event)) {
-			this.delegate.stateChanged(event);
+			delegate.stateChanged(event);
 		}
 	}
 
 	private boolean accept(PinValueChangedEvent event) {
-		return this.pin.equals(event.getPin());
+		return Objects.equals(pin, event.getPin());
 	}
 
 }

@@ -34,7 +34,7 @@ import org.ardulink.util.anno.LapsedWith;
 @LapsedWith(value = JDK14, module = "records")
 public final class DefaultDigitalPinValueChangedEvent implements DigitalPinValueChangedEvent {
 
-	public static DefaultDigitalPinValueChangedEvent digitalPinValueChanged(DigitalPin pin, boolean value) {
+	public static DigitalPinValueChangedEvent digitalPinValueChanged(DigitalPin pin, boolean value) {
 		return new DefaultDigitalPinValueChangedEvent(pin, value);
 	}
 
