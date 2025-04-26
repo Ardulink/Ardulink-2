@@ -190,9 +190,8 @@ public final class ToArdulinkProtocol implements Processor {
 
 	private Optional<String> createMessage(String topic, String value) {
 		return this.creators.stream() //
-				.map(creator -> creator.createMessage(topic, value)) //
-				.filter(Optional::isPresent) //
-				.findFirst().map(Optional::get);
+				.flatMap(c -> c.createMessage(topic, value).stream()) //
+				.findFirst();
 	}
 
 	private static List<MessageCreator> creators(Topics topics) {

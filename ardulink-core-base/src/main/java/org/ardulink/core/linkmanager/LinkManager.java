@@ -608,8 +608,9 @@ public abstract class LinkManager {
 			List<LinkFactory> connectionFactories = getLinkFactories().collect(toList());
 			BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function1 = (t, u) -> getByName(t, u);
 			BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function2 = (t, u) -> getByAlias(t, u);
-			return Stream.of(function1, function2).map(f -> f.apply(name, connectionFactories))
-					.filter(Optional::isPresent).map(Optional::get).findFirst();
+			return Stream.of(function1, function2) //
+					.flatMap(f -> f.apply(name, connectionFactories).stream()) //
+					.findFirst();
 		}
 
 		private Optional<LinkFactory> getByName(String name, List<LinkFactory> connectionFactories) {
