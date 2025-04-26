@@ -18,12 +18,13 @@ limitations under the License.
 
 package org.ardulink.gui;
 
+import static java.awt.event.ItemEvent.DESELECTED;
+import static java.awt.event.ItemEvent.SELECTED;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.gui.Icons.icon;
 import static org.ardulink.gui.util.LinkReplacer.doReplace;
 
 import java.awt.GridLayout;
-import java.awt.event.ItemEvent;
 import java.io.IOException;
 
 import javax.swing.ImageIcon;
@@ -53,10 +54,16 @@ import org.ardulink.util.Throwables;
  */
 public class DigitalPinStatus extends JPanel implements Linkable {
 
+	private static final long serialVersionUID = -7773514191770737230L;
+
 	private static final String SENSOR_ON = "Sensor on";
 	private static final String SENSOR_OFF = "Sensor off";
 
-	private static final long serialVersionUID = -7773514191770737230L;
+	private static final String HIGH = "High";
+	private static final String LOW = "Low";
+
+	private static final ImageIcon HIGH_ICON = icon("icons/blue-on-32.png");
+	private static final ImageIcon LOW_ICON = icon("icons/blue-off-32.png");
 
 	private final JLabel lblStatelabel;
 	private final JComboBox<Integer> pinComboBox;
@@ -66,14 +73,6 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 
 	private transient Link link;
 
-	private static final String HIGH = "High";
-	private static final String LOW = "Low";
-
-	private static final String HIGH_ICON_NAME = "icons/blue-on-32.png";
-	private static final String LOW_ICON_NAME = "icons/blue-off-32.png";
-
-	private static final ImageIcon HIGH_ICON = icon(HIGH_ICON_NAME);
-	private static final ImageIcon LOW_ICON = icon(LOW_ICON_NAME);
 	private JPanel comboPanel;
 
 	private transient EventListener listener;
@@ -114,9 +113,9 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 
 		isActiveButton = new JToggleButton(SENSOR_OFF);
 		isActiveButton.addItemListener(e -> {
-			if (e.getStateChange() == ItemEvent.SELECTED) {
+			if (e.getStateChange() == SELECTED) {
 				startListening();
-			} else if (e.getStateChange() == ItemEvent.DESELECTED) {
+			} else if (e.getStateChange() == DESELECTED) {
 				stopListening();
 			}
 			updateComponentsEnabledState();
@@ -184,7 +183,6 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 
 		isActiveButton.setEnabled(panelIsEnabled);
 		pinComboBox.setEnabled(panelIsEnabled && !isOn);
-		lblStatelabel.setEnabled(panelIsEnabled && isOn);
 	}
 
 }
