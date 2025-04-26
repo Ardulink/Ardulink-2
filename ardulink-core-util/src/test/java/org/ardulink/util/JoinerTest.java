@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.ardulink.util.Joiner.MapJoiner;
@@ -36,11 +37,11 @@ class JoinerTest {
 
 	@Test
 	void join() {
-		Object[] objects = new Object[] { "A", null, 1 };
-		Joiner joiner = Joiner.on("; ");
+		List<Object> objects = Arrays.asList("A", null, 1);
+		Joiner sut = Joiner.on("; ");
 		String expected = "A; null; 1";
-		assertThat(joiner.join(objects)).isEqualTo(expected);
-		assertThat(joiner.join(Arrays.asList(objects))).isEqualTo(expected);
+		assertThat(sut.join(objects.toArray())).isEqualTo(expected);
+		assertThat(sut.join(objects)).isEqualTo(expected);
 	}
 
 	@Test
@@ -48,8 +49,8 @@ class JoinerTest {
 		Map<Object, Object> map = mapWithNullValue();
 		String separator = "|&>";
 		String kvSeparator = " =>";
-		MapJoiner withKeyValueSeparator = Joiner.on(separator).withKeyValueSeparator(kvSeparator);
-		assertThat(withKeyValueSeparator.join(map)).isEqualTo( //
+		MapJoiner sut = Joiner.on(separator).withKeyValueSeparator(kvSeparator);
+		assertThat(sut.join(map)).isEqualTo( //
 				"A" + kvSeparator + "42" + separator //
 						+ "2" + kvSeparator + "null" + separator //
 						+ "3" + kvSeparator + "3");

@@ -132,7 +132,7 @@ class DummyLinkFactoryTest {
 		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		ConfigAttribute a = configurer.getAttribute("a");
 		assertThat(a.hasChoiceValues()).isEqualTo(TRUE);
-		assertThat(a.getChoiceValues()).isEqualTo(new Object[] { "aVal1", "aVal2" });
+		assertThat(a.getChoiceValues()).containsExactly("aVal1", "aVal2");
 
 		assertThat(configurer.getAttribute("b").hasChoiceValues()).isEqualTo(FALSE);
 		assertThat(configurer.getAttribute("c").hasChoiceValues()).isEqualTo(FALSE);
@@ -147,7 +147,7 @@ class DummyLinkFactoryTest {
 	void cannotSetChoiceValuesThatDoNotExist_WithPreviousQuery() {
 		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		ConfigAttribute a = configurer.getAttribute("a");
-		assertThat(a.getChoiceValues()).isEqualTo(new Object[] { "aVal1", "aVal2" });
+		assertThat(a.getChoiceValues()).containsExactly("aVal1", "aVal2");
 		String invalidValue = "aVal3IsNotAvalidValue";
 		a.setValue(invalidValue);
 		assertThatIllegalArgumentException().isThrownBy(configurer::newLink)
