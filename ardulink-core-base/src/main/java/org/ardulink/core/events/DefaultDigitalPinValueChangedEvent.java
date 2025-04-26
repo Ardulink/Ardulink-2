@@ -16,9 +16,12 @@ limitations under the License.
 
 package org.ardulink.core.events;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
 import java.util.Objects;
 
 import org.ardulink.core.Pin.DigitalPin;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -28,6 +31,7 @@ import org.ardulink.core.Pin.DigitalPin;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public final class DefaultDigitalPinValueChangedEvent implements DigitalPinValueChangedEvent {
 
 	public static DefaultDigitalPinValueChangedEvent digitalPinValueChanged(DigitalPin pin, boolean value) {

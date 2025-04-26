@@ -15,6 +15,10 @@ limitations under the License.
  */
 package org.ardulink.core.events;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
+import org.ardulink.util.anno.LapsedWith;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -23,6 +27,7 @@ package org.ardulink.core.events;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public class DefaultCustomEvent implements CustomEvent {
 
 	private final String message;

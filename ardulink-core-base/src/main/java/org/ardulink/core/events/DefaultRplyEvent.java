@@ -17,10 +17,13 @@ limitations under the License.
 package org.ardulink.core.events;
 
 import static java.util.Collections.unmodifiableMap;
+import static org.ardulink.util.anno.LapsedWith.JDK14;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -30,6 +33,7 @@ import java.util.Set;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public class DefaultRplyEvent implements RplyEvent {
 
 	private final boolean ok;
