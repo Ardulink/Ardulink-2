@@ -82,25 +82,9 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	private EventListenerAdapter listener() {
 		AnalogPin pin = analogPin(pinComboBoxModel.getSelectedItem().intValue());
 		return filter(pin, new EventListenerAdapter() {
-
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
-				int value = event.getValue();
-				valueLabel.setText(String.valueOf(value));
-				voltValueLbl.setText(voltageFormat.format(voltage(value)) + " V");
-				progressBar.setValue(percent(value));
-			}
-
-			private float voltage(int value) {
-				return (float) value * 5.0f / 1023.0f;
-			}
-
-			private int percent(int value) {
-				int minValue = getMinValue();
-				int maxValue = getMaxValue();
-				return maxValue == minValue //
-						? 0 //
-						: (int) (((value - minValue) * 100.0) / (maxValue - minValue));
+				setValue(event.getValue());
 			}
 		});
 	}
@@ -169,7 +153,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		lblVoltOutput.setBounds(10, 143, 59, 14);
 		add(lblVoltOutput);
 
-		voltValueLbl = new JLabel("0V");
+		voltValueLbl = new JLabel();
 		voltValueLbl.setFont(FONT_11);
 		voltValueLbl.setBounds(10, 157, 76, 14);
 		add(voltValueLbl);
@@ -181,7 +165,6 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 
 		valueLabel = new JLabel();
 		valueLabel.setBounds(10, 112, 55, 22);
-		valueLabel.setText("0");
 		add(valueLabel);
 
 		isActiveButton = new JToggleButton(TOGGLE_TEXT_OFF);
@@ -198,17 +181,36 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		isActiveButton.setBounds(10, 177, 76, 28);
 		add(isActiveButton);
 
-		minValueComboBox.addActionListener(__ -> fixAndUpdate(minValueComboBoxModel, getMaxValue()));
-		maxValueComboBox.addActionListener(__ -> fixAndUpdate(maxValueComboBoxModel, getMinValue()));
+		setValue(0);
+		minValueComboBox.addActionListener(__ -> fixAndUpdate(minValueComboBoxModel, maxValue()));
+		maxValueComboBox.addActionListener(__ -> fixAndUpdate(maxValueComboBoxModel, minValue()));
+	}
+
+	public void setValue(int value) {
+		valueLabel.setText(String.valueOf(value));
+		voltValueLbl.setText(voltageFormat.format(voltage(value)) + " V");
+		progressBar.setValue(percent(value));
+	}
+
+	private float voltage(int value) {
+		return (float) value * 5.0f / 1023.0f;
+	}
+
+	private int percent(int value) {
+		int minValue = minValue();
+		int maxValue = maxValue();
+		return maxValue == minValue //
+				? 0 //
+				: (int) (((value - minValue) * 100.0) / (maxValue - minValue));
 	}
 
 	private void fixAndUpdate(IntMinMaxModel minMaxModel, int value) {
 		fixWhenExceed(minMaxModel, value);
-		updateValue();
+		setValue(constrain(value, minValue(), maxValue()));
 	}
 
 	private void fixWhenExceed(IntMinMaxModel model, int value) {
-		if (getMinValue() > getMaxValue()) {
+		if (minValue() > maxValue()) {
 			model.setSelectedItem(value);
 		}
 	}
@@ -251,28 +253,12 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		this.link = doReplace(this.link).with(link);
 	}
 
-	public void setTitle(String title) {
-		lblPowerPinController.setText(title);
-	}
-
-	public int getValue() {
-		return Integer.parseInt(valueLabel.getText());
-	}
-
-	public void setValue(int value) {
-		valueLabel.setText(String.valueOf(constrain(value, getMinValue(), getMaxValue())));
-	}
-
-	public int getMinValue() {
+	private int minValue() {
 		return minValueComboBoxModel.getSelectedItem().intValue();
 	}
 
-	public int getMaxValue() {
+	private int maxValue() {
 		return maxValueComboBoxModel.getSelectedItem().intValue();
-	}
-
-	private void updateValue() {
-		setValue(getValue());
 	}
 
 	@Override
