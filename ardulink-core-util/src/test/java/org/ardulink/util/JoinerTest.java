@@ -15,12 +15,15 @@ limitations under the License.
  */
 package org.ardulink.util;
 
+import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.ardulink.util.Joiner.MapJoiner;
 import org.junit.jupiter.api.Test;
@@ -47,13 +50,11 @@ class JoinerTest {
 	@Test
 	void joinMap() {
 		Map<Object, Object> map = mapWithNullValue();
-		String separator = "|&>";
-		String kvSeparator = " =>";
-		MapJoiner sut = Joiner.on(separator).withKeyValueSeparator(kvSeparator);
-		assertThat(sut.join(map)).isEqualTo( //
-				"A" + kvSeparator + "42" + separator //
-						+ "2" + kvSeparator + "null" + separator //
-						+ "3" + kvSeparator + "3");
+		MapJoiner sut = Joiner.on(", ").withKeyValueSeparator(" = ");
+		String expected = "A = 42, " //
+				+ "2 = null, " //
+				+ "3 = 3";
+		assertThat(sut.join(map)).isEqualTo(expected);
 	}
 
 	private static Map<Object, Object> mapWithNullValue() {
