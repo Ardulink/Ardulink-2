@@ -15,14 +15,16 @@ limitations under the License.
 */
 package org.ardulink.gui;
 
+import static java.awt.Font.PLAIN;
 import static java.awt.event.ItemEvent.DESELECTED;
 import static java.awt.event.ItemEvent.SELECTED;
+import static javax.swing.SwingConstants.CENTER;
+import static javax.swing.SwingConstants.VERTICAL;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.events.FilteredEventListenerAdapter.filter;
 import static org.ardulink.gui.util.LinkReplacer.doReplace;
 import static org.ardulink.util.Integers.constrain;
 
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.io.IOException;
@@ -33,7 +35,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JToggleButton;
-import javax.swing.SwingConstants;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin.AnalogPin;
@@ -57,14 +58,14 @@ import org.ardulink.util.Throwables;
 public class AnalogPinStatus extends JPanel implements Linkable {
 
 	private static final long serialVersionUID = 7927439571760351922L;
-	
+
 	private static final String TOGGLE_TEXT_ON = "On";
 	private static final String TOGGLE_TEXT_OFF = "Off";
 
-	private static final Font FONT_11 = new Font("SansSerif", Font.PLAIN, 11);
-	private static final Font FONT_12 = new Font("SansSerif", Font.PLAIN, 12);
-	
-	private static final float VOLTAGE_CONVERSION = 5.0F / 1023.0F;
+	private static final Font FONT_11 = new Font("SansSerif", PLAIN, 11);
+	private static final Font FONT_12 = new Font("SansSerif", PLAIN, 12);
+
+	private static final float VOLTAGE_CONVERSION = 5F / 1023F;
 
 	private JLabel valueLabel;
 	private JLabel voltValueLbl;
@@ -138,15 +139,14 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		progressBar = new JProgressBar();
 		progressBar.setFont(FONT_11);
 		progressBar.setStringPainted(true);
-		progressBar.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-		progressBar.setOrientation(SwingConstants.VERTICAL);
+		progressBar.setOrientation(VERTICAL);
 		progressBar.setBounds(111, 99, 16, 108);
 		add(progressBar);
 
 		lblPowerPinController = new JLabel("Analog PIN Status");
 		lblPowerPinController.setFont(FONT_12);
 		lblPowerPinController.setToolTipText("");
-		lblPowerPinController.setHorizontalAlignment(SwingConstants.CENTER);
+		lblPowerPinController.setHorizontalAlignment(CENTER);
 		lblPowerPinController.setBounds(10, 11, 117, 14);
 		add(lblPowerPinController);
 
@@ -195,7 +195,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	}
 
 	private float voltage(int value) {
-	    return value * VOLTAGE_CONVERSION;
+		return value * VOLTAGE_CONVERSION;
 	}
 
 	private int percent(int value) {
@@ -203,7 +203,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		int maxValue = maxValue();
 		return maxValue == minValue //
 				? 0 //
-				: (int) (((value - minValue) * 100.0) / (maxValue - minValue));
+				: (int) (((value - minValue) * 100D) / (maxValue - minValue));
 	}
 
 	private void fixAndUpdate(IntMinMaxModel model, int value) {

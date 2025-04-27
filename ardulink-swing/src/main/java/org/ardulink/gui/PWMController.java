@@ -18,15 +18,18 @@ limitations under the License.
 
 package org.ardulink.gui;
 
+import static java.awt.ComponentOrientation.RIGHT_TO_LEFT;
+import static java.awt.Font.PLAIN;
+import static javax.swing.SwingConstants.CENTER;
+import static javax.swing.SwingConstants.VERTICAL;
 import static org.ardulink.core.Pin.analogPin;
+import static org.ardulink.gui.util.LinkReplacer.doReplace;
 import static org.ardulink.util.Integers.constrain;
-import static org.ardulink.util.Preconditions.checkNotNull;
 
-import java.awt.ComponentOrientation;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -36,7 +39,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSlider;
-import javax.swing.SwingConstants;
 
 import org.ardulink.core.Link;
 import org.ardulink.gui.event.PWMChangeEvent;
@@ -58,10 +60,12 @@ import org.ardulink.util.Throwables;
  */
 public class PWMController extends JPanel implements Linkable {
 
-	private static final Font FONT_11 = new Font("SansSerif", Font.PLAIN, 11);
-	private static final Font FONT_12 = new Font("SansSerif", Font.PLAIN, 12);
-
 	private static final long serialVersionUID = 7927439571760351922L;
+
+	private static final Font FONT_11 = new Font("SansSerif", PLAIN, 11);
+	private static final Font FONT_12 = new Font("SansSerif", PLAIN, 12);
+
+	private static final float VOLTAGE_CONVERSION = 5F / 255F;
 
 	private JSlider powerSlider;
 	private JComboBox<Integer> valueComboBox;
@@ -75,6 +79,7 @@ public class PWMController extends JPanel implements Linkable {
 	private JLabel lblPowerPinController;
 
 	private transient List<PWMControllerListener> pwmControllerListeners = new CopyOnWriteArrayList<>();
+	private final DecimalFormat voltageFormat = new DecimalFormat("#.### V");
 
 	private transient Link link;
 
@@ -92,7 +97,7 @@ public class PWMController extends JPanel implements Linkable {
 		powerSlider.setPaintTicks(true);
 		powerSlider.setMaximum(255);
 		powerSlider.setValue(0);
-		powerSlider.setOrientation(SwingConstants.VERTICAL);
+		powerSlider.setOrientation(VERTICAL);
 		powerSlider.setBounds(126, 38, 59, 199);
 		add(powerSlider);
 
@@ -103,8 +108,8 @@ public class PWMController extends JPanel implements Linkable {
 
 		// TODO define a method to be able to change the set of controllable pins. This
 		// way you can work with different boards than an Arduino UNO
-		// pinComboBox.setModel(new DefaultComboBoxModel(new String[] {"3", "5", "6",
-		// "9", "10", "11"}));
+		// pinComboBox.setModel(new DefaultComboBoxModel(new Integer[] {3, 5, 6, 9, 10,
+		// 11 }));
 		IntMinMaxModel pinComboBoxModel = new IntMinMaxModel(0, 40);
 		pinComboBox = new JComboBox<Integer>(pinComboBoxModel);
 		pinComboBox.setName("pinComboBox");
@@ -135,15 +140,14 @@ public class PWMController extends JPanel implements Linkable {
 		progressBar = new JProgressBar();
 		progressBar.setFont(FONT_11);
 		progressBar.setStringPainted(true);
-		progressBar.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-		progressBar.setOrientation(SwingConstants.VERTICAL);
+		progressBar.setOrientation(VERTICAL);
 		progressBar.setBounds(96, 98, 16, 108);
 		add(progressBar);
 
 		lblPowerPinController = new JLabel("Power Pin Controller");
 		lblPowerPinController.setFont(FONT_12);
 		lblPowerPinController.setToolTipText("Power With Modulation");
-		lblPowerPinController.setHorizontalAlignment(SwingConstants.CENTER);
+		lblPowerPinController.setHorizontalAlignment(CENTER);
 		lblPowerPinController.setBounds(10, 11, 175, 14);
 		add(lblPowerPinController);
 
@@ -152,7 +156,7 @@ public class PWMController extends JPanel implements Linkable {
 		lblVoltOutput.setBounds(10, 143, 59, 14);
 		add(lblVoltOutput);
 
-		voltValueLbl = new JLabel("0V");
+		voltValueLbl = new JLabel();
 		voltValueLbl.setFont(FONT_11);
 		voltValueLbl.setBounds(10, 157, 76, 14);
 		add(voltValueLbl);
@@ -183,25 +187,18 @@ public class PWMController extends JPanel implements Linkable {
 		chckbxContChange = new JCheckBox("");
 		chckbxContChange.setRequestFocusEnabled(false);
 		chckbxContChange.setRolloverEnabled(true);
-		chckbxContChange.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+		chckbxContChange.setComponentOrientation(RIGHT_TO_LEFT);
 		chckbxContChange.setSelected(true);
 		chckbxContChange.setBounds(6, 188, 21, 22);
 		add(chckbxContChange);
 
 		powerSlider.addChangeListener(__ -> {
 			if (!powerSlider.getValueIsAdjusting() || chckbxContChange.isSelected()) {
-				int powerValue = powerSlider.getValue();
-				valueComboBoxModel.setSelectedItem(powerValue);
-				float volt = ((powerValue) * 5.0f) / 255.0f;
-				voltValueLbl.setText(volt + "V");
-				float progress = ((powerValue - powerSlider.getMinimum()) * 100.0f)
-						/ ((float) powerSlider.getMaximum() - (float) powerSlider.getMinimum());
-				progressBar.setValue((int) progress);
-
-				notifyListeners(new PWMChangeEvent(powerValue));
-
+				int power = powerSlider.getValue();
 				try {
-					link.switchAnalogPin(analogPin(((int) pinComboBox.getSelectedItem())), powerValue);
+					link.switchAnalogPin(analogPin(getPin()), power);
+					setPower(power);
+					notifyListeners(new PWMChangeEvent(power));
 				} catch (IOException e) {
 					throw Throwables.propagate(e);
 				}
@@ -209,57 +206,72 @@ public class PWMController extends JPanel implements Linkable {
 		});
 
 		minValueComboBox.addActionListener(__ -> {
-			int maximum = maxValueComboBoxModel.getSelectedItem().intValue();
-			int minimum = minValueComboBoxModel.getSelectedItem().intValue();
-
-			if (minimum > maximum) {
-				minValueComboBoxModel.setSelectedItem(maximum);
-			}
-
-			valueComboBoxModel = new IntMinMaxModel(minimum, maximum);
-			valueComboBox.setModel(valueComboBoxModel);
-			powerSlider.setPaintLabels(false);
-			powerSlider.setPaintTicks(false);
-			powerSlider.setMajorTickSpacing((maximum - minimum) / 18);
-			powerSlider.setMinimum(minimum);
-			powerSlider.setPaintLabels(true);
-			powerSlider.setPaintTicks(true);
+			update(minValueComboBoxModel, maxValue());
+			powerSlider.setMinimum(minValue());
 		});
-
 		maxValueComboBox.addActionListener(__ -> {
-			int maximum = maxValueComboBoxModel.getSelectedItem().intValue();
-			int minimum = minValueComboBoxModel.getSelectedItem().intValue();
-
-			if (minimum > maximum) {
-				maxValueComboBoxModel.setSelectedItem(minimum);
-			}
-
-			valueComboBoxModel = new IntMinMaxModel(minimum, maximum);
-			valueComboBox.setModel(valueComboBoxModel);
-			powerSlider.setPaintLabels(false);
-			powerSlider.setPaintTicks(false);
-			powerSlider.setMajorTickSpacing((maximum - minimum) / 18);
-			powerSlider.setMaximum(maximum);
-			powerSlider.setPaintLabels(true);
-			powerSlider.setPaintTicks(true);
+			update(maxValueComboBoxModel, minValue());
+			powerSlider.setMaximum(maxValue());
 		});
+		setPower(0);
+	}
 
+	private void update(IntMinMaxModel model, int value) {
+		int minValue = minValue();
+		int maxValue = maxValue();
+		if (minValue > maxValue) {
+			model.setSelectedItem(value);
+		}
+
+		valueComboBoxModel = new IntMinMaxModel(minValue, maxValue);
+		valueComboBox.setModel(valueComboBoxModel);
+		powerSlider.setMajorTickSpacing((maxValue - minValue) / 18);
+	}
+
+	private int minValue() {
+		return minValueComboBoxModel.getSelectedItem().intValue();
+	}
+
+	private int maxValue() {
+		return maxValueComboBoxModel.getSelectedItem().intValue();
+	}
+
+	private void setPower(int value) {
+		valueComboBoxModel.setSelectedItem(value);
+		voltValueLbl.setText(voltageFormat.format(voltage(value)));
+		progressBar.setValue(percent(value));
+	}
+
+	private static float voltage(int power) {
+		return power * VOLTAGE_CONVERSION;
+	}
+
+	private int percent(int value) {
+		int minValue = minValue();
+		int maxValue = maxValue();
+		return maxValue == minValue //
+				? 0 //
+				: (int) (((value - minValue) * 100D) / (maxValue - minValue));
 	}
 
 	/**
 	 * Set the pin to control.
 	 * 
 	 * @param pin pin number
-	 * @return 
+	 * @return
 	 */
 	public PWMController setPin(int pin) {
 		pinComboBox.setSelectedItem(Integer.valueOf(pin));
 		return this;
 	}
 
+	private int getPin() {
+		return ((Integer) pinComboBox.getSelectedItem()).intValue();
+	}
+
 	@Override
 	public void setLink(Link link) {
-		this.link = checkNotNull(link, "link must not be null");
+		this.link = doReplace(this.link).with(link);
 	}
 
 	public void setTitle(String title) {
@@ -279,9 +291,7 @@ public class PWMController extends JPanel implements Linkable {
 	}
 
 	public void setValue(int value) {
-		int maximum = maxValueComboBoxModel.getSelectedItem().intValue();
-		int minimum = minValueComboBoxModel.getSelectedItem().intValue();
-		valueComboBoxModel.setSelectedItem(constrain(value, minimum, maximum));
+		valueComboBoxModel.setSelectedItem(constrain(value, minValue(), maxValue()));
 	}
 
 }
