@@ -206,15 +206,11 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 				: (int) (((value - minValue) * 100.0) / (maxValue - minValue));
 	}
 
-	private void fixAndUpdate(IntMinMaxModel minMaxModel, int value) {
-		fixWhenExceed(minMaxModel, value);
-		setValue(constrain(value, minValue(), maxValue()));
-	}
-
-	private void fixWhenExceed(IntMinMaxModel model, int value) {
+	private void fixAndUpdate(IntMinMaxModel model, int value) {
 		if (minValue() > maxValue()) {
 			model.setSelectedItem(value);
 		}
+		setValue(constrain(value, minValue(), maxValue()));
 	}
 
 	private void startListening() {
