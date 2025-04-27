@@ -202,27 +202,6 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		maxValueComboBox.addActionListener(__ -> fixAndUpdate(maxValueComboBoxModel, getMinValue()));
 	}
 
-	private void startListening() {
-		isActiveButton.setText(TOGGLE_TEXT_ON);
-		try {
-			link.addListener(listener = listener());
-		} catch (IOException e) {
-			throw Throwables.propagate(e);
-		}
-	}
-
-	private void stopListening() {
-		isActiveButton.setText(TOGGLE_TEXT_OFF);
-		if (listener != null) {
-			try {
-				link.removeListener(listener);
-				listener = null;
-			} catch (IOException e) {
-				throw Throwables.propagate(e);
-			}
-		}
-	}
-
 	private void fixAndUpdate(IntMinMaxModel minMaxModel, int value) {
 		fixWhenExceed(minMaxModel, value);
 		updateValue();
@@ -231,6 +210,27 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	private void fixWhenExceed(IntMinMaxModel model, int value) {
 		if (getMinValue() > getMaxValue()) {
 			model.setSelectedItem(value);
+		}
+	}
+
+	private void startListening() {
+		try {
+			link.addListener(listener = listener());
+			isActiveButton.setText(TOGGLE_TEXT_ON);
+		} catch (IOException e) {
+			throw Throwables.propagate(e);
+		}
+	}
+
+	private void stopListening() {
+		if (listener != null) {
+			try {
+				link.removeListener(listener);
+				listener = null;
+				isActiveButton.setText(TOGGLE_TEXT_OFF);
+			} catch (IOException e) {
+				throw Throwables.propagate(e);
+			}
 		}
 	}
 

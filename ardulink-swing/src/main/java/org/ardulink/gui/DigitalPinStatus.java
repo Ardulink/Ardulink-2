@@ -124,20 +124,20 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 	}
 
 	private void startListening() {
-		isActiveButton.setText(SENSOR_ON);
 		try {
 			link.addListener(listener = listener());
+			isActiveButton.setText(SENSOR_ON);
 		} catch (IOException e) {
 			throw Throwables.propagate(e);
 		}
 	}
 
 	private void stopListening() {
-		isActiveButton.setText(SENSOR_OFF);
 		if (listener != null) {
 			try {
 				link.removeListener(listener);
 				listener = null;
+				isActiveButton.setText(SENSOR_OFF);
 			} catch (IOException e) {
 				throw Throwables.propagate(e);
 			}
@@ -171,10 +171,8 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 	 * Ensures that UI components reflect expected interaction logic:
 	 * <ul>
 	 * <li>If the panel is disabled, all components are disabled</li>
-	 * <li>If the sensor is on, the pin combo is disabled and status label is
-	 * enabled</li>
-	 * <li>If the sensor is off, the pin combo is enabled and status label is
-	 * disabled</li>
+	 * <li>If the sensor is on, the pin combo is disabled</li>
+	 * <li>If the sensor is off, the pin combo is enabled</li>
 	 * </ul>
 	 */
 	private void updateComponentsEnabledState() {
