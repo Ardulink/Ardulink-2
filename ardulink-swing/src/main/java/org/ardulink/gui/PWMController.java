@@ -216,6 +216,10 @@ public class PWMController extends JPanel implements Linkable {
 		setPower(0);
 	}
 
+	private int getPin() {
+		return (int) pinComboBox.getSelectedItem();
+	}
+
 	private void update(IntMinMaxModel model, int value) {
 		int minValue = minValue();
 		int maxValue = maxValue();
@@ -263,10 +267,6 @@ public class PWMController extends JPanel implements Linkable {
 	public PWMController setPin(int pin) {
 		pinComboBox.setSelectedItem(Integer.valueOf(pin));
 		return this;
-	}
-
-	private int getPin() {
-		return ((Integer) pinComboBox.getSelectedItem()).intValue();
 	}
 
 	@Override
