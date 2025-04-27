@@ -66,9 +66,9 @@ class ConsoleTest {
 	private static final String IS_HEADLESS = "java.awt.GraphicsEnvironment#isHeadless";
 
 	private final List<EventListener> eventListeners = new ArrayList<>();
-	private final Link connectLink = createMock();
+	private final Link linkMock = createLinkMock();
 
-	private Link createMock() {
+	private Link createLinkMock() {
 		try {
 			Link link = mock(Link.class);
 			doAnswer(i -> {
@@ -97,7 +97,7 @@ class ConsoleTest {
 		try (ConsolePage page = new ConsolePage(newConsole())) {
 			page.connect();
 
-			assertThat(page.getLink()).isSameAs(connectLink);
+			assertThat(page.getLink()).isSameAs(linkMock);
 			assertThat(page.connectButton().isEnabled()).isFalse();
 			assertThat(page.disconnectButton().isEnabled()).isTrue();
 		}
@@ -154,17 +154,17 @@ class ConsoleTest {
 			pin11.setValue(42);
 			pin12.doClick();
 
-			verify(connectLink).switchAnalogPin(analogPin(11), 42);
-			verify(connectLink).switchDigitalPin(digitalPin(12), true);
-			verifyNoMoreInteractions(connectLink);
+			verify(linkMock).switchAnalogPin(analogPin(11), 42);
+			verify(linkMock).switchDigitalPin(digitalPin(12), true);
+			verifyNoMoreInteractions(linkMock);
 
 			// disconnect restores the states, e.g. sets pin 11 and 12 to 0 (but this must
 			// not be done on the old (previous) link
-			reset(connectLink);
+			reset(linkMock);
 			page.disconnect();
 
-			verify(connectLink).close();
-			verifyNoMoreInteractions(connectLink);
+			verify(linkMock).close();
+			verifyNoMoreInteractions(linkMock);
 		}
 	}
 
@@ -174,8 +174,8 @@ class ConsoleTest {
 		try (ConsolePage page = new ConsolePage(newConsole())) {
 			page.connect();
 		}
-		verify(connectLink, timeout(SECONDS.toMillis(1))).close();
-		verifyNoMoreInteractions(connectLink);
+		verify(linkMock, timeout(SECONDS.toMillis(1))).close();
+		verifyNoMoreInteractions(linkMock);
 	}
 
 	@Test
@@ -275,7 +275,7 @@ class ConsoleTest {
 		return new Console() {
 			@Override
 			protected Link createLink() {
-				return connectLink;
+				return linkMock;
 			}
 		};
 	}

@@ -56,13 +56,15 @@ import org.ardulink.util.Throwables;
  */
 public class AnalogPinStatus extends JPanel implements Linkable {
 
+	private static final long serialVersionUID = 7927439571760351922L;
+	
 	private static final String TOGGLE_TEXT_ON = "On";
 	private static final String TOGGLE_TEXT_OFF = "Off";
 
 	private static final Font FONT_11 = new Font("SansSerif", Font.PLAIN, 11);
 	private static final Font FONT_12 = new Font("SansSerif", Font.PLAIN, 12);
-
-	private static final long serialVersionUID = 7927439571760351922L;
+	
+	private static final float VOLTAGE_CONVERSION = 5.0F / 1023.0F;
 
 	private JLabel valueLabel;
 	private JLabel voltValueLbl;
@@ -77,7 +79,7 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 	private JToggleButton isActiveButton;
 
 	private transient EventListener listener;
-	private final DecimalFormat voltageFormat = new DecimalFormat("#.###");
+	private final DecimalFormat voltageFormat = new DecimalFormat("#.### V");
 
 	private EventListenerAdapter listener() {
 		AnalogPin pin = analogPin(pinComboBoxModel.getSelectedItem().intValue());
@@ -186,14 +188,14 @@ public class AnalogPinStatus extends JPanel implements Linkable {
 		maxValueComboBox.addActionListener(__ -> fixAndUpdate(maxValueComboBoxModel, minValue()));
 	}
 
-	public void setValue(int value) {
+	private void setValue(int value) {
 		valueLabel.setText(String.valueOf(value));
-		voltValueLbl.setText(voltageFormat.format(voltage(value)) + " V");
+		voltValueLbl.setText(voltageFormat.format(voltage(value)));
 		progressBar.setValue(percent(value));
 	}
 
 	private float voltage(int value) {
-		return (float) value * 5.0f / 1023.0f;
+	    return value * VOLTAGE_CONVERSION;
 	}
 
 	private int percent(int value) {
