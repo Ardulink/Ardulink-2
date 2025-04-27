@@ -184,6 +184,7 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 
 		isActiveButton.setEnabled(panelIsEnabled);
 		pinComboBox.setEnabled(panelIsEnabled && !isOn);
+		lblStatelabel.setEnabled(panelIsEnabled && isOn);
 	}
 
 }
