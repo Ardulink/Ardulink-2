@@ -15,15 +15,12 @@ limitations under the License.
  */
 package org.ardulink.util;
 
-import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.ardulink.util.Joiner.MapJoiner;
 import org.junit.jupiter.api.Test;
