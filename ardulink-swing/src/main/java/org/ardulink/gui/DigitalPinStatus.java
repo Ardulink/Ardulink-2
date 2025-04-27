@@ -59,8 +59,8 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 	private static final String SENSOR_ON = "Sensor on";
 	private static final String SENSOR_OFF = "Sensor off";
 
-	private static final String HIGH = "High";
-	private static final String LOW = "Low";
+	private static final String HIGH_TEXT = "High";
+	private static final String LOW_TEXT = "Low";
 
 	private static final ImageIcon HIGH_ICON = icon("icons/blue-on-32.png");
 	private static final ImageIcon LOW_ICON = icon("icons/blue-off-32.png");
@@ -82,9 +82,7 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 		return filter(pin, new EventListenerAdapter() {
 			@Override
 			public void stateChanged(DigitalPinValueChangedEvent event) {
-				boolean value = event.getValue().booleanValue();
-				lblStatelabel.setText(value ? HIGH : LOW);
-				lblStatelabel.setIcon(value ? HIGH_ICON : LOW_ICON);
+				setValue(event.getValue().booleanValue());
 			}
 		});
 	}
@@ -95,9 +93,8 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 	public DigitalPinStatus() {
 		setLayout(new GridLayout(3, 1, 0, 0));
 
-		lblStatelabel = new JLabel(LOW);
+		lblStatelabel = new JLabel();
 		lblStatelabel.setHorizontalAlignment(SwingConstants.CENTER);
-		lblStatelabel.setIcon(LOW_ICON);
 		lblStatelabel.setEnabled(false);
 		add(lblStatelabel);
 
@@ -121,6 +118,12 @@ public class DigitalPinStatus extends JPanel implements Linkable {
 			updateComponentsEnabledState();
 		});
 		add(isActiveButton);
+		setValue(false);
+	}
+
+	private void setValue(boolean value) {
+		lblStatelabel.setText(value ? HIGH_TEXT : LOW_TEXT);
+		lblStatelabel.setIcon(value ? HIGH_ICON : LOW_ICON);
 	}
 
 	private void startListening() {
