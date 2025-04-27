@@ -44,7 +44,8 @@ import org.ardulink.gui.facility.Colors;
  * [ardulinktitle] [ardulinkversion]
  * 
  * This class can manage three power with modulation arduino pins sending
- * specific messages to the arduino board. It is usually used to manage RGB LEDs. 
+ * specific messages to the arduino board. It is usually used to manage RGB
+ * LEDs.
  * 
  * project Ardulink http://www.ardulink.org/
  * 
@@ -56,13 +57,13 @@ public class RGBController extends JPanel {
 	private final transient DefaultDocumentListener colorTextFieldDocumentListener = new DefaultDocumentListener();
 
 	private final class DefaultDocumentListener extends AbstractDocumentListenerAdapter {
-		
+
 		private boolean enabled;
 
 		private void setEnabled(boolean enabled) {
 			this.enabled = enabled;
 		}
-		
+
 		@Override
 		protected void updated(DocumentEvent documentEvent) {
 			if (!enabled) {
@@ -73,15 +74,15 @@ public class RGBController extends JPanel {
 	}
 
 	private class DefaultPWMControllerListener implements PWMControllerListener {
-		
+
 		private boolean enabled = true;
-		
+
 		private final BiFunction<Color, Integer, Color> colorMaker;
 
 		private DefaultPWMControllerListener(BiFunction<Color, Integer, Color> colorMaker) {
 			this.colorMaker = colorMaker;
 		}
-		
+
 		public void setEnabled(boolean enabled) {
 			this.enabled = enabled;
 		}
@@ -111,12 +112,12 @@ public class RGBController extends JPanel {
 	private PWMController greenController;
 	private PWMController blueController;
 
-	private JPanel centralPanel;
+	private final JPanel centralPanel;
 	private final JPanel coloredPanel;
-	private JPanel southPanel;
-	private JLabel lblColor;
-	private JTextField colorTextField;
-	private JCheckBox chckbxInverted;
+	private final JPanel southPanel;
+	private final JLabel lblColor;
+	private final JTextField colorTextField;
+	private final JCheckBox chckbxInverted;
 
 	private final transient DefaultPWMControllerListener redListener = new DefaultPWMControllerListener(
 			(c, v) -> new Color(v, c.getGreen(), c.getBlue()));
@@ -160,20 +161,26 @@ public class RGBController extends JPanel {
 
 		coloredPanel = new JPanel();
 		coloredPanel.setToolTipText("click to open color dialog");
-		coloredPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null,
-				null));
+		coloredPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		coloredPanel.setPreferredSize(new Dimension(150, 40));
 		coloredPanel.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				ColorChooserDialog dialog = new ColorChooserDialog(coloredPanel
-						.getBackground());
-				dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-				dialog.setVisible(true);
-				setColor(dialog.getColor());
+			public void mouseClicked(MouseEvent __) {
+				// In Swing, for most components like buttons, disabled means no mouse events,
+				// but JPanel is a lightweight container and doesn't inherently block mouse
+				// events when disabled.
+				if (coloredPanel.isEnabled()) {
+					ColorChooserDialog dialog = new ColorChooserDialog(coloredPanel.getBackground());
+					dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+					dialog.setVisible(true);
+					setColor(dialog.getColor());
+				}
 			}
 		});
-		
+
+		colorTextField = new JTextField();
+		colorTextField.setText(Colors.toString(coloredPanel.getBackground()));
+
 		chckbxInverted = new JCheckBox("Inverted");
 		chckbxInverted.addActionListener(__ -> {
 			Color newColor = Colors.invert(coloredPanel.getBackground());
@@ -183,19 +190,15 @@ public class RGBController extends JPanel {
 		southPanel.add(chckbxInverted);
 
 		southPanel.add(coloredPanel);
-		coloredPanel.setBackground(new Color(redController.getValue(),
-				greenController.getValue(), blueController.getValue()));
+		coloredPanel.setBackground(
+				new Color(redController.getValue(), greenController.getValue(), blueController.getValue()));
 
 		lblColor = new JLabel("Color:");
 		southPanel.add(lblColor);
 
-		colorTextField = new JTextField();
-		colorTextField.setText(Colors.toString(coloredPanel
-				.getBackground()));
 		southPanel.add(colorTextField);
 		colorTextField.setColumns(10);
-		colorTextField.getDocument().addDocumentListener(
-				colorTextFieldDocumentListener);
+		colorTextField.getDocument().addDocumentListener(colorTextFieldDocumentListener);
 	}
 
 	private void updateColor() {
