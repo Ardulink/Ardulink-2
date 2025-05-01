@@ -15,8 +15,8 @@ limitations under the License.
  */
 package org.ardulink.core.classloader;
 
-import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toList;
+import static java.util.Arrays.asList;
+import static org.ardulink.util.Lists.mapList;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Throwables.propagate;
 
@@ -72,11 +72,11 @@ public class ModuleClassLoader extends URLClassLoader {
 
 	private static List<File> list(File dir) {
 		checkState(dir.exists(), "Directory %s not found", dir);
-		return stream(dir.list(isJar())).map(f -> new File(dir, f)).collect(toList());
+		return mapList(asList(dir.list(isJar())), f -> new File(dir, f));
 	}
 
 	private static FilenameFilter isJar() {
-		return (dir, name) -> name.toLowerCase().endsWith(".jar");
+		return (__, name) -> name.toLowerCase().endsWith(".jar");
 	}
 
 }
