@@ -44,6 +44,7 @@ import static org.ardulink.util.StopWatch.Countdown.createStarted;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -173,8 +174,8 @@ public class RestRouteBuilder extends RouteBuilder {
 	}
 
 	private static String content(String in) {
-		try {
-			return new String(RestRouteBuilder.class.getClassLoader().getResourceAsStream(in).readAllBytes(), UTF_8);
+		try (InputStream is = RestRouteBuilder.class.getClassLoader().getResourceAsStream(in)) {
+			return new String(is.readAllBytes(), UTF_8);
 		} catch (IOException e) {
 			throw propagate(e);
 		}
