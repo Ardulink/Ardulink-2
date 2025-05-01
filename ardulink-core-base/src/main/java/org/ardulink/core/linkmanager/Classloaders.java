@@ -16,14 +16,12 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
-import static java.lang.System.getProperty;
 import static java.util.Collections.list;
-import static java.util.Optional.ofNullable;
+import static org.ardulink.util.SystemProperties.systemProperty;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.Set;
 
 import org.ardulink.core.classloader.ModuleClassLoader;
@@ -45,10 +43,6 @@ public final class Classloaders {
 	public static ClassLoader moduleClassloader() {
 		ClassLoader parent = Thread.currentThread().getContextClassLoader();
 		return new ModuleClassLoader(parent, systemProperty("ardulink.module.dir").orElse("."));
-	}
-
-	private static Optional<String> systemProperty(String propertyName) {
-		return ofNullable(getProperty(propertyName));
 	}
 
 	public static Collection<URL> getResources(ClassLoader classloader, String name) throws IOException {

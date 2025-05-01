@@ -16,19 +16,19 @@ limitations under the License.
 
 package org.ardulink.rest.swagger;
 
-import static org.ardulink.util.Preconditions.checkArgument;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static java.awt.GraphicsEnvironment.isHeadless;
-import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.testsupport.mock.TestSupport.uniqueMockUri;
+import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.ServerSockets.freePort;
-import static org.ardulink.util.Strings.nullOrEmpty;
+import static org.ardulink.util.SystemProperties.isPropertySet;
+import static org.ardulink.util.SystemProperties.systemProperty;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -142,27 +142,26 @@ class ArdulinkRestSwaggerTest {
 			return options();
 		}
 
-		private Options options() {
+		private static Options options() {
 			Options options = new Options().setHeadless(headless());
-			String videoPath = System.getProperty(SYS_PROP_PREFIX + "playwright.video.path");
-			return nullOrEmpty(videoPath) //
-					? options //
-					: options.setContextOptions(new NewContextOptions().setRecordVideoDir(Paths.get(videoPath))
-							.setRecordVideoSize(recordVideoSize()));
+			return systemProperty(SYS_PROP_PREFIX + "playwright.video.path") //
+					.map(p -> options.setContextOptions(new NewContextOptions().setRecordVideoDir(Paths.get(p))
+							.setRecordVideoSize(recordVideoSize()))) //
+					.orElse(options);
 		}
 
-		private RecordVideoSize recordVideoSize() {
-			String videoSize = System.getProperty(SYS_PROP_PREFIX + "playwright.video.size");
-			if (nullOrEmpty(videoSize)) {
-				return new RecordVideoSize(1024, 800);
-			}
-			String[] values = videoSize.split("[ ,x*]");
-			checkArgument(values.length == 2, "Cannot split %s into two parts (got %s)", videoSize, values.length);
-			return new RecordVideoSize(parseInt(values[0]), parseInt(values[1]));
+		private static RecordVideoSize recordVideoSize() {
+			return systemProperty(SYS_PROP_PREFIX + "playwright.video.size") //
+					.map(s -> {
+						String[] values = s.split("[ ,x*]");
+						checkArgument(values.length == 2, "Cannot split %s into two parts (got %s)", s, values.length);
+						return new RecordVideoSize(parseInt(values[0]), parseInt(values[1]));
+					}) //
+					.orElseGet(() -> new RecordVideoSize(1024, 800));
 		}
 
-		private boolean headless() {
-			return isHeadless() || !parseBoolean(System.getProperty(SYS_PROP_PREFIX + "playwright.showbrowser"));
+		private static boolean headless() {
+			return isHeadless() || !isPropertySet(SYS_PROP_PREFIX + "playwright.showbrowser");
 		}
 
 	}

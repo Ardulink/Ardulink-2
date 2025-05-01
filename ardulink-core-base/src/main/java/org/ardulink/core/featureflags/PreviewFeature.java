@@ -16,8 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.featureflags;
 
-import static java.lang.System.getProperty;
-import static org.ardulink.util.Strings.nullOrEmpty;
+import static org.ardulink.util.SystemProperties.isPropertySet;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -53,10 +52,6 @@ public final class PreviewFeature {
 
 	private PreviewFeature() {
 		super();
-	}
-
-	private static boolean isPropertySet(String property) {
-		return !nullOrEmpty(getProperty(property));
 	}
 
 	public static boolean isFirmataProtocolFeatureEnabled() {
