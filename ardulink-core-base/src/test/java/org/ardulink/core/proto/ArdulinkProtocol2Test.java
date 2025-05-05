@@ -11,6 +11,7 @@ import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIG
 import static org.ardulink.util.Maps.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -145,8 +146,10 @@ class ArdulinkProtocol2Test {
 
 	private void thenMessageIs(Pin pin, Object value) {
 		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessagePinStateChanged.class, m -> {
-			assertThat(m.getPin()).isEqualTo(pin);
-			assertThat(m.getValue()).isEqualTo(value);
+			assertSoftly(s -> {
+				s.assertThat(m.getPin()).isEqualTo(pin);
+				s.assertThat(m.getValue()).isEqualTo(value);
+			});
 		});
 	}
 
