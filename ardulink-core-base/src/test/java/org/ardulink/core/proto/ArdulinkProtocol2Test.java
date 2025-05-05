@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Stream;
 
 import org.ardulink.core.Pin;
@@ -28,6 +29,7 @@ import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
 import org.ardulink.util.Joiner;
+import org.ardulink.util.Maps;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -57,11 +59,13 @@ class ArdulinkProtocol2Test {
 
 	@Test
 	void canReadRplyViaArdulinkProto() throws IOException {
-		givenMessage("alp://rply/ok?id=1&UniqueID=456-2342-2342&ciao=boo");
+		Entry<String, String> entry1 = Maps.entry("UniqueID", "123-45678-9012");
+		Entry<String, String> entry2 = Maps.entry("foo", "bar");
+		givenMessage(String.format("alp://rply/ok?id=1&%s=%s&%s=%s", entry1.getKey(), entry1.getValue(),
+				entry2.getKey(), entry2.getValue()));
 		whenMessageIsProcessed();
 		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class,
-				m -> assertThat(m.getParameters())
-						.containsExactlyInAnyOrderEntriesOf(Map.of("UniqueID", "456-2342-2342", "ciao", "boo")));
+				m -> assertThat(m.getParameters()).contains(entry1, entry2));
 	}
 
 	@Test
