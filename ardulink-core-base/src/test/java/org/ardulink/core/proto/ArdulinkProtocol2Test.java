@@ -7,6 +7,8 @@ import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -26,6 +28,8 @@ import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
 import org.ardulink.util.Joiner;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ArdulinkProtocol2Test {
 
@@ -84,7 +88,7 @@ class ArdulinkProtocol2Test {
 	@Test
 	void ardulinkProtocol2ReceiveRply() throws IOException {
 		long id = 1;
-		Map<String, Object> params = Map.of("key1", "value1","key2", "value2");
+		Map<String, Object> params = Map.of("key1", "value1", "key2", "value2");
 		givenMessage("alp://rply/ok?id=" + id + "&" + Joiner.on("&").withKeyValueSeparator("=").join(params));
 		whenMessageIsProcessed();
 		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class, m -> {
@@ -93,6 +97,43 @@ class ArdulinkProtocol2Test {
 			// expected in same order defined
 			assertThat(m.getParameters()).containsExactlyInAnyOrderEntriesOf(params);
 		});
+	}
+
+	private static final String _65TimesX = "xxxxx" //
+			+ "xxxxx" + "xxxxx" //
+			+ "xxxxx" + "xxxxx" //
+			+ "xxxxx" + "xxxxx" //
+			+ "xxxxx" + "xxxxx" //
+			+ "xxxxx" + "xxxxx" //
+			+ "xxxxx" + "xxxxx";
+
+	@ParameterizedTest
+	@ValueSource(strings = { //
+			"alp://" + _65TimesX, //
+			"alp://ared/" + _65TimesX, //
+			"alp://ared/1/" + _65TimesX, //
+			"alp://ared/1/2" + _65TimesX, //
+			"alp://ared/1/2/" + _65TimesX, //
+			"alp://ared/1/2?" + _65TimesX, //
+			"alp://ared/1/2?id" + _65TimesX, //
+			"alp://ared/1/2?id=" + _65TimesX, //
+	})
+	void bufferOverflow(String message) throws IOException {
+		givenMessage(message);
+		assertThatRuntimeException().isThrownBy(this::whenMessageIsProcessed).withMessageContaining("buffer");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { //
+			_65TimesX, //
+			"al" + _65TimesX, //
+			"alp:" + _65TimesX, //
+			"alp:/" + _65TimesX, //
+	})
+	void noBufferOverflowButNoMessageProcessed(String message) throws IOException {
+		givenMessage(message);
+		whenMessageIsProcessed();
+		assertThat(messages).isEmpty();
 	}
 
 	private void givenMessage(String in) {
