@@ -125,8 +125,8 @@ class ArdulinkProtocol2Test {
 		return shortenFromTo("alp:/", "");
 	}
 
-	private static Stream<String> shortenFromTo(String start, String string) {
-		return Stream.iterate(start, not(string::equals), s -> s.substring(0, s.length() - 1))
+	private static Stream<String> shortenFromTo(String start, String end) {
+		return Stream.iterate(start, not(end::equals), s -> s.substring(0, s.length() - 1))
 				.map(s -> s.concat("x".repeat(65)));
 	}
 
