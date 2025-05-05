@@ -24,11 +24,11 @@ import static io.moquette.broker.config.IConfig.PERSISTENCE_ENABLED_PROPERTY_NAM
 import static io.moquette.broker.config.IConfig.PORT_PROPERTY_NAME;
 import static io.moquette.broker.config.IConfig.SSL_PORT_PROPERTY_NAME;
 import static io.moquette.broker.config.IConfig.WEB_SOCKET_PORT_PROPERTY_NAME;
-import static java.util.stream.Collectors.toMap;
 import static org.ardulink.mqtt.MqttCamelRouteBuilder.DEFAULT_PORT;
 import static org.ardulink.mqtt.MqttCamelRouteBuilder.DEFAULT_SSL_PORT;
 import static org.ardulink.util.Maps.merge;
 import static org.ardulink.util.Maps.toProperties;
+import static org.ardulink.util.Maps.valuesToString;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.io.Closeable;
@@ -88,25 +88,25 @@ public class MqttBroker implements Closeable {
 		}
 
 		public Map<String, String> properties() {
-			return addSsl(Map.of( //
+			return valuesToString(addSsl(Map.of( //
 					HOST_PROPERTY_NAME, host, //
-					PORT_PROPERTY_NAME, ssl ? 0 : portOr(DEFAULT_PORT), //
+					PORT_PROPERTY_NAME, ssl ? 0 : configuredPortOrElse(DEFAULT_PORT), //
 					ALLOW_ANONYMOUS_PROPERTY_NAME, authenticator == null, //
 					PERSISTENCE_ENABLED_PROPERTY_NAME, false, //
 					ENABLE_TELEMETRY_NAME, false //
-			)).entrySet().stream().collect(toMap(Map.Entry::getKey, e -> e.getValue().toString()));
+			)));
 		}
 
 		private Map<String, Object> addSsl(Map<String, Object> properties) {
 			return ssl //
 					? merge(properties, Map.of( //
-							SSL_PORT_PROPERTY_NAME, portOr(DEFAULT_SSL_PORT), //
+							SSL_PORT_PROPERTY_NAME, configuredPortOrElse(DEFAULT_SSL_PORT), //
 							WEB_SOCKET_PORT_PROPERTY_NAME, 0, //
 							KEY_MANAGER_PASSWORD_PROPERTY_NAME, "non-null-value")) //
 					: properties;
 		}
 
-		private int portOr(int fallback) {
+		private int configuredPortOrElse(int fallback) {
 			return port == null ? fallback : port;
 		}
 

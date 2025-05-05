@@ -33,11 +33,11 @@ public final class BinaryOperators {
 	}
 
 	public static <T> BinaryOperator<T> left() {
-		return (first, second) -> first;
+		return (l, r) -> l;
 	}
 
 	public static <T> BinaryOperator<T> right() {
-		return (first, second) -> second;
+		return (l, r) -> r;
 	}
 
 }

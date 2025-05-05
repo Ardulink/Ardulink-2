@@ -20,6 +20,7 @@ import static com.icegreen.greenmail.util.ServerSetupTest.SMTP_IMAP;
 import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -43,10 +44,10 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.mail.Folder;
 import javax.mail.Message;
@@ -259,10 +260,12 @@ class ArdulinkMailOnCamelIntegrationTest {
 
 	private List<Message> fetchMails(String loginId, String password) throws MessagingException, InterruptedException {
 		ImapServer imapd = mailMock.getImap();
-		List<Message> messages = new ArrayList<>();
-		await().forever().pollInterval(100, MILLISECONDS)
-				.until(() -> messages.addAll(retrieveViaImap(imapd.getBindTo(), imapd.getPort(), loginId, password)));
-		return messages;
+		AtomicReference<List<Message>> messages = new AtomicReference<>(emptyList());
+		await().forever().pollInterval(100, MILLISECONDS).until(() -> {
+			messages.set(retrieveViaImap(imapd.getBindTo(), imapd.getPort(), loginId, password));
+			return !messages.get().isEmpty();
+		});
+		return messages.get();
 	}
 
 	private List<Message> retrieveViaImap(String host, int port, String user, String password)
