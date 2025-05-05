@@ -1,5 +1,6 @@
 package org.ardulink.core.proto;
 
+import static java.lang.String.format;
 import static java.util.function.Predicate.not;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -7,6 +8,7 @@ import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcess
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
+import static org.ardulink.util.Maps.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 
@@ -29,7 +31,6 @@ import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
 import org.ardulink.util.Joiner;
-import org.ardulink.util.Maps;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -59,10 +60,10 @@ class ArdulinkProtocol2Test {
 
 	@Test
 	void canReadRplyViaArdulinkProto() throws IOException {
-		Entry<String, String> entry1 = Maps.entry("UniqueID", "123-45678-9012");
-		Entry<String, String> entry2 = Maps.entry("foo", "bar");
-		givenMessage(String.format("alp://rply/ok?id=1&%s=%s&%s=%s", entry1.getKey(), entry1.getValue(),
-				entry2.getKey(), entry2.getValue()));
+		Entry<String, String> entry1 = entry("UniqueID", "123-45678-9012");
+		Entry<String, String> entry2 = entry("foo", "bar");
+		givenMessage(format("alp://rply/ok?id=1&%s=%s&%s=%s", entry1.getKey(), entry1.getValue(), entry2.getKey(),
+				entry2.getValue()));
 		whenMessageIsProcessed();
 		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class,
 				m -> assertThat(m.getParameters()).contains(entry1, entry2));
