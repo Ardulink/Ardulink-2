@@ -99,10 +99,12 @@ class ArdulinkProtocol2Test {
 		givenMessage("alp://rply/ok?id=" + id + "&" + Joiner.on("&").withKeyValueSeparator("=").join(params));
 		whenMessageIsProcessed();
 		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class, m -> {
-			assertThat(m.isOk()).isTrue();
-			assertThat(m.getId()).isEqualTo(id);
-			// expected in same order defined
-			assertThat(m.getParameters()).containsExactlyInAnyOrderEntriesOf(params);
+			assertSoftly(s -> {
+				s.assertThat(m.isOk()).isTrue();
+				s.assertThat(m.getId()).isEqualTo(id);
+				// expected in same order defined
+				s.assertThat(m.getParameters()).containsExactlyInAnyOrderEntriesOf(params);
+			});
 		});
 	}
 
