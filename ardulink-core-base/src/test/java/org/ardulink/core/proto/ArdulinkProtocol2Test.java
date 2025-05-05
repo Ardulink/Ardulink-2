@@ -1,5 +1,6 @@
 package org.ardulink.core.proto;
 
+import static java.util.function.Predicate.not;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
@@ -15,6 +16,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceMessage;
@@ -28,7 +30,7 @@ import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
 import org.ardulink.util.Joiner;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class ArdulinkProtocol2Test {
 
@@ -107,16 +109,7 @@ class ArdulinkProtocol2Test {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { //
-			"alp://" + _65TimesX, //
-			"alp://ared/" + _65TimesX, //
-			"alp://ared/1/" + _65TimesX, //
-			"alp://ared/1/2" + _65TimesX, //
-			"alp://ared/1/2/" + _65TimesX, //
-			"alp://ared/1/2?" + _65TimesX, //
-			"alp://ared/1/2?id" + _65TimesX, //
-			"alp://ared/1/2?id=" + _65TimesX, //
-	})
+	@MethodSource("alpAred12")
 	void bufferOverflow(String message) throws IOException {
 		givenMessage(message);
 		assertThatRuntimeException() //
@@ -125,16 +118,24 @@ class ArdulinkProtocol2Test {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { //
-			_65TimesX, //
-			"al" + _65TimesX, //
-			"alp:" + _65TimesX, //
-			"alp:/" + _65TimesX, //
-	})
+	@MethodSource("alp")
 	void noBufferOverflowButNoMessageProcessed(String message) throws IOException {
 		givenMessage(message);
 		whenMessageIsProcessed();
 		assertThat(messages).isEmpty();
+	}
+
+	static Stream<String> alpAred12() {
+		return shortenFromTo("alp://ared/1/2?id=", "alp://");
+	}
+
+	static Stream<String> alp() {
+		return shortenFromTo("alp:/", "");
+	}
+
+	private static Stream<String> shortenFromTo(String start, String string) {
+		return Stream.iterate(start, not(string::equals), s -> s.substring(0, s.length() - 1))
+				.map(s -> s.concat(_65TimesX));
 	}
 
 	private void givenMessage(String in) {
