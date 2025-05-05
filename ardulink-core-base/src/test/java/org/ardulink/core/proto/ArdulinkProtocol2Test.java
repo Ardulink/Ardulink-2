@@ -34,14 +34,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class ArdulinkProtocol2Test {
 
-	private static final String _65TimesX = "xxxxx" //
-			+ "xxxxx" + "xxxxx" //
-			+ "xxxxx" + "xxxxx" //
-			+ "xxxxx" + "xxxxx" //
-			+ "xxxxx" + "xxxxx" //
-			+ "xxxxx" + "xxxxx" //
-			+ "xxxxx" + "xxxxx";
-
 	private List<FromDeviceMessage> messages;
 	private String message;
 
@@ -135,7 +127,7 @@ class ArdulinkProtocol2Test {
 
 	private static Stream<String> shortenFromTo(String start, String string) {
 		return Stream.iterate(start, not(string::equals), s -> s.substring(0, s.length() - 1))
-				.map(s -> s.concat(_65TimesX));
+				.map(s -> s.concat("x".repeat(65)));
 	}
 
 	private void givenMessage(String in) {
