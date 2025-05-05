@@ -17,7 +17,6 @@ package org.ardulink.camel;
 
 import static java.lang.Character.toUpperCase;
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toCollection;
 import static org.ardulink.core.Pin.analogPin;
@@ -29,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.spi.UriEndpoint;
@@ -57,8 +57,7 @@ public class ArdulinkComponent extends DefaultComponent {
 	}
 
 	private static Set<Pin> parsePins(String pinsString) {
-		return asList(pinsString.split(",")).stream() //
-				.map(String::valueOf) //
+		return Stream.of(pinsString.split(",")) //
 				.map(String::trim) //
 				.map(ArdulinkComponent::toPin) //
 				.collect(toCollection(LinkedHashSet::new));
