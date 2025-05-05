@@ -7,7 +7,6 @@ import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 
 import java.io.ByteArrayInputStream;
@@ -32,6 +31,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class ArdulinkProtocol2Test {
+
+	private static final String _65TimesX = "xxxxx" //
+			+ "xxxxx" + "xxxxx" //
+			+ "xxxxx" + "xxxxx" //
+			+ "xxxxx" + "xxxxx" //
+			+ "xxxxx" + "xxxxx" //
+			+ "xxxxx" + "xxxxx" //
+			+ "xxxxx" + "xxxxx";
 
 	private List<FromDeviceMessage> messages;
 	private String message;
@@ -99,14 +106,6 @@ class ArdulinkProtocol2Test {
 		});
 	}
 
-	private static final String _65TimesX = "xxxxx" //
-			+ "xxxxx" + "xxxxx" //
-			+ "xxxxx" + "xxxxx" //
-			+ "xxxxx" + "xxxxx" //
-			+ "xxxxx" + "xxxxx" //
-			+ "xxxxx" + "xxxxx" //
-			+ "xxxxx" + "xxxxx";
-
 	@ParameterizedTest
 	@ValueSource(strings = { //
 			"alp://" + _65TimesX, //
@@ -120,7 +119,9 @@ class ArdulinkProtocol2Test {
 	})
 	void bufferOverflow(String message) throws IOException {
 		givenMessage(message);
-		assertThatRuntimeException().isThrownBy(this::whenMessageIsProcessed).withMessageContaining("buffer");
+		assertThatRuntimeException() //
+				.isThrownBy(this::whenMessageIsProcessed) //
+				.withMessageContaining("buffer");
 	}
 
 	@ParameterizedTest
