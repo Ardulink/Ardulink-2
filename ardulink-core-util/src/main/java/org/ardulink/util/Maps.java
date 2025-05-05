@@ -52,16 +52,16 @@ public final class Maps {
 		return new AbstractMap.SimpleEntry<>(k, v);
 	}
 
+	public static <K> Map<K, String> valuesToString(Map<K, Object> map) {
+		return map.entrySet().stream().collect(toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue())));
+	}
+
 	@SafeVarargs
 	public static <K, V> Map<K, V> merge(Map<K, V>... maps) {
 		return Arrays.stream(maps) //
 				.map(Map::entrySet) //
 				.flatMap(Collection::stream)
 				.collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue, right()));
-	}
-
-	public static <K> Map<K, String> valuesToString(Map<K, Object> map) {
-		return map.entrySet().stream().collect(toMap(Map.Entry::getKey, e -> e.getValue().toString()));
 	}
 
 }
