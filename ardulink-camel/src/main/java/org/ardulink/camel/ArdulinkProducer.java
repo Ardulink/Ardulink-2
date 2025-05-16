@@ -82,12 +82,13 @@ public class ArdulinkProducer extends DefaultProducer {
 
 	private boolean handlePinStateChange(FromDeviceMessagePinStateChanged event) throws IOException {
 		Pin pin = event.getPin();
+		String value = String.valueOf(event.getValue());
 		if (pin.is(ANALOG)) {
-			link.switchAnalogPin(analogPin(pin.pinNum()), parseInt(String.valueOf(event.getValue())));
+			link.switchAnalogPin(analogPin(pin.pinNum()), parseInt(value));
 			return true;
 		}
 		if (pin.is(DIGITAL)) {
-			link.switchDigitalPin(digitalPin(pin.pinNum()), parseBoolean(String.valueOf(event.getValue())));
+			link.switchDigitalPin(digitalPin(pin.pinNum()), parseBoolean(value));
 			return true;
 		}
 		return false;
