@@ -26,6 +26,7 @@ import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.CUSTOM_EVENT;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.START_LISTENING_ANALOG;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
@@ -153,20 +154,37 @@ class ArdulinkComponentTest {
 		verifyNoMoreInteractions(mock);
 	}
 
+	@Test
+	void respondWithNokOnUnknownCommands() throws Exception {
+		Pin pin = digitalPin(9);
+		String message = alpProtocolMessage(CUSTOM_EVENT).forPin(pin.pinNum()).withoutValue();
+		assertThat(send(message)).isEqualTo(nok(message));
+	}
+
 	void testDigital(DigitalPin pin, boolean state) throws Exception {
-		Object response = send(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin.pinNum()).withState(state));
+		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin.pinNum()).withState(state);
+		Object response = send(message);
 		Link mock = getMock(link);
 		verify(mock).switchDigitalPin(pin, state);
 		verifyNoMoreInteractions(mock);
-		assertThat(response).isEqualTo(format("alp://dred/%s/%s=OK", pin.pinNum(), (state ? "1" : "0")));
+		assertThat(response).isEqualTo(ok(message));
 	}
 
 	void testAnalog(AnalogPin pin, int value) throws Exception {
-		Object response = send(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum()).withValue(value));
+		String message = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum()).withValue(value);
+		Object response = send(message);
 		Link mock = getMock(link);
 		verify(mock).switchAnalogPin(pin, value);
 		verifyNoMoreInteractions(mock);
-		assertThat(response).isEqualTo(format("alp://ared/%s/%s=OK", pin.pinNum(), value));
+		assertThat(response).isEqualTo(ok(message));
+	}
+
+	private static String ok(String message) {
+		return message + "=OK";
+	}
+
+	private static String nok(String message) {
+		return message + "=NOK";
 	}
 
 	CamelContext camelContext(String in, String to) throws Exception {

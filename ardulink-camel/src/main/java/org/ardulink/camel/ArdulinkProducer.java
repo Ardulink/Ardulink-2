@@ -73,6 +73,8 @@ public class ArdulinkProducer extends DefaultProducer {
 		} else if (fromDevice instanceof FromDeviceChangeListeningState) {
 			handleListeningStateChange((FromDeviceChangeListeningState) fromDevice);
 			setResponse(exchange, body, "OK");
+		} else {
+			setResponse(exchange, body, "NOK");
 		}
 	}
 
