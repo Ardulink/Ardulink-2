@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.camel;
 
+import static java.lang.String.format;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -76,7 +77,7 @@ public class ArdulinkProducer extends DefaultProducer {
 	}
 
 	private void setResponse(Exchange exchange, String bodyIn, String rc) {
-		exchange.getMessage().setBody(bodyIn + "=" + rc);
+		exchange.getMessage().setBody(format("%s=%s", bodyIn, rc));
 	}
 
 	private void handlePinStateChange(FromDeviceMessagePinStateChanged event) throws IOException {
