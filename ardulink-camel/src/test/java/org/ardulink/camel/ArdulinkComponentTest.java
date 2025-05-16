@@ -41,6 +41,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.Iterator;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.CamelContext;
@@ -54,10 +55,12 @@ import org.ardulink.core.convenience.Links;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.testsupport.mock.junit5.MockUri;
-import org.junit.jupiter.api.AfterEach;
+import org.ardulink.util.Throwables;
 import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
 /**
@@ -85,20 +88,20 @@ class ArdulinkComponentTest {
 		this.link = Links.getLink(mockUri);
 	}
 
-	@Test
-	void canSwitchDigitalPin() throws Exception {
-		assertAll( //
-				() -> testDigital(digitalPin(1), true), //
-				() -> testDigital(digitalPin(2), false) //
-		);
+	@ParameterizedTest
+	@CsvSource(value = { //
+			"1,true", //
+			"2,false" })
+	void canSwitchDigitalPin(int pin, boolean value) throws Exception {
+		testDigital(digitalPin(pin), value);
 	}
 
-	@Test
-	void canSwitchAnalogPin() throws Exception {
-		assertAll( //
-				() -> testAnalog(analogPin(3), 123), //
-				() -> testAnalog(analogPin(4), 456) //
-		);
+	@ParameterizedTest
+	@CsvSource(value = { //
+			"3,123", //
+			"4,456" })
+	void canSwitchAnalogPin(int pin, int value) throws Exception {
+		testAnalog(analogPin(pin), value);
 	}
 
 	@Test
@@ -151,17 +154,19 @@ class ArdulinkComponentTest {
 	}
 
 	void testDigital(DigitalPin pin, boolean state) throws Exception {
-		send(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin.pinNum()).withState(state));
+		Object response = send(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin.pinNum()).withState(state));
 		Link mock = getMock(link);
 		verify(mock).switchDigitalPin(pin, state);
 		verifyNoMoreInteractions(mock);
+		assertThat(response).isEqualTo(format("alp://dred/%s/%s=OK", pin.pinNum(), (state ? "1" : "0")));
 	}
 
 	void testAnalog(AnalogPin pin, int value) throws Exception {
-		send(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum()).withValue(value));
+		Object response = send(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum()).withValue(value));
 		Link mock = getMock(link);
 		verify(mock).switchAnalogPin(pin, value);
 		verifyNoMoreInteractions(mock);
+		assertThat(response).isEqualTo(format("alp://ared/%s/%s=OK", pin.pinNum(), value));
 	}
 
 	CamelContext camelContext(String in, String to) throws Exception {
@@ -176,8 +181,12 @@ class ArdulinkComponentTest {
 		return context;
 	}
 
-	void send(String message) {
-		context.createProducerTemplate().sendBody(mockUri, message);
+	Object send(String message) {
+		try {
+			return context.createProducerTemplate().asyncRequestBody(mockUri, message).get();
+		} catch (InterruptedException | ExecutionException e) {
+			throw Throwables.propagate(e);
+		}
 	}
 
 	static class TestLinkFactory implements LinkFactory<TestLinkConfig> {
