@@ -17,10 +17,7 @@ limitations under the License.
 package org.ardulink.util;
 
 import static java.util.Arrays.asList;
-import static java.util.Spliterator.ORDERED;
-import static java.util.Spliterators.spliteratorUnknownSize;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.StreamSupport.stream;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -46,7 +43,7 @@ public final class Lists {
 	}
 
 	public static <T> List<T> newArrayList(Iterator<T> iterator) {
-		return stream(spliteratorUnknownSize(iterator, ORDERED), false).collect(toList());
+		return Iterators.stream(iterator).collect(toList());
 	}
 
 	@SafeVarargs
