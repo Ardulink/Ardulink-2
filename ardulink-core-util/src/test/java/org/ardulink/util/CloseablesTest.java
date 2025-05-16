@@ -18,7 +18,9 @@ package org.ardulink.util;
 
 import static org.ardulink.util.Closeables.closeQuietly;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -35,19 +37,18 @@ import org.junit.jupiter.api.Test;
  */
 class CloseablesTest {
 
+	Closeable closeable = mock(Closeable.class);
+
 	@Test
-	void closeQuietlyOk() {
-		Closeable noop = () -> {
-		};
-		assertDoesNotThrow(() -> closeQuietly(noop));
+	void closeQuietlyOk() throws IOException {
+		closeQuietly(closeable);
+		verify(closeable).close();
 	}
 
 	@Test
-	void closeQuietlyException() {
+	void closeQuietlyException() throws IOException {
 		IOException ioex = new IOException("close error");
-		Closeable closeable = () -> {
-			throw ioex;
-		};
+		doThrow(ioex).when(closeable).close();
 		assertThatRuntimeException().isThrownBy(() -> closeQuietly(closeable)).withCause(ioex);
 	}
 
