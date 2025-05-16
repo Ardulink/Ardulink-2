@@ -21,8 +21,6 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
-import static org.ardulink.core.messages.api.FromDeviceChangeListeningState.Mode.START;
-import static org.ardulink.core.messages.api.FromDeviceChangeListeningState.Mode.STOP;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
 import static org.ardulink.util.Iterables.getFirst;
 
@@ -94,16 +92,16 @@ public class ArdulinkProducer extends DefaultProducer {
 	}
 
 	private boolean handleListeningStateChange(FromDeviceChangeListeningState event) throws IOException {
-		Pin pin = event.getPin();
-		if (event.getMode() == START) {
-			link.startListening(pin);
+		switch (event.getMode()) {
+		case START:
+			link.startListening(event.getPin());
 			return true;
-		}
-		if (event.getMode() == STOP) {
-			link.stopListening(pin);
+		case STOP:
+			link.stopListening(event.getPin());
 			return true;
+		default:
+			return false;
 		}
-		return false;
 	}
 
 	@Override
