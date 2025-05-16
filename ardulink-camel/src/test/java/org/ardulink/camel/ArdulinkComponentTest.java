@@ -109,7 +109,7 @@ class ArdulinkComponentTest {
 	@ExpectedToFail("clarify who should filter it")
 	void ignoresNegativeValues() {
 		Pin pin = analogPin(5);
-		send(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum()).withValue(-1));
+		assertOk(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum()).withValue(-1));
 		Link mock = getMock(link);
 		verifyNoMoreInteractions(mock);
 	}
@@ -117,7 +117,7 @@ class ArdulinkComponentTest {
 	@Test
 	void canEnableAnalogListening() throws Exception {
 		Pin pin = analogPin(6);
-		send(alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
+		assertOk(alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
 		Link mock = getMock(link);
 		verify(mock).startListening(pin);
 		verifyNoMoreInteractions(mock);
@@ -126,7 +126,7 @@ class ArdulinkComponentTest {
 	@Test
 	void canEnableDigitalListening() throws Exception {
 		Pin pin = digitalPin(7);
-		send(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue());
+		assertOk(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue());
 		Link mock = getMock(link);
 		verify(mock).startListening(pin);
 		verifyNoMoreInteractions(mock);
@@ -135,10 +135,10 @@ class ArdulinkComponentTest {
 	@Test
 	void canDisableAnalogListening() throws Exception {
 		Pin pin = analogPin(8);
-		send(alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
+		assertOk(alpProtocolMessage(START_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
 		Link mock = getMock(link);
 		reset(mock);
-		send(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
+		assertOk(alpProtocolMessage(STOP_LISTENING_ANALOG).forPin(pin.pinNum()).withoutValue());
 		verify(mock).stopListening(pin);
 		verifyNoMoreInteractions(mock);
 	}
@@ -146,8 +146,8 @@ class ArdulinkComponentTest {
 	@Test
 	void canDisableDigitalListening() throws Exception {
 		Pin pin = digitalPin(9);
-		send(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue());
-		send(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue());
+		assertOk(alpProtocolMessage(START_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue());
+		assertOk(alpProtocolMessage(STOP_LISTENING_DIGITAL).forPin(pin.pinNum()).withoutValue());
 		Link mock = getMock(link);
 		verify(mock).startListening(pin);
 		verify(mock).stopListening(pin);
@@ -157,34 +157,21 @@ class ArdulinkComponentTest {
 	@Test
 	void respondWithNokOnUnknownCommands() throws Exception {
 		Pin pin = digitalPin(9);
-		String message = alpProtocolMessage(CUSTOM_EVENT).forPin(pin.pinNum()).withoutValue();
-		assertThat(send(message)).isEqualTo(nok(message));
+		assertNok(alpProtocolMessage(CUSTOM_EVENT).forPin(pin.pinNum()).withoutValue());
 	}
 
 	void testDigital(DigitalPin pin, boolean state) throws Exception {
-		String message = alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin.pinNum()).withState(state);
-		Object response = send(message);
+		assertOk(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin.pinNum()).withState(state));
 		Link mock = getMock(link);
 		verify(mock).switchDigitalPin(pin, state);
 		verifyNoMoreInteractions(mock);
-		assertThat(response).isEqualTo(ok(message));
 	}
 
 	void testAnalog(AnalogPin pin, int value) throws Exception {
-		String message = alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum()).withValue(value);
-		Object response = send(message);
+		assertOk(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum()).withValue(value));
 		Link mock = getMock(link);
 		verify(mock).switchAnalogPin(pin, value);
 		verifyNoMoreInteractions(mock);
-		assertThat(response).isEqualTo(ok(message));
-	}
-
-	private static String ok(String message) {
-		return message + "=OK";
-	}
-
-	private static String nok(String message) {
-		return message + "=NOK";
 	}
 
 	CamelContext camelContext(String in, String to) throws Exception {
@@ -199,7 +186,15 @@ class ArdulinkComponentTest {
 		return context;
 	}
 
-	Object send(String message) {
+	void assertOk(String message) {
+		assertThat(send(message)).isEqualTo(format("%s=OK", message));
+	}
+
+	void assertNok(String message) {
+		assertThat(send(message)).isEqualTo(format("%s=NOK", message));
+	}
+
+	private Object send(String message) {
 		try {
 			return context.createProducerTemplate().asyncRequestBody(mockUri, message).get();
 		} catch (InterruptedException | ExecutionException e) {
