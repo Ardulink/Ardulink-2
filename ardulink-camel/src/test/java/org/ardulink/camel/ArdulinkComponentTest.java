@@ -33,6 +33,7 @@ import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STA
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
+import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -56,7 +57,6 @@ import org.ardulink.core.convenience.Links;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.testsupport.mock.junit5.MockUri;
-import org.ardulink.util.Throwables;
 import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -203,7 +203,7 @@ class ArdulinkComponentTest {
 		try {
 			return context.createProducerTemplate().asyncRequestBody(mockUri, message).get();
 		} catch (InterruptedException | ExecutionException e) {
-			throw Throwables.propagate(e);
+			throw propagate(e);
 		}
 	}
 
