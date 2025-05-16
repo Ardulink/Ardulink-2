@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.camel;
 
+import static java.lang.Boolean.parseBoolean;
+import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -81,11 +83,11 @@ public class ArdulinkProducer extends DefaultProducer {
 	private boolean handlePinStateChange(FromDeviceMessagePinStateChanged event) throws IOException {
 		Pin pin = event.getPin();
 		if (pin.is(ANALOG)) {
-			link.switchAnalogPin(analogPin(pin.pinNum()), Integer.parseInt(String.valueOf(event.getValue())));
+			link.switchAnalogPin(analogPin(pin.pinNum()), parseInt(String.valueOf(event.getValue())));
 			return true;
 		}
 		if (pin.is(DIGITAL)) {
-			link.switchDigitalPin(digitalPin(pin.pinNum()), Boolean.parseBoolean(String.valueOf(event.getValue())));
+			link.switchDigitalPin(digitalPin(pin.pinNum()), parseBoolean(String.valueOf(event.getValue())));
 			return true;
 		}
 		return false;
