@@ -67,37 +67,43 @@ public class ArdulinkProducer extends DefaultProducer {
 		String body = exchange.getIn().getBody(String.class);
 		FromDeviceMessage fromDevice = getFirst(parse(byteStreamProcessor, byteStreamProcessor.toBytes(body)))
 				.orElseThrow(() -> new IllegalStateException("Could not extract message from body " + body));
+		boolean ok = false;
 		if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
-			handlePinStateChange((FromDeviceMessagePinStateChanged) fromDevice);
-			setResponse(exchange, body, "OK");
+			ok = handlePinStateChange((FromDeviceMessagePinStateChanged) fromDevice);
 		} else if (fromDevice instanceof FromDeviceChangeListeningState) {
-			handleListeningStateChange((FromDeviceChangeListeningState) fromDevice);
-			setResponse(exchange, body, "OK");
-		} else {
-			setResponse(exchange, body, "NOK");
+			ok = handleListeningStateChange((FromDeviceChangeListeningState) fromDevice);
 		}
+		setResponse(exchange, body, ok ? "OK" : "NOK");
 	}
 
 	private void setResponse(Exchange exchange, String bodyIn, String rc) {
 		exchange.getMessage().setBody(format("%s=%s", bodyIn, rc));
 	}
 
-	private void handlePinStateChange(FromDeviceMessagePinStateChanged event) throws IOException {
+	private boolean handlePinStateChange(FromDeviceMessagePinStateChanged event) throws IOException {
 		Pin pin = event.getPin();
 		if (pin.is(ANALOG)) {
 			link.switchAnalogPin(analogPin(pin.pinNum()), Integer.parseInt(String.valueOf(event.getValue())));
-		} else if (pin.is(DIGITAL)) {
-			link.switchDigitalPin(digitalPin(pin.pinNum()), Boolean.parseBoolean(String.valueOf(event.getValue())));
+			return true;
 		}
+		if (pin.is(DIGITAL)) {
+			link.switchDigitalPin(digitalPin(pin.pinNum()), Boolean.parseBoolean(String.valueOf(event.getValue())));
+			return true;
+		}
+		return false;
 	}
 
-	private void handleListeningStateChange(FromDeviceChangeListeningState event) throws IOException {
+	private boolean handleListeningStateChange(FromDeviceChangeListeningState event) throws IOException {
 		Pin pin = event.getPin();
 		if (event.getMode() == START) {
 			link.startListening(pin);
-		} else if (event.getMode() == STOP) {
-			link.stopListening(pin);
+			return true;
 		}
+		if (event.getMode() == STOP) {
+			link.stopListening(pin);
+			return true;
+		}
+		return false;
 	}
 
 	@Override
