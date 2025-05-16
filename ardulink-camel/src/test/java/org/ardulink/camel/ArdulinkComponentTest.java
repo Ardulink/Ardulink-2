@@ -35,8 +35,8 @@ import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STO
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.assertj.core.util.Lists.newArrayList;
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -248,10 +248,10 @@ class ArdulinkComponentTest {
 		withRegistered(linkFactory).execute(
 				() -> context = camelContext(format("ardulink://%s?a=%s&b=%s", name, aValue, bValue), mockUri));
 
-		assertAll( //
-				() -> assertThat(config.a).isEqualTo(aValue), //
-				() -> assertThat(config.b).isEqualTo(bValue) //
-		);
+		assertSoftly(s -> {
+			s.assertThat(config.a).isEqualTo(aValue);
+			s.assertThat(config.b).isEqualTo(bValue);
+		});
 	}
 
 }
