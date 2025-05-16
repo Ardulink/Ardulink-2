@@ -50,7 +50,7 @@ public class ProxyLinkFactory implements LinkFactory<ProxyLinkConfig> {
 	public ConnectionBasedLink newLink(ProxyLinkConfig config) throws IOException {
 		ProxyConnectionToRemote remote = config.getRemote();
 
-		remote.send(CONNECT_CMD.getCommand());
+		remote.send(CONNECT_CMD);
 		remote.send(checkNotNull(config.port, "port must not be null"));
 		remote.send(String.valueOf(config.speed));
 		String response = remote.read();

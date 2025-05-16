@@ -16,8 +16,13 @@ limitations under the License.
 
 package org.ardulink.core.proxy;
 
+import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
+import static java.util.regex.Pattern.quote;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.IntStream.range;
 import static org.ardulink.core.proxy.ProxyConnectionToRemote.Command.GET_PORT_LIST_CMD;
+import static org.ardulink.util.Closeables.closeQuietly;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 
@@ -25,10 +30,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -44,11 +47,12 @@ public class ProxyConnectionToRemote implements Closeable {
 
 	public enum Command {
 
-		GET_PORT_LIST_CMD("get_port_list"), CONNECT_CMD("connect");
+		CONNECT_CMD("connect"), //
+		GET_PORT_LIST_CMD("get_port_list");
 
 		private final String command;
 
-		Command(String command) {
+		private Command(String command) {
 			this.command = format("ardulink:networkproxyserver:%s", command);
 		}
 
@@ -67,48 +71,51 @@ public class ProxyConnectionToRemote implements Closeable {
 
 	private final String host;
 	private final Socket socket;
-	private final Scanner scanner;
-	private final PrintWriter printWriter;
+	private final Scanner inScanner;
+	private final PrintWriter outWriter;
 
+	@SuppressWarnings("resource")
 	public ProxyConnectionToRemote(String host, int port) throws IOException {
 		this.host = host;
 		this.socket = new Socket(host, port);
-		this.scanner = new Scanner(socket.getInputStream()).useDelimiter(Pattern.quote(PROXY_CONNECTION_SEPARATOR));
-		this.printWriter = new PrintWriter(socket.getOutputStream(), false);
+		this.inScanner = new Scanner(socket.getInputStream()).useDelimiter(quote(PROXY_CONNECTION_SEPARATOR));
+		this.outWriter = new PrintWriter(socket.getOutputStream(), false);
 	}
 
-	public List<String> getPortList() throws IOException {
-		send(GET_PORT_LIST_CMD.getCommand());
-		String numberOfPorts = checkNotNull(read(), "invalid response from %s, got null", host);
-		checkState(numberOfPorts.startsWith(NUMBER_OF_PORTS), "invalid response: did not start with %s",
-				NUMBER_OF_PORTS);
-		int numOfPorts = Integer.parseInt(numberOfPorts.substring(NUMBER_OF_PORTS.length()));
-		List<String> retvalue = new ArrayList<>(numOfPorts);
-		for (int i = 0; i < numOfPorts; i++) {
-			retvalue.add(read());
-		}
-		return retvalue;
+	public List<String> getPortList() {
+		send(GET_PORT_LIST_CMD);
+		int numberOfPorts = numberOfPorts(checkNotNull(read(), "invalid response from %s, got null", host));
+		return range(0, numberOfPorts).mapToObj(__ -> read()).collect(toList());
+	}
+
+	private static int numberOfPorts(String string) {
+		checkState(string.startsWith(NUMBER_OF_PORTS), "invalid response: did not start with %s", NUMBER_OF_PORTS);
+		return parseInt(string.substring(NUMBER_OF_PORTS.length()));
 	}
 
 	public Socket getSocket() {
 		return socket;
 	}
 
-	public String read() throws IOException {
-		return scanner.next();
+	public String read() {
+		return inScanner.next();
+	}
+
+	public void send(Command command) {
+		send(command.getCommand());
 	}
 
 	public void send(String message) {
-		printWriter.print(message);
-		printWriter.print(PROXY_CONNECTION_SEPARATOR);
-		printWriter.flush();
+		outWriter.print(message);
+		outWriter.print(PROXY_CONNECTION_SEPARATOR);
+		outWriter.flush();
 	}
 
 	@Override
-	public void close() throws IOException {
-		scanner.close();
-		printWriter.close();
-		socket.close();
+	public void close() {
+		closeQuietly(inScanner);
+		closeQuietly(outWriter);
+		closeQuietly(socket);
 	}
 
 }
