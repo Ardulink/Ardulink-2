@@ -64,16 +64,17 @@ public class ArdulinkProducer extends DefaultProducer {
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		String body = exchange.getIn().getBody(String.class);
-		FromDeviceMessage fromDevice = getFirst(parse(camelPayloadProcessor, camelPayloadProcessor.toBytes(body)))
-				.orElseThrow(() -> new IllegalStateException("Could not extract message from body " + body));
+		String payload = exchange.getIn().getBody(String.class);
+		FromDeviceMessage fromDevice = payload == null //
+				? null //
+				: getFirst(parse(camelPayloadProcessor, camelPayloadProcessor.toBytes(payload))).orElse(null);
 		boolean ok = false;
 		if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
 			ok = handlePinStateChange((FromDeviceMessagePinStateChanged) fromDevice);
 		} else if (fromDevice instanceof FromDeviceChangeListeningState) {
 			ok = handleListeningStateChange((FromDeviceChangeListeningState) fromDevice);
 		}
-		exchange.getMessage().setBody(format("%s=%s", body, ok ? "OK" : "NOK"));
+		exchange.getMessage().setBody(format("%s=%s", payload, ok ? "OK" : "NOK"));
 	}
 
 	private boolean handlePinStateChange(FromDeviceMessagePinStateChanged event) throws IOException {
@@ -103,13 +104,8 @@ public class ArdulinkProducer extends DefaultProducer {
 	}
 
 	@Override
-	public void stop() {
-		try {
-			this.link.close();
-		} catch (IOException e) {
-			fail(e);
-		}
-		super.stop();
+	protected void doStop() throws Exception {
+		this.link.close();
 	}
 
 }

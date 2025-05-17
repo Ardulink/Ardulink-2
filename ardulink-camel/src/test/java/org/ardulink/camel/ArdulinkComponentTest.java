@@ -62,6 +62,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junitpioneer.jupiter.ExpectedToFail;
 
 /**
@@ -90,17 +91,19 @@ class ArdulinkComponentTest {
 	}
 
 	@ParameterizedTest
-	@CsvSource(value = { //
+	@CsvSource({ //
 			"1,true", //
-			"2,false" })
+			"2,false" //
+	})
 	void canSwitchDigitalPin(int pin, boolean value) throws Exception {
 		testDigital(digitalPin(pin), value);
 	}
 
 	@ParameterizedTest
-	@CsvSource(value = { //
+	@CsvSource({ //
 			"3,123", //
-			"4,456" })
+			"4,456" //
+	})
 	void canSwitchAnalogPin(int pin, int value) throws Exception {
 		testAnalog(analogPin(pin), value);
 	}
@@ -154,10 +157,15 @@ class ArdulinkComponentTest {
 		verifyNoMoreInteractions(mock);
 	}
 
+	@ParameterizedTest
+	@NullAndEmptySource
+	void respondWithNokOnEmptyMessage(String message) {
+		assertNok(message);
+	}
+
 	@Test
-	void respondWithNokOnUnknownCommands() throws Exception {
-		Pin pin = digitalPin(9);
-		assertNok(alpProtocolMessage(CUSTOM_EVENT).forPin(pin.pinNum()).withoutValue());
+	void respondWithNokOnUnknownCommands() {
+		assertNok(alpProtocolMessage(CUSTOM_EVENT).forPin(9).withoutValue());
 	}
 
 	void testDigital(DigitalPin pin, boolean state) throws Exception {
@@ -187,11 +195,15 @@ class ArdulinkComponentTest {
 	}
 
 	void assertOk(String message) {
-		assertThat(send(message)).isEqualTo(format("%s=OK", message));
+		sendAndAssertReceived(message, "OK");
 	}
 
 	void assertNok(String message) {
-		assertThat(send(message)).isEqualTo(format("%s=NOK", message));
+		sendAndAssertReceived(message, "NOK");
+	}
+
+	private void sendAndAssertReceived(String message, String rc) {
+		assertThat(send(message)).isEqualTo(format("%s=%s", message, rc));
 	}
 
 	private Object send(String message) {
