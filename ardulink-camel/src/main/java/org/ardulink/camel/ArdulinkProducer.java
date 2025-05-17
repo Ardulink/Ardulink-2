@@ -73,11 +73,7 @@ public class ArdulinkProducer extends DefaultProducer {
 		} else if (fromDevice instanceof FromDeviceChangeListeningState) {
 			ok = handleListeningStateChange((FromDeviceChangeListeningState) fromDevice);
 		}
-		setResponse(exchange, body, ok ? "OK" : "NOK");
-	}
-
-	private void setResponse(Exchange exchange, String bodyIn, String rc) {
-		exchange.getMessage().setBody(format("%s=%s", bodyIn, rc));
+		exchange.getMessage().setBody(format("%s=%s", body, ok ? "OK" : "NOK"));
 	}
 
 	private boolean handlePinStateChange(FromDeviceMessagePinStateChanged event) throws IOException {
