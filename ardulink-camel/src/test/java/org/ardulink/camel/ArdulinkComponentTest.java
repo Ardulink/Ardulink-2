@@ -51,8 +51,6 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
-import org.ardulink.core.Pin.AnalogPin;
-import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
@@ -96,7 +94,10 @@ class ArdulinkComponentTest {
 			"2,false" //
 	})
 	void canSwitchDigitalPin(int pin, boolean value) throws Exception {
-		testDigital(digitalPin(pin), value);
+		assertOk(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin).withState(value));
+		Link mock = getMock(link);
+		verify(mock).switchDigitalPin(digitalPin(pin), value);
+		verifyNoMoreInteractions(mock);
 	}
 
 	@ParameterizedTest
@@ -105,14 +106,16 @@ class ArdulinkComponentTest {
 			"4,456" //
 	})
 	void canSwitchAnalogPin(int pin, int value) throws Exception {
-		testAnalog(analogPin(pin), value);
+		assertOk(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin).withValue(value));
+		Link mock = getMock(link);
+		verify(mock).switchAnalogPin(analogPin(pin), value);
+		verifyNoMoreInteractions(mock);
 	}
 
 	@Test
 	@ExpectedToFail("clarify who should filter it")
 	void ignoresNegativeValues() {
-		Pin pin = analogPin(5);
-		assertOk(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum()).withValue(-1));
+		assertOk(alpProtocolMessage(ANALOG_PIN_READ).forPin(5).withValue(-1));
 		Link mock = getMock(link);
 		verifyNoMoreInteractions(mock);
 	}
@@ -166,20 +169,6 @@ class ArdulinkComponentTest {
 	@Test
 	void respondWithNokOnUnknownCommands() {
 		assertNok(alpProtocolMessage(CUSTOM_EVENT).forPin(9).withoutValue());
-	}
-
-	void testDigital(DigitalPin pin, boolean state) throws Exception {
-		assertOk(alpProtocolMessage(DIGITAL_PIN_READ).forPin(pin.pinNum()).withState(state));
-		Link mock = getMock(link);
-		verify(mock).switchDigitalPin(pin, state);
-		verifyNoMoreInteractions(mock);
-	}
-
-	void testAnalog(AnalogPin pin, int value) throws Exception {
-		assertOk(alpProtocolMessage(ANALOG_PIN_READ).forPin(pin.pinNum()).withValue(value));
-		Link mock = getMock(link);
-		verify(mock).switchAnalogPin(pin, value);
-		verifyNoMoreInteractions(mock);
 	}
 
 	CamelContext camelContext(String in, String to) throws Exception {
