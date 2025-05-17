@@ -98,9 +98,8 @@ public class ArdulinkProducer extends DefaultProducer {
 		case STOP:
 			link.stopListening(event.getPin());
 			return true;
-		default:
-			return false;
 		}
+		return false;
 	}
 
 	@Override
