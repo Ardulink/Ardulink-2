@@ -52,10 +52,10 @@ public class ArdulinkProducer extends DefaultProducer {
 	private final Link link;
 
 	/**
-	 * This is NOT the protocol of the link but the expected payload of camel's
-	 * {@link Message}.
+	 * This is NOT the protocol of the link but the expected payloads of camel's
+	 * {@link Message}s since they are ALP.
 	 */
-	private final ALPByteStreamProcessor byteStreamProcessor = new ALPByteStreamProcessor();
+	private final ALPByteStreamProcessor camelPayloadProcessor = new ALPByteStreamProcessor();
 
 	public ArdulinkProducer(Endpoint endpoint, Link link) {
 		super(endpoint);
@@ -65,7 +65,7 @@ public class ArdulinkProducer extends DefaultProducer {
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		String body = exchange.getIn().getBody(String.class);
-		FromDeviceMessage fromDevice = getFirst(parse(byteStreamProcessor, byteStreamProcessor.toBytes(body)))
+		FromDeviceMessage fromDevice = getFirst(parse(camelPayloadProcessor, camelPayloadProcessor.toBytes(body)))
 				.orElseThrow(() -> new IllegalStateException("Could not extract message from body " + body));
 		boolean ok = false;
 		if (fromDevice instanceof FromDeviceMessagePinStateChanged) {

@@ -53,7 +53,7 @@ public final class ByteStreamProcessors {
 	}
 
 	private static FromDeviceListener fromDeviceListener(List<FromDeviceMessage> messages) {
-		return fromDevice -> messages.add(fromDevice);
+		return messages::add;
 	}
 
 }
