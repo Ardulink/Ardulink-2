@@ -104,8 +104,8 @@ public class ArdulinkProducer extends DefaultProducer {
 	}
 
 	@Override
-	protected void doStop() throws Exception {
-		this.link.close();
+	protected AutoCloseable doLifecycleChange() {
+		return link;
 	}
 
 }
