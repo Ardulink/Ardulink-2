@@ -20,6 +20,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static jssc.SerialPort.DATABITS_8;
 import static jssc.SerialPort.PARITY_NONE;
 import static jssc.SerialPort.STOPBITS_1;
+import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.io.IOException;
 
@@ -91,7 +92,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 	}
 
 	private SerialPort serialPort(SerialLinkConfig config) throws SerialPortException {
-		SerialPort serialPort = new SerialPort(config.port);
+		SerialPort serialPort = new SerialPort(checkNotNull(config.port, "Port must not be null"));
 		serialPort.openPort();
 		serialPort.setParams(config.baudrate, DATABITS_8, STOPBITS_1, PARITY_NONE);
 		return serialPort;

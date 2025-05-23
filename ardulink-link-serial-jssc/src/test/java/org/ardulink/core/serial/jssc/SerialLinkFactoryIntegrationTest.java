@@ -79,7 +79,7 @@ class SerialLinkFactoryIntegrationTest {
 	@Test
 	void cantConnectWithoutPort() {
 		Configurer configurer = LinkManager.getInstance().getConfigurer(create(PREFIX + "?baudrate=9600"));
-		assertThatRuntimeException().isThrownBy(configurer::newLink).withMessageContaining("Port name - null");
+		assertThatRuntimeException().isThrownBy(configurer::newLink).withMessageContaining("Port", "null");
 	}
 
 	private static String anyString() {
