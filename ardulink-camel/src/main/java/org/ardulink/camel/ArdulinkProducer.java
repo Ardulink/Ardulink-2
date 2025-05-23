@@ -104,9 +104,13 @@ public class ArdulinkProducer extends DefaultProducer {
 	}
 
 	@Override
-	public void close() throws IOException {
-		this.link.close();
-		super.close();
+	public void stop() {
+		try {
+			this.link.close();
+		} catch (IOException e) {
+			fail(e);
+		}
+		super.stop();
 	}
 
 }
