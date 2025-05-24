@@ -37,11 +37,16 @@ import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.assertj.core.util.Lists.newArrayList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -51,6 +56,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
+import org.ardulink.core.Pin.AnalogPin;
+import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.convenience.Links;
 import org.ardulink.core.linkmanager.LinkConfig;
 import org.ardulink.core.linkmanager.LinkFactory;
@@ -158,6 +165,23 @@ class ArdulinkComponentTest {
 		verify(mock).startListening(pin);
 		verify(mock).stopListening(pin);
 		verifyNoMoreInteractions(mock);
+	}
+
+	@Test
+	void throwsAnExceptionIfLinkThrowsException() throws IOException {
+		IOException ioe = new IOException("my io exception");
+		when(this.link.switchAnalogPin(any(AnalogPin.class), anyInt())).thenThrow(ioe);
+		when(this.link.switchDigitalPin(any(DigitalPin.class), anyBoolean())).thenThrow(ioe);
+
+		assertSoftly(s -> {
+			s.assertThatRuntimeException()
+					.isThrownBy(() -> send(alpProtocolMessage(ANALOG_PIN_READ).forPin(1).withValue(2)))
+					.havingRootCause().isSameAs(ioe);
+			s.assertThatRuntimeException()
+					.isThrownBy(() -> send(alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true)))
+					.havingRootCause().isSameAs(ioe);
+		});
+
 	}
 
 	@ParameterizedTest
