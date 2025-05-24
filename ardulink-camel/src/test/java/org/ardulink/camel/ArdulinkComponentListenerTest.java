@@ -46,41 +46,44 @@ class ArdulinkComponentListenerTest {
 
 	@Test
 	void startListeningOnPassedPins(@MockUri String mockUri) throws Exception {
+		Link mock;
 		try (Link link = Links.getLink(mockUri)) {
 			haltCamel(startCamel(mockUri + "&listenTo=d1,d2,a1"));
-			Link mock = getMock(link);
+			mock = getMock(link);
 			verify(mock).startListening(digitalPin(1));
 			verify(mock).startListening(digitalPin(2));
 			verify(mock).startListening(analogPin(1));
-			verify(mock).close();
-			verifyNoMoreInteractions(mock);
 		}
+		verify(mock).close();
+		verifyNoMoreInteractions(mock);
 	}
 
 	@Test
 	void listeningIsCaseInsensitive(@MockUri String mockUri) throws Exception {
+		Link mock;
 		try (Link link = Links.getLink(mockUri)) {
 			haltCamel(startCamel(mockUri + "&listenTo=d1,D2,a3,A4"));
-			Link mock = getMock(link);
+			mock = getMock(link);
 			verify(mock).startListening(digitalPin(1));
 			verify(mock).startListening(digitalPin(2));
 			verify(mock).startListening(analogPin(3));
 			verify(mock).startListening(analogPin(4));
-			verify(mock).close();
-			verifyNoMoreInteractions(mock);
 		}
+		verify(mock).close();
+		verifyNoMoreInteractions(mock);
 	}
 
 	@Test
 	void ignoresMultipleOccurencesOfSamePin(@MockUri String mockUri) throws Exception {
+		Link mock;
 		try (Link link = Links.getLink(mockUri)) {
 			haltCamel(startCamel(mockUri + "&listenTo=d1,D1,a2,A2"));
-			Link mock = getMock(link);
+			mock = getMock(link);
 			verify(mock).startListening(digitalPin(1));
 			verify(mock).startListening(analogPin(2));
-			verify(mock).close();
-			verifyNoMoreInteractions(mock);
 		}
+		verify(mock).close();
+		verifyNoMoreInteractions(mock);
 	}
 
 	private CamelContext haltCamel(CamelContext context) throws Exception {

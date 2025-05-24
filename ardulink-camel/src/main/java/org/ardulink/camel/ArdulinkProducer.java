@@ -104,13 +104,9 @@ public class ArdulinkProducer extends DefaultProducer {
 	}
 
 	@Override
-	public void stop() {
-		try {
-			this.link.close();
-		} catch (IOException e) {
-			fail(e);
-		}
-		super.stop();
+	protected void doStop() throws Exception {
+		super.doStop();
+		this.link.close();
 	}
 
 }
