@@ -35,8 +35,10 @@ import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STO
 import static org.ardulink.testsupport.mock.TestSupport.getMock;
 import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.assertj.core.util.Lists.newArrayList;
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -50,6 +52,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
@@ -64,7 +67,9 @@ import org.ardulink.core.linkmanager.LinkFactory;
 import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -167,20 +172,17 @@ class ArdulinkComponentTest {
 		verifyNoMoreInteractions(mock);
 	}
 
-	@Test
-	void throwsAnExceptionIfLinkThrowsException() throws IOException {
+	@TestFactory
+	Stream<DynamicTest> throwsAnExceptionIfLinkThrowsException() throws IOException {
 		IOException ioe = new IOException("my io exception");
 		when(this.link.switchAnalogPin(any(AnalogPin.class), anyInt())).thenThrow(ioe);
 		when(this.link.switchDigitalPin(any(DigitalPin.class), anyBoolean())).thenThrow(ioe);
 
-		assertSoftly(s -> {
-			s.assertThatRuntimeException()
-					.isThrownBy(() -> send(alpProtocolMessage(ANALOG_PIN_READ).forPin(1).withValue(2)))
-					.havingRootCause().isSameAs(ioe);
-			s.assertThatRuntimeException()
-					.isThrownBy(() -> send(alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true)))
-					.havingRootCause().isSameAs(ioe);
-		});
+		return Stream.of( //
+				alpProtocolMessage(ANALOG_PIN_READ).forPin(1).withValue(2), //
+				alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true) //
+		).map(m -> dynamicTest(m,
+				() -> assertThatRuntimeException().isThrownBy(() -> send(m)).havingRootCause().isSameAs(ioe)));
 
 	}
 
