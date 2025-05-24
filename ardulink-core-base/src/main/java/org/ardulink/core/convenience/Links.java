@@ -204,7 +204,7 @@ public final class Links {
 	}
 
 	private static boolean containsName(List<URI> uris, String name) {
-		return uris.stream().anyMatch(uri -> extractNameFromURI(uri).equals(name));
+		return uris.stream().anyMatch(u -> extractNameFromURI(u).equals(name));
 	}
 
 	public static Link getLink(Configurer configurer) {
