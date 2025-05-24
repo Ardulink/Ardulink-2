@@ -235,14 +235,18 @@ public final class Links {
 			@Override
 			public long startListening(Pin pin) throws IOException {
 				long result = super.startListening(pin);
-				listenCounter.merge(pin, new AtomicInteger(1), (i1, i2) -> new AtomicInteger(i1.addAndGet(i2.get())));
+				listenCounter.computeIfAbsent(pin, __ -> new AtomicInteger(0)).incrementAndGet();
 				return result;
 			}
 
 			@Override
 			public long stopListening(Pin pin) throws IOException {
 				AtomicInteger counter = listenCounter.get(pin);
-				return counter != null && counter.decrementAndGet() == 0 ? super.stopListening(pin) : -1;
+				if (counter != null && counter.decrementAndGet() == 0) {
+					listenCounter.remove(pin);
+					return super.stopListening(pin);
+				}
+				return -1;
 			}
 		};
 	}
