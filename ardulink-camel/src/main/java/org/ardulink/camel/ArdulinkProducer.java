@@ -19,6 +19,8 @@ package org.ardulink.camel;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
+import static org.ardulink.camel.ArdulinkProducer.Handled.HANDLED_SUCCESSFULLY;
+import static org.ardulink.camel.ArdulinkProducer.Handled.NOT_HANDLED;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -49,6 +51,10 @@ import org.ardulink.core.proto.ardulink.ArdulinkProtocol2.ALPByteStreamProcessor
  */
 public class ArdulinkProducer extends DefaultProducer {
 
+	static enum Handled {
+		HANDLED_SUCCESSFULLY, NOT_HANDLED;
+	}
+
 	private final Link link;
 
 	/**
@@ -68,39 +74,40 @@ public class ArdulinkProducer extends DefaultProducer {
 		FromDeviceMessage fromDevice = payload == null //
 				? null //
 				: getFirst(parse(camelPayloadProcessor, camelPayloadProcessor.toBytes(payload))).orElse(null);
-		boolean ok = false;
+		Handled handledSuccessfully = NOT_HANDLED;
 		if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
-			ok = handlePinStateChange((FromDeviceMessagePinStateChanged) fromDevice);
+			handledSuccessfully = handlePinStateChange((FromDeviceMessagePinStateChanged) fromDevice);
 		} else if (fromDevice instanceof FromDeviceChangeListeningState) {
-			ok = handleListeningStateChange((FromDeviceChangeListeningState) fromDevice);
+			handledSuccessfully = handleListeningStateChange((FromDeviceChangeListeningState) fromDevice);
 		}
-		exchange.getMessage().setBody(format("%s=%s", payload, ok ? "OK" : "NOK"));
+		String rc = handledSuccessfully == HANDLED_SUCCESSFULLY ? "OK" : "NOK";
+		exchange.getMessage().setBody(format("%s=%s", payload, rc));
 	}
 
-	private boolean handlePinStateChange(FromDeviceMessagePinStateChanged event) throws IOException {
+	private Handled handlePinStateChange(FromDeviceMessagePinStateChanged event) throws IOException {
 		Pin pin = event.getPin();
 		String value = String.valueOf(event.getValue());
 		if (pin.is(ANALOG)) {
 			link.switchAnalogPin(analogPin(pin.pinNum()), parseInt(value));
-			return true;
+			return HANDLED_SUCCESSFULLY;
 		}
 		if (pin.is(DIGITAL)) {
 			link.switchDigitalPin(digitalPin(pin.pinNum()), parseBoolean(value));
-			return true;
+			return HANDLED_SUCCESSFULLY;
 		}
-		return false;
+		return NOT_HANDLED;
 	}
 
-	private boolean handleListeningStateChange(FromDeviceChangeListeningState event) throws IOException {
+	private Handled handleListeningStateChange(FromDeviceChangeListeningState event) throws IOException {
 		switch (event.getMode()) {
 		case START:
 			link.startListening(event.getPin());
-			return true;
+			return HANDLED_SUCCESSFULLY;
 		case STOP:
 			link.stopListening(event.getPin());
-			return true;
+			return HANDLED_SUCCESSFULLY;
 		}
-		return false;
+		return NOT_HANDLED;
 	}
 
 	@Override
