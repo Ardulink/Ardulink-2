@@ -77,7 +77,7 @@
 		<jqwik.version>1.9.3</jqwik.version>
 		<awaitility.version>4.3.0</awaitility.version>
 		<junit-pioneer.version>2.3.0</junit-pioneer.version>
-		<equalsverifier.version>3.19.4</equalsverifier.version>
+		<equalsverifier.version>4.0.4</equalsverifier.version>
 		<!-- camel3 is the last version that supports java 11, camel4 needs java 17 -->
 		<camel.version>3.22.4</camel.version>
 
