@@ -27,8 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.ardulink.util.Throwables;
-
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -77,7 +75,7 @@ public class ModuleClassLoader extends URLClassLoader {
 		try {
 			return Files.list(dir).filter(ModuleClassLoader::isJar).collect(toList());
 		} catch (IOException e) {
-			throw Throwables.propagate(e);
+			throw propagate(e);
 		}
 	}
 
