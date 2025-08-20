@@ -35,7 +35,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
@@ -145,8 +145,9 @@ class ArdulinkRestSwaggerTest {
 		private static Options options() {
 			Options options = new Options().setHeadless(headless());
 			return systemProperty(SYS_PROP_PREFIX + "playwright.video.path") //
-					.map(p -> options.setContextOptions(new NewContextOptions().setRecordVideoDir(Paths.get(p))
-							.setRecordVideoSize(recordVideoSize()))) //
+					.map(Path::of) //
+					.map(p -> options.setContextOptions(
+							new NewContextOptions().setRecordVideoDir(p).setRecordVideoSize(recordVideoSize()))) //
 					.orElse(options);
 		}
 

@@ -15,17 +15,19 @@ limitations under the License.
  */
 package org.ardulink.core.classloader;
 
-import static java.util.Arrays.asList;
-import static org.ardulink.util.Lists.mapList;
+import static java.util.stream.Collectors.toList;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Throwables.propagate;
 
-import java.io.File;
-import java.io.FilenameFilter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+
+import org.ardulink.util.Throwables;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -38,18 +40,18 @@ import java.util.List;
 public class ModuleClassLoader extends URLClassLoader {
 
 	public ModuleClassLoader(String moduleDir) {
-		this(new File(moduleDir));
+		this(Path.of(moduleDir));
 	}
 
-	public ModuleClassLoader(File moduleDir) {
+	public ModuleClassLoader(Path moduleDir) {
 		this(contextClassLoader(), moduleDir);
 	}
 
 	public ModuleClassLoader(ClassLoader parent, String moduleDir) {
-		this(parent, new File(moduleDir));
+		this(parent, Path.of(moduleDir));
 	}
 
-	public ModuleClassLoader(ClassLoader parent, File moduleDir) {
+	public ModuleClassLoader(ClassLoader parent, Path moduleDir) {
 		super(toUrls(list(moduleDir)), parent);
 	}
 
@@ -57,26 +59,29 @@ public class ModuleClassLoader extends URLClassLoader {
 		return Thread.currentThread().getContextClassLoader();
 	}
 
-	private static URL[] toUrls(List<File> files) {
+	private static URL[] toUrls(List<Path> files) {
 		return files.stream().map(ModuleClassLoader::toURL).toArray(URL[]::new);
 	}
 
-	private static URL toURL(File file) {
+	private static URL toURL(Path path) {
 		try {
-			checkState(file.exists(), "File %s not found", file);
-			return file.toURI().normalize().toURL();
+			checkState(Files.exists(path), "File %s not found", path);
+			return path.toUri().normalize().toURL();
 		} catch (MalformedURLException e) {
 			throw propagate(e);
 		}
 	}
 
-	private static List<File> list(File dir) {
-		checkState(dir.exists(), "Directory %s not found", dir);
-		return mapList(asList(dir.list(isJar())), f -> new File(dir, f));
+	private static List<Path> list(Path dir) {
+		checkState(Files.exists(dir), "Directory %s not found", dir);
+		try {
+			return Files.list(dir).filter(ModuleClassLoader::isJar).collect(toList());
+		} catch (IOException e) {
+			throw Throwables.propagate(e);
+		}
 	}
 
-	private static FilenameFilter isJar() {
-		return (__, name) -> name.toLowerCase().endsWith(".jar");
+	private static boolean isJar(Path path) {
+		return path.getFileName().toString().toLowerCase().endsWith(".jar");
 	}
-
 }
