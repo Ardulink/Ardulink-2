@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.core.beans;
 
 import static java.util.Arrays.stream;
-import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Stream.concat;
 import static org.ardulink.core.beans.finder.api.AttributeFinders.beanAttributes;
@@ -188,11 +187,11 @@ public class BeanProperties {
 	}
 
 	private Optional<AttributeReader> findReader(String name) throws Exception {
-		return firstWithName(name, stream(finders).map(a -> stream(a.listReaders(bean))).flatMap(identity()));
+		return firstWithName(name, stream(finders).flatMap(a -> stream(a.listReaders(bean))));
 	}
 
 	private Optional<AttributeWriter> findWriter(String name) throws Exception {
-		return firstWithName(name, stream(finders).map(a -> stream(a.listWriters(bean))).flatMap(identity()));
+		return firstWithName(name, stream(finders).flatMap(a -> stream(a.listWriters(bean))));
 	}
 
 	private <T extends TypedAttributeProvider> Optional<T> firstWithName(String name, Stream<T> writers) {
@@ -200,8 +199,8 @@ public class BeanProperties {
 	}
 
 	public Collection<String> attributeNames() {
-		return stream(finders).map(f -> concat(namesOf(f.listReaders(bean)), namesOf(f.listWriters(bean))))
-				.flatMap(identity()).collect(toCollection(LinkedHashSet::new));
+		return stream(finders).flatMap(f -> concat(namesOf(f.listReaders(bean)), namesOf(f.listWriters(bean))))
+				.collect(toCollection(LinkedHashSet::new));
 	}
 
 	private Stream<String> namesOf(Iterable<? extends TypedAttributeProvider> readers) {
