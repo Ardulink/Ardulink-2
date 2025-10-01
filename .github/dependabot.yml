@@ -15,3 +15,6 @@ updates:
     time: "04:42"
   assignees:
   - pfichtner
+  ignore:
+    - dependency-name: "org.junit:junit-bom"
+      versions: [">=6.0.0"]

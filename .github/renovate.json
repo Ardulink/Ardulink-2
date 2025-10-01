@@ -11,6 +11,10 @@
     {
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": false
+    },
+    {
+      "matchPackageNames": ["org.junit:junit-bom"],
+      "allowedVersions": "<6.0.0"
     }
   ]
 }
