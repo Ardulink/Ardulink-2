@@ -7,6 +7,7 @@
     ]
   },
   "labels": ["dependencies"],
+
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch"],
@@ -15,7 +16,18 @@
     {
       "matchPackageNames": ["org.junit:junit-bom"],
       "allowedVersions": "<6.0.0"
+    },
+    {
+      "matchPackageNames": ["com.pi4j:pi4j-core"],
+      "allowedVersions": "<3.0.0"
+    },
+    {
+      "matchPackagePatterns": ["^org\\.apache\\.camel"],
+      "allowedVersions": "<4.0.0"
+    },
+    {
+      "matchPackageNames": ["nl.jqno.equalsverifier"],
+      "allowedVersions": "<4.0.0"
     }
   ]
 }
-
