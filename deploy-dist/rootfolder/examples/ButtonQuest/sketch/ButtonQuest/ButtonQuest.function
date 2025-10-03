@@ -60,7 +60,8 @@ bool handleCustomMessage(String customId, String value, char* rplyBuffer) {
       return true;
     }
   } else if (customId == "getResult") {
-    rplyResult = "result=" + getResult();
+    rplyAppend("result=");
+    rplyAppend(getResult());
     return true;
   }
   return false;

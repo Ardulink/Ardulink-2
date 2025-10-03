@@ -39,12 +39,14 @@ So the final length to store the unique id is 38 bytes.
 
 bool handleCustomMessage(String customId, String value, char* rplyBuffer) {
   static boolean initialized = false;
-  if (!initialized && customCommand == "getUniqueID") {
-    rplyResult = "&UniqueID=" + getUniqueID(value);
-    initialized = true;
-    return true;
+  if (initialized || customCommand != "getUniqueID") {
+    return false;
   }  
-  return false;
+
+ rplyAppend("UniqueID=");
+ rplyAppend(value);
+ initialized = true;
+ return true;
 }
 
 String getUniqueID(String suggested) {
