@@ -48,7 +48,7 @@ void setup() {
   IOShieldOled.begin();
 }
 
-bool handleCustomMessage(String customId, String value, char* rplyBuffer) {
+bool handleCustomMessage(String customId, String value) {
   if (customId == "setbutton") {
     if (value.startsWith("on/")) {
       value = value.substring(3, value.length());

@@ -37,7 +37,7 @@ So the final length to store the unique id is 38 bytes.
 #define UNIQUE_ID_MAGIC_NUMBER_HIGH 76
 #define UNIQUE_ID_MAGIC_NUMBER_LOW 90
 
-bool handleCustomMessage(String customId, String value, char* rplyBuffer) {
+bool handleCustomMessage(String customId, String value) {
   static boolean initialized = false;
   if (initialized || customCommand != "getUniqueID") {
     return false;

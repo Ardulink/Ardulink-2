@@ -57,7 +57,7 @@ void setup() {
   servoArm2.write(90); // move it to its default position (it depends on your calibration)
 }
 
-bool handleCustomMessage(String customId, String value, char* rplyBuffer) {
+bool handleCustomMessage(String customId, String value) {
   if (customId == "servoHand") {
     servoHand.write(value.toInt());
     return true;

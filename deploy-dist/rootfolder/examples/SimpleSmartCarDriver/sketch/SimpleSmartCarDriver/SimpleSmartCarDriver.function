@@ -36,7 +36,7 @@ void setup() {
   motorRight.run(RELEASE);  
 }
 
-bool handleCustomMessage(String customId, String value, char* rplyBuffer) {
+bool handleCustomMessage(String customId, String value) {
   if (customId == "ahead") {
     goAhead(value.toInt());
     return true;
