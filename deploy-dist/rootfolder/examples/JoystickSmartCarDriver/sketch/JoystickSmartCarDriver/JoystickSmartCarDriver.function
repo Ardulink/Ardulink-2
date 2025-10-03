@@ -36,7 +36,7 @@ void setup() {
   motorRight.run(RELEASE);  
 }
 
-bool handleCustomMessage(String customId, String value) {
+bool handleCustomMessage(String customId, String value, char* rplyBuffer) {
   if (customId == "joy") {
     String leftDirection = value.substring(0, 1);
     int leftPowerEndPosition = value.indexOf(')');

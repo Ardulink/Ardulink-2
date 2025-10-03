@@ -36,17 +36,17 @@ void setup() {
   motorRight.run(RELEASE);  
 }
 
-bool handleCustomMessage(String customId, String value) {
-  if(customId == "ahead") {
+bool handleCustomMessage(String customId, String value, char* rplyBuffer) {
+  if (customId == "ahead") {
     goAhead(value.toInt());
     return true;
-  } else if(customId == "back") {
+  } else if (customId == "back") {
     goBack(value.toInt());
     return true;
-  } else if(customId == "right") {
+  } else if (customId == "right") {
     goRight(value.toInt());
     return true;
-  } else if(customId == "left") {
+  } else if (customId == "left") {
     goLeft(value.toInt());
     return true;
   }
