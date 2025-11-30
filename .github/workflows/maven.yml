@@ -87,10 +87,12 @@ jobs:
       uses: ScribeMD/docker-cache@0.5.0
       with:
         key: docker-${{ runner.os }}-${{ matrix.java-version }}-${{ hashFiles('deploy-dist/tests/docker-compose.yml') }}
-    - name: Run the systemtests
-      run: |
-        bash deploy-dist/tests/systemtest-mqtt.sh
-        bash deploy-dist/tests/systemtest-rest.sh
+
+    - name: Run MQTT systemtests
+      run: timeout 2m bash deploy-dist/tests/systemtest-mqtt.sh
+
+    - name: Run REST systemtests
+      run: timeout 2m bash deploy-dist/tests/systemtest-rest.sh
 
     - name: Codecov
       uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
