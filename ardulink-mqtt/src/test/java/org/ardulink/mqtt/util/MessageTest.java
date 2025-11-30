@@ -25,7 +25,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 class MessageTest {
 
 	@Test
-	public void equalsContract() {
+	void equalsContract() {
 		assertDoesNotThrow(EqualsVerifier.forClass(Message.class)::verify);
 	}
 
