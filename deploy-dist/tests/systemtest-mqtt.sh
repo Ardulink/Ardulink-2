@@ -25,7 +25,7 @@ wget -qO "$ARDULINK_DIR/ArdulinkProtocol.ino.hex" https://github.com/Ardulink/Fi
 echo "Running Docker container for ArdulinkProtocol..."
 export DEVICEUSER=$UID
 docker compose -f "$COMPOSE_FILE" up -d virtualavr
-wait_for_container_healthy virtualavr
+timeout 120s wait_for_container_healthy virtualavr
 
 # Step 3: Start websocat container (listening for messages sent by virtualavr)
 docker compose -f "$COMPOSE_FILE" up -d websocat
