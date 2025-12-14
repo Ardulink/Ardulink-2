@@ -28,6 +28,10 @@
     {
       "matchPackageNames": ["nl.jqno.equalsverifier"],
       "allowedVersions": "<4.0.0"
+    },
+    {
+      "matchPackageNames": ["io.rest-assured:rest-assured"],
+      "allowedVersions": "<6.0.0"
     }
   ]
 }
