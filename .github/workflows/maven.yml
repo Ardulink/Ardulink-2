@@ -67,7 +67,7 @@ jobs:
         path: "/tmp/ardulink-V*.zip"
 
     - name: Test Report JDK ${{ matrix.java-version }}
-      uses: dorny/test-reporter@fe45e9537387dac839af0d33ba56eed8e24189e8 # v2
+      uses: dorny/test-reporter@e17be7e0078fc00f61965f3b4032f1e1fdc7fcfb # v2
       if: (success() || failure()) && github.event_name != 'pull_request' && github.actor != 'dependabot[bot]'  # run this step even if previous step failed
       with:
         name: Tests Report JDK ${{ matrix.java-version }}
