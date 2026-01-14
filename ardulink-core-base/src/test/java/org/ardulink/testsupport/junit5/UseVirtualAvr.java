@@ -20,6 +20,7 @@ import static com.github.pfichtner.testcontainers.virtualavr.IOUtil.filename;
 import static com.github.pfichtner.testcontainers.virtualavr.TestcontainerSupport.virtualAvrContainer;
 import static java.nio.file.Files.createTempDirectory;
 import static java.util.function.Predicate.not;
+import static org.testcontainers.images.PullPolicy.defaultPolicy;
 
 import java.io.File;
 import java.io.IOException;
@@ -133,7 +134,9 @@ public @interface UseVirtualAvr {
 		}
 
 		private static VirtualAvrContainer<?> createContainer(String deviceName) {
-			return virtualAvrContainer(inoFile).withDeviceName(deviceName);
+			return virtualAvrContainer(inoFile) //
+					.withImagePullPolicy(defaultPolicy()) //
+					.withDeviceName(deviceName);
 		}
 
 		@Override
