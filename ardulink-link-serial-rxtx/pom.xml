@@ -39,6 +39,16 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers-junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.github.pfichtner</groupId>
+			<artifactId>testcontainers-virtualavr</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-core-base</artifactId>
 			<type>test-jar</type>

@@ -16,21 +16,22 @@ limitations under the License.
 
 package org.ardulink.core.serial.rxtx;
 
+import static java.lang.String.format;
 import static java.net.URI.create;
-import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-
-import java.util.List;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+import com.github.pfichtner.testcontainers.virtualavr.VirtualAvrContainer;
 
 import gnu.io.NoSuchPortException;
 
@@ -46,18 +47,31 @@ class SerialLinkFactoryIntegrationTest {
 
 	private static final String PREFIX = "ardulink://" + SerialLinkFactory.NAME;
 
-	@Test
-	@Disabled("Link#close hangs since StreamReader calls read and this native method doesn't get interrupted even if the InputStream gets closed. That's the reason why RXTX's close does not get a writeLock since the lock remains locked")
-	void canConfigureSerialConnectionViaURI() throws Exception {
-		List<String> portNames = new SerialLinkConfig().listPorts().collect(toList());
-		assumeFalse(portNames.isEmpty());
+	@Nested
+	@Testcontainers
+	class WithVirtualAvr {
 
-		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(
-				create(PREFIX + "?port=" + portNames.get(0) + "&baudrate=9600&pingprobe=false&waitsecs=1"));
-		try (Link link = configurer.newLink()) {
-			assertThat(link).isNotNull();
+		private static final String TTY_USB0 = "ttyUSB0";
+
+		@SuppressWarnings("resource")
+		@Container
+		// use the default loop sketch (we just need a serial port to be present)
+		VirtualAvrContainer<?> virtualAvrContainer = new VirtualAvrContainer<>() //
+				.withDeviceName(TTY_USB0) //
+				.withDeviceGroup("root") //
+				.withDeviceMode(666) //
+		;
+
+		@Test
+		void canConfigureSerialConnectionViaURI() throws Exception {
+			LinkManager connectionManager = LinkManager.getInstance();
+			Configurer configurer = connectionManager.getConfigurer(
+					create(PREFIX + format("?port=/dev/%s&baudrate=9600&pingprobe=false&waitsecs=1", TTY_USB0)));
+			try (Link link = configurer.newLink()) {
+				assertThat(link).isNotNull();
+			}
 		}
+
 	}
 
 	@Test

@@ -16,19 +16,22 @@ limitations under the License.
 
 package org.ardulink.core.serial.jserialcomm;
 
+import static java.lang.String.format;
 import static java.net.URI.create;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import com.fazecast.jSerialComm.SerialPort;
+import com.github.pfichtner.testcontainers.virtualavr.VirtualAvrContainer;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -42,17 +45,31 @@ class SerialLinkFactoryIntegrationTest {
 
 	private static final String PREFIX = "ardulink://" + SerialLinkFactory.NAME;
 
-	@Test
-	void canConfigureSerialConnectionViaURI() throws Exception {
-		SerialPort[] portNames = SerialPort.getCommPorts();
-		assumeTrue(portNames.length > 0);
+	@Nested
+	@Testcontainers
+	class WithVirtualAvr {
 
-		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(create(
-				PREFIX + "?port=" + portNames[0].getSystemPortPath() + "&baudrate=9600&pingprobe=false&waitsecs=1"));
-		try (Link link = configurer.newLink()) {
-			assertThat(link).isNotNull();
+		private static final String TTY_USB0 = "ttyUSB0";
+
+		@SuppressWarnings("resource")
+		@Container
+		// use the default loop sketch (we just need a serial port to be present)
+		VirtualAvrContainer<?> virtualAvrContainer = new VirtualAvrContainer<>() //
+				.withDeviceName(TTY_USB0) //
+				.withDeviceGroup("root") //
+				.withDeviceMode(666) //
+		;
+
+		@Test
+		void canConfigureSerialConnectionViaURI() throws Exception {
+			LinkManager connectionManager = LinkManager.getInstance();
+			Configurer configurer = connectionManager.getConfigurer(
+					create(format(PREFIX + "?port=/dev/%s&baudrate=9600&pingprobe=false&waitsecs=1", TTY_USB0)));
+			try (Link link = configurer.newLink()) {
+				assertThat(link).isNotNull();
+			}
 		}
+
 	}
 
 	@Test
