@@ -27,7 +27,6 @@ import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
 import org.ardulink.testsupport.junit5.UseVirtualAvr;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.github.pfichtner.testcontainers.virtualavr.VirtualAvrContainer;
@@ -44,20 +43,15 @@ class SerialLinkFactoryIntegrationTest {
 
 	private static final String PREFIX = "ardulink://" + SerialLinkFactory.NAME;
 
-	@Nested
-	@UseVirtualAvr
-	class WithVirtualAvr {
-
-		@Test
-		void canConfigureSerialConnectionViaURI(VirtualAvrContainer<?> virtualAvr) throws Exception {
-			LinkManager connectionManager = LinkManager.getInstance();
-			Configurer configurer = connectionManager.getConfigurer(create(PREFIX
-					+ format("?port=%s&baudrate=9600&pingprobe=false&waitsecs=1", virtualAvr.serialPortDescriptor())));
-			try (Link link = configurer.newLink()) {
-				assertThat(link).isNotNull();
-			}
+	@Test
+	@UseVirtualAvr(isolated = true)
+	void canConfigureSerialConnectionViaURI(VirtualAvrContainer<?> virtualAvr) throws Exception {
+		LinkManager connectionManager = LinkManager.getInstance();
+		Configurer configurer = connectionManager.getConfigurer(create(PREFIX
+				+ format("?port=%s&baudrate=9600&pingprobe=false&waitsecs=1", virtualAvr.serialPortDescriptor())));
+		try (Link link = configurer.newLink()) {
+			assertThat(link).isNotNull();
 		}
-
 	}
 
 	@Test

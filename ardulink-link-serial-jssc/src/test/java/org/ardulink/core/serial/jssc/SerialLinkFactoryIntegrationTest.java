@@ -44,20 +44,15 @@ class SerialLinkFactoryIntegrationTest {
 
 	private static final String PREFIX = "ardulink://" + SerialLinkFactory.NAME;
 
-	@Nested
-	@UseVirtualAvr
-	class WithVirtualAvr {
-
-		@Test
-		void canConfigureSerialConnectionViaURI(VirtualAvrContainer<?> virtualAvr) throws Exception {
-			LinkManager connectionManager = LinkManager.getInstance();
-			Configurer configurer = connectionManager.getConfigurer(create(PREFIX
-					+ format("?port=%s&baudrate=9600&pingprobe=false&waitsecs=1", virtualAvr.serialPortDescriptor())));
-			try (Link link = configurer.newLink()) {
-				assertThat(link).isNotNull();
-			}
+	@Test
+	@UseVirtualAvr(isolated = true)
+	void canConfigureSerialConnectionViaURI(VirtualAvrContainer<?> virtualAvr) throws Exception {
+		LinkManager connectionManager = LinkManager.getInstance();
+		Configurer configurer = connectionManager.getConfigurer(create(PREFIX
+				+ format("?port=%s&baudrate=9600&pingprobe=false&waitsecs=1", virtualAvr.serialPortDescriptor())));
+		try (Link link = configurer.newLink()) {
+			assertThat(link).isNotNull();
 		}
-
 	}
 
 	@Test
