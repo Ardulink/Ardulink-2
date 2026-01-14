@@ -26,10 +26,9 @@ import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
+import org.ardulink.testsupport.junit5.UseVirtualAvr;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.github.pfichtner.testcontainers.virtualavr.VirtualAvrContainer;
 
@@ -48,25 +47,14 @@ class SerialLinkFactoryIntegrationTest {
 	private static final String PREFIX = "ardulink://" + SerialLinkFactory.NAME;
 
 	@Nested
-	@Testcontainers
+	@UseVirtualAvr
 	class WithVirtualAvr {
 
-		private static final String TTY_USB0 = "ttyUSB0";
-
-		@SuppressWarnings("resource")
-		@Container
-		// use the default loop sketch (we just need a serial port to be present)
-		VirtualAvrContainer<?> virtualAvrContainer = new VirtualAvrContainer<>() //
-				.withDeviceName(TTY_USB0) //
-				.withDeviceGroup("root") //
-				.withDeviceMode(666) //
-		;
-
 		@Test
-		void canConfigureSerialConnectionViaURI() throws Exception {
+		void canConfigureSerialConnectionViaURI(VirtualAvrContainer<?> virtualAvr) throws Exception {
 			LinkManager connectionManager = LinkManager.getInstance();
-			Configurer configurer = connectionManager.getConfigurer(
-					create(PREFIX + format("?port=/dev/%s&baudrate=9600&pingprobe=false&waitsecs=1", TTY_USB0)));
+			Configurer configurer = connectionManager.getConfigurer(create(PREFIX
+					+ format("?port=%s&baudrate=9600&pingprobe=false&waitsecs=1", virtualAvr.serialPortDescriptor())));
 			try (Link link = configurer.newLink()) {
 				assertThat(link).isNotNull();
 			}
