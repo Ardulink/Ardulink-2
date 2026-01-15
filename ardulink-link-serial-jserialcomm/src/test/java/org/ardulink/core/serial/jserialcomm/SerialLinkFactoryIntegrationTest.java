@@ -18,10 +18,10 @@ package org.ardulink.core.serial.jserialcomm;
 
 import static java.lang.String.format;
 import static java.net.URI.create;
+import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinSwitching;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 
-import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
@@ -45,13 +45,11 @@ class SerialLinkFactoryIntegrationTest {
 
 	@Test
 	@UseVirtualAvr(isolated = true)
-	void canConfigureSerialConnectionViaURI(VirtualAvrContainer<?> virtualAvr) throws Exception {
+	void canConnectAndSwitchPins(VirtualAvrContainer<?> virtualAvr) throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(create(PREFIX
-				+ format("?port=%s&baudrate=9600&pingprobe=false&waitsecs=1", virtualAvr.serialPortDescriptor())));
-		try (Link link = configurer.newLink()) {
-			assertThat(link).isNotNull();
-		}
+				+ format("?port=%s&baudrate=9600&pingprobe=true&waitsecs=1", virtualAvr.serialPortDescriptor())));
+		testSerialPinSwitching(virtualAvr, configurer);
 	}
 
 	@Test
