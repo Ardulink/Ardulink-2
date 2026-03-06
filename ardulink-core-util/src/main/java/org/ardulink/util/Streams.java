@@ -16,7 +16,7 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static java.util.stream.Stream.empty;
+import static java.util.function.Function.identity;
 import static org.ardulink.util.BinaryOperators.right;
 
 import java.util.Arrays;
@@ -53,7 +53,7 @@ public final class Streams {
 
 	@SafeVarargs
 	public static <T> Stream<T> concat(Stream<T>... streams) {
-		return Arrays.stream(streams).reduce(Stream::concat).orElse(empty());
+		return Arrays.stream(streams).flatMap(identity());
 	}
 
 }
