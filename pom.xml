@@ -70,7 +70,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.release>11</maven.compiler.release>
 		<args4j.version>2.37</args4j.version>
-		<slf4j.version>2.0.17</slf4j.version>
+		<slf4j.version>2.0.18</slf4j.version>
 		<junit.version>5.14.4</junit.version>
 		<assertj.version>3.27.7</assertj.version>
 		<mockito.version>5.23.0</mockito.version>
