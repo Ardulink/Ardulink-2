@@ -68,11 +68,30 @@ wait_for_port() {
 
 wait_for_container_healthy() {
     local container_name="$1"
+    local timeout="${2:-30}"
+
     echo "Waiting for $container_name to become healthy..."
-    until [ "$(docker compose -f "$COMPOSE_FILE" ps --format='{{json .Health }}' "$container_name")" == '"healthy"' ]; do
+
+    local start_time=$(date +%s)
+
+    while true; do
+        local health
+        health=$(docker compose -f "$COMPOSE_FILE" ps --format='{{json .Health }}' "$container_name")
+
+        if [ "$health" == '"healthy"' ]; then
+            echo "$container_name is healthy."
+            return 0
+        fi
+
+        local current_time=$(date +%s)
+        local elapsed_time=$((current_time - start_time))
+
+        if [ "$elapsed_time" -ge "$timeout" ]; then
+            die "Timeout reached. Container $container_name did not become healthy."
+        fi
+
         sleep 1
     done
-    echo "$container_name is healthy."
 }
 
 check_websocket_message() {
