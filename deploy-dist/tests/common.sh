@@ -11,7 +11,7 @@ cleanup() {
     echo "Cleaning up..."
 
     echo "Stopping Java process..."
-    kill $JAVA_PID 2>/dev/null
+    kill "$JAVA_PID" 2>/dev/null
 
     echo "Stopping Docker Compose services..."
     docker compose -f "$COMPOSE_FILE" down
@@ -35,7 +35,7 @@ find_first_unused_device() {
 
 # Function to find an unused port
 find_unused_port() {
-    local base_port=${1:-49152}
+    local base_port="${1:-49152}"
     local max_port=65535
     for port in $(seq $base_port $max_port); do
         if ! nc -z localhost "$port" 2>/dev/null; then
@@ -51,19 +51,7 @@ wait_for_port() {
     local port=$1
     local timeout=${2:-10}
     local host=${3:-localhost}
-
-    local start_time=$(date +%s)
-    while ! nc -z "$host" "$port"; do
-        local current_time=$(date +%s)
-        local elapsed_time=$((current_time - start_time))
-
-        if [ "$elapsed_time" -ge "$timeout" ]; then
-            die "Timeout reached. Port $port on $host did not become available."
-        fi
-
-        sleep 1
-    done
-    return 0
+    timeout "$timeout" bash -c 'until nc -z "'"$host"'" "'"$port"'"; do sleep 1; done' || die "Timeout reached. Port $port on $host did not become available."
 }
 
 wait_for_container_healthy() {
@@ -71,27 +59,8 @@ wait_for_container_healthy() {
     local timeout="${2:-30}"
 
     echo "Waiting for $container_name to become healthy..."
-
-    local start_time=$(date +%s)
-
-    while true; do
-        local health
-        health=$(docker compose -f "$COMPOSE_FILE" ps --format='{{json .Health }}' "$container_name")
-
-        if [ "$health" == '"healthy"' ]; then
-            echo "$container_name is healthy."
-            return 0
-        fi
-
-        local current_time=$(date +%s)
-        local elapsed_time=$((current_time - start_time))
-
-        if [ "$elapsed_time" -ge "$timeout" ]; then
-            die "Timeout reached. Container $container_name did not become healthy."
-        fi
-
-        sleep 1
-    done
+    timeout "$timeout" bash -c '
+        until [ "$(docker compose -f "'"$COMPOSE_FILE"'" ps --format "{{json .Health }}" "'"$container_name"'")" = "\"healthy\"" ]; do sleep 1; done' || die "Timeout reached. Container $container_name did not become healthy."
 }
 
 check_websocket_message() {
