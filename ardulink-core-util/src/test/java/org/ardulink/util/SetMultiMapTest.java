@@ -16,7 +16,6 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static java.util.Collections.singleton;
 import static org.ardulink.util.Maps.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,14 +43,14 @@ class SetMultiMapTest {
 	@Test
 	void canPut() {
 		assertThat(sut.put(keyOne, element1)).isTrue();
-		assertThat(sut.asMap()).containsExactly(entry(keyOne, singleton(element1)));
+		assertThat(sut.asMap()).containsExactly(entry(keyOne, Set.of(element1)));
 	}
 
 	@Test
 	void canPutTwice() {
 		assertThat(sut.put(keyOne, element1)).isTrue();
 		assertThat(sut.put(keyOne, element1)).isFalse();
-		assertThat(sut.asMap()).containsExactly(entry(keyOne, singleton(element1)));
+		assertThat(sut.asMap()).containsExactly(entry(keyOne, Set.of(element1)));
 	}
 
 	@Test
@@ -65,14 +64,14 @@ class SetMultiMapTest {
 	void canHandleRemovesOfNonExistingValues() {
 		assertThat(sut.put(keyOne, element1)).isTrue();
 		assertThat(sut.remove(keyOne, element2)).isFalse();
-		assertThat(sut.asMap()).containsExactly(entry(keyOne, singleton(element1)));
+		assertThat(sut.asMap()).containsExactly(entry(keyOne, Set.of(element1)));
 	}
 
 	@Test
 	void canHandleRemovesOfNonExistingKeys() {
 		assertThat(sut.put(keyOne, element1)).isTrue();
 		assertThat(sut.remove(not(keyOne), element1)).isFalse();
-		assertThat(sut.asMap()).containsExactly(entry(keyOne, singleton(element1)));
+		assertThat(sut.asMap()).containsExactly(entry(keyOne, Set.of(element1)));
 	}
 
 	@Test
