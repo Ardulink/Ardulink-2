@@ -17,7 +17,6 @@ package org.ardulink.camel;
 
 import static java.lang.Character.toUpperCase;
 import static java.lang.String.format;
-import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toCollection;
 import static org.ardulink.camel.EndpointConfig.endpointConfigWithType;
 import static org.ardulink.core.Pin.analogPin;
@@ -49,7 +48,7 @@ public class ArdulinkComponent extends DefaultComponent {
 
 	@Override
 	protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
-		Set<Pin> pins = popStringValue(parameters, "listenTo").map(ArdulinkComponent::parsePins).orElse(emptySet());
+		Set<Pin> pins = popStringValue(parameters, "listenTo").map(ArdulinkComponent::parsePins).orElse(Set.of());
 		EndpointConfig config = endpointConfigWithType(remaining).listenTo(pins).linkParams(parameters);
 		parameters.clear();
 		ArdulinkEndpoint endpoint = new ArdulinkEndpoint(uri, this, config);

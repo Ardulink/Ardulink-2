@@ -16,8 +16,6 @@ limitations under the License.
 
 package org.ardulink.core.proxy;
 
-import static java.util.Collections.emptyList;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -67,7 +65,7 @@ public class ProxyLinkConfig implements LinkConfig {
 
 	@ChoiceFor(value = NAMED_PORT, dependsOn = { NAMED_TCPHOST, NAMED_TCPPORT })
 	public List<String> getAvailablePorts() throws IOException {
-		return tcphost == null ? emptyList() : getRemoteInternal().getPortList();
+		return tcphost == null ? List.of() : getRemoteInternal().getPortList();
 	}
 
 	public synchronized ProxyConnectionToRemote getRemote() throws IOException {

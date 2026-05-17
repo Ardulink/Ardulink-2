@@ -1,7 +1,5 @@
 package org.ardulink.camel;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
@@ -14,8 +12,8 @@ import org.ardulink.util.Iterables;
 public class EndpointConfig {
 
 	private final String type;
-	private Map<String, Object> typeParams = emptyMap();
-	private List<Pin> pins = emptyList();
+	private Map<String, Object> typeParams = Map.of();
+	private List<Pin> pins = List.of();
 
 	public static EndpointConfig endpointConfigWithType(String type) {
 		return new EndpointConfig(type);

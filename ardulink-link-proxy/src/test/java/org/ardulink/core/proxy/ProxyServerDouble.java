@@ -17,8 +17,6 @@ limitations under the License.
 package org.ardulink.core.proxy;
 
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.Stream.concat;
@@ -88,14 +86,21 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 					while ((line = in.readLine()) != null) {
 						logger.info("Read {}", line);
 						received.add(line);
-						answers.getOrDefault(line, emptyList()).stream() //
-								.peek(m -> logger.info("Responding {}", m)) //
-								.map(m -> m + "\n") //
-								.forEach(out::print);
-						out.flush();
+						sendAnswer(out, line);
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
+				}
+			}
+
+			private void sendAnswer(PrintWriter out, String line) {
+				List<String> answer = answers.get(line);
+				if (answer != null) {
+					answer.stream() //
+							.peek(m -> logger.info("Responding {}", m)) //
+							.map(m -> m + "\n") //
+							.forEach(out::print);
+					out.flush();
 				}
 			}
 		};
@@ -140,7 +145,7 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 	private Map<String, List<String>> makeMap(int numberOfPorts) {
 		return Map.of( //
 				proxyMessage("get_port_list"), portList(numberOfPorts), //
-				proxyMessage("connect"), singletonList(OK) //
+				proxyMessage("connect"), List.of(OK) //
 		);
 	}
 

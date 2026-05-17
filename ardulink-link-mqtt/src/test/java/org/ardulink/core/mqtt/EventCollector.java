@@ -17,7 +17,6 @@ limitations under the License.
 package org.ardulink.core.mqtt;
 
 import static java.time.Duration.ofMillis;
-import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
@@ -84,7 +83,7 @@ public class EventCollector implements EventListener {
 	}
 
 	private List<PinValueChangedEvent> eventsOfType(Type type) {
-		return events.asMap().getOrDefault(type, emptyList());
+		return events.asMap().getOrDefault(type, List.of());
 	}
 
 }
