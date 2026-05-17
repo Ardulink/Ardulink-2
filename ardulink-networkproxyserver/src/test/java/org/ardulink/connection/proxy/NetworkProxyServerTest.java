@@ -1,7 +1,6 @@
 package org.ardulink.connection.proxy;
 
 import static java.time.Duration.ofMillis;
-import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.proto.api.Protocols.protoByName;
@@ -18,6 +17,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 
 import org.ardulink.connection.proxy.NetworkProxyServer.StartCommand;
@@ -131,7 +131,7 @@ class NetworkProxyServerTest {
 
 										@Override
 										public Collection<String> getAttributes() {
-											return singletonList("port");
+											return List.of("port");
 										}
 
 										@Override
