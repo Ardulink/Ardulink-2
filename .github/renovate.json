@@ -26,7 +26,7 @@
       "allowedVersions": "<4.0.0"
     },
     {
-      "matchPackageNames": ["nl.jqno.equalsverifier"],
+      "matchPackageNames": ["nl.jqno.equalsverifier:equalsverifier"],
       "allowedVersions": "<4.0.0"
     },
     {
