@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.proto.firmata;
 
 import static java.lang.Boolean.TRUE;
+import static java.lang.String.format;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.IntStream.range;
@@ -175,7 +176,6 @@ public class FirmataProtocol implements Protocol {
 
 		private static final String REPLY_PREFIX = "rply|";
 		private static final String LISTEN_PREFIX = "listen|";
-
 		private final AtomicBoolean capabilitiesRequested = new AtomicBoolean(false);
 		private volatile OutboundListener outboundListener;
 
@@ -184,8 +184,8 @@ public class FirmataProtocol implements Protocol {
 			@Override
 			public void accept(Event event) {
 				String pinString = String.valueOf(event.getBodyItem(PIN_ID));
-				Integer pinInt = tryParseAs(Integer.class, pinString)
-						.orElseThrow(() -> new IllegalStateException("Cannot parse " + pinString));
+				Integer pinInt = tryParseAs(Integer.class, pinString).orElseThrow(
+						() -> new IllegalStateException(format("Cannot parse %s as pin number", pinString)));
 				fireEvent(new DefaultFromDeviceMessagePinStateChanged(createPin(pinInt),
 						convertValue(event.getBodyItem(PIN_VALUE))));
 			}
@@ -317,8 +317,8 @@ public class FirmataProtocol implements Protocol {
 						? FromDeviceChangeListeningState.Mode.START
 						: FromDeviceChangeListeningState.Mode.STOP;
 				boolean isAnalog = "analog".equals(parts[1]);
-				Integer pinNum = tryParseAs(Integer.class, parts[2])
-						.orElseThrow(() -> new IllegalStateException("Cannot parse " + parts[2]));
+				Integer pinNum = tryParseAs(Integer.class, parts[2]).orElseThrow(
+						() -> new IllegalStateException(format("Cannot parse %s as pin number", parts[2])));
 				Pin pin = isAnalog ? analogPin(pinNum) : digitalPin(pinNum);
 				fireEvent(fromDeviceChangeListeningState(pin, mode));
 			}
@@ -329,10 +329,10 @@ public class FirmataProtocol implements Protocol {
 			String[] parts = payload.split("\\|", 3);
 			if (parts.length >= 2) {
 				boolean ok = "ok".equals(parts[0]);
-				long id = tryParseAs(Long.class, parts[1])
-						.orElseThrow(() -> new IllegalStateException("Cannot parse " + parts[1]));
+				long replyId = tryParseAs(Long.class, parts[1])
+						.orElseThrow(() -> new IllegalStateException(format("Cannot parse %s as reply id", parts[1])));
 				Map<String, String> params = parts.length == 3 ? stringToMap(parts[2], "\\|", "=") : Map.of();
-				fireEvent(fromDeviceMessageReply(ok, id, params));
+				fireEvent(fromDeviceMessageReply(ok, replyId, params));
 			}
 		}
 
@@ -340,7 +340,7 @@ public class FirmataProtocol implements Protocol {
 			StringBuilder sb = new StringBuilder();
 			int count = data.length / 2;
 			for (int i = 0; i < count; i++) {
-				sb.append((char) (data[i * 2] | (data[i * 2 + 1] << 7)));
+				sb.append((char) ((data[i * 2] & 0xff) | ((data[i * 2 + 1] & 0xff) << 7)));
 			}
 			return sb.toString();
 		}
