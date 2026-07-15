@@ -23,7 +23,6 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
-
 import static org.ardulink.core.messages.impl.DefaultFromDeviceChangeListeningState.fromDeviceChangeListeningState;
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageCustom.fromDeviceMessageCustom;
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageInfo.fromDeviceMessageInfo;
@@ -46,7 +45,6 @@ import static org.firmata4j.firmata.parser.FirmataToken.REPORT_ANALOG;
 import static org.firmata4j.firmata.parser.FirmataToken.REPORT_DIGITAL;
 import static org.firmata4j.firmata.parser.FirmataToken.REPORT_VERSION;
 import static org.firmata4j.firmata.parser.FirmataToken.START_SYSEX;
-import static org.firmata4j.firmata.parser.FirmataToken.STRING_DATA;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -74,6 +72,7 @@ import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProces
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode;
 import org.ardulink.util.ByteArray;
+import org.ardulink.util.Joiner;
 import org.firmata4j.Consumer;
 import org.firmata4j.firmata.FirmataMessageFactory;
 import org.firmata4j.firmata.parser.WaitingForMessageState;
@@ -319,13 +318,10 @@ public class FirmataProtocol implements Protocol {
 						? FromDeviceChangeListeningState.Mode.START
 						: FromDeviceChangeListeningState.Mode.STOP;
 				boolean isAnalog = "analog".equals(parts[1]);
-				try {
-					int pinNum = Integer.parseInt(parts[2]);
-					Pin pin = isAnalog ? analogPin(pinNum) : digitalPin(pinNum);
-					fireEvent(fromDeviceChangeListeningState(pin, mode));
-				} catch (NumberFormatException e) {
-					// ignore malformed message
-				}
+				Integer pinNum = tryParseAs(Integer.class, parts[2])
+						.orElseThrow(() -> new IllegalStateException("Cannot parse " + parts[2]));
+				Pin pin = isAnalog ? analogPin(pinNum) : digitalPin(pinNum);
+				fireEvent(fromDeviceChangeListeningState(pin, mode));
 			}
 		}
 
@@ -334,12 +330,8 @@ public class FirmataProtocol implements Protocol {
 			String[] parts = payload.split("\\|", -1);
 			if (parts.length >= 2) {
 				boolean ok = "ok".equals(parts[0]);
-				long id = -1;
-				try {
-					id = Long.parseLong(parts[1]);
-				} catch (NumberFormatException e) {
-					id = -1;
-				}
+				Long id = tryParseAs(Long.class, parts[1])
+						.orElseThrow(() -> new IllegalStateException("Cannot parse " + parts[1]));
 				Map<String, Object> params = new HashMap<>();
 				for (int i = 2; i < parts.length; i++) {
 					String[] kv = parts[i].split("=", 2);
