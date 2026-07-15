@@ -19,6 +19,7 @@ package org.ardulink.core.proto.firmata;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.stream.IntStream.range;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -28,6 +29,7 @@ import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageCustom.fro
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageInfo.fromDeviceMessageInfo;
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageReply.fromDeviceMessageReply;
 import static org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode.PWM;
+import static org.ardulink.util.Maps.stringToMap;
 import static org.ardulink.util.Primitives.tryParseAs;
 import static org.firmata4j.firmata.parser.FirmataEventType.ANALOG_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.DIGITAL_MESSAGE_RESPONSE;
@@ -46,7 +48,6 @@ import static org.firmata4j.firmata.parser.FirmataToken.REPORT_DIGITAL;
 import static org.firmata4j.firmata.parser.FirmataToken.REPORT_VERSION;
 import static org.firmata4j.firmata.parser.FirmataToken.START_SYSEX;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,7 +73,6 @@ import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProces
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode;
 import org.ardulink.util.ByteArray;
-import org.ardulink.util.Joiner;
 import org.firmata4j.Consumer;
 import org.firmata4j.firmata.FirmataMessageFactory;
 import org.firmata4j.firmata.parser.WaitingForMessageState;
@@ -268,9 +268,8 @@ public class FirmataProtocol implements Protocol {
 				public void accept(Event event) {
 					byte index = (Byte) event.getBodyItem(PIN_ID);
 					FirmataPin pin = FirmataPin.fromIndex(index);
-					for (byte modeByte : (byte[]) event.getBodyItem(PIN_SUPPORTED_MODES)) {
-						pin.addSupportedMode(Mode.fromByteValue(modeByte));
-					}
+					byte[] modes = (byte[]) event.getBodyItem(PIN_SUPPORTED_MODES);
+					range(0, modes.length).forEach(i -> pin.addSupportedMode(Mode.fromByteValue(modes[i])));
 					pins.put(pin.index(), pin);
 				}
 			};
@@ -327,18 +326,12 @@ public class FirmataProtocol implements Protocol {
 
 		private void handleReplyMessage(String message) {
 			String payload = message.substring(REPLY_PREFIX.length());
-			String[] parts = payload.split("\\|", -1);
+			String[] parts = payload.split("\\|", 3);
 			if (parts.length >= 2) {
 				boolean ok = "ok".equals(parts[0]);
-				Long id = tryParseAs(Long.class, parts[1])
+				long id = tryParseAs(Long.class, parts[1])
 						.orElseThrow(() -> new IllegalStateException("Cannot parse " + parts[1]));
-				Map<String, Object> params = new HashMap<>();
-				for (int i = 2; i < parts.length; i++) {
-					String[] kv = parts[i].split("=", 2);
-					if (kv.length == 2) {
-						params.put(kv[0], kv[1]);
-					}
-				}
+				Map<String, String> params = parts.length == 3 ? stringToMap(parts[2], "\\|", "=") : Map.of();
 				fireEvent(fromDeviceMessageReply(ok, id, params));
 			}
 		}
