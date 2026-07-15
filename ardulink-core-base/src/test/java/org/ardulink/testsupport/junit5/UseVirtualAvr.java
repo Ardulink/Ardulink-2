@@ -24,16 +24,19 @@ import static org.testcontainers.images.PullPolicy.defaultPolicy;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.ardulink.testsupport.junit5.UseVirtualAvr.VirtualAvrExtension;
@@ -68,29 +71,60 @@ public @interface UseVirtualAvr {
 
 	boolean isolated() default false;
 
+	String firmware();
+
 	static class VirtualAvrExtension
 			implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
 
-		private static final String REMOTE_INO_FILE = "https://github.com/Ardulink/Firmware/releases/download/v1.2.0/ArdulinkProtocol.ino.hex";
-		private static final File inoFile = loadFromNet();
+		private static final ConcurrentHashMap<String, File> firmwareCache = new ConcurrentHashMap<>();
 
-		static File loadFromNet() {
+		private static final AtomicBoolean started = new AtomicBoolean(false);
+
+		private static VirtualAvrContainer<?> sharedContainer;
+
+		static File resolveFirmware(String firmwareUri) {
+			return firmwareCache.computeIfAbsent(firmwareUri, VirtualAvrExtension::loadFirmware);
+		}
+
+		private static File loadFirmware(String uri) {
+			if (uri.startsWith("https://") || uri.startsWith("http://")) {
+				return downloadFromUrl(uri);
+			} else if (uri.startsWith("classpath://")) {
+				String resourcePath = uri.substring("classpath://".length());
+				return loadFromClasspath(resourcePath.startsWith("/") ? resourcePath : "/" + resourcePath);
+			}
+			throw new ExtensionConfigurationException(
+					"Unsupported firmware URI scheme: " + uri + " (supported: https://, http://, classpath://)");
+		}
+
+		private static File downloadFromUrl(String urlString) {
 			try {
-				URL inoUrl = new URL(REMOTE_INO_FILE);
+				URL url = new URL(urlString);
 				File target = Path
-						.of(createTempDirectory("ardulink-firmware").toFile().getAbsolutePath(), filename(inoUrl))
+						.of(createTempDirectory("ardulink-firmware").toFile().getAbsolutePath(), filename(url))
 						.toFile();
-				return downloadTo(inoUrl, target);
+				return downloadTo(url, target);
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
 			}
 		}
 
-		private static final AtomicBoolean started = new AtomicBoolean(false);
-
-		private static final VirtualAvrContainer<?> sharedContainer = createContainer(TTY_USB0);
-		static {
-			Runtime.getRuntime().addShutdownHook(new Thread(sharedContainer::stop));
+		private static File loadFromClasspath(String resourcePath) {
+			try {
+				URL resource = UseVirtualAvr.class.getResource(resourcePath);
+				if (resource == null) {
+					throw new ExtensionConfigurationException("Classpath resource not found: " + resourcePath);
+				}
+				String fileName = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
+				File target = Path.of(createTempDirectory("ardulink-firmware").toFile().getAbsolutePath(), fileName)
+						.toFile();
+				try (InputStream in = resource.openStream()) {
+					Files.write(target.toPath(), in.readAllBytes());
+				}
+				return target;
+			} catch (IOException e) {
+				throw new UncheckedIOException(e);
+			}
 		}
 
 		@Override
@@ -98,7 +132,11 @@ public @interface UseVirtualAvr {
 			Class<?> testClass = context.getRequiredTestClass();
 			validateConfiguration(testClass);
 			if (needsSharedContainer(testClass) && started.compareAndSet(false, true)) {
+				UseVirtualAvr classAnn = testClass.getAnnotation(UseVirtualAvr.class);
+				File firmware = resolveFirmware(classAnn.firmware());
+				sharedContainer = createContainer(classAnn.deviceName(), firmware);
 				sharedContainer.start();
+				Runtime.getRuntime().addShutdownHook(new Thread(sharedContainer::stop));
 			}
 		}
 
@@ -127,14 +165,15 @@ public @interface UseVirtualAvr {
 			UseVirtualAvr config = findConfig(context)
 					.orElseThrow(() -> new ExtensionConfigurationException("@UseVirtualAvr not found"));
 			if (config.isolated()) {
-				VirtualAvrContainer<?> container = createContainer(config.deviceName());
+				File firmware = resolveFirmware(config.firmware());
+				VirtualAvrContainer<?> container = createContainer(config.deviceName(), firmware);
 				container.start();
 				context.getStore(ExtensionContext.Namespace.create(getClass(), context)).put("container", container);
 			}
 		}
 
-		private static VirtualAvrContainer<?> createContainer(String deviceName) {
-			return virtualAvrContainer(inoFile) //
+		private static VirtualAvrContainer<?> createContainer(String deviceName, File firmware) {
+			return virtualAvrContainer(firmware) //
 					.withImagePullPolicy(defaultPolicy()) //
 					.withDeviceName(deviceName);
 		}

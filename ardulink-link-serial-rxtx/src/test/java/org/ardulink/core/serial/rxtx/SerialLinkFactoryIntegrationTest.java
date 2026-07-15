@@ -47,7 +47,7 @@ class SerialLinkFactoryIntegrationTest {
 
 	private static final String PREFIX = "ardulink://" + SerialLinkFactory.NAME;
 
-	@UseVirtualAvr(isolated = true)
+	@UseVirtualAvr(isolated = true, firmware = "https://github.com/Ardulink/Firmware/releases/download/v1.2.0/ArdulinkProtocol.ino.hex")
 	void canConfigureSerialConnectionViaURI(VirtualAvrContainer<?> virtualAvr) throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(create(PREFIX
@@ -58,7 +58,7 @@ class SerialLinkFactoryIntegrationTest {
 	}
 
 	@Disabled("Link#close hangs since StreamReader calls read and this native method doesn't get interrupted even if the InputStream gets closed. That's the reason why RXTX's close does not get a writeLock since the lock remains locked")
-	@UseVirtualAvr(isolated = true)
+	@UseVirtualAvr(isolated = true, firmware = "https://github.com/Ardulink/Firmware/releases/download/v1.2.0/ArdulinkProtocol.ino.hex")
 	void canConnectAndSwitchPins(VirtualAvrContainer<?> virtualAvr) throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(create(PREFIX

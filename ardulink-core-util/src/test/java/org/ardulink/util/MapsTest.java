@@ -71,7 +71,7 @@ class MapsTest {
 	void testStringToMapSingleEntry() {
 		assertThat(stringToMap("key=value", "&", "=")).containsExactlyInAnyOrderEntriesOf(Map.of("key", "value"));
 	}
-	
+
 	@Test
 	void testStringToMapWithAmpersandAndEquals() {
 		assertThat(stringToMap("key1=value1&key2=value22", "&", "=")).containsExactlyInAnyOrderEntriesOf(Map.of("key1", "value1", "key2", "value22"));
