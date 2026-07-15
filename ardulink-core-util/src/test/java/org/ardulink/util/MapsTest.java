@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static org.ardulink.util.Maps.stringToMap;
 import static org.ardulink.util.Maps.toProperties;
 import static org.ardulink.util.Maps.valuesToString;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,6 +65,16 @@ class MapsTest {
 		Map<Integer, String> map2 = Map.of(2, "m2-B", 4, "m2-D");
 		Map<Integer, String> merged = Maps.merge(map1, map2);
 		assertThat(merged).containsExactlyInAnyOrderEntriesOf(Map.of(1, "m1-A", 2, "m2-B", 3, "m1-C", 4, "m2-D"));
+	}
+
+	@Test
+	void testStringToMapSingleEntry() {
+		assertThat(stringToMap("key=value", "&", "=")).containsExactlyInAnyOrderEntriesOf(Map.of("key", "value"));
+	}
+
+	@Test
+	void testStringToMapWithAmpersandAndEquals() {
+		assertThat(stringToMap("key1=value1&key2=value22", "&", "=")).containsExactlyInAnyOrderEntriesOf(Map.of("key1", "value1", "key2", "value22"));
 	}
 
 }

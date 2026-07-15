@@ -16,9 +16,11 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 import static org.ardulink.util.BinaryOperators.right;
+import static org.ardulink.util.Preconditions.checkNotNull;
 
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -62,6 +64,11 @@ public final class Maps {
 				.map(Map::entrySet) //
 				.flatMap(Collection::stream)
 				.collect(toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue, right()));
+	}
+
+	public static Map<String, String> stringToMap(String query, String sep, String kvSep) {
+		return stream(checkNotNull(query, "Params can't be null").split(sep)).map(p -> p.split(kvSep))
+				.map(kv -> entry(kv[0], kv[1])).collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 
 }

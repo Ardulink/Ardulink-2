@@ -6,8 +6,9 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static org.ardulink.core.featureflags.PreviewFeature.FIRMATA_ENABLED_PROPERTY_FEATURE;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom.toDeviceMessageCustom;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone.toDeviceMessageNoTone;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePing.toDeviceMessageNoTone;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange.toDeviceMessagePinStateChange;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
 import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
@@ -30,28 +31,34 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.Tone;
 import org.ardulink.core.messages.api.FromDeviceMessage;
+import org.ardulink.core.messages.api.FromDeviceChangeListeningState;
+import org.ardulink.core.messages.api.FromDeviceMessageCustom;
 import org.ardulink.core.messages.api.FromDeviceMessageInfo;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
+import org.ardulink.core.messages.api.FromDeviceMessageReply;
+import org.ardulink.core.messages.api.ToDeviceMessageCustom;
+import org.ardulink.core.messages.impl.DefaultToDeviceMessageKeyPress;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
+import org.ardulink.core.proto.api.MessageIdHolder;
+import org.ardulink.core.proto.api.MessageIdHolders;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin;
 import org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ClearSystemProperty;
-import org.junitpioneer.jupiter.ExpectedToFail;
-import org.junitpioneer.jupiter.SetSystemProperty;
 
 class FirmataProtocolTest {
 
@@ -61,22 +68,6 @@ class FirmataProtocolTest {
 	private List<FromDeviceMessage> messages = new ArrayList<>();
 
 	@Test
-	@SetSystemProperty(key = FIRMATA_ENABLED_PROPERTY_FEATURE, value = "anyNonNullValue")
-	void firmataIsAvailableIfSystemPropertyIsSet() {
-		assertThat(loadFirmata()).isNotEmpty();
-	}
-
-	@Test
-	@ClearSystemProperty(key = FIRMATA_ENABLED_PROPERTY_FEATURE)
-	void firmataIsAbsentIfSystemPropertyIsNotSet() {
-		assertThat(loadFirmata()).isEmpty();
-	}
-
-	private static Optional<Protocol> loadFirmata() {
-		return tryProtoByName(FirmataProtocol.NAME);
-	}
-
-	@Test
 	void canReadFirmwareStartupResponseAndRequestsCapabilities() throws IOException {
 		givenMessage(0xF0, 0x79, 0x01, 0x02, 0x41, 0x0, 0xF7);
 		whenMessageIsProcessed();
@@ -84,22 +75,23 @@ class FirmataProtocolTest {
 	}
 
 	@Test
-	@ExpectedToFail
 	void doesRequestsCapabilitiesOnlyOnFirstFirmwareStartupResponse() throws IOException {
-		// TODO it's unclear for now, how we can send messages to the arduino since BSP
-		// is incoming only.
-		// TODO Idea: Let the BSP implement a Pushback-Interface, let StreamConnection
-		// combine input/output
-		@SuppressWarnings("unused")
-		final int[] CAPABILITIES_QUERY = { 0xF0, 0x6B, 0xF7 };
+		AtomicReference<byte[]> outboundBytes = new AtomicReference<>();
+		sut.setOutboundListener(outboundBytes::set);
 
 		givenMessage(0xF0, 0x79, 0x01, 0x02, 0x41, 0x0, 0xF7);
 		whenMessageIsProcessed();
+		assertThat(outboundBytes.get()).containsExactly(0xF0, 0x6B, 0xF7);
+
+		outboundBytes.set(null);
 		givenMessage(capabilitiesQuery());
 		whenMessageIsProcessed();
+		assertThat(outboundBytes.get()).isNull();
+
+		outboundBytes.set(null);
 		givenMessage(0xF0, 0x79, 0x01, 0x02, 0x41, 0x0, 0xF7);
 		whenMessageIsProcessed();
-		assertThat(messages).hasSize(2).allSatisfy(e -> assertThat(e).isInstanceOf(FromDeviceMessageInfo.class));
+		assertThat(outboundBytes.get()).isNull();
 	}
 
 	@Test
@@ -108,7 +100,6 @@ class FirmataProtocolTest {
 		givenMessage(capabilitiesQuery());
 		whenMessageIsProcessed();
 
-		// TODO verify via behavior check
 		Field declaredField = sut.getClass().getDeclaredField("pins");
 		declaredField.setAccessible(true);
 
@@ -182,10 +173,16 @@ class FirmataProtocolTest {
 		givenMessage(command |= port, valueLow, valueHigh);
 		whenMessageIsProcessed();
 
-		// TODO PF onDigitalMappingReceive
 		AtomicInteger pin = new AtomicInteger((byte) pow(2, port + 1));
 		assertMessage(messages, Arrays.asList(true, false, true, false, false, true, false, true).stream()
 				.collect(toMap(__ -> digitalPin(pin.getAndIncrement()), identity())));
+	}
+
+	// -------------------------------------------------------------------------
+
+	@Test
+	void canSendPing() {
+		assertThat(sut.toDevice(toDeviceMessageNoTone())).containsExactly(0xF9);
 	}
 
 	// -------------------------------------------------------------------------
@@ -263,6 +260,132 @@ class FirmataProtocolTest {
 			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(0xD1, 0x01);
 			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(0xD1, 0x00);
 		});
+	}
+
+	// -------------------------------------------------------------------------
+
+	@Test
+	void canSendCustomMessage() {
+		byte[] result = sut.toDevice(toDeviceMessageCustom("hello"));
+		assertThat(result[0]).isEqualTo((byte) 0xF0);
+		assertThat(result[1]).isEqualTo((byte) 0x71);
+		assertThat(result[result.length - 1]).isEqualTo((byte) 0xF7);
+	}
+
+	@Test
+	void canSendCustomMessageWithMultipleStrings() {
+		byte[] result = sut.toDevice(toDeviceMessageCustom("hello", "world"));
+		assertThat(result).isNotEmpty();
+		assertThat(result[0]).isEqualTo((byte) 0xF0);
+		assertThat(result[1]).isEqualTo((byte) 0x71);
+	}
+
+	@Test
+	void canSendCustomMessageWithMessageId() {
+		ToDeviceMessageCustom msg = MessageIdHolders.addMessageId(toDeviceMessageCustom("test"), 42L);
+		byte[] result = sut.toDevice(msg);
+		assertThat(result).isNotEmpty();
+		assertThat(result[0]).isEqualTo((byte) 0xF0);
+		assertThat(result[1]).isEqualTo((byte) 0x71);
+	}
+
+	// -------------------------------------------------------------------------
+
+	@Test
+	void canSendKeyPress() {
+		byte[] result = sut.toDevice(DefaultToDeviceMessageKeyPress.toDeviceMessageKeyPress('A', 65, 0, 0, 0));
+		assertThat(result).isNotEmpty();
+		assertThat(result[0]).isEqualTo((byte) 0xF0);
+		assertThat(result[1]).isEqualTo((byte) 0x71);
+		assertThat(result[result.length - 1]).isEqualTo((byte) 0xF7);
+	}
+
+	// -------------------------------------------------------------------------
+
+	@Test
+	void canParseIncomingStringMessageAsCustom() throws IOException {
+		givenMessage(stringMessageBytes("hello"));
+		whenMessageIsProcessed();
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageCustom.class,
+				e -> assertThat(e.getMessage()).isEqualTo("hello"));
+	}
+
+	@Test
+	void canParseIncomingReplyOk() throws IOException {
+		givenMessage(stringMessageBytes("rply|ok|42"));
+		whenMessageIsProcessed();
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class, e -> {
+			assertThat(e.isOk()).isTrue();
+			assertThat(e.getId()).isEqualTo(42);
+			assertThat(e.getParameters()).isEmpty();
+		});
+	}
+
+	@Test
+	void canParseIncomingReplyKo() throws IOException {
+		givenMessage(stringMessageBytes("rply|ko|7"));
+		whenMessageIsProcessed();
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class, e -> {
+			assertThat(e.isOk()).isFalse();
+			assertThat(e.getId()).isEqualTo(7);
+			assertThat(e.getParameters()).isEmpty();
+		});
+	}
+
+	@Test
+	void canParseIncomingReplyWithParameters() throws IOException {
+		givenMessage(stringMessageBytes("rply|ok|5|pin=13|val=1"));
+		whenMessageIsProcessed();
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class, e -> {
+			assertThat(e.isOk()).isTrue();
+			assertThat(e.getId()).isEqualTo(5);
+			assertThat(e.getParameters()).containsEntry("pin", "13").containsEntry("val", "1");
+		});
+	}
+
+	@Test
+	void canParseIncomingSysexCustomMessage() throws IOException {
+		byte[] data = new byte[] { (byte) 0xF0, (byte) 0x7F, (byte) 0x01, (byte) 0x02, (byte) 0xF7 };
+		givenMessage(data);
+		whenMessageIsProcessed();
+		assertThat(messages).singleElement().isInstanceOf(FromDeviceMessageCustom.class);
+	}
+
+	// -------------------------------------------------------------------------
+
+	@Test
+	void canParseIncomingListenStartAnalog() throws IOException {
+		givenMessage(stringMessageBytes("listen|start|analog|2"));
+		whenMessageIsProcessed();
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceChangeListeningState.class, e -> {
+			assertThat(e.getPin()).isEqualTo(analogPin(2));
+			assertThat(e.getMode()).isEqualTo(FromDeviceChangeListeningState.Mode.START);
+		});
+	}
+
+	@Test
+	void canParseIncomingListenStopDigital() throws IOException {
+		givenMessage(stringMessageBytes("listen|stop|digital|13"));
+		whenMessageIsProcessed();
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceChangeListeningState.class, e -> {
+			assertThat(e.getPin()).isEqualTo(digitalPin(13));
+			assertThat(e.getMode()).isEqualTo(FromDeviceChangeListeningState.Mode.STOP);
+		});
+	}
+
+	// -------------------------------------------------------------------------
+
+	private byte[] stringMessageBytes(String str) {
+		byte[] strBytes = str.getBytes();
+		byte[] result = new byte[strBytes.length * 2 + 3];
+		result[0] = (byte) 0xF0;
+		result[1] = (byte) 0x71;
+		for (int i = 0; i < strBytes.length; i++) {
+			result[i * 2 + 2] = (byte) (strBytes[i] & 0x7F);
+			result[i * 2 + 3] = (byte) ((strBytes[i] >> 7) & 0x7F);
+		}
+		result[result.length - 1] = (byte) 0xF7;
+		return result;
 	}
 
 	// -------------------------------------------------------------------------

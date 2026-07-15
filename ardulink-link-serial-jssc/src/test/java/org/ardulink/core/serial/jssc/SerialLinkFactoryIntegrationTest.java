@@ -44,7 +44,7 @@ class SerialLinkFactoryIntegrationTest {
 	private static final String PREFIX = "ardulink://" + SerialLinkFactory.NAME;
 
 	@Test
-	@UseVirtualAvr(isolated = true)
+	@UseVirtualAvr(isolated = true, firmware = "https://github.com/Ardulink/Firmware/releases/download/v1.2.0/ArdulinkProtocol.ino.hex")
 	void canConnectAndSwitchPins(VirtualAvrContainer<?> virtualAvr) throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(create(PREFIX

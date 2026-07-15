@@ -29,12 +29,6 @@ import static org.ardulink.util.SystemProperties.isPropertySet;
 public final class PreviewFeature {
 
 	/**
-	 * To enable Firmata protocol (work in progress) set the system property
-	 * {@value #FIRMATA_ENABLED_PROPERTY_FEATURE} to any non-empty value.
-	 */
-	public static final String FIRMATA_ENABLED_PROPERTY_FEATURE = "protocol.firmata.enabled";
-
-	/**
 	 * To enable SimpleProtocol in general set the system property
 	 * {@value #SIMPLE_PROTOCOL_ENABLED_PROPERTY_FEATURE} to any non-empty value.
 	 * 
@@ -52,10 +46,6 @@ public final class PreviewFeature {
 
 	private PreviewFeature() {
 		super();
-	}
-
-	public static boolean isFirmataProtocolFeatureEnabled() {
-		return isPropertySet(FIRMATA_ENABLED_PROPERTY_FEATURE);
 	}
 
 	public static boolean isSimpleProtocolFeatureEnabledInGeneral() {

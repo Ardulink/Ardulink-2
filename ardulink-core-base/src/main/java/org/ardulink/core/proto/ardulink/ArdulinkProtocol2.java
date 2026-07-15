@@ -20,9 +20,7 @@ import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.stream.Collectors.toMap;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
@@ -50,7 +48,7 @@ import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STO
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.TONE;
 import static org.ardulink.util.Booleans.toBoolean;
-import static org.ardulink.util.Maps.entry;
+import static org.ardulink.util.Maps.stringToMap;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Primitives.tryParseAs;
 
@@ -174,15 +172,10 @@ public class ArdulinkProtocol2 implements Protocol {
 			@Override
 			public State process(byte b) {
 				if (isNewline(b)) {
-					return new RplyParsed(ok, paramsToMap(bufferAsString()));
+					return new RplyParsed(ok, stringToMap(bufferAsString(), "&", "="));
 				}
 				bufferAppend(b);
 				return this;
-			}
-
-			private static Map<String, String> paramsToMap(String query) {
-				return stream(checkNotNull(query, "Params can't be null").split("&")).map(p -> p.split("="))
-						.map(kv -> entry(kv[0], kv[1])).collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
 			}
 
 		}
