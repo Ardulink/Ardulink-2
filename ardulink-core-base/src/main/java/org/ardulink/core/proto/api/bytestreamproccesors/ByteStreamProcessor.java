@@ -39,9 +39,16 @@ public interface ByteStreamProcessor {
 		void handle(FromDeviceMessage fromDevice);
 	}
 
+	interface OutboundListener {
+		void outbound(byte[] bytes);
+	}
+
 	void addListener(FromDeviceListener listener);
 
 	void removeListener(FromDeviceListener listener);
+
+	default void setOutboundListener(OutboundListener listener) {
+	}
 
 	// -- in
 

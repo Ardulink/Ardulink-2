@@ -84,6 +84,13 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		this.connection = connection;
 		this.byteStreamProcessor = byteStreamProcessor;
 		this.byteStreamProcessor.addListener(this::received);
+		this.byteStreamProcessor.setOutboundListener(bytes -> {
+			try {
+				this.connection.write(bytes);
+			} catch (Exception e) {
+				// ignore outbound errors during boot
+			}
+		});
 	}
 
 	public Connection getConnection() {
