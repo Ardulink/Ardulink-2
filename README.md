@@ -1,4 +1,11 @@
-# Ardulink-2 [![Build Status](https://github.com/Ardulink/Ardulink-2/actions/workflows/maven.yml/badge.svg)](https://github.com/Ardulink/Ardulink-2/actions/workflows/maven.yml)
+# Ardulink-2
+
+[![Build Status](https://github.com/Ardulink/Ardulink-2/actions/workflows/maven.yml/badge.svg)](https://github.com/Ardulink/Ardulink-2/actions/workflows/maven.yml)
+[![License](https://img.shields.io/github/license/Ardulink/Ardulink-2)](LICENSE)
+[![Maven Central](https://img.shields.io/maven-central/v/org.ardulink/ardulink-core-base)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.ardulink%22)
+[![codecov](https://codecov.io/gh/Ardulink/Ardulink-2/branch/master/graph/badge.svg)](https://codecov.io/gh/Ardulink/Ardulink-2)
+[![CodeQL](https://github.com/Ardulink/Ardulink-2/actions/workflows/codeql.yml/badge.svg)](https://github.com/Ardulink/Ardulink-2/actions/workflows/codeql.yml)
+[![Java Version](https://img.shields.io/badge/java-11+-blue)](https://github.com/Ardulink/Ardulink-2/blob/master/pom.xml)
 
 This is the repository for Ardulink 2. Ardulink 2 is a complete, open source, java solution for the control and coordination of Arduino boards. This repository contains Ardulink Version 0.6.2 and all upcoming releases.
 
