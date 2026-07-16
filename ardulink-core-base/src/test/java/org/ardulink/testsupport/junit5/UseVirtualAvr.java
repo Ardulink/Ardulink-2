@@ -100,9 +100,7 @@ public @interface UseVirtualAvr {
 		private static File downloadFromUrl(String urlString) {
 			try {
 				URL url = new URL(urlString);
-				File target = Path
-						.of(createTempDirectory("ardulink-firmware").toFile().getAbsolutePath(), filename(url))
-						.toFile();
+				File target = Path.of(tempDirectory().getAbsolutePath(), filename(url)).toFile();
 				return downloadTo(url, target);
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
@@ -116,8 +114,7 @@ public @interface UseVirtualAvr {
 					throw new ExtensionConfigurationException("Classpath resource not found: " + resourcePath);
 				}
 				String fileName = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
-				File target = Path.of(createTempDirectory("ardulink-firmware").toFile().getAbsolutePath(), fileName)
-						.toFile();
+				File target = Path.of(tempDirectory().getAbsolutePath(), fileName).toFile();
 				try (InputStream in = resource.openStream()) {
 					Files.write(target.toPath(), in.readAllBytes());
 				}
@@ -125,6 +122,10 @@ public @interface UseVirtualAvr {
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
 			}
+		}
+
+		private static File tempDirectory() throws IOException {
+			return createTempDirectory("ardulink-firmware").toFile();
 		}
 
 		@Override
@@ -144,7 +145,8 @@ public @interface UseVirtualAvr {
 			UseVirtualAvr classAnn = testClass.getAnnotation(UseVirtualAvr.class);
 			if (classAnn != null && !classAnn.isolated()) {
 				boolean hasIsolatedMethod = Arrays.stream(testClass.getDeclaredMethods())
-						.map(m -> m.getAnnotation(UseVirtualAvr.class)).filter(Objects::nonNull)
+						.map(m -> m.getAnnotation(UseVirtualAvr.class)) //
+						.filter(Objects::nonNull) //
 						.anyMatch(UseVirtualAvr::isolated);
 
 				if (hasIsolatedMethod) {
@@ -190,8 +192,7 @@ public @interface UseVirtualAvr {
 		private Optional<UseVirtualAvr> findConfig(ExtensionContext context) {
 			return context.getElement() //
 					.flatMap(e -> Optional.ofNullable(e.getAnnotation(UseVirtualAvr.class))) //
-					.or(() -> Optional.ofNullable(context.getRequiredTestClass().getAnnotation(UseVirtualAvr.class) //
-					));
+					.or(() -> Optional.ofNullable(context.getRequiredTestClass().getAnnotation(UseVirtualAvr.class)));
 		}
 
 		private boolean needsSharedContainer(Class<?> testClass) {
@@ -202,8 +203,10 @@ public @interface UseVirtualAvr {
 			}
 
 			// Case 2: scan methods
-			return Arrays.stream(testClass.getDeclaredMethods()).map(m -> m.getAnnotation(UseVirtualAvr.class))
-					.filter(Objects::nonNull).anyMatch(not(UseVirtualAvr::isolated));
+			return Arrays.stream(testClass.getDeclaredMethods()) //
+					.map(m -> m.getAnnotation(UseVirtualAvr.class)) //
+					.filter(Objects::nonNull) //
+					.anyMatch(not(UseVirtualAvr::isolated));
 		}
 
 		@Override
