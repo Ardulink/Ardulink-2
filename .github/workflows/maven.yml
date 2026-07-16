@@ -99,7 +99,6 @@ jobs:
       run: |
         find . -path '*/target/site/jacoco-aggregate' -type d -exec rm -rf {} + 2>/dev/null; true
         rm -f ardulink-swing/target/site/jacoco/jacoco.xml
-        rm -f ardulink-link-*/target/site/jacoco/jacoco.xml
 
     - name: Codecov
       if: matrix.java-version == 11
