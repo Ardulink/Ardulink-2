@@ -17,6 +17,8 @@ package org.ardulink.core.events;
 
 import static org.ardulink.util.anno.LapsedWith.JDK14;
 
+import java.util.Objects;
+
 import org.ardulink.util.anno.LapsedWith;
 
 /**
@@ -28,10 +30,10 @@ import org.ardulink.util.anno.LapsedWith;
  *
  */
 @LapsedWith(value = JDK14, module = "records")
-public class DefaultCustomEvent implements CustomEvent {
+public final class DefaultCustomEvent implements CustomEvent {
 
 	private final String message;
-	
+
 	public DefaultCustomEvent(String message) {
 		this.message = message;
 	}
@@ -39,6 +41,28 @@ public class DefaultCustomEvent implements CustomEvent {
 	@Override
 	public String getMessage() {
 		return message;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(message);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DefaultCustomEvent other = (DefaultCustomEvent) obj;
+		return Objects.equals(message, other.message);
+	}
+
+	@Override
+	public String toString() {
+		return "DefaultCustomEvent [message=" + message + "]";
 	}
 
 }
