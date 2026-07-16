@@ -94,11 +94,13 @@ jobs:
     - name: Run REST systemtests
       run: timeout 2m bash deploy-dist/tests/systemtest-rest.sh
 
+    - name: Remove JaCoCo aggregate reports
+      if: matrix.java-version == 11
+      run: find . -path '*/target/site/jacoco-aggregate' -type d -exec rm -rf {} + 2>/dev/null; true
+
     - name: Codecov
       if: matrix.java-version == 11
       uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: |
-          */target/site/jacoco/jacoco.xml
 
