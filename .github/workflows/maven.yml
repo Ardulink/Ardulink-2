@@ -94,9 +94,12 @@ jobs:
     - name: Run REST systemtests
       run: timeout 2m bash deploy-dist/tests/systemtest-rest.sh
 
-    - name: Remove JaCoCo aggregate reports
+    - name: Remove JaCoCo aggregate and excluded module reports
       if: matrix.java-version == 11
-      run: find . -path '*/target/site/jacoco-aggregate' -type d -exec rm -rf {} + 2>/dev/null; true
+      run: |
+        find . -path '*/target/site/jacoco-aggregate' -type d -exec rm -rf {} + 2>/dev/null; true
+        rm -f ardulink-swing/target/site/jacoco/jacoco.xml
+        rm -f ardulink-link-*/target/site/jacoco/jacoco.xml
 
     - name: Codecov
       if: matrix.java-version == 11

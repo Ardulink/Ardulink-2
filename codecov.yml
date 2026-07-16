@@ -7,6 +7,10 @@ coverage:
       default:
         target: auto
 
+  ignore:
+    - "ardulink-swing/**"
+    - "ardulink-link-*/**"
+
 comment:
   layout: "reach,diff,flags,files"
   behavior: default
