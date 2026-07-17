@@ -247,7 +247,7 @@ class FirmataProtocolTest {
 		byte pinNumber = 2;
 		Pin pin = analogPin(pinNumber);
 		assertSoftly(s -> {
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(0xC2, 0x01);
+			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(0xF4, 0x02, 0x00, 0xC2, 0x01);
 			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(0xC2, 0x00);
 		});
 	}
@@ -257,7 +257,8 @@ class FirmataProtocolTest {
 		byte pinNumber = 12;
 		Pin pin = digitalPin(pinNumber);
 		assertSoftly(s -> {
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(0xD1, 0x01);
+			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin)))
+					.containsExactly(0xF4, 12, 0, 0xD1, 0x01);
 			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(0xD1, 0x00);
 		});
 	}

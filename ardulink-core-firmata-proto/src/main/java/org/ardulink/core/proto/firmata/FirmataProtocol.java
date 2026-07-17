@@ -30,8 +30,10 @@ import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageCustom.fro
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageInfo.fromDeviceMessageInfo;
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageReply.fromDeviceMessageReply;
 import static org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode.PWM;
+import static org.ardulink.util.Bytes.concat;
 import static org.ardulink.util.Maps.stringToMap;
 import static org.ardulink.util.Primitives.tryParseAs;
+import static org.firmata4j.firmata.FirmataMessageFactory.setMode;
 import static org.firmata4j.firmata.parser.FirmataEventType.ANALOG_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.DIGITAL_MESSAGE_RESPONSE;
 import static org.firmata4j.firmata.parser.FirmataEventType.FIRMWARE_MESSAGE;
@@ -74,6 +76,7 @@ import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProces
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode;
 import org.ardulink.util.ByteArray;
+import org.ardulink.util.Bytes;
 import org.firmata4j.Consumer;
 import org.firmata4j.firmata.FirmataMessageFactory;
 import org.firmata4j.firmata.parser.WaitingForMessageState;
@@ -362,7 +365,9 @@ public class FirmataProtocol implements Protocol {
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageStartListening startListening) {
-			return reportingMessage(startListening.getPin(), true);
+			byte[] msg1 = reportingMessage(startListening.getPin(), true);
+			byte[] msg2 = setMode((byte) startListening.getPin().pinNum(), org.firmata4j.Pin.Mode.INPUT);
+			return concat(msg2, msg1);
 		}
 
 		@Override
@@ -397,8 +402,7 @@ public class FirmataProtocol implements Protocol {
 			FirmataPin firmataPin = getPin(switchPinType(pinStateChange.getPin(), DIGITAL));
 			if (pinStateChange.getPin().is(ANALOG)) {
 				if (!firmataPin.modeIs(PWM)) {
-					message.append(
-							FirmataMessageFactory.setMode((byte) firmataPin.index(), org.firmata4j.Pin.Mode.PWM));
+					message.append(setMode((byte) firmataPin.index(), org.firmata4j.Pin.Mode.PWM));
 					firmataPin.currentMode = PWM;
 				}
 				int value = (Integer) pinStateChange.getValue();
