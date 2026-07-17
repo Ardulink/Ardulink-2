@@ -19,12 +19,18 @@ import static com.github.pfichtner.testcontainers.virtualavr.VirtualAvrConnectio
 import static com.github.pfichtner.testcontainers.virtualavr.VirtualAvrConnection.PinReportMode.DIGITAL;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.events.FilteredEventListenerAdapter.filter;
 import static org.testcontainers.shaded.com.google.common.base.Objects.equal;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.ardulink.core.Link;
+import org.ardulink.core.events.AnalogPinValueChangedEvent;
+import org.ardulink.core.events.DigitalPinValueChangedEvent;
+import org.ardulink.core.events.EventListenerAdapter;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
 
 import com.github.pfichtner.testcontainers.virtualavr.VirtualAvrConnection;
@@ -43,13 +49,14 @@ public final class VirtualAvrTester {
 		super();
 	}
 
-	public static void testSerialPinSwitching(VirtualAvrContainer<?> virtualAvr, Configurer configurer) throws IOException {
+	public static void testSerialPinSwitching(VirtualAvrContainer<?> virtualAvr, Configurer configurer)
+			throws IOException {
 		try (Link link = configurer.newLink()) {
-			testPinSwitching(virtualAvr, link);
+			testSerialPinSwitching(virtualAvr, link);
 		}
 	}
 
-	public static void testPinSwitching(VirtualAvrContainer<?> virtualAvr, Link link) throws IOException {
+	public static void testSerialPinSwitching(VirtualAvrContainer<?> virtualAvr, Link link) throws IOException {
 		VirtualAvrConnection avr = virtualAvr.avr();
 		switchAnalog(avr, link);
 		switchDigital(avr, link);
@@ -69,6 +76,63 @@ public final class VirtualAvrTester {
 		avr.pinReportMode(String.valueOf(digitalPin), DIGITAL);
 		link.switchDigitalPin(digitalPin(digitalPin), digitalValue);
 		await().until(() -> equal(avr.lastStates().get(String.valueOf(digitalPin)), digitalValue));
+	}
+
+	// ---------------------------------------------------------------------------------------------------
+
+	public static void testSerialPinListening(VirtualAvrContainer<?> virtualAvr, Configurer configurer)
+			throws IOException {
+		try (Link link = configurer.newLink()) {
+			testSerialPinListening(virtualAvr, link);
+		}
+	}
+
+	public static void testSerialPinListening(VirtualAvrContainer<?> virtualAvr, Link link) throws IOException {
+		VirtualAvrConnection avr = virtualAvr.avr();
+		listenAnalog(avr, link);
+		listenDigital(avr, link);
+	}
+
+	private static void listenAnalog(VirtualAvrConnection avr, Link link) throws IOException {
+		int ardulinkPin = 2;
+		int analogValue = 42;
+		AtomicInteger received = new AtomicInteger();
+		EventListenerAdapter listener = filter(analogPin(ardulinkPin), new EventListenerAdapter() {
+			@Override
+			public void stateChanged(AnalogPinValueChangedEvent event) {
+				received.set(event.getValue());
+			}
+		});
+		link.addListener(listener);
+		try {
+			String avrPin = "A" + ardulinkPin;
+			avr.pinReportMode(avrPin, ANALOG);
+			avr.pinState(avrPin, analogValue);
+			await().until(() -> received.get() == analogValue);
+		} finally {
+			link.removeListener(listener);
+		}
+	}
+
+	private static void listenDigital(VirtualAvrConnection avr, Link link) throws IOException {
+		String avrPin = "2";
+		int ardulinkPin = 2;
+		boolean digitalValue = true;
+		AtomicBoolean received = new AtomicBoolean();
+		EventListenerAdapter listener = filter(digitalPin(ardulinkPin), new EventListenerAdapter() {
+			@Override
+			public void stateChanged(DigitalPinValueChangedEvent event) {
+				received.set(event.getValue());
+			}
+		});
+		link.addListener(listener);
+		try {
+			avr.pinReportMode(avrPin, DIGITAL);
+			avr.pinState(avrPin, digitalValue);
+			await().until(() -> received.get() == digitalValue);
+		} finally {
+			link.removeListener(listener);
+		}
 	}
 
 }

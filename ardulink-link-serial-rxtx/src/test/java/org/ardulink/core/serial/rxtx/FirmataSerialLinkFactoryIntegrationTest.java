@@ -18,6 +18,7 @@ package org.ardulink.core.serial.rxtx;
 
 import static java.lang.String.format;
 import static java.net.URI.create;
+import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinListening;
 import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinSwitching;
 
 import org.ardulink.core.linkmanager.LinkManager;
@@ -31,16 +32,17 @@ import com.github.pfichtner.testcontainers.virtualavr.VirtualAvrContainer;
 class FirmataSerialLinkFactoryIntegrationTest {
 
 	private static final String PREFIX = "ardulink://" + SerialLinkFactory.NAME;
+	private static final String FIRMATA_FIRMWARE = "classpath://firmware/StandardFirmata.hex";
 
 	@Disabled("Link#close hangs since StreamReader calls read and this native method doesn't get interrupted even if the InputStream gets closed. That's the reason why RXTX's close does not get a writeLock since the lock remains locked")
 	@Test
-	@UseVirtualAvr(isolated = true, firmware = "classpath://firmware/StandardFirmata.hex")
-	void canConnectAndSwitchPins(VirtualAvrContainer<?> virtualAvr) throws Exception {
-		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(create(PREFIX
-				+ format("?port=%s&baudrate=9600&proto=Firmata&pingprobe=true&waitsecs=3",
+	@UseVirtualAvr(isolated = true, firmware = FIRMATA_FIRMWARE)
+	void canInteractWithSerialLink(VirtualAvrContainer<?> virtualAvr) throws Exception {
+		Configurer configurer = LinkManager.getInstance()
+				.getConfigurer(create(PREFIX + format("?port=%s&baudrate=9600&proto=Firmata&pingprobe=true&waitsecs=10",
 						virtualAvr.serialPortDescriptor())));
 		testSerialPinSwitching(virtualAvr, configurer);
+		testSerialPinListening(virtualAvr, configurer);
 	}
 
 }

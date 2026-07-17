@@ -18,6 +18,7 @@ package org.ardulink.core.serial.rxtx;
 
 import static java.lang.String.format;
 import static java.net.URI.create;
+import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinListening;
 import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinSwitching;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
@@ -46,8 +47,9 @@ import gnu.io.NoSuchPortException;
 class SerialLinkFactoryIntegrationTest {
 
 	private static final String PREFIX = "ardulink://" + SerialLinkFactory.NAME;
+	private static final String ARDULINK_FIRMWARE = "classpath://firmware/ArdulinkProtocol.ino.hex";
 
-	@UseVirtualAvr(isolated = true, firmware = "https://github.com/Ardulink/Firmware/releases/download/v1.2.0/ArdulinkProtocol.ino.hex")
+	@UseVirtualAvr(isolated = true, firmware = ARDULINK_FIRMWARE)
 	void canConfigureSerialConnectionViaURI(VirtualAvrContainer<?> virtualAvr) throws Exception {
 		LinkManager connectionManager = LinkManager.getInstance();
 		Configurer configurer = connectionManager.getConfigurer(create(PREFIX
@@ -58,12 +60,12 @@ class SerialLinkFactoryIntegrationTest {
 	}
 
 	@Disabled("Link#close hangs since StreamReader calls read and this native method doesn't get interrupted even if the InputStream gets closed. That's the reason why RXTX's close does not get a writeLock since the lock remains locked")
-	@UseVirtualAvr(isolated = true, firmware = "https://github.com/Ardulink/Firmware/releases/download/v1.2.0/ArdulinkProtocol.ino.hex")
-	void canConnectAndSwitchPins(VirtualAvrContainer<?> virtualAvr) throws Exception {
-		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(create(PREFIX
-				+ format("?port=%s&baudrate=9600&pingprobe=true&waitsecs=1", virtualAvr.serialPortDescriptor())));
+	@UseVirtualAvr(isolated = true, firmware = ARDULINK_FIRMWARE)
+	void canInteractWithSerialLink(VirtualAvrContainer<?> virtualAvr) throws Exception {
+		Configurer configurer = LinkManager.getInstance().getConfigurer(create(PREFIX
+				+ format("?port=%s&baudrate=9600&pingprobe=true&waitsecs=10", virtualAvr.serialPortDescriptor())));
 		testSerialPinSwitching(virtualAvr, configurer);
+		testSerialPinListening(virtualAvr, configurer);
 	}
 
 	@Test
