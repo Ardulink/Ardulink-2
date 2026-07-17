@@ -101,6 +101,8 @@ public @interface UseVirtualAvr {
 			try {
 				URL url = new URL(urlString);
 				File target = Path.of(tempDirectory().getAbsolutePath(), filename(url)).toFile();
+				target.deleteOnExit();
+				target.getParentFile().deleteOnExit();
 				return downloadTo(url, target);
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
