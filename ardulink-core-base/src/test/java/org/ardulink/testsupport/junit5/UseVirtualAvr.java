@@ -153,15 +153,8 @@ public @interface UseVirtualAvr {
 		}
 
 		private static FirmwareManager getOrCreateFirmwareManager(ExtensionContext context) {
-			ExtensionContext.Store rootStore = context.getRoot().getStore(NAMESPACE);
-			synchronized (FirmwareManager.class) {
-				FirmwareManager fm = rootStore.get("firmwareManager", FirmwareManager.class);
-				if (fm == null) {
-					fm = new FirmwareManager();
-					rootStore.put("firmwareManager", fm);
-				}
-				return fm;
-			}
+			return context.getRoot().getStore(NAMESPACE) //
+					.getOrComputeIfAbsent("firmwareManager", __ -> new FirmwareManager(), FirmwareManager.class);
 		}
 
 		@Override
@@ -170,8 +163,7 @@ public @interface UseVirtualAvr {
 			validateConfiguration(testClass);
 			if (needsSharedContainer(testClass)) {
 				UseVirtualAvr classAnn = testClass.getAnnotation(UseVirtualAvr.class);
-				FirmwareManager fm = getOrCreateFirmwareManager(context);
-				File firmware = fm.resolveFirmware(classAnn.firmware());
+				File firmware = getOrCreateFirmwareManager(context).resolveFirmware(classAnn.firmware());
 				VirtualAvrContainer<?> container = createContainer(classAnn.deviceName(), firmware);
 				container.start();
 				context.getStore(NAMESPACE).put("container", container);
@@ -210,8 +202,7 @@ public @interface UseVirtualAvr {
 			UseVirtualAvr config = findConfig(context).orElseThrow(() -> new ExtensionConfigurationException(
 					String.format("@%s not found", UseVirtualAvr.class.getSimpleName())));
 			if (config.isolated()) {
-				FirmwareManager fm = getOrCreateFirmwareManager(context);
-				File firmware = fm.resolveFirmware(config.firmware());
+				File firmware = getOrCreateFirmwareManager(context).resolveFirmware(config.firmware());
 				VirtualAvrContainer<?> container = createContainer(config.deviceName(), firmware);
 				container.start();
 				context.getStore(NAMESPACE).put("container", container);
