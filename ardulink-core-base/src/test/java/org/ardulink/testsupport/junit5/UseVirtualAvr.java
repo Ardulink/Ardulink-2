@@ -138,14 +138,13 @@ public @interface UseVirtualAvr {
 			public void close() throws Exception {
 				if (rootDir != null && Files.exists(rootDir)) {
 					try (Stream<Path> walk = Files.walk(rootDir)) {
-						walk.sorted(Comparator.reverseOrder())
-								.forEach(path -> {
-									try {
-										Files.deleteIfExists(path);
-									} catch (IOException e) {
-										// best effort cleanup
-									}
-								});
+						walk.sorted(Comparator.reverseOrder()).forEach(path -> {
+							try {
+								Files.deleteIfExists(path);
+							} catch (IOException e) {
+								// best effort cleanup
+							}
+						});
 					}
 				}
 			}
@@ -182,8 +181,7 @@ public @interface UseVirtualAvr {
 			UseVirtualAvr classAnn = testClass.getAnnotation(UseVirtualAvr.class);
 			if (classAnn != null && !classAnn.isolated()) {
 				boolean hasIsolatedMethod = Arrays.stream(testClass.getDeclaredMethods())
-						.map(m -> m.getAnnotation(UseVirtualAvr.class))
-						.filter(Objects::nonNull)
+						.map(m -> m.getAnnotation(UseVirtualAvr.class)).filter(Objects::nonNull)
 						.anyMatch(UseVirtualAvr::isolated);
 
 				if (hasIsolatedMethod) {
@@ -218,9 +216,7 @@ public @interface UseVirtualAvr {
 		}
 
 		private static VirtualAvrContainer<?> createContainer(String deviceName, File firmware) {
-			return virtualAvrContainer(firmware)
-					.withImagePullPolicy(defaultPolicy())
-					.withDeviceName(deviceName);
+			return virtualAvrContainer(firmware).withImagePullPolicy(defaultPolicy()).withDeviceName(deviceName);
 		}
 
 		@Override
@@ -233,8 +229,7 @@ public @interface UseVirtualAvr {
 		}
 
 		private Optional<UseVirtualAvr> findConfig(ExtensionContext context) {
-			return context.getElement()
-					.flatMap(e -> Optional.ofNullable(e.getAnnotation(UseVirtualAvr.class)))
+			return context.getElement().flatMap(e -> Optional.ofNullable(e.getAnnotation(UseVirtualAvr.class)))
 					.or(() -> Optional.ofNullable(context.getRequiredTestClass().getAnnotation(UseVirtualAvr.class)));
 		}
 
@@ -244,10 +239,8 @@ public @interface UseVirtualAvr {
 				return true;
 			}
 
-			return Arrays.stream(testClass.getDeclaredMethods())
-					.map(m -> m.getAnnotation(UseVirtualAvr.class))
-					.filter(Objects::nonNull)
-					.anyMatch(not(UseVirtualAvr::isolated));
+			return Arrays.stream(testClass.getDeclaredMethods()).map(m -> m.getAnnotation(UseVirtualAvr.class))
+					.filter(Objects::nonNull).anyMatch(not(UseVirtualAvr::isolated));
 		}
 
 		@Override
@@ -257,8 +250,8 @@ public @interface UseVirtualAvr {
 
 		@Override
 		public Object resolveParameter(ParameterContext pc, ExtensionContext ctx) {
-			ExtensionContext.Namespace classNamespace = ExtensionContext.Namespace
-					.create(ctx.getRequiredTestClass(), NAMESPACE);
+			ExtensionContext.Namespace classNamespace = ExtensionContext.Namespace.create(ctx.getRequiredTestClass(),
+					NAMESPACE);
 			Store store = ctx.getStore(classNamespace);
 			VirtualAvrContainer<?> container = store.get("container", VirtualAvrContainer.class);
 			if (container == null) {
