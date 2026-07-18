@@ -182,7 +182,8 @@ public @interface UseVirtualAvr {
 			UseVirtualAvr classAnn = testClass.getAnnotation(UseVirtualAvr.class);
 			if (classAnn != null && !classAnn.isolated()) {
 				boolean hasIsolatedMethod = Arrays.stream(testClass.getDeclaredMethods())
-						.map(m -> m.getAnnotation(UseVirtualAvr.class)).filter(Objects::nonNull)
+						.map(m -> m.getAnnotation(UseVirtualAvr.class)) //
+						.filter(Objects::nonNull) //
 						.anyMatch(UseVirtualAvr::isolated);
 
 				if (hasIsolatedMethod) {
@@ -237,12 +238,11 @@ public @interface UseVirtualAvr {
 
 		private boolean needsSharedContainer(Class<?> testClass) {
 			UseVirtualAvr classAnnotation = testClass.getAnnotation(UseVirtualAvr.class);
-			if (classAnnotation != null && !classAnnotation.isolated()) {
-				return true;
-			}
-
-			return Arrays.stream(testClass.getDeclaredMethods()).map(m -> m.getAnnotation(UseVirtualAvr.class))
-					.filter(Objects::nonNull).anyMatch(not(UseVirtualAvr::isolated));
+			return (classAnnotation != null && !classAnnotation.isolated())
+					|| (Arrays.stream(testClass.getDeclaredMethods()) //
+							.map(m -> m.getAnnotation(UseVirtualAvr.class)) //
+							.filter(Objects::nonNull) //
+							.anyMatch(not(UseVirtualAvr::isolated)));
 		}
 
 		@Override
