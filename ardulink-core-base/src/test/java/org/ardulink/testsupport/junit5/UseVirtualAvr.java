@@ -18,7 +18,6 @@ package org.ardulink.testsupport.junit5;
 import static com.github.pfichtner.testcontainers.virtualavr.IOUtil.downloadTo;
 import static com.github.pfichtner.testcontainers.virtualavr.IOUtil.filename;
 import static com.github.pfichtner.testcontainers.virtualavr.TestcontainerSupport.virtualAvrContainer;
-import static java.nio.file.Files.createTempDirectory;
 import static java.util.function.Predicate.not;
 import static org.testcontainers.images.PullPolicy.defaultPolicy;
 
@@ -34,10 +33,11 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import org.ardulink.testsupport.junit5.UseVirtualAvr.VirtualAvrExtension;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -76,70 +76,105 @@ public @interface UseVirtualAvr {
 	static class VirtualAvrExtension
 			implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
 
-		private static final ConcurrentHashMap<String, File> firmwareCache = new ConcurrentHashMap<>();
+		private static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace
+				.create(VirtualAvrExtension.class);
 
-		private static final AtomicBoolean started = new AtomicBoolean(false);
+		static class FirmwareManager implements ExtensionContext.Store.CloseableResource {
 
-		private static VirtualAvrContainer<?> sharedContainer;
+			private final Path rootDir;
+			private final ConcurrentHashMap<String, File> cache = new ConcurrentHashMap<>();
 
-		static File resolveFirmware(String firmwareUri) {
-			return firmwareCache.computeIfAbsent(firmwareUri, VirtualAvrExtension::loadFirmware);
-		}
-
-		private static File loadFirmware(String uri) {
-			if (uri.startsWith("https://") || uri.startsWith("http://")) {
-				return downloadFromUrl(uri);
-			} else if (uri.startsWith("classpath://")) {
-				String resourcePath = uri.substring("classpath://".length());
-				return loadFromClasspath(resourcePath.startsWith("/") ? resourcePath : "/" + resourcePath);
-			}
-			throw new ExtensionConfigurationException(
-					"Unsupported firmware URI scheme: " + uri + " (supported: https://, http://, classpath://)");
-		}
-
-		private static File downloadFromUrl(String urlString) {
-			try {
-				URL url = new URL(urlString);
-				File target = Path.of(tempDirectory().getAbsolutePath(), filename(url)).toFile();
-				target.deleteOnExit();
-				target.getParentFile().deleteOnExit();
-				return downloadTo(url, target);
-			} catch (IOException e) {
-				throw new UncheckedIOException(e);
-			}
-		}
-
-		private static File loadFromClasspath(String resourcePath) {
-			try {
-				URL resource = UseVirtualAvr.class.getResource(resourcePath);
-				if (resource == null) {
-					throw new ExtensionConfigurationException("Classpath resource not found: " + resourcePath);
+			FirmwareManager() {
+				try {
+					this.rootDir = Files.createTempDirectory("ardulink-firmware");
+				} catch (IOException e) {
+					throw new UncheckedIOException(e);
 				}
-				String fileName = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
-				File target = Path.of(tempDirectory().getAbsolutePath(), fileName).toFile();
-				try (InputStream in = resource.openStream()) {
-					Files.write(target.toPath(), in.readAllBytes());
-				}
-				return target;
-			} catch (IOException e) {
-				throw new UncheckedIOException(e);
 			}
+
+			File resolveFirmware(String firmwareUri) {
+				return cache.computeIfAbsent(firmwareUri, this::loadFirmware);
+			}
+
+			private File loadFirmware(String uri) {
+				if (uri.startsWith("https://") || uri.startsWith("http://")) {
+					return downloadFromUrl(uri);
+				} else if (uri.startsWith("classpath://")) {
+					String resourcePath = uri.substring("classpath://".length());
+					return loadFromClasspath(resourcePath.startsWith("/") ? resourcePath : "/" + resourcePath);
+				}
+				throw new ExtensionConfigurationException(
+						"Unsupported firmware URI scheme: " + uri + " (supported: https://, http://, classpath://)");
+			}
+
+			private File downloadFromUrl(String urlString) {
+				try {
+					URL url = new URL(urlString);
+					File target = rootDir.resolve(filename(url)).toFile();
+					return downloadTo(url, target);
+				} catch (IOException e) {
+					throw new UncheckedIOException(e);
+				}
+			}
+
+			private File loadFromClasspath(String resourcePath) {
+				try {
+					URL resource = UseVirtualAvr.class.getResource(resourcePath);
+					if (resource == null) {
+						throw new ExtensionConfigurationException("Classpath resource not found: " + resourcePath);
+					}
+					String fileName = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
+					File target = rootDir.resolve(fileName).toFile();
+					try (InputStream in = resource.openStream()) {
+						Files.write(target.toPath(), in.readAllBytes());
+					}
+					return target;
+				} catch (IOException e) {
+					throw new UncheckedIOException(e);
+				}
+			}
+
+			@Override
+			public void close() throws Exception {
+				if (rootDir != null && Files.exists(rootDir)) {
+					try (Stream<Path> walk = Files.walk(rootDir)) {
+						walk.sorted(Comparator.reverseOrder())
+								.forEach(path -> {
+									try {
+										Files.deleteIfExists(path);
+									} catch (IOException e) {
+										// best effort cleanup
+									}
+								});
+					}
+				}
+			}
+
 		}
 
-		private static File tempDirectory() throws IOException {
-			return createTempDirectory("ardulink-firmware").toFile();
+		private static FirmwareManager getOrCreateFirmwareManager(ExtensionContext context) {
+			ExtensionContext.Store rootStore = context.getRoot().getStore(NAMESPACE);
+			synchronized (FirmwareManager.class) {
+				FirmwareManager fm = rootStore.get("firmwareManager", FirmwareManager.class);
+				if (fm == null) {
+					fm = new FirmwareManager();
+					rootStore.put("firmwareManager", fm);
+				}
+				return fm;
+			}
 		}
 
 		@Override
 		public void beforeAll(ExtensionContext context) {
 			Class<?> testClass = context.getRequiredTestClass();
 			validateConfiguration(testClass);
-			if (needsSharedContainer(testClass) && started.compareAndSet(false, true)) {
+			if (needsSharedContainer(testClass)) {
 				UseVirtualAvr classAnn = testClass.getAnnotation(UseVirtualAvr.class);
-				File firmware = resolveFirmware(classAnn.firmware());
-				sharedContainer = createContainer(classAnn.deviceName(), firmware);
-				sharedContainer.start();
-				Runtime.getRuntime().addShutdownHook(new Thread(sharedContainer::stop));
+				FirmwareManager fm = getOrCreateFirmwareManager(context);
+				File firmware = fm.resolveFirmware(classAnn.firmware());
+				VirtualAvrContainer<?> container = createContainer(classAnn.deviceName(), firmware);
+				container.start();
+				context.getStore(NAMESPACE).put("container", container);
 			}
 		}
 
@@ -147,8 +182,8 @@ public @interface UseVirtualAvr {
 			UseVirtualAvr classAnn = testClass.getAnnotation(UseVirtualAvr.class);
 			if (classAnn != null && !classAnn.isolated()) {
 				boolean hasIsolatedMethod = Arrays.stream(testClass.getDeclaredMethods())
-						.map(m -> m.getAnnotation(UseVirtualAvr.class)) //
-						.filter(Objects::nonNull) //
+						.map(m -> m.getAnnotation(UseVirtualAvr.class))
+						.filter(Objects::nonNull)
 						.anyMatch(UseVirtualAvr::isolated);
 
 				if (hasIsolatedMethod) {
@@ -160,8 +195,13 @@ public @interface UseVirtualAvr {
 
 		@Override
 		public void afterAll(ExtensionContext context) {
-			// DO NOTHING
-			// Let the JVM shut it down, or use a shutdown hook if desired
+			Class<?> testClass = context.getRequiredTestClass();
+			ExtensionContext.Namespace classNamespace = ExtensionContext.Namespace.create(testClass, NAMESPACE);
+			Store store = context.getStore(classNamespace);
+			VirtualAvrContainer<?> container = store.remove("container", VirtualAvrContainer.class);
+			if (container != null) {
+				container.stop();
+			}
 		}
 
 		@Override
@@ -169,22 +209,23 @@ public @interface UseVirtualAvr {
 			UseVirtualAvr config = findConfig(context)
 					.orElseThrow(() -> new ExtensionConfigurationException("@UseVirtualAvr not found"));
 			if (config.isolated()) {
-				File firmware = resolveFirmware(config.firmware());
+				FirmwareManager fm = getOrCreateFirmwareManager(context);
+				File firmware = fm.resolveFirmware(config.firmware());
 				VirtualAvrContainer<?> container = createContainer(config.deviceName(), firmware);
 				container.start();
-				context.getStore(ExtensionContext.Namespace.create(getClass(), context)).put("container", container);
+				context.getStore(NAMESPACE).put("container", container);
 			}
 		}
 
 		private static VirtualAvrContainer<?> createContainer(String deviceName, File firmware) {
-			return virtualAvrContainer(firmware) //
-					.withImagePullPolicy(defaultPolicy()) //
+			return virtualAvrContainer(firmware)
+					.withImagePullPolicy(defaultPolicy())
 					.withDeviceName(deviceName);
 		}
 
 		@Override
 		public void afterEach(ExtensionContext context) {
-			Store store = context.getStore(ExtensionContext.Namespace.create(getClass(), context));
+			Store store = context.getStore(NAMESPACE);
 			VirtualAvrContainer<?> container = store.remove("container", VirtualAvrContainer.class);
 			if (container != null) {
 				container.stop();
@@ -192,22 +233,20 @@ public @interface UseVirtualAvr {
 		}
 
 		private Optional<UseVirtualAvr> findConfig(ExtensionContext context) {
-			return context.getElement() //
-					.flatMap(e -> Optional.ofNullable(e.getAnnotation(UseVirtualAvr.class))) //
+			return context.getElement()
+					.flatMap(e -> Optional.ofNullable(e.getAnnotation(UseVirtualAvr.class)))
 					.or(() -> Optional.ofNullable(context.getRequiredTestClass().getAnnotation(UseVirtualAvr.class)));
 		}
 
 		private boolean needsSharedContainer(Class<?> testClass) {
-			// Case 1: annotation on class → shared container
 			UseVirtualAvr classAnnotation = testClass.getAnnotation(UseVirtualAvr.class);
 			if (classAnnotation != null && !classAnnotation.isolated()) {
 				return true;
 			}
 
-			// Case 2: scan methods
-			return Arrays.stream(testClass.getDeclaredMethods()) //
-					.map(m -> m.getAnnotation(UseVirtualAvr.class)) //
-					.filter(Objects::nonNull) //
+			return Arrays.stream(testClass.getDeclaredMethods())
+					.map(m -> m.getAnnotation(UseVirtualAvr.class))
+					.filter(Objects::nonNull)
 					.anyMatch(not(UseVirtualAvr::isolated));
 		}
 
@@ -218,9 +257,19 @@ public @interface UseVirtualAvr {
 
 		@Override
 		public Object resolveParameter(ParameterContext pc, ExtensionContext ctx) {
-			Store store = ctx.getStore(ExtensionContext.Namespace.create(getClass(), ctx));
-			VirtualAvrContainer<?> isolated = store.get("container", VirtualAvrContainer.class);
-			return isolated == null ? sharedContainer : isolated;
+			ExtensionContext.Namespace classNamespace = ExtensionContext.Namespace
+					.create(ctx.getRequiredTestClass(), NAMESPACE);
+			Store store = ctx.getStore(classNamespace);
+			VirtualAvrContainer<?> container = store.get("container", VirtualAvrContainer.class);
+			if (container == null) {
+				Store methodStore = ctx.getStore(NAMESPACE);
+				container = methodStore.get("container", VirtualAvrContainer.class);
+			}
+			if (container == null) {
+				throw new ExtensionConfigurationException(
+						"No VirtualAvrContainer available. Ensure @UseVirtualAvr is properly configured.");
+			}
+			return container;
 		}
 
 	}
