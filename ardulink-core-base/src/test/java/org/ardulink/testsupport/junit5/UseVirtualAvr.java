@@ -18,6 +18,7 @@ package org.ardulink.testsupport.junit5;
 import static com.github.pfichtner.testcontainers.virtualavr.IOUtil.downloadTo;
 import static com.github.pfichtner.testcontainers.virtualavr.IOUtil.filename;
 import static com.github.pfichtner.testcontainers.virtualavr.TestcontainerSupport.virtualAvrContainer;
+import static java.util.Comparator.reverseOrder;
 import static java.util.function.Predicate.not;
 import static org.testcontainers.images.PullPolicy.defaultPolicy;
 
@@ -33,7 +34,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -138,7 +138,7 @@ public @interface UseVirtualAvr {
 			public void close() throws Exception {
 				if (rootDir != null && Files.exists(rootDir)) {
 					try (Stream<Path> walk = Files.walk(rootDir)) {
-						walk.sorted(Comparator.reverseOrder()).forEach(path -> {
+						walk.sorted(reverseOrder()).forEach(path -> {
 							try {
 								Files.deleteIfExists(path);
 							} catch (IOException e) {
