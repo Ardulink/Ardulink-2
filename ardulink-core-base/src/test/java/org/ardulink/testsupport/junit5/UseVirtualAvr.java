@@ -180,18 +180,18 @@ public @interface UseVirtualAvr {
 
 		private void validateConfiguration(Class<?> testClass) {
 			UseVirtualAvr classAnn = testClass.getAnnotation(UseVirtualAvr.class);
-			if (classAnn != null && !classAnn.isolated()) {
-				boolean hasIsolatedMethod = Arrays.stream(testClass.getDeclaredMethods())
-						.map(m -> m.getAnnotation(UseVirtualAvr.class)) //
-						.filter(Objects::nonNull) //
-						.anyMatch(UseVirtualAvr::isolated);
-
-				if (hasIsolatedMethod) {
-					throw new ExtensionConfigurationException(
-							format("Cannot mix class-level shared @%s with isolated methods",
-									UseVirtualAvr.class.getSimpleName()));
-				}
+			if (classAnn != null && !classAnn.isolated() && hasIsolatedMethod(testClass)) {
+				throw new ExtensionConfigurationException(
+						format("Cannot mix class-level shared @%s with isolated methods",
+								UseVirtualAvr.class.getSimpleName()));
 			}
+		}
+
+		private boolean hasIsolatedMethod(Class<?> testClass) {
+			return Arrays.stream(testClass.getDeclaredMethods()) //
+					.map(m -> m.getAnnotation(UseVirtualAvr.class)) //
+					.filter(Objects::nonNull) //
+					.anyMatch(UseVirtualAvr::isolated);
 		}
 
 		@Override
