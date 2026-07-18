@@ -79,7 +79,7 @@ public @interface UseVirtualAvr {
 		private static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace
 				.create(VirtualAvrExtension.class);
 
-		static class FirmwareManager implements ExtensionContext.Store.CloseableResource {
+		static class FirmwareManager implements AutoCloseable {
 
 			private final Path rootDir;
 			private final ConcurrentHashMap<String, File> cache = new ConcurrentHashMap<>();
