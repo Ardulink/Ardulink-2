@@ -18,6 +18,7 @@ package org.ardulink.testsupport.junit5;
 import static com.github.pfichtner.testcontainers.virtualavr.IOUtil.downloadTo;
 import static com.github.pfichtner.testcontainers.virtualavr.IOUtil.filename;
 import static com.github.pfichtner.testcontainers.virtualavr.TestcontainerSupport.virtualAvrContainer;
+import static java.lang.String.format;
 import static java.util.Comparator.reverseOrder;
 import static java.util.function.Predicate.not;
 import static org.testcontainers.images.PullPolicy.defaultPolicy;
@@ -186,7 +187,8 @@ public @interface UseVirtualAvr {
 
 				if (hasIsolatedMethod) {
 					throw new ExtensionConfigurationException(
-							"Cannot mix class-level shared @UseVirtualAvr with isolated methods");
+							format("Cannot mix class-level shared @%s with isolated methods",
+									UseVirtualAvr.class.getSimpleName()));
 				}
 			}
 		}
@@ -204,8 +206,8 @@ public @interface UseVirtualAvr {
 
 		@Override
 		public void beforeEach(ExtensionContext context) {
-			UseVirtualAvr config = findConfig(context)
-					.orElseThrow(() -> new ExtensionConfigurationException("@UseVirtualAvr not found"));
+			UseVirtualAvr config = findConfig(context).orElseThrow(() -> new ExtensionConfigurationException(
+					String.format("@%s not found", UseVirtualAvr.class.getSimpleName())));
 			if (config.isolated()) {
 				FirmwareManager fm = getOrCreateFirmwareManager(context);
 				File firmware = fm.resolveFirmware(config.firmware());
@@ -260,7 +262,8 @@ public @interface UseVirtualAvr {
 			}
 			if (container == null) {
 				throw new ExtensionConfigurationException(
-						"No VirtualAvrContainer available. Ensure @UseVirtualAvr is properly configured.");
+						format("No VirtualAvrContainer available. Ensure @%s is properly configured.",
+								UseVirtualAvr.class.getSimpleName()));
 			}
 			return container;
 		}
