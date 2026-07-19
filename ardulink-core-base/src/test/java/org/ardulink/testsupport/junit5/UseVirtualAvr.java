@@ -21,6 +21,7 @@ import static com.github.pfichtner.testcontainers.virtualavr.TestcontainerSuppor
 import static java.lang.String.format;
 import static java.util.Comparator.reverseOrder;
 import static java.util.function.Predicate.not;
+import static java.util.stream.Collectors.joining;
 import static org.testcontainers.images.PullPolicy.defaultPolicy;
 
 import java.io.File;
@@ -35,6 +36,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -74,6 +76,61 @@ public @interface UseVirtualAvr {
 
 	String firmware();
 
+	interface FirmwareLoader {
+		List<String> supportedProtocols();
+
+		File loadFirmware(String uri, Path rootDir);
+	}
+
+	class ClasspathFirmwareLoader implements FirmwareLoader {
+
+		@Override
+		public List<String> supportedProtocols() {
+			return List.of("classpath://");
+		}
+
+		@Override
+		public File loadFirmware(String uri, Path rootDir) {
+			String resourcePath = uri.substring("classpath://".length());
+			String normalizedPath = resourcePath.startsWith("/") ? resourcePath : "/" + resourcePath;
+			try {
+				URL resource = UseVirtualAvr.class.getResource(normalizedPath);
+				if (resource == null) {
+					throw new ExtensionConfigurationException("Classpath resource not found: " + normalizedPath);
+				}
+				String fileName = normalizedPath.substring(normalizedPath.lastIndexOf('/') + 1);
+				File target = rootDir.resolve(fileName).toFile();
+				try (InputStream in = resource.openStream()) {
+					Files.write(target.toPath(), in.readAllBytes());
+				}
+				return target;
+			} catch (IOException e) {
+				throw new UncheckedIOException(e);
+			}
+		}
+
+	}
+
+	class HttpFirmwareLoader implements FirmwareLoader {
+
+		@Override
+		public List<String> supportedProtocols() {
+			return List.of("http://", "https://");
+		}
+
+		@Override
+		public File loadFirmware(String uri, Path rootDir) {
+			try {
+				URL url = new URL(uri);
+				File target = rootDir.resolve(filename(url)).toFile();
+				return downloadTo(url, target);
+			} catch (IOException e) {
+				throw new UncheckedIOException(e);
+			}
+		}
+
+	}
+
 	static class VirtualAvrExtension
 			implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
 
@@ -84,6 +141,8 @@ public @interface UseVirtualAvr {
 
 			private final Path rootDir;
 			private final ConcurrentHashMap<String, File> cache = new ConcurrentHashMap<>();
+			private final List<FirmwareLoader> loaders = List.of(new HttpFirmwareLoader(),
+					new ClasspathFirmwareLoader());
 
 			FirmwareManager() {
 				try {
@@ -98,41 +157,16 @@ public @interface UseVirtualAvr {
 			}
 
 			private File loadFirmware(String uri) {
-				if (uri.startsWith("https://") || uri.startsWith("http://")) {
-					return downloadFromUrl(uri);
-				} else if (uri.startsWith("classpath://")) {
-					String resourcePath = uri.substring("classpath://".length());
-					return loadFromClasspath(resourcePath.startsWith("/") ? resourcePath : "/" + resourcePath);
-				}
-				throw new ExtensionConfigurationException(
-						"Unsupported firmware URI scheme: " + uri + " (supported: https://, http://, classpath://)");
-			}
-
-			private File downloadFromUrl(String urlString) {
-				try {
-					URL url = new URL(urlString);
-					File target = rootDir.resolve(filename(url)).toFile();
-					return downloadTo(url, target);
-				} catch (IOException e) {
-					throw new UncheckedIOException(e);
-				}
-			}
-
-			private File loadFromClasspath(String resourcePath) {
-				try {
-					URL resource = UseVirtualAvr.class.getResource(resourcePath);
-					if (resource == null) {
-						throw new ExtensionConfigurationException("Classpath resource not found: " + resourcePath);
-					}
-					String fileName = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
-					File target = rootDir.resolve(fileName).toFile();
-					try (InputStream in = resource.openStream()) {
-						Files.write(target.toPath(), in.readAllBytes());
-					}
-					return target;
-				} catch (IOException e) {
-					throw new UncheckedIOException(e);
-				}
+				return loaders.stream() //
+						.filter(l -> l.supportedProtocols().stream().anyMatch(s -> uri.startsWith(s))) //
+						.findFirst() //
+						.map(l -> l.loadFirmware(uri, rootDir)) //
+						.orElseGet(() -> {
+							String supported = loaders.stream().flatMap(l -> l.supportedProtocols().stream())
+									.collect(joining(", "));
+							throw new ExtensionConfigurationException(
+									format("Unsupported firmware URI scheme: %s (supported: %s)", uri, supported));
+						});
 			}
 
 			@Override
