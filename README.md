@@ -45,6 +45,6 @@ Without adding additional jars ```Links.getDefault()``` would throw an exception
 
 To see all available link types and a how to use Ardulink with other build systems see https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.ardulink%22
 
-see Ardulink site: www.ardulink.org
+see [Ardulink site](https://ardulink.github.io/) (documentation, guides and downloads)
 
 
