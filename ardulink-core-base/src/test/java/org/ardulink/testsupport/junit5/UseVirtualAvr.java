@@ -22,6 +22,7 @@ import static java.lang.String.format;
 import static java.util.Comparator.reverseOrder;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.joining;
+import static org.ardulink.util.Throwables.propagate;
 import static org.testcontainers.images.PullPolicy.defaultPolicy;
 
 import java.io.File;
@@ -32,6 +33,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -43,6 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.ardulink.testsupport.junit5.UseVirtualAvr.VirtualAvrExtension;
+import org.ardulink.util.Throwables;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -121,11 +125,13 @@ public @interface UseVirtualAvr {
 		@Override
 		public File loadFirmware(String uri, Path rootDir) {
 			try {
-				URL url = new URL(uri);
+				URL url = new URI(uri).toURL();
 				File target = rootDir.resolve(filename(url)).toFile();
 				return downloadTo(url, target);
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
+			} catch (URISyntaxException e) {
+				throw propagate(e);
 			}
 		}
 
