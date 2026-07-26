@@ -217,12 +217,13 @@ public @interface UseVirtualAvr {
 						.filter(l -> l.supportedSchemes().contains(scheme)) //
 						.findFirst() //
 						.map(l -> l.loadFirmware(uri, rootDir)) //
-						.orElseGet(() -> {
-							String supported = loaders.stream().flatMap(l -> l.supportedSchemes().stream())
-									.map(Scheme::value).collect(joining(", "));
-							throw new ExtensionConfigurationException(
-									format("Unsupported firmware URI scheme: %s (supported: %s)", uri, supported));
-						});
+						.orElseThrow(() -> unsupportedScheme(uri));
+			}
+
+			private ExtensionConfigurationException unsupportedScheme(URI uri) {
+				return new ExtensionConfigurationException(format("Unsupported firmware URI scheme: %s (supported: %s)",
+						uri, loaders.stream().flatMap(l -> l.supportedSchemes().stream()).map(Scheme::value)
+								.collect(joining(", "))));
 			}
 
 			@Override
