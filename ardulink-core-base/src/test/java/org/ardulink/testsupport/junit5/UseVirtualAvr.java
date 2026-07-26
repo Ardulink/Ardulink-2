@@ -39,6 +39,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -217,13 +218,17 @@ public @interface UseVirtualAvr {
 						.filter(l -> l.supportedSchemes().contains(scheme)) //
 						.findFirst() //
 						.map(l -> l.loadFirmware(uri, rootDir)) //
-						.orElseThrow(() -> unsupportedScheme(uri));
+						.orElseThrow(() -> unsupportedScheme(uri, loaders));
 			}
 
-			private ExtensionConfigurationException unsupportedScheme(URI uri) {
-				return new ExtensionConfigurationException(format("Unsupported firmware URI scheme: %s (supported: %s)",
-						uri, loaders.stream().flatMap(l -> l.supportedSchemes().stream()).map(Scheme::value)
-								.collect(joining(", "))));
+			private ExtensionConfigurationException unsupportedScheme(URI uri, List<FirmwareLoader> loaders) {
+				return new ExtensionConfigurationException(
+						format("Unsupported firmware URI scheme: %s (supported: %s)", uri, supportedSchemes(loaders)));
+			}
+
+			private String supportedSchemes(List<FirmwareLoader> loaders) {
+				return loaders.stream().map(FirmwareLoader::supportedSchemes).flatMap(Collection::stream)
+						.map(Scheme::value).collect(joining(", "));
 			}
 
 			@Override
