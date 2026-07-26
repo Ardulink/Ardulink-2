@@ -218,12 +218,9 @@ public @interface UseVirtualAvr {
 						.filter(l -> l.supportedSchemes().contains(scheme)) //
 						.findFirst() //
 						.map(l -> l.loadFirmware(uri, rootDir)) //
-						.orElseThrow(() -> unsupportedScheme(uri, loaders));
-			}
-
-			private ExtensionConfigurationException unsupportedScheme(URI uri, List<FirmwareLoader> loaders) {
-				return new ExtensionConfigurationException(
-						format("Unsupported firmware URI scheme: %s (supported: %s)", uri, supportedSchemes(loaders)));
+						.orElseThrow(() -> new ExtensionConfigurationException(
+								format("Unsupported firmware URI scheme: %s (supported: %s)", uri,
+										supportedSchemes(loaders))));
 			}
 
 			private String supportedSchemes(List<FirmwareLoader> loaders) {
