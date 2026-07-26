@@ -22,7 +22,8 @@ import static java.lang.String.format;
 import static java.util.Comparator.reverseOrder;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.joining;
-import static org.ardulink.util.Throwables.propagate;
+import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.anno.LapsedWith.JDK14;
 import static org.testcontainers.images.PullPolicy.defaultPolicy;
 
 import java.io.File;
@@ -34,7 +35,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.ardulink.testsupport.junit5.UseVirtualAvr.VirtualAvrExtension;
-import org.ardulink.util.Throwables;
+import org.ardulink.util.anno.LapsedWith;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -80,22 +80,74 @@ public @interface UseVirtualAvr {
 
 	String firmware();
 
-	interface FirmwareLoader {
-		List<String> supportedProtocols();
+	@LapsedWith(module = JDK14, value = "records")
+	final class Scheme {
 
-		File loadFirmware(String uri, Path rootDir);
-	}
+		private final String value;
 
-	class ClasspathFirmwareLoader implements FirmwareLoader {
+		public Scheme(String value) {
+			this.value = value.toLowerCase();
+		}
 
-		@Override
-		public List<String> supportedProtocols() {
-			return List.of("classpath://");
+		public static Scheme of(URI uri) {
+			return new Scheme(checkNotNull(uri.getScheme(), "URI has no scheme: %s", uri));
+		}
+
+		public static Scheme of(String value) {
+			return new Scheme(value);
 		}
 
 		@Override
-		public File loadFirmware(String uri, Path rootDir) {
-			String resourcePath = uri.substring("classpath://".length());
+		public int hashCode() {
+			return Objects.hash(value);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return this == obj //
+					|| obj != null && getClass() == obj.getClass() //
+							&& Objects.equals(value, ((Scheme) obj).value);
+		}
+
+		public String value() {
+			return value;
+		}
+
+		@Override
+		public String toString() {
+			return value;
+		}
+
+	}
+
+	interface FirmwareLoader {
+		List<Scheme> supportedSchemes();
+
+		File loadFirmware(URI uri, Path rootDir);
+	}
+
+	abstract class AbstractFirmwareLoader implements FirmwareLoader {
+		private final List<Scheme> schemes;
+
+		AbstractFirmwareLoader(List<Scheme> schemes) {
+			this.schemes = List.copyOf(schemes);
+		}
+
+		@Override
+		public final List<Scheme> supportedSchemes() {
+			return schemes;
+		}
+	}
+
+	class ClasspathFirmwareLoader extends AbstractFirmwareLoader {
+
+		public ClasspathFirmwareLoader() {
+			super(List.of(Scheme.of("classpath")));
+		}
+
+		@Override
+		public File loadFirmware(URI uri, Path rootDir) {
+			String resourcePath = uri.toString().replaceFirst("(?i)^classpath://", "");
 			String normalizedPath = resourcePath.startsWith("/") ? resourcePath : "/" + resourcePath;
 			try {
 				URL resource = UseVirtualAvr.class.getResource(normalizedPath);
@@ -115,23 +167,20 @@ public @interface UseVirtualAvr {
 
 	}
 
-	class HttpFirmwareLoader implements FirmwareLoader {
+	class HttpFirmwareLoader extends AbstractFirmwareLoader {
 
-		@Override
-		public List<String> supportedProtocols() {
-			return List.of("http://", "https://");
+		HttpFirmwareLoader() {
+			super(List.of(Scheme.of("http"), Scheme.of("https")));
 		}
 
 		@Override
-		public File loadFirmware(String uri, Path rootDir) {
+		public File loadFirmware(URI uri, Path rootDir) {
 			try {
-				URL url = new URI(uri).toURL();
+				URL url = uri.toURL();
 				File target = rootDir.resolve(filename(url)).toFile();
 				return downloadTo(url, target);
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
-			} catch (URISyntaxException e) {
-				throw propagate(e);
 			}
 		}
 
@@ -146,7 +195,7 @@ public @interface UseVirtualAvr {
 		static class FirmwareManager implements AutoCloseable {
 
 			private final Path rootDir;
-			private final ConcurrentHashMap<String, File> cache = new ConcurrentHashMap<>();
+			private final ConcurrentHashMap<URI, File> cache = new ConcurrentHashMap<>();
 			private final List<FirmwareLoader> loaders = List.of(new HttpFirmwareLoader(),
 					new ClasspathFirmwareLoader());
 
@@ -158,18 +207,19 @@ public @interface UseVirtualAvr {
 				}
 			}
 
-			File resolveFirmware(String firmwareUri) {
+			File resolveFirmware(URI firmwareUri) {
 				return cache.computeIfAbsent(firmwareUri, this::loadFirmware);
 			}
 
-			private File loadFirmware(String uri) {
+			private File loadFirmware(URI uri) {
+				Scheme scheme = Scheme.of(uri);
 				return loaders.stream() //
-						.filter(l -> l.supportedProtocols().stream().anyMatch(s -> uri.startsWith(s))) //
+						.filter(l -> l.supportedSchemes().contains(scheme)) //
 						.findFirst() //
 						.map(l -> l.loadFirmware(uri, rootDir)) //
 						.orElseGet(() -> {
-							String supported = loaders.stream().flatMap(l -> l.supportedProtocols().stream())
-									.collect(joining(", "));
+							String supported = loaders.stream().flatMap(l -> l.supportedSchemes().stream())
+									.map(Scheme::value).collect(joining(", "));
 							throw new ExtensionConfigurationException(
 									format("Unsupported firmware URI scheme: %s (supported: %s)", uri, supported));
 						});
@@ -203,7 +253,7 @@ public @interface UseVirtualAvr {
 			validateConfiguration(testClass);
 			if (needsSharedContainer(testClass)) {
 				UseVirtualAvr classAnn = testClass.getAnnotation(UseVirtualAvr.class);
-				File firmware = getOrCreateFirmwareManager(context).resolveFirmware(classAnn.firmware());
+				File firmware = getOrCreateFirmwareManager(context).resolveFirmware(URI.create(classAnn.firmware()));
 				VirtualAvrContainer<?> container = createContainer(classAnn.deviceName(), firmware);
 				container.start();
 				context.getStore(NAMESPACE).put("container", container);
@@ -242,7 +292,7 @@ public @interface UseVirtualAvr {
 			UseVirtualAvr config = findConfig(context).orElseThrow(() -> new ExtensionConfigurationException(
 					format("@%s not found", UseVirtualAvr.class.getSimpleName())));
 			if (config.isolated()) {
-				File firmware = getOrCreateFirmwareManager(context).resolveFirmware(config.firmware());
+				File firmware = getOrCreateFirmwareManager(context).resolveFirmware(URI.create(config.firmware()));
 				VirtualAvrContainer<?> container = createContainer(config.deviceName(), firmware);
 				container.start();
 				context.getStore(NAMESPACE).put("container", container);
