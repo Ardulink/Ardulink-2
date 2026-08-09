@@ -11,6 +11,10 @@ import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.AggregationStrategy;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -90,7 +94,6 @@ public class MqttCamelRouteBuilder {
 			StringBuilder sb = new StringBuilder();
 			sb = sb.append(String.format("paho:%s#?brokerUrl=%s://%s:%s", topics.getTopic(), (ssl ? "ssl" : "tcp"),
 					brokerHost, getBrokerPort()));
-			sb = hasAuth() ? sb.append(String.format("&userName=%s&password=%s", user, new String(password))) : sb;
 			sb = sb.append("&automaticReconnect=false");
 			sb = sb.append("&maxInflight=65535");
 			sb = sb.append(String.format("&clientId=%s", name));
@@ -98,8 +101,20 @@ public class MqttCamelRouteBuilder {
 			return sb.toString();
 		}
 
-		private boolean hasAuth() {
+		public boolean hasAuth() {
 			return user != null && password != null;
+		}
+
+		public MqttClient newClient() throws MqttException {
+			MqttConnectOptions options = new MqttConnectOptions();
+			options.setUserName(user);
+			options.setPassword(new String(password).toCharArray());
+			options.setAutomaticReconnect(false);
+			options.setMaxInflight(65535);
+			MqttClient client = new MqttClient(String.format("%s://%s:%s", ssl ? "ssl" : "tcp", brokerHost,
+					getBrokerPort()), name, new MemoryPersistence());
+			client.connect(options);
+			return client;
 		}
 
 	}

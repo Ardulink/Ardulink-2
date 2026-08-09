@@ -32,7 +32,6 @@ public class CommandLineArguments {
 	@Option(name = "-clientId", usage = "This client's name")
 	public String clientId = "ardulink";
 
-	@Option(name = "-credentials", usage = "Credentials for mqtt authentication")
 	public String credentials;
 
 	// TODO PF re-add

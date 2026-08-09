@@ -21,21 +21,30 @@ import static java.util.stream.Collectors.joining;
 import static org.ardulink.mqtt.MqttBroker.builder;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
+import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Route;
 import org.apache.camel.ServiceStatus;
+import org.apache.camel.component.paho.PahoComponent;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.spi.RouteController;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttCamelRouteBuilder.MqttConnectionProperties;
 import org.ardulink.util.Strings;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
@@ -49,11 +58,18 @@ import org.kohsuke.args4j.CmdLineParser;
  */
 public class MqttMain {
 
+	public static final String CREDENTIALS_ENV_NAME = "ARDULINK_MQTT_CREDENTIALS";
+	public static final String CREDENTIALS_FILE_NAME = "mqtt-credentials";
+
 	private final CommandLineArguments args;
+
+	private final String credentials;
 
 	private CamelContext context;
 
 	private MqttBroker standaloneServer;
+
+	private MqttClient mqttClient;
 
 	private CamelContext createCamelContext(Topics topics) throws Exception {
 		return addRoutes(topics, new DefaultCamelContext());
@@ -68,6 +84,12 @@ public class MqttMain {
 		MqttConnectionProperties mqtt = appendAuth(
 				new MqttConnectionProperties().name("mqttMain").brokerHost(args.brokerHost).ssl(args.ssl))
 				.brokerPort(args.brokerPort);
+		if (mqtt.hasAuth()) {
+			// inject a preconfigured (and connected) client so that credentials never
+			// appear in the endpoint URI (which would get logged by Camel)
+			mqttClient = mqtt.newClient();
+			((PahoComponent) context.getComponent("paho")).setClient(mqttClient);
+		}
 		rb.fromSomethingToMqtt(ardulink, mqtt).andReverse();
 		return context;
 	}
@@ -82,10 +104,10 @@ public class MqttMain {
 	}
 
 	protected MqttConnectionProperties appendAuth(MqttConnectionProperties properties) {
-		if (nullOrEmpty(args.credentials)) {
+		if (nullOrEmpty(credentials)) {
 			return properties;
 		}
-		String[] auth = args.credentials.split(":");
+		String[] auth = credentials.split(":");
 		checkState(auth.length == 2, "Credentials not in format user:password");
 		return properties.user(auth[0]).password(auth[1].getBytes());
 	}
@@ -118,9 +140,49 @@ public class MqttMain {
 
 	public MqttMain(CommandLineArguments args) {
 		this.args = args.normalize();
+		this.credentials = nullOrEmpty(args.credentials) ? resolveCredentials() : args.credentials;
 		if (args.standalone) {
 			standaloneServer = addCredentials(builder().host(args.brokerHost).useSsl(args.ssl).port(args.brokerPort),
-					args.credentials).startBroker();
+					credentials).startBroker();
+		}
+	}
+
+	private static String resolveCredentials() {
+		String fromEnv = System.getenv(CREDENTIALS_ENV_NAME);
+		if (!nullOrEmpty(fromEnv)) {
+			return fromEnv;
+		}
+		Path file = Path.of(System.getProperty("user.home"), ".ardulink", CREDENTIALS_FILE_NAME);
+		if (!Files.isReadable(file)) {
+			return null;
+		}
+		checkState(isOwnerOnlyReadable(file), "Refusing to read credentials file %s (must not be readable by group/others)",
+				file);
+		try {
+			return Files.readAllLines(file).stream() //
+					.map(String::trim) //
+					.filter(Predicate.not(String::isEmpty)) //
+					.findFirst() //
+					.orElse(null);
+		} catch (IOException e) {
+			throw propagate(e);
+		}
+	}
+
+	private static boolean isOwnerOnlyReadable(Path file) {
+		try {
+			Set<PosixFilePermission> permissions = Files.getPosixFilePermissions(file);
+			return !permissions.contains(PosixFilePermission.GROUP_READ)
+					&& !permissions.contains(PosixFilePermission.OTHERS_READ)
+					&& !permissions.contains(PosixFilePermission.GROUP_WRITE)
+					&& !permissions.contains(PosixFilePermission.OTHERS_WRITE)
+					&& !permissions.contains(PosixFilePermission.GROUP_EXECUTE)
+					&& !permissions.contains(PosixFilePermission.OTHERS_EXECUTE);
+		} catch (UnsupportedOperationException e) {
+			// not a POSIX filesystem, nothing we can check here
+			return true;
+		} catch (IOException e) {
+			throw propagate(e);
 		}
 	}
 
@@ -162,6 +224,13 @@ public class MqttMain {
 
 	public void close() throws IOException {
 		Optional.ofNullable(this.context).ifPresent(CamelContext::stop);
+		if (this.mqttClient != null) {
+			try {
+				this.mqttClient.disconnect();
+			} catch (MqttException e) {
+				throw propagate(e);
+			}
+		}
 		Optional.ofNullable(this.standaloneServer).ifPresent(MqttBroker::stop);
 	}
 
