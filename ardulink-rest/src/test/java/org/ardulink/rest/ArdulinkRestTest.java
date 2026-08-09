@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.rest;
 
 import static io.restassured.RestAssured.given;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.IntStream.rangeClosed;
 import static org.ardulink.core.Pin.analogPin;
@@ -38,6 +39,9 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.verify;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
 
@@ -151,6 +155,40 @@ class ArdulinkRestTest {
 				fireEvent(link, analogPinValueChanged(pin, v));
 			}));
 			given().get("/pin/analog/{pin}", pin.pinNum()).then().statusCode(200).body(is(String.valueOf(lastValue)));
+		}
+	}
+
+	@Test
+	void concurrentReadsDoNotSeeEachOthersValues() throws Exception {
+		AnalogPin analogPin = analogPin(7);
+		DigitalPin digitalPin = digitalPin(5);
+		int analogValue = 456;
+		boolean digitalValue = true;
+		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
+			fireEvent(link, digitalPinValueChanged(digitalPin, digitalValue));
+			fireEvent(link, analogPinValueChanged(analogPin, analogValue));
+			ExecutorService executor = Executors.newFixedThreadPool(2);
+			try {
+				Future<?> analogReader = executor
+						.submit(() -> given().get("/pin/analog/" + analogPin.pinNum()).then().statusCode(200)
+								.body(is(String.valueOf(analogValue))));
+				Future<?> digitalReader = executor
+						.submit(() -> given().get("/pin/digital/" + digitalPin.pinNum()).then().statusCode(200)
+								.body(is(String.valueOf(digitalValue))));
+				analogReader.get(30, SECONDS);
+				digitalReader.get(30, SECONDS);
+			} finally {
+				executor.shutdownNow();
+			}
+		}
+	}
+
+	@Test
+	void readDoesNotReturnValueOfAnotherPin() throws Exception {
+		DigitalPin pin = digitalPin(7);
+		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
+			fireEvent(link, analogPinValueChanged(analogPin(7), 456));
+			given().get("/pin/digital/{pin}", pin.pinNum()).then().statusCode(500).and().body(containsString("Timeout"));
 		}
 	}
 

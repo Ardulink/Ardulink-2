@@ -48,8 +48,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -99,8 +98,7 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	@Override
 	public void configure() throws Exception {
-		AtomicReference<FromDeviceMessagePinStateChanged> messageRef = new AtomicReference<>();
-		CountDownLatch latch = new CountDownLatch(1);
+		ConcurrentHashMap<Pin, FromDeviceMessagePinStateChanged> messages = new ConcurrentHashMap<>();
 
 		String patchAnalog = "direct:patchAnalog-" + identityHashCode(this);
 		String patchDigital = "direct:patchDigital-" + identityHashCode(this);
@@ -132,13 +130,11 @@ public class RestRouteBuilder extends RouteBuilder {
 		;
 		from(patchAnalog).process(exchange -> patchAnalog(exchange)).to(target);
 		from(patchDigital).process(exchange -> patchDigital(exchange)).to(target);
-		from(readAnalog).process(exchange -> readAnalog(exchange))
-				.process(exchange -> readQueue(exchange, messageRef, latch));
-		from(readDigital).process(exchange -> readDigital(exchange))
-				.process(exchange -> readQueue(exchange, messageRef, latch));
+		from(readAnalog).process(exchange -> readAnalog(exchange)).process(exchange -> readQueue(exchange, messages));
+		from(readDigital).process(exchange -> readDigital(exchange)).process(exchange -> readQueue(exchange, messages));
 		from(switchAnalog).process(exchange -> switchAnalog(exchange)).to(target);
 		from(switchDigital).process(exchange -> switchDigital(exchange)).to(target);
-		writeArduinoMessagesTo(target, messageRef, latch);
+		writeArduinoMessagesTo(target, messages);
 	}
 
 	private void swagger(String apidocs) {
@@ -209,19 +205,18 @@ public class RestRouteBuilder extends RouteBuilder {
 		message.setHeader("location", location);
 	}
 
-	private static void readQueue(Exchange exchange, AtomicReference<FromDeviceMessagePinStateChanged> messageRef,
-			CountDownLatch latch) throws InterruptedException {
+	private static void readQueue(Exchange exchange, Map<Pin, FromDeviceMessagePinStateChanged> messages)
+			throws InterruptedException {
 		Message message = exchange.getMessage();
 		Pin pinOfMessage = extractPin(message);
 
 		for (Countdown countdown = createStarted(1, SECONDS); !countdown.finished();) {
-			if (latch.await(countdown.remaining(MILLISECONDS), MILLISECONDS)) {
-				FromDeviceMessagePinStateChanged polled = messageRef.get();
-				if (pinOfMessage.equals(polled.getPin())) {
-					message.setBody(polled.getValue(), String.class);
-					return;
-				}
+			FromDeviceMessagePinStateChanged polled = messages.get(pinOfMessage);
+			if (polled != null) {
+				message.setBody(polled.getValue(), String.class);
+				return;
 			}
+			MILLISECONDS.sleep(Math.min(10, countdown.remaining(MILLISECONDS)));
 		}
 		throw new IllegalStateException("Timeout retrieving message from arduino");
 	}
@@ -289,16 +284,15 @@ public class RestRouteBuilder extends RouteBuilder {
 		return message;
 	}
 
-	private void writeArduinoMessagesTo(String arduino, AtomicReference<FromDeviceMessagePinStateChanged> messageRef,
-			CountDownLatch latch) {
+	private void writeArduinoMessagesTo(String arduino, Map<Pin, FromDeviceMessagePinStateChanged> messages) {
 		ALPByteStreamProcessor byteStreamProcessor = new ALPByteStreamProcessor();
 		from(arduino).process(exchange -> {
 			String body = exchange.getMessage().getBody(String.class);
 			FromDeviceMessage fromDevice = getFirst(parse(byteStreamProcessor, byteStreamProcessor.toBytes(body)))
 					.orElseThrow(() -> new IllegalStateException("Cannot handle " + body));
 			if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
-				messageRef.set((FromDeviceMessagePinStateChanged) fromDevice);
-				latch.countDown();
+				FromDeviceMessagePinStateChanged message = (FromDeviceMessagePinStateChanged) fromDevice;
+				messages.put(message.getPin(), message);
 			}
 		});
 	}
