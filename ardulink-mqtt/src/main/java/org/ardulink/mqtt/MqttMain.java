@@ -19,18 +19,12 @@ package org.ardulink.mqtt;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.joining;
 import static org.ardulink.mqtt.MqttBroker.builder;
-import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -42,7 +36,6 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.spi.RouteController;
 import org.ardulink.mqtt.MqttBroker.Builder;
 import org.ardulink.mqtt.MqttCamelRouteBuilder.MqttConnectionProperties;
-import org.ardulink.util.Strings;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.kohsuke.args4j.CmdLineException;
@@ -58,12 +51,14 @@ import org.kohsuke.args4j.CmdLineParser;
  */
 public class MqttMain {
 
-	public static final String CREDENTIALS_ENV_NAME = "ARDULINK_MQTT_CREDENTIALS";
-	public static final String CREDENTIALS_FILE_NAME = "mqtt-credentials";
+	public static final String USER_ENV_NAME = "ARDULINK_MQTT_USER";
+	public static final String PASSWORD_ENV_NAME = "ARDULINK_MQTT_PASSWORD";
 
 	private final CommandLineArguments args;
 
-	private final String credentials;
+	private final String user;
+
+	private final String password;
 
 	private CamelContext context;
 
@@ -104,12 +99,7 @@ public class MqttMain {
 	}
 
 	protected MqttConnectionProperties appendAuth(MqttConnectionProperties properties) {
-		if (nullOrEmpty(credentials)) {
-			return properties;
-		}
-		String[] auth = credentials.split(":");
-		checkState(auth.length == 2, "Credentials not in format user:password");
-		return properties.user(auth[0]).password(auth[1].getBytes());
+		return hasCredentials() ? properties.user(user).password(password.getBytes()) : properties;
 	}
 
 	private String listenTo() {
@@ -140,58 +130,20 @@ public class MqttMain {
 
 	public MqttMain(CommandLineArguments args) {
 		this.args = args.normalize();
-		this.credentials = nullOrEmpty(args.credentials) ? resolveCredentials() : args.credentials;
+		this.user = System.getenv(USER_ENV_NAME);
+		this.password = System.getenv(PASSWORD_ENV_NAME);
 		if (args.standalone) {
-			standaloneServer = addCredentials(builder().host(args.brokerHost).useSsl(args.ssl).port(args.brokerPort),
-					credentials).startBroker();
+			standaloneServer = addCredentials(builder().host(args.brokerHost).useSsl(args.ssl).port(args.brokerPort))
+					.startBroker();
 		}
 	}
 
-	private static String resolveCredentials() {
-		String fromEnv = System.getenv(CREDENTIALS_ENV_NAME);
-		if (!nullOrEmpty(fromEnv)) {
-			return fromEnv;
-		}
-		Path file = Path.of(System.getProperty("user.home"), ".ardulink", CREDENTIALS_FILE_NAME);
-		if (!Files.isReadable(file)) {
-			return null;
-		}
-		checkState(isOwnerOnlyReadable(file), "Refusing to read credentials file %s (must not be readable by group/others)",
-				file);
-		try {
-			return Files.readAllLines(file).stream() //
-					.map(String::trim) //
-					.filter(Predicate.not(String::isEmpty)) //
-					.findFirst() //
-					.orElse(null);
-		} catch (IOException e) {
-			throw propagate(e);
-		}
+	private boolean hasCredentials() {
+		return !nullOrEmpty(user) && !nullOrEmpty(password);
 	}
 
-	private static boolean isOwnerOnlyReadable(Path file) {
-		try {
-			Set<PosixFilePermission> permissions = Files.getPosixFilePermissions(file);
-			return !permissions.contains(PosixFilePermission.GROUP_READ)
-					&& !permissions.contains(PosixFilePermission.OTHERS_READ)
-					&& !permissions.contains(PosixFilePermission.GROUP_WRITE)
-					&& !permissions.contains(PosixFilePermission.OTHERS_WRITE)
-					&& !permissions.contains(PosixFilePermission.GROUP_EXECUTE)
-					&& !permissions.contains(PosixFilePermission.OTHERS_EXECUTE);
-		} catch (UnsupportedOperationException e) {
-			// not a POSIX filesystem, nothing we can check here
-			return true;
-		} catch (IOException e) {
-			throw propagate(e);
-		}
-	}
-
-	private static Builder addCredentials(Builder builder, String credentials) {
-		if (Strings.nullOrEmpty(credentials)) {
-			return builder;
-		}
-		String[] split = credentials.split(":");
-		return builder.addAuthenication(split[0], split[1].getBytes());
+	private Builder addCredentials(Builder builder) {
+		return hasCredentials() ? builder.addAuthenication(user, password.getBytes()) : builder;
 	}
 
 	private static Optional<CommandLineArguments> tryParse(String... args) {

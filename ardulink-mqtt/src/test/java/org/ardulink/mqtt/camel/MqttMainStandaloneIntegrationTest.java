@@ -17,6 +17,8 @@ limitations under the License.
 package org.ardulink.mqtt.camel;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.ardulink.mqtt.MqttMain.PASSWORD_ENV_NAME;
+import static org.ardulink.mqtt.MqttMain.USER_ENV_NAME;
 import static org.ardulink.util.ServerSockets.freePort;
 import static org.ardulink.util.Strings.nullOrEmpty;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -43,12 +46,10 @@ import org.junit.jupiter.api.Timeout;
 @Timeout(value = 10, unit = SECONDS)
 class MqttMainStandaloneIntegrationTest {
 
-	String someUser = "someUser";
-	String somePassword = "somePassword";
+	static final String someUser = "someUser";
+	static final String somePassword = "somePassword";
 
 	CommandLineArguments cmdLineArgs;
-	String brokerUser;
-	String brokerPassword;
 	String injectClientPassword;
 
 	@BeforeEach
@@ -66,14 +67,16 @@ class MqttMainStandaloneIntegrationTest {
 	}
 
 	@Test
+	@SetEnvironmentVariable(key = USER_ENV_NAME, value = someUser)
+	@SetEnvironmentVariable(key = PASSWORD_ENV_NAME, value = somePassword)
 	void clientCanConnectUsingCredentialsToNewlyStartedBroker() throws Exception {
-		givenBrokerAndClientCredentials(someUser, somePassword);
 		assertDoesNotThrow(this::runMainAndConnectToBroker);
 	}
 
 	@Test
+	@SetEnvironmentVariable(key = USER_ENV_NAME, value = someUser)
+	@SetEnvironmentVariable(key = PASSWORD_ENV_NAME, value = somePassword)
 	void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker() throws Exception {
-		givenBrokerAndClientCredentials(someUser, somePassword);
 		givenClientPassword("not" + somePassword + "not");
 
 		assertThatThrownBy(this::runMainAndConnectToBroker).isInstanceOf(MqttSecurityException.class);
@@ -81,9 +84,10 @@ class MqttMainStandaloneIntegrationTest {
 
 	@Test
 	@Disabled("test fails with Caused by: javax.net.ssl.SSLHandshakeException: Received fatal alert: handshake_failure")
+	@SetEnvironmentVariable(key = USER_ENV_NAME, value = someUser)
+	@SetEnvironmentVariable(key = PASSWORD_ENV_NAME, value = somePassword)
 	void clientCanConnectUsingCredentialsToNewlyStartedSslBroker() throws Exception {
 		givenSslEnabled(true);
-		givenBrokerAndClientCredentials(someUser, somePassword);
 		assertDoesNotThrow(this::runMainAndConnectToBroker);
 	}
 
@@ -104,12 +108,6 @@ class MqttMainStandaloneIntegrationTest {
 
 	void givenSslEnabled(boolean sslIsOn) {
 		this.cmdLineArgs.ssl = sslIsOn;
-	}
-
-	void givenBrokerAndClientCredentials(String brokerUser, String brokerPassword) {
-		this.brokerUser = brokerUser;
-		this.brokerPassword = brokerPassword;
-		this.cmdLineArgs.credentials = brokerUser + ":" + brokerPassword;
 	}
 
 	void givenClientPassword(String password) {

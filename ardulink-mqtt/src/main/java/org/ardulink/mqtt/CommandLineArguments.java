@@ -32,8 +32,6 @@ public class CommandLineArguments {
 	@Option(name = "-clientId", usage = "This client's name")
 	public String clientId = "ardulink";
 
-	public String credentials;
-
 	// TODO PF re-add
 	// @Option(name = "-publishClientInfo", usage =
 	// "When set, publish messages on connect/disconnect under this topic")
