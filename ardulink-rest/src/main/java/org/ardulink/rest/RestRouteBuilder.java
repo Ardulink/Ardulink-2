@@ -20,7 +20,6 @@ package org.ardulink.rest;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.identityHashCode;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.regex.Matcher.quoteReplacement;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
@@ -40,7 +39,6 @@ import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Primitives.tryParseAs;
-import static org.ardulink.util.StopWatch.Countdown.createStarted;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
@@ -48,7 +46,10 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -60,7 +61,6 @@ import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey;
 import org.ardulink.core.proto.ardulink.ArdulinkProtocol2.ALPByteStreamProcessor;
-import org.ardulink.util.StopWatch.Countdown;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.resource.EmptyResource;
 import org.eclipse.jetty.util.resource.Resource;
@@ -98,7 +98,7 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	@Override
 	public void configure() throws Exception {
-		ConcurrentHashMap<Pin, FromDeviceMessagePinStateChanged> messages = new ConcurrentHashMap<>();
+		ConcurrentHashMap<Pin, CompletableFuture<FromDeviceMessagePinStateChanged>> messages = new ConcurrentHashMap<>();
 
 		String patchAnalog = "direct:patchAnalog-" + identityHashCode(this);
 		String patchDigital = "direct:patchDigital-" + identityHashCode(this);
@@ -205,20 +205,24 @@ public class RestRouteBuilder extends RouteBuilder {
 		message.setHeader("location", location);
 	}
 
-	private static void readQueue(Exchange exchange, Map<Pin, FromDeviceMessagePinStateChanged> messages)
-			throws InterruptedException {
+	private static void readQueue(Exchange exchange,
+			Map<Pin, CompletableFuture<FromDeviceMessagePinStateChanged>> messages) throws InterruptedException {
 		Message message = exchange.getMessage();
 		Pin pinOfMessage = extractPin(message);
 
-		for (Countdown countdown = createStarted(1, SECONDS); !countdown.finished();) {
-			FromDeviceMessagePinStateChanged polled = messages.get(pinOfMessage);
-			if (polled != null) {
-				message.setBody(polled.getValue(), String.class);
-				return;
-			}
-			MILLISECONDS.sleep(Math.min(10, countdown.remaining(MILLISECONDS)));
+		// We use a CompletableFuture per Pin rather than a BlockingQueue: computeIfAbsent returns the same
+		// future to all concurrent readers of a pin, so a single incoming message completes it for every one
+		// of them. A queue would consume the value, so concurrent reads of the same pin would race each other
+		// (one reader takes the message, the other would have to wait for a fresh one and might time out).
+		CompletableFuture<FromDeviceMessagePinStateChanged> future = messages.computeIfAbsent(pinOfMessage,
+				p -> new CompletableFuture<>());
+		FromDeviceMessagePinStateChanged polled;
+		try {
+			polled = future.get(1, SECONDS);
+		} catch (ExecutionException | TimeoutException e) {
+			throw new IllegalStateException("Timeout retrieving message from arduino");
 		}
-		throw new IllegalStateException("Timeout retrieving message from arduino");
+		message.setBody(polled.getValue(), String.class);
 	}
 
 	private static void patchDigital(Exchange exchange) {
@@ -284,7 +288,8 @@ public class RestRouteBuilder extends RouteBuilder {
 		return message;
 	}
 
-	private void writeArduinoMessagesTo(String arduino, Map<Pin, FromDeviceMessagePinStateChanged> messages) {
+	private void writeArduinoMessagesTo(String arduino,
+			Map<Pin, CompletableFuture<FromDeviceMessagePinStateChanged>> messages) {
 		ALPByteStreamProcessor byteStreamProcessor = new ALPByteStreamProcessor();
 		from(arduino).process(exchange -> {
 			String body = exchange.getMessage().getBody(String.class);
@@ -292,7 +297,12 @@ public class RestRouteBuilder extends RouteBuilder {
 					.orElseThrow(() -> new IllegalStateException("Cannot handle " + body));
 			if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
 				FromDeviceMessagePinStateChanged message = (FromDeviceMessagePinStateChanged) fromDevice;
-				messages.put(message.getPin(), message);
+				messages.compute(message.getPin(), (pin, future) -> {
+					if (future != null) {
+						future.complete(message);
+					}
+					return CompletableFuture.completedFuture(message);
+				});
 			}
 		});
 	}
