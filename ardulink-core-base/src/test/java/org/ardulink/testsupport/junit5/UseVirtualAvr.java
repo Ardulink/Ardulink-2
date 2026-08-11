@@ -142,13 +142,15 @@ public @interface UseVirtualAvr {
 
 	class ClasspathFirmwareLoader extends AbstractFirmwareLoader {
 
+		private static final Scheme classpath = Scheme.of("classpath");
+
 		public ClasspathFirmwareLoader() {
-			super(List.of(Scheme.of("classpath")));
+			super(List.of(classpath));
 		}
 
 		@Override
 		public File loadFirmware(URI uri, Path rootDir) {
-			String resourcePath = uri.toString().replaceFirst("(?i)^classpath://", "");
+			String resourcePath = uri.toString().replaceFirst(format("(?i)^%s://", classpath.value()), "");
 			String normalizedPath = resourcePath.startsWith("/") ? resourcePath : "/" + resourcePath;
 			try {
 				URL resource = UseVirtualAvr.class.getResource(normalizedPath);
