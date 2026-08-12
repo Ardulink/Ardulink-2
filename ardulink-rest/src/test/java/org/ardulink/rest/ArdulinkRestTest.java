@@ -147,6 +147,14 @@ class ArdulinkRestTest {
 	}
 
 	@Test
+	void timeoutWhenNoMessageArrives() throws Exception {
+		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
+			given().get("/pin/digital/5").then().statusCode(500).and().body(containsString("Timeout"));
+			given().get("/pin/analog/5").then().statusCode(500).and().body(containsString("Timeout"));
+		}
+	}
+
+	@Test
 	void queueDoesNotExplode() throws Exception {
 		AnalogPin pin = analogPin(7);
 		int lastValue = 1023;
