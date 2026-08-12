@@ -126,6 +126,14 @@ class ArdulinkRestTest {
 	}
 
 	@Test
+	void timeoutWhenNoMessageArrives() throws Exception {
+		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
+			given().get("/pin/digital/5").then().statusCode(500).and().body(containsString("Timeout"));
+			given().get("/pin/analog/5").then().statusCode(500).and().body(containsString("Timeout"));
+		}
+	}
+
+	@Test
 	void timeoutWhenWaitingForDigitalMessageWithoutMatchingDigitalMessage() throws Exception {
 		AnalogPin pin = analogPin(7);
 		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
@@ -143,14 +151,6 @@ class ArdulinkRestTest {
 			fireEvent(link, digitalPinValueChanged(pin, true));
 			forAllPinsNotEqualTo(pin, p -> fireEvent(link, analogPinValueChanged(analogPin(p), 456)));
 			given().get("/pin/analog/{pin}", pin.pinNum()).then().statusCode(500).and().body(containsString("Timeout"));
-		}
-	}
-
-	@Test
-	void timeoutWhenNoMessageArrives() throws Exception {
-		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
-			given().get("/pin/digital/5").then().statusCode(500).and().body(containsString("Timeout"));
-			given().get("/pin/analog/5").then().statusCode(500).and().body(containsString("Timeout"));
 		}
 	}
 
