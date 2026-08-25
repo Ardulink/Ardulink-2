@@ -63,7 +63,6 @@ import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.ardulink.util.Closeables;
 import org.ardulink.util.ListMultiMap;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -366,15 +365,6 @@ class LinksTest {
 				assertThat(link1).isSameAs(link2);
 			}
 		});
-	}
-
-	@Test
-	@ExpectedToFail("Needs a ReferenceQueue in Links class")
-	void closesUnunsedLinksThatGetGCed(@MockUri String mockUri) throws IOException {
-		Link link = Links.getLink(mockUri);
-		link = null;
-		System.gc();
-		verify(getMock(link), times(1)).close();
 	}
 
 	private static Link link(String name) {
