@@ -22,7 +22,7 @@ import static java.lang.System.identityHashCode;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -47,7 +47,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.mail.Folder;
@@ -246,15 +245,13 @@ class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	private void runInBackground(Main main) {
-		ExecutorService executor = newSingleThreadExecutor();
-		executor.execute(() -> {
+		runAsync(() -> {
 			try {
 				main.run();
 			} catch (Exception e) {
 				throw propagate(e);
 			}
 		});
-		executor.shutdown();
 	}
 
 	private void createMailUser(String email, String login, String password) {

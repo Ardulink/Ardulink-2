@@ -17,7 +17,7 @@ limitations under the License.
 package org.ardulink.core;
 
 import static java.lang.Integer.MAX_VALUE;
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.ConnectionBasedLink.Mode.INFO_MESSAGE_ONLY;
@@ -26,7 +26,7 @@ import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.ardulink.testsupport.junit5.ArduinoStubExt;
 import org.ardulink.testsupport.junit5.ArduinoStubExt.RegexAdder;
@@ -81,16 +81,15 @@ class WaitForArduinoToBootTest {
 	}
 
 	private void simulateArduinoSendsInOneSecond(String message) {
-		ExecutorService executor = newSingleThreadExecutor();
-		executor.execute(() -> {
+		ScheduledExecutorService scheduler = newSingleThreadScheduledExecutor();
+		scheduler.schedule(() -> {
 			try {
-				SECONDS.sleep(1);
 				arduinoStub.simulateArduinoSends(message);
-			} catch (InterruptedException | IOException e) {
+			} catch (IOException e) {
 				throw propagate(e);
 			}
-		});
-		executor.shutdown();
+		}, 1, SECONDS);
+		scheduler.shutdown();
 	}
 
 	private static String lf(String string) {
