@@ -75,6 +75,7 @@ public class PiLink extends AbstractListenerLink {
 	@Override
 	public void close() throws IOException {
 		this.gpioController.shutdown();
+		this.listeners.clear();
 		super.close();
 	}
 

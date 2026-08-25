@@ -282,6 +282,10 @@ public class PWMController extends JPanel implements Linkable {
 		return pwmControllerListeners.add(listener);
 	}
 
+	public boolean removePWMControllerListener(PWMControllerListener listener) {
+		return pwmControllerListeners.remove(listener);
+	}
+
 	private void notifyListeners(PWMChangeEvent event) {
 		pwmControllerListeners.forEach(l -> l.pwmChanged(event));
 	}

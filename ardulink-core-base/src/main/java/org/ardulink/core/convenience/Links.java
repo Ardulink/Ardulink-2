@@ -29,9 +29,12 @@ import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Regex.regex;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -57,9 +60,8 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
  */
 public final class Links {
 
-	// TODO add ReferenceQueue to close GCed Links, we need strong refs to the keys
-	// but weak ones to the links
-	private static final Map<Object, CacheEntry> cache = new HashMap<>();
+	private static final Map<Object, CacheEntry> cache = new ConcurrentHashMap<>();
+	private static final ReferenceQueue<Link> gcQueue = new ReferenceQueue<>();
 	private static final LinkManager linkManager = LinkManager.getInstance();
 
 	private static final Alias defaultAlias = new Alias("default", regex(".*"));
@@ -94,15 +96,19 @@ public final class Links {
 
 	private static class CacheEntry {
 
-		private final Link link;
+		private final WeakReference<Link> linkRef;
 		private int usageCounter;
 
 		private CacheEntry(Link link) {
-			this.link = link;
+			this.linkRef = new WeakReference<>(link, gcQueue);
 		}
 
 		private Link getLink() {
-			return link;
+			return linkRef.get();
+		}
+
+		private boolean isCleared() {
+			return linkRef.get() == null;
 		}
 
 		private int increaseUsageCounter() {
@@ -208,12 +214,28 @@ public final class Links {
 	}
 
 	public static Link getLink(Configurer configurer) {
+		drainGcQueue();
 		Object cacheKey = configurer.uniqueIdentifier();
 		synchronized (cache) {
-			CacheEntry cacheEntry = cache.computeIfAbsent(cacheKey,
-					k -> new CacheEntry(newDelegate(k, configurer.newLink())));
+			CacheEntry cacheEntry = cache.get(cacheKey);
+			if (cacheEntry != null && cacheEntry.isCleared()) {
+				cache.remove(cacheKey);
+				cacheEntry = null;
+			}
+			if (cacheEntry == null) {
+				cacheEntry = new CacheEntry(newDelegate(cacheKey, configurer.newLink()));
+				cache.put(cacheKey, cacheEntry);
+			}
 			cacheEntry.increaseUsageCounter();
 			return cacheEntry.getLink();
+		}
+	}
+
+	private static void drainGcQueue() {
+		Reference<? extends Link> ref;
+		while ((ref = gcQueue.poll()) != null) {
+			Reference<? extends Link> clearedRef = ref;
+			cache.values().removeIf(entry -> entry.linkRef == clearedRef || entry.isCleared());
 		}
 	}
 
@@ -225,7 +247,10 @@ public final class Links {
 					CacheEntry cacheEntry = cache.get(cacheKey);
 					if (cacheEntry != null && cacheEntry.decreaseUsageCounter() == 0) {
 						cache.remove(cacheKey);
-						super.close();
+						Link delegate = cacheEntry.getLink();
+						if (delegate != null) {
+							super.close();
+						}
 					}
 				}
 			}

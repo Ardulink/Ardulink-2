@@ -47,6 +47,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.mail.Folder;
@@ -245,13 +246,15 @@ class ArdulinkMailOnCamelIntegrationTest {
 	}
 
 	private void runInBackground(Main main) {
-		newSingleThreadExecutor().execute(() -> {
+		ExecutorService executor = newSingleThreadExecutor();
+		executor.execute(() -> {
 			try {
 				main.run();
 			} catch (Exception e) {
 				throw propagate(e);
 			}
 		});
+		executor.shutdown();
 	}
 
 	private void createMailUser(String email, String login, String password) {
@@ -276,9 +279,17 @@ class ArdulinkMailOnCamelIntegrationTest {
 		), null);
 		Store store = session.getStore();
 		store.connect(host, user, password);
-		Folder inbox = store.getFolder("INBOX");
-		inbox.open(Folder.READ_ONLY);
-		return asList(inbox.getMessages());
+		try {
+			Folder inbox = store.getFolder("INBOX");
+			inbox.open(Folder.READ_ONLY);
+			try {
+				return asList(inbox.getMessages());
+			} finally {
+				inbox.close(false);
+			}
+		} finally {
+			store.close();
+		}
 	}
 
 	private static String makeURI(String uri, Map<? extends Object, ? extends Object> kv) {

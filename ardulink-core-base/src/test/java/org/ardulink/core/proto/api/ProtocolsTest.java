@@ -72,7 +72,7 @@ class ProtocolsTest {
 		try {
 			return tryProtoByName(InactiveProtocol.NAME).isPresent();
 		} finally {
-			InactiveProtocol.isActive.set(false);
+			InactiveProtocol.isActive.remove();
 		}
 	}
 

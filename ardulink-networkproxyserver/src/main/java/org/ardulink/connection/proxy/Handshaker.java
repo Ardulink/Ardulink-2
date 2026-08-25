@@ -23,6 +23,7 @@ import static org.ardulink.connection.proxy.NetworkProxyMessages.NUMBER_OF_PORTS
 import static org.ardulink.connection.proxy.NetworkProxyMessages.OK;
 import static org.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * [adsense]
  *
  */
-public class Handshaker {
+public class Handshaker implements Closeable {
 
 	private static final Logger logger = LoggerFactory.getLogger(Handshaker.class);
 	public static final String PROXY_CONNECTION_SEPARATOR = "\n";
@@ -131,6 +132,12 @@ public class Handshaker {
 
 	private Object[] getPortList() {
 		return configurer.getAttribute("port").getChoiceValues();
+	}
+
+	@Override
+	public void close() throws IOException {
+		scanner.close();
+		printWriter.close();
 	}
 
 }

@@ -77,8 +77,9 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 
 			@Override
 			public void run() {
+				Socket clientSocket = null;
 				try {
-					Socket clientSocket = serverSocket.accept();
+					clientSocket = serverSocket.accept();
 					PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), false);
 					BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
@@ -90,6 +91,8 @@ public class ProxyServerDouble implements BeforeEachCallback, AfterEachCallback 
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
+				} finally {
+					closeQuietly(clientSocket);
 				}
 			}
 

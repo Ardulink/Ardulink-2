@@ -200,6 +200,10 @@ public abstract class AbstractListenerLink implements Link {
 	@Override
 	public void close() throws IOException {
 		this.closed = true;
+		this.eventListeners.clear();
+		this.connectionListeners.clear();
+		this.rplyListeners.clear();
+		this.customListeners.clear();
 	}
 
 }

@@ -33,8 +33,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -56,7 +56,7 @@ public class Joystick extends JPanel implements Linkable {
 
 	private transient Link link;
 	
-	private final List<PositionListener> positionListeners = new ArrayList<>();
+	private final List<PositionListener> positionListeners = new CopyOnWriteArrayList<>();
 	private String id = "none";
 	
 	// TODO Make the border size parametric and turn this into a default value

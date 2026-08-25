@@ -23,6 +23,8 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -56,13 +58,19 @@ public class NetworkProxyServer {
 		@Override
 		public void execute(int portNumber) throws IOException {
 			ServerSocket serverSocket = new ServerSocket(portNumber);
+			ExecutorService executor = Executors.newCachedThreadPool(r -> {
+				Thread t = new Thread(r);
+				t.setDaemon(true);
+				return t;
+			});
 			try {
 				serverIsUp(portNumber);
-				while (true) {
-					new Thread(newConnection(serverSocket)).start();
+				while (!Thread.currentThread().isInterrupted()) {
+					executor.execute(newConnection(serverSocket));
 				}
 			} finally {
 				logger.info("{} stops", NAME);
+				executor.shutdownNow();
 				serverSocket.close();
 			}
 		}

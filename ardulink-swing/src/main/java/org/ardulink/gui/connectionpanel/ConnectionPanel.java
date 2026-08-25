@@ -34,6 +34,7 @@ import java.net.URI;
 import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -74,6 +75,8 @@ public class ConnectionPanel extends JPanel implements Linkable {
 	private transient Configurer configurer;
 
 	private JPanel panel;
+
+	private transient ExecutorService displayExecutor;
 
 	private JComboBox<String> createURICombo() {
 		JComboBox<String> uris = new JComboBox<>();
@@ -170,7 +173,11 @@ public class ConnectionPanel extends JPanel implements Linkable {
 			}
 
 			private void displayIn(WaitDialog waitDialog, int timeout, TimeUnit tu) {
-				newCachedThreadPool().execute(() -> {
+				if (displayExecutor != null) {
+					displayExecutor.shutdownNow();
+				}
+				displayExecutor = newCachedThreadPool();
+				displayExecutor.execute(() -> {
 					try {
 						tu.sleep(timeout);
 						synchronized (this) {

@@ -26,6 +26,7 @@ import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 
 import org.ardulink.testsupport.junit5.ArduinoStubExt;
 import org.ardulink.testsupport.junit5.ArduinoStubExt.RegexAdder;
@@ -80,7 +81,8 @@ class WaitForArduinoToBootTest {
 	}
 
 	private void simulateArduinoSendsInOneSecond(String message) {
-		newSingleThreadExecutor().execute(() -> {
+		ExecutorService executor = newSingleThreadExecutor();
+		executor.execute(() -> {
 			try {
 				SECONDS.sleep(1);
 				arduinoStub.simulateArduinoSends(message);
@@ -88,6 +90,7 @@ class WaitForArduinoToBootTest {
 				throw propagate(e);
 			}
 		});
+		executor.shutdown();
 	}
 
 	private static String lf(String string) {

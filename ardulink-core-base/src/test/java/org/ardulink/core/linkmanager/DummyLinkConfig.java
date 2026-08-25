@@ -155,6 +155,11 @@ public class DummyLinkConfig implements LinkConfig {
 	public static final ThreadLocal<String[]> choiceValuesOfD = ThreadLocal.withInitial(() -> new String[] { "---unconfigured---" });
 	public static final ThreadLocal<Boolean> doDisableXXX = ThreadLocal.withInitial(() -> Boolean.TRUE);
 
+	public static void cleanupThreadLocals() {
+		choiceValuesOfD.remove();
+		doDisableXXX.remove();
+	}
+
 	@Named("a")
 	public void setPort(String a) {
 		this.a = a;
