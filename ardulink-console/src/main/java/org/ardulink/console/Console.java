@@ -290,8 +290,8 @@ public class Console extends JFrame implements Linkable {
 		});
 
 		pack();
-		stateStore = new StateStore(contentPane).snapshot().removeStates(allConnectionsPanel, configurationPanel,
-				connectionStatus);
+		stateStore = new StateStore(contentPane).snapshot() //
+				.removeStates(allConnectionsPanel, configurationPanel, connectionStatus);
 		setLink(NULL_LINK);
 	}
 

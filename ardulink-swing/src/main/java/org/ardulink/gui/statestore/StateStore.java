@@ -20,6 +20,7 @@ import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.ardulink.gui.statestore.StateStore.Storer.storer;
 import static org.ardulink.gui.util.SwingUtilities.componentsStream;
+import static org.ardulink.util.BinaryOperators.right;
 import static org.ardulink.util.Streams.castIfInstance;
 
 import java.awt.Component;
@@ -213,8 +214,7 @@ public class StateStore {
 	}
 
 	public StateStore removeStates(Component... components) {
-		Stream.of(components).forEach(this::removeStates);
-		return this;
+		return Stream.of(components).map(this::removeStates).reduce(right()).orElse(this);
 	}
 
 	public StateStore removeStates(Component component) {
