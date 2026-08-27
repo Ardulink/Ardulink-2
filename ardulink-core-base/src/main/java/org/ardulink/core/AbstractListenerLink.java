@@ -18,6 +18,7 @@ package org.ardulink.core;
 
 import static java.util.function.Predicate.isEqual;
 import static org.ardulink.util.Predicates.attribute;
+import static org.ardulink.util.Streams.castIfInstance;
 
 import java.io.IOException;
 import java.util.List;
@@ -170,8 +171,7 @@ public abstract class AbstractListenerLink implements Link {
 
 	private boolean hasListenerForPin(Pin pin) {
 		return this.eventListeners.stream() //
-				.filter(FilteredEventListenerAdapter.class::isInstance) //
-				.map(FilteredEventListenerAdapter.class::cast) //
+				.flatMap(l -> castIfInstance(FilteredEventListenerAdapter.class, l)) //
 				.anyMatch(attribute(FilteredEventListenerAdapter::getPin, isEqual(pin)));
 	}
 

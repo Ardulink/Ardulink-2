@@ -56,4 +56,9 @@ public final class Streams {
 		return Arrays.stream(streams).flatMap(identity());
 	}
 
+	public static <T> Stream<T> castIfInstance(Class<T> clazz, Object object) {
+		T casted = Objects.castIfInstance(clazz, object);
+		return casted == null ? Stream.empty() : Stream.of(casted);
+	}
+
 }

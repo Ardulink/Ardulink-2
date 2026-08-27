@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.proto.api;
 
+import static org.ardulink.util.Objects.castIfInstance;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.lang.reflect.Array;
@@ -44,7 +45,7 @@ public final class MessageIdHolders {
 	public static class MessageIdHolderInvocationHandler implements InvocationHandler {
 
 		private static final Method messageIdHolderGetIdMethod = getMessageIdHolderGetIdMethod();
-		
+
 		private final Object delegate;
 		private final Long messageId;
 
@@ -116,11 +117,11 @@ public final class MessageIdHolders {
 	 *         <code>msg</code> is no {@link MessageIdHolder}.
 	 */
 	private static Optional<MessageIdHolder> toHolder(Object msg) {
-		return Optional.of(msg).filter(MessageIdHolder.class::isInstance).map(MessageIdHolder.class::cast);
+		return Optional.of(msg).map(o -> castIfInstance(MessageIdHolder.class, o));
 	}
 
 	public static long messageIdOf(Object msg) {
-			return toHolder(msg).orElse(NO_ID).getId();
+		return toHolder(msg).orElse(NO_ID).getId();
 	}
 
 }

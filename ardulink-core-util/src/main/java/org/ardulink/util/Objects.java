@@ -33,4 +33,8 @@ public final class Objects {
 		return object1 == null ? object2 : object1;
 	}
 
+	public static <T> T castIfInstance(Class<T> clazz, Object object) {
+		return clazz.isInstance(object) ? clazz.cast(object) : null;
+	}
+
 }

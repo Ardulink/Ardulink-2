@@ -18,9 +18,13 @@ package org.ardulink.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -54,6 +58,19 @@ class StreamsTest {
 	void concat() {
 		assertThat(Streams.concat(Stream.of("a"), Stream.of("b"), Stream.of("c"))).containsExactly("a", "b", "c");
 		assertThat(Streams.concat()).isEmpty();
+	}
+
+	@ParameterizedTest
+	@MethodSource("castIfInstanceParameters")
+	void castIfInstance(Object object, Class<CharSequence> clazz, List<String> expected) {
+		assertThat(Streams.castIfInstance(clazz, object)).containsExactlyElementsOf(expected);
+	}
+
+	static Stream<Arguments> castIfInstanceParameters() {
+		return Stream.of( //
+				Arguments.of("foo", CharSequence.class, List.of("foo")), //
+				Arguments.of(42, CharSequence.class, List.of()), //
+				Arguments.of(null, CharSequence.class, List.of()));
 	}
 
 }

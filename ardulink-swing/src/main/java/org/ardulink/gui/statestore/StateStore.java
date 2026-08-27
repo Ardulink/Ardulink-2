@@ -20,6 +20,7 @@ import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.ardulink.gui.statestore.StateStore.Storer.storer;
 import static org.ardulink.gui.util.SwingUtilities.componentsStream;
+import static org.ardulink.util.Streams.castIfInstance;
 
 import java.awt.Component;
 import java.awt.IllegalComponentStateException;
@@ -183,7 +184,8 @@ public class StateStore {
 	}
 
 	public static Function<Component, Stream<Component>> restorables() {
-		return c -> componentsStream(c).filter(JPanel.class::isInstance).map(JPanel.class::cast)
+		return c -> componentsStream(c) //
+				.flatMap(x -> castIfInstance(JPanel.class, x)) //
 				.flatMap(StateStore::restorables);
 	}
 

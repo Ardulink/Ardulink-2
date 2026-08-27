@@ -31,6 +31,7 @@ import static org.ardulink.gui.facility.LAFUtil.setLookAndFeel;
 import static org.ardulink.gui.util.LinkReplacer.*;
 import static org.ardulink.gui.util.SwingUtilities.componentsStream;
 import static org.ardulink.util.Predicates.attribute;
+import static org.ardulink.util.Streams.castIfInstance;
 import static org.ardulink.util.Streams.getLast;
 import static org.ardulink.util.Throwables.getCauses;
 
@@ -358,8 +359,7 @@ public class Console extends JFrame implements Linkable {
 		this.link = withConnectionListener(connectionListener).replace(this.link).with(link);
 		componentsStream(this) //
 				.filter(not(this::equals)) //
-				.filter(Linkable.class::isInstance) //
-				.map(Linkable.class::cast) //
+				.flatMap(c -> castIfInstance(Linkable.class, c)) //
 				.forEach(l -> l.setLink(this.link));
 		stateStore.restore();
 	}
