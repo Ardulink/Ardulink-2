@@ -27,6 +27,7 @@ import static org.ardulink.core.linkmanager.LinkManager.extractNameFromURI;
 import static org.ardulink.core.linkmanager.LinkManager.replaceName;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Regex.regex;
+import static org.ardulink.util.anno.LapsedWith.JDK14;
 
 import java.io.IOException;
 import java.lang.ref.Reference;
@@ -34,7 +35,6 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,6 +49,7 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -70,6 +71,7 @@ public final class Links {
 
 	public static final String DEFAULT_URI = format("%s://%s", ARDULINK_SCHEME, defaultAlias.aliasName);
 
+	@LapsedWith(module = JDK14, value = "records")
 	private static class Alias {
 
 		private final String aliasName;
