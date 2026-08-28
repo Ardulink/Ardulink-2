@@ -17,7 +17,7 @@ limitations under the License.
 package org.ardulink.core;
 
 import static java.util.function.Predicate.isEqual;
-import static org.ardulink.util.Instance.instance;
+import static org.ardulink.util.Instance.toInstance;
 import static org.ardulink.util.Predicates.attribute;
 
 import java.io.IOException;
@@ -171,7 +171,7 @@ public abstract class AbstractListenerLink implements Link {
 
 	private boolean hasListenerForPin(Pin pin) {
 		return this.eventListeners.stream() //
-				.flatMap(instance(FilteredEventListenerAdapter.class)::stream) //
+				.flatMap(toInstance(FilteredEventListenerAdapter.class)::stream) //
 				.anyMatch(attribute(FilteredEventListenerAdapter::getPin, isEqual(pin)));
 	}
 

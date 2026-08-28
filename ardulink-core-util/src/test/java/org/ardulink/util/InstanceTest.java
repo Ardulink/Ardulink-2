@@ -16,10 +16,12 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static org.ardulink.util.Instance.instance;
+import static org.ardulink.util.Instance.toInstance;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,21 +41,27 @@ class InstanceTest {
 	@ParameterizedTest
 	@MethodSource("castIfInstanceParameters")
 	void apply(Object object, Class<CharSequence> clazz, String expected) {
-		assertThat(instance(clazz).apply(object)).isEqualTo(expected);
+		assertThat(toInstance(clazz).apply(object)).isEqualTo(expected);
+	}
+
+	@ParameterizedTest
+	@MethodSource("castIfInstanceParameters")
+	void optional(Object object, Class<CharSequence> clazz, String expected) {
+		assertThat(toInstance(clazz).optional(object)).isEqualTo(Optional.ofNullable(expected));
 	}
 
 	@ParameterizedTest
 	@MethodSource("castIfInstanceParameters")
 	void stream(Object object, Class<CharSequence> clazz, String expected) {
-		List<String> expectedList = expected == null ? List.of() : List.of(expected);
-		assertThat(instance(clazz).stream(object)).containsExactlyElementsOf(expectedList);
+		assertThat(toInstance(clazz).stream(object))
+				.containsExactlyElementsOf(expected == null ? List.of() : List.of(expected));
 	}
 
 	static Stream<Arguments> castIfInstanceParameters() {
 		return Stream.of( //
-				Arguments.of("foo", CharSequence.class, "foo"), //
-				Arguments.of(42, CharSequence.class, null), //
-				Arguments.of(null, CharSequence.class, null));
+				arguments("foo", CharSequence.class, "foo"), //
+				arguments(42, CharSequence.class, null), //
+				arguments(null, CharSequence.class, null));
 	}
 
 }

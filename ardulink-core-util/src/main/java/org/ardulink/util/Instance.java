@@ -15,6 +15,7 @@ limitations under the License.
  */
 package org.ardulink.util;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -34,13 +35,17 @@ public final class Instance<T> implements Function<Object, T> {
 		this.target = target;
 	}
 
-	public static <T> Instance<T> instance(Class<T> target) {
+	public static <T> Instance<T> toInstance(Class<T> target) {
 		return new Instance<T>(target);
 	}
 
 	@Override
 	public T apply(Object object) {
 		return Objects.castIfInstance(target, object);
+	}
+
+	public Optional<T> optional(Object object) {
+		return Optional.ofNullable(apply(object));
 	}
 
 	public Stream<T> stream(Object object) {
