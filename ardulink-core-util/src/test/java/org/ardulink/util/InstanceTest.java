@@ -59,9 +59,10 @@ class InstanceTest {
 
 	static Stream<Arguments> castIfInstanceParameters() {
 		return Stream.of( //
+				arguments("foo", String.class, "foo"), //
 				arguments("foo", CharSequence.class, "foo"), //
-				arguments(42, CharSequence.class, null), //
-				arguments(null, CharSequence.class, null));
+				arguments("foo", Integer.class, null), //
+				arguments(null, Integer.class, null));
 	}
 
 }
