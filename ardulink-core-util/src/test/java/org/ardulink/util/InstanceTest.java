@@ -16,7 +16,7 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static org.ardulink.util.Instance.toInstance;
+import static org.ardulink.util.Instance.castTo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -41,19 +41,19 @@ class InstanceTest {
 	@ParameterizedTest
 	@MethodSource("castIfInstanceParameters")
 	void apply(Object object, Class<CharSequence> clazz, String expected) {
-		assertThat(toInstance(clazz).apply(object)).isEqualTo(expected);
+		assertThat(castTo(clazz).apply(object)).isEqualTo(expected);
 	}
 
 	@ParameterizedTest
 	@MethodSource("castIfInstanceParameters")
 	void optional(Object object, Class<CharSequence> clazz, String expected) {
-		assertThat(toInstance(clazz).optional(object)).isEqualTo(Optional.ofNullable(expected));
+		assertThat(castTo(clazz).asOptional(object)).isEqualTo(Optional.ofNullable(expected));
 	}
 
 	@ParameterizedTest
 	@MethodSource("castIfInstanceParameters")
 	void stream(Object object, Class<CharSequence> clazz, String expected) {
-		assertThat(toInstance(clazz).stream(object))
+		assertThat(castTo(clazz).asStream(object))
 				.containsExactlyElementsOf(expected == null ? List.of() : List.of(expected));
 	}
 

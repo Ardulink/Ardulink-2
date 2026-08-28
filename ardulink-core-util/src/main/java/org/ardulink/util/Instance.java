@@ -35,7 +35,7 @@ public final class Instance<T> implements Function<Object, T> {
 		this.target = target;
 	}
 
-	public static <T> Instance<T> toInstance(Class<T> target) {
+	public static <T> Instance<T> castTo(Class<T> target) {
 		return new Instance<T>(target);
 	}
 
@@ -44,11 +44,11 @@ public final class Instance<T> implements Function<Object, T> {
 		return Objects.castIfInstance(target, object);
 	}
 
-	public Optional<T> optional(Object object) {
+	public Optional<T> asOptional(Object object) {
 		return Optional.ofNullable(apply(object));
 	}
 
-	public Stream<T> stream(Object object) {
+	public Stream<T> asStream(Object object) {
 		return Streams.castIfInstance(target, object);
 	}
 
