@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+	<!-- Suppress findings that are known false positives or not applicable.
+	     Suppress only what you have reviewed and can justify; re-check each
+	     suppression on a regular basis. -->
+</suppressions>
