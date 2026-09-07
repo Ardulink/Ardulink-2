@@ -80,6 +80,7 @@
 		<equalsverifier.version>3.19.4</equalsverifier.version>
 		<!-- camel3 is the last version that supports java 11, camel4 needs java 17 -->
 		<camel.version>3.22.4</camel.version>
+		<owasp.dependency.check.version>12.1.3</owasp.dependency.check.version>
 
 		<!-- default image name for JIB -->
 		<image>docker.io/ardulink/${project.artifactId}:${project.version}</image>
@@ -243,6 +244,35 @@
 			<properties>
 				<argLine>-Dardulink.test.playwright.video.path=target/videos</argLine>
 			</properties>
+		</profile>
+		<profile>
+			<id>owasp</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.owasp</groupId>
+						<artifactId>dependency-check-maven</artifactId>
+						<version>${owasp.dependency.check.version}</version>
+						<configuration>
+							<failBuildOnCVSS>7</failBuildOnCVSS>
+							<formats>
+								<format>HTML</format>
+								<format>JSON</format>
+							</formats>
+							<suppressionFiles>
+								<suppressionFile>${maven.multiModuleProjectDirectory}/dependency-check/suppressions.xml</suppressionFile>
+							</suppressionFiles>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 		<profile>
 			<id>makerelease</id>

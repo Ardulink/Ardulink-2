@@ -1,0 +1,51 @@
+name: OWASP Dependency-Check
+
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - "**/pom.xml"
+      - "dependency-check/**"
+      - ".github/workflows/dependency-check.yml"
+  pull_request:
+    branches: ["master"]
+    paths:
+      - "**/pom.xml"
+      - "dependency-check/**"
+      - ".github/workflows/dependency-check.yml"
+  schedule:
+    - cron: "0 0 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          java-version: 17
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run OWASP Dependency-Check
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: mvn -B -Powasp -DskipTests -Dmodernizer.skip verify
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dependency-check-report
+          path: "*/target/dependency-check-report.html"
