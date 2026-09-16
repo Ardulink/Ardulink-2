@@ -16,7 +16,7 @@ jobs:
     - name: Set up JDK 11 (or your version)
       uses: actions/setup-java@v6
       with:
-        java-version: '11.0.32+101'
+        java-version: '25.0.4+101.0.LTS'
         distribution: 'temurin'
 
     - name: Build with Maven
