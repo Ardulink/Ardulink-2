@@ -47,4 +47,6 @@ To see all available link types and a how to use Ardulink with other build syste
 
 see [Ardulink site](https://ardulink.github.io/) (documentation, guides and downloads)
 
+Maintainers: see [README.release.md](README.release.md) for how to publish a new release to Maven Central.
+
 

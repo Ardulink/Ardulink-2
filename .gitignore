@@ -9,3 +9,8 @@ playwright/.cache/
 .idea
 *.iml
 .jqwik-database
+*.swp
+
+# local release credentials (copy of settings-release.xml.example)
+settings-release.xml
+.central-staging/

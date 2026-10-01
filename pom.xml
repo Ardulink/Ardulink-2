@@ -244,8 +244,25 @@
 				<argLine>-Dardulink.test.playwright.video.path=target/videos</argLine>
 			</properties>
 		</profile>
+		<!--
+			Everything needed to publish to Maven Central, activated by a single profile.
+			Run: ./release.sh <version>   (see README.release.md)
+
+			Attaches sources + javadoc jars (required by Central), GPG-signs every
+			artifact (required by Central) and uploads a bundle to the Central
+			Publisher Portal.
+		-->
 		<profile>
-			<id>makerelease</id>
+			<id>release</id>
+			<properties>
+				<!--
+					Never let maven-build-cache-extension (see .mvn/extensions.xml)
+					replay a cached deploy/gpg run for a release. It happily restores
+					stale, already-signed artifacts from a previous snapshot build,
+					which produces bundles Central rejects or silently mis-signs.
+				-->
+				<maven.build.cache.enabled>false</maven.build.cache.enabled>
+			</properties>
 			<build>
 				<plugins>
 					<plugin>
@@ -281,16 +298,16 @@
 							</execution>
 						</executions>
 					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>signartifacts</id>
-			<build>
-				<plugins>
 					<plugin>
 						<artifactId>maven-gpg-plugin</artifactId>
 						<version>3.2.8</version>
+						<configuration>
+							<!-- read the passphrase from MAVEN_GPG_PASSPHRASE / -Dgpg.passphrase -->
+							<gpgArguments>
+								<arg>--pinentry-mode</arg>
+								<arg>loopback</arg>
+							</gpgArguments>
+						</configuration>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
@@ -299,6 +316,32 @@
 								</goals>
 							</execution>
 						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+						<version>0.11.0</version>
+						<extensions>true</extensions>
+						<configuration>
+							<!-- must match the <server><id> in ~/.m2/settings.xml -->
+							<publishingServerId>central</publishingServerId>
+							<deploymentName>Ardulink ${project.version}</deploymentName>
+							<autoPublish>true</autoPublish>
+							<waitUntil>published</waitUntil>
+							<waitMaxTime>3600</waitMaxTime>
+							<centralSnapshotsUrl>https://central.sonatype.com/repository/maven-snapshots/</centralSnapshotsUrl>
+							<!--
+								deploy-dist only builds the ardulink-*.zip distribution, which is
+								released via GitHub (see .github/workflows/release.yml). It sets
+								maven.deploy.skip, but that property is only honoured by
+								maven-deploy-plugin - which central-publishing-maven-plugin
+								replaces. Without this the ~33 MB zip would be uploaded to
+								Maven Central on every release.
+							-->
+							<excludeArtifacts>
+								<excludeArtifact>deploy-dist</excludeArtifact>
+							</excludeArtifacts>
+						</configuration>
 					</plugin>
 				</plugins>
 			</build>
@@ -374,15 +417,11 @@
 		</dependencies>
 	</dependencyManagement>
 
-	<distributionManagement>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
-		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-	</distributionManagement>
+	<!--
+		No <distributionManagement> on purpose: publishing goes through
+		central-publishing-maven-plugin (see the "release" profile above).
 
+		The old https://oss.sonatype.org/... endpoints are dead - OSSRH was
+		shut down on 2025-06-30 and replaced by the Central Publisher Portal.
+	-->
 </project>
