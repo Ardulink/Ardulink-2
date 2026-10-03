@@ -7,6 +7,7 @@ The short version, once [set up](#one-time-setup):
 
 ```bash
 export MAVEN_GPG_PASSPHRASE='...'
+export GNUPGHOME=/path/to/keys      # only if your keys are not in ~/.gnupg
 ./release.sh 2.2.1
 ```
 
@@ -14,6 +15,10 @@ That single command bumps every pom to `2.2.1`, builds, GPG-signs and uploads
 all 21 modules plus the parent pom to Maven Central, waits until they are
 published, then commits, tags `v2.2.1` and pushes. Pushing the tag makes GitHub
 Actions build the zip and attach it to the GitHub release.
+
+`GNUPGHOME` is optional: if your signing key is already in `~/.gnupg`, leave it
+unset and ignore the line above - see [using a keyring outside your home
+directory](#using-a-keyring-outside-your-home-directory).
 
 ---
 
@@ -85,6 +90,32 @@ export MAVEN_GPG_PASSPHRASE='...'
 `maven-gpg-plugin` reads `MAVEN_GPG_PASSPHRASE`, and the `release` profile
 passes `--pinentry-mode loopback` so it never tries to open a pinentry window.
 
+#### Using a keyring outside your home directory
+
+If your keys live somewhere other than `~/.gnupg`, export `GNUPGHOME` pointing at
+the directory that holds them - it is the standard gpg variable, so both `gpg`
+and Maven follow it:
+
+```bash
+export GNUPGHOME=/path/to/keys   # the directory holding pubring.kbx
+export MAVEN_GPG_PASSPHRASE='...'
+./release.sh 2.2.1
+```
+
+`release.sh` uses `GNUPGHOME` if it is set and falls back to `~/.gnupg`, exports
+whichever it settled on so the preflight check and the Maven build cannot end up
+on different keyrings, prints the path during preflight, and aborts if the
+directory does not exist or holds no secret key. For a one-off
+`mvn -Prelease deploy` outside the script, just export `GNUPGHOME` yourself -
+Maven passes its environment to gpg.
+
+Two things about a relocated keyring:
+
+- The directory must be mode `700`. Anything else makes gpg print
+  `WARNING: unsafe permissions on homedir` on every call.
+- Do **not** move a `.gnupg` folder that came from another machine - see the
+  warning below about the `gpg-agent` socket.
+
 ### 3. Central credentials
 
 Create `~/.m2/settings.xml` from the checked-in template:
@@ -133,7 +164,8 @@ Before touching anything, the script checks that:
 - `v2.2.1` does not already exist as a tag
 - `2.2.1` is not already on Maven Central (versions are immutable, this cannot
   be undone)
-- a GPG secret key is present and `MAVEN_GPG_PASSPHRASE` is set
+- a GPG secret key is present in `GNUPGHOME` (default `~/.gnupg`) and
+  `MAVEN_GPG_PASSPHRASE` is set
 - `~/.m2/settings.xml` has a `central` server
 
 Then it bumps all 23 poms, runs `mvn -DskipTests -Prelease clean deploy`, and
@@ -181,6 +213,7 @@ mvn versions:set -DnewVersion=2.2.1 -DgenerateBackupPoms=false
 
 # 2. build, sign and publish in one pass
 export MAVEN_GPG_PASSPHRASE='...'
+export GNUPGHOME=/path/to/keys      # only if your keys are not in ~/.gnupg
 mvn -DskipTests -Prelease clean deploy
 
 # 3. tag and push - this triggers the GitHub release with the zip
@@ -209,7 +242,8 @@ ls -lh target/central-publishing/central-bundle.zip
 unzip -l target/central-publishing/central-bundle.zip | head -40
 ```
 
-Verify a signature by hand:
+Verify a signature by hand (add `--homedir /path/to/keys`, or `GNUPGHOME`, if
+that is not `~/.gnupg`):
 
 ```bash
 gpg --verify ardulink-core-base/target/ardulink-core-base-2.2.1.jar.asc \
@@ -249,7 +283,21 @@ in the shell that runs Maven, and that the `release` profile (which adds
 
 **`no gpg secret key found`**
 `gpg --list-secret-keys` is empty. Either `GNUPGHOME` points somewhere else, or
-the key has to be imported - see [step 2](#2-gpg-signing-key).
+the key has to be imported - see [step 2](#2-gpg-signing-key). Check which
+keyring gpg is actually using with `gpgconf --list-dirs homedir`.
+
+**`gpg: WARNING: unsafe permissions on homedir`**
+The keyring directory is not mode `700`:
+
+```bash
+chmod 700 "${GNUPGHOME:-$HOME/.gnupg}"
+```
+
+**`gpg: signing failed: ... No secret key`**
+The key exists, but not in the keyring the build used. The variable has to be
+exported, not just set in one shell, and `release.sh` has to be able to see it:
+run `GNUPGHOME=/path/to/keys ./release.sh 2.2.1` and check the `GPG home` line
+in the preflight output.
 
 **The release is stuck waiting**
 `waitMaxTime` is 3600s. Past that `release.sh` fails, but the deployment is

@@ -8,6 +8,8 @@
 #   ./release.sh 2.2.1
 #   ./release.sh 2.2.1 --no-push     # build + upload only, no git push
 #
+# The signing keyring is taken from $GNUPGHOME, else ~/.gnupg.
+#
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -25,7 +27,7 @@ step() { printf '\n\033[1m%s\033[0m\n' "$*"; }
 strip_ansi() { sed -E $'s/\x1b\\[[0-9;]*m//g'; }
 
 usage() {
-	sed -n '3,9p' "$0" | sed 's/^# \{0,1\}//'
+	awk 'NR>2 { if ($0 !~ /^#/) exit; sub(/^# ?/, ""); print }' "$0"
 	exit "${1:-1}"
 }
 
@@ -83,9 +85,21 @@ if curl -fsI --max-time 20 \
 	die "${GROUP_PATH}:${PROBE_ARTIFACT}:${VERSION} is already on Maven Central - versions are immutable"
 fi
 
+# The keyring to sign with. Anything but $HOME/.gnupg has to be handed to both
+# gpg and Maven, so resolve it once here and export it for the rest of the run.
+export GNUPGHOME="${GNUPGHOME:-${HOME}/.gnupg}"
+[ -d "$GNUPGHOME" ] ||
+	die "no GPG home at '${GNUPGHOME}' - export GNUPGHOME=/path/to/keys"
+# absolute, so a relative path or a stray trailing slash cannot be misread later
+GNUPGHOME=$(cd "$GNUPGHOME" && pwd)
+info "GPG home         : ${GNUPGHOME}"
+GPG_HOME_MODE=$(stat -c %a "$GNUPGHOME" 2>/dev/null || stat -f %Lp "$GNUPGHOME" 2>/dev/null || true)
+[ -z "$GPG_HOME_MODE" ] || [ "$GPG_HOME_MODE" = 700 ] ||
+	info "                   mode ${GPG_HOME_MODE} - gpg complains until this is 700"
+
 SIGNING_KEYS=$(gpg --batch --list-secret-keys --with-colons 2>/dev/null | grep -c '^sec' || true)
 [ "$SIGNING_KEYS" -gt 0 ] ||
-	die "no gpg secret key found in GNUPGHOME=${GNUPGHOME:-$HOME/.gnupg} - see README.release.md"
+	die "no gpg secret key in GNUPGHOME='${GNUPGHOME}' - see README.release.md"
 info "signing key      : $(gpg --batch --list-secret-keys --with-colons 2>/dev/null | grep '^fpr' | head -1 | cut -d: -f10)"
 
 [ -n "${MAVEN_GPG_PASSPHRASE:-}" ] ||
