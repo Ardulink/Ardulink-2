@@ -144,6 +144,18 @@ Two things people get wrong:
 If you already have a `~/.m2/settings.xml`, merge the `<servers>` block into it
 instead of overwriting the file.
 
+To keep the token out of `~/.m2/settings.xml`, put it in its own file and hand
+that to the release instead:
+
+```bash
+./release.sh 2.2.1 -s /path/to/central.xml
+```
+
+`-s` is Maven's own flag; `release.sh` forwards it to every `mvn` call and checks
+*that* file for the `central` server, so the file it validates is always the file
+Maven uses. Add the same `-s` to the manual `mvn` commands below when you run
+them by hand.
+
 Confirm the namespace `org.ardulink` is active at
 <https://central.sonatype.com/publishing/deployments>.
 
@@ -166,7 +178,8 @@ Before touching anything, the script checks that:
   be undone)
 - a GPG secret key is present in `GNUPGHOME` (default `~/.gnupg`) and
   `MAVEN_GPG_PASSPHRASE` is set
-- `~/.m2/settings.xml` has a `central` server
+- the settings file (`~/.m2/settings.xml`, or whatever `-s` points at) has a
+  `central` server
 
 Then it bumps all 23 poms, runs `mvn -DskipTests -Prelease clean deploy`, and
 only commits and tags **after** the upload succeeded. If the build fails it
@@ -214,7 +227,7 @@ mvn versions:set -DnewVersion=2.2.1 -DgenerateBackupPoms=false
 # 2. build, sign and publish in one pass
 export MAVEN_GPG_PASSPHRASE='...'
 export GNUPGHOME=/path/to/keys      # only if your keys are not in ~/.gnupg
-mvn -DskipTests -Prelease clean deploy
+mvn -DskipTests -Prelease clean deploy        # add -s /path/to/central.xml if needed
 
 # 3. tag and push - this triggers the GitHub release with the zip
 git commit -am "release 2.2.1"
@@ -270,7 +283,8 @@ the ~33 MB zip would be uploaded to Central on every release.
 ## Troubleshooting
 
 **`Unable to get publisher server properties for server id: central`**
-`~/.m2/settings.xml` is missing or has no `<server>` with `<id>central</id>`.
+The settings file has no `<server>` with `<id>central</id>`. That is
+`~/.m2/settings.xml` by default, or whatever you passed to `release.sh -s`.
 
 **`401 Unauthorized`**
 The token name or password is wrong, or you pasted your Sonatype account login

@@ -7,6 +7,7 @@
 #
 #   ./release.sh 2.2.1
 #   ./release.sh 2.2.1 --no-push     # build + upload only, no git push
+#   ./release.sh 2.2.1 -s ~/.m2/central.xml   # Central token in another file
 #
 # The signing keyring is taken from $GNUPGHOME, else ~/.gnupg.
 #
@@ -20,6 +21,7 @@ PROBE_ARTIFACT="ardulink-core-base"
 
 PUSH=true
 VERSION=""
+SETTINGS=""
 
 die() { printf '\033[31merror\033[0m %s\n' "$*" >&2; exit 1; }
 info() { printf '\033[32m==>\033[0m %s\n' "$*"; }
@@ -34,6 +36,13 @@ usage() {
 while [ $# -gt 0 ]; do
 	case "$1" in
 		--no-push) PUSH=false ;;
+		--settings=*) SETTINGS="${1#*=}" ;;
+		--settings | -s)
+			shift
+			[ $# -gt 0 ] || die "missing file for the settings option"
+			SETTINGS="$1"
+			;;
+		-s?*) SETTINGS="${1#-s}" ;;
 		-h | --help) usage 0 ;;
 		-*) die "unknown option '$1' (try --help)" ;;
 		*) [ -z "$VERSION" ] || die "unexpected argument '$1'"; VERSION="$1" ;;
@@ -55,9 +64,18 @@ command -v mvn >/dev/null || die "mvn not found on PATH"
 command -v gpg >/dev/null || die "gpg not found on PATH - install gnupg (Debian/Ubuntu: apt install gnupg)"
 command -v curl >/dev/null || die "curl not found on PATH"
 
+# The settings file holding the Central token. -s wins, else the default, and
+# every mvn call below gets it explicitly, so the file that is checked is the
+# file that is used.
+SETTINGS="${SETTINGS:-${HOME}/.m2/settings.xml}"
+[ -f "$SETTINGS" ] ||
+	die "no ${SETTINGS} - copy settings-release.xml.example and add your Central token (see README.release.md)"
+grep -q '<id>central</id>' "$SETTINGS" ||
+	die "${SETTINGS} has no <server> with <id>central</id> - copy settings-release.xml.example (see README.release.md)"
+
 step "Preflight"
 
-CURRENT=$(mvn -q -N help:evaluate -Dexpression=project.version -DforceStdout 2>/dev/null |
+CURRENT=$(mvn -s "$SETTINGS" -q -N help:evaluate -Dexpression=project.version -DforceStdout 2>/dev/null |
 	strip_ansi | tr -d '[:space:]')
 [ -n "$CURRENT" ] || die "could not read the current version from pom.xml (is Maven working?)"
 info "current version : ${CURRENT}"
@@ -105,13 +123,7 @@ info "signing key      : $(gpg --batch --list-secret-keys --with-colons 2>/dev/n
 [ -n "${MAVEN_GPG_PASSPHRASE:-}" ] ||
 	die "MAVEN_GPG_PASSPHRASE is not set - see README.release.md"
 
-SETTINGS="${HOME}/.m2/settings.xml"
-[ -f "$SETTINGS" ] ||
-	die "no ${SETTINGS} - copy settings-release.xml.example and add your Central token (see README.release.md)"
-grep -q '<id>central</id>' "$SETTINGS" ||
-	die "${SETTINGS} has no <server> with <id>central</id> - copy settings-release.xml.example (see README.release.md)"
-
-info "Central token    : configured (server id 'central')"
+info "Central token    : configured (server id 'central' in ${SETTINGS})"
 info "version to cut   : ${VERSION}"
 
 if [ "$PUSH" = false ]; then
@@ -119,7 +131,7 @@ if [ "$PUSH" = false ]; then
 fi
 
 step "Bumping version to ${VERSION}"
-mvn -q versions:set -DnewVersion="${VERSION}" -DgenerateBackupPoms=false
+mvn -s "$SETTINGS" -q versions:set -DnewVersion="${VERSION}" -DgenerateBackupPoms=false
 # keep README's dependency snippets in sync with the release
 if grep -qE '<version>[0-9]+\.[0-9]+\.[0-9]+</version>' README.md; then
 	sed -i.bak -E "s|<version>[0-9]+\.[0-9]+\.[0-9]+</version>|<version>${VERSION}</version>|g" README.md
@@ -130,12 +142,12 @@ git --no-pager diff --stat
 
 restore_version() {
 	step "Restoring version ${CURRENT}"
-	mvn -q versions:set -DnewVersion="${CURRENT}" -DgenerateBackupPoms=false || true
+	mvn -s "$SETTINGS" -q versions:set -DnewVersion="${CURRENT}" -DgenerateBackupPoms=false || true
 	git checkout -- README.md 2>/dev/null || true
 }
 
 step "Building, signing and uploading to Maven Central"
-if ! mvn -DskipTests -P"${RELEASE_PROFILE}" clean deploy; then
+if ! mvn -s "$SETTINGS" -DskipTests -P"${RELEASE_PROFILE}" clean deploy; then
 	restore_version
 	die "release build failed - nothing was tagged or pushed, fix and retry"
 fi
