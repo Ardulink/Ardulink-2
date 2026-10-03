@@ -10,6 +10,10 @@
 		<version>2.3.0-SNAPSHOT</version>
 	</parent>
 
+	<name>Ardulink Distribution</name>
+	<description>Binary distribution of Ardulink</description>
+	<url>http://www.ardulink.org</url>
+
 	<properties>
 		<maven.install.skip>true</maven.install.skip>
 		<maven.deploy.skip>true</maven.deploy.skip>

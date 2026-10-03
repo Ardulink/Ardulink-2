@@ -8,6 +8,10 @@
 		<version>2.3.0-SNAPSHOT</version>
 	</parent>
 
+	<name>Ardulink REST</name>
+	<description>RESTful interface for Ardulink</description>
+	<url>http://www.ardulink.org</url>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>

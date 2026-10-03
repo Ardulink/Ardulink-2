@@ -9,6 +9,10 @@
 		<version>2.3.0-SNAPSHOT</version>
 	</parent>
 
+	<name>Ardulink Link NodeMCU</name>
+	<description>Link to NodeMCU boards</description>
+	<url>http://www.ardulink.org</url>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>

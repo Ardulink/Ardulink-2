@@ -10,6 +10,10 @@
 		<version>2.3.0-SNAPSHOT</version>
 	</parent>
 
+	<name>Ardulink Console</name>
+	<description>Command line console for Ardulink</description>
+	<url>http://www.ardulink.org</url>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>

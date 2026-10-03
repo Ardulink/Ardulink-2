@@ -9,6 +9,10 @@
 		<version>2.3.0-SNAPSHOT</version>
 	</parent>
 
+	<name>Ardulink Core Beans</name>
+	<description>Data beans exchanged between Ardulink links and connected boards</description>
+	<url>http://www.ardulink.org</url>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>

@@ -9,6 +9,10 @@
 		<version>2.3.0-SNAPSHOT</version>
 	</parent>
 
+	<name>Ardulink Link Bluetooth</name>
+	<description>Link to boards reachable over Bluetooth</description>
+	<url>http://www.ardulink.org</url>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ardulink</groupId>

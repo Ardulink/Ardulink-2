@@ -9,6 +9,10 @@
 		<version>2.3.0-SNAPSHOT</version>
 	</parent>
 
+	<name>Ardulink Link Virtual</name>
+	<description>Link without a physical connection to a board</description>
+	<url>http://www.ardulink.org</url>
+
 	<properties>
 		<maven.deploy.skip>true</maven.deploy.skip>
 	</properties>

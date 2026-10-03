@@ -9,6 +9,10 @@
 		<version>2.3.0-SNAPSHOT</version>
 	</parent>
 
+	<name>Ardulink Core Util</name>
+	<description>Shared utilities used by the other Ardulink modules</description>
+	<url>http://www.ardulink.org</url>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
