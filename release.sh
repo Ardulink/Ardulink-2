@@ -70,8 +70,21 @@ command -v curl >/dev/null || die "curl not found on PATH"
 SETTINGS="${SETTINGS:-${HOME}/.m2/settings.xml}"
 [ -f "$SETTINGS" ] ||
 	die "no ${SETTINGS} - copy settings-release.xml.example and add your Central token (see README.release.md)"
-grep -q '<id>central</id>' "$SETTINGS" ||
-	die "${SETTINGS} has no <server> with <id>central</id> - copy settings-release.xml.example (see README.release.md)"
+
+# Ask Maven what it resolves rather than grepping the file: an <id>central</id>
+# inside a comment, a <mirror> or a <profile> matches the text but is not the
+# <server> the publishing plugin looks up, and it fails with 'server is null'
+# halfway through the release.
+EFFECTIVE_SETTINGS=$(mktemp)
+trap 'rm -f "$EFFECTIVE_SETTINGS"' EXIT
+mvn -s "$SETTINGS" -q -N help:effective-settings -Doutput="$EFFECTIVE_SETTINGS" >/dev/null 2>&1 || true
+[ -s "$EFFECTIVE_SETTINGS" ] ||
+	die "Maven cannot read ${SETTINGS} - is it valid XML?"
+# only inside <servers>: an <id>central</id> under <mirrors> or <profiles> is
+# not the <server> the publishing plugin resolves
+awk '/<servers>/{f=1} f{print} /<\/servers>/{exit}' "$EFFECTIVE_SETTINGS" |
+	grep -q '<id>central</id>' ||
+	die "${SETTINGS} has no <server> with <id>central</id> that Maven can see - check that it sits in <servers> and not in a comment, a <mirror> or a <profile> (see README.release.md)"
 
 step "Preflight"
 
