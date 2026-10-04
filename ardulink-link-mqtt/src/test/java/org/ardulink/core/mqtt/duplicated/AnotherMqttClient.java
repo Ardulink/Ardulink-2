@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.mqtt.duplicated;
 
+import static java.lang.String.format;
 import static java.time.Duration.ofMillis;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
@@ -93,11 +94,11 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 	}
 
 	private static String serverUrl(String host, int port) {
-		return "tcp://" + host + ":" + port;
+		return format("tcp://%s:%d", host, port);
 	}
 
 	private static String clientId() {
-		return "amc-" + Thread.currentThread().getId() + "-" + System.currentTimeMillis();
+		return format("amc-%d-%d", Thread.currentThread().getId(), System.currentTimeMillis());
 	}
 
 	@Override
