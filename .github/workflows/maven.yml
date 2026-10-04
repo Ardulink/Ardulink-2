@@ -56,8 +56,15 @@ jobs:
     # https://github.com/actions/upload-artifact/issues/546
     - name: Copy zip to /tmp
       run: |
-        for file in deploy-dist/target/ardulink-V*.zip; do 
-          cp "$file" "/tmp/$(basename "$file" | sed 's/-SNAPSHOT-[0-9T:.\-]\+Z\.zip$/-SNAPSHOT.zip/')"
+        for file in deploy-dist/target/ardulink-V*.zip; do
+          base=$(basename "$file")
+          if [[ "$base" == *SNAPSHOT* ]]; then
+            sanitized=$(echo "$base" | sed -E 's/-SNAPSHOT.*\.zip$/-SNAPSHOT.zip/')
+          else
+            sanitized=$(echo "$base" | sed -E 's/-[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{6}Z\.zip$/.zip/; s/-[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\.zip$/.zip/')
+            sanitized=$(echo "$sanitized" | sed 's/\.zip\.zip$/.zip/')
+          fi
+          cp "$file" "/tmp/$sanitized"
         done
     - name: Distribute zip created
       if: ${{ env.FIRST_JOB == 'true' }}
