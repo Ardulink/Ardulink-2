@@ -36,18 +36,18 @@ public final class Predicates {
 	}
 
 	public static <I, O> Predicate<I> attribute(Function<I, O> function, Predicate<O> predicate) {
-		return new Predicate<I>() {
+		return new Predicate<>() {
 
-			@Override
-			public boolean test(I in) {
-				return predicate.test(function.apply(in));
-			}
+            @Override
+            public boolean test(I in) {
+                return predicate.test(function.apply(in));
+            }
 
-			public String toString() {
-				return format("AttributePredicate: function: %s, predicate: %s", function, predicate);
-			}
+            public String toString() {
+                return format("AttributePredicate: function: %s, predicate: %s", function, predicate);
+            }
 
-		};
+        };
 	}
 
 }

@@ -82,13 +82,13 @@ public abstract class AbstractListenerLink implements Link {
 	}
 
 	@Override
-	public Link addRplyListener(RplyListener listener) throws IOException {
+	public Link addRplyListener(RplyListener listener) {
 		this.rplyListeners.add(listener);
 		return this;
 	}
 
 	@Override
-	public Link removeRplyListener(RplyListener listener) throws IOException {
+	public Link removeRplyListener(RplyListener listener) {
 		this.rplyListeners.remove(listener);
 		return this;
 	}
@@ -98,13 +98,13 @@ public abstract class AbstractListenerLink implements Link {
 	}
 
 	@Override
-	public Link addCustomListener(CustomListener listener) throws IOException {
+	public Link addCustomListener(CustomListener listener) {
 		this.customListeners.add(listener);
 		return this;
 	}
 
 	@Override
-	public Link removeCustomListener(CustomListener listener) throws IOException {
+	public Link removeCustomListener(CustomListener listener) {
 		this.customListeners.remove(listener);
 		return this;
 	}

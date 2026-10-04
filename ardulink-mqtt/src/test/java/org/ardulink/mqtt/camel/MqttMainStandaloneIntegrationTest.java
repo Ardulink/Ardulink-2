@@ -64,18 +64,18 @@ class MqttMainStandaloneIntegrationTest {
 	}
 
 	@Test
-	void clientCanConnectToNewlyStartedBroker() throws Exception {
+	void clientCanConnectToNewlyStartedBroker() {
 		assertDoesNotThrow(this::runMainAndConnectToBroker);
 	}
 
 	@Test
-	void clientCanConnectUsingCredentialsToNewlyStartedBroker() throws Exception {
+	void clientCanConnectUsingCredentialsToNewlyStartedBroker() {
 		givenBrokerAndClientCredentials(someUser, somePassword);
 		assertDoesNotThrow(this::runMainAndConnectToBroker);
 	}
 
 	@Test
-	void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker() throws Exception {
+	void clientFailsToConnectUsingWrongCredentialsToNewlyStartedBroker() {
 		givenBrokerAndClientCredentials(someUser, somePassword);
 		givenClientPassword("not" + somePassword + "not");
 
@@ -85,7 +85,7 @@ class MqttMainStandaloneIntegrationTest {
 
 	@Test
 	@Disabled("test fails with Caused by: javax.net.ssl.SSLHandshakeException: Received fatal alert: handshake_failure")
-	void clientCanConnectUsingCredentialsToNewlyStartedSslBroker() throws Exception {
+	void clientCanConnectUsingCredentialsToNewlyStartedSslBroker() {
 		givenSslEnabled(true);
 		givenBrokerAndClientCredentials(someUser, somePassword);
 		assertDoesNotThrow(this::runMainAndConnectToBroker);

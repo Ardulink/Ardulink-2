@@ -111,7 +111,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		add(refreshButton(), constraints(0, 2).build());
 		LinkManager.getInstance().listURIs().stream() //
 				.map(URI::toASCIIString) //
-				.forEach(u -> uris.addItem(u));
+				.forEach(uris::addItem);
 	}
 
 	private Component refreshButton() {

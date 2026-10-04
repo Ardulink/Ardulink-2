@@ -98,19 +98,17 @@ class ArdulinkProtocol2Test {
 		Map<String, Object> params = Map.of("key1", "value1", "key2", "value2");
 		givenMessage("alp://rply/ok?id=" + id + "&" + Joiner.on("&").withKeyValueSeparator("=").join(params));
 		whenMessageIsProcessed();
-		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class, m -> {
-			assertSoftly(s -> {
-				s.assertThat(m.isOk()).isTrue();
-				s.assertThat(m.getId()).isEqualTo(id);
-				// expected in same order defined
-				s.assertThat(m.getParameters()).containsExactlyInAnyOrderEntriesOf(params);
-			});
-		});
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageReply.class, m -> assertSoftly(s -> {
+            s.assertThat(m.isOk()).isTrue();
+            s.assertThat(m.getId()).isEqualTo(id);
+            // expected in same order defined
+            s.assertThat(m.getParameters()).containsExactlyInAnyOrderEntriesOf(params);
+        }));
 	}
 
 	@ParameterizedTest
 	@MethodSource("alpAred12")
-	void bufferOverflow(String message) throws IOException {
+	void bufferOverflow(String message) {
 		givenMessage(message);
 		assertThatRuntimeException() //
 				.isThrownBy(this::whenMessageIsProcessed) //
@@ -147,12 +145,10 @@ class ArdulinkProtocol2Test {
 	}
 
 	private void thenMessageIs(Pin pin, Object value) {
-		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessagePinStateChanged.class, m -> {
-			assertSoftly(s -> {
-				s.assertThat(m.getPin()).isEqualTo(pin);
-				s.assertThat(m.getValue()).isEqualTo(value);
-			});
-		});
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessagePinStateChanged.class, m -> assertSoftly(s -> {
+            s.assertThat(m.getPin()).isEqualTo(pin);
+            s.assertThat(m.getValue()).isEqualTo(value);
+        }));
 	}
 
 	private void whenMessageIsProcessed() throws IOException {

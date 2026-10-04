@@ -116,7 +116,7 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 		return new MqttCallbackExtended() {
 
 			@Override
-			public void messageArrived(String topic, MqttMessage message) throws Exception {
+			public void messageArrived(String topic, MqttMessage message) {
 				// noop
 			}
 

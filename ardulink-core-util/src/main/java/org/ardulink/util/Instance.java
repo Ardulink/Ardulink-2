@@ -36,7 +36,7 @@ public final class Instance<T> implements Function<Object, T> {
 	}
 
 	public static <T> Instance<T> castTo(Class<T> target) {
-		return new Instance<T>(target);
+		return new Instance<>(target);
 	}
 
 	@Override

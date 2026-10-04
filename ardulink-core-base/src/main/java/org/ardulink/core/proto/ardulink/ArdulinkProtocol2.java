@@ -254,7 +254,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			}
 
 			private Pin pin(String string) {
-				Integer pinNumber = tryParseAs(Integer.class, string)
+				int pinNumber = tryParseAs(Integer.class, string)
 						.orElseThrow(() -> new IllegalStateException("Cannot parse " + string + " as pin number"));
 				return isAnalog() ? analogPin(pinNumber) : digitalPin(pinNumber);
 			}

@@ -106,7 +106,7 @@ public final class BluetoothDiscoveryUtil {
 			private ServiceRecord findService(ServiceRecord[] serviceRecords) {
 				return serviceRecords.length == 1 //
 						? serviceRecords[0] //
-						: stream(serviceRecords).filter(r -> isDevB(r)).findFirst().orElse(null);
+						: stream(serviceRecords).filter(this::isDevB).findFirst().orElse(null);
 			}
 
 			private boolean isDevB(ServiceRecord serviceRecords) {

@@ -22,7 +22,6 @@ import static org.ardulink.mqtt.MqttBroker.builder;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Strings.nullOrEmpty;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.IntStream;
@@ -98,7 +97,7 @@ public class MqttMain {
 		return IntStream.of(pins).mapToObj(pin -> String.format(format, pin));
 	}
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		tryParse(args).map(MqttMain::new).ifPresent(m -> {
 			try {
 				m.connectToMqttBroker();
@@ -160,7 +159,7 @@ public class MqttMain {
 				.allMatch(ServiceStatus::isStarted);
 	}
 
-	public void close() throws IOException {
+	public void close() {
 		Optional.ofNullable(this.context).ifPresent(CamelContext::stop);
 		Optional.ofNullable(this.standaloneServer).ifPresent(MqttBroker::stop);
 	}

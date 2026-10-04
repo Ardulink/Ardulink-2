@@ -48,8 +48,6 @@ import com.pi4j.io.gpio.GpioPin;
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.io.gpio.GpioPinPwmOutput;
 import com.pi4j.io.gpio.PinMode;
-import com.pi4j.io.gpio.event.GpioPinAnalogValueChangeEvent;
-import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListener;
 import com.pi4j.io.gpio.event.GpioPinListenerAnalog;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
@@ -80,7 +78,7 @@ public class PiLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public long startListening(Pin pin) throws IOException {
+	public long startListening(Pin pin) {
 		if (pin.is(ANALOG)) {
 			addListener(pin, analogAdapter());
 		} else if (pin.is(DIGITAL)) {
@@ -99,7 +97,7 @@ public class PiLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public long stopListening(Pin pin) throws IOException {
+	public long stopListening(Pin pin) {
 		GpioPin gpioPin = getOrCreate(pin.pinNum(), pi4jInputMode(pin));
 		List<GpioPinListener> list = listeners.asMap().get(gpioPin);
 		if (list != null) {
@@ -112,7 +110,7 @@ public class PiLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public long switchAnalogPin(AnalogPin analogPin, int value) throws IOException {
+	public long switchAnalogPin(AnalogPin analogPin, int value) {
 		GpioPinPwmOutput pin = (GpioPinPwmOutput) getOrCreate(analogPin.pinNum(), DIGITAL_OUTPUT);
 		pin.setMode(PWM_OUTPUT);
 		pin.setPwm(value);
@@ -120,7 +118,7 @@ public class PiLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public long switchDigitalPin(DigitalPin digitalPin, boolean value) throws IOException {
+	public long switchDigitalPin(DigitalPin digitalPin, boolean value) {
 		GpioPinDigitalOutput pin = (GpioPinDigitalOutput) getOrCreate(digitalPin.pinNum(), DIGITAL_OUTPUT);
 		if (value) {
 			pin.high();
@@ -131,23 +129,22 @@ public class PiLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers, int keymodifiersex)
-			throws IOException {
+	public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers, int keymodifiersex) {
 		throw notSupported();
 	}
 
 	@Override
-	public long sendTone(Tone tone) throws IOException {
+	public long sendTone(Tone tone) {
 		throw notSupported();
 	}
 
 	@Override
-	public long sendNoTone(AnalogPin analogPin) throws IOException {
+	public long sendNoTone(AnalogPin analogPin) {
 		throw notSupported();
 	}
 
 	@Override
-	public long sendCustomMessage(String... messages) throws IOException {
+	public long sendCustomMessage(String... messages) {
 		throw notSupported();
 	}
 
@@ -171,27 +168,21 @@ public class PiLink extends AbstractListenerLink {
 	}
 
 	private GpioPinListenerDigital digitalAdapter() {
-		return new GpioPinListenerDigital() {
-			@Override
-			public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
-				if (event.getEventType() == DIGITAL_STATE_CHANGE) {
-					fireStateChanged(digitalPinValueChanged(digitalPin(event.getPin().getPin().getAddress()),
-							event.getState().isHigh()));
-				}
-			}
-		};
+		return event -> {
+            if (event.getEventType() == DIGITAL_STATE_CHANGE) {
+                fireStateChanged(digitalPinValueChanged(digitalPin(event.getPin().getPin().getAddress()),
+                        event.getState().isHigh()));
+            }
+        };
 	}
 
 	private GpioPinListenerAnalog analogAdapter() {
-		return new GpioPinListenerAnalog() {
-			@Override
-			public void handleGpioPinAnalogValueChangeEvent(GpioPinAnalogValueChangeEvent event) {
-				if (event.getEventType() == ANALOG_VALUE_CHANGE) {
-					fireStateChanged(analogPinValueChanged(analogPin(event.getPin().getPin().getAddress()),
-							(int) event.getValue()));
-				}
-			}
-		};
+		return event -> {
+            if (event.getEventType() == ANALOG_VALUE_CHANGE) {
+                fireStateChanged(analogPinValueChanged(analogPin(event.getPin().getPin().getAddress()),
+                        (int) event.getValue()));
+            }
+        };
 	}
 
 	private static PinMode pi4jInputMode(Pin pin) {

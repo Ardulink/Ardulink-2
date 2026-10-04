@@ -148,7 +148,7 @@ public class AnotherMqttClient implements Closeable {
 
 	}
 
-	public AnotherMqttClient connect() throws IOException {
+	public AnotherMqttClient connect() {
 		try {
 			context.start();
 		} catch (Exception e) {
@@ -178,7 +178,7 @@ public class AnotherMqttClient implements Closeable {
 		this.messages.clear();
 	}
 
-	public void switchPin(Pin pin, Object value) throws IOException {
+	public void switchPin(Pin pin, Object value) {
 		sendMessage(new Message(append(this.topic + typeMap.get(pin.getType()) + pin.pinNum()), String.valueOf(value)));
 	}
 
@@ -194,17 +194,17 @@ public class AnotherMqttClient implements Closeable {
 		startStopListening(pin, false);
 	}
 
-	private void startStopListening(Pin pin, boolean state) throws IOException {
+	private void startStopListening(Pin pin, boolean state) {
 		sendMessage(new Message(append(this.controlTopic + typeMap.get(pin.getType()) + pin.pinNum()),
 				String.valueOf(state)));
 	}
 
-	private void sendMessage(Message message) throws IOException {
+	private void sendMessage(Message message) {
 		producerTemplate.sendBodyAndHeader("direct:start", message.getMessage(), PUBLISH_HEADER, message.getTopic());
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		try {
 			this.context.stop();
 		} catch (Exception e) {

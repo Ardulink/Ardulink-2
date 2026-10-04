@@ -40,7 +40,7 @@ class NetworkProxyServerTest {
 	private final Connection proxySideConnection = new Connection() {
 
 		@Override
-		public void write(byte[] bytes) throws IOException {
+		public void write(byte[] bytes) {
 			proxySideReceived.append(new String(bytes));
 		}
 
@@ -55,7 +55,7 @@ class NetworkProxyServerTest {
 		}
 
 		@Override
-		public void close() throws IOException {
+		public void close() {
 			// noop
 		}
 
@@ -75,7 +75,7 @@ class NetworkProxyServerTest {
 		StringBuilder expected = new StringBuilder();
 		for (int i = 0; i < 3; i++) {
 			this.clientSideLink.switchAnalogPin(analogPin(1), 2);
-			expected.append(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(1).withValue(2) + "\n");
+			expected.append(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(1).withValue(2)).append("\n");
 		}
 		assertReceived(expected);
 	}
@@ -85,7 +85,7 @@ class NetworkProxyServerTest {
 	}
 
 	private void assertReceived(String expectedMsg) {
-		await().forever().pollInterval(ofMillis(50)).until(() -> proxySideReceived.toString(), expectedMsg::equals);
+		await().forever().pollInterval(ofMillis(50)).until(proxySideReceived::toString, expectedMsg::equals);
 	}
 
 	private ConnectionBasedLink clientLinkToServer(String hostname, int port) throws IOException {

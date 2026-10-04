@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_FAILED_AUTHENTICATION;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import java.io.IOException;
 import java.net.URI;
 
 import org.ardulink.core.Link;
@@ -66,7 +65,7 @@ class MqttWithAuthenticationIntegrationTest {
 	}
 
 	@Test
-	void canConnectUsingUserAndPassword() throws IOException {
+	void canConnectUsingUserAndPassword() {
 		assertDoesNotThrow(createLink(create(mqttBase() + "&user=" + USER + "&password=" + PASSWORD))::close);
 	}
 

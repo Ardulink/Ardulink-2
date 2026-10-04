@@ -111,7 +111,7 @@ public class PWMController extends JPanel implements Linkable {
 		// pinComboBox.setModel(new DefaultComboBoxModel(new Integer[] {3, 5, 6, 9, 10,
 		// 11 }));
 		IntMinMaxModel pinComboBoxModel = new IntMinMaxModel(0, 40);
-		pinComboBox = new JComboBox<Integer>(pinComboBoxModel);
+		pinComboBox = new JComboBox<>(pinComboBoxModel);
 		pinComboBox.setName("pinComboBox");
 		pinComboBox.setSelectedItem(Integer.valueOf(11));
 		pinComboBox.setBounds(65, 36, 55, 22);

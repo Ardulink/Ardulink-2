@@ -80,7 +80,7 @@ public class StateStore {
 
 	@Retention(RUNTIME)
 	@Target(FIELD)
-	public static @interface Restorable {
+	public @interface Restorable {
 
 	}
 
@@ -107,7 +107,7 @@ public class StateStore {
 
 		public void save(Component component, Map<Component, SoftReference<Map<String, Object>>> states) {
 			SoftReference<Map<String, Object>> ref = states.computeIfAbsent(component,
-					__ -> new SoftReference<Map<String, Object>>(new HashMap<String, Object>()));
+					__ -> new SoftReference<>(new HashMap<>()));
 			Map<String, Object> map = ref.get();
 			if (map != null) {
 				map.put(valueName, saver.apply(componentType.cast(component)));
@@ -163,7 +163,7 @@ public class StateStore {
 
 	}
 
-	private static final List<Storer<? extends Component, ? extends Object>> storers = Arrays.asList( //
+	private static final List<Storer<? extends Component, ?>> storers = Arrays.asList( //
 			storer(JLabel.class, TEXT), //
 			storer(JLabel.class, ICON), //
 			storer(JTextField.class, TEXT), //
@@ -180,7 +180,7 @@ public class StateStore {
 	private final Component component;
 	private final Map<Component, SoftReference<Map<String, Object>>> states = new IdentityHashMap<>();
 
-	private static Stream<Storer<? extends Component, ? extends Object>> storers(Component component) {
+	private static Stream<Storer<? extends Component, ?>> storers(Component component) {
 		return storers.stream().filter(s -> s.canHandle(component));
 	}
 

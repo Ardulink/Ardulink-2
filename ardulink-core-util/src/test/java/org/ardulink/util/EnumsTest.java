@@ -32,8 +32,8 @@ import org.junit.jupiter.api.Test;
 class EnumsTest {
 
 	enum TestEnum {
-		A, B, C;
-	}
+		A, B, C
+    }
 
 	String cName = TestEnum.C.name();
 	String swappedCName = swapUpperLower(cName);

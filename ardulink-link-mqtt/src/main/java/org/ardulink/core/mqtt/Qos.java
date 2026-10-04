@@ -9,7 +9,7 @@ public enum Qos {
 	public static final Qos DEFAULT = AT_MOST_ONCE;
 	private final int intValue;
 
-	private Qos(int intValue) {
+	Qos(int intValue) {
 		this.intValue = intValue;
 	}
 

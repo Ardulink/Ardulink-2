@@ -159,9 +159,7 @@ class ArdulinkRestTest {
 		AnalogPin pin = analogPin(7);
 		int lastValue = 1023;
 		try (Link link = Links.getLink(mockUri); RestMain main = runRestComponent(mockUri)) {
-			range(0, 200).forEach(__ -> rangeClosed(0, lastValue).forEach(v -> {
-				fireEvent(link, analogPinValueChanged(pin, v));
-			}));
+			range(0, 200).forEach(__ -> rangeClosed(0, lastValue).forEach(v -> fireEvent(link, analogPinValueChanged(pin, v))));
 			given().get("/pin/analog/{pin}", pin.pinNum()).then().statusCode(200).body(is(String.valueOf(lastValue)));
 		}
 	}
@@ -228,7 +226,7 @@ class ArdulinkRestTest {
 		}
 	}
 
-	private RestMain runRestComponent(String target) throws Exception {
+	private RestMain runRestComponent(String target) {
 		CommandLineArguments args = new CommandLineArguments();
 		args.connection = target;
 		args.port = RestAssured.port;

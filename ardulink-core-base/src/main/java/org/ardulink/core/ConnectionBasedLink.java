@@ -164,7 +164,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 		AtomicBoolean deviceIsReady = new AtomicBoolean(false);
 		ListenerAdapter listener = new ListenerAdapter() {
 			@Override
-			public void received(byte[] bytes) throws IOException {
+			public void received(byte[] bytes) {
 				if (mode == ANY_MESSAGE_RECEIVED || infoMsgReceived) {
 					deviceIsReady.set(true);
 				}

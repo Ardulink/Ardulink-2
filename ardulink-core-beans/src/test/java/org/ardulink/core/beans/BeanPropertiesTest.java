@@ -154,9 +154,9 @@ class BeanPropertiesTest {
 		public List<String> values;
 	}
 
-	public static enum MyEnum {
-		A, B, C;
-	}
+	public enum MyEnum {
+		A, B, C
+    }
 
 	@Retention(RUNTIME)
 	public @interface OurOwnTestAnnoWithEnumType {
@@ -269,7 +269,7 @@ class BeanPropertiesTest {
 	}
 
 	@Test
-	void canMergeDifferentTypes() throws Exception {
+	void canMergeDifferentTypes() {
 		BeanProperties bp = BeanProperties.builder(new BeanWithDifferentTypes())
 				.using(propertyAnnotated(OurOwnTestAnno.class)).build();
 		Attribute attribute = bp.getAttribute("weHaveToUseAnnotationsSinceThisWontWorkWithBeans");
@@ -314,7 +314,7 @@ class BeanPropertiesTest {
 	}
 
 	@Test
-	void canFindPropertyByAnnotatedPublicFieldBitNotUsingValueButSomeOtherAttribute() throws Exception {
+	void canFindPropertyByAnnotatedPublicFieldBitNotUsingValueButSomeOtherAttribute() {
 		BeanWithAnnoOnPublicFieldButUsingNotValueButSomeOtherAttribute bean = new BeanWithAnnoOnPublicFieldButUsingNotValueButSomeOtherAttribute();
 		BeanProperties bp = BeanProperties.builder(bean)
 				.using(beanAttributes(), propertyAnnotated(OurOwnTestAnno.class, "someOtherAttribute")).build();

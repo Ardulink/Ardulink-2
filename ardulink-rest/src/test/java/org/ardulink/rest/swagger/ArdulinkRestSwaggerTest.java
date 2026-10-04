@@ -76,7 +76,7 @@ class ArdulinkRestSwaggerTest {
 	}
 
 	@Test
-	void canAccesApiDoc() throws Exception {
+	void canAccesApiDoc() {
 		try (RestMain main = runRestComponent()) {
 			given().port(RestAssured.port).get("/api-docs").then().assertThat().statusCode(200).contentType(JSON) //
 					.body("info.title", equalTo("User API")) //
@@ -87,7 +87,7 @@ class ArdulinkRestSwaggerTest {
 	}
 
 	@Test
-	void canAccesApiUi_GotoApiDocs(Page page) throws Exception {
+	void canAccesApiUi_GotoApiDocs(Page page) {
 		assertThatNoException().isThrownBy(() -> {
 			try (RestMain main = runRestComponent()) {
 				page.navigate(format("http://localhost:%d/api-browser", RestAssured.port));
@@ -128,7 +128,7 @@ class ArdulinkRestSwaggerTest {
 		}
 	}
 
-	private RestMain runRestComponent() throws Exception {
+	private RestMain runRestComponent() {
 		CommandLineArguments args = new CommandLineArguments();
 		args.connection = MOCK_URI;
 		args.port = RestAssured.port;

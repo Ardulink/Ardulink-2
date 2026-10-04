@@ -58,12 +58,12 @@ public class SerialMonitor extends JPanel implements Linkable {
 	private final transient Listener listener = new Listener() {
 
 		@Override
-		public void received(byte[] bytes) throws IOException {
+		public void received(byte[] bytes) {
 			receivedTextArea.append("\n" + new String(bytes, UTF_8));
 		}
 
 		@Override
-		public void sent(byte[] bytes) throws IOException {
+		public void sent(byte[] bytes) {
 			sentTextArea.append(new String(bytes, UTF_8));
 		}
 

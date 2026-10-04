@@ -340,19 +340,17 @@ class LinksTest {
 	@Test
 	void handlesChoiceValuesCorrectly() throws Throwable {
 		String randomName = "factory-" + randomUUID();
-		LinkFactoryForTest linkFactory = factory(randomName, () -> new MyLinkConfig());
+		LinkFactoryForTest linkFactory = factory(randomName, MyLinkConfig::new);
 		withRegistered(linkFactory).execute(() -> {
 			try (Link link = link(randomName)) {
 				assertThat(linkFactory.configsAndLinks.asMap().keySet()).singleElement()
-						.isInstanceOfSatisfying(MyLinkConfig.class, c -> {
-							assertSoftly(s -> {
-								s.assertThat(c.keepsNull).isNull();
-								s.assertThat(c.turnsFirstChoiceValue).isEqualTo("Choice1");
-								s.assertThat(c.getsNullAndSoKeepsNull).isNull();
-								s.assertThat(c.keepsOldValue1).isEqualTo("keepsValue_noChoice");
-								s.assertThat(c.keepsOldValue2).isEqualTo("keepsValue_withChoice");
-							});
-						});
+						.isInstanceOfSatisfying(MyLinkConfig.class, c -> assertSoftly(s -> {
+                            s.assertThat(c.keepsNull).isNull();
+                            s.assertThat(c.turnsFirstChoiceValue).isEqualTo("Choice1");
+                            s.assertThat(c.getsNullAndSoKeepsNull).isNull();
+                            s.assertThat(c.keepsOldValue1).isEqualTo("keepsValue_noChoice");
+                            s.assertThat(c.keepsOldValue2).isEqualTo("keepsValue_withChoice");
+                        }));
 			}
 		});
 	}

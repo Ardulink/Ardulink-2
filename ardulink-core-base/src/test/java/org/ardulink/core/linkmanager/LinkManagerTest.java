@@ -61,7 +61,7 @@ class LinkManagerTest {
 	LinkManager sut = LinkManager.getInstance();
 
 	@Test
-	void onceQueriedChoiceValuesStayValid() throws Exception {
+	void onceQueriedChoiceValuesStayValid() {
 		Configurer configurer = sut.getConfigurer(create(format("%s://dummyLink", ARDULINK_SCHEME)));
 
 		choiceValuesOfDNowAre("x", "y");
@@ -94,7 +94,7 @@ class LinkManagerTest {
 	}
 
 	@Test
-	void nonExistingNameWitllThrowRTE() throws IOException {
+	void nonExistingNameWitllThrowRTE() {
 		assertThatRuntimeException().isThrownBy(
 				() -> sut.getConfigurer(create(format("%s://XXX-aNameThatIsNotRegistered-XXX", ARDULINK_SCHEME))))
 				.withMessageContainingAll("registered", "factory");
@@ -108,10 +108,8 @@ class LinkManagerTest {
 
 	@Test
 	void aliasNameNotListed() throws Throwable {
-		withRegistered(new AliasUsingLinkFactory()).execute(() -> {
-			assertThat(sut.listURIs()).contains(aliasUri())
-					.doesNotContain(create(format("%s://aliasLinkAlias", ARDULINK_SCHEME)));
-		});
+		withRegistered(new AliasUsingLinkFactory()).execute(() -> assertThat(sut.listURIs()).contains(aliasUri())
+                .doesNotContain(create(format("%s://aliasLinkAlias", ARDULINK_SCHEME))));
 	}
 
 	@Test

@@ -51,9 +51,9 @@ import org.ardulink.core.proto.ardulink.ArdulinkProtocol2.ALPByteStreamProcessor
  */
 public class ArdulinkProducer extends DefaultProducer {
 
-	static enum Handled {
-		HANDLED_SUCCESSFULLY, NOT_HANDLED;
-	}
+	enum Handled {
+		HANDLED_SUCCESSFULLY, NOT_HANDLED
+    }
 
 	private final Link link;
 

@@ -11,7 +11,6 @@ import static org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone.toDev
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePing.toDeviceMessageNoTone;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange.toDeviceMessagePinStateChange;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
-import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
 import static org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode.ANALOG_INPUT;
 import static org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode.DIGITAL_INPUT;
@@ -30,13 +29,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
@@ -52,9 +49,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageKeyPress;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
-import org.ardulink.core.proto.api.MessageIdHolder;
 import org.ardulink.core.proto.api.MessageIdHolders;
-import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin;
 import org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode;
@@ -174,7 +169,7 @@ class FirmataProtocolTest {
 		whenMessageIsProcessed();
 
 		AtomicInteger pin = new AtomicInteger((byte) pow(2, port + 1));
-		assertMessage(messages, Arrays.asList(true, false, true, false, false, true, false, true).stream()
+		assertMessage(messages, Stream.of(true, false, true, false, false, true, false, true)
 				.collect(toMap(__ -> digitalPin(pin.getAndIncrement()), identity())));
 	}
 
@@ -408,12 +403,10 @@ class FirmataProtocolTest {
 	}
 
 	private void thenMessageIs(Pin pin, Object value) {
-		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessagePinStateChanged.class, e -> {
-			assertSoftly(s -> {
-				s.assertThat(e.getPin()).isEqualTo(pin);
-				s.assertThat(e.getValue()).isEqualTo(value);
-			});
-		});
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessagePinStateChanged.class, e -> assertSoftly(s -> {
+            s.assertThat(e.getPin()).isEqualTo(pin);
+            s.assertThat(e.getValue()).isEqualTo(value);
+        }));
 	}
 
 	private void assertMessage(List<FromDeviceMessage> messages, Map<Pin, Object> expectedStates) {

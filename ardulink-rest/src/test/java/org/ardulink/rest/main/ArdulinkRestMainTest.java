@@ -31,7 +31,6 @@ import org.ardulink.core.Link;
 import org.ardulink.core.convenience.Links;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.kohsuke.args4j.CmdLineException;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -49,7 +48,7 @@ class ArdulinkRestMainTest {
 	}
 
 	@Test
-	void canParseArgs() throws IOException, CmdLineException {
+	void canParseArgs() {
 		CommandLineArguments args = RestMain
 				.tryParse("-connection", "ardulink://abc", "-bind", "someHost", "-port", "123").orElseThrow();
 		assertThat(args.connection).isEqualTo("ardulink://abc");
@@ -58,7 +57,7 @@ class ArdulinkRestMainTest {
 	}
 
 	@Test
-	void canStartMainWithArgs() throws IOException, CmdLineException {
+	void canStartMainWithArgs() throws IOException {
 		CommandLineArguments args = args();
 		try (Link link = Links.getLink(args.connection); RestMain restMain = new RestMain(args)) {
 			int pin = 5;

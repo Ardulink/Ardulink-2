@@ -193,7 +193,7 @@ public class MqttCamelRouteBuilder {
 	private Processor divideByValueOf(ValueBuilder valueBuilder) {
 		return new Processor() {
 			@Override
-			public void process(Exchange exchange) throws Exception {
+			public void process(Exchange exchange) {
 				Message in = exchange.getIn();
 				BigDecimal sum = new BigDecimal(
 						checkNotNull(in.getBody(Number.class), "Body of %s is null", in).toString());

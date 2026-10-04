@@ -75,7 +75,7 @@ class ArdulinkConsumerIntegrationTest {
 		CamelContext context = new DefaultCamelContext();
 		context.addRoutes(new RouteBuilder() {
 			@Override
-			public void configure() throws Exception {
+			public void configure() {
 				from(from).to(camelMockOut);
 			}
 		});

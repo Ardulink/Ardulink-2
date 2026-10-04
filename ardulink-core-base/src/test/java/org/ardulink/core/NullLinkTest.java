@@ -18,13 +18,13 @@ limitations under the License.
 package org.ardulink.core;
 
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.IntStream.range;
 import static org.ardulink.core.NullLink.NULL_LINK;
 import static org.ardulink.util.Primitives.findPrimitiveFor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -45,17 +45,13 @@ class NullLinkTest {
 	Link sut = NULL_LINK;
 
 	@TestFactory
-	Stream<DynamicTest> canBeCalledAndDoesNotReturnNull() throws Exception {
-		return methodsOfLink().map(m -> dynamicTest(testname(m), () -> {
-			assertThat(m.invoke(sut, params(m))).isNotNull();
-		}));
+	Stream<DynamicTest> canBeCalledAndDoesNotReturnNull() {
+		return methodsOfLink().map(m -> dynamicTest(testname(m), () -> assertThat(m.invoke(sut, params(m))).isNotNull()));
 	}
 
 	@TestFactory
-	Stream<DynamicTest> doesReturnItself() throws Exception {
-		return methodsOfLink().filter(returnTypeIs(sut.getClass())).map(m -> dynamicTest(testname(m), () -> {
-			assertThat(m.invoke(sut, params(m))).isSameAs(sut);
-		}));
+	Stream<DynamicTest> doesReturnItself() {
+		return methodsOfLink().filter(returnTypeIs(sut.getClass())).map(m -> dynamicTest(testname(m), () -> assertThat(m.invoke(sut, params(m))).isSameAs(sut)));
 	}
 
 	Predicate<Method> returnTypeIs(Class<?> clazz) {
@@ -79,9 +75,8 @@ class NullLinkTest {
 	}
 
 	static Object[] params(Method method) {
-		return range(0, method.getParameterCount()) //
-				.mapToObj(i -> method.getParameterTypes()[i]) //
-				.map(p -> defaultOrNull(p)) //
+        return Arrays.stream(method.getParameterTypes(), 0, method.getParameterCount()) //
+				.map(NullLinkTest::defaultOrNull) //
 				.toArray(Object[]::new);
 	}
 

@@ -128,12 +128,12 @@ public class RestRouteBuilder extends RouteBuilder {
 				.put(ANALOG_PIN).consumes(APPLICATION_TEXT).type(String.class).to(switchAnalog) //
 				.put(DIGITAL_PIN).consumes(APPLICATION_TEXT).type(String.class).to(switchDigital) //
 		;
-		from(patchAnalog).process(exchange -> patchAnalog(exchange)).to(target);
-		from(patchDigital).process(exchange -> patchDigital(exchange)).to(target);
-		from(readAnalog).process(exchange -> readAnalog(exchange)).process(exchange -> readQueue(exchange, messages));
-		from(readDigital).process(exchange -> readDigital(exchange)).process(exchange -> readQueue(exchange, messages));
-		from(switchAnalog).process(exchange -> switchAnalog(exchange)).to(target);
-		from(switchDigital).process(exchange -> switchDigital(exchange)).to(target);
+		from(patchAnalog).process(RestRouteBuilder::patchAnalog).to(target);
+		from(patchDigital).process(RestRouteBuilder::patchDigital).to(target);
+		from(readAnalog).process(RestRouteBuilder::readAnalog).process(exchange -> readQueue(exchange, messages));
+		from(readDigital).process(RestRouteBuilder::readDigital).process(exchange -> readQueue(exchange, messages));
+		from(switchAnalog).process(RestRouteBuilder::switchAnalog).to(target);
+		from(switchDigital).process(RestRouteBuilder::switchDigital).to(target);
 		writeArduinoMessagesTo(target, messages);
 	}
 
@@ -185,11 +185,11 @@ public class RestRouteBuilder extends RouteBuilder {
 		return RestRouteBuilder.class.getClassLoader().getResource(META_INF_RESOURCES_WEBJARS).toURI();
 	}
 
-	private void registerResourceHandler(String id, URI resource, String ignore) throws URISyntaxException {
+	private void registerResourceHandler(String id, URI resource, String ignore) {
 		getContext().getRegistry().bind(id, ResourceHandler.class, resourceHandler(resource, ignore));
 	}
 
-	private static ResourceHandler resourceHandler(URI resourceURI, String ignore) throws URISyntaxException {
+	private static ResourceHandler resourceHandler(URI resourceURI, String ignore) {
 		ResourceHandler rh = new ResourceHandler() {
 			@Override
 			public Resource getResource(String path) {

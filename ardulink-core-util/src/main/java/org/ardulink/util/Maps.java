@@ -43,7 +43,7 @@ public final class Maps {
 		super();
 	}
 
-	public static Properties toProperties(Map<? extends Object, ? extends Object> map) {
+	public static Properties toProperties(Map<?, ?> map) {
 		Properties properties = new Properties();
 		properties.putAll(map);
 		return properties;

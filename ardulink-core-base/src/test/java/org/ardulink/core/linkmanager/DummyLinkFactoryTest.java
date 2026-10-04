@@ -128,7 +128,7 @@ class DummyLinkFactoryTest {
 	}
 
 	@Test
-	void canDefineChoiceValues() throws Exception {
+	void canDefineChoiceValues() {
 		Configurer configurer = sut.getConfigurer(dummyLinkURI());
 		ConfigAttribute a = configurer.getAttribute("a");
 		assertThat(a.hasChoiceValues()).isEqualTo(TRUE);
@@ -258,21 +258,17 @@ class DummyLinkFactoryTest {
 	}
 
 	private void hasMinMax(ConfigAttribute attribute, long min, long max) {
-		assertThat(attribute.getValidationInfo()).isInstanceOfSatisfying(NumberValidationInfo.class, nvi -> {
-			assertSoftly(s -> {
-				s.assertThat(nvi.min()).isEqualTo(min);
-				s.assertThat(nvi.max()).isEqualTo(max);
-			});
-		});
+		assertThat(attribute.getValidationInfo()).isInstanceOfSatisfying(NumberValidationInfo.class, nvi -> assertSoftly(s -> {
+            s.assertThat(nvi.min()).isEqualTo(min);
+            s.assertThat(nvi.max()).isEqualTo(max);
+        }));
 	}
 
 	private void isNan(ConfigAttribute attribute) {
-		assertThat(attribute.getValidationInfo()).isInstanceOfSatisfying(NumberValidationInfo.class, nvi -> {
-			assertSoftly(s -> {
-				s.assertThat(nvi.min()).isNaN();
-				s.assertThat(nvi.max()).isNaN();
-			});
-		});
+		assertThat(attribute.getValidationInfo()).isInstanceOfSatisfying(NumberValidationInfo.class, nvi -> assertSoftly(s -> {
+            s.assertThat(nvi.min()).isNaN();
+            s.assertThat(nvi.max()).isNaN();
+        }));
 	}
 
 	private String getName(String name) {

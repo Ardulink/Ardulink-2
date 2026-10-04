@@ -54,7 +54,7 @@ public abstract class StreamReader implements Closeable {
 	}
 
 	public void runReaderThread() {
-		this.thread = new Thread(() -> readUntilClosed());
+		this.thread = new Thread(this::readUntilClosed);
 		this.thread.setDaemon(true);
 		this.thread.start();
 	}

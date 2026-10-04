@@ -55,7 +55,7 @@ class ColorsTest {
 	}
 
 	@Test
-	void testToString() throws Exception {
+	void testToString() {
 		assertThat(Colors.toString(BLACK)).isEqualTo("#000000");
 		assertThat(Colors.toString(RED)).isEqualTo("#FF0000");
 		assertThat(Colors.toString(GREEN)).isEqualTo("#00FF00");
@@ -63,7 +63,7 @@ class ColorsTest {
 	}
 
 	@Test
-	void testInvert() throws Exception {
+	void testInvert() {
 		assertThat(Colors.invert(BLACK)).isEqualTo(Color.WHITE);
 		assertThat(Colors.invert(RED)).isEqualTo(Color.decode("#00FFFF"));
 		assertThat(Colors.invert(GREEN)).isEqualTo(Color.decode("#FF00FF"));

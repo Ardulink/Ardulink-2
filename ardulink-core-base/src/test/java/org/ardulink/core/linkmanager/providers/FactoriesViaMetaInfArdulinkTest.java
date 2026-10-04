@@ -1,7 +1,6 @@
 package org.ardulink.core.linkmanager.providers;
 
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.IntStream.rangeClosed;
@@ -64,7 +63,7 @@ public class FactoriesViaMetaInfArdulinkTest {
 	}
 
 	@Test
-	void linkClassHasNoConstructorWithArgumentOfTypeLinkConfig() throws ClassNotFoundException {
+	void linkClassHasNoConstructorWithArgumentOfTypeLinkConfig() {
 		TestLinkConfig config = new TestLinkConfig();
 		String configClassName = config.getClass().getName();
 		String linkClassName = TestLinkWithoutLinkConfigConstructor.class.getName();
@@ -90,7 +89,7 @@ public class FactoriesViaMetaInfArdulinkTest {
 
 	@ParameterizedTest
 	@MethodSource("stringsRepresentingNull")
-	void ifTheConfigClassIsNullThereHasToBePublicZeroArgConstructor(String configClassName) throws Exception {
+	void ifTheConfigClassIsNullThereHasToBePublicZeroArgConstructor(String configClassName) {
 		String linkClassName = TestLinkWithConfigConstructor.class.getName();
 		assertThatRuntimeException().isThrownBy(() -> sut(makeRow(configClassName, linkClassName)))
 				.withMessage(linkClassName + " has no public zero arg constructor");
@@ -105,7 +104,7 @@ public class FactoriesViaMetaInfArdulinkTest {
 	}
 
 	static String row(List<String> row) {
-		return row.stream().collect(joining(":"));
+		return String.join(":", row);
 	}
 
 	LinkFactory<LinkConfig> sut(String line) {

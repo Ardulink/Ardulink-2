@@ -96,38 +96,38 @@ public abstract class AbstractMultiMap<K, V, T extends Collection<V>> implements
 
 	@Override
 	public Iterator<Entry<K, V>> iterator() {
-		return new Iterator<Entry<K, V>>() {
+		return new Iterator<>() {
 
-			private final Iterator<Entry<K, T>> it = entrySet().iterator();
-			private K key;
-			private Iterator<V> cur;
+            private final Iterator<Entry<K, T>> it = entrySet().iterator();
+            private K key;
+            private Iterator<V> cur;
 
-			@Override
-			public boolean hasNext() {
-				fetch();
-				return cur != null && cur.hasNext();
-			}
+            @Override
+            public boolean hasNext() {
+                fetch();
+                return cur != null && cur.hasNext();
+            }
 
-			private void fetch() {
-				while ((cur == null || !cur.hasNext()) && it.hasNext()) {
-					Entry<K, T> next = it.next();
-					key = next.getKey();
-					cur = next.getValue().iterator();
-				}
-			}
+            private void fetch() {
+                while ((cur == null || !cur.hasNext()) && it.hasNext()) {
+                    Entry<K, T> next = it.next();
+                    key = next.getKey();
+                    cur = next.getValue().iterator();
+                }
+            }
 
-			@Override
-			public Entry<K, V> next() {
-				fetch();
-				return new MapEntry<>(key, cur.next());
-			}
+            @Override
+            public Entry<K, V> next() {
+                fetch();
+                return new MapEntry<>(key, cur.next());
+            }
 
-			@Override
-			public void remove() {
-				fetch();
-				cur.remove();
-			}
-		};
+            @Override
+            public void remove() {
+                fetch();
+                cur.remove();
+            }
+        };
 	}
 
 }

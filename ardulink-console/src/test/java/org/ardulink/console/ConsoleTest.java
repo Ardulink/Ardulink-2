@@ -72,7 +72,7 @@ class ConsoleTest {
 		try {
 			Link link = mock(Link.class);
 			doAnswer(i -> {
-				eventListeners.add((EventListener) i.getArgument(0));
+				eventListeners.add(i.getArgument(0));
 				return link;
 			}).when(link).addListener(any(EventListener.class));
 			return link;
@@ -267,7 +267,7 @@ class ConsoleTest {
 	}
 
 	private void repaint(Console console) {
-		await().until(() -> console.isOpaque());
+		await().until(console::isOpaque);
 	}
 
 	@SuppressWarnings("serial")

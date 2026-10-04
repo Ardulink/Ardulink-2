@@ -195,10 +195,10 @@ public final class Links {
 	private static URI aliasReplacement(URI uri) {
 		List<URI> availableUris = sortedURIs().collect(toList());
 		String name = extractNameFromURI(uri);
-		return containsName(availableUris, name) //
+        //
+        return containsName(availableUris, name) //
 				? uri //
-				: findAlias(name) //
-						.map(a -> isAliasFor(availableUris, a).orElse(null)) //
+				: findAlias(name).flatMap(a -> isAliasFor(availableUris, a)) //
 						.map(r -> replaceName(uri, extractNameFromURI(r))) //
 						.orElse(uri);
 	}

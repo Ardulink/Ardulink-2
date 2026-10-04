@@ -73,7 +73,7 @@ import com.github.pfichtner.testcontainers.virtualavr.VirtualAvrContainer;
 @ExtendWith(VirtualAvrExtension.class)
 public @interface UseVirtualAvr {
 
-	public static final String TTY_USB0 = "ttyUSB0";
+	String TTY_USB0 = "ttyUSB0";
 
 	String deviceName() default TTY_USB0;
 
@@ -189,7 +189,7 @@ public @interface UseVirtualAvr {
 
 	}
 
-	static class VirtualAvrExtension
+	class VirtualAvrExtension
 			implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
 
 		private static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace

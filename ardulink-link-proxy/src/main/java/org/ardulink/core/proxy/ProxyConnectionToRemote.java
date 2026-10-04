@@ -52,7 +52,7 @@ public class ProxyConnectionToRemote implements Closeable {
 
 		private final String command;
 
-		private Command(String command) {
+		Command(String command) {
 			this.command = format("ardulink:networkproxyserver:%s", command);
 		}
 

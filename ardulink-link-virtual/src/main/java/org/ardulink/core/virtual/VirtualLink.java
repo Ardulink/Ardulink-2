@@ -88,7 +88,7 @@ public class VirtualLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public long startListening(Pin pin) throws IOException {
+	public long startListening(Pin pin) {
 		this.listeningPins.put(pin, getRandomValue(pin));
 		return MessageIdHolders.NO_ID.getId();
 	}
@@ -112,45 +112,44 @@ public class VirtualLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public long stopListening(Pin pin) throws IOException {
+	public long stopListening(Pin pin) {
 		this.listeningPins.remove(pin);
 		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public long switchAnalogPin(AnalogPin analogPin, int value) throws IOException {
+	public long switchAnalogPin(AnalogPin analogPin, int value) {
 		logger.info("{} set to {}", analogPin, value);
 		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public long switchDigitalPin(DigitalPin digitalPin, boolean value) throws IOException {
+	public long switchDigitalPin(DigitalPin digitalPin, boolean value) {
 		logger.info("{} set to {}", digitalPin, value);
 		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers, int keymodifiersex)
-			throws IOException {
+	public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers, int keymodifiersex) {
 		logger.info("key pressed ({} {} {} {} {})", keychar, keycode, keylocation, keymodifiers, keymodifiersex);
 		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public long sendTone(Tone tone) throws IOException {
+	public long sendTone(Tone tone) {
 		logger.info("tone {}", tone);
 		return MessageIdHolders.NO_ID.getId();
 	}
 
 	@Override
-	public long sendNoTone(AnalogPin analogPin) throws IOException {
+	public long sendNoTone(AnalogPin analogPin) {
 		logger.info("no tone on {}", analogPin);
 		return MessageIdHolders.NO_ID.getId();
 
 	}
 
 	@Override
-	public long sendCustomMessage(String... messages) throws IOException {
+	public long sendCustomMessage(String... messages) {
 		logger.info("custom message {}", Arrays.asList(messages));
 		return -1;
 	}

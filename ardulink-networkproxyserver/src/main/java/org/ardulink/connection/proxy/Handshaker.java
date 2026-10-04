@@ -75,36 +75,40 @@ public class Handshaker implements Closeable {
 	public Link doHandshake() throws Exception {
 		while (scanner.hasNext()) {
 			String input = read();
-			if (input.equals(STOP_SERVER_CMD)) {
-				Thread currentThread = Thread.currentThread();
-				currentThread.getThreadGroup().getParent().interrupt();
-				currentThread.interrupt();
-			} else if (GET_PORT_LIST_CMD.equals(input)) {
-				handleGetPortList();
-			} else if (CONNECT_CMD.equals(input)) {
-				try {
-					// Ardulink-1 only did support Proxy to connect to serial links. So the
-					// handshake contains serial specific attributes. We should deprecate
-					// the Proxy since MQTT supports the same (or even more) features.
-					// Otherwise: Proxy should not contain serial specific things but send
-					// the ardulink:// URI to connect to (e.g.
-					// ardulink://serial?baudrate=9600)
-					configurer.getAttribute("port").setValue(read());
-					configurer.getAttribute("baudrate").setValue(Integer.valueOf(read()));
-					Link link = newLink(configurer);
-					write(OK);
-					return link;
-				} catch (Exception e) {
-					logger.error("Error during connecting", e);
-					write(KO);
-				}
-			}
+            switch (input) {
+                case STOP_SERVER_CMD:
+                    Thread currentThread = Thread.currentThread();
+                    currentThread.getThreadGroup().getParent().interrupt();
+                    currentThread.interrupt();
+                    break;
+                case GET_PORT_LIST_CMD:
+                    handleGetPortList();
+                    break;
+                case CONNECT_CMD:
+                    try {
+                        // Ardulink-1 only did support Proxy to connect to serial links. So the
+                        // handshake contains serial specific attributes. We should deprecate
+                        // the Proxy since MQTT supports the same (or even more) features.
+                        // Otherwise: Proxy should not contain serial specific things but send
+                        // the ardulink:// URI to connect to (e.g.
+                        // ardulink://serial?baudrate=9600)
+                        configurer.getAttribute("port").setValue(read());
+                        configurer.getAttribute("baudrate").setValue(Integer.valueOf(read()));
+                        Link link = newLink(configurer);
+                        write(OK);
+                        return link;
+                    } catch (Exception e) {
+                        logger.error("Error during connecting", e);
+                        write(KO);
+                    }
+                    break;
+            }
 			printWriter.flush();
 		}
 		throw new IllegalStateException("No more data but no " + CONNECT_CMD + " received");
 	}
 
-	private void handleGetPortList() throws IOException {
+	private void handleGetPortList() {
 		Object[] portList = getPortList();
 		if (portList == null) {
 			portList = new Object[0];
@@ -119,7 +123,7 @@ public class Handshaker implements Closeable {
 		return scanner.next();
 	}
 
-	private void write(Object object) throws IOException {
+	private void write(Object object) {
 		String message = object instanceof String ? ((String) object) : String.valueOf(object);
 		printWriter.write(message);
 		printWriter.write(PROXY_CONNECTION_SEPARATOR);
@@ -135,7 +139,7 @@ public class Handshaker implements Closeable {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		scanner.close();
 		printWriter.close();
 	}

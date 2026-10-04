@@ -120,7 +120,7 @@ public class BeanProperties {
 		private Annotation[] computeAnnotations() {
 			Set<Annotation> annos = new LinkedHashSet<>();
 			Stream.of(reader, writer).filter(Objects::nonNull).forEach(p -> p.addAnnotations(annos));
-			return annos.toArray(new Annotation[annos.size()]);
+			return annos.toArray(new Annotation[0]);
 		}
 
 		@Override
@@ -174,10 +174,10 @@ public class BeanProperties {
 			Optional<AttributeWriter> writer) {
 		Optional<Class<?>> readerType = reader.map(TypedAttributeProvider::getType);
 		Optional<Class<?>> writerType = writer.map(TypedAttributeProvider::getType);
-		if (!readerType.isPresent()) {
+		if (readerType.isEmpty()) {
 			return writerType;
 		}
-		if (!writerType.isPresent() || readerType.orElseThrow().isAssignableFrom(writerType.orElseThrow())) {
+		if (writerType.isEmpty() || readerType.orElseThrow().isAssignableFrom(writerType.orElseThrow())) {
 			return readerType;
 		}
 		if (writerType.orElseThrow().isAssignableFrom(readerType.orElseThrow())) {
@@ -186,11 +186,11 @@ public class BeanProperties {
 		return Optional.empty();
 	}
 
-	private Optional<AttributeReader> findReader(String name) throws Exception {
+	private Optional<AttributeReader> findReader(String name) {
 		return firstWithName(name, stream(finders).flatMap(a -> stream(a.listReaders(bean))));
 	}
 
-	private Optional<AttributeWriter> findWriter(String name) throws Exception {
+	private Optional<AttributeWriter> findWriter(String name) {
 		return firstWithName(name, stream(finders).flatMap(a -> stream(a.listWriters(bean))));
 	}
 

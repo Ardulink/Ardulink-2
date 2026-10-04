@@ -58,19 +58,19 @@ public final class SwingPredicates {
 	}
 
 	public static <T> Predicate<Object> isA(Class<T> type, Predicate<? super T> predicate) {
-		return new Predicate<Object>() {
+		return new Predicate<>() {
 
-			@Override
-			public boolean test(Object component) {
-				return type.isInstance(component) && predicate.test(type.cast(component));
-			}
+            @Override
+            public boolean test(Object component) {
+                return type.isInstance(component) && predicate.test(type.cast(component));
+            }
 
-			@Override
-			public String toString() {
-				return format("is type: %s, predicate: %s", type, predicate);
-			}
+            @Override
+            public String toString() {
+                return format("is type: %s, predicate: %s", type, predicate);
+            }
 
-		};
+        };
 	}
 
 }

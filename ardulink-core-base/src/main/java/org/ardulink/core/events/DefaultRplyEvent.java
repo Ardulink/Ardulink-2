@@ -41,7 +41,7 @@ public class DefaultRplyEvent implements RplyEvent {
 	private final Map<String, Object> parameters;
 
 	public DefaultRplyEvent(boolean ok, long id,
-			Map<String, ? extends Object> parameters) {
+			Map<String, ?> parameters) {
 		this.ok = ok;
 		this.id = id;
 		this.parameters = unmodifiableMap(new HashMap<String, Object>(

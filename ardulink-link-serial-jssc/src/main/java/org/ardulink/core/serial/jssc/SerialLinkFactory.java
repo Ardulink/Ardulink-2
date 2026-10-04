@@ -52,7 +52,7 @@ public class SerialLinkFactory implements LinkFactory<SerialLinkConfig> {
 	}
 
 	@Override
-	public LinkDelegate newLink(SerialLinkConfig config) throws SerialPortException, IOException {
+	public LinkDelegate newLink(SerialLinkConfig config) throws IOException {
 		SerialPort serialPort = serialPort(config);
 		ConnectionBasedLink connectionBasedLink = new ConnectionBasedLink(
 				new StreamConnection(new SerialInputStream(serialPort), new SerialOutputStream(serialPort),

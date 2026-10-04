@@ -43,7 +43,6 @@ import static org.ardulink.util.Throwables.propagate;
 import static org.ardulink.util.anno.LapsedWith.JDK14;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationHandler;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -374,9 +373,7 @@ public abstract class LinkManager {
 			 */
 			private List<ConfigAttribute> resolveDeps(Attribute choiceFor) {
 				return Optional.ofNullable(choiceFor) //
-						.map(c -> c.getAnnotation(ChoiceFor.class)) //
-						.map(c -> stream(c.dependsOn())) //
-						.orElse(Stream.empty()) //
+                        .map(c -> c.getAnnotation(ChoiceFor.class)).stream().flatMap(c -> stream(c.dependsOn())) //
 						.map(n -> lazy(ConfigAttribute.class, () -> getAttribute(n))) //
 						.collect(toList());
 			}
@@ -386,7 +383,7 @@ public abstract class LinkManager {
 				// ourself within a Map#computeIfAbsent call
 				Supplier<X> memoized = memoize(delegate);
 				return clazz.cast(newProxyInstance(getClass().getClassLoader(), new Class[] { clazz },
-						(InvocationHandler) (__, m, a) -> m.invoke(memoized.get(), a)));
+                        (__, m, a) -> m.invoke(memoized.get(), a)));
 			}
 
 			@Override
@@ -440,7 +437,7 @@ public abstract class LinkManager {
 
 			@Override
 			public ConfigAttribute[] choiceDependsOn() {
-				return this.dependsOn.toArray(new ConfigAttribute[this.dependsOn.size()]);
+				return this.dependsOn.toArray(new ConfigAttribute[0]);
 			}
 
 			@Override
@@ -451,7 +448,7 @@ public abstract class LinkManager {
 						this.cachedChoiceValues = asList(loadChoiceValues());
 						changed = false;
 					}
-					return this.cachedChoiceValues.toArray(new Object[this.cachedChoiceValues.size()]);
+					return this.cachedChoiceValues.toArray(new Object[0]);
 				} catch (Exception e) {
 					throw propagate(e);
 				}
@@ -463,7 +460,7 @@ public abstract class LinkManager {
 						getName());
 				if (value instanceof Collection<?>) {
 					Collection<?> collection = (Collection<?>) value;
-					value = collection.toArray(new Object[collection.size()]);
+					value = collection.toArray(new Object[0]);
 				}
 				if (value instanceof Stream<?>) {
 					try (Stream<?> stream = (Stream<?>) value) {
@@ -501,7 +498,7 @@ public abstract class LinkManager {
 
 			private final Map<String, Object> values;
 
-			public CacheKey() throws Exception {
+			public CacheKey() {
 				this.factoryType = DefaultConfigurer.this.linkFactory.getClass();
 				this.values = getAttributes().stream() //
 						.map(this::toMapEntry) //
@@ -606,8 +603,8 @@ public abstract class LinkManager {
 
 		private Optional<LinkFactory> getLinkFactory(String name) {
 			List<LinkFactory> connectionFactories = getLinkFactories().collect(toList());
-			BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function1 = (t, u) -> getByName(t, u);
-			BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function2 = (t, u) -> getByAlias(t, u);
+			BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function1 = this::getByName;
+			BiFunction<String, List<LinkFactory>, Optional<LinkFactory>> function2 = this::getByAlias;
 			return Stream.of(function1, function2) //
 					.flatMap(f -> f.apply(name, connectionFactories).stream()) //
 					.findFirst();

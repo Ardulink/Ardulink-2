@@ -48,7 +48,7 @@ public class StreamConnection extends AbstractConnection implements ByteStreamPr
 		this.byteStreamProcessor = byteStreamProcessor;
 		this.streamReader = new StreamReader(inputStream) {
 			@Override
-			protected void received(byte[] bytes) throws Exception {
+			protected void received(byte[] bytes) {
 				fireReceived(bytes);
 			}
 		};

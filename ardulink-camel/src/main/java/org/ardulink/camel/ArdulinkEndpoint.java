@@ -48,21 +48,16 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements MultipleConsume
 	}
 
 	@Override
-	public Producer createProducer() throws Exception {
+	public Producer createProducer() {
 		return new ArdulinkProducer(this, this.link);
 	}
 
 	@Override
-	public Consumer createConsumer(Processor processor) throws Exception {
+	public Consumer createConsumer(Processor processor) {
 		return new ArdulinkConsumer(this, processor, link);
 	}
 
-	@Override
-	public boolean isSingleton() {
-		return true;
-	}
-
-	@Override
+    @Override
 	public boolean isMultipleConsumersSupported() {
 		return true;
 	}

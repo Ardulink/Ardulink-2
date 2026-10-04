@@ -53,7 +53,7 @@ public final class NullLink {
 		}
 
 		@Override
-		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		public Object invoke(Object proxy, Method method, Object[] args) {
 			Class<?> returnType = method.getReturnType();
 			return returnType.equals(proxyType) ? proxyInstance
 					: findPrimitiveFor(returnType).map(Primitives::defaultValue).orElse(null);

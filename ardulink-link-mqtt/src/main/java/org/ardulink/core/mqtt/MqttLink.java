@@ -109,14 +109,14 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	private void subscribe() throws MqttException {
-		this.mqttClient.subscribe(topic + "#", qos, (t, m) -> messageReceived(t, m));
+		this.mqttClient.subscribe(topic + "#", qos, this::messageReceived);
 	}
 
 	private MqttCallback callback() {
 		return new MqttCallbackExtended() {
 
 			@Override
-			public void messageArrived(String topic, MqttMessage message) throws Exception {
+			public void messageArrived(String topic, MqttMessage message) {
 				// noop
 			}
 
@@ -239,23 +239,22 @@ public class MqttLink extends AbstractListenerLink {
 	}
 
 	@Override
-	public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers, int keymodifiersex)
-			throws IOException {
+	public long sendKeyPressEvent(char keychar, int keycode, int keylocation, int keymodifiers, int keymodifiersex) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public long sendTone(Tone tone) throws IOException {
+	public long sendTone(Tone tone) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public long sendNoTone(AnalogPin analogPin) throws IOException {
+	public long sendNoTone(AnalogPin analogPin) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public long sendCustomMessage(String... messages) throws IOException {
+	public long sendCustomMessage(String... messages) {
 		throw new UnsupportedOperationException();
 	}
 

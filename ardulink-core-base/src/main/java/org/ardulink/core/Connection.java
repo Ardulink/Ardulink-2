@@ -36,12 +36,12 @@ public interface Connection extends Closeable {
 		Listener NULL = new Listener() {
 
 			@Override
-			public void received(byte[] bytes) throws IOException {
+			public void received(byte[] bytes) {
 				// do nothing
 			}
 
 			@Override
-			public void sent(byte[] bytes) throws IOException {
+			public void sent(byte[] bytes) {
 				// do nothing
 			}
 		};
@@ -72,7 +72,7 @@ public interface Connection extends Closeable {
 		}
 
 		@Override
-		public void sent(byte[] bytes) throws IOException {
+		public void sent(byte[] bytes) {
 			// do nothing
 		}
 	}

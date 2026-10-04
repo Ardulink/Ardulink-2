@@ -76,7 +76,6 @@ import org.ardulink.core.proto.api.bytestreamproccesors.AbstractByteStreamProces
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode;
 import org.ardulink.util.ByteArray;
-import org.ardulink.util.Bytes;
 import org.firmata4j.Consumer;
 import org.firmata4j.firmata.FirmataMessageFactory;
 import org.firmata4j.firmata.parser.WaitingForMessageState;
@@ -99,7 +98,7 @@ public class FirmataProtocol implements Protocol {
 
 		private int index;
 		private int value;
-		private final Set<Mode> supportedModes = new CopyOnWriteArraySet<Mode>();
+		private final Set<Mode> supportedModes = new CopyOnWriteArraySet<>();
 		private final Set<Mode> supportedModes_ = unmodifiableSet(supportedModes);
 		private Mode currentMode;
 
@@ -166,12 +165,7 @@ public class FirmataProtocol implements Protocol {
 		return NAME;
 	}
 
-	@Override
-	public boolean isActive() {
-		return true;
-	}
-
-	private static class FirmataByteStreamProcessor extends AbstractByteStreamProcessor {
+    private static class FirmataByteStreamProcessor extends AbstractByteStreamProcessor {
 
 		private static final byte TONE = (byte) 0x5F;
 		private static final byte TONE_ON = (byte) 0x00;
@@ -254,52 +248,52 @@ public class FirmataProtocol implements Protocol {
 		}
 
 		private Consumer<Event> firmwareConsumer() {
-			return new Consumer<Event>() {
-				@Override
-				public void accept(Event t) {
-					fireEvent(fromDeviceMessageInfo());
-					if (capabilitiesRequested.compareAndSet(false, true)) {
-						sendOutbound(new byte[] { START_SYSEX, CAPABILITY_QUERY, END_SYSEX });
-					}
-				}
-			};
+			return new Consumer<>() {
+                @Override
+                public void accept(Event t) {
+                    fireEvent(fromDeviceMessageInfo());
+                    if (capabilitiesRequested.compareAndSet(false, true)) {
+                        sendOutbound(new byte[]{START_SYSEX, CAPABILITY_QUERY, END_SYSEX});
+                    }
+                }
+            };
 		}
 
 		private Consumer<Event> capabilitiesConsumer() {
-			return new Consumer<Event>() {
-				@Override
-				public void accept(Event event) {
-					byte index = (Byte) event.getBodyItem(PIN_ID);
-					FirmataPin pin = FirmataPin.fromIndex(index);
-					byte[] modes = (byte[]) event.getBodyItem(PIN_SUPPORTED_MODES);
-					range(0, modes.length).forEach(i -> pin.addSupportedMode(Mode.fromByteValue(modes[i])));
-					pins.put(pin.index(), pin);
-				}
-			};
+			return new Consumer<>() {
+                @Override
+                public void accept(Event event) {
+                    byte index = (Byte) event.getBodyItem(PIN_ID);
+                    FirmataPin pin = FirmataPin.fromIndex(index);
+                    byte[] modes = (byte[]) event.getBodyItem(PIN_SUPPORTED_MODES);
+                    range(0, modes.length).forEach(i -> pin.addSupportedMode(Mode.fromByteValue(modes[i])));
+                    pins.put(pin.index(), pin);
+                }
+            };
 		}
 
 		private Consumer<Event> stringMessageConsumer() {
-			return new Consumer<Event>() {
-				@Override
-				public void accept(Event event) {
-					String message = (String) event.getBodyItem("stringMessage");
-					if (message != null) {
-						handleStringMessage(message);
-					}
-				}
-			};
+			return new Consumer<>() {
+                @Override
+                public void accept(Event event) {
+                    String message = (String) event.getBodyItem("stringMessage");
+                    if (message != null) {
+                        handleStringMessage(message);
+                    }
+                }
+            };
 		}
 
 		private Consumer<Event> sysexCustomMessageConsumer() {
-			return new Consumer<Event>() {
-				@Override
-				public void accept(Event event) {
-					byte[] data = (byte[]) event.getBodyItem("sysexCustomMessage");
-					if (data != null) {
-						fireEvent(fromDeviceMessageCustom(bytesToString(data)));
-					}
-				}
-			};
+			return new Consumer<>() {
+                @Override
+                public void accept(Event event) {
+                    byte[] data = (byte[]) event.getBodyItem("sysexCustomMessage");
+                    if (data != null) {
+                        fireEvent(fromDeviceMessageCustom(bytesToString(data)));
+                    }
+                }
+            };
 		}
 
 		private void handleStringMessage(String message) {
@@ -320,7 +314,7 @@ public class FirmataProtocol implements Protocol {
 						? FromDeviceChangeListeningState.Mode.START
 						: FromDeviceChangeListeningState.Mode.STOP;
 				boolean isAnalog = "analog".equals(parts[1]);
-				Integer pinNum = tryParseAs(Integer.class, parts[2]).orElseThrow(
+				int pinNum = tryParseAs(Integer.class, parts[2]).orElseThrow(
 						() -> new IllegalStateException(format("Cannot parse %s as pin number", parts[2])));
 				Pin pin = isAnalog ? analogPin(pinNum) : digitalPin(pinNum);
 				fireEvent(fromDeviceChangeListeningState(pin, mode));
@@ -386,7 +380,7 @@ public class FirmataProtocol implements Protocol {
 			throw new UnsupportedOperationException("Unsupported pin type: " + pin.getType());
 		}
 
-		private final Map<Integer, FirmataPin> pins = new ConcurrentHashMap<Integer, FirmataPin>();
+		private final Map<Integer, FirmataPin> pins = new ConcurrentHashMap<>();
 
 		private FirmataPin getPin(int index) {
 			return pins.computeIfAbsent(index, FirmataPin::fromIndex);
@@ -458,7 +452,7 @@ public class FirmataProtocol implements Protocol {
 		public byte[] toDevice(ToDeviceMessageTone toneMessage) {
 			Tone tone = toneMessage.getTone();
 			int frequency = tone.getHertz();
-			Long duration = tone.getDuration(MILLISECONDS).orElse(0L);
+			long duration = tone.getDuration(MILLISECONDS).orElse(0L);
 			return sysex(TONE, TONE_ON, (byte) tone.getPin().pinNum(), lsb(frequency), msb(frequency), lsb(duration),
 					msb(duration));
 		}

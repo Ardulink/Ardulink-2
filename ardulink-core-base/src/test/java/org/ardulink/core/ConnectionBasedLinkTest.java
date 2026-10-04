@@ -63,12 +63,12 @@ class ConnectionBasedLinkTest {
 		private final StringBuilder sent = new StringBuilder();
 
 		@Override
-		public void received(byte[] bytes) throws IOException {
+		public void received(byte[] bytes) {
 			received.append(new String(bytes));
 		}
 
 		@Override
-		public void sent(byte[] bytes) throws IOException {
+		public void sent(byte[] bytes) {
 			sent.append(new String(bytes));
 		}
 	}

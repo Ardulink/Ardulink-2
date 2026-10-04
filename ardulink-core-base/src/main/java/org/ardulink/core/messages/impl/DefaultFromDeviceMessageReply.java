@@ -34,7 +34,7 @@ import org.ardulink.core.messages.api.FromDeviceMessageReply;
 public class DefaultFromDeviceMessageReply implements FromDeviceMessageReply {
 
 	public static FromDeviceMessageReply fromDeviceMessageReply(boolean ok, long id,
-			Map<String, ? extends Object> parameters) {
+			Map<String, ?> parameters) {
 		return new DefaultFromDeviceMessageReply(ok, id, parameters);
 	}
 
@@ -42,7 +42,7 @@ public class DefaultFromDeviceMessageReply implements FromDeviceMessageReply {
 	private final long id;
 	private final Map<String, Object> parameters;
 
-	public DefaultFromDeviceMessageReply(boolean ok, long id, Map<String, ? extends Object> parameters) {
+	public DefaultFromDeviceMessageReply(boolean ok, long id, Map<String, ?> parameters) {
 		this.ok = ok;
 		this.id = id;
 		this.parameters = unmodifiableMap(new HashMap<String, Object>(parameters));

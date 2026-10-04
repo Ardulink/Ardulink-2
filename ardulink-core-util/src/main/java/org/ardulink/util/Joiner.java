@@ -64,7 +64,7 @@ public final class Joiner {
 		return new Joiner(separator);
 	}
 
-	public String join(Collection<? extends Object> values) {
+	public String join(Collection<?> values) {
 		return join(values.stream());
 	}
 
@@ -72,7 +72,7 @@ public final class Joiner {
 		return join(Arrays.stream(values));
 	}
 
-	public String join(Stream<? extends Object> stream) {
+	public String join(Stream<?> stream) {
 		return stream.map(String::valueOf).collect(joining(separator));
 	}
 
