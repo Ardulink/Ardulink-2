@@ -99,7 +99,7 @@ public class FirmataProtocol implements Protocol {
 		private int index;
 		private int value;
 		private final Set<Mode> supportedModes = new CopyOnWriteArraySet<>();
-		private final Set<Mode> supportedModes_ = unmodifiableSet(supportedModes);
+		private final Set<Mode> supportedModesView = unmodifiableSet(supportedModes);
 		private Mode currentMode;
 
 		public enum Mode {
@@ -140,12 +140,12 @@ public class FirmataProtocol implements Protocol {
 
 		public void addSupportedMode(Mode mode) {
 			if (mode != null) {
-				this.supportedModes.add(mode);
+				supportedModes.add(mode);
 			}
 		}
 
 		public Set<Mode> getSupportedMode() {
-			return this.supportedModes_;
+			return supportedModesView;
 		}
 
 		public boolean modeIs(Mode other) {
@@ -155,7 +155,7 @@ public class FirmataProtocol implements Protocol {
 		@Override
 		public String toString() {
 			return "FirmataPin [index=" + index + ", value=" + value + ", supportedModes=" + supportedModes
-					+ ", supportedModes_=" + supportedModes_ + ", currentMode=" + currentMode + "]";
+					+ ", supportedModes_=" + supportedModesView + ", currentMode=" + currentMode + "]";
 		}
 
 	}

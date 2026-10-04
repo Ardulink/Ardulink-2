@@ -16,10 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.events;
 
-import static java.util.Collections.unmodifiableMap;
 import static org.ardulink.util.anno.LapsedWith.JDK14;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,8 +42,7 @@ public class DefaultRplyEvent implements RplyEvent {
 			Map<String, ?> parameters) {
 		this.ok = ok;
 		this.id = id;
-		this.parameters = unmodifiableMap(new HashMap<String, Object>(
-				parameters));
+		this.parameters = Map.copyOf(parameters);
 	}
 
 	@Override

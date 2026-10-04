@@ -16,7 +16,6 @@ limitations under the License.
  */
 package org.ardulink.mqtt.util;
 
-import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
@@ -29,7 +28,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -109,18 +107,11 @@ public class AnotherMqttClient implements Closeable {
 	private final String topic;
 	private final String controlTopic;
 
-	private static final Map<Type, String> typeMap = unmodifiableMap(typeMap());
+	private static final Map<Type, String> typeMap = Map.of(ANALOG, "A", DIGITAL, "D");
 
 	private CamelContext context;
 
 	private boolean appendValueSet;
-
-	private static Map<Type, String> typeMap() {
-		Map<Type, String> typeMap = new HashMap<>();
-		typeMap.put(ANALOG, "A");
-		typeMap.put(DIGITAL, "D");
-		return typeMap;
-	}
 
 	private AnotherMqttClient(Builder builder) {
 		this.topic = builder.topic.endsWith("/") ? builder.topic : builder.topic + "/";
