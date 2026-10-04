@@ -39,11 +39,11 @@ public final class Message {
 		this.message = message;
 	}
 
-	public String getTopic() {
+	public String topic() {
 		return topic;
 	}
 
-	public String getMessage() {
+	public String message() {
 		return message;
 	}
 

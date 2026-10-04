@@ -170,7 +170,7 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 
 	private void sendMessage(Message message) throws IOException {
 		try {
-			mqttClient.publish(message.getTopic(), message.getMessage().getBytes(), QOS_LEVEL, false);
+			mqttClient.publish(message.topic(), message.message().getBytes(), QOS_LEVEL, false);
 		} catch (MqttException e) {
 			throw new IOException(e);
 		}
