@@ -30,6 +30,8 @@ jobs:
         release_name: "Release ${{ github.ref }}"
         body: |
           Release notes for ${{ github.ref }}.
+        allowUpdates: true
+        updateOnlyUnreleased: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
