@@ -1,13 +1,10 @@
 package org.ardulink.camel;
 
-import static java.util.stream.Collectors.toList;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.ardulink.core.Pin;
-import org.ardulink.util.Iterables;
 
 public class EndpointConfig {
 
@@ -28,16 +25,6 @@ public class EndpointConfig {
 		return this;
 	}
 
-	/**
-	 * @deprecated use {@link #listenTo(Collection)}
-	 * @param pins the pins to listen to
-	 * @return this {@link EndpointConfig}
-	 */
-	@Deprecated
-	public EndpointConfig listenTo(Iterable<Pin> pins) {
-		return listenTo(Iterables.stream(pins).collect(toList()));
-	}
-
 	public EndpointConfig listenTo(Collection<Pin> pins) {
 		this.pins = List.copyOf(pins);
 		return this;
@@ -53,6 +40,11 @@ public class EndpointConfig {
 
 	public List<Pin> getPins() {
 		return pins;
+	}
+
+	@Override
+	public String toString() {
+		return "EndpointConfig [type=" + type + ", typeParams=" + typeParams + ", pins=" + pins + "]";
 	}
 
 }
