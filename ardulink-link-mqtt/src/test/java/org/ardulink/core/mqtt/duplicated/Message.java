@@ -16,6 +16,10 @@ limitations under the License.
 */
 package org.ardulink.core.mqtt.duplicated;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
+import org.ardulink.util.anno.LapsedWith;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -24,6 +28,7 @@ package org.ardulink.core.mqtt.duplicated;
  * [adsense]
  *
  */
+@LapsedWith(module = JDK14, value = "records")
 public final class Message {
 
 	private final String topic;
