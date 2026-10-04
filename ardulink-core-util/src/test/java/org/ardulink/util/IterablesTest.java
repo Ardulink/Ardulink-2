@@ -43,6 +43,8 @@ class IterablesTest {
 	void getLast() {
 		assertThat(Iterables.getLast(iterableOf(1))).hasValue(1);
 		assertThat(Iterables.getLast(iterableOf(1, 2))).hasValue(2);
+		assertThat(Iterables.getLast(iterableOf(1, 2, null))).isEmpty();
+		assertThat(Iterables.getLast(iterableOf(1, 2, null, 3))).hasValue(3);
 	}
 
 	@Test

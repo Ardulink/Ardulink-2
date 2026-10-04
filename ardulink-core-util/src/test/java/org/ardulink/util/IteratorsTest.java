@@ -44,6 +44,8 @@ class IteratorsTest {
 	void getLast() {
 		assertThat(Iterators.getLast(iteratorOf(1))).hasValue(1);
 		assertThat(Iterators.getLast(iteratorOf(1, 2))).hasValue(2);
+		assertThat(Iterators.getLast(iteratorOf(1, 2, null))).isEmpty();
+		assertThat(Iterators.getLast(iteratorOf(1, 2, null, 3))).hasValue(3);
 	}
 
 	@Test
