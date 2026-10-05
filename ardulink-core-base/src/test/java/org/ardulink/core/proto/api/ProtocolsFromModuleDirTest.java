@@ -17,9 +17,12 @@ limitations under the License.
 package org.ardulink.core.proto.api;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.ardulink.core.linkmanager.Classloaders.MODULE_DIR_PROPERTY;
+import static org.ardulink.core.proto.api.Protocols.protocolNames;
+import static org.ardulink.core.proto.api.Protocols.tryProtoByName;
+import static org.ardulink.core.proto.moduledir.ModuleDirOnlyProtocol.NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
-import static org.ardulink.core.proto.moduledir.ModuleDirOnlyProtocol.NAME;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -40,14 +43,13 @@ import org.junit.jupiter.api.io.TempDir;
  * 
  * [adsense]
  *
- * Protocols have to be discovered via the module directory just like links are, otherwise a
- * protocol that is only shipped next to an application stays invisible. The binary distribution
- * relies on exactly that: {@code ardulink-core-firmata-proto.jar} sits in {@code lib} but is not
- * on the application classpath of the jars that are started with {@code java -jar}.
+ * Protocols have to be discovered via the module directory just like links are,
+ * otherwise a protocol that is only shipped next to an application stays
+ * invisible. The binary distribution relies on exactly that:
+ * {@code ardulink-core-firmata-proto.jar} sits in {@code lib} but is not on the
+ * application classpath of the jars that are started with {@code java -jar}.
  */
 class ProtocolsFromModuleDirTest {
-
-	private static final String MODULE_DIR_PROPERTY = "ardulink.module.dir";
 
 	private static final String SERVICE_RESOURCE = "META-INF/services/" + Protocol.class.getName();
 
@@ -61,23 +63,28 @@ class ProtocolsFromModuleDirTest {
 
 	@Test
 	void protocolRegisteredByAJarOfTheModuleDirIsRegistered() throws IOException {
-		registerProtocolInModuleDir();
-
+		createJar();
+		useModuleDir(moduleDir);
 		assertSoftly(s -> {
-			s.assertThat(Protocols.protocolNames()).contains(NAME);
-			s.assertThat(Protocols.tryProtoByName(NAME)).hasValueSatisfying( //
+			s.assertThat(protocolNames()).contains(NAME);
+			s.assertThat(tryProtoByName(NAME)).hasValueSatisfying( //
 					proto -> assertThat(proto).isExactlyInstanceOf(ModuleDirOnlyProtocol.class));
 		});
 	}
 
 	@Test
-	void protocolIsNotRegisteredWithoutAJarRegisteringIt() {
-		useModuleDir(moduleDir);
-
-		assertThat(Protocols.tryProtoByName(NAME)).isEmpty();
+	void whenModuleDirIsNotSetThenTheJarIsNotFound() throws IOException {
+		createJar();
+		assertThat(tryProtoByName(NAME)).isEmpty();
 	}
 
-	private void registerProtocolInModuleDir() throws IOException {
+	@Test
+	void protocolIsNotRegisteredWithoutAJarRegisteringIt() {
+		useModuleDir(moduleDir);
+		assertThat(tryProtoByName(NAME)).isEmpty();
+	}
+
+	private void createJar() throws IOException {
 		Path jar = moduleDir.resolve("module-dir-only-protocol.jar");
 		try (OutputStream out = Files.newOutputStream(jar); //
 				JarOutputStream jarOut = new JarOutputStream(out)) {
@@ -85,7 +92,6 @@ class ProtocolsFromModuleDirTest {
 			jarOut.write((ModuleDirOnlyProtocol.class.getName() + "\n").getBytes(UTF_8));
 			jarOut.closeEntry();
 		}
-		useModuleDir(moduleDir);
 	}
 
 	private void useModuleDir(Path dir) {
