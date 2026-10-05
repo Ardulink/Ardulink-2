@@ -35,6 +35,7 @@ import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -176,7 +177,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 				if (displayExecutor != null) {
 					displayExecutor.shutdownNow();
 				}
-				displayExecutor = newCachedThreadPool();
+				displayExecutor = newCachedThreadPool(daemonThreadFactory());
 				displayExecutor.execute(() -> {
 					try {
 						tu.sleep(timeout);
@@ -192,6 +193,14 @@ public class ConnectionPanel extends JPanel implements Linkable {
 			}
 
 		}.execute();
+	}
+
+	private static ThreadFactory daemonThreadFactory() {
+		return runnable -> {
+			Thread thread = new Thread(runnable);
+			thread.setDaemon(true);
+			return thread;
+		};
 	}
 
 	private JPanel createSubpanel() {

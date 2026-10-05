@@ -136,6 +136,7 @@ public class Console extends JFrame implements Linkable {
 			try {
 				setLookAndFeel("Nimbus");
 				Console frame = new Console();
+				frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
 				setupExceptionHandler(frame);
 				frame.setVisible(true);
 			} catch (Exception e) {
