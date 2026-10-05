@@ -17,6 +17,7 @@ package org.ardulink.core.classloader;
 
 import static java.util.stream.Collectors.toList;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Strings.endsWithIgnoreCase;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
@@ -80,6 +81,7 @@ public class ModuleClassLoader extends URLClassLoader {
 	}
 
 	private static boolean isJar(Path path) {
-		return path.getFileName().toString().toLowerCase().endsWith(".jar");
+		return endsWithIgnoreCase(path.getFileName().toString(), ".jar");
 	}
+
 }

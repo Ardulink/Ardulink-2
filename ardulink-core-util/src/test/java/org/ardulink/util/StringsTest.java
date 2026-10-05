@@ -16,12 +16,17 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static org.ardulink.util.Strings.endsWithIgnoreCase;
 import static org.ardulink.util.Strings.nullOrEmpty;
+import static org.ardulink.util.Strings.startsWithIgnoreCase;
 import static org.ardulink.util.Strings.swapUpperLower;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -47,6 +52,55 @@ class StringsTest {
 	@EmptySource
 	void testNullOrEmpty_nonNulls(String string) {
 		assertThat(nullOrEmpty(string)).isTrue();
+	}
+
+	@ParameterizedTest
+	@CsvSource({ //
+			"hello.jar, .jar", //
+			"hello.JAR, .jar", //
+			"hello.Jar, .JAR", //
+			".jar,      .jar", //
+			"jar,       jar", //
+			"hello,     ''" //
+	})
+	void endsWithIgnoreCase_hits(String name, String suffix) {
+		assertTrue(endsWithIgnoreCase(name, suffix));
+	}
+
+	@ParameterizedTest
+	@CsvSource({ //
+			"hello.jar, .zip", //
+			"hello.jar, .JARx", //
+			"hello,     .jar", //
+			"ja,        .jar", //
+			"jar,       .jarx" //
+	})
+	void endsWithIgnoreCase_misses(String name, String suffix) {
+		assertFalse(endsWithIgnoreCase(name, suffix));
+	}
+
+	@ParameterizedTest
+	@CsvSource({ //
+			"hello.jar, hello", //
+			"Hello.jar, hello", //
+			"HELLO.jar, hello", //
+			"hello,     hello", //
+			"hello,     ''" //
+	})
+	void startsWithIgnoreCase_hits(String name, String prefix) {
+		assertTrue(startsWithIgnoreCase(name, prefix));
+	}
+
+	@ParameterizedTest
+	@CsvSource({ //
+			"hello.jar, world", //
+			"hello.jar, hello.jarx", //
+			"hello,     hello.", //
+			"he,        hello", //
+			"hello,     HELLOx" //
+	})
+	void startsWithIgnoreCase_misses(String name, String prefix) {
+		assertFalse(startsWithIgnoreCase(name, prefix));
 	}
 
 	@Test
