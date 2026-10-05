@@ -7,7 +7,9 @@
 [![CodeQL](https://github.com/Ardulink/Ardulink-2/actions/workflows/codeql.yml/badge.svg)](https://github.com/Ardulink/Ardulink-2/actions/workflows/codeql.yml)
 [![Java Version](https://img.shields.io/badge/java-11+-blue)](https://github.com/Ardulink/Ardulink-2/blob/master/pom.xml)
 
-This is the repository for Ardulink 2. Ardulink 2 is a complete, open source, java solution for the control and coordination of Arduino boards. This repository contains Ardulink Version 0.6.2 and all upcoming releases.
+This is the repository for Ardulink 2. Ardulink 2 is a complete, open source, java solution for the control and coordination of Arduino boards. This repository contains Ardulink Version 0.6.2 and all upcoming releases. 
+
+**Firmware has moved to a separate repository:** https://github.com/Ardulink/Firmware
 
 ```java
 public static void main(String... args) throws Exception {
