@@ -31,9 +31,9 @@ import org.ardulink.mqtt.MqttMain;
 import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junitpioneer.jupiter.ExpectedToFail;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -84,7 +84,7 @@ class MqttMainStandaloneIntegrationTest {
 	}
 
 	@Test
-	@Disabled("test fails with Caused by: javax.net.ssl.SSLHandshakeException: Received fatal alert: handshake_failure")
+	@ExpectedToFail("test fails with Caused by: javax.net.ssl.SSLHandshakeException: Received fatal alert: handshake_failure")
 	void clientCanConnectUsingCredentialsToNewlyStartedSslBroker() {
 		givenSslEnabled(true);
 		givenBrokerAndClientCredentials(someUser, somePassword);
