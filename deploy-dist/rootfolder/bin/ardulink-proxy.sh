@@ -26,7 +26,7 @@
 #	- View the last log lines       tail /var/log/ardulink-proxy.log
 #	If this file has syntax error ensure that TABs aren't replaced by Spaces.
 ### END INIT INFO
-APP_VERSION="2.2.0"
+APP_VERSION="2.3.1"
 APP_NAME=ardulink-proxy
 SERVICE_NAME="ARDUlink Network Proxy Server"
 # Ardulink discovers links and protocols from the working directory (all jars found there),
