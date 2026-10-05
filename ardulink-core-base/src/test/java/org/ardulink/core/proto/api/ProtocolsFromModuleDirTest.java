@@ -64,7 +64,7 @@ class ProtocolsFromModuleDirTest {
 	@Test
 	void protocolRegisteredByAJarOfTheModuleDirIsRegistered() throws IOException {
 		createJar();
-		useModuleDir(moduleDir);
+		useModuleDir();
 		assertSoftly(s -> {
 			s.assertThat(protocolNames()).contains(NAME);
 			s.assertThat(tryProtoByName(NAME)).hasValueSatisfying( //
@@ -80,7 +80,7 @@ class ProtocolsFromModuleDirTest {
 
 	@Test
 	void protocolIsNotRegisteredWithoutAJarRegisteringIt() {
-		useModuleDir(moduleDir);
+		useModuleDir();
 		assertThat(tryProtoByName(NAME)).isEmpty();
 	}
 
@@ -94,8 +94,8 @@ class ProtocolsFromModuleDirTest {
 		}
 	}
 
-	private void useModuleDir(Path dir) {
-		System.setProperty(MODULE_DIR_PROPERTY, dir.toAbsolutePath().toString());
+	private void useModuleDir() {
+		System.setProperty(MODULE_DIR_PROPERTY, moduleDir.toAbsolutePath().toString());
 	}
 
 }
