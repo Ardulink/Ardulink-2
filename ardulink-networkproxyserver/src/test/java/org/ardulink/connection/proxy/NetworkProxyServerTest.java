@@ -1,6 +1,7 @@
 package org.ardulink.connection.proxy;
 
 import static java.time.Duration.ofMillis;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.proto.api.Protocols.protoByName;
@@ -99,73 +100,72 @@ class NetworkProxyServerTest {
 
 	private void startServerInBackground(int freePort) throws InterruptedException {
 		Semaphore waitUntilServerIsUp = new Semaphore(0);
-		new Thread() {
-
-			@Override
-			public void run() {
-				try {
-					new StartCommand() {
-
-						@Override
-						protected void serverIsUp(int portNumber) {
-							super.serverIsUp(portNumber);
-							waitUntilServerIsUp.release();
-						}
-
-						@Override
-						protected NetworkProxyServerConnection newConnection(ServerSocket serverSocket)
-								throws IOException {
-							return new NetworkProxyServerConnection(serverSocket.accept()) {
-								@Override
-								protected Handshaker handshaker(InputStream isRemote, OutputStream osRemote) {
-									return new Handshaker(isRemote, osRemote, configurer());
-								}
-
-								private Configurer configurer() {
-									return new Configurer() {
-
-										@Override
-										public Object uniqueIdentifier() {
-											return "";
-										}
-
-										@Override
-										public Collection<String> getAttributes() {
-											return List.of("port");
-										}
-
-										@Override
-										public ConfigAttribute getAttribute(String key) {
-											return configAttributeOfName(key);
-										}
-
-										@Override
-										public Link newLink() {
-											return new ConnectionBasedLink(proxySideConnection,
-													protoByName(ArdulinkProtocol2.NAME).newByteStreamProcessor());
-										}
-
-									};
-								}
-
-								private ConfigAttribute configAttributeOfName(String key) {
-									ConfigAttribute attribute = mock(ConfigAttribute.class);
-									when(attribute.getName()).thenReturn(key);
-									return attribute;
-								}
-
-							};
-						}
-					}.execute(freePort);
-				} catch (IOException e) {
-					throw propagate(e);
-				}
+		newSingleThreadExecutor().submit(() -> {
+			try {
+				startCommand(waitUntilServerIsUp).execute(freePort);
+			} catch (IOException e) {
+				throw propagate(e);
 			}
-		}.start();
+		});
 		waitUntilServerIsUp.acquire();
 	}
 
-	private ProxyLinkConfig configure(ProxyLinkConfig linkConfig, String hostname, int tcpPort) {
+	private StartCommand startCommand(Semaphore waitUntilServerIsUp) {
+		return new StartCommand() {
+
+			@Override
+			protected void serverIsUp(int portNumber) {
+				super.serverIsUp(portNumber);
+				waitUntilServerIsUp.release();
+			}
+
+			@Override
+			protected NetworkProxyServerConnection newConnection(ServerSocket serverSocket) throws IOException {
+				return new NetworkProxyServerConnection(serverSocket.accept()) {
+					@Override
+					protected Handshaker handshaker(InputStream isRemote, OutputStream osRemote) {
+						return new Handshaker(isRemote, osRemote, configurer());
+					}
+
+					private Configurer configurer() {
+						return new Configurer() {
+
+							@Override
+							public Object uniqueIdentifier() {
+								return "";
+							}
+
+							@Override
+							public Collection<String> getAttributes() {
+								return List.of("port");
+							}
+
+							@Override
+							public ConfigAttribute getAttribute(String key) {
+								return configAttributeOfName(key);
+							}
+
+							@Override
+							public Link newLink() {
+								return new ConnectionBasedLink(proxySideConnection,
+										protoByName(ArdulinkProtocol2.NAME).newByteStreamProcessor());
+							}
+
+						};
+					}
+
+					private ConfigAttribute configAttributeOfName(String key) {
+						ConfigAttribute attribute = mock(ConfigAttribute.class);
+						when(attribute.getName()).thenReturn(key);
+						return attribute;
+					}
+
+				};
+			}
+		};
+	}
+
+	private static ProxyLinkConfig configure(ProxyLinkConfig linkConfig, String hostname, int tcpPort) {
 		linkConfig.tcphost = hostname;
 		linkConfig.tcpport = tcpPort;
 		linkConfig.port = "anything non-null";
