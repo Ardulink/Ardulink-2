@@ -34,6 +34,7 @@ class IterablesTest {
 
 	@Test
 	void getFirst() {
+		assertThat(Iterables.getFirst(iterableOf())).isEmpty();
 		assertThat(Iterables.getFirst(iterableOf(1))).hasValue(1);
 		assertThat(Iterables.getFirst(iterableOf(1, 2, null))).hasValue(1);
 		assertThat(Iterables.getFirst(iterableOf(null, 1, 2))).isEmpty();
@@ -41,6 +42,7 @@ class IterablesTest {
 
 	@Test
 	void getLast() {
+		assertThat(Iterables.getLast(iterableOf())).isEmpty();
 		assertThat(Iterables.getLast(iterableOf(1))).hasValue(1);
 		assertThat(Iterables.getLast(iterableOf(1, 2))).hasValue(2);
 		assertThat(Iterables.getLast(iterableOf(1, 2, null))).isEmpty();

@@ -35,6 +35,7 @@ class IteratorsTest {
 
 	@Test
 	void getFirst() {
+		assertThat(Iterators.getFirst(iteratorOf())).isEmpty();
 		assertThat(Iterators.getFirst(iteratorOf(1))).hasValue(1);
 		assertThat(Iterators.getFirst(iteratorOf(1, 2, null))).hasValue(1);
 		assertThat(Iterators.getFirst(iteratorOf(null, 1, 2))).isEmpty();
@@ -42,6 +43,7 @@ class IteratorsTest {
 
 	@Test
 	void getLast() {
+		assertThat(Iterators.getLast(iteratorOf())).isEmpty();
 		assertThat(Iterators.getLast(iteratorOf(1))).hasValue(1);
 		assertThat(Iterators.getLast(iteratorOf(1, 2))).hasValue(2);
 		assertThat(Iterators.getLast(iteratorOf(1, 2, null))).isEmpty();
