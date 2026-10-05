@@ -24,6 +24,17 @@
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>
+		<!--
+			jib builds the container classpath from the runtime dependencies only, so
+			unlike the binary distribution - where the jar is picked up from the module
+			directory - a protocol has to be declared to be part of the image.
+		-->
+		<dependency>
+			<groupId>org.ardulink</groupId>
+			<artifactId>ardulink-core-firmata-proto</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>

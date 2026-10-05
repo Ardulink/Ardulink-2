@@ -29,7 +29,11 @@
 APP_VERSION="2.2.0"
 APP_NAME=ardulink-proxy
 SERVICE_NAME="ARDUlink Network Proxy Server"
-JAR_COMMAND="/var/ardulink/lib/ardulink-networkproxyserver-$APP_VERSION.jar start"
+# Ardulink discovers links and protocols from the working directory (all jars found there),
+# so enter the lib directory next to this script before starting it. The service is usually
+# symlinked into /etc/init.d, hence readlink -f to resolve the real location of this script.
+cd "$(dirname "$(readlink -f "$0")")/../lib" || exit 1
+JAR_COMMAND="ardulink-networkproxyserver-$APP_VERSION.jar start"
 PID_FILE=/var/run/$APP_NAME.pid
 LOG=/var/log/$APP_NAME.log
 case $1 in

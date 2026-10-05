@@ -19,6 +19,7 @@ package org.ardulink.core.proto.api;
 import static java.lang.String.format;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
+import static org.ardulink.core.linkmanager.Classloaders.moduleClassloader;
 import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Lists.mapList;
 import static org.ardulink.util.Predicates.attribute;
@@ -45,11 +46,20 @@ public final class Protocols {
 	/**
 	 * List all registered protocols.
 	 * 
+	 * <p>
+	 * Protocols are looked up with the same {@link org.ardulink.core.classloader.ModuleClassLoader}
+	 * that {@link org.ardulink.core.linkmanager.LinkManager} uses to find links. That classloader
+	 * covers every jar of the module directory (default: the working directory) on top of the
+	 * regular application classpath. Without it a protocol whose jar is only shipped next to the
+	 * application - like {@code ardulink-core-firmata-proto} in the binary distribution - would be
+	 * invisible although its jar sits right there.
+	 * </p>
+	 * 
 	 * @return list of all registered protocols
 	 * @see #protocolNames()
 	 */
 	public static List<Protocol> protocols() {
-		return ServiceLoader.load(Protocol.class) //
+		return ServiceLoader.load(Protocol.class, moduleClassloader()) //
 				.stream().map(Provider::get) //
 				.filter(Protocol::isActive) //
 				.collect(toList());
