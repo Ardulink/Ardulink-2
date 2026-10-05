@@ -63,6 +63,63 @@ wait_for_container_healthy() {
         until [ "$(docker compose -f "'"$COMPOSE_FILE"'" ps --format "{{json .Health }}" "'"$container_name"'")" = "\"healthy\"" ]; do sleep 1; done' || die "Timeout reached. Container $container_name did not become healthy."
 }
 
+# Function to resolve everything that depends on the protocol under test. Sets
+# PROTO_FILENAME (the firmware flashed into the emulated Arduino),
+# PROTO_FIRMWARE_SOURCE (where that firmware comes from) and PROTO_CONNECTION (the
+# connection string used by the applications).
+resolve_protocol() {
+    local protocol="${1:-ardulink}"
+    local virtualdevice="$2"
+
+    PROTO_CONNECTION="ardulink://serial?port=$virtualdevice"
+    case "$protocol" in
+        ardulink)
+            # The distribution does not ship the sketch anymore, so the firmware is taken from the
+            # releases of the Firmware repository. Downloading it proves that the hex users flash
+            # from the release page still works with this distribution, which the copy the
+            # integration tests use would not, as that copy never leaves the repository.
+            PROTO_FILENAME="ArdulinkProtocol.ino.hex"
+            PROTO_FIRMWARE_SOURCE="https://github.com/Ardulink/Firmware/releases/download/v1.2.0/ArdulinkProtocol.ino.hex"
+            PROTO_CONNECTION="$PROTO_CONNECTION"
+            ;;
+        firmata)
+            # Stock Firmata is no Ardulink firmware, hence the Firmware repository does not publish
+            # it and there is nothing to download. Its hex is taken from the resources the
+            # integration tests use instead.
+            #
+            # proto=Firmata is only shipped next to the applications in the distribution, not on their
+            # classpath. Selecting it therefore proves that a protocol is discovered from the module
+            # directory (ardulink.module.dir, defaulting to the working directory) next to the jar.
+            PROTO_FILENAME="StandardFirmata.hex"
+            PROTO_FIRMWARE_SOURCE="$SCRIPT_DIR/../../ardulink-core-base/src/test/resources/firmware/$PROTO_FILENAME"
+            PROTO_CONNECTION="$PROTO_CONNECTION&proto=Firmata&baudrate=9600"
+            ;;
+        *)
+            die "Unknown protocol '$protocol'. Supported protocols: ardulink, firmata."
+            ;;
+    esac
+}
+
+# Function to place the firmware of the resolved protocol in the directory mounted
+# as sketch by the virtualavr container, downloading it or copying it from the
+# repository depending on PROTO_FIRMWARE_SOURCE.
+install_firmware() {
+    mkdir -p "$ARDULINK_DIR"
+
+    case "$PROTO_FIRMWARE_SOURCE" in
+        http*)
+            echo "Downloading $PROTO_FILENAME..."
+            wget -qO "$ARDULINK_DIR/$PROTO_FILENAME" "$PROTO_FIRMWARE_SOURCE" \
+                || die "Failed to download $PROTO_FILENAME from $PROTO_FIRMWARE_SOURCE"
+            ;;
+        *)
+            echo "Preparing $PROTO_FILENAME..."
+            [ -f "$PROTO_FIRMWARE_SOURCE" ] || die "Firmware not found: $PROTO_FIRMWARE_SOURCE"
+            cp "$PROTO_FIRMWARE_SOURCE" "$ARDULINK_DIR/$PROTO_FILENAME"
+            ;;
+    esac
+}
+
 check_websocket_message() {
     local action="$1"         # Command to execute the action
     local json_pattern="$2"   # JQ pattern to match in the WebSocket message

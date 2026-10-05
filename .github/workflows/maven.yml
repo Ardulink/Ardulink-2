@@ -96,16 +96,16 @@ jobs:
         key: docker-${{ runner.os }}-${{ matrix.java-version }}-${{ hashFiles('deploy-dist/tests/docker-compose.yml') }}
 
     - name: Run MQTT systemtests
-      run: timeout 2m bash deploy-dist/tests/systemtest-mqtt.sh
+      run: timeout 2m bash deploy-dist/tests/systemtest-mqtt.sh ardulink
 
     - name: Run REST systemtests
-      run: timeout 2m bash deploy-dist/tests/systemtest-rest.sh
+      run: timeout 2m bash deploy-dist/tests/systemtest-rest.sh ardulink
 
     - name: Run MQTT systemtests with Firmata firmware
-      run: timeout 2m bash deploy-dist/tests/systemtest-mqtt-firmata.sh
+      run: timeout 2m bash deploy-dist/tests/systemtest-mqtt.sh firmata
 
     - name: Run REST systemtests with Firmata firmware
-      run: timeout 2m bash deploy-dist/tests/systemtest-rest-firmata.sh
+      run: timeout 2m bash deploy-dist/tests/systemtest-rest.sh firmata
 
     - name: Remove JaCoCo aggregate and excluded module reports
       if: matrix.java-version == 11
