@@ -6,7 +6,7 @@ services:
     environment:
       - VIRTUALDEVICE=${VIRTUALDEVICE}
       - DEVICEUSER=${DEVICEUSER}
-      - FILENAME=ArdulinkProtocol.ino.hex
+      - FILENAME=${FILENAME:-ArdulinkProtocol.ino.hex}
     volumes:
       - /dev:/dev
       - ${ARDULINK_DIR}:/sketch

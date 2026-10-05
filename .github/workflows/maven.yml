@@ -101,6 +101,12 @@ jobs:
     - name: Run REST systemtests
       run: timeout 2m bash deploy-dist/tests/systemtest-rest.sh
 
+    - name: Run MQTT systemtests with Firmata firmware
+      run: timeout 2m bash deploy-dist/tests/systemtest-mqtt-firmata.sh
+
+    - name: Run REST systemtests with Firmata firmware
+      run: timeout 2m bash deploy-dist/tests/systemtest-rest-firmata.sh
+
     - name: Remove JaCoCo aggregate and excluded module reports
       if: matrix.java-version == 11
       run: |
