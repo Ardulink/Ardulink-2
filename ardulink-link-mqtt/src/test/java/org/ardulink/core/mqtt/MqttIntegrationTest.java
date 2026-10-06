@@ -25,14 +25,17 @@ import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.events.DefaultAnalogPinValueChangedEvent.analogPinValueChanged;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
+import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.core.mqtt.Broker.newBroker;
 import static org.ardulink.core.mqtt.EventCollector.eventCollector;
 import static org.ardulink.core.mqtt.duplicated.AnotherMqttClient.newClient;
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.ardulink.util.URIBuilder.uriBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin.AnalogPin;
@@ -107,9 +110,12 @@ class MqttIntegrationTest {
 	void init(TestConfig config) {
 		this.mqttClient.appendValueSet(config.separatedTopics);
 		this.messageFormat = config.messageFormat;
-		String clientUri = "ardulink://mqtt?host=localhost&port=" + broker.port() + "&topic=" + TOPIC
-				+ "&separatedTopics=" + config.separatedTopics;
-		this.link = Links.getLink(clientUri);
+		this.link = Links.getLink(uriBuilder(ARDULINK_SCHEME, "mqtt").params(Map.of( //
+				"host", "localhost", //
+				"port", broker.port(), //
+				"topic", TOPIC, //
+				"separatedTopics", config.separatedTopics)).build() //
+		);
 	}
 
 	@ParameterizedTest(name = "{index} {0}")

@@ -17,12 +17,15 @@ limitations under the License.
 package org.ardulink.core.linkmanager;
 
 import static java.lang.Integer.valueOf;
-import static java.net.URI.create;
 import static java.util.Optional.ofNullable;
 import static org.ardulink.core.linkmanager.providers.DynamicLinkFactoriesProvider.withRegistered;
 import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.URIBuilder.uriBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+
+import java.net.URI;
+import java.util.Map;
 
 import org.ardulink.core.Link;
 import org.junit.jupiter.api.Test;
@@ -104,8 +107,9 @@ class LinkConfigWithDependentAttributesLinkFactoryTest {
 	@Test
 	void canInstantiateLinkWithDependentAttributes() throws Throwable {
 		withRegistered(new LinkConfigWithDependentAttributesLinkFactory()).execute(() -> {
-			try (Link link = LinkManager.getInstance()
-					.getConfigurer(create("ardulink://dependendAttributes?devicePort=foo&host=h&port=1")).newLink()) {
+			URI uri = uriBuilder("ardulink", "dependendAttributes")
+					.params(Map.of("devicePort", "foo", "host", "h", "port", 1)).build();
+			try (Link link = LinkManager.getInstance().getConfigurer(uri).newLink()) {
 				assertThat(link).isNotNull();
 			}
 		});

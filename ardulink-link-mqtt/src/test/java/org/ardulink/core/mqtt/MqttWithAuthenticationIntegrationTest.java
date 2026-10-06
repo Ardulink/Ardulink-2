@@ -16,19 +16,22 @@ limitations under the License.
 
 package org.ardulink.core.mqtt;
 
-import static java.net.URI.create;
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.core.mqtt.Broker.newBroker;
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.ardulink.util.URIBuilder.uriBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.eclipse.paho.client.mqttv3.MqttException.REASON_CODE_FAILED_AUTHENTICATION;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.net.URI;
+import java.util.Map;
 
 import org.ardulink.core.Link;
 import org.ardulink.core.linkmanager.LinkManager;
+import org.ardulink.util.URIBuilder;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -56,21 +59,21 @@ class MqttWithAuthenticationIntegrationTest {
 
 	@Test
 	void canNotConnectWithoutUserAndPassword() {
-		assertAuthFailure(create(mqttBase()));
+		assertAuthFailure(mqttBase().build());
 	}
 
 	@Test
 	void canNotConnectWithWrongPassword() {
-		assertAuthFailure(create(mqttBase() + "&user=" + USER + "&password=" + "anyWrongPassword"));
+		assertAuthFailure(mqttBase().param("user", USER).param("password", "anyWrongPassword").build());
 	}
 
 	@Test
 	void canConnectUsingUserAndPassword() {
-		assertDoesNotThrow(createLink(create(mqttBase() + "&user=" + USER + "&password=" + PASSWORD))::close);
+		assertDoesNotThrow(createLink(mqttBase().param("user", USER).param("password", PASSWORD).build())::close);
 	}
 
-	private String mqttBase() {
-		return "ardulink://mqtt?port=" + broker.port() + "&topic=" + TOPIC;
+	private URIBuilder mqttBase() {
+		return uriBuilder(ARDULINK_SCHEME, "mqtt").params(Map.of("port", broker.port(), "topic", TOPIC));
 	}
 
 	private void assertAuthFailure(URI uri) {

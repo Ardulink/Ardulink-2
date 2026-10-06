@@ -16,7 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.serial.jserialcomm;
 
-import static java.lang.String.format;
+import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinListening;
 import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinSwitching;
 import static org.ardulink.util.URIBuilder.uriBuilder;
@@ -45,8 +45,6 @@ import com.github.pfichtner.testcontainers.virtualavr.VirtualAvrContainer;
  */
 class SerialLinkFactoryIntegrationTest {
 
-	private static final String PREFIX = format("ardulink://%s", SerialLinkFactory.NAME);
-
 	private static final String ARDULINK_FIRMWARE = "classpath://firmware/ArdulinkProtocol.ino.hex";
 
 	@Test
@@ -58,7 +56,7 @@ class SerialLinkFactoryIntegrationTest {
 	}
 
 	static URI uri(VirtualAvrContainer<?> virtualAvr) {
-		return uriBuilder(PREFIX).params(Map.of( //
+		return uriBuilder(ARDULINK_SCHEME, SerialLinkFactory.NAME).params(Map.of( //
 				"port", virtualAvr.serialPortDescriptor(), //
 				"baudrate", 9600, //
 				"pingprobe", true, //
@@ -69,7 +67,8 @@ class SerialLinkFactoryIntegrationTest {
 	@Test
 	void canConfigureSerialConnectionViaConfigurer() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(uriBuilder(PREFIX).build());
+		Configurer configurer = connectionManager
+				.getConfigurer(uriBuilder(ARDULINK_SCHEME, SerialLinkFactory.NAME).build());
 
 		assertThat(configurer.getAttributes()).containsExactlyInAnyOrder( //
 				"port", "baudrate", "proto", "qos", "waitsecs", "pingprobe");
@@ -90,7 +89,7 @@ class SerialLinkFactoryIntegrationTest {
 	@Test
 	void cantConnectWithoutPort() {
 		Configurer configurer = LinkManager.getInstance()
-				.getConfigurer(uriBuilder(PREFIX).param("baudrate", 9600).build());
+				.getConfigurer(uriBuilder(ARDULINK_SCHEME, SerialLinkFactory.NAME).param("baudrate", 9600).build());
 		assertThatRuntimeException().isThrownBy(configurer::newLink).withMessageContaining("port descriptor: null");
 	}
 

@@ -23,15 +23,18 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.DIGITAL;
 import static org.ardulink.core.events.DefaultDigitalPinValueChangedEvent.digitalPinValueChanged;
+import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.core.mqtt.Broker.newBroker;
 import static org.ardulink.core.mqtt.EventCollector.eventCollector;
 import static org.ardulink.core.mqtt.duplicated.AnotherMqttClient.newClient;
 import static org.ardulink.testsupport.mock.TestSupport.extractDelegated;
 import static org.ardulink.util.ServerSockets.freePort;
+import static org.ardulink.util.URIBuilder.uriBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.ardulink.core.AbstractListenerLink;
@@ -166,8 +169,11 @@ class MqttLinkIntegrationTest {
 		this.separatedTopics = config.separateTopics;
 		this.messageFormat = config.messageFormat;
 		this.mqttClient.appendValueSet(config.separateTopics);
-		Link link = Links.getLink(
-				"ardulink://mqtt?port=" + broker.port() + "&topic=" + TOPIC + "&separatedTopics=" + separatedTopics);
+		Link link = Links.getLink(uriBuilder(ARDULINK_SCHEME, "mqtt").params(Map.of( //
+				"port", broker.port(), //
+				"topic", TOPIC, //
+				"separatedTopics", separatedTopics) //
+		).build());
 		link.addListener(eventCollector);
 		return link;
 	}

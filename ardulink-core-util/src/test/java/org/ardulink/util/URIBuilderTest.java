@@ -41,13 +41,13 @@ class URIBuilderTest {
 	@Test
 	void simpleURI() throws URISyntaxException {
 		URI uri = uriBuilder(base).build();
-		assertThat(uri).isEqualTo(new URI("ardulink://serial-jssc"));
+		assertThat(uri).isEqualTo(new URI(base));
 	}
 
 	@Test
 	void singleParam() throws URISyntaxException {
 		URI uri = uriBuilder(base).param("port", "COM3").build();
-		assertThat(uri).isEqualTo(new URI("ardulink://serial-jssc?port=COM3"));
+		assertThat(uri).isEqualTo(new URI(base + "?port=COM3"));
 	}
 
 	@Test

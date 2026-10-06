@@ -91,8 +91,11 @@ class NetworkProxyServerTest {
 
 	private ConnectionBasedLink clientLinkToServer(String hostname, int port) throws IOException {
 		// TODO PF use Links?
-		// Links.getLink(URIs.newURI(String.format("ardulink://proxy?tcphost=%s&tcpport=%s&port=%s",
-		// hostname, port, "someNonNullPort")));
+		// Links.getLink(URIBuilder.uriBuilder(LinkManager.ARDULINK_SCHEME, "proxy").params(Map.of( //
+		//		"tcphost", hostname, //
+		//		"tcpport", port, //
+		//		"port", "someNonNullPort" //
+		// )).build());
 		ProxyLinkFactory linkFactory = new ProxyLinkFactory();
 		ProxyLinkConfig linkConfig = linkFactory.newLinkConfig();
 		return linkFactory.newLink(configure(linkConfig, hostname, port));

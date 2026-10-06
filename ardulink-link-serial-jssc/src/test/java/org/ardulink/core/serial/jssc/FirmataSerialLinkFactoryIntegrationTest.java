@@ -16,7 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.serial.jssc;
 
-import static java.lang.String.format;
+import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
 import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinListening;
 import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinSwitching;
 import static org.ardulink.util.URIBuilder.uriBuilder;
@@ -33,8 +33,6 @@ import com.github.pfichtner.testcontainers.virtualavr.VirtualAvrContainer;
 
 class FirmataSerialLinkFactoryIntegrationTest {
 
-	private static final String PREFIX = format("ardulink://%s", SerialLinkFactory.NAME);
-
 	private static final String FIRMATA_FIRMWARE = "classpath://firmware/StandardFirmata.hex";
 
 	@Test
@@ -46,7 +44,7 @@ class FirmataSerialLinkFactoryIntegrationTest {
 	}
 
 	static URI uri(VirtualAvrContainer<?> virtualAvr) {
-		return uriBuilder(PREFIX).params(Map.of( //
+		return uriBuilder(ARDULINK_SCHEME, SerialLinkFactory.NAME).params(Map.of( //
 				"port", virtualAvr.serialPortDescriptor(), //
 				"baudrate", 9600, //
 				"proto", "Firmata", //
