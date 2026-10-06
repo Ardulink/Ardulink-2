@@ -17,9 +17,12 @@ limitations under the License.
 package org.ardulink.core.serial.jssc;
 
 import static java.lang.String.format;
-import static java.net.URI.create;
 import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinListening;
 import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinSwitching;
+import static org.ardulink.util.URIBuilder.uriBuilder;
+
+import java.net.URI;
+import java.util.Map;
 
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.Configurer;
@@ -30,17 +33,26 @@ import com.github.pfichtner.testcontainers.virtualavr.VirtualAvrContainer;
 
 class FirmataSerialLinkFactoryIntegrationTest {
 
-	private static final String PREFIX = "ardulink://" + SerialLinkFactory.NAME;
+	private static final String PREFIX = format("ardulink://%s", SerialLinkFactory.NAME);
+
 	private static final String FIRMATA_FIRMWARE = "classpath://firmware/StandardFirmata.hex";
 
 	@Test
 	@UseVirtualAvr(isolated = true, firmware = FIRMATA_FIRMWARE)
 	void canInteractWithSerialLink(VirtualAvrContainer<?> virtualAvr) throws Exception {
-		Configurer configurer = LinkManager.getInstance()
-				.getConfigurer(create(PREFIX + format("?port=%s&baudrate=9600&proto=Firmata&pingprobe=true&waitsecs=10",
-						virtualAvr.serialPortDescriptor())));
+		Configurer configurer = LinkManager.getInstance().getConfigurer(uri(virtualAvr));
 		testSerialPinSwitching(virtualAvr, configurer);
 		testSerialPinListening(virtualAvr, configurer);
+	}
+
+	static URI uri(VirtualAvrContainer<?> virtualAvr) {
+		return uriBuilder(PREFIX).params(Map.of( //
+				"port", virtualAvr.serialPortDescriptor(), //
+				"baudrate", 9600, //
+				"proto", "Firmata", //
+				"pingprobe", true, //
+				"waitsecs", 10 //
+		)).build();
 	}
 
 }
