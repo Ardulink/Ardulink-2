@@ -51,29 +51,33 @@ class WaitForArduinoToBootTest {
 	@Test
 	void ifNoResponseReceivedWithin3SecondsWaitWillReturnFalse() {
 		onPing().doNotRespond();
-		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS)).describedAs("Arduino did respond but shouldn't")
+		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS)) //
+				.describedAs("Arduino did respond but shouldn't") //
 				.isFalse();
 	}
 
 	@Test
 	void noNeedToWaitIfArduinoDoesRespond() {
 		onPing().respondWith(lf("alp://rply/ok?id={0}"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS)).describedAs("Arduino did not respond")
+		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS)) //
+				.describedAs("Arduino didn't respond") //
 				.isTrue();
 	}
 
 	@Test
 	void canDetectInfoPaketFirmwarVersion2xSendingAfterBoot() {
 		simulateArduinoSendsInOneSecond(lf("alp://info/x=42/foo=abc"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, INFO_MESSAGE_ONLY))
-				.describedAs("Arduino did not respond").isTrue();
+		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, INFO_MESSAGE_ONLY)) //
+				.describedAs("Arduino didn't respond") //
+				.isTrue();
 	}
 
 	@Test
 	void ignoresMisformedReadyPaket() {
 		simulateArduinoSendsInOneSecond(lf("alp://infoX/"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS, INFO_MESSAGE_ONLY))
-				.describedAs("Arduino did respond but shouldn't").isFalse();
+		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS, INFO_MESSAGE_ONLY)) //
+				.describedAs("Arduino did respond but shouldn't") //
+				.isFalse();
 	}
 
 	private RegexAdder onPing() {

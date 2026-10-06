@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core;
 
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.ardulink.core.ConnectionBasedLink.Mode.ANY_MESSAGE_RECEIVED;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
@@ -31,11 +33,12 @@ import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListenin
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
 import static org.ardulink.core.proto.api.MessageIdHolders.addMessageId;
 import static org.ardulink.core.proto.api.MessageIdHolders.messageIdOf;
-import static org.ardulink.util.StopWatch.Countdown.createStarted;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.ardulink.core.Connection.ListenerAdapter;
 import org.ardulink.core.Pin.AnalogPin;
@@ -55,7 +58,6 @@ import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
-import org.ardulink.util.StopWatch.Countdown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,10 +73,12 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 
 	private static final Logger logger = LoggerFactory.getLogger(ConnectionBasedLink.class);
 
+	private final ScheduledExecutorService scheduler = newSingleThreadScheduledExecutor();
+
 	private final Connection connection;
 	private final ByteStreamProcessor byteStreamProcessor;
 	private long messageId;
-	private boolean infoMsgReceived;
+	private volatile boolean infoMsgReceived;
 
 	public <T extends Connection & ByteStreamProcessorProvider> ConnectionBasedLink(T connection) {
 		this(connection, connection.getByteStreamProcessor());
@@ -161,31 +165,25 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 	 *         otherwise <code>false</code>
 	 */
 	public boolean waitForArduinoToBoot(int wait, TimeUnit timeUnit, Mode mode) {
-		AtomicBoolean deviceIsReady = new AtomicBoolean(false);
+		CompletableFuture<Boolean> ready = new CompletableFuture<>();
+
 		ListenerAdapter listener = new ListenerAdapter() {
 			@Override
 			public void received(byte[] bytes) {
 				if (mode == ANY_MESSAGE_RECEIVED || infoMsgReceived) {
-					deviceIsReady.set(true);
+					ready.complete(true);
 				}
 			}
 		};
-		this.connection.addListener(listener);
 
-		try {
-			for (Countdown countdown = createStarted(wait, timeUnit); !countdown.finished();) {
-				ping();
-				TimeUnit.MILLISECONDS.sleep(100);
-				if (deviceIsReady.get()) {
-					return true;
-				}
-			}
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		} finally {
-			this.connection.removeListener(listener);
-		}
-		return false;
+		connection.addListener(listener);
+		ScheduledFuture<?> pinger = scheduler.scheduleAtFixedRate(this::ping, 0, 100, MILLISECONDS);
+		return ready.whenComplete((__, ___) -> {
+			pinger.cancel(false);
+			connection.removeListener(listener);
+		}).orTimeout(wait, timeUnit) //
+				.exceptionally(__ -> false) //
+				.join();
 	}
 
 	private void ping() {
