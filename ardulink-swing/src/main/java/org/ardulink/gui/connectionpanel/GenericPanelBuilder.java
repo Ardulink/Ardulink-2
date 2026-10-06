@@ -47,7 +47,6 @@ import org.ardulink.core.linkmanager.LinkManager.Configurer;
 import org.ardulink.core.linkmanager.LinkManager.NumberValidationInfo;
 import org.ardulink.core.linkmanager.LinkManager.ValidationInfo;
 import org.ardulink.util.Numbers;
-import org.ardulink.util.Primitives;
 
 public class GenericPanelBuilder implements PanelBuilder {
 
@@ -203,11 +202,15 @@ public class GenericPanelBuilder implements PanelBuilder {
 	}
 
 	private static boolean isBoolean(ConfigAttribute attribute) {
-		return attribute.getType().equals(Boolean.class) || attribute.getType().equals(boolean.class);
+		return isTypeOrSubtype(attribute, Boolean.class);
 	}
 
 	private static boolean isNumber(ConfigAttribute attribute) {
-		return Number.class.isAssignableFrom(Primitives.wrap(attribute.getType()));
+		return isTypeOrSubtype(attribute, Number.class);
+	}
+
+	private static boolean isTypeOrSubtype(ConfigAttribute attribute, Class<?> type) {
+		return wrap(type).isAssignableFrom(wrap(attribute.getType()));
 	}
 
 }
