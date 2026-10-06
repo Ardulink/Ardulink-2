@@ -52,4 +52,12 @@ public final class Instance<T> implements Function<Object, T> {
 		return Streams.castIfInstance(target, object);
 	}
 
+	public <R> Optional<R> map(Object object, Function<T, R> mapper) {
+		return asOptional(object).map(mapper);
+	}
+
+	public <R> Stream<R> flatMap(Object object, Function<T, R> mapper) {
+		return asStream(object).map(mapper);
+	}
+
 }

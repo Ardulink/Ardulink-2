@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -63,6 +64,22 @@ class InstanceTest {
 				arguments("foo", CharSequence.class, "foo"), //
 				arguments("foo", Integer.class, null), //
 				arguments(null, Integer.class, null));
+	}
+
+	@Test
+	void map() {
+		Instance<String> castTo = castTo(String.class);
+		CharSequence cs = "foo";
+		assertThat(castTo.map(cs, String::toUpperCase)).hasValue("FOO");
+		assertThat(castTo.map(42, String::toUpperCase)).isEmpty();
+	}
+
+	@Test
+	void flatMap() {
+		Instance<String> castTo = castTo(String.class);
+		CharSequence cs = "foo";
+		assertThat(castTo.flatMap(cs, String::toUpperCase)).containsExactly("FOO");
+		assertThat(castTo.flatMap(42, String::toUpperCase)).isEmpty();
 	}
 
 }

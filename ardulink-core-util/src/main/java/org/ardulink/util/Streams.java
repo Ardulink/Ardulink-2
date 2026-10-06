@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Spliterators;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -59,6 +60,10 @@ public final class Streams {
 	public static <T> Stream<T> castIfInstance(Class<T> clazz, Object object) {
 		T casted = Objects.castIfInstance(clazz, object);
 		return casted == null ? Stream.empty() : Stream.of(casted);
+	}
+
+	public static <T> Stream<T> unfold(T value, Function<T, Optional<T>> next) {
+		return Stream.iterate(Optional.of(value), Optional::isPresent, o -> o.flatMap(next)).flatMap(Optional::stream);
 	}
 
 }

@@ -17,8 +17,10 @@ limitations under the License.
 package org.ardulink.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -69,9 +71,22 @@ class StreamsTest {
 
 	static Stream<Arguments> castIfInstanceParameters() {
 		return Stream.of( //
-				Arguments.of("foo", CharSequence.class, "foo"), //
-				Arguments.of(42, CharSequence.class, null), //
-				Arguments.of(null, CharSequence.class, null));
+				arguments("foo", CharSequence.class, "foo"), //
+				arguments(42, CharSequence.class, null), //
+				arguments(null, CharSequence.class, null));
+	}
+
+	@Test
+	void unfold() {
+		assertThat(Streams.unfold(1, i -> i < 4 //
+				? Optional.of(i + 1) //
+				: Optional.empty())) //
+				.containsExactly(1, 2, 3, 4);
+	}
+
+	@Test
+	void unfoldStopsWhenNextIsEmpty() {
+		assertThat(Streams.unfold(1, i -> Optional.empty())).containsExactly(1);
 	}
 
 }

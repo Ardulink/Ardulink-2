@@ -20,19 +20,18 @@ import java.io.Closeable;
 import java.io.IOException;
 
 /**
- * [ardulinktitle] [ardulinkversion]
- * Represents a Connection to an Arduino (ArduLink) board. This connection must
- * not be physically for example it can also be represented by a network
- * connection.
+ * [ardulinktitle] [ardulinkversion] Represents a Connection to an Arduino
+ * (ArduLink) board. This connection must not be physically for example it can
+ * also be represented by a network connection.
  * 
- * [adsense] 
+ * [adsense]
  */
 public interface Connection extends Closeable {
 
 	/**
 	 * The Listener is called on data received from the Arduino.
 	 */
-    interface Listener {
+	interface Listener {
 		Listener NULL = new Listener() {
 
 			@Override
@@ -49,8 +48,7 @@ public interface Connection extends Closeable {
 		/**
 		 * Called whenever a message was received from arduino.
 		 * 
-		 * @param bytes
-		 *            the message read
+		 * @param bytes the message read
 		 * @throws IOException
 		 */
 		void received(byte[] bytes) throws IOException;
@@ -58,8 +56,7 @@ public interface Connection extends Closeable {
 		/**
 		 * Called whenever a message was sent to the arduino.
 		 * 
-		 * @param bytes
-		 *            the message read
+		 * @param bytes the message read
 		 * @throws IOException
 		 */
 		void sent(byte[] bytes) throws IOException;
@@ -67,7 +64,7 @@ public interface Connection extends Closeable {
 
 	class ListenerAdapter implements Listener {
 		@Override
-		public void received(byte[] bytes) throws IOException {
+		public void received(byte[] bytes) {
 			// do nothing
 		}
 
