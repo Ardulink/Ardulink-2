@@ -21,16 +21,13 @@ CONNECTION="$PROTO_CONNECTION"
 
 trap cleanup EXIT INT TERM
 
-export WS_PORT=$(find_unused_port 8000)
-[ -z "$WS_PORT" ] && die "Could not find an available port."
-
 # Step 1: Get the firmware of the protocol under test and place it in the firmware directory
 install_firmware
 
 # Step 2: Run the Docker container that emulates the Arduino
 echo "Running Docker container for $FILENAME..."
 export DEVICEUSER=$UID
-docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" up -d virtualavr
+with_port_lock start_virtualavr
 wait_for_container_healthy virtualavr 120
 
 # Step 3: Start websocat container (listening for messages sent by virtualavr)
@@ -42,17 +39,24 @@ echo "WebSocket container started"
 echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" run --rm -T websocat-send-once "cat - | websocat ws://localhost:$WS_PORT"
 
 # Step 4: Run the Java application in the background (detached mode)
-export MQTT_PORT=$(find_unused_port 1883)
-[ -z "$MQTT_PORT" ] && die "Could not find an available port."
+start_mqtt_service() {
+    export MQTT_PORT=$(find_unused_port 1883)
+    [ -z "$MQTT_PORT" ] && die "Could not find an available port."
 
-echo "Starting Ardulink MQTT service on port $MQTT_PORT..."
-cd $SCRIPT_DIR/../target/ardulink/lib/
-java -jar ardulink-mqtt-*.jar -standalone -brokerPort=$MQTT_PORT -connection "$CONNECTION" &
-JAVA_PID=$!
-echo "Ardulink-MQTT started"
-cd - >/dev/null
+    echo "Starting Ardulink MQTT service on port $MQTT_PORT..."
+    cd $SCRIPT_DIR/../target/ardulink/lib/
+    java -jar ardulink-mqtt-*.jar -standalone -brokerPort=$MQTT_PORT -connection "$CONNECTION" 9>&- &
+    JAVA_PID=$!
+    echo "Ardulink-MQTT started"
+    cd - >/dev/null
 
-wait_for_port $MQTT_PORT 10 || die "Failed to detect Ardulink-MQTT server on port $MQTT_PORT."
+    wait_for_port $MQTT_PORT 10 || die "Failed to detect Ardulink-MQTT server on port $MQTT_PORT."
+    kill -0 "$JAVA_PID" 2>/dev/null || die "Ardulink-MQTT process exited, port $MQTT_PORT was taken."
+}
+
+# Picking the port and binding it happens under the same lock, so a parallel
+# run cannot pick the same port in between.
+with_port_lock start_mqtt_service
 echo "Ardulink-MQTT server is ready on port $MQTT_PORT."
 
 # Step 5: Publish MQTT message and verify the response in the WebSocket container log file with a timeout

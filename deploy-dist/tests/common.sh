@@ -57,6 +57,49 @@ find_unused_port() {
     die "No available ports found in the range $base_port-$max_port"
 }
 
+# Lock file serializing port picking and port binding across parallel runs of
+# the system tests. find_unused_port only proves that nobody listens on a port
+# at that very moment, so without this lock two parallel runs can both pick the
+# same port and then fight over it when the container or the JVM binds it.
+PORT_LOCK_FILE="${TMPDIR:-/tmp}/ardulink-systemtest-ports.lock"
+
+# Runs the given function while holding PORT_LOCK_FILE. The function must go
+# from picking a port to having that port bound and nothing else, otherwise the
+# lock does not protect anything. The lock is released when the function returns
+# and also when the script exits, as the file descriptor dies with the process.
+# Background processes started inside the locked function inherit the file
+# descriptor and would keep the lock alive when the script dies without
+# unlocking, so start them with 9>&- to keep them out of the lock.
+with_port_lock() {
+    exec 9>"$PORT_LOCK_FILE" || die "Cannot open port lock file $PORT_LOCK_FILE"
+    flock -x 9 || die "Cannot lock $PORT_LOCK_FILE"
+    "$@"
+    local status=$?
+    flock -u 9
+    exec 9>&-
+    return $status
+}
+
+# Picks a free WebSocket port and starts the virtualavr container publishing it
+# while the port lock is held. Retries with another port when binding fails,
+# which covers ports that were busy before this run started and hence were not
+# visible as busy to find_unused_port.
+start_virtualavr() {
+    local attempt
+    for attempt in 1 2 3; do
+        WS_PORT=$(find_unused_port 8000)
+        export WS_PORT
+        echo "Starting virtualavr on port $WS_PORT..."
+        if docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" up -d virtualavr; then
+            return 0
+        fi
+        echo "Could not bind port $WS_PORT, trying another one..."
+        docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" down
+        sleep 1
+    done
+    die "Failed to start virtualavr."
+}
+
 # Function to wait for a port to become available
 wait_for_port() {
     local port=$1
