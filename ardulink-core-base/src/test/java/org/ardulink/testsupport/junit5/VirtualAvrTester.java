@@ -22,6 +22,7 @@ import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.events.FilteredEventListenerAdapter.filter;
 import static org.testcontainers.shaded.com.google.common.base.Objects.equal;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
+import static org.testcontainers.shaded.org.hamcrest.Matchers.is;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -108,7 +109,7 @@ public final class VirtualAvrTester {
 			String avrPin = "A" + ardulinkPin;
 			avr.pinReportMode(avrPin, ANALOG);
 			avr.pinState(avrPin, analogValue);
-			await().until(() -> received.get() == analogValue);
+			await().untilAtomic(received, is(analogValue));
 		} finally {
 			link.removeListener(listener);
 		}
@@ -129,7 +130,7 @@ public final class VirtualAvrTester {
 		try {
 			avr.pinReportMode(avrPin, DIGITAL);
 			avr.pinState(avrPin, digitalValue);
-			await().until(() -> received.get() == digitalValue);
+			await().untilAtomic(received, is(digitalValue));
 		} finally {
 			link.removeListener(listener);
 		}
