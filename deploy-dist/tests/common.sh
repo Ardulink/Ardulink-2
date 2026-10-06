@@ -80,24 +80,48 @@ with_port_lock() {
     return $status
 }
 
-# Picks a free WebSocket port and starts the virtualavr container publishing it
-# while the port lock is held. Retries with another port when binding fails,
-# which covers ports that were busy before this run started and hence were not
-# visible as busy to find_unused_port.
+# Picks a free WebSocket port and a device path for the emulated Arduino and
+# starts the virtualavr container binding both while the port lock is held. The
+# device path counts as bound only once the container created it, hence
+# wait_for_device runs before the lock is released. Retries with fresh port and
+# device when either fails, which covers resources that were busy before this
+# run started and hence were not visible as busy when picking.
 start_virtualavr() {
     local attempt
     for attempt in 1 2 3; do
         WS_PORT=$(find_unused_port 8000)
         export WS_PORT
-        echo "Starting virtualavr on port $WS_PORT..."
-        if docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" up -d virtualavr; then
+        VIRTUALDEVICE=$(find_first_unused_device "/dev/ttyUSB")
+        export VIRTUALDEVICE
+        echo "Starting virtualavr on port $WS_PORT using device $VIRTUALDEVICE..."
+        if docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" up -d virtualavr \
+            && wait_for_device "$VIRTUALDEVICE" 10; then
             return 0
         fi
-        echo "Could not bind port $WS_PORT, trying another one..."
+        echo "Could not bind port $WS_PORT or device $VIRTUALDEVICE, trying another one..."
         docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" down
         sleep 1
     done
     die "Failed to start virtualavr."
+}
+
+# Waits until the given device path shows up. The container creates it shortly
+# after it started, so a successful docker compose up alone does not mean the
+# device exists. Returns non-zero instead of dying so start_virtualavr can
+# retry with another device.
+wait_for_device() {
+    local device="$1"
+    local timeout="${2:-10}"
+    local start now
+    start=$(date +%s)
+    while [ ! -e "$device" ]; do
+        now=$(date +%s)
+        if [ $((now - start)) -ge "$timeout" ]; then
+            echo "Device $device did not appear within $timeout seconds."
+            return 1
+        fi
+        sleep 1
+    done
 }
 
 # Function to wait for a port to become available
@@ -119,13 +143,14 @@ wait_for_container_healthy() {
 
 # Function to resolve everything that depends on the protocol under test. Sets
 # PROTO_FILENAME (the firmware flashed into the emulated Arduino),
-# PROTO_FIRMWARE_SOURCE (where that firmware comes from) and PROTO_CONNECTION (the
-# connection string used by the applications).
+# PROTO_FIRMWARE_SOURCE (where that firmware comes from) and
+# PROTO_CONNECTION_SUFFIX (appended to the connection string by
+# proto_connection). The device the connection string points to is picked per
+# run when the container starts, so it is not known yet here.
 resolve_protocol() {
     local protocol="${1:-ardulink}"
-    local virtualdevice="$2"
 
-    PROTO_CONNECTION="ardulink://serial?port=$virtualdevice"
+    PROTO_CONNECTION_SUFFIX=""
     case "$protocol" in
         ardulink)
             # The distribution does not ship the sketch anymore, so the firmware is taken from the
@@ -134,7 +159,6 @@ resolve_protocol() {
             # integration tests use would not, as that copy never leaves the repository.
             PROTO_FILENAME="ArdulinkProtocol.ino.hex"
             PROTO_FIRMWARE_SOURCE="https://github.com/Ardulink/Firmware/releases/download/v1.2.0/ArdulinkProtocol.ino.hex"
-            PROTO_CONNECTION="$PROTO_CONNECTION"
             ;;
         firmata)
             # Stock Firmata is no Ardulink firmware, hence the Firmware repository does not publish
@@ -146,12 +170,19 @@ resolve_protocol() {
             # directory (ardulink.module.dir, defaulting to the working directory) next to the jar.
             PROTO_FILENAME="StandardFirmata.hex"
             PROTO_FIRMWARE_SOURCE="$SCRIPT_DIR/../../ardulink-core-base/src/test/resources/firmware/$PROTO_FILENAME"
-            PROTO_CONNECTION="$PROTO_CONNECTION&proto=Firmata&baudrate=9600"
+            PROTO_CONNECTION_SUFFIX="&proto=Firmata&baudrate=9600"
             ;;
         *)
             die "Unknown protocol '$protocol'. Supported protocols: ardulink, firmata."
             ;;
     esac
+}
+
+# Builds the connection string pointing to the given device. Called after
+# start_virtualavr, as only that run picks the device the applications connect
+# to.
+proto_connection() {
+    echo "ardulink://serial?port=$1$PROTO_CONNECTION_SUFFIX"
 }
 
 # Function to place the firmware of the resolved protocol in the directory mounted

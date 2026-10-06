@@ -12,12 +12,10 @@ export COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
 
 TEMP_DIR=$(mktemp -d)
 export ARDULINK_DIR="$TEMP_DIR/firmware"
-export VIRTUALDEVICE=$(find_first_unused_device "/dev/ttyUSB")
 PIN="12"
 
-resolve_protocol "${1:-ardulink}" "$VIRTUALDEVICE"
+resolve_protocol "${1:-ardulink}"
 export FILENAME="$PROTO_FILENAME"
-CONNECTION="$PROTO_CONNECTION"
 
 trap cleanup EXIT INT TERM
 
@@ -29,6 +27,7 @@ echo "Running Docker container for $FILENAME..."
 export DEVICEUSER=$UID
 
 with_port_lock start_virtualavr
+CONNECTION=$(proto_connection "$VIRTUALDEVICE")
 wait_for_container_healthy virtualavr 120
 
 # Step 3: Start websocat container (listening for messages sent by virtualavr)
