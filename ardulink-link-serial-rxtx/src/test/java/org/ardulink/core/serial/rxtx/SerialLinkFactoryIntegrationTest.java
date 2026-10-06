@@ -54,6 +54,7 @@ class SerialLinkFactoryIntegrationTest {
 	private static final String ARDULINK_FIRMWARE = "classpath://firmware/ArdulinkProtocol.ino.hex";
 
 	@Test
+	@Disabled("canConfigureSerialConnectionViaURI(com.github.pfichtner.testcontainers.virtualavr.VirtualAvrContainer) timed out after 5 minutes\r\n")
 	@UseVirtualAvr(isolated = true, firmware = ARDULINK_FIRMWARE)
 	void canConfigureSerialConnectionViaURI(VirtualAvrContainer<?> virtualAvr) throws Exception {
 		Configurer configurer = LinkManager.getInstance().getConfigurer(uri(virtualAvr));
