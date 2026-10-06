@@ -31,16 +31,16 @@ install_firmware
 echo "Running Docker container for $FILENAME..."
 export DEVICEUSER=$UID
 
-docker compose -f "$COMPOSE_FILE" up -d virtualavr
+docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" up -d virtualavr
 wait_for_container_healthy virtualavr 120
 
 # Step 3: Start websocat container (listening for messages sent by virtualavr)
-docker compose -f "$COMPOSE_FILE" up -d websocat
+docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" up -d websocat
 echo "WebSocket container started"
 
 # Let virtualavr report changes of pin $PIN. Firmata only sends pin reports when asked to,
 # which is what makes the state written below visible on the WebSocket.
-echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker compose -f "$COMPOSE_FILE" run --rm -T websocat-send-once "cat - | websocat ws://localhost:$WS_PORT"
+echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" run --rm -T websocat-send-once "cat - | websocat ws://localhost:$WS_PORT"
 
 # Step 4: Run the Java application in the background (detached mode)
 REST_PORT=$(find_unused_port 8080)

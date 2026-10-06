@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# Function to generate a unique stack ID for Docker Compose
+generate_stack_id() {
+    # Using timestamp as unique identifier
+    date +%s%N | cut -b1-13
+}
+
+# Generated once when this file is sourced at script startup, so it stays unique
+# and unchanged for the whole run. Every docker compose call must pass it via -p.
+STACK_ID="$(generate_stack_id)"
+export STACK_ID
+
 # Function to print an error message and exit with status 1
 die() {
     echo "Error: $1"
@@ -14,7 +25,7 @@ cleanup() {
     kill "$JAVA_PID" 2>/dev/null
 
     echo "Stopping Docker Compose services..."
-    docker compose -f "$COMPOSE_FILE" down
+    docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" down
 
     echo "Removing temporary directory..."
     rm -rf "$TEMP_DIR"
@@ -60,7 +71,7 @@ wait_for_container_healthy() {
 
     echo "Waiting for $container_name to become healthy..."
     timeout "$timeout" bash -c '
-        until [ "$(docker compose -f "'"$COMPOSE_FILE"'" ps --format "{{json .Health }}" "'"$container_name"'")" = "\"healthy\"" ]; do sleep 1; done' || die "Timeout reached. Container $container_name did not become healthy."
+        until [ "$(docker compose -p "'"$STACK_ID"'" -f "'"$COMPOSE_FILE"'" ps --format "{{json .Health }}" "'"$container_name"'")" = "\"healthy\"" ]; do sleep 1; done' || die "Timeout reached. Container $container_name did not become healthy."
 }
 
 # Function to resolve everything that depends on the protocol under test. Sets
@@ -132,7 +143,7 @@ check_websocket_message() {
         eval "$action"
 
         # Check WebSocket logs for the expected message using the provided jq pattern
-        if docker compose -f "$COMPOSE_FILE" logs websocat | jq -R -e \
+        if docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" logs websocat | jq -R -e \
             "split(\" | \") | .[1] | fromjson? | select($json_pattern)" \
             >/dev/null 2>&1; then
             echo "Test passed. Received WebSocket message matching $json_pattern."

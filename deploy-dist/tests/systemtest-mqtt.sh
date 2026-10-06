@@ -30,16 +30,16 @@ install_firmware
 # Step 2: Run the Docker container that emulates the Arduino
 echo "Running Docker container for $FILENAME..."
 export DEVICEUSER=$UID
-docker compose -f "$COMPOSE_FILE" up -d virtualavr
+docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" up -d virtualavr
 wait_for_container_healthy virtualavr 120
 
 # Step 3: Start websocat container (listening for messages sent by virtualavr)
-docker compose -f "$COMPOSE_FILE" up -d websocat
+docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" up -d websocat
 echo "WebSocket container started"
 
 # Let virtualavr report changes of pin $PIN. Firmata only sends pin reports when asked to,
 # which is what makes the state published below visible on the WebSocket.
-echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker compose -f "$COMPOSE_FILE" run --rm -T websocat-send-once "cat - | websocat ws://localhost:$WS_PORT"
+echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" run --rm -T websocat-send-once "cat - | websocat ws://localhost:$WS_PORT"
 
 # Step 4: Run the Java application in the background (detached mode)
 export MQTT_PORT=$(find_unused_port 1883)
@@ -62,7 +62,7 @@ export MQTT_MESSAGE="true"
 
 json_pattern=".type == \"pinState\" and .pin == \"$PIN\" and .state == true"
 check_websocket_message \
-    "docker compose -f "$COMPOSE_FILE" run --rm mqtt-pub-once" \
+    "docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" run --rm mqtt-pub-once" \
     "$json_pattern"
 
 # If everything is successful, cleanup will be called automatically when the script exits
