@@ -90,8 +90,7 @@ class FirmataProtocolTest {
 	}
 
 	@Test
-	void canReadCapabilities() throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException,
-			IllegalAccessException {
+	void canReadCapabilities() throws Exception {
 		givenMessage(capabilitiesQuery());
 		whenMessageIsProcessed();
 
