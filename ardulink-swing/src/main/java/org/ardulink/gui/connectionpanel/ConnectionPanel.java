@@ -196,8 +196,8 @@ public class ConnectionPanel extends JPanel implements Linkable {
 	}
 
 	private static ThreadFactory daemonThreadFactory() {
-		return runnable -> {
-			Thread thread = new Thread(runnable);
+		return r -> {
+			Thread thread = new Thread(r);
 			thread.setDaemon(true);
 			return thread;
 		};
