@@ -20,7 +20,6 @@ import static com.icegreen.greenmail.util.ServerSetupTest.SMTP_IMAP;
 import static java.lang.String.format;
 import static java.lang.String.join;
 import static java.lang.System.identityHashCode;
-import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -108,7 +107,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 
 				context.addRoutes(
 						ardulinkProcessing(imapUri(username, password), swapUpperLower(validSender), commandName,
-								asList(switchDigitalPin, switchAnalogPin), makeURI(mockUri, Map.of()), "mock:result"));
+								List.of(switchDigitalPin, switchAnalogPin), makeURI(mockUri, Map.of()), "mock:result"));
 				context.start();
 
 				long timeoutMillis = SECONDS.toMillis(TIMEOUT_SECS);
@@ -151,7 +150,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 			String smtpName = "direct:routeLink-" + UUID.randomUUID();
 			context.addRoutes(setToAndFromHeaderAndSendTo(smtpName, smtpUri(username, password)));
 			context.addRoutes(ardulinkProcessing(imapUri(username, password), validSender, commandName,
-					asList(switchDigitalPin, switchAnalogPin), ardulink, smtpName));
+					List.of(switchDigitalPin, switchAnalogPin), ardulink, smtpName));
 			context.start();
 
 			assertThat(fetchMails("loginIdSender", "secretOfSender")).singleElement()
@@ -176,8 +175,6 @@ class ArdulinkMailOnCamelIntegrationTest {
 		String commandName = "usedScenario";
 		String command1 = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
 		String command2 = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
-		String command = command1 + "," + command2;
-
 		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText(commandName));
 
 		Main main = new Main();
@@ -189,7 +186,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 		String smtpRouteStart = "direct:smtp-" + UUID.randomUUID();
 		main.configure().addRoutesBuilder(setToAndFromHeaderAndSendTo(smtpRouteStart, "{{to}}"));
 		main.configure().addRoutesBuilder(ardulinkProcessing("{{from}}", validSender, commandName,
-				asList(command.split("\\,")), makeURI(mockUri, Map.of()), smtpRouteStart));
+				List.of(command1, command2), makeURI(mockUri, Map.of()), smtpRouteStart));
 		runInBackground(main);
 
 		try {
@@ -288,7 +285,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 			Folder inbox = store.getFolder("INBOX");
 			inbox.open(Folder.READ_ONLY);
 			try {
-				return asList(inbox.getMessages());
+				return List.of(inbox.getMessages());
 			} finally {
 				inbox.close(false);
 			}
