@@ -20,8 +20,6 @@ import static com.icegreen.greenmail.util.ServerSetupTest.SMTP_IMAP;
 import static java.lang.String.format;
 import static java.lang.System.identityHashCode;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -108,7 +106,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 				String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
 
 				context.addRoutes(ardulinkProcessing(imapUri(username, password), swapUpperLower(validSender),
-						commandName, asList(switchDigitalPin, switchAnalogPin), makeURI(mockUri, emptyMap()),
+						commandName, asList(switchDigitalPin, switchAnalogPin), makeURI(mockUri, Map.of()),
 						"mock:result"));
 				context.start();
 
@@ -140,7 +138,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 		String commandName = "usedScenario";
 		send(mailFrom(validSender).to(receiver).withSubject(anySubject()).withText(commandName));
 
-		String ardulink = makeURI(mockUri, emptyMap());
+		String ardulink = makeURI(mockUri, Map.of());
 
 		String switchDigitalPin = alpProtocolMessage(DIGITAL_PIN_READ).forPin(1).withState(true);
 		String switchAnalogPin = alpProtocolMessage(ANALOG_PIN_READ).forPin(2).withValue(123);
@@ -184,7 +182,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 		String smtpRouteStart = "direct:smtp-" + UUID.randomUUID();
 		main.configure().addRoutesBuilder(setToAndFromHeaderAndSendTo(smtpRouteStart, "{{to}}"));
 		main.configure().addRoutesBuilder(ardulinkProcessing("{{from}}", validSender, commandName,
-				asList(command.split("\\,")), makeURI(mockUri, emptyMap()), smtpRouteStart));
+				asList(command.split("\\,")), makeURI(mockUri, Map.of()), smtpRouteStart));
 		runInBackground(main);
 
 		try {
@@ -260,7 +258,7 @@ class ArdulinkMailOnCamelIntegrationTest {
 
 	private List<Message> fetchMails(String loginId, String password) throws MessagingException, InterruptedException {
 		ImapServer imapd = mailMock.getImap();
-		AtomicReference<List<Message>> messages = new AtomicReference<>(emptyList());
+		AtomicReference<List<Message>> messages = new AtomicReference<>(List.of());
 		await().forever().pollInterval(100, MILLISECONDS).until(() -> {
 			messages.set(retrieveViaImap(imapd.getBindTo(), imapd.getPort(), loginId, password));
 			return !messages.get().isEmpty();
