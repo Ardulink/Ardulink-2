@@ -75,6 +75,18 @@ class TelemetrixProtocolTest {
 	}
 
 	@Test
+	void reSendsOutputModeAfterListeningWasEnabled() {
+		DigitalPin pin = digitalPin(13);
+		assertSoftly(s -> {
+			s.assertThat(sut.toDevice(toDeviceMessagePinStateChange(pin, true))).containsExactly(1, 13, 1, 0, 0, 2, 13,
+					1);
+			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(1, 13, 0, 1);
+			s.assertThat(sut.toDevice(toDeviceMessagePinStateChange(pin, false))).containsExactly(1, 13, 1, 0, 0, 2, 13,
+					0);
+		});
+	}
+
+	@Test
 	void canSetPwmPin() {
 		AnalogPin pin = analogPin(9);
 		assertSoftly(s -> {

@@ -30,6 +30,9 @@ Listening is enabled/disabled through the reporting byte of `SET_PIN_MODE`:
 
 The legacy `MODIFY_REPORTING` (`4`) command is intentionally not used: its declared command length of one byte does not match the three bytes the reference client sends, which leaves bytes in the serial buffer and desynchronizes the command stream.
 
+The sketch also declares four data bytes for `SET_PIN_MODE` while the reference client sends only three for the input and analog variants (only `AT_OUTPUT` uses all four). The sketch calls `set_pin_mode` after every data byte, so on the fourth iteration it reads the next buffered byte if one is already there. A command sent immediately after such a `SET_PIN_MODE` can therefore have its command byte consumed. The reference client lives with this, and so does this implementation: frames are written one at a time and the sketch's per-byte delay keeps the next command from being buffered yet.
+
+
 ##### Device to host
 
 | Feature | Id | Arguments | Ardulink mapping |
