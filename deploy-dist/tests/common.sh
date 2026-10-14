@@ -172,8 +172,16 @@ resolve_protocol() {
             PROTO_FIRMWARE_SOURCE="$SCRIPT_DIR/../../ardulink-core-base/src/test/resources/firmware/$PROTO_FILENAME"
             PROTO_CONNECTION_SUFFIX="&proto=Firmata&baudrate=9600"
             ;;
+        telemetrix)
+            # The legacy arduino-telemetrix.ino sketch is published in the Telemetrix repository.
+            # It is a plain sketch (no compiled hex), so it is downloaded as .ino and compiled by
+            # the virtualavr container at startup.
+            PROTO_FILENAME="arduino-telemetrix.ino"
+            PROTO_FIRMWARE_SOURCE="https://raw.githubusercontent.com/MrYsLab/telemetrix/refs/heads/master/arduino_sketches/arduino-telemetrix/arduino-telemetrix.ino"
+            PROTO_CONNECTION_SUFFIX="&proto=Telemetrix&baudrate=115200"
+            ;;
         *)
-            die "Unknown protocol '$protocol'. Supported protocols: ardulink, firmata."
+            die "Unknown protocol '$protocol'. Supported protocols: ardulink, firmata, telemetrix."
             ;;
     esac
 }
