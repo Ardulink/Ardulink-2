@@ -17,7 +17,9 @@ limitations under the License.
 package org.ardulink.core.proto.telemetrix;
 
 import static java.lang.Boolean.TRUE;
-import static java.util.EnumSet.allOf;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toUnmodifiableMap;
+import static java.util.stream.Stream.of;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -102,6 +104,9 @@ public class TelemetrixProtocol implements Protocol {
 		private final byte code;
 		private final int argCount;
 
+		private static final Map<Byte, Report> BY_CODE = of(values())
+				.collect(toUnmodifiableMap(r -> r.code, identity()));
+
 		Report(int code, int argCount) {
 			this.code = (byte) code;
 			this.argCount = argCount;
@@ -112,7 +117,7 @@ public class TelemetrixProtocol implements Protocol {
 		}
 
 		static Report from(byte code) {
-			return allOf(Report.class).stream().filter(report -> report.code == code).findFirst().orElse(null);
+			return BY_CODE.get(code);
 		}
 
 	}
@@ -204,8 +209,12 @@ public class TelemetrixProtocol implements Protocol {
 		}
 
 		private byte[] setPinMode(Pin pin, byte reporting) {
+			int pinNum = pin.pinNum();
+			// the pin is configured as an input (or analog input), so a later
+			// write has to re-send the output mode again
+			outputPins.remove(pinNum);
 			byte mode = pin.is(ANALOG) ? AT_ANALOG : AT_INPUT;
-			return new byte[] { Command.SET_PIN_MODE.code(), (byte) pin.pinNum(), mode, reporting };
+			return new byte[] { Command.SET_PIN_MODE.code(), (byte) pinNum, mode, reporting };
 		}
 
 		@Override
