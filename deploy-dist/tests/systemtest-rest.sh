@@ -2,7 +2,7 @@
 
 # Systemtest of the REST application in the distribution. The protocol under test is
 # given as the only argument, defaults to ardulink.
-# Usage: systemtest-rest.sh [ardulink|firmata]
+# Usage: systemtest-rest.sh [ardulink|firmata|telemetrix]
 
 # Include the common script
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
