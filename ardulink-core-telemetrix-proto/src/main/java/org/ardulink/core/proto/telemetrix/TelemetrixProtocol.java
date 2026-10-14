@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core.proto.telemetrix;
 
 import static java.lang.Boolean.TRUE;
+import static java.util.EnumSet.allOf;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
@@ -64,19 +65,57 @@ public class TelemetrixProtocol implements Protocol {
 	public static final String NAME = "Telemetrix";
 
 	// commands received by the device
-	private static final byte SERIAL_LOOP_BACK = 0;
-	private static final byte SET_PIN_MODE = 1;
-	private static final byte DIGITAL_WRITE = 2;
-	private static final byte ANALOG_WRITE = 3;
-	private static final byte GET_FIRMWARE_VERSION = 5;
-	private static final byte ARE_U_THERE = 6;
+	private enum Command {
 
-	// reports sent by the device
-	private static final byte DIGITAL_REPORT = DIGITAL_WRITE;
-	private static final byte ANALOG_REPORT = ANALOG_WRITE;
-	private static final byte FIRMWARE_REPORT = GET_FIRMWARE_VERSION;
-	private static final byte I_AM_HERE = ARE_U_THERE;
-	private static final byte DEBUG_PRINT = 99;
+		SERIAL_LOOP_BACK(0), //
+		SET_PIN_MODE(1), //
+		DIGITAL_WRITE(2), //
+		ANALOG_WRITE(3), //
+		GET_FIRMWARE_VERSION(5), //
+		ARE_U_THERE(6);
+
+		private final byte code;
+
+		Command(int code) {
+			this.code = (byte) code;
+		}
+
+		byte code() {
+			return code;
+		}
+
+	}
+
+	// reports sent by the device. Their ids reuse the command ids (e.g. the
+	// digital report shares the digital write id), the debug report has no
+	// command counterpart. argCount is the number of argument bytes following
+	// the report id.
+	private enum Report {
+
+		LOOP_BACK(Command.SERIAL_LOOP_BACK.code(), 1), //
+		DIGITAL(Command.DIGITAL_WRITE.code(), 2), //
+		ANALOG(Command.ANALOG_WRITE.code(), 3), //
+		FIRMWARE(Command.GET_FIRMWARE_VERSION.code(), 2), //
+		I_AM_HERE(Command.ARE_U_THERE.code(), 1), //
+		DEBUG_PRINT(99, 3);
+
+		private final byte code;
+		private final int argCount;
+
+		Report(int code, int argCount) {
+			this.code = (byte) code;
+			this.argCount = argCount;
+		}
+
+		int argCount() {
+			return argCount;
+		}
+
+		static Report from(byte code) {
+			return allOf(Report.class).stream().filter(report -> report.code == code).findFirst().orElse(null);
+		}
+
+	}
 
 	// pin modes (see Arduino.h and arduino-telemetrix.ino)
 	private static final byte AT_INPUT = 0;
@@ -95,71 +134,52 @@ public class TelemetrixProtocol implements Protocol {
 
 		private final Map<Integer, Byte> outputPins = new ConcurrentHashMap<>();
 
-		// parser state, -1 means "waiting for a report id"
-		private int reportId = -1;
+		// parser state, the report currently being read, null while waiting
+		// for a report id
+		private Report report;
 		private final ByteArray reportArgs = new ByteArray();
 
 		@Override
 		public void process(byte b) {
-			if (reportId < 0) {
+			if (report == null) {
 				startReport(b);
 				return;
 			}
 			reportArgs.append(b);
-			if (reportArgs.length() == reportArgCount((byte) reportId)) {
-				dispatch((byte) reportId, reportArgs.copy());
-				reportArgs.clear();
-				reportId = -1;
+			if (reportArgs.length() == report.argCount()) {
+				dispatch(report, reportArgs.copy());
+				report = null;
 			}
 		}
 
 		private void startReport(byte reportId) {
-			int argCount = reportArgCount(reportId);
-			if (argCount < 0) {
+			Report report = Report.from(reportId);
+			if (report == null) {
 				return;
 			}
-			if (argCount == 0) {
-				dispatch(reportId, new byte[0]);
-			} else {
-				reportArgs.clear();
-				this.reportId = reportId;
+			if (report.argCount() == 0) {
+				dispatch(report, new byte[0]);
+				return;
 			}
+			reportArgs.clear();
+			this.report = report;
 		}
 
-		private static int reportArgCount(byte reportId) {
-			switch (reportId) {
-			case SERIAL_LOOP_BACK:
-				return 1;
-			case DIGITAL_REPORT:
-				return 2;
-			case ANALOG_REPORT:
-				return 3;
-			case FIRMWARE_REPORT:
-				return 2;
-			case I_AM_HERE:
-				return 1;
-			case DEBUG_PRINT:
-				return 3;
-			default:
-				return -1;
-			}
-		}
-
-		private void dispatch(byte reportId, byte[] args) {
-			switch (reportId) {
-			case DIGITAL_REPORT:
+		private void dispatch(Report report, byte[] args) {
+			switch (report) {
+			case DIGITAL:
 				fireEvent(fromDeviceMessagePinStateChanged(digitalPin(unsigned(args[0])), args[1] != 0));
 				break;
-			case ANALOG_REPORT:
+			case ANALOG:
 				fireEvent(fromDeviceMessagePinStateChanged(analogPin(unsigned(args[0])),
 						(unsigned(args[1]) << 8) | unsigned(args[2])));
 				break;
-			case FIRMWARE_REPORT:
+			case FIRMWARE:
 			case I_AM_HERE:
 				fireEvent(fromDeviceMessageInfo());
 				break;
 			default:
-				// SERIAL_LOOP_BACK and DEBUG_PRINT do not map to ardulink events
+				// loop back and debug reports do not map to ardulink events
 				break;
 			}
 		}
@@ -170,7 +190,7 @@ public class TelemetrixProtocol implements Protocol {
 
 		@Override
 		public byte[] toDevice(ToDeviceMessagePing ping) {
-			return new byte[] { GET_FIRMWARE_VERSION };
+			return new byte[] { Command.GET_FIRMWARE_VERSION.code() };
 		}
 
 		@Override
@@ -185,7 +205,7 @@ public class TelemetrixProtocol implements Protocol {
 
 		private byte[] setPinMode(Pin pin, byte reporting) {
 			byte mode = pin.is(ANALOG) ? AT_ANALOG : AT_INPUT;
-			return new byte[] { SET_PIN_MODE, (byte) pin.pinNum(), mode, reporting };
+			return new byte[] { Command.SET_PIN_MODE.code(), (byte) pin.pinNum(), mode, reporting };
 		}
 
 		@Override
@@ -195,16 +215,19 @@ public class TelemetrixProtocol implements Protocol {
 			int pinNum = pin.pinNum();
 			ensureOutputMode(message, pinNum);
 			if (pin.is(ANALOG)) {
-				message.append(new byte[] { ANALOG_WRITE, (byte) pinNum, (byte) ((Integer) pinStateChange.getValue()).intValue() });
+				message.append(new byte[] { Command.ANALOG_WRITE.code(), (byte) pinNum,
+						(byte) ((Integer) pinStateChange.getValue()).intValue() });
 			} else {
-				message.append(new byte[] { DIGITAL_WRITE, (byte) pinNum, booleanToByte(TRUE.equals(pinStateChange.getValue())) });
+				message.append(new byte[] { Command.DIGITAL_WRITE.code(), (byte) pinNum,
+						booleanToByte(TRUE.equals(pinStateChange.getValue())) });
 			}
 			return message.copy();
 		}
 
 		private void ensureOutputMode(ByteArray message, int pinNum) {
 			if (outputPins.putIfAbsent(pinNum, AT_OUTPUT) == null) {
-				message.append(new byte[] { SET_PIN_MODE, (byte) pinNum, AT_OUTPUT, REPORTING_OFF, REPORTING_OFF });
+				message.append(new byte[] { Command.SET_PIN_MODE.code(), (byte) pinNum, AT_OUTPUT, REPORTING_OFF,
+						REPORTING_OFF });
 			}
 		}
 
