@@ -11,7 +11,7 @@ This module implements the legacy Telemetrix protocol. It is a plain byte protoc
 | Feature | Id | Format |
 |---------|----|--------|
 | Loop back | `0` | `0 <byte>` |
-| Set pin mode | `1` | `1 <pin> <mode> <reporting>` |
+| Set pin mode | `1` | `1 <pin> <mode> <reporting> <unused>` |
 | Digital write | `2` | `2 <pin> <value>` |
 | Analog (PWM) write | `3` | `3 <pin> <value>` |
 | Get firmware version | `5` | `5` (used for Ping) |
@@ -23,14 +23,14 @@ Listening is enabled/disabled through the reporting byte of `SET_PIN_MODE`:
 
 | Feature | Format |
 |---------|--------|
-| Start listening (analog) | `1 <pin> 3 1` |
-| Start listening (digital) | `1 <pin> 0 1` |
-| Stop listening (analog) | `1 <pin> 3 0` |
-| Stop listening (digital) | `1 <pin> 0 0` |
+| Start listening (analog) | `1 <pin> 3 1 0` |
+| Start listening (digital) | `1 <pin> 0 1 0` |
+| Stop listening (analog) | `1 <pin> 3 0 0` |
+| Stop listening (digital) | `1 <pin> 0 0 0` |
 
 The legacy `MODIFY_REPORTING` (`4`) command is intentionally not used: its declared command length of one byte does not match the three bytes the reference client sends, which leaves bytes in the serial buffer and desynchronizes the command stream.
 
-The sketch also declares four data bytes for `SET_PIN_MODE` while the reference client sends only three for the input and analog variants (only `AT_OUTPUT` uses all four). The sketch calls `set_pin_mode` after every data byte, so on the fourth iteration it reads the next buffered byte if one is already there. A command sent immediately after such a `SET_PIN_MODE` can therefore have its command byte consumed. The reference client lives with this, and so does this implementation: frames are written one at a time and the sketch's per-byte delay keeps the next command from being buffered yet.
+`SET_PIN_MODE` declares four data bytes in the sketch, but only `<pin>`, `<mode>` and `<reporting>` are read; the fourth is unused and sent as `0`. It must not be omitted: the sketch calls `set_pin_mode` after each of the four data bytes and, on the fourth iteration, reads whatever byte is buffered next. Sending only three data bytes makes that read consume the following command's id byte and desynchronizes the stream.
 
 
 ##### Device to host

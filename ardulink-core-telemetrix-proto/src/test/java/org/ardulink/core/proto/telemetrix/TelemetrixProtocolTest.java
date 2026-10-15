@@ -80,7 +80,7 @@ class TelemetrixProtocolTest {
 		assertSoftly(s -> {
 			s.assertThat(sut.toDevice(toDeviceMessagePinStateChange(pin, true))).containsExactly(1, 13, 1, 0, 0, 2, 13,
 					1);
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(1, 13, 0, 1);
+			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(1, 13, 0, 1, 0);
 			s.assertThat(sut.toDevice(toDeviceMessagePinStateChange(pin, false))).containsExactly(1, 13, 1, 0, 0, 2, 13,
 					0);
 		});
@@ -99,8 +99,8 @@ class TelemetrixProtocolTest {
 	void canEnableDisableAnalogListening() {
 		Pin pin = analogPin(2);
 		assertSoftly(s -> {
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(1, 2, 3, 1);
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(1, 2, 3, 0);
+			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(1, 2, 3, 1, 0);
+			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(1, 2, 3, 0, 0);
 		});
 	}
 
@@ -108,8 +108,8 @@ class TelemetrixProtocolTest {
 	void canEnableDisableDigitalListening() {
 		Pin pin = digitalPin(12);
 		assertSoftly(s -> {
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(1, 12, 0, 1);
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(1, 12, 0, 0);
+			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(1, 12, 0, 1, 0);
+			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(1, 12, 0, 0, 0);
 		});
 	}
 

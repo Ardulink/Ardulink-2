@@ -214,7 +214,10 @@ public class TelemetrixProtocol implements Protocol {
 			// write has to re-send the output mode again
 			outputPins.remove(pinNum);
 			byte mode = pin.is(ANALOG) ? AT_ANALOG : AT_INPUT;
-			return new byte[] { Command.SET_PIN_MODE.code(), (byte) pinNum, mode, reporting };
+			// SET_PIN_MODE expects four argument bytes (see command_lengths in
+			// arduino-telemetrix.ino); the fourth is unused but must be sent,
+			// otherwise the sketch consumes the next command's id byte
+			return new byte[] { Command.SET_PIN_MODE.code(), (byte) pinNum, mode, reporting, REPORTING_OFF };
 		}
 
 		@Override
