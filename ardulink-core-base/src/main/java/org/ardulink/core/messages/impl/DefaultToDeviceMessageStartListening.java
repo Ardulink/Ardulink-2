@@ -35,7 +35,7 @@ public class DefaultToDeviceMessageStartListening implements ToDeviceMessageStar
 
 	private final Pin pin;
 
-	public DefaultToDeviceMessageStartListening(Pin pin) {
+	private DefaultToDeviceMessageStartListening(Pin pin) {
 		this.pin = pin;
 	}
 
