@@ -160,9 +160,10 @@ class TelemetrixProtocolTest {
 
 	@Test
 	void canReadFirmwareReport() throws IOException {
-		givenMessage(5, 0, 1);
+		givenMessage(5, 1, 23);
 		whenMessageIsProcessed();
-		assertThat(messages).singleElement().isInstanceOf(FromDeviceMessageInfo.class);
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageInfo.class,
+				i -> assertThat(i.parameters()).containsExactlyInAnyOrderEntriesOf(Map.of("fw", "1.23")));
 	}
 
 	@Test

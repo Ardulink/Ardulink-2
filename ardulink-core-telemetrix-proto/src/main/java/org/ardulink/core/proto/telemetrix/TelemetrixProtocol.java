@@ -21,6 +21,8 @@ import static java.lang.String.format;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
+import static org.ardulink.core.messages.api.FromDeviceMessageInfo.ARDUINO_ID;
+import static org.ardulink.core.messages.api.FromDeviceMessageInfo.FIRMWARE;
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageInfo.fromDeviceMessageInfo;
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessagePinStateChanged.fromDeviceMessagePinStateChanged;
 import static org.ardulink.util.Enums.mapInstances;
@@ -182,10 +184,10 @@ public class TelemetrixProtocol implements Protocol {
 						(unsigned(args[1]) << 8) | unsigned(args[2])));
 				break;
 			case FIRMWARE:
-				fireEvent(fromDeviceMessageInfo());
+				fireEvent(fromDeviceMessageInfo(Map.of(FIRMWARE, unsigned(args[0]) + "." + unsigned(args[1]))));
 				break;
 			case I_AM_HERE:
-				fireEvent(fromDeviceMessageInfo(Map.of("arduinoId", unsigned(args[0]))));
+				fireEvent(fromDeviceMessageInfo(Map.of(ARDUINO_ID, unsigned(args[0]))));
 				break;
 			default:
 				// loop back and debug reports do not map to ardulink events
