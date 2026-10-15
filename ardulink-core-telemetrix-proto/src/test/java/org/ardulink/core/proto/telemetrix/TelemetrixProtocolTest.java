@@ -18,8 +18,13 @@ package org.ardulink.core.proto.telemetrix;
 
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
-import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePing.toDeviceMessageNoTone;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom.toDeviceMessageCustom;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageKeyPress.toDeviceMessageKeyPress;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange.toDeviceMessagePinStateChange;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePing.toDeviceMessageNoTone;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening.toDeviceMessageStartListening;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening.toDeviceMessageStopListening;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -33,11 +38,11 @@ import java.util.List;
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
+import org.ardulink.core.Tone;
 import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessageInfo;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
+import org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.junit.jupiter.api.Test;
 
@@ -80,7 +85,7 @@ class TelemetrixProtocolTest {
 		assertSoftly(s -> {
 			s.assertThat(sut.toDevice(toDeviceMessagePinStateChange(pin, true))).containsExactly(1, 13, 1, 0, 0, 2, 13,
 					1);
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(1, 13, 0, 1, 0);
+			s.assertThat(sut.toDevice(toDeviceMessageStartListening(pin))).containsExactly(1, 13, 0, 1, 0);
 			s.assertThat(sut.toDevice(toDeviceMessagePinStateChange(pin, false))).containsExactly(1, 13, 1, 0, 0, 2, 13,
 					0);
 		});
@@ -99,8 +104,8 @@ class TelemetrixProtocolTest {
 	void canEnableDisableAnalogListening() {
 		Pin pin = analogPin(2);
 		assertSoftly(s -> {
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(1, 2, 3, 1, 0);
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(1, 2, 3, 0, 0);
+			s.assertThat(sut.toDevice(toDeviceMessageStartListening(pin))).containsExactly(1, 2, 3, 1, 0);
+			s.assertThat(sut.toDevice(toDeviceMessageStopListening(pin))).containsExactly(1, 2, 3, 0, 0);
 		});
 	}
 
@@ -108,8 +113,26 @@ class TelemetrixProtocolTest {
 	void canEnableDisableDigitalListening() {
 		Pin pin = digitalPin(12);
 		assertSoftly(s -> {
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(1, 12, 0, 1, 0);
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(1, 12, 0, 0, 0);
+			s.assertThat(sut.toDevice(toDeviceMessageStartListening(pin))).containsExactly(1, 12, 0, 1, 0);
+			s.assertThat(sut.toDevice(toDeviceMessageStopListening(pin))).containsExactly(1, 12, 0, 0, 0);
+		});
+	}
+
+	@Test
+	void doesNotSupportKeyPressToneNoToneAndCustomMessages() {
+		assertSoftly(s -> {
+			s.assertThatThrownBy(() -> sut.toDevice(toDeviceMessageKeyPress('a', 0, 0, 0, 0)))
+					.isInstanceOf(UnsupportedOperationException.class)
+					.hasMessageContaining("key press events");
+			s.assertThatThrownBy(() -> sut.toDevice(toDeviceMessageTone(Tone.forPin(analogPin(9)).withHertz(440).endless())))
+					.isInstanceOf(UnsupportedOperationException.class)
+					.hasMessageContaining("does not support tones");
+			s.assertThatThrownBy(() -> sut.toDevice(DefaultToDeviceMessageNoTone.toDeviceMessageNoTone(analogPin(2))))
+					.isInstanceOf(UnsupportedOperationException.class)
+					.hasMessageContaining("does not support tones");
+			s.assertThatThrownBy(() -> sut.toDevice(toDeviceMessageCustom("custom")))
+					.isInstanceOf(UnsupportedOperationException.class)
+					.hasMessageContaining("custom messages");
 		});
 	}
 
@@ -131,6 +154,13 @@ class TelemetrixProtocolTest {
 	}
 
 	@Test
+	void canReadDigitalPinLow() throws IOException {
+		givenMessage(2, 5, 0);
+		whenMessageIsProcessed();
+		thenMessageIs(digitalPin(5), false);
+	}
+
+	@Test
 	void canReadFirmwareReport() throws IOException {
 		givenMessage(5, 0, 1);
 		whenMessageIsProcessed();
@@ -147,6 +177,13 @@ class TelemetrixProtocolTest {
 	@Test
 	void ignoresLoopBackAndDebugReports() throws IOException {
 		givenMessage(0, 7, /**/ 99, 1, 0, 42);
+		whenMessageIsProcessed();
+		assertThat(messages).isEmpty();
+	}
+
+	@Test
+	void ignoresUnknownReportIds() throws IOException {
+		givenMessage(7, 7);
 		whenMessageIsProcessed();
 		assertThat(messages).isEmpty();
 	}
