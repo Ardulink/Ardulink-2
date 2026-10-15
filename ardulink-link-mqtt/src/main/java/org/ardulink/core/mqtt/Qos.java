@@ -1,6 +1,9 @@
 package org.ardulink.core.mqtt;
 
-import java.util.EnumSet;
+import static org.ardulink.util.Enums.mapInstances;
+import static org.ardulink.util.Preconditions.checkArgument;
+
+import java.util.Map;
 
 public enum Qos {
 
@@ -8,6 +11,8 @@ public enum Qos {
 
 	public static final Qos DEFAULT = AT_MOST_ONCE;
 	private final int intValue;
+
+	private static final Map<Integer, Qos> byIntValue = mapInstances(Qos.class, Qos::intValue);
 
 	Qos(int intValue) {
 		this.intValue = intValue;
@@ -18,8 +23,9 @@ public enum Qos {
 	}
 
 	public static Qos forInt(int level) {
-		return EnumSet.allOf(Qos.class).stream().filter(q -> q.intValue() == level).findFirst()
-				.orElseThrow(() -> new IllegalArgumentException("Invalid qos level " + level));
+		Qos qos = byIntValue.get(level);
+		checkArgument(qos != null, "Invalid qos level %s", level);
+		return qos;
 	}
 
 }
