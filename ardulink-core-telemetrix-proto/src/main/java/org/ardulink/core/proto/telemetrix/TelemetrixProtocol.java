@@ -18,15 +18,13 @@ package org.ardulink.core.proto.telemetrix;
 
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toUnmodifiableMap;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageInfo.fromDeviceMessageInfo;
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessagePinStateChanged.fromDeviceMessagePinStateChanged;
+import static org.ardulink.util.Enums.mapInstances;
 
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -105,8 +103,7 @@ public class TelemetrixProtocol implements Protocol {
 		private final byte code;
 		private final int argCount;
 
-		private static final Map<Byte, Report> byCode = EnumSet.allOf(Report.class).stream() //
-				.collect(toUnmodifiableMap(Report::code, identity()));
+		private static final Map<Byte, Report> byCode = mapInstances(Report.class, Report::code);
 
 		Report(Command command, int argCount) {
 			this(command.code(), argCount);
