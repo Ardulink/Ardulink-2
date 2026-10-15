@@ -17,8 +17,7 @@ limitations under the License.
 package org.ardulink.core.serial.jssc;
 
 import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
-import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinListening;
-import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinSwitching;
+import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPins;
 import static org.ardulink.util.URIBuilder.uriBuilder;
 
 import java.net.URI;
@@ -40,8 +39,7 @@ class TelemetrixSerialLinkFactoryIntegrationTest {
 	@UseVirtualAvr(isolated = true, firmware = TELEMETRIX_FIRMWARE)
 	void canInteractWithSerialLink(VirtualAvrContainer<?> virtualAvr) throws Exception {
 		Configurer configurer = LinkManager.getInstance().getConfigurer(uri(virtualAvr));
-		testSerialPinSwitching(virtualAvr, configurer);
-		testSerialPinListening(virtualAvr, configurer);
+		testSerialPins(virtualAvr, configurer);
 	}
 
 	static URI uri(VirtualAvrContainer<?> virtualAvr) {

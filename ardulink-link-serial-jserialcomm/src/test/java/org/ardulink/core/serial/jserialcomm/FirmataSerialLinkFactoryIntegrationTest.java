@@ -18,8 +18,7 @@ package org.ardulink.core.serial.jserialcomm;
 
 import static java.lang.String.format;
 import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
-import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinListening;
-import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinSwitching;
+import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPins;
 import static org.ardulink.util.URIBuilder.uriBuilder;
 
 import java.net.URI;
@@ -46,8 +45,7 @@ class FirmataSerialLinkFactoryIntegrationTest {
 	@UseVirtualAvr(isolated = true, firmware = "classpath://firmware/StandardFirmata.hex")
 	void canInteractWithSerialLink(VirtualAvrContainer<?> virtualAvr) throws Exception {
 		Configurer configurer = LinkManager.getInstance().getConfigurer(uri(virtualAvr));
-		testSerialPinSwitching(virtualAvr, configurer);
-		testSerialPinListening(virtualAvr, configurer);
+		testSerialPins(virtualAvr, configurer);
 	}
 
 	static URI uri(VirtualAvrContainer<?> virtualAvr) {

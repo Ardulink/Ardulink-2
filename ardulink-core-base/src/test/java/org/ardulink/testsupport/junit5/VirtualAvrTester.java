@@ -50,6 +50,14 @@ public final class VirtualAvrTester {
 		super();
 	}
 
+	// single link: a closed link's reader thread keeps stealing bytes from a reopened port
+	public static void testSerialPins(VirtualAvrContainer<?> virtualAvr, Configurer configurer) throws IOException {
+		try (Link link = configurer.newLink()) {
+			testSerialPinSwitching(virtualAvr, link);
+			testSerialPinListening(virtualAvr, link);
+		}
+	}
+
 	public static void testSerialPinSwitching(VirtualAvrContainer<?> virtualAvr, Configurer configurer)
 			throws IOException {
 		try (Link link = configurer.newLink()) {

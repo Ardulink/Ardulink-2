@@ -17,8 +17,7 @@ limitations under the License.
 package org.ardulink.core.serial.rxtx;
 
 import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
-import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinListening;
-import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinSwitching;
+import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPins;
 import static org.ardulink.util.URIBuilder.uriBuilder;
 
 import java.net.URI;
@@ -43,8 +42,7 @@ class TelemetrixSerialLinkFactoryIntegrationTest {
 	void canInteractWithSerialLink(VirtualAvrContainer<?> virtualAvr) throws Exception {
 		URI uri = uri(virtualAvr);
 		Configurer configurer = LinkManager.getInstance().getConfigurer(uri);
-		testSerialPinSwitching(virtualAvr, configurer);
-		testSerialPinListening(virtualAvr, configurer);
+		testSerialPins(virtualAvr, configurer);
 	}
 
 	static URI uri(VirtualAvrContainer<?> virtualAvr) {
