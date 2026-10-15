@@ -8,8 +8,10 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom.toDeviceMessageCustom;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone.toDeviceMessageNoTone;
-import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePing.toDeviceMessageNoTone;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange.toDeviceMessagePinStateChange;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePing.toDeviceMessageNoTone;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening.toDeviceMessageStartListening;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening.toDeviceMessageStopListening;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
 import static org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessors.parse;
 import static org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin.Mode.ANALOG_INPUT;
@@ -39,16 +41,14 @@ import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.Tone;
-import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceChangeListeningState;
+import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessageCustom;
 import org.ardulink.core.messages.api.FromDeviceMessageInfo;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.messages.api.FromDeviceMessageReply;
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.impl.DefaultToDeviceMessageKeyPress;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening;
-import org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening;
 import org.ardulink.core.proto.api.MessageIdHolders;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
 import org.ardulink.core.proto.firmata.FirmataProtocol.FirmataPin;
@@ -241,8 +241,8 @@ class FirmataProtocolTest {
 		byte pinNumber = 2;
 		Pin pin = analogPin(pinNumber);
 		assertSoftly(s -> {
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin))).containsExactly(0xF4, 0x02, 0x00, 0xC2, 0x01);
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(0xC2, 0x00);
+			s.assertThat(sut.toDevice(toDeviceMessageStartListening(pin))).containsExactly(0xF4, 0x02, 0x00, 0xC2, 0x01);
+			s.assertThat(sut.toDevice(toDeviceMessageStopListening(pin))).containsExactly(0xC2, 0x00);
 		});
 	}
 
@@ -251,9 +251,9 @@ class FirmataProtocolTest {
 		byte pinNumber = 12;
 		Pin pin = digitalPin(pinNumber);
 		assertSoftly(s -> {
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStartListening(pin)))
+			s.assertThat(sut.toDevice(toDeviceMessageStartListening(pin)))
 					.containsExactly(0xF4, 12, 0, 0xD1, 0x01);
-			s.assertThat(sut.toDevice(new DefaultToDeviceMessageStopListening(pin))).containsExactly(0xD1, 0x00);
+			s.assertThat(sut.toDevice(toDeviceMessageStopListening(pin))).containsExactly(0xD1, 0x00);
 		});
 	}
 
