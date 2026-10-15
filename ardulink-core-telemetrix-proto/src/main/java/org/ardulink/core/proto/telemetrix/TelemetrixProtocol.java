@@ -182,8 +182,10 @@ public class TelemetrixProtocol implements Protocol {
 						(unsigned(args[1]) << 8) | unsigned(args[2])));
 				break;
 			case FIRMWARE:
-			case I_AM_HERE:
 				fireEvent(fromDeviceMessageInfo());
+				break;
+			case I_AM_HERE:
+				fireEvent(fromDeviceMessageInfo(Map.of("arduinoId", unsigned(args[0]))));
 				break;
 			default:
 				// loop back and debug reports do not map to ardulink events

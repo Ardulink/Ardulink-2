@@ -15,6 +15,8 @@ limitations under the License.
  */
 package org.ardulink.core.messages.api;
 
+import java.util.Map;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -24,5 +26,13 @@ package org.ardulink.core.messages.api;
  *
  */
 public interface FromDeviceMessageInfo extends FromDeviceMessage {
+
+	/**
+	 * Parameters carried by this info message. Messages without payload return an
+	 * empty map.
+	 */
+	default Map<String, Object> parameters() {
+		return Map.of();
+	}
 
 }

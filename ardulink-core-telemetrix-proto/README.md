@@ -40,6 +40,6 @@ The legacy `MODIFY_REPORTING` (`4`) command is intentionally not used: its decla
 | Digital report | `2` | `pin, value` | `digitalPin(pin)`, `value != 0` |
 | Analog report | `3` | `pin, high, low` | `analogPin(pin)`, `(high << 8) \| low` |
 | Firmware report | `5` | `major, minor` | `FromDeviceMessageInfo` |
-| I am here | `6` | `arduinoId` | `FromDeviceMessageInfo` |
+| I am here | `6` | `arduinoId` | `FromDeviceMessageInfo` (parameter `arduinoId`) |
 | Loop back | `0` | `byte` | ignored |
 | Debug print | `99` | `id, high, low` | ignored |

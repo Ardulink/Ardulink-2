@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
@@ -122,17 +123,14 @@ class TelemetrixProtocolTest {
 	void doesNotSupportKeyPressToneNoToneAndCustomMessages() {
 		assertSoftly(s -> {
 			s.assertThatThrownBy(() -> sut.toDevice(toDeviceMessageKeyPress('a', 0, 0, 0, 0)))
-					.isInstanceOf(UnsupportedOperationException.class)
-					.hasMessageContaining("key press events");
-			s.assertThatThrownBy(() -> sut.toDevice(toDeviceMessageTone(Tone.forPin(analogPin(9)).withHertz(440).endless())))
-					.isInstanceOf(UnsupportedOperationException.class)
-					.hasMessageContaining("does not support tones");
+					.isInstanceOf(UnsupportedOperationException.class).hasMessageContaining("key press events");
+			s.assertThatThrownBy(
+					() -> sut.toDevice(toDeviceMessageTone(Tone.forPin(analogPin(9)).withHertz(440).endless())))
+					.isInstanceOf(UnsupportedOperationException.class).hasMessageContaining("does not support tones");
 			s.assertThatThrownBy(() -> sut.toDevice(DefaultToDeviceMessageNoTone.toDeviceMessageNoTone(analogPin(2))))
-					.isInstanceOf(UnsupportedOperationException.class)
-					.hasMessageContaining("does not support tones");
+					.isInstanceOf(UnsupportedOperationException.class).hasMessageContaining("does not support tones");
 			s.assertThatThrownBy(() -> sut.toDevice(toDeviceMessageCustom("custom")))
-					.isInstanceOf(UnsupportedOperationException.class)
-					.hasMessageContaining("custom messages");
+					.isInstanceOf(UnsupportedOperationException.class).hasMessageContaining("custom messages");
 		});
 	}
 
@@ -169,9 +167,10 @@ class TelemetrixProtocolTest {
 
 	@Test
 	void canReadIAmHereReport() throws IOException {
-		givenMessage(6, 1);
+		givenMessage(6, 42);
 		whenMessageIsProcessed();
-		assertThat(messages).singleElement().isInstanceOf(FromDeviceMessageInfo.class);
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageInfo.class,
+				i -> assertThat(i.parameters()).containsExactlyInAnyOrderEntriesOf(Map.of("arduinoId", 42)));
 	}
 
 	@Test
