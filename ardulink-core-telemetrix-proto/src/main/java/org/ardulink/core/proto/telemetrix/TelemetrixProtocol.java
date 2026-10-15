@@ -171,10 +171,6 @@ public class TelemetrixProtocol implements Protocol {
 			if (report == null) {
 				return;
 			}
-			if (report.argCount() == 0) {
-				dispatch(report, new byte[0]);
-				return;
-			}
 			reportArgs.clear();
 			this.report = report;
 		}
