@@ -75,6 +75,25 @@ class ArdulinkProtocol2Test {
 		givenMessage("alp://info/");
 		whenMessageIsProcessed();
 		assertThat(messages).singleElement().isInstanceOf(FromDeviceMessageInfo.class);
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageInfo.class,
+				i -> assertThat(i.parameters()).isEmpty());
+	}
+
+	@Test
+	void canReadInfoViaArdulinkProtoWithSingleParameter() throws IOException {
+		givenMessage("alp://info/fw=12.345-FOO");
+		whenMessageIsProcessed();
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageInfo.class,
+				i -> assertThat(i.parameters()).containsExactlyInAnyOrderEntriesOf(Map.of("fw", "12.345-FOO")));
+	}
+
+	@Test
+	void canReadInfoViaArdulinkProtoWithMultipleParameters() throws IOException {
+		givenMessage("alp://info/fw=12.345-FOO/foo=bar");
+		whenMessageIsProcessed();
+		assertThat(messages).singleElement().isInstanceOfSatisfying(FromDeviceMessageInfo.class,
+				i -> assertThat(i.parameters())
+						.containsExactlyInAnyOrderEntriesOf(Map.of("fw", "12.345-FOO", "foo", "bar")));
 	}
 
 	@Test
