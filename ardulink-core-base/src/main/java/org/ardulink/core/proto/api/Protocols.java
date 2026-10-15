@@ -85,8 +85,12 @@ public final class Protocols {
 	 */
 	public static Protocol protoByName(String name) {
 		List<Protocol> availables = protocols();
-		return withName(availables, name).orElseThrow(() -> new IllegalStateException(
-				format("No protocol with name %s registered. Available names are %s", name, extractNames(availables))));
+		return withName(availables, name).orElseThrow(() -> noProtoWithThatName(name, availables));
+	}
+
+	private static IllegalStateException noProtoWithThatName(String name, List<Protocol> availables) {
+		return new IllegalStateException(
+				format("No protocol with name %s registered. Available names are %s", name, extractNames(availables)));
 	}
 
 	/**
