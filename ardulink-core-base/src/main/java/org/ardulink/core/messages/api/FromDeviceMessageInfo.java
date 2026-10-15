@@ -27,6 +27,10 @@ import java.util.Map;
  */
 public interface FromDeviceMessageInfo extends FromDeviceMessage {
 
+	String FIRMWARE = "fw";
+
+	String ARDUINO_ID = "arduinoId";
+
 	/**
 	 * Parameters carried by this info message. Messages without payload return an
 	 * empty map.
