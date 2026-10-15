@@ -58,6 +58,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
 import org.ardulink.core.messages.api.ToDeviceMessageStopListening;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
 import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor;
+import org.ardulink.core.proto.api.bytestreamproccesors.ByteStreamProcessor.FromDeviceListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -175,12 +176,22 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 				}
 			}
 		};
+		FromDeviceListener infoListener = fromDevice -> {
+			if (fromDevice instanceof FromDeviceMessageInfo) {
+				ready.complete(true);
+			}
+		};
 
 		connection.addListener(listener);
+		byteStreamProcessor.addListener(infoListener);
+		if (mode == Mode.INFO_MESSAGE_ONLY && infoMsgReceived) {
+			ready.complete(true);
+		}
 		ScheduledFuture<?> pinger = scheduler.scheduleAtFixedRate(this::ping, 0, 100, MILLISECONDS);
 		return ready.whenComplete((__, ___) -> {
 			pinger.cancel(false);
 			connection.removeListener(listener);
+			byteStreamProcessor.removeListener(infoListener);
 		}).orTimeout(wait, timeUnit) //
 				.exceptionally(__ -> false) //
 				.join();
