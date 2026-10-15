@@ -27,7 +27,7 @@ import static org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom.toDev
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageKeyPress.toDeviceMessageKeyPress;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone.toDeviceMessageNoTone;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange.toDeviceMessagePinStateChange;
-import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePing.toDeviceMessageNoTone;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePing.toDeviceMessagePing;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening.toDeviceMessageStartListening;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening.toDeviceMessageStopListening;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
@@ -188,7 +188,7 @@ public class ConnectionBasedLink extends AbstractListenerLink {
 
 	private void ping() {
 		try {
-			connection.write(this.byteStreamProcessor.toDevice(addMessageId(toDeviceMessageNoTone(), 0)));
+			connection.write(this.byteStreamProcessor.toDevice(addMessageId(toDeviceMessagePing(), 0)));
 		} catch (IOException e) {
 			// ignore
 		}

@@ -9,7 +9,7 @@ import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageCustom.toDeviceMessageCustom;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageNoTone.toDeviceMessageNoTone;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChange.toDeviceMessagePinStateChange;
-import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePing.toDeviceMessageNoTone;
+import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePing.toDeviceMessagePing;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening.toDeviceMessageStartListening;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStopListening.toDeviceMessageStopListening;
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageTone.toDeviceMessageTone;
@@ -176,7 +176,7 @@ class FirmataProtocolTest {
 
 	@Test
 	void canSendPing() {
-		assertThat(sut.toDevice(toDeviceMessageNoTone())).containsExactly(0xF9);
+		assertThat(sut.toDevice(toDeviceMessagePing())).containsExactly(0xF9);
 	}
 
 	// -------------------------------------------------------------------------
