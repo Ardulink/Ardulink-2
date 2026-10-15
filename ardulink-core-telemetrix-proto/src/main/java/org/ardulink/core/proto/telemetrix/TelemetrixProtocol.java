@@ -17,15 +17,16 @@ limitations under the License.
 package org.ardulink.core.proto.telemetrix;
 
 import static java.lang.Boolean.TRUE;
+import static java.lang.String.format;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toUnmodifiableMap;
-import static java.util.stream.Stream.of;
-import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.Pin.digitalPin;
+import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessageInfo.fromDeviceMessageInfo;
 import static org.ardulink.core.messages.impl.DefaultFromDeviceMessagePinStateChanged.fromDeviceMessagePinStateChanged;
 
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -52,9 +53,9 @@ import org.ardulink.util.ByteArray;
  *
  * Implementation of the protocol used by the legacy
  * <a href="https://github.com/MrYsLab/telemetrix">arduino-telemetrix.ino</a>
- * sketch. The sketch and the protocol are quite minimal: apart from setting
- * pin modes and reading/writing pins there is no support for key presses,
- * tones or custom messages.
+ * sketch. The sketch and the protocol are quite minimal: apart from setting pin
+ * modes and reading/writing pins there is no support for key presses, tones or
+ * custom messages.
  *
  * Reporting is controlled via the reporting byte of <code>SET_PIN_MODE</code>
  * instead of <code>MODIFY_REPORTING</code>. The latter declares a command
@@ -94,22 +95,30 @@ public class TelemetrixProtocol implements Protocol {
 	// the report id.
 	private enum Report {
 
-		LOOP_BACK(Command.SERIAL_LOOP_BACK.code(), 1), //
-		DIGITAL(Command.DIGITAL_WRITE.code(), 2), //
-		ANALOG(Command.ANALOG_WRITE.code(), 3), //
-		FIRMWARE(Command.GET_FIRMWARE_VERSION.code(), 2), //
-		I_AM_HERE(Command.ARE_U_THERE.code(), 1), //
+		LOOP_BACK(Command.SERIAL_LOOP_BACK, 1), //
+		DIGITAL(Command.DIGITAL_WRITE, 2), //
+		ANALOG(Command.ANALOG_WRITE, 3), //
+		FIRMWARE(Command.GET_FIRMWARE_VERSION, 2), //
+		I_AM_HERE(Command.ARE_U_THERE, 1), //
 		DEBUG_PRINT(99, 3);
 
 		private final byte code;
 		private final int argCount;
 
-		private static final Map<Byte, Report> BY_CODE = of(values())
-				.collect(toUnmodifiableMap(r -> r.code, identity()));
+		private static final Map<Byte, Report> byCode = EnumSet.allOf(Report.class).stream() //
+				.collect(toUnmodifiableMap(Report::code, identity()));
+
+		Report(Command command, int argCount) {
+			this(command.code(), argCount);
+		}
 
 		Report(int code, int argCount) {
 			this.code = (byte) code;
 			this.argCount = argCount;
+		}
+
+		byte code() {
+			return code;
 		}
 
 		int argCount() {
@@ -117,7 +126,7 @@ public class TelemetrixProtocol implements Protocol {
 		}
 
 		static Report from(byte code) {
-			return BY_CODE.get(code);
+			return byCode.get(code);
 		}
 
 	}
@@ -249,22 +258,22 @@ public class TelemetrixProtocol implements Protocol {
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageKeyPress keyPress) {
-			throw new UnsupportedOperationException("Telemetrix does not support key press events");
+			throw new UnsupportedOperationException(format("%s does not support key press events", NAME));
 		}
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageTone tone) {
-			throw new UnsupportedOperationException("Telemetrix does not support tones");
+			throw new UnsupportedOperationException(format("%s does not support tones", NAME));
 		}
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageNoTone noTone) {
-			throw new UnsupportedOperationException("Telemetrix does not support tones");
+			throw new UnsupportedOperationException(format("%s does not support tones", NAME));
 		}
 
 		@Override
 		public byte[] toDevice(ToDeviceMessageCustom custom) {
-			throw new UnsupportedOperationException("Telemetrix does not support custom messages");
+			throw new UnsupportedOperationException(format("%s does not support custom messages", NAME));
 		}
 
 	}
