@@ -151,6 +151,7 @@ resolve_protocol() {
     local protocol="${1:-ardulink}"
 
     PROTO_CONNECTION_SUFFIX=""
+    PROTO_OPTIONAL=""
     case "$protocol" in
         ardulink)
             # The distribution does not ship the sketch anymore, so the firmware is taken from the
@@ -179,11 +180,27 @@ resolve_protocol() {
             PROTO_FILENAME="arduino-telemetrix.ino"
             PROTO_FIRMWARE_SOURCE="https://raw.githubusercontent.com/MrYsLab/telemetrix/refs/heads/master/arduino_sketches/arduino-telemetrix/arduino-telemetrix.ino"
             PROTO_CONNECTION_SUFFIX="&proto=Telemetrix&baudrate=115200"
+            # Optional protocols are not shipped in lib/ (they would be auto-discovered there),
+            # so they must be enabled explicitly before they can be used.
+            PROTO_OPTIONAL="telemetrix"
             ;;
         *)
             die "Unknown protocol '$protocol'. Supported protocols: ardulink, firmata, telemetrix."
             ;;
     esac
+}
+
+# Optional protocols ship in the distribution's optional/ directory instead of lib/, so they are
+# not on the classpath (and therefore not auto-discovered) until the user moves them into lib/.
+# The systemtests perform the same move so an optional protocol can be exercised through the
+# normal distribution layout.
+enable_optional_protocol() {
+    [ -n "$PROTO_OPTIONAL" ] || return 0
+    local lib_dir="$SCRIPT_DIR/../target/ardulink/lib"
+    local optional_dir="$SCRIPT_DIR/../target/ardulink/optional/$PROTO_OPTIONAL"
+    [ -d "$optional_dir" ] || die "Optional protocol directory not found: $optional_dir"
+    echo "Enabling optional protocol '$PROTO_OPTIONAL' by copying it into lib/..."
+    cp "$optional_dir"/*.jar "$lib_dir"/
 }
 
 # Builds the connection string pointing to the given device. Called after

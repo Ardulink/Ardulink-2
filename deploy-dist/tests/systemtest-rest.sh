@@ -22,6 +22,9 @@ trap cleanup EXIT INT TERM
 # Step 1: Get the firmware of the protocol under test and place it in the firmware directory
 install_firmware
 
+# Step 1b: Optional protocols must be enabled (moved into lib/) before the application starts
+enable_optional_protocol
+
 # Step 2: Run the Docker container that emulates the Arduino
 echo "Running Docker container for $FILENAME..."
 export DEVICEUSER=$UID
