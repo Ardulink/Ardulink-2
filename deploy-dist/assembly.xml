@@ -13,10 +13,42 @@
 	<moduleSets>
 		<moduleSet>
 			<useAllReactorProjects>true</useAllReactorProjects>
+			<excludes>
+				<!-- optional protocols are not put in lib so they are not
+				     auto-discoverable, they live under optional/ instead -->
+				<exclude>org.ardulink:ardulink-core-telemetrix-proto</exclude>
+			</excludes>
 			<binaries>
 				<!-- put Ardulink and applications jars under ${baseDirectory}/lib -->
 				<outputDirectory>ardulink/lib</outputDirectory>
 				<unpack>false</unpack>
+				<dependencySets>
+					<!-- The module-level exclude above only keeps the optional protocols' own
+					     artifacts out. Their jars would still land in lib/ through the runtime
+					     dependency set if any module declared one (that is exactly why the
+					     default includeDependencies behaviour is overridden here), so the same
+					     list is repeated at the dependency level as a safety net. -->
+					<dependencySet>
+						<outputDirectory>ardulink/lib</outputDirectory>
+						<scope>runtime</scope>
+						<excludes>
+							<exclude>org.ardulink:ardulink-core-telemetrix-proto</exclude>
+						</excludes>
+					</dependencySet>
+				</dependencySets>
+			</binaries>
+		</moduleSet>
+		<moduleSet>
+			<useAllReactorProjects>true</useAllReactorProjects>
+			<includes>
+				<include>org.ardulink:ardulink-core-telemetrix-proto</include>
+			</includes>
+			<binaries>
+				<!-- copy just the jar to optional/telemetrix; its dependencies are already in lib,
+				     users enable it by moving the jar to lib/ -->
+				<outputDirectory>ardulink/optional/telemetrix</outputDirectory>
+				<unpack>false</unpack>
+				<includeDependencies>false</includeDependencies>
 			</binaries>
 		</moduleSet>
 	</moduleSets>
