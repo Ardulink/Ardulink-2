@@ -22,35 +22,35 @@
 	     component is actually used or once the project moves to Java 17 + Camel 4.x.
 	-->
 	<suppress>
-		<cve>CVE-2026-47323</cve>
 		<notes><![CDATA[False positive: the flaw is in camel-cxf-rest, camel-cxf-transport and camel-knative-http (message header injection). None of these components are on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
+		<cve>CVE-2026-47323</cve>
 	</suppress>
 	<suppress>
-		<cve>CVE-2026-25747</cve>
 		<notes><![CDATA[False positive: the flaw is in camel-leveldb (unsafe deserialization in LevelDBAggregationRepository). camel-leveldb is not on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
+		<cve>CVE-2026-25747</cve>
 	</suppress>
 	<suppress>
-		<cve>CVE-2026-27172</cve>
 		<notes><![CDATA[False positive: the flaw is in camel-consul (unsafe deserialization in ConsulRegistry). camel-consul is not on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
+		<cve>CVE-2026-27172</cve>
 	</suppress>
 	<suppress>
-		<cve>CVE-2026-33454</cve>
 		<notes><![CDATA[False positive for this project: the flaw is in camel-mail (inbound MIME header injection when consuming via imap/pop3). The only dependency on camel-mail is ardulink-mail, which is a showcase/demo (packaging "pom", no production classes) and not a real component. No downstream camel-exec/file/bean/sql producer is configured, so the injection path is not exploitable here.]]></notes>
+		<cve>CVE-2026-33454</cve>
 	</suppress>
 	<suppress>
-		<cve>CVE-2026-40473</cve>
 		<notes><![CDATA[False positive: the flaw is in camel-mina (unsafe deserialization in MinaConverter.toObjectInput). camel-mina is not on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
+		<cve>CVE-2026-40473</cve>
 	</suppress>
 	<suppress>
-		<cve>CVE-2026-43866</cve>
 		<notes><![CDATA[False positive: the flaw is in the JMS family, camel-jms/camel-sjms/camel-sjms2/camel-amqp/camel-activemq (bypass of the CVE-2026-40860 fix via DefaultExchangeHolder). None of these components are on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
+		<cve>CVE-2026-43866</cve>
 	</suppress>
 	<suppress>
-		<cve>CVE-2026-40453</cve>
 		<notes><![CDATA[False positive: the flaw is in camel-jms, camel-sjms, camel-coap and camel-google-pubsub (case-variant header injection in non-HTTP HeaderFilterStrategies). None of these components are on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
+		<cve>CVE-2026-40453</cve>
 	</suppress>
 	<suppress>
-		<cve>CVE-2026-40860</cve>
 		<notes><![CDATA[False positive: the flaw is in the JMS family, camel-jms/camel-sjms/camel-sjms2/camel-amqp and camel-activemq (unsafe deserialization of JMS ObjectMessage). None of these components are on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
+		<cve>CVE-2026-40860</cve>
 	</suppress>
 </suppressions>
