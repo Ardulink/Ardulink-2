@@ -266,6 +266,17 @@
 						<configuration>
 							<failBuildOnCVSS>7</failBuildOnCVSS>
 							<nvdApiKeyEnvironmentVariable>NVD_API_KEY</nvdApiKeyEnvironmentVariable>
+							<!--
+								Disable the Sonatype OSS Index analyzer. It is enabled by default
+								and queries https://ossindex.sonatype.org/api/v3/component-report,
+								which now rejects anonymous requests with 401 Unauthorized. That
+								error fails the build regardless of any actual findings. Using it
+								would require Sonatype credentials (ossIndexServerId or
+								ossIndexUsername/ossIndexPassword). The NVD, our primary source, is
+								already queried with the NVD_API_KEY above, so we simply turn this
+								secondary analyzer off.
+							-->
+							<ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
 							<formats>
 								<format>HTML</format>
 								<format>JSON</format>
