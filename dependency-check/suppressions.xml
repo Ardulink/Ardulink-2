@@ -3,4 +3,54 @@
 	<!-- Suppress findings that are known false positives or not applicable.
 	     Suppress only what you have reviewed and can justify; re-check each
 	     suppression on a regular basis. -->
+
+	<!--
+	     Apache Camel 3.22.4 is the last release supporting Java 11 (Camel 4.x
+	     requires Java 17), so it cannot be upgraded within this line.
+
+	     Dependency-Check matches the product-level CPE cpe:2.3:a:apache:camel,
+	     which covers the entire Apache Camel product. As a result every Camel
+	     CVE is reported against whichever camel-*.jar happens to be on the
+	     classpath (here camel-core-engine), even when the vulnerability lives in
+	     a component that is not used at all. Ardulink only depends on camel-core
+	     (ardulink-camel), camel-mail/camel-main (ardulink-mail, a showcase, not a
+	     real component), camel-jetty/camel-swagger-java (ardulink-rest) and
+	     camel-paho (ardulink-mqtt). None of the components below are reachable,
+	     so these findings are false positives for this project.
+
+	     Re-check on every Camel upgrade; remove suppressions once the affected
+	     component is actually used or once the project moves to Java 17 + Camel 4.x.
+	-->
+	<suppress>
+		<cve>CVE-2026-47323</cve>
+		<notes><![CDATA[False positive: the flaw is in camel-cxf-rest, camel-cxf-transport and camel-knative-http (message header injection). None of these components are on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
+	</suppress>
+	<suppress>
+		<cve>CVE-2026-25747</cve>
+		<notes><![CDATA[False positive: the flaw is in camel-leveldb (unsafe deserialization in LevelDBAggregationRepository). camel-leveldb is not on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
+	</suppress>
+	<suppress>
+		<cve>CVE-2026-27172</cve>
+		<notes><![CDATA[False positive: the flaw is in camel-consul (unsafe deserialization in ConsulRegistry). camel-consul is not on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
+	</suppress>
+	<suppress>
+		<cve>CVE-2026-33454</cve>
+		<notes><![CDATA[False positive for this project: the flaw is in camel-mail (inbound MIME header injection when consuming via imap/pop3). The only dependency on camel-mail is ardulink-mail, which is a showcase/demo (packaging "pom", no production classes) and not a real component. No downstream camel-exec/file/bean/sql producer is configured, so the injection path is not exploitable here.]]></notes>
+	</suppress>
+	<suppress>
+		<cve>CVE-2026-40473</cve>
+		<notes><![CDATA[False positive: the flaw is in camel-mina (unsafe deserialization in MinaConverter.toObjectInput). camel-mina is not on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
+	</suppress>
+	<suppress>
+		<cve>CVE-2026-43866</cve>
+		<notes><![CDATA[False positive: the flaw is in the JMS family, camel-jms/camel-sjms/camel-sjms2/camel-amqp/camel-activemq (bypass of the CVE-2026-40860 fix via DefaultExchangeHolder). None of these components are on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
+	</suppress>
+	<suppress>
+		<cve>CVE-2026-40453</cve>
+		<notes><![CDATA[False positive: the flaw is in camel-jms, camel-sjms, camel-coap and camel-google-pubsub (case-variant header injection in non-HTTP HeaderFilterStrategies). None of these components are on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
+	</suppress>
+	<suppress>
+		<cve>CVE-2026-40860</cve>
+		<notes><![CDATA[False positive: the flaw is in the JMS family, camel-jms/camel-sjms/camel-sjms2/camel-amqp and camel-activemq (unsafe deserialization of JMS ObjectMessage). None of these components are on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
+	</suppress>
 </suppressions>
