@@ -265,6 +265,7 @@
 						<version>${owasp.dependency.check.version}</version>
 						<configuration>
 							<failBuildOnCVSS>7</failBuildOnCVSS>
+							<nvdApiKeyEnvironmentVariable>NVD_API_KEY</nvdApiKeyEnvironmentVariable>
 							<formats>
 								<format>HTML</format>
 								<format>JSON</format>
