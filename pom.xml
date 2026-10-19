@@ -80,6 +80,7 @@
 		<equalsverifier.version>3.19.4</equalsverifier.version>
 		<!-- camel3 is the last version that supports java 11, camel4 needs java 17 -->
 		<camel.version>3.22.4</camel.version>
+		<owasp.dependency.check.version>12.1.3</owasp.dependency.check.version>
 		<maven.build.timestamp.format>yyyy-MM-dd'T'HHmmss'Z'</maven.build.timestamp.format>
 
 		<!-- default image name for JIB -->
@@ -254,6 +255,47 @@
 			artifact (required by Central) and uploads a bundle to the Central
 			Publisher Portal.
 		-->
+		<profile>
+			<id>owasp</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.owasp</groupId>
+						<artifactId>dependency-check-maven</artifactId>
+						<version>${owasp.dependency.check.version}</version>
+						<configuration>
+							<failBuildOnCVSS>7</failBuildOnCVSS>
+							<nvdApiKeyEnvironmentVariable>NVD_API_KEY</nvdApiKeyEnvironmentVariable>
+							<!--
+								Disable the Sonatype OSS Index analyzer. It is enabled by default
+								and queries https://ossindex.sonatype.org/api/v3/component-report,
+								which now rejects anonymous requests with 401 Unauthorized. That
+								error fails the build regardless of any actual findings. Using it
+								would require Sonatype credentials (ossIndexServerId or
+								ossIndexUsername/ossIndexPassword). The NVD, our primary source, is
+								already queried with the NVD_API_KEY above, so we simply turn this
+								secondary analyzer off.
+							-->
+							<ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+							<formats>
+								<format>HTML</format>
+								<format>JSON</format>
+							</formats>
+							<suppressionFiles>
+								<suppressionFile>${maven.multiModuleProjectDirectory}/dependency-check/suppressions.xml</suppressionFile>
+							</suppressionFiles>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 		<profile>
 			<id>release</id>
 			<properties>
