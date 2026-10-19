@@ -16,12 +16,14 @@ limitations under the License.
 
 package org.ardulink.core.serial.jssc;
 
-import static java.lang.String.format;
-import static java.net.URI.create;
-import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinListening;
-import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPinSwitching;
+import static org.ardulink.core.linkmanager.LinkManager.ARDULINK_SCHEME;
+import static org.ardulink.testsupport.junit5.VirtualAvrTester.testSerialPins;
+import static org.ardulink.util.URIBuilder.uriBuilder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
+
+import java.net.URI;
+import java.util.Map;
 
 import org.ardulink.core.linkmanager.LinkManager;
 import org.ardulink.core.linkmanager.LinkManager.ConfigAttribute;
@@ -42,22 +44,29 @@ import com.github.pfichtner.testcontainers.virtualavr.VirtualAvrContainer;
  */
 class SerialLinkFactoryIntegrationTest {
 
-	private static final String PREFIX = "ardulink://" + SerialLinkFactory.NAME;
 	private static final String ARDULINK_FIRMWARE = "classpath://firmware/ArdulinkProtocol.ino.hex";
 
 	@Test
 	@UseVirtualAvr(isolated = true, firmware = ARDULINK_FIRMWARE)
 	void canInteractWithSerialLink(VirtualAvrContainer<?> virtualAvr) throws Exception {
-		Configurer configurer = LinkManager.getInstance().getConfigurer(create(PREFIX
-				+ format("?port=%s&baudrate=9600&pingprobe=true&waitsecs=10", virtualAvr.serialPortDescriptor())));
-		testSerialPinSwitching(virtualAvr, configurer);
-		testSerialPinListening(virtualAvr, configurer);
+		Configurer configurer = LinkManager.getInstance().getConfigurer(uri(virtualAvr));
+		testSerialPins(virtualAvr, configurer);
+	}
+
+	static URI uri(VirtualAvrContainer<?> virtualAvr) {
+		return uriBuilder(ARDULINK_SCHEME, SerialLinkFactory.NAME).params(Map.of( //
+				"port", virtualAvr.serialPortDescriptor(), //
+				"baudrate", 9600, //
+				"pingprobe", true, //
+				"waitsecs", 10 //
+		)).build();
 	}
 
 	@Test
 	void canConfigureSerialConnectionViaConfigurer() {
 		LinkManager connectionManager = LinkManager.getInstance();
-		Configurer configurer = connectionManager.getConfigurer(create(PREFIX));
+		Configurer configurer = connectionManager
+				.getConfigurer(uriBuilder(ARDULINK_SCHEME, SerialLinkFactory.NAME).build());
 
 		assertThat(configurer.getAttributes()).containsExactlyInAnyOrder( //
 				"port", "baudrate", "proto", "qos", "waitsecs", "pingprobe");
@@ -77,7 +86,8 @@ class SerialLinkFactoryIntegrationTest {
 
 	@Test
 	void cantConnectWithoutPort() {
-		Configurer configurer = LinkManager.getInstance().getConfigurer(create(PREFIX + "?baudrate=9600"));
+		Configurer configurer = LinkManager.getInstance()
+				.getConfigurer(uriBuilder(ARDULINK_SCHEME, SerialLinkFactory.NAME).param("baudrate", 9600).build());
 		assertThatRuntimeException().isThrownBy(configurer::newLink).withMessageContaining("Port", "null");
 	}
 

@@ -14,9 +14,9 @@ jobs:
       uses: actions/checkout@v7.0.1
 
     - name: Set up JDK 11 (or your version)
-      uses: actions/setup-java@v5
+      uses: actions/setup-java@v6
       with:
-        java-version: '11'
+        java-version: '11.0.32+101'
         distribution: 'temurin'
 
     - name: Build with Maven
@@ -26,8 +26,8 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         artifacts: deploy-dist/target/*.zip
-        tag: ${{ github.ref }}
-        release_name: "Release ${{ github.ref }}"
+        tag: ${{ github.ref_name }}
+        release_name: "Release ${{ github.ref_name }}"
         body: |
           Release notes for ${{ github.ref }}.
       env:

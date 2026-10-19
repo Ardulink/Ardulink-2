@@ -16,8 +16,6 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
-import java.io.IOException;
-
 import org.ardulink.core.AbstractConnection;
 
 /**
@@ -37,12 +35,12 @@ public class DummyConnection extends AbstractConnection {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		// do nothing
 	}
 
 	@Override
-	public void write(byte[] bytes) throws IOException {
+	public void write(byte[] bytes) {
 		// do nothing
 	}
 

@@ -40,7 +40,7 @@ public final class FromArdulinkProtocol implements Processor {
 	}
 
 	@Override
-	public void process(Exchange exchange) throws Exception {
+	public void process(Exchange exchange) {
 		Message in = exchange.getIn();
 		FromDeviceMessage deviceMessage = getFirst(
 				parse(byteStreamProcessor, byteStreamProcessor.toBytes(in.getBody(String.class))))

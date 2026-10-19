@@ -18,7 +18,13 @@ package org.ardulink.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.stream.Stream;
+
+import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -39,4 +45,24 @@ class ObjectsTest {
 		assertThat(Objects.firstNonNull(nullString, "b")).isEqualTo("b");
 		assertThat(Objects.firstNonNull("a", "b")).isEqualTo("a");
 	}
+
+	@ParameterizedTest
+	@MethodSource("castIfInstanceParameters")
+	void castIfInstance(Object object, Class<CharSequence> clazz, boolean stays) {
+		AbstractCharSequenceAssert<?, ? extends CharSequence> asserter = assertThat(
+				Objects.castIfInstance(clazz, object));
+		if (stays) {
+			asserter.isEqualTo(object);
+		} else {
+			asserter.isNull();
+		}
+	}
+
+	static Stream<Arguments> castIfInstanceParameters() {
+		return Stream.of( //
+				Arguments.of("foo", CharSequence.class, true), //
+				Arguments.of(42, CharSequence.class, false), //
+				Arguments.of(null, CharSequence.class, false));
+	}
+
 }

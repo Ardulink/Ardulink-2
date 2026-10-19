@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.ardulink.core.mqtt.duplicated;
 
+import static java.lang.String.format;
 import static java.time.Duration.ofMillis;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
@@ -93,11 +94,11 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 	}
 
 	private static String serverUrl(String host, int port) {
-		return "tcp://" + host + ":" + port;
+		return format("tcp://%s:%d", host, port);
 	}
 
 	private static String clientId() {
-		return "amc-" + Thread.currentThread().getId() + "-" + System.currentTimeMillis();
+		return format("amc-%d-%d", Thread.currentThread().getId(), System.currentTimeMillis());
 	}
 
 	@Override
@@ -116,7 +117,7 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 		return new MqttCallbackExtended() {
 
 			@Override
-			public void messageArrived(String topic, MqttMessage message) throws Exception {
+			public void messageArrived(String topic, MqttMessage message) {
 				// noop
 			}
 
@@ -170,7 +171,7 @@ public class AnotherMqttClient implements BeforeEachCallback, AfterEachCallback 
 
 	private void sendMessage(Message message) throws IOException {
 		try {
-			mqttClient.publish(message.getTopic(), message.getMessage().getBytes(), QOS_LEVEL, false);
+			mqttClient.publish(message.topic(), message.message().getBytes(), QOS_LEVEL, false);
 		} catch (MqttException e) {
 			throw new IOException(e);
 		}

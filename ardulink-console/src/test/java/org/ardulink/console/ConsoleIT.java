@@ -44,6 +44,7 @@ class ConsoleIT {
 	void canConnectToVirtualRandom() {
 		String connection = "ardulink://virtual-console";
 
+		@SuppressWarnings("resource")
 		ConsolePage page = new ConsolePage(new Console());
 		page.useConnection(connection);
 

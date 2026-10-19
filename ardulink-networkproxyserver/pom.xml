@@ -5,8 +5,12 @@
 	<parent>
 		<groupId>org.ardulink</groupId>
 		<artifactId>parent</artifactId>
-		<version>2.2.1-SNAPSHOT</version>
+		<version>2.3.2-SNAPSHOT</version>
 	</parent>
+
+	<name>Ardulink Network Proxy Server</name>
+	<description>Proxy server connecting remote Ardulink links</description>
+	<url>http://www.ardulink.org</url>
 
 	<dependencies>
 		<dependency>
@@ -17,6 +21,17 @@
 		<dependency>
 			<groupId>org.ardulink</groupId>
 			<artifactId>ardulink-link-serial-jssc</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<!--
+			jib builds the container classpath from the runtime dependencies only, so
+			unlike the binary distribution - where the jar is picked up from the module
+			directory - a protocol has to be declared to be part of the image.
+		-->
+		<dependency>
+			<groupId>org.ardulink</groupId>
+			<artifactId>ardulink-core-firmata-proto</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
 		</dependency>

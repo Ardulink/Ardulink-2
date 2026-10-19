@@ -176,7 +176,7 @@ public class ArduinoStubExt implements BeforeEachCallback, AfterEachCallback {
 			private final ByteArray bytes = new ByteArray();
 
 			@Override
-			public void received(byte[] bytes) throws IOException {
+			public void received(byte[] bytes) {
 				ArduinoStubExt.this.bytesNotYetRead.addAndGet(-bytes.length);
 			}
 

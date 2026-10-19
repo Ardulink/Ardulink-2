@@ -130,7 +130,7 @@ public class ArdulinkProtocol2 implements Protocol {
 
 			private State toCommand(ALPProtocolKey key) {
 				if (key.equals(INFO)) {
-					return new InfoParsed();
+					return new WaitingForInfo();
 				} else if (RPLY.equals(key)) {
 					return new WaitingForOkKo();
 				} else if (CUSTOM_EVENT.equals(key)) {
@@ -254,7 +254,7 @@ public class ArdulinkProtocol2 implements Protocol {
 			}
 
 			private Pin pin(String string) {
-				Integer pinNumber = tryParseAs(Integer.class, string)
+				int pinNumber = tryParseAs(Integer.class, string)
 						.orElseThrow(() -> new IllegalStateException("Cannot parse " + string + " as pin number"));
 				return isAnalog() ? analogPin(pinNumber) : digitalPin(pinNumber);
 			}
@@ -327,9 +327,27 @@ public class ArdulinkProtocol2 implements Protocol {
 
 		}
 
+		private static class WaitingForInfo extends AbstractState {
+
+			@Override
+			public State process(byte b) {
+				if (isNewline(b)) {
+					String params = bufferAsString();
+					return new InfoParsed(params.isEmpty() ? Map.of() : stringToMap(params, "/", "="));
+				}
+				bufferAppend(b);
+				return this;
+			}
+
+		}
+
 		private static class InfoParsed extends AbstractState {
 
-			private final FromDeviceMessage message = fromDeviceMessageInfo();
+			private final FromDeviceMessage message;
+
+			private InfoParsed(Map<String, String> params) {
+				this.message = fromDeviceMessageInfo(params);
+			}
 
 			@Override
 			public State process(byte b) {

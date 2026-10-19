@@ -86,7 +86,7 @@ class ArdulinkComponentListenerTest {
 		verifyNoMoreInteractions(mock);
 	}
 
-	private CamelContext haltCamel(CamelContext context) throws Exception {
+	private CamelContext haltCamel(CamelContext context) {
 		context.stop();
 		return context;
 	}

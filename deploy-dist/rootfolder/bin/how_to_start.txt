@@ -15,3 +15,10 @@ The Network Proxy Server accepts a mandatory argument. Please run it without arg
 
 The MQTT bridge accepts arguments. Please run it with -h option to read the usage.
 
+
+ADDITIONAL PROTOCOLS
+
+Some protocols (e.g. Telemetrix) are not bundled in the lib folder so they are not available
+automatically. You will find them in the optional folder next to lib. To enable such a protocol,
+copy its jar from the optional folder into the lib folder before starting the application.
+

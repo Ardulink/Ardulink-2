@@ -38,19 +38,17 @@ public final class Iterators {
 	}
 
 	public static <T> Optional<T> getFirst(Iterator<T> iterator) {
-		return iterator.hasNext() ? Optional.ofNullable(iterator.next()) : Optional
-				.empty();
+		return iterator.hasNext() //
+				? Optional.ofNullable(iterator.next()) //
+				: Optional.empty();
 	}
 
 	public static <T> Optional<T> getLast(Iterator<T> iterator) {
-		if (!iterator.hasNext()) {
-			return Optional.empty();
-		}
-		T last;
-		do {
+		T last = null;
+		while (iterator.hasNext()) {
 			last = iterator.next();
-		} while (iterator.hasNext());
-		return Optional.of(last);
+		}
+		return Optional.ofNullable(last);
 	}
 
 	public static <T> Stream<T> stream(Iterator<T> iterator) {

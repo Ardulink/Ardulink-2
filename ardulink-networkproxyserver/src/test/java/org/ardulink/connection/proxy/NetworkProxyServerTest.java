@@ -1,6 +1,7 @@
 package org.ardulink.connection.proxy;
 
 import static java.time.Duration.ofMillis;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.core.proto.api.Protocols.protoByName;
@@ -40,7 +41,7 @@ class NetworkProxyServerTest {
 	private final Connection proxySideConnection = new Connection() {
 
 		@Override
-		public void write(byte[] bytes) throws IOException {
+		public void write(byte[] bytes) {
 			proxySideReceived.append(new String(bytes));
 		}
 
@@ -55,7 +56,7 @@ class NetworkProxyServerTest {
 		}
 
 		@Override
-		public void close() throws IOException {
+		public void close() {
 			// noop
 		}
 
@@ -75,7 +76,7 @@ class NetworkProxyServerTest {
 		StringBuilder expected = new StringBuilder();
 		for (int i = 0; i < 3; i++) {
 			this.clientSideLink.switchAnalogPin(analogPin(1), 2);
-			expected.append(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(1).withValue(2) + "\n");
+			expected.append(alpProtocolMessage(POWER_PIN_INTENSITY).forPin(1).withValue(2)).append("\n");
 		}
 		assertReceived(expected);
 	}
@@ -85,13 +86,16 @@ class NetworkProxyServerTest {
 	}
 
 	private void assertReceived(String expectedMsg) {
-		await().forever().pollInterval(ofMillis(50)).until(() -> proxySideReceived.toString(), expectedMsg::equals);
+		await().forever().pollInterval(ofMillis(50)).until(proxySideReceived::toString, expectedMsg::equals);
 	}
 
 	private ConnectionBasedLink clientLinkToServer(String hostname, int port) throws IOException {
 		// TODO PF use Links?
-		// Links.getLink(URIs.newURI(String.format("ardulink://proxy?tcphost=%s&tcpport=%s&port=%s",
-		// hostname, port, "someNonNullPort")));
+		// Links.getLink(URIBuilder.uriBuilder(LinkManager.ARDULINK_SCHEME, "proxy").params(Map.of( //
+		//		"tcphost", hostname, //
+		//		"tcpport", port, //
+		//		"port", "someNonNullPort" //
+		// )).build());
 		ProxyLinkFactory linkFactory = new ProxyLinkFactory();
 		ProxyLinkConfig linkConfig = linkFactory.newLinkConfig();
 		return linkFactory.newLink(configure(linkConfig, hostname, port));
@@ -99,73 +103,72 @@ class NetworkProxyServerTest {
 
 	private void startServerInBackground(int freePort) throws InterruptedException {
 		Semaphore waitUntilServerIsUp = new Semaphore(0);
-		new Thread() {
-
-			@Override
-			public void run() {
-				try {
-					new StartCommand() {
-
-						@Override
-						protected void serverIsUp(int portNumber) {
-							super.serverIsUp(portNumber);
-							waitUntilServerIsUp.release();
-						}
-
-						@Override
-						protected NetworkProxyServerConnection newConnection(ServerSocket serverSocket)
-								throws IOException {
-							return new NetworkProxyServerConnection(serverSocket.accept()) {
-								@Override
-								protected Handshaker handshaker(InputStream isRemote, OutputStream osRemote) {
-									return new Handshaker(isRemote, osRemote, configurer());
-								}
-
-								private Configurer configurer() {
-									return new Configurer() {
-
-										@Override
-										public Object uniqueIdentifier() {
-											return "";
-										}
-
-										@Override
-										public Collection<String> getAttributes() {
-											return List.of("port");
-										}
-
-										@Override
-										public ConfigAttribute getAttribute(String key) {
-											return configAttributeOfName(key);
-										}
-
-										@Override
-										public Link newLink() {
-											return new ConnectionBasedLink(proxySideConnection,
-													protoByName(ArdulinkProtocol2.NAME).newByteStreamProcessor());
-										}
-
-									};
-								}
-
-								private ConfigAttribute configAttributeOfName(String key) {
-									ConfigAttribute attribute = mock(ConfigAttribute.class);
-									when(attribute.getName()).thenReturn(key);
-									return attribute;
-								}
-
-							};
-						}
-					}.execute(freePort);
-				} catch (IOException e) {
-					throw propagate(e);
-				}
+		newSingleThreadExecutor().submit(() -> {
+			try {
+				startCommand(waitUntilServerIsUp).execute(freePort);
+			} catch (IOException e) {
+				throw propagate(e);
 			}
-		}.start();
+		});
 		waitUntilServerIsUp.acquire();
 	}
 
-	private ProxyLinkConfig configure(ProxyLinkConfig linkConfig, String hostname, int tcpPort) {
+	private StartCommand startCommand(Semaphore waitUntilServerIsUp) {
+		return new StartCommand() {
+
+			@Override
+			protected void serverIsUp(int portNumber) {
+				super.serverIsUp(portNumber);
+				waitUntilServerIsUp.release();
+			}
+
+			@Override
+			protected NetworkProxyServerConnection newConnection(ServerSocket serverSocket) throws IOException {
+				return new NetworkProxyServerConnection(serverSocket.accept()) {
+					@Override
+					protected Handshaker handshaker(InputStream isRemote, OutputStream osRemote) {
+						return new Handshaker(isRemote, osRemote, configurer());
+					}
+
+					private Configurer configurer() {
+						return new Configurer() {
+
+							@Override
+							public Object uniqueIdentifier() {
+								return "";
+							}
+
+							@Override
+							public Collection<String> getAttributes() {
+								return List.of("port");
+							}
+
+							@Override
+							public ConfigAttribute getAttribute(String key) {
+								return configAttributeOfName(key);
+							}
+
+							@Override
+							public Link newLink() {
+								return new ConnectionBasedLink(proxySideConnection,
+										protoByName(ArdulinkProtocol2.NAME).newByteStreamProcessor());
+							}
+
+						};
+					}
+
+					private ConfigAttribute configAttributeOfName(String key) {
+						ConfigAttribute attribute = mock(ConfigAttribute.class);
+						when(attribute.getName()).thenReturn(key);
+						return attribute;
+					}
+
+				};
+			}
+		};
+	}
+
+	private static ProxyLinkConfig configure(ProxyLinkConfig linkConfig, String hostname, int tcpPort) {
 		linkConfig.tcphost = hostname;
 		linkConfig.tcpport = tcpPort;
 		linkConfig.port = "anything non-null";

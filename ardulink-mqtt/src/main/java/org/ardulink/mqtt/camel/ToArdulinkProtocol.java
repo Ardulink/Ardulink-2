@@ -2,8 +2,7 @@ package org.ardulink.mqtt.camel;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
-import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.toList;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
@@ -11,14 +10,14 @@ import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STA
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_ANALOG;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.STOP_LISTENING_DIGITAL;
-import static org.ardulink.util.Lists.newArrayList;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Primitives.tryParseAs;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -35,6 +34,12 @@ public final class ToArdulinkProtocol implements Processor {
 
 	private abstract static class AbstractMessageCreator implements MessageCreator {
 
+		static interface AbstractMessageCreatorBuilder {
+			boolean patternIsValid();
+
+			AbstractMessageCreator build();
+		}
+
 		private final Pattern pattern;
 
 		public AbstractMessageCreator(Pattern pattern) {
@@ -44,9 +49,15 @@ public final class ToArdulinkProtocol implements Processor {
 		@Override
 		public Optional<String> createMessage(String topic, String message) {
 			return Optional.of(this.pattern.matcher(topic)) //
-					.filter(m -> m.matches() && m.groupCount() > 0) //
+					.flatMap(AbstractMessageCreator::matcherWithGroup) //
 					.flatMap(m -> tryParseAs(Integer.class, m.group(1))) //
 					.map(pin -> createMessage(pin, message));
+		}
+
+		private static Optional<Matcher> matcherWithGroup(Matcher matcher) {
+			return matcher.matches() && matcher.groupCount() > 0 //
+					? Optional.of(matcher) //
+					: Optional.empty();
 		}
 
 		protected abstract String createMessage(int pin, String message);
@@ -90,7 +101,7 @@ public final class ToArdulinkProtocol implements Processor {
 	 */
 	private static class ControlHandlerAnalog extends AbstractMessageCreator {
 
-		public static class Builder {
+		public static class Builder implements AbstractMessageCreatorBuilder {
 
 			private final Pattern pattern;
 
@@ -98,10 +109,12 @@ public final class ToArdulinkProtocol implements Processor {
 				this.pattern = topics.getTopicPatternAnalogControl();
 			}
 
+			@Override
 			public boolean patternIsValid() {
 				return this.pattern != null;
 			}
 
+			@Override
 			public ControlHandlerAnalog build() {
 				return new ControlHandlerAnalog(this.pattern);
 			}
@@ -125,7 +138,7 @@ public final class ToArdulinkProtocol implements Processor {
 	 */
 	public static class ControlHandlerDigital extends AbstractMessageCreator {
 
-		public static class Builder {
+		public static class Builder implements AbstractMessageCreatorBuilder {
 
 			private final Pattern pattern;
 
@@ -133,10 +146,12 @@ public final class ToArdulinkProtocol implements Processor {
 				this.pattern = topics.getTopicPatternDigitalControl();
 			}
 
+			@Override
 			public boolean patternIsValid() {
 				return this.pattern != null;
 			}
 
+			@Override
 			public ControlHandlerDigital build() {
 				return new ControlHandlerDigital(this.pattern);
 			}
@@ -163,7 +178,7 @@ public final class ToArdulinkProtocol implements Processor {
 	}
 
 	public ToArdulinkProtocol(Topics topics) {
-		this.creators = unmodifiableList(newArrayList(creators(topics)));
+		this.creators = creators(topics).collect(toList());
 	}
 
 	public ToArdulinkProtocol topicFrom(ValueBuilder topicFrom) {
@@ -194,18 +209,15 @@ public final class ToArdulinkProtocol implements Processor {
 				.findFirst();
 	}
 
-	private static List<MessageCreator> creators(Topics topics) {
-		List<MessageCreator> creators = new ArrayList<>(
-				asList(new DigitalMessageCreator(topics), new AnalogMessageCreator(topics)));
-		ControlHandlerAnalog.Builder ab = new ControlHandlerAnalog.Builder(topics);
-		if (ab.patternIsValid()) {
-			creators.add(ab.build());
-		}
-		ControlHandlerDigital.Builder db = new ControlHandlerDigital.Builder(topics);
-		if (db.patternIsValid()) {
-			creators.add(db.build());
-		}
-		return creators;
+	private static Stream<AbstractMessageCreator> creators(Topics topics) {
+		Stream<AbstractMessageCreator> stream1 = Stream.of( //
+				new DigitalMessageCreator(topics), new AnalogMessageCreator(topics) //
+		);
+		Stream<AbstractMessageCreator> stream2 = Stream
+				.of(new ControlHandlerAnalog.Builder(topics), new ControlHandlerDigital.Builder(topics)) //
+				.filter(AbstractMessageCreator.AbstractMessageCreatorBuilder::patternIsValid) //
+				.map(AbstractMessageCreator.AbstractMessageCreatorBuilder::build);
+		return Stream.concat(stream1, stream2);
 	}
 
 }

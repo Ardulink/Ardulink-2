@@ -65,7 +65,7 @@ public class ALProtoBuilder {
 
 		private final String command;
 
-		private ALPProtocolKey(String command) {
+		ALPProtocolKey(String command) {
 			this.command = command;
 		}
 

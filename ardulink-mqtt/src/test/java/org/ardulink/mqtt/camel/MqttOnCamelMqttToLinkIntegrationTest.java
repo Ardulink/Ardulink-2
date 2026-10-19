@@ -208,7 +208,7 @@ class MqttOnCamelMqttToLinkIntegrationTest {
 	}
 
 	private static void adviceAll(ModelCamelContext context, Predicate<RouteDefinition> predicate,
-			ThrowingConsumer<AdviceWithRouteBuilder, Exception> throwingConsumer) throws Exception {
+			ThrowingConsumer<AdviceWithRouteBuilder, Exception> throwingConsumer) {
 		List<String> routeIds = context.getRouteDefinitions().stream().filter(predicate)
 				.map(RouteDefinition::getRouteId).collect(toList());
 		routeIds.forEach(d -> replaceFromWith(context, d, throwingConsumer));

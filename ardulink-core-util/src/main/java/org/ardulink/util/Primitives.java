@@ -47,7 +47,7 @@ public enum Primitives {
 
 	private static char charValueOfHelper(String string) {
 		checkArgument(string.length() == 1, "single character expected but got %s", string);
-		return Character.valueOf(string.charAt(0));
+		return string.charAt(0);
 	}
 
 	private final Class<?> type;
@@ -55,7 +55,7 @@ public enum Primitives {
 	private final Function<String, Object> parseFunction;
 	private final Object defaultValue;
 
-	private Primitives(Class<?> type, Class<?> wrapperType, Function<String, Object> parseFunction, Object defaultValue) {
+	Primitives(Class<?> type, Class<?> wrapperType, Function<String, Object> parseFunction, Object defaultValue) {
 		this.type = type;
 		this.wrapperType = wrapperType;
 		this.parseFunction = parseFunction;

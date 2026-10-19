@@ -17,9 +17,13 @@ limitations under the License.
 package org.ardulink.util;
 
 import static java.util.Arrays.stream;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toUnmodifiableMap;
 import static org.ardulink.util.Predicates.attribute;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -46,6 +50,10 @@ public final class Enums {
 
 	private static <T extends Enum<?>> Optional<T> findEnumWithName(Class<T> enumClass, Predicate<String> predicate) {
 		return stream(enumClass.getEnumConstants()).filter(attribute(Enum::name, predicate)).findFirst();
+	}
+
+	public static <K, V extends Enum<?>> Map<K, V> mapInstances(Class<V> enumClass, Function<V, K> keyMapper) {
+		return stream(enumClass.getEnumConstants()).collect(toUnmodifiableMap(keyMapper, identity()));
 	}
 
 }

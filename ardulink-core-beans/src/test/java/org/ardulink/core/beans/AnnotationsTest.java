@@ -96,13 +96,13 @@ class AnnotationsTest {
 	}
 
 	@Test
-	void anotherAnnoOnTheField() throws Exception {
+	void anotherAnnoOnTheField() {
 		assertHasBothAnnotations(
 				BeanProperties.builder(new AnotherAnnoOnTheField()).using(directFieldAccess()).build());
 	}
 
 	@Test
-	void anotherAnnoOnTheFieldWithGetterAndSetter() throws Exception {
+	void anotherAnnoOnTheFieldWithGetterAndSetter() {
 		// this will only work if the property was found using propertyAnnotated
 		// since when looking up via findByIntrospection there is no relation
 		// between the reader/setter and the private field!
@@ -111,17 +111,17 @@ class AnnotationsTest {
 	}
 
 	@Test
-	void testAnnoOnGetter() throws Exception {
+	void testAnnoOnGetter() {
 		assertHasBothAnnotations(BeanProperties.forBean(new AnotherAnnoOnTheGetter()));
 	}
 
 	@Test
-	void testAnnoOnSetter() throws Exception {
+	void testAnnoOnSetter() {
 		assertHasBothAnnotations(BeanProperties.forBean(new AnotherAnnoOnTheSetter()));
 	}
 
 	@Test
-	void testAnnoOnGetterAndSetter() throws Exception {
+	void testAnnoOnGetterAndSetter() {
 		assertHasBothAnnotations(BeanProperties.forBean(new AnotherAnnoOnTheGetterAndSetter()));
 	}
 

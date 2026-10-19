@@ -16,8 +16,12 @@ limitations under the License.
 
 package org.ardulink.util;
 
+import static org.ardulink.util.Enums.mapInstances;
 import static org.ardulink.util.Strings.swapUpperLower;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
+
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +36,7 @@ import org.junit.jupiter.api.Test;
 class EnumsTest {
 
 	enum TestEnum {
-		A, B, C;
+		A, B, C
 	}
 
 	String cName = TestEnum.C.name();
@@ -48,6 +52,18 @@ class EnumsTest {
 	void testEnumWithNameIgnoreCase() {
 		assertThat(Enums.enumWithNameIgnoreCase(TestEnum.class, cName)).hasValue(TestEnum.C);
 		assertThat(Enums.enumWithNameIgnoreCase(TestEnum.class, swappedCName)).hasValue(TestEnum.C);
+	}
+
+	@Test
+	void testMapInstances() {
+		assertThat(mapInstances(TestEnum.class, TestEnum::name))
+				.containsExactlyInAnyOrderEntriesOf(Map.of("A", TestEnum.A, "B", TestEnum.B, "C", TestEnum.C));
+	}
+
+	@Test
+	void testMapInstancesDuplicateKeys() {
+		assertThatRuntimeException().isThrownBy(() -> mapInstances(TestEnum.class, __ -> "A"))
+				.withMessageContaining("Duplicate");
 	}
 
 }

@@ -22,6 +22,7 @@ import static org.ardulink.core.Pin.digitalPin;
 import static org.ardulink.core.events.FilteredEventListenerAdapter.filter;
 import static org.testcontainers.shaded.com.google.common.base.Objects.equal;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
+import static org.testcontainers.shaded.org.hamcrest.Matchers.is;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,6 +48,14 @@ public final class VirtualAvrTester {
 
 	private VirtualAvrTester() {
 		super();
+	}
+
+	// single link: a closed link's reader thread keeps stealing bytes from a reopened port
+	public static void testSerialPins(VirtualAvrContainer<?> virtualAvr, Configurer configurer) throws IOException {
+		try (Link link = configurer.newLink()) {
+			testSerialPinSwitching(virtualAvr, link);
+			testSerialPinListening(virtualAvr, link);
+		}
 	}
 
 	public static void testSerialPinSwitching(VirtualAvrContainer<?> virtualAvr, Configurer configurer)
@@ -108,7 +117,7 @@ public final class VirtualAvrTester {
 			String avrPin = "A" + ardulinkPin;
 			avr.pinReportMode(avrPin, ANALOG);
 			avr.pinState(avrPin, analogValue);
-			await().until(() -> received.get() == analogValue);
+			await().untilAtomic(received, is(analogValue));
 		} finally {
 			link.removeListener(listener);
 		}
@@ -129,7 +138,7 @@ public final class VirtualAvrTester {
 		try {
 			avr.pinReportMode(avrPin, DIGITAL);
 			avr.pinState(avrPin, digitalValue);
-			await().until(() -> received.get() == digitalValue);
+			await().untilAtomic(received, is(digitalValue));
 		} finally {
 			link.removeListener(listener);
 		}

@@ -20,7 +20,6 @@ package org.ardulink.rest;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.System.identityHashCode;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.regex.Matcher.quoteReplacement;
 import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
@@ -40,7 +39,6 @@ import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
 import static org.ardulink.util.Primitives.tryParseAs;
-import static org.ardulink.util.StopWatch.Countdown.createStarted;
 import static org.ardulink.util.Throwables.propagate;
 
 import java.io.IOException;
@@ -48,8 +46,10 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -61,7 +61,6 @@ import org.ardulink.core.messages.api.FromDeviceMessage;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
 import org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey;
 import org.ardulink.core.proto.ardulink.ArdulinkProtocol2.ALPByteStreamProcessor;
-import org.ardulink.util.StopWatch.Countdown;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.resource.EmptyResource;
 import org.eclipse.jetty.util.resource.Resource;
@@ -99,8 +98,7 @@ public class RestRouteBuilder extends RouteBuilder {
 
 	@Override
 	public void configure() throws Exception {
-		AtomicReference<FromDeviceMessagePinStateChanged> messageRef = new AtomicReference<>();
-		CountDownLatch latch = new CountDownLatch(1);
+		ConcurrentHashMap<Pin, CompletableFuture<FromDeviceMessagePinStateChanged>> messages = new ConcurrentHashMap<>();
 
 		String patchAnalog = "direct:patchAnalog-" + identityHashCode(this);
 		String patchDigital = "direct:patchDigital-" + identityHashCode(this);
@@ -130,15 +128,13 @@ public class RestRouteBuilder extends RouteBuilder {
 				.put(ANALOG_PIN).consumes(APPLICATION_TEXT).type(String.class).to(switchAnalog) //
 				.put(DIGITAL_PIN).consumes(APPLICATION_TEXT).type(String.class).to(switchDigital) //
 		;
-		from(patchAnalog).process(exchange -> patchAnalog(exchange)).to(target);
-		from(patchDigital).process(exchange -> patchDigital(exchange)).to(target);
-		from(readAnalog).process(exchange -> readAnalog(exchange))
-				.process(exchange -> readQueue(exchange, messageRef, latch));
-		from(readDigital).process(exchange -> readDigital(exchange))
-				.process(exchange -> readQueue(exchange, messageRef, latch));
-		from(switchAnalog).process(exchange -> switchAnalog(exchange)).to(target);
-		from(switchDigital).process(exchange -> switchDigital(exchange)).to(target);
-		writeArduinoMessagesTo(target, messageRef, latch);
+		from(patchAnalog).process(RestRouteBuilder::patchAnalog).to(target);
+		from(patchDigital).process(RestRouteBuilder::patchDigital).to(target);
+		from(readAnalog).process(RestRouteBuilder::readAnalog).process(exchange -> readQueue(exchange, messages));
+		from(readDigital).process(RestRouteBuilder::readDigital).process(exchange -> readQueue(exchange, messages));
+		from(switchAnalog).process(RestRouteBuilder::switchAnalog).to(target);
+		from(switchDigital).process(RestRouteBuilder::switchDigital).to(target);
+		writeArduinoMessagesTo(target, messages);
 	}
 
 	private void swagger(String apidocs) {
@@ -189,11 +185,11 @@ public class RestRouteBuilder extends RouteBuilder {
 		return RestRouteBuilder.class.getClassLoader().getResource(META_INF_RESOURCES_WEBJARS).toURI();
 	}
 
-	private void registerResourceHandler(String id, URI resource, String ignore) throws URISyntaxException {
+	private void registerResourceHandler(String id, URI resource, String ignore) {
 		getContext().getRegistry().bind(id, ResourceHandler.class, resourceHandler(resource, ignore));
 	}
 
-	private static ResourceHandler resourceHandler(URI resourceURI, String ignore) throws URISyntaxException {
+	private static ResourceHandler resourceHandler(URI resourceURI, String ignore) {
 		ResourceHandler rh = new ResourceHandler() {
 			@Override
 			public Resource getResource(String path) {
@@ -209,21 +205,24 @@ public class RestRouteBuilder extends RouteBuilder {
 		message.setHeader("location", location);
 	}
 
-	private static void readQueue(Exchange exchange, AtomicReference<FromDeviceMessagePinStateChanged> messageRef,
-			CountDownLatch latch) throws InterruptedException {
+	private static void readQueue(Exchange exchange,
+			Map<Pin, CompletableFuture<FromDeviceMessagePinStateChanged>> messages) throws InterruptedException {
 		Message message = exchange.getMessage();
 		Pin pinOfMessage = extractPin(message);
 
-		for (Countdown countdown = createStarted(1, SECONDS); !countdown.finished();) {
-			if (latch.await(countdown.remaining(MILLISECONDS), MILLISECONDS)) {
-				FromDeviceMessagePinStateChanged polled = messageRef.get();
-				if (pinOfMessage.equals(polled.getPin())) {
-					message.setBody(polled.getValue(), String.class);
-					return;
-				}
-			}
+		// We use a CompletableFuture per Pin rather than a BlockingQueue: computeIfAbsent returns the same
+		// future to all concurrent readers of a pin, so a single incoming message completes it for every one
+		// of them. A queue would consume the value, so concurrent reads of the same pin would race each other
+		// (one reader takes the message, the other would have to wait for a fresh one and might time out).
+		CompletableFuture<FromDeviceMessagePinStateChanged> future = messages.computeIfAbsent(pinOfMessage,
+				p -> new CompletableFuture<>());
+		FromDeviceMessagePinStateChanged polled;
+		try {
+			polled = future.get(1, SECONDS);
+		} catch (ExecutionException | TimeoutException e) {
+			throw new IllegalStateException("Timeout retrieving message from arduino");
 		}
-		throw new IllegalStateException("Timeout retrieving message from arduino");
+		message.setBody(polled.getValue(), String.class);
 	}
 
 	private static void patchDigital(Exchange exchange) {
@@ -289,16 +288,21 @@ public class RestRouteBuilder extends RouteBuilder {
 		return message;
 	}
 
-	private void writeArduinoMessagesTo(String arduino, AtomicReference<FromDeviceMessagePinStateChanged> messageRef,
-			CountDownLatch latch) {
+	private void writeArduinoMessagesTo(String arduino,
+			Map<Pin, CompletableFuture<FromDeviceMessagePinStateChanged>> messages) {
 		ALPByteStreamProcessor byteStreamProcessor = new ALPByteStreamProcessor();
 		from(arduino).process(exchange -> {
 			String body = exchange.getMessage().getBody(String.class);
 			FromDeviceMessage fromDevice = getFirst(parse(byteStreamProcessor, byteStreamProcessor.toBytes(body)))
 					.orElseThrow(() -> new IllegalStateException("Cannot handle " + body));
 			if (fromDevice instanceof FromDeviceMessagePinStateChanged) {
-				messageRef.set((FromDeviceMessagePinStateChanged) fromDevice);
-				latch.countDown();
+				FromDeviceMessagePinStateChanged message = (FromDeviceMessagePinStateChanged) fromDevice;
+				messages.compute(message.getPin(), (pin, future) -> {
+					if (future != null) {
+						future.complete(message);
+					}
+					return CompletableFuture.completedFuture(message);
+				});
 			}
 		});
 	}

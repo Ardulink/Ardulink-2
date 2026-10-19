@@ -73,7 +73,7 @@ import com.github.pfichtner.testcontainers.virtualavr.VirtualAvrContainer;
 @ExtendWith(VirtualAvrExtension.class)
 public @interface UseVirtualAvr {
 
-	public static final String TTY_USB0 = "ttyUSB0";
+	String TTY_USB0 = "ttyUSB0";
 
 	String deviceName() default TTY_USB0;
 
@@ -142,13 +142,15 @@ public @interface UseVirtualAvr {
 
 	class ClasspathFirmwareLoader extends AbstractFirmwareLoader {
 
+		private static final Scheme classpath = Scheme.of("classpath");
+
 		public ClasspathFirmwareLoader() {
-			super(List.of(Scheme.of("classpath")));
+			super(List.of(classpath));
 		}
 
 		@Override
 		public File loadFirmware(URI uri, Path rootDir) {
-			String resourcePath = uri.toString().replaceFirst("(?i)^classpath://", "");
+			String resourcePath = uri.toString().replaceFirst(format("(?i)^%s://", classpath.value()), "");
 			String normalizedPath = resourcePath.startsWith("/") ? resourcePath : "/" + resourcePath;
 			try {
 				URL resource = UseVirtualAvr.class.getResource(normalizedPath);
@@ -187,7 +189,7 @@ public @interface UseVirtualAvr {
 
 	}
 
-	static class VirtualAvrExtension
+	class VirtualAvrExtension
 			implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
 
 		private static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace

@@ -20,6 +20,8 @@ import static java.util.stream.Stream.iterate;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Streams.getLast;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -43,6 +45,10 @@ public final class Throwables {
 
 	public static Stream<Throwable> getCauses(Throwable throwable) {
 		return iterate(throwable, Objects::nonNull, Throwable::getCause);
+	}
+
+	public static RuntimeException propagate(IOException exception) {
+		throw new UncheckedIOException(exception);
 	}
 
 	public static RuntimeException propagate(Throwable throwable) {

@@ -16,21 +16,12 @@ limitations under the License.
 
 package org.ardulink.core.linkmanager;
 
-/**
- * [ardulinktitle] [ardulinkversion]
- * 
- * project Ardulink http://www.ardulink.org/
- * 
- * [adsense]
- *
- */
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.ardulink.core.proto.api.Protocols.protoByName;
 import static org.ardulink.core.proto.api.Protocols.protocolNames;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -46,6 +37,14 @@ import org.ardulink.core.linkmanager.LinkConfig.I18n;
 import org.ardulink.core.proto.api.Protocol;
 import org.ardulink.core.proto.ardulink.ArdulinkProtocol2;
 
+/**
+ * [ardulinktitle] [ardulinkversion]
+ *
+ * project Ardulink http://www.ardulink.org/
+ *
+ * [adsense]
+ *
+ */
 @I18n("message")
 public class DummyLinkConfig implements LinkConfig {
 	
@@ -155,6 +154,11 @@ public class DummyLinkConfig implements LinkConfig {
 	public static final ThreadLocal<String[]> choiceValuesOfD = ThreadLocal.withInitial(() -> new String[] { "---unconfigured---" });
 	public static final ThreadLocal<Boolean> doDisableXXX = ThreadLocal.withInitial(() -> Boolean.TRUE);
 
+	public static void cleanupThreadLocals() {
+		choiceValuesOfD.remove();
+		doDisableXXX.remove();
+	}
+
 	@Named("a")
 	public void setPort(String a) {
 		this.a = a;
@@ -179,12 +183,12 @@ public class DummyLinkConfig implements LinkConfig {
 
 	@ChoiceFor("proto")
 	public static String[] choiceValuesForAtttribute_proto_typeIsArray() {
-		return protocolNames().stream().toArray(String[]::new);
+		return protocolNames().toArray(String[]::new);
 	}
 
 	@ChoiceFor("f1")
 	public List<TimeUnit> choiceValuesForAtttribute_f1_typeIsList() {
-		return Arrays.asList(NANOSECONDS);
+		return List.of(NANOSECONDS);
 	}
 
 	@ChoiceFor("f2")

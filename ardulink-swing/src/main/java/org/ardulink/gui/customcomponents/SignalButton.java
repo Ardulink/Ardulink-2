@@ -64,7 +64,7 @@ public class SignalButton extends JPanel implements Linkable {
 			try {
 				link.sendCustomMessage(getId(), getValue());
 			} catch (IOException e) {
-				Throwables.propagate(e);
+				throw Throwables.propagate(e);
 			}
 		});
 		add(signalButton);

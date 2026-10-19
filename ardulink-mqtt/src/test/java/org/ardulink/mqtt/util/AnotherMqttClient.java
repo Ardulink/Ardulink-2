@@ -16,7 +16,6 @@ limitations under the License.
  */
 package org.ardulink.mqtt.util;
 
-import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.Pin.Type.ANALOG;
 import static org.ardulink.core.Pin.Type.DIGITAL;
@@ -29,7 +28,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -109,18 +107,11 @@ public class AnotherMqttClient implements Closeable {
 	private final String topic;
 	private final String controlTopic;
 
-	private static final Map<Type, String> typeMap = unmodifiableMap(typeMap());
+	private static final Map<Type, String> typeMap = Map.of(ANALOG, "A", DIGITAL, "D");
 
 	private CamelContext context;
 
 	private boolean appendValueSet;
-
-	private static Map<Type, String> typeMap() {
-		Map<Type, String> typeMap = new HashMap<>();
-		typeMap.put(ANALOG, "A");
-		typeMap.put(DIGITAL, "D");
-		return typeMap;
-	}
 
 	private AnotherMqttClient(Builder builder) {
 		this.topic = builder.topic.endsWith("/") ? builder.topic : builder.topic + "/";
@@ -148,7 +139,7 @@ public class AnotherMqttClient implements Closeable {
 
 	}
 
-	public AnotherMqttClient connect() throws IOException {
+	public AnotherMqttClient connect() {
 		try {
 			context.start();
 		} catch (Exception e) {
@@ -178,7 +169,7 @@ public class AnotherMqttClient implements Closeable {
 		this.messages.clear();
 	}
 
-	public void switchPin(Pin pin, Object value) throws IOException {
+	public void switchPin(Pin pin, Object value) {
 		sendMessage(new Message(append(this.topic + typeMap.get(pin.getType()) + pin.pinNum()), String.valueOf(value)));
 	}
 
@@ -194,17 +185,17 @@ public class AnotherMqttClient implements Closeable {
 		startStopListening(pin, false);
 	}
 
-	private void startStopListening(Pin pin, boolean state) throws IOException {
+	private void startStopListening(Pin pin, boolean state) {
 		sendMessage(new Message(append(this.controlTopic + typeMap.get(pin.getType()) + pin.pinNum()),
 				String.valueOf(state)));
 	}
 
-	private void sendMessage(Message message) throws IOException {
+	private void sendMessage(Message message) {
 		producerTemplate.sendBodyAndHeader("direct:start", message.getMessage(), PUBLISH_HEADER, message.getTopic());
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		try {
 			this.context.stop();
 		} catch (Exception e) {

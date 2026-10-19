@@ -7,7 +7,9 @@
 [![CodeQL](https://github.com/Ardulink/Ardulink-2/actions/workflows/codeql.yml/badge.svg)](https://github.com/Ardulink/Ardulink-2/actions/workflows/codeql.yml)
 [![Java Version](https://img.shields.io/badge/java-11+-blue)](https://github.com/Ardulink/Ardulink-2/blob/master/pom.xml)
 
-This is the repository for Ardulink 2. Ardulink 2 is a complete, open source, java solution for the control and coordination of Arduino boards. This repository contains Ardulink Version 0.6.2 and all upcoming releases.
+This is the repository for Ardulink 2. Ardulink 2 is a complete, open source, java solution for the control and coordination of Arduino boards. This repository contains Ardulink Version 0.6.2 and all upcoming releases. 
+
+**Firmware has moved to a separate repository:** https://github.com/Ardulink/Firmware
 
 ```java
 public static void main(String... args) throws Exception {
@@ -31,7 +33,7 @@ Recommended way of using Ardulink-2 inside your own application is declaring a d
 <dependency>
     <groupId>org.ardulink</groupId>
     <artifactId>ardulink-core-base</artifactId>
-    <version>2.2.0</version>
+    <version>2.3.1</version>
 </dependency>
 ```
 Without adding additional jars ```Links.getDefault()``` would throw an exception because no link type is available. For each link type a separate jar is available. So if you like to connect using a serial link you have to add the corresponding module.For serial link this is
@@ -39,12 +41,14 @@ Without adding additional jars ```Links.getDefault()``` would throw an exception
 <dependency>
     <groupId>org.ardulink</groupId>
     <artifactId>ardulink-link-serial-jssc</artifactId>
-    <version>2.2.0</version>
+    <version>2.3.1</version>
 </dependency>
 ```
 
-To see all available link types and a how to use Ardulink with other build systems see https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.ardulink%22
+To see all available link types and a how to use Ardulink with other build systems see https://central.sonatype.com/search?q=g%3Aorg.ardulink
 
 see [Ardulink site](https://ardulink.github.io/) (documentation, guides and downloads)
+
+Maintainers: see [README.release.md](README.release.md) for how to publish a new release to Maven Central.
 
 

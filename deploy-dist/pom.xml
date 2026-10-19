@@ -7,12 +7,17 @@
 	<parent>
 		<groupId>org.ardulink</groupId>
 		<artifactId>parent</artifactId>
-		<version>2.2.1-SNAPSHOT</version>
+		<version>2.3.2-SNAPSHOT</version>
 	</parent>
+
+	<name>Ardulink Distribution</name>
+	<description>Binary distribution of Ardulink</description>
+	<url>http://www.ardulink.org</url>
 
 	<properties>
 		<maven.install.skip>true</maven.install.skip>
 		<maven.deploy.skip>true</maven.deploy.skip>
+		<maven.build.timestamp.format>yyyy-MM-dd'T'HHmmss'Z'</maven.build.timestamp.format>
 	</properties>
 
 	<build>

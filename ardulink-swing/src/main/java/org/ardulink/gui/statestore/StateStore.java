@@ -20,6 +20,8 @@ import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.ardulink.gui.statestore.StateStore.Storer.storer;
 import static org.ardulink.gui.util.SwingUtilities.componentsStream;
+import static org.ardulink.util.BinaryOperators.right;
+import static org.ardulink.util.Streams.castIfInstance;
 
 import java.awt.Component;
 import java.awt.IllegalComponentStateException;
@@ -78,7 +80,7 @@ public class StateStore {
 
 	@Retention(RUNTIME)
 	@Target(FIELD)
-	public static @interface Restorable {
+	public @interface Restorable {
 
 	}
 
@@ -105,7 +107,7 @@ public class StateStore {
 
 		public void save(Component component, Map<Component, SoftReference<Map<String, Object>>> states) {
 			SoftReference<Map<String, Object>> ref = states.computeIfAbsent(component,
-					__ -> new SoftReference<Map<String, Object>>(new HashMap<String, Object>()));
+					__ -> new SoftReference<>(new HashMap<>()));
 			Map<String, Object> map = ref.get();
 			if (map != null) {
 				map.put(valueName, saver.apply(componentType.cast(component)));
@@ -161,7 +163,7 @@ public class StateStore {
 
 	}
 
-	private static final List<Storer<? extends Component, ? extends Object>> storers = Arrays.asList( //
+	private static final List<Storer<? extends Component, ?>> storers = Arrays.asList( //
 			storer(JLabel.class, TEXT), //
 			storer(JLabel.class, ICON), //
 			storer(JTextField.class, TEXT), //
@@ -178,12 +180,13 @@ public class StateStore {
 	private final Component component;
 	private final Map<Component, SoftReference<Map<String, Object>>> states = new IdentityHashMap<>();
 
-	private static Stream<Storer<? extends Component, ? extends Object>> storers(Component component) {
+	private static Stream<Storer<? extends Component, ?>> storers(Component component) {
 		return storers.stream().filter(s -> s.canHandle(component));
 	}
 
 	public static Function<Component, Stream<Component>> restorables() {
-		return c -> componentsStream(c).filter(JPanel.class::isInstance).map(JPanel.class::cast)
+		return c -> componentsStream(c) //
+				.flatMap(x -> castIfInstance(JPanel.class, x)) //
 				.flatMap(StateStore::restorables);
 	}
 
@@ -211,8 +214,7 @@ public class StateStore {
 	}
 
 	public StateStore removeStates(Component... components) {
-		Stream.of(components).forEach(this::removeStates);
-		return this;
+		return Stream.of(components).map(this::removeStates).reduce(right()).orElse(this);
 	}
 
 	public StateStore removeStates(Component component) {

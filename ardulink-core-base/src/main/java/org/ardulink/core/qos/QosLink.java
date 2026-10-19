@@ -53,12 +53,11 @@ public class QosLink implements Link {
 	private final long timeout;
 	private final TimeUnit timeUnit;
 
-	public QosLink(Link link) throws IOException {
+	public QosLink(Link link) {
 		this(link, NO_TIMEOUT, NO_TIMEOUT_UNIT);
 	}
 
-	public QosLink(Link link, long timeout, TimeUnit timeUnit)
-			throws IOException {
+	public QosLink(Link link, long timeout, TimeUnit timeUnit) {
 		this.delegate = link;
 		this.timeout = timeout;
 		this.timeUnit = timeUnit;

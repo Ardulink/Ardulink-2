@@ -34,6 +34,8 @@ import java.net.URI;
 import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -75,6 +77,8 @@ public class ConnectionPanel extends JPanel implements Linkable {
 
 	private JPanel panel;
 
+	private transient ExecutorService displayExecutor;
+
 	private JComboBox<String> createURICombo() {
 		JComboBox<String> uris = new JComboBox<>();
 		uris.setName("uris");
@@ -108,7 +112,7 @@ public class ConnectionPanel extends JPanel implements Linkable {
 		add(refreshButton(), constraints(0, 2).build());
 		LinkManager.getInstance().listURIs().stream() //
 				.map(URI::toASCIIString) //
-				.forEach(u -> uris.addItem(u));
+				.forEach(uris::addItem);
 	}
 
 	private Component refreshButton() {
@@ -170,7 +174,11 @@ public class ConnectionPanel extends JPanel implements Linkable {
 			}
 
 			private void displayIn(WaitDialog waitDialog, int timeout, TimeUnit tu) {
-				newCachedThreadPool().execute(() -> {
+				if (displayExecutor != null) {
+					displayExecutor.shutdownNow();
+				}
+				displayExecutor = newCachedThreadPool(daemonThreadFactory());
+				displayExecutor.execute(() -> {
 					try {
 						tu.sleep(timeout);
 						synchronized (this) {
@@ -185,6 +193,14 @@ public class ConnectionPanel extends JPanel implements Linkable {
 			}
 
 		}.execute();
+	}
+
+	private static ThreadFactory daemonThreadFactory() {
+		return r -> {
+			Thread thread = new Thread(r);
+			thread.setDaemon(true);
+			return thread;
+		};
 	}
 
 	private JPanel createSubpanel() {

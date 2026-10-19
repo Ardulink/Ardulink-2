@@ -21,14 +21,14 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+      uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
       with:
         egress-policy: audit
 
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Set up JDK ${{ matrix.java-version }}
-      uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+      uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
       with:
         java-version: ${{ matrix.java-version }}
         distribution: 'temurin'
@@ -47,7 +47,7 @@ jobs:
 
     - name: Distribute jars built
       if: ${{ env.FIRST_JOB == 'true' }}
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: jars
         path: "*/target/*.jar"
@@ -56,18 +56,25 @@ jobs:
     # https://github.com/actions/upload-artifact/issues/546
     - name: Copy zip to /tmp
       run: |
-        for file in deploy-dist/target/ardulink-V*.zip; do 
-          cp "$file" "/tmp/$(basename "$file" | sed 's/-SNAPSHOT-[0-9T:.\-]\+Z\.zip$/-SNAPSHOT.zip/')"
+        for file in deploy-dist/target/ardulink-V*.zip; do
+          base=$(basename "$file")
+          if [[ "$base" == *SNAPSHOT* ]]; then
+            sanitized=$(echo "$base" | sed -E 's/-SNAPSHOT.*\.zip$/-SNAPSHOT.zip/')
+          else
+            sanitized=$(echo "$base" | sed -E 's/-[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{6}Z\.zip$/.zip/; s/-[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\.zip$/.zip/')
+            sanitized=$(echo "$sanitized" | sed 's/\.zip\.zip$/.zip/')
+          fi
+          cp "$file" "/tmp/$sanitized"
         done
     - name: Distribute zip created
       if: ${{ env.FIRST_JOB == 'true' }}
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: ardulink-zip
         path: "/tmp/ardulink-V*.zip"
 
     - name: Test Report JDK ${{ matrix.java-version }}
-      uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3
+      uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3
       if: (success() || failure()) && github.event_name != 'pull_request' && github.actor != 'dependabot[bot]'  # run this step even if previous step failed
       with:
         name: Tests Report JDK ${{ matrix.java-version }}
@@ -76,7 +83,7 @@ jobs:
 
     - name: Distribute video records
       if: ${{ env.FIRST_JOB == 'true' }}
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: videos
         path: "*/target/videos/*"
@@ -89,10 +96,22 @@ jobs:
         key: docker-${{ runner.os }}-${{ matrix.java-version }}-${{ hashFiles('deploy-dist/tests/docker-compose.yml') }}
 
     - name: Run MQTT systemtests
-      run: timeout 2m bash deploy-dist/tests/systemtest-mqtt.sh
+      run: timeout 2m bash deploy-dist/tests/systemtest-mqtt.sh ardulink
 
     - name: Run REST systemtests
-      run: timeout 2m bash deploy-dist/tests/systemtest-rest.sh
+      run: timeout 2m bash deploy-dist/tests/systemtest-rest.sh ardulink
+
+    - name: Run MQTT systemtests with Firmata firmware
+      run: timeout 2m bash deploy-dist/tests/systemtest-mqtt.sh firmata
+
+    - name: Run REST systemtests with Firmata firmware
+      run: timeout 2m bash deploy-dist/tests/systemtest-rest.sh firmata
+
+    - name: Run MQTT systemtests with Telemetrix firmware
+      run: timeout 2m bash deploy-dist/tests/systemtest-mqtt.sh telemetrix
+
+    - name: Run REST systemtests with Telemetrix firmware
+      run: timeout 2m bash deploy-dist/tests/systemtest-rest.sh telemetrix
 
     - name: Remove JaCoCo aggregate and excluded module reports
       if: matrix.java-version == 11
@@ -103,7 +122,7 @@ jobs:
 
     - name: Codecov
       if: matrix.java-version == 11
-      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
 

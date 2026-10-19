@@ -5,8 +5,12 @@
 	<parent>
 		<groupId>org.ardulink</groupId>
 		<artifactId>parent</artifactId>
-		<version>2.2.1-SNAPSHOT</version>
+		<version>2.3.2-SNAPSHOT</version>
 	</parent>
+
+	<name>Ardulink Link Proxy</name>
+	<description>Link through a remote proxy</description>
+	<url>http://www.ardulink.org</url>
 
 	<dependencies>
 		<dependency>

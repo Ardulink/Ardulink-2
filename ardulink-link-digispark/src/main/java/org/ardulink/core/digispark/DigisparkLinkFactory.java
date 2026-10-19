@@ -16,8 +16,6 @@ limitations under the License.
 
 package org.ardulink.core.digispark;
 
-import java.io.IOException;
-
 import org.ardulink.core.AbstractListenerLink;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.linkmanager.LinkFactory;
@@ -30,8 +28,7 @@ public class DigisparkLinkFactory implements LinkFactory<DigisparkLinkConfig> {
 	}
 
 	@Override
-	public AbstractListenerLink newLink(DigisparkLinkConfig config)
-			throws IOException {
+	public AbstractListenerLink newLink(DigisparkLinkConfig config) {
 		return new ConnectionBasedLink(new DigisparkConnection(config),
 				config.protocol.newByteStreamProcessor());
 	}

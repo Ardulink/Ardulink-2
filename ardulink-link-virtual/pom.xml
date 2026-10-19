@@ -6,8 +6,12 @@
 	<parent>
 		<groupId>org.ardulink</groupId>
 		<artifactId>parent</artifactId>
-		<version>2.2.1-SNAPSHOT</version>
+		<version>2.3.2-SNAPSHOT</version>
 	</parent>
+
+	<name>Ardulink Link Virtual</name>
+	<description>Link without a physical connection to a board</description>
+	<url>http://www.ardulink.org</url>
 
 	<properties>
 		<maven.deploy.skip>true</maven.deploy.skip>

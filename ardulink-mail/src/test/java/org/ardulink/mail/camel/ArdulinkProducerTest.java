@@ -17,8 +17,6 @@ limitations under the License.
 package org.ardulink.mail.camel;
 
 import static java.lang.System.identityHashCode;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.POWER_PIN_INTENSITY;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.POWER_PIN_SWITCH;
@@ -83,7 +81,7 @@ class ArdulinkProducerTest {
 
 	@Test
 	void doesNotAcceptMessagesWithEmptyBody() throws Exception {
-		setup("aValidUser", null, emptyList());
+		setup("aValidUser", null, List.of());
 		setFrom("aValidUser");
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
@@ -95,7 +93,7 @@ class ArdulinkProducerTest {
 
 	@Test
 	void doesNotAcceptMessagesWithNullOrEmptyFromAddress() throws Exception {
-		setup("anyuser", null, emptyList());
+		setup("anyuser", null, List.of());
 
 		MockEndpoint mockEndpoint = getMockEndpoint();
 		mockEndpoint.expectedMessageCount(0);
@@ -107,7 +105,7 @@ class ArdulinkProducerTest {
 	@Test
 	void doesNotAcceptMessagesWhereScenarioNameIsNotKnown() throws Exception {
 		String anyUser = "anyuser";
-		setup(anyUser, null, emptyList());
+		setup(anyUser, null, List.of());
 
 		setFrom(anyUser);
 		setBody("unknown command name");
@@ -126,7 +124,7 @@ class ArdulinkProducerTest {
 		String anyUser = "anyuser";
 		String commandName = "scenario 1";
 
-		setup(anyUser, commandName, singletonList(switchDigital7));
+		setup(anyUser, commandName, List.of(switchDigital7));
 
 		setFrom(anyUser);
 		setBody(commandName);

@@ -30,7 +30,7 @@ public class DefaultToDeviceMessagePing implements ToDeviceMessagePing {
 
 	private static final DefaultToDeviceMessagePing instance = new DefaultToDeviceMessagePing();
 
-	public static ToDeviceMessagePing toDeviceMessageNoTone() {
+	public static ToDeviceMessagePing toDeviceMessagePing() {
 		return instance;
 	}
 

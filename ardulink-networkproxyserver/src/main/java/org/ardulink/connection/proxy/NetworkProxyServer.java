@@ -15,6 +15,7 @@ limitations under the License.
 */
 package org.ardulink.connection.proxy;
 
+import static java.util.concurrent.Executors.newCachedThreadPool;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
 
@@ -23,6 +24,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -56,13 +58,19 @@ public class NetworkProxyServer {
 		@Override
 		public void execute(int portNumber) throws IOException {
 			ServerSocket serverSocket = new ServerSocket(portNumber);
+			ExecutorService executor = newCachedThreadPool(r -> {
+				Thread thread = new Thread(r);
+				thread.setDaemon(true);
+				return thread;
+			});
 			try {
 				serverIsUp(portNumber);
-				while (true) {
-					new Thread(newConnection(serverSocket)).start();
+				while (!Thread.currentThread().isInterrupted()) {
+					executor.execute(newConnection(serverSocket));
 				}
 			} finally {
 				logger.info("{} stops", NAME);
+				executor.shutdownNow();
 				serverSocket.close();
 			}
 		}

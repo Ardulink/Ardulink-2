@@ -23,6 +23,7 @@ import static org.ardulink.connection.proxy.NetworkProxyMessages.NUMBER_OF_PORTS
 import static org.ardulink.connection.proxy.NetworkProxyMessages.OK;
 import static org.ardulink.connection.proxy.NetworkProxyMessages.STOP_SERVER_CMD;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * [adsense]
  *
  */
-public class Handshaker {
+public class Handshaker implements Closeable {
 
 	private static final Logger logger = LoggerFactory.getLogger(Handshaker.class);
 	public static final String PROXY_CONNECTION_SEPARATOR = "\n";
@@ -74,36 +75,40 @@ public class Handshaker {
 	public Link doHandshake() throws Exception {
 		while (scanner.hasNext()) {
 			String input = read();
-			if (input.equals(STOP_SERVER_CMD)) {
-				Thread currentThread = Thread.currentThread();
-				currentThread.getThreadGroup().getParent().interrupt();
-				currentThread.interrupt();
-			} else if (GET_PORT_LIST_CMD.equals(input)) {
-				handleGetPortList();
-			} else if (CONNECT_CMD.equals(input)) {
-				try {
-					// Ardulink-1 only did support Proxy to connect to serial links. So the
-					// handshake contains serial specific attributes. We should deprecate
-					// the Proxy since MQTT supports the same (or even more) features.
-					// Otherwise: Proxy should not contain serial specific things but send
-					// the ardulink:// URI to connect to (e.g.
-					// ardulink://serial?baudrate=9600)
-					configurer.getAttribute("port").setValue(read());
-					configurer.getAttribute("baudrate").setValue(Integer.valueOf(read()));
-					Link link = newLink(configurer);
-					write(OK);
-					return link;
-				} catch (Exception e) {
-					logger.error("Error during connecting", e);
-					write(KO);
-				}
-			}
+            switch (input) {
+                case STOP_SERVER_CMD:
+                    Thread currentThread = Thread.currentThread();
+                    currentThread.getThreadGroup().getParent().interrupt();
+                    currentThread.interrupt();
+                    break;
+                case GET_PORT_LIST_CMD:
+                    handleGetPortList();
+                    break;
+                case CONNECT_CMD:
+                    try {
+                        // Ardulink-1 only did support Proxy to connect to serial links. So the
+                        // handshake contains serial specific attributes. We should deprecate
+                        // the Proxy since MQTT supports the same (or even more) features.
+                        // Otherwise: Proxy should not contain serial specific things but send
+                        // the ardulink:// URI to connect to (e.g.
+                        // ardulink://serial?baudrate=9600)
+                        configurer.getAttribute("port").setValue(read());
+                        configurer.getAttribute("baudrate").setValue(Integer.valueOf(read()));
+                        Link link = newLink(configurer);
+                        write(OK);
+                        return link;
+                    } catch (Exception e) {
+                        logger.error("Error during connecting", e);
+                        write(KO);
+                    }
+                    break;
+            }
 			printWriter.flush();
 		}
 		throw new IllegalStateException("No more data but no " + CONNECT_CMD + " received");
 	}
 
-	private void handleGetPortList() throws IOException {
+	private void handleGetPortList() {
 		Object[] portList = getPortList();
 		if (portList == null) {
 			portList = new Object[0];
@@ -118,7 +123,7 @@ public class Handshaker {
 		return scanner.next();
 	}
 
-	private void write(Object object) throws IOException {
+	private void write(Object object) {
 		String message = object instanceof String ? ((String) object) : String.valueOf(object);
 		printWriter.write(message);
 		printWriter.write(PROXY_CONNECTION_SEPARATOR);
@@ -131,6 +136,12 @@ public class Handshaker {
 
 	private Object[] getPortList() {
 		return configurer.getAttribute("port").getChoiceValues();
+	}
+
+	@Override
+	public void close() {
+		scanner.close();
+		printWriter.close();
 	}
 
 }

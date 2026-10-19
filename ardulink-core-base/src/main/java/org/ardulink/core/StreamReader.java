@@ -54,7 +54,7 @@ public abstract class StreamReader implements Closeable {
 	}
 
 	public void runReaderThread() {
-		this.thread = new Thread(() -> readUntilClosed());
+		this.thread = new Thread(this::readUntilClosed);
 		this.thread.setDaemon(true);
 		this.thread.start();
 	}
@@ -104,6 +104,14 @@ public abstract class StreamReader implements Closeable {
 	@Override
 	public void close() throws IOException {
 		Optional.ofNullable(thread).ifPresent(Thread::interrupt);
+		Optional.ofNullable(thread).ifPresent(t -> {
+			try {
+				t.join(1000);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		});
+		this.thread = null;
 		inputStream.close();
 	}
 

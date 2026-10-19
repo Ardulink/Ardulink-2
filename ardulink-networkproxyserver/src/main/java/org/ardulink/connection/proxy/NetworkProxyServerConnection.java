@@ -15,18 +15,24 @@ limitations under the License.
  */
 package org.ardulink.connection.proxy;
 
+import static org.ardulink.util.Instance.castTo;
 import static org.ardulink.util.Preconditions.checkState;
+import static org.ardulink.util.Streams.getLast;
+import static org.ardulink.util.Streams.unfold;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Optional;
 
 import org.ardulink.core.Connection;
 import org.ardulink.core.ConnectionBasedLink;
 import org.ardulink.core.Link;
 import org.ardulink.core.StreamReader;
 import org.ardulink.core.convenience.LinkDelegate;
+import org.ardulink.util.Instance;
+import org.ardulink.util.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,24 +66,25 @@ public class NetworkProxyServerConnection implements Runnable {
 			checkState(link instanceof ConnectionBasedLink, "Only %s links supported for now (got %s)",
 					ConnectionBasedLink.class.getName(), link.getClass());
 
-			ConnectionBasedLink cbl = (ConnectionBasedLink) link;
-			cbl.getConnection().addListener(new Connection.ListenerAdapter() {
+			ConnectionBasedLink cbLink = (ConnectionBasedLink) link;
+			cbLink.getConnection().addListener(new Connection.ListenerAdapter() {
 				@Override
-				public void received(byte[] bytes) throws IOException {
-					osRemote.write(bytes);
+				public void received(byte[] bytes) {
+					try {
+						osRemote.write(bytes);
+					} catch (IOException e) {
+						throw Throwables.propagate(e);
+					}
 				}
 			});
 
-			StreamReader streamReader = new StreamReader(isRemote) {
+			try (StreamReader streamReader = new StreamReader(isRemote) {
 				@Override
 				protected void received(byte[] bytes) throws Exception {
-					cbl.getConnection().write(bytes);
+					cbLink.getConnection().write(bytes);
 				}
-			};
-			try {
+			}) {
 				streamReader.readUntilClosed();
-			} finally {
-				streamReader.close();
 			}
 		} catch (Exception e) {
 			logger.error("Error while doing proxy", e);
@@ -93,10 +100,8 @@ public class NetworkProxyServerConnection implements Runnable {
 	}
 
 	private Link getRoot(Link link) {
-		while (link instanceof LinkDelegate) {
-			link = ((LinkDelegate) link).getDelegate();
-		}
-		return link;
+		Instance<LinkDelegate> linkDelegate = castTo(LinkDelegate.class);
+		return getLast(unfold(link, l -> linkDelegate.map(l, LinkDelegate::getDelegate))).orElse(link);
 	}
 
 	private void close(Socket socket) {
@@ -108,13 +113,13 @@ public class NetworkProxyServerConnection implements Runnable {
 	}
 
 	private void close(Link link) {
-		if (link != null) {
+		Optional.ofNullable(link).ifPresent(l -> {
 			try {
-				link.close();
-			} catch (Exception e) {
-				logger.error("Error disconnecting link {}", link, e);
+				l.close();
+			} catch (IOException e) {
+				logger.error("Error closing link {}", l, e);
 			}
-		}
+		});
 	}
 
 }

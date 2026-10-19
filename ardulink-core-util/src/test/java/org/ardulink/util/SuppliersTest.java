@@ -36,17 +36,17 @@ import org.junit.jupiter.api.Test;
  */
 class SuppliersTest {
 
-	Supplier<Object> throwingSupplier = new Supplier<Object>() {
+	Supplier<Object> throwingSupplier = new Supplier<>() {
 
-		private boolean called;
+        private boolean called;
 
-		@Override
-		public Object get() {
-			checkState(!called, "Only one call allowed");
-			called = true;
-			return new Object();
-		}
-	};
+        @Override
+        public Object get() {
+            checkState(!called, "Only one call allowed");
+            called = true;
+            return new Object();
+        }
+    };
 
 	@Test
 	void throwingSupplierDoesThrowException() {

@@ -17,6 +17,7 @@ limitations under the License.
 package org.ardulink.core;
 
 import static java.util.function.Predicate.isEqual;
+import static org.ardulink.util.Instance.castTo;
 import static org.ardulink.util.Predicates.attribute;
 
 import java.io.IOException;
@@ -81,13 +82,13 @@ public abstract class AbstractListenerLink implements Link {
 	}
 
 	@Override
-	public Link addRplyListener(RplyListener listener) throws IOException {
+	public Link addRplyListener(RplyListener listener) {
 		this.rplyListeners.add(listener);
 		return this;
 	}
 
 	@Override
-	public Link removeRplyListener(RplyListener listener) throws IOException {
+	public Link removeRplyListener(RplyListener listener) {
 		this.rplyListeners.remove(listener);
 		return this;
 	}
@@ -97,13 +98,13 @@ public abstract class AbstractListenerLink implements Link {
 	}
 
 	@Override
-	public Link addCustomListener(CustomListener listener) throws IOException {
+	public Link addCustomListener(CustomListener listener) {
 		this.customListeners.add(listener);
 		return this;
 	}
 
 	@Override
-	public Link removeCustomListener(CustomListener listener) throws IOException {
+	public Link removeCustomListener(CustomListener listener) {
 		this.customListeners.remove(listener);
 		return this;
 	}
@@ -170,8 +171,7 @@ public abstract class AbstractListenerLink implements Link {
 
 	private boolean hasListenerForPin(Pin pin) {
 		return this.eventListeners.stream() //
-				.filter(FilteredEventListenerAdapter.class::isInstance) //
-				.map(FilteredEventListenerAdapter.class::cast) //
+				.flatMap(castTo(FilteredEventListenerAdapter.class)::asStream) //
 				.anyMatch(attribute(FilteredEventListenerAdapter::getPin, isEqual(pin)));
 	}
 
@@ -200,6 +200,10 @@ public abstract class AbstractListenerLink implements Link {
 	@Override
 	public void close() throws IOException {
 		this.closed = true;
+		this.eventListeners.clear();
+		this.connectionListeners.clear();
+		this.rplyListeners.clear();
+		this.customListeners.clear();
 	}
 
 }

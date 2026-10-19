@@ -17,7 +17,7 @@ limitations under the License.
 package org.ardulink.core;
 
 import static java.lang.Integer.MAX_VALUE;
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.ardulink.core.ConnectionBasedLink.Mode.INFO_MESSAGE_ONLY;
@@ -26,6 +26,7 @@ import static org.ardulink.util.Throwables.propagate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.ardulink.testsupport.junit5.ArduinoStubExt;
 import org.ardulink.testsupport.junit5.ArduinoStubExt.RegexAdder;
@@ -48,31 +49,35 @@ class WaitForArduinoToBootTest {
 	ArduinoStubExt arduinoStub = new ArduinoStubExt();
 
 	@Test
-	void ifNoResponseReceivedWithin3SecondsWaitWillReturnFalse() throws IOException {
+	void ifNoResponseReceivedWithin3SecondsWaitWillReturnFalse() {
 		onPing().doNotRespond();
-		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS)).describedAs("Arduino did respond but shouldn't")
+		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS)) //
+				.describedAs("Arduino did respond but shouldn't") //
 				.isFalse();
 	}
 
 	@Test
-	void noNeedToWaitIfArduinoDoesRespond() throws IOException {
+	void noNeedToWaitIfArduinoDoesRespond() {
 		onPing().respondWith(lf("alp://rply/ok?id={0}"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS)).describedAs("Arduino did not respond")
+		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS)) //
+				.describedAs("Arduino didn't respond") //
 				.isTrue();
 	}
 
 	@Test
-	void canDetectInfoPaketFirmwarVersion2xSendingAfterBoot() throws IOException {
+	void canDetectInfoPaketFirmwarVersion2xSendingAfterBoot() {
 		simulateArduinoSendsInOneSecond(lf("alp://info/x=42/foo=abc"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, INFO_MESSAGE_ONLY))
-				.describedAs("Arduino did not respond").isTrue();
+		assertThat(arduinoStub.link().waitForArduinoToBoot(MAX_VALUE, DAYS, INFO_MESSAGE_ONLY)) //
+				.describedAs("Arduino didn't respond") //
+				.isTrue();
 	}
 
 	@Test
-	void ignoresMisformedReadyPaket() throws IOException {
+	void ignoresMisformedReadyPaket() {
 		simulateArduinoSendsInOneSecond(lf("alp://infoX/"));
-		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS, INFO_MESSAGE_ONLY))
-				.describedAs("Arduino did respond but shouldn't").isFalse();
+		assertThat(arduinoStub.link().waitForArduinoToBoot(3, SECONDS, INFO_MESSAGE_ONLY)) //
+				.describedAs("Arduino did respond but shouldn't") //
+				.isFalse();
 	}
 
 	private RegexAdder onPing() {
@@ -80,14 +85,15 @@ class WaitForArduinoToBootTest {
 	}
 
 	private void simulateArduinoSendsInOneSecond(String message) {
-		newSingleThreadExecutor().execute(() -> {
+		ScheduledExecutorService scheduler = newSingleThreadScheduledExecutor();
+		scheduler.schedule(() -> {
 			try {
-				SECONDS.sleep(1);
 				arduinoStub.simulateArduinoSends(message);
-			} catch (InterruptedException | IOException e) {
+			} catch (IOException e) {
 				throw propagate(e);
 			}
-		});
+		}, 1, SECONDS);
+		scheduler.shutdown();
 	}
 
 	private static String lf(String string) {

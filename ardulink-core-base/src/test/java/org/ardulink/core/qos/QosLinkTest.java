@@ -24,7 +24,6 @@ import static org.ardulink.core.Pin.analogPin;
 import static org.ardulink.util.Regex.regex;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -92,7 +91,7 @@ class QosLinkTest {
 		}
 	}
 
-	private QosLink newQosLink(long timeout, TimeUnit timeUnit) throws IOException {
+	private QosLink newQosLink(long timeout, TimeUnit timeUnit) {
 		return new QosLink(arduinoStub.link(), timeout, timeUnit);
 	}
 

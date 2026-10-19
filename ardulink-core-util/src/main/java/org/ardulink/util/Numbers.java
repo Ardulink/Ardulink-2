@@ -16,7 +16,6 @@ limitations under the License.
 
 package org.ardulink.util;
 
-import static java.util.Collections.unmodifiableMap;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toUnmodifiableMap;
 import static org.ardulink.util.Preconditions.checkNotNull;
@@ -48,15 +47,14 @@ public enum Numbers {
 	private final Function<Number, Number> converter;
 
 	@SuppressWarnings("unchecked")
-	private Numbers(Class<?> type, Number min, Number max, Function<Number, Number> converter) {
+    Numbers(Class<?> type, Number min, Number max, Function<Number, Number> converter) {
 		this.type = (Class<Number>) type;
 		this.min = min;
 		this.max = max;
 		this.converter = converter;
 	}
 
-	private static final Map<Class<?>, Numbers> typeMapping = unmodifiableMap(
-			EnumSet.allOf(Numbers.class).stream().collect(toUnmodifiableMap(Numbers::getType, identity())));
+	private static final Map<Class<?>, Numbers> typeMapping = EnumSet.allOf(Numbers.class).stream().collect(toUnmodifiableMap(Numbers::getType, identity()));
 
 	public Class<Number> getType() {
 		return type;

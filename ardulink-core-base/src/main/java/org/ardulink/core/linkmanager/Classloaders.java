@@ -36,13 +36,15 @@ import org.ardulink.core.classloader.ModuleClassLoader;
  */
 public final class Classloaders {
 
+	public static final String MODULE_DIR_PROPERTY = "ardulink.module.dir";
+
 	private Classloaders() {
 		super();
 	}
 
 	public static ClassLoader moduleClassloader() {
 		ClassLoader parent = Thread.currentThread().getContextClassLoader();
-		return new ModuleClassLoader(parent, systemProperty("ardulink.module.dir").orElse("."));
+		return new ModuleClassLoader(parent, systemProperty(MODULE_DIR_PROPERTY).orElse("."));
 	}
 
 	public static Collection<URL> getResources(ClassLoader classloader, String name) throws IOException {

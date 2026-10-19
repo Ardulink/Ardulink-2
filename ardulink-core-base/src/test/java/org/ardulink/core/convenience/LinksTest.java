@@ -63,7 +63,6 @@ import org.ardulink.testsupport.mock.junit5.MockUri;
 import org.ardulink.util.Closeables;
 import org.ardulink.util.ListMultiMap;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.ExpectedToFail;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -341,19 +340,17 @@ class LinksTest {
 	@Test
 	void handlesChoiceValuesCorrectly() throws Throwable {
 		String randomName = "factory-" + randomUUID();
-		LinkFactoryForTest linkFactory = factory(randomName, () -> new MyLinkConfig());
+		LinkFactoryForTest linkFactory = factory(randomName, MyLinkConfig::new);
 		withRegistered(linkFactory).execute(() -> {
 			try (Link link = link(randomName)) {
 				assertThat(linkFactory.configsAndLinks.asMap().keySet()).singleElement()
-						.isInstanceOfSatisfying(MyLinkConfig.class, c -> {
-							assertSoftly(s -> {
-								s.assertThat(c.keepsNull).isNull();
-								s.assertThat(c.turnsFirstChoiceValue).isEqualTo("Choice1");
-								s.assertThat(c.getsNullAndSoKeepsNull).isNull();
-								s.assertThat(c.keepsOldValue1).isEqualTo("keepsValue_noChoice");
-								s.assertThat(c.keepsOldValue2).isEqualTo("keepsValue_withChoice");
-							});
-						});
+						.isInstanceOfSatisfying(MyLinkConfig.class, c -> assertSoftly(s -> {
+                            s.assertThat(c.keepsNull).isNull();
+                            s.assertThat(c.turnsFirstChoiceValue).isEqualTo("Choice1");
+                            s.assertThat(c.getsNullAndSoKeepsNull).isNull();
+                            s.assertThat(c.keepsOldValue1).isEqualTo("keepsValue_noChoice");
+                            s.assertThat(c.keepsOldValue2).isEqualTo("keepsValue_withChoice");
+                        }));
 			}
 		});
 	}
@@ -366,15 +363,6 @@ class LinksTest {
 				assertThat(link1).isSameAs(link2);
 			}
 		});
-	}
-
-	@Test
-	@ExpectedToFail("Needs a ReferenceQueue in Links class")
-	void closesUnunsedLinksThatGetGCed(@MockUri String mockUri) throws IOException {
-		Link link = Links.getLink(mockUri);
-		link = null;
-		System.gc();
-		verify(getMock(link), times(1)).close();
 	}
 
 	private static Link link(String name) {

@@ -36,7 +36,7 @@ public class DummyLinkFactory implements LinkFactory<DummyLinkConfig> {
 	}
 
 	@Override
-	public Link newLink(DummyLinkConfig config) throws Exception {
+	public Link newLink(DummyLinkConfig config) {
 		return null;
 	}
 

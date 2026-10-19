@@ -38,7 +38,7 @@ public class VirtualConnectionLinkFactory implements LinkFactory<VirtualConnecti
 	}
 
 	@Override
-	public Link newLink(VirtualConnectionConfig config) throws Exception {
+	public Link newLink(VirtualConnectionConfig config) {
 		System.out.println("Created a link that writes it's output to and gets it's input from here");
 		return new ConnectionBasedLink(
 				new StreamConnection(System.in, System.out, config.protocol().newByteStreamProcessor()));

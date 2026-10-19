@@ -22,7 +22,7 @@ public class ArdulinkConsumer extends DefaultConsumer {
 	private final EventListener listener = listener();
 	private final Link link;
 
-	public ArdulinkConsumer(Endpoint endpoint, Processor processor, Link link) throws IOException {
+	public ArdulinkConsumer(Endpoint endpoint, Processor processor, Link link) {
 		super(endpoint, processor);
 		this.link = link;
 	}

@@ -35,7 +35,7 @@ public class DefaultToDeviceMessageStopListening implements ToDeviceMessageStopL
 
 	private final Pin pin;
 
-	public DefaultToDeviceMessageStopListening(Pin pin) {
+	private DefaultToDeviceMessageStopListening(Pin pin) {
 		this.pin = pin;
 	}
 

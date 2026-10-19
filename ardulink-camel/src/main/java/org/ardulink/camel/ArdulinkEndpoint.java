@@ -1,10 +1,10 @@
 package org.ardulink.camel;
 
-import static java.lang.String.format;
 import static org.ardulink.util.Preconditions.checkNotNull;
+import static org.ardulink.util.URIBuilder.uriBuilder;
 
 import java.io.IOException;
-import java.util.Map;
+import java.net.URI;
 import java.util.Objects;
 
 import org.apache.camel.Component;
@@ -37,29 +37,23 @@ public class ArdulinkEndpoint extends DefaultEndpoint implements MultipleConsume
 	}
 
 	private Link createLink() {
+		URI uri = uriBuilder("ardulink", checkNotNull(config.getType(), "type must not be null"))
+				.params(config.getTypeParams()).build();
 		try {
-			String type = checkNotNull(config.getType(), "type must not be null");
-			String url = format("ardulink://%s", type);
-			Map<String, Object> typeParams = config.getTypeParams();
-			return Links.getLink(typeParams.isEmpty() ? url : url + "?" + joiner.join(typeParams));
+			return Links.getLink(uri);
 		} catch (Exception e) {
 			throw Throwables.propagate(e);
 		}
 	}
 
 	@Override
-	public Producer createProducer() throws Exception {
+	public Producer createProducer() {
 		return new ArdulinkProducer(this, this.link);
 	}
 
 	@Override
-	public Consumer createConsumer(Processor processor) throws Exception {
+	public Consumer createConsumer(Processor processor) {
 		return new ArdulinkConsumer(this, processor, link);
-	}
-
-	@Override
-	public boolean isSingleton() {
-		return true;
 	}
 
 	@Override

@@ -16,6 +16,8 @@ limitations under the License.
 
 package org.ardulink.core.messages.impl;
 
+import java.util.Map;
+
 import org.ardulink.core.messages.api.FromDeviceMessageInfo;
 
 /**
@@ -29,7 +31,22 @@ import org.ardulink.core.messages.api.FromDeviceMessageInfo;
 public class DefaultFromDeviceMessageInfo implements FromDeviceMessageInfo {
 
 	public static FromDeviceMessageInfo fromDeviceMessageInfo() {
-		return new DefaultFromDeviceMessageInfo();
+		return fromDeviceMessageInfo(Map.of());
+	}
+
+	public static FromDeviceMessageInfo fromDeviceMessageInfo(Map<String, ?> parameters) {
+		return new DefaultFromDeviceMessageInfo(parameters);
+	}
+
+	private final Map<String, Object> parameters;
+
+	public DefaultFromDeviceMessageInfo(Map<String, ?> parameters) {
+		this.parameters = Map.copyOf(parameters);
+	}
+
+	@Override
+	public Map<String, Object> parameters() {
+		return parameters;
 	}
 
 }
