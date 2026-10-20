@@ -38,10 +38,20 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # Own key with restore-keys: setup-java's maven cache is exact-match only
+      # and shared with maven.yml, so the OWASP database never survives there.
+      - name: Cache OWASP data
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .dc-data
+          key: owasp-data-${{ runner.os }}-${{ hashFiles('pom.xml') }}
+          restore-keys: |
+            owasp-data-${{ runner.os }}-
+
       - name: Run OWASP Dependency-Check
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: mvn -B -Powasp -DskipTests -Dmodernizer.skip verify
+        run: mvn -B -Powasp -DskipTests -Dmodernizer.skip -DdataDirectory="$PWD/.dc-data" verify
 
       - name: Upload report
         if: always()
