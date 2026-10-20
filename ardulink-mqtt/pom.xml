@@ -38,7 +38,6 @@
 		<dependency>
 			<groupId>io.moquette</groupId>
 			<artifactId>moquette-broker</artifactId>
-			<version>0.17</version>
 		</dependency>
 		<dependency>
 			<groupId>args4j</groupId>

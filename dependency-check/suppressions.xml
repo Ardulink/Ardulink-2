@@ -53,4 +53,32 @@
 		<notes><![CDATA[False positive: the flaw is in the JMS family, camel-jms/camel-sjms/camel-sjms2/camel-amqp and camel-activemq (unsafe deserialization of JMS ObjectMessage). None of these components are on the classpath; matched only via the product-level apache:camel CPE.]]></notes>
 		<cve>CVE-2026-40860</cve>
 	</suppress>
+
+	<!--
+	     Jetty 9.4.58 (pulled in by camel-jetty 3.22.4 for ardulink-rest).
+
+	     The three findings below are fixed upstream in Jetty 9.4.60 / 10.0.28 /
+	     11.0.29 (see the GitHub advisories), but those patch releases are NOT
+	     published on Maven Central yet - 9.4.58 and 10.0.26 are the newest
+	     artifacts available. The only published patched line is Jetty 12
+	     (12.0.33+), which is jakarta.servlet-based and therefore not a drop-in
+	     replacement for camel-jetty 3.22.4, which binds the javax.servlet API
+	     (and Java 11). So this cannot be fixed by a version bump at the moment.
+
+	     Re-check on every Maven Central catalog refresh / Renovate run; remove
+	     these suppressions as soon as a patched 9.4.x (or 10.0.28+) is published
+	     and can be adopted.
+	-->
+	<suppress>
+		<notes><![CDATA[HTTP request smuggling via chunked-extension quoted-string parsing (CWE-444). Fixed in 9.4.60 (not yet on Maven Central; latest is 9.4.58). The ardulink-rest server is a standalone, non-proxied local control API that does not sit behind (nor act as) an HTTP intermediary, so there is no request-smuggling peer to desynchronize with in the intended deployment. Re-check once Jetty 9.4.60 is published.]]></notes>
+		<cve>CVE-2026-2332</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[Digest-auth password encoding uses ISO-8859-1, silently mangling non-Latin1 passwords. Fixed in 9.4.60 (not yet on Maven Central). ardulink-rest does not configure any Jetty authentication/security handler, so the Digest authenticator is not on the request path. Re-check once Jetty 9.4.60 is published.]]></notes>
+		<cve>CVE-2026-10050</cve>
+	</suppress>
+	<suppress>
+		<notes><![CDATA[JASPIAuthenticator leaves ThreadLocals set on early return, causing cross-request privilege escalation. Fixed in 9.4.60 (not yet on Maven Central). ardulink-rest does not configure JASPI authentication, so JASPIAuthenticator is not on the request path. Re-check once Jetty 9.4.60 is published.]]></notes>
+		<cve>CVE-2026-5795</cve>
+	</suppress>
 </suppressions>

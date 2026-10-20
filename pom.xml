@@ -80,6 +80,18 @@
 		<equalsverifier.version>3.19.4</equalsverifier.version>
 		<!-- camel3 is the last version that supports java 11, camel4 needs java 17 -->
 		<camel.version>3.22.4</camel.version>
+		<!-- 0.18.1 is not on Maven Central yet, jar and poms are vendored in local-repo/ -->
+		<moquette.version>0.18.1</moquette.version>
+		<netty.version>4.1.139.Final</netty.version>
+		<h2-mvstore.version>2.5.252</h2-mvstore.version>
+		<!-- camel 3.22.4 pulls vulnerable jetty/jackson/guava/snakeyaml through camel-jetty and
+		     camel-swagger-java; overridden below. 9.4 is the last jetty line that runs on java 11
+		     (10/11 need java 17 at runtime); all jackson 2.x lines are java 8 bytecode. -->
+		<jetty.version>9.4.58.v20250814</jetty.version>
+		<!-- 2.21.4 is the first line that fixes CVE-2026-54512/54513 (also 2.18.8+, but 2.21.4 is newer) -->
+		<jackson.version>2.21.4</jackson.version>
+		<guava.version>33.7.2-jre</guava.version>
+		<snakeyaml.version>2.5</snakeyaml.version>
 		<owasp.dependency.check.version>13.0.0</owasp.dependency.check.version>
 		<maven.build.timestamp.format>yyyy-MM-dd'T'HHmmss'Z'</maven.build.timestamp.format>
 
@@ -394,6 +406,47 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-bom</artifactId>
+				<version>${netty.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.moquette</groupId>
+				<artifactId>moquette-broker</artifactId>
+				<version>${moquette.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.h2database</groupId>
+				<artifactId>h2-mvstore</artifactId>
+				<version>${h2-mvstore.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-bom</artifactId>
+				<version>${jetty.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${jackson.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>${guava.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.yaml</groupId>
+				<artifactId>snakeyaml</artifactId>
+				<version>${snakeyaml.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>args4j</groupId>
 				<artifactId>args4j</artifactId>
