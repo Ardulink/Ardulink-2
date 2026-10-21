@@ -91,7 +91,7 @@
 		<!-- 2.21.4 is the first line that fixes CVE-2026-54512/54513 (also 2.18.8+, but 2.21.4 is newer) -->
 		<jackson.version>2.21.4</jackson.version>
 		<guava.version>33.7.2-jre</guava.version>
-		<snakeyaml.version>2.5</snakeyaml.version>
+		<snakeyaml.version>2.7</snakeyaml.version>
 		<owasp.dependency.check.version>13.0.0</owasp.dependency.check.version>
 		<maven.build.timestamp.format>yyyy-MM-dd'T'HHmmss'Z'</maven.build.timestamp.format>
 
