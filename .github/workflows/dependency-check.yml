@@ -1,20 +1,9 @@
 name: OWASP Dependency-Check
 
 on:
-  push:
-    branches: ["master"]
-    paths:
-      - "**/pom.xml"
-      - "dependency-check/**"
-      - ".github/workflows/dependency-check.yml"
-  pull_request:
-    branches: ["master"]
-    paths:
-      - "**/pom.xml"
-      - "dependency-check/**"
-      - ".github/workflows/dependency-check.yml"
   schedule:
     - cron: "0 0 * * 1"
+  workflow_dispatch:
 
 permissions:
   contents: read
