@@ -82,7 +82,7 @@
 		<camel.version>3.22.4</camel.version>
 		<!-- 0.18.1 is not on Maven Central yet, jar and poms are vendored in local-repo/ -->
 		<moquette.version>0.18.1</moquette.version>
-		<netty.version>4.1.139.Final</netty.version>
+		<netty.version>4.2.19.Final</netty.version>
 		<h2-mvstore.version>2.5.252</h2-mvstore.version>
 		<!-- camel 3.22.4 pulls vulnerable jetty/jackson/guava/snakeyaml through camel-jetty and
 		     camel-swagger-java; overridden below. 9.4 is the last jetty line that runs on java 11
