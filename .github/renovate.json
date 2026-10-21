@@ -37,6 +37,10 @@
     {
       "matchPackageNames": ["io.rest-assured:rest-assured"],
       "allowedVersions": "<6.0.0"
+    },
+    {
+      "matchPackageNames": ["org.eclipse.jetty:jetty-bom"],
+      "allowedVersions": "<10.0.0"
     }
   ]
 }
