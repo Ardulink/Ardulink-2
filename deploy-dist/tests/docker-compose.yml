@@ -1,6 +1,6 @@
 services:
   virtualavr:
-    image: pfichtner/virtualavr:0.3.3
+    image: pfichtner/virtualavr:0.4.0
     init: true
     ports:
       - "${WS_PORT}:8080"
