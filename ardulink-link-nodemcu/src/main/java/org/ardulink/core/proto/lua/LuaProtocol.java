@@ -24,6 +24,8 @@ import static org.ardulink.core.proto.lua.LuaProtoBuilder.LuaProtocolKey.POWER_P
 import static org.ardulink.core.proto.lua.LuaProtoBuilder.LuaProtocolKey.START_LISTENING_DIGITAL;
 import static org.ardulink.core.proto.lua.LuaProtoBuilder.LuaProtocolKey.STOP_LISTENING_DIGITAL;
 
+import java.util.List;
+
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
@@ -115,9 +117,11 @@ public class LuaProtocol implements Protocol {
 			throw noSense();
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public byte[] toDevice(ToDeviceMessageCustom custom) {
-			return toBytes(getBuilder(CUSTOM_MESSAGE).withValues((Object[]) custom.getMessages()).build());
+			return toBytes(getBuilder(CUSTOM_MESSAGE)
+					.withValues((List<Object>) (List<? extends Object>) custom.getMessages()).build());
 		}
 
 		/**

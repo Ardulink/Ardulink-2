@@ -15,6 +15,8 @@ limitations under the License.
  */
 package org.ardulink.core.messages.api;
 
+import java.util.List;
+
 /**
  * [ardulinktitle] [ardulinkversion]
  * 
@@ -25,6 +27,6 @@ package org.ardulink.core.messages.api;
  */
 public interface ToDeviceMessageCustom extends ToDeviceMessage {
 
-	String[] getMessages();
+	List<String> getMessages();
 
 }

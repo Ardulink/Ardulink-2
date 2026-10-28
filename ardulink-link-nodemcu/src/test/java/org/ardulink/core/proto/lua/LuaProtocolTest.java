@@ -24,6 +24,8 @@ import static org.ardulink.core.messages.impl.DefaultToDeviceMessagePinStateChan
 import static org.ardulink.core.messages.impl.DefaultToDeviceMessageStartListening.toDeviceMessageStartListening;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
@@ -60,7 +62,7 @@ class LuaProtocolTest {
 
 	@Test
 	void generateCustomMessage() {
-		String[] values = new String[] { "param1", "somethingelse2", "final3" };
+		List<String> values = List.of( "param1", "somethingelse2", "final3" );
 		ToDeviceMessageCustom msg = toDeviceMessageCustom(values);
 		assertThat(stringOf(sut.toDevice(msg))).isEqualTo(lua(customMessage(values)));
 	}
@@ -88,7 +90,7 @@ class LuaProtocolTest {
 		return format("pwm.setup(%s,1000,1023) pwm.start(%s) pwm.setduty(%s,%s)", pin, pin, pin, value);
 	}
 
-	private String customMessage(String... values) {
+	private String customMessage(List<String> values) {
 		return join(" ", values);
 	}
 

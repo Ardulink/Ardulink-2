@@ -18,6 +18,8 @@ package org.ardulink.core.messages.impl;
 import static java.lang.String.join;
 import static org.ardulink.util.anno.LapsedWith.JDK14;
 
+import java.util.List;
+
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
 import org.ardulink.util.anno.LapsedWith;
 
@@ -33,18 +35,22 @@ import org.ardulink.util.anno.LapsedWith;
 public class DefaultToDeviceMessageCustom implements ToDeviceMessageCustom {
 
 	public static ToDeviceMessageCustom toDeviceMessageCustom(String... messages) {
+		return toDeviceMessageCustom(List.of(messages));
+	}
+
+	public static ToDeviceMessageCustom toDeviceMessageCustom(List<String> messages) {
 		return new DefaultToDeviceMessageCustom(messages);
 	}
 
-	private final String[] messages;
+	private final List<String> messages;
 
-	private DefaultToDeviceMessageCustom(String... messages) {
-		this.messages = messages.clone();
+	private DefaultToDeviceMessageCustom(List<String> messages) {
+		this.messages = List.copyOf(messages);
 	}
 
 	@Override
-	public String[] getMessages() {
-		return messages.clone();
+	public List<String> getMessages() {
+		return messages;
 	}
 
 	@Override

@@ -17,9 +17,9 @@ package org.ardulink.core.proto.lua;
 
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
-import static java.util.Arrays.stream;
 import static java.util.regex.Pattern.quote;
 import static java.util.stream.Collectors.joining;
+import static org.ardulink.util.Iterables.getFirst;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
@@ -28,6 +28,7 @@ import static org.ardulink.util.Throwables.propagate;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 
 public class LuaProtoBuilder {
 
@@ -71,9 +72,9 @@ public class LuaProtoBuilder {
 			@Override
 			public String message(LuaProtoBuilder builder) {
 				checkState(builder.pin == null, PIN_MUST_NOT_SPECIFIED);
-				checkArgument(checkNotNull(builder.values, VALUE_HAS_TO_BE_SPECIFIED).length > 0,
+				checkArgument(checkNotNull(builder.values, VALUE_HAS_TO_BE_SPECIFIED).size() > 0,
 						"value contains no data");
-				return stream(builder.values).map(String::valueOf).collect(joining(" "));
+				return builder.values.stream().map(String::valueOf).collect(joining(" "));
 			}
 		}, //
 		START_LISTENING_DIGITAL {
@@ -111,14 +112,13 @@ public class LuaProtoBuilder {
 		}
 	}
 
-	private static <T> T firstValue(Object[] values, Class<T> type) {
+	private static <T> T firstValue(List<Object> values, Class<T> type) {
 		return verifyType(firstValue(values), type);
 	}
 
-	private static Object firstValue(Object[] values) {
-		checkArgument(checkNotNull(values, VALUE_HAS_TO_BE_SPECIFIED).length == 1,
-				"Exactly one value expected but %s contains %s", values, values.length);
-		return values[0];
+	private static Object firstValue(List<Object> values) {
+		return getFirst(values).orElseThrow(() -> new IllegalArgumentException(
+				format("Exactly one value expected but %s contains %d", values, values.size())));
 	}
 
 	private static <T> T verifyType(Object value, Class<T> clazz) {
@@ -132,7 +132,7 @@ public class LuaProtoBuilder {
 
 	private final LuaProtocolKey key;
 	private Integer pin;
-	private Object[] values;
+	private List<Object> values;
 
 	public LuaProtoBuilder(LuaProtocolKey key) {
 		this.key = key;
@@ -144,10 +144,10 @@ public class LuaProtoBuilder {
 	}
 
 	public LuaProtoBuilder withValue(Object value) {
-		return withValues(value);
+		return withValues(List.of(value));
 	}
 
-	public LuaProtoBuilder withValues(Object... values) {
+	public LuaProtoBuilder withValues(List<Object> values) {
 		this.values = values;
 		return this;
 	}

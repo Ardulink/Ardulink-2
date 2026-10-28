@@ -17,9 +17,8 @@ limitations under the License.
 package org.ardulink.core.proto.ardulink;
 
 import static java.lang.String.join;
-import static java.util.Collections.addAll;
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toUnmodifiableMap;
 import static org.ardulink.util.Preconditions.checkArgument;
 
 import java.util.Arrays;
@@ -95,19 +94,19 @@ public class ALProtoBuilder {
 	}
 
 	public String withoutValue() {
-		return withValues();
+		return withValues(List.of());
 	}
 
 	public String withValue(Object value) {
-		return withValues(String.valueOf(value));
+		return withValues(List.of(String.valueOf(value)));
 	}
 
-	public String withValues(String... values) {
+	public String withValues(List<String> values) {
 		List<String> concat = Lists.newArrayList(command);
 		if (pin != null) {
 			concat.add(String.valueOf(pin));
 		}
-		addAll(concat, values);
+		concat.addAll(values);
 		return appendMessageIdIfNeeded("alp://" + join("/", concat));
 	}
 
