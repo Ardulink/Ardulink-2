@@ -1,5 +1,6 @@
 package org.ardulink.camel;
 
+import static org.ardulink.core.proto.ardulink.ALProtoBuilder.alpProtocolMessage;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.ANALOG_PIN_READ;
 import static org.ardulink.core.proto.ardulink.ALProtoBuilder.ALPProtocolKey.DIGITAL_PIN_READ;
 
@@ -15,11 +16,10 @@ import org.ardulink.core.Link;
 import org.ardulink.core.events.AnalogPinValueChangedEvent;
 import org.ardulink.core.events.DigitalPinValueChangedEvent;
 import org.ardulink.core.events.EventListener;
-import org.ardulink.core.proto.ardulink.ALProtoBuilder;
 
 public class ArdulinkConsumer extends DefaultConsumer {
 
-	private final EventListener listener = listener();
+	private final EventListener eventListener = eventListener();
 	private final Link link;
 
 	public ArdulinkConsumer(Endpoint endpoint, Processor processor, Link link) {
@@ -30,7 +30,7 @@ public class ArdulinkConsumer extends DefaultConsumer {
 	@Override
 	public void start() {
 		try {
-			link.addListener(listener);
+			link.addListener(eventListener);
 			super.start();
 		} catch (IOException e) {
 			fail(e);
@@ -40,26 +40,26 @@ public class ArdulinkConsumer extends DefaultConsumer {
 	@Override
 	public void stop() {
 		try {
-			link.removeListener(listener);
+			link.removeListener(eventListener);
 			super.stop();
 		} catch (IOException e) {
 			fail(e);
 		}
 	}
 
-	private EventListener listener() {
+	private EventListener eventListener() {
 		return new EventListener() {
 
 			@Override
 			public void stateChanged(DigitalPinValueChangedEvent event) {
-				String body = ALProtoBuilder.alpProtocolMessage(DIGITAL_PIN_READ).forPin(event.getPin().pinNum())
+				String body = alpProtocolMessage(DIGITAL_PIN_READ).forPin(event.getPin().pinNum())
 						.withState(event.getValue().booleanValue());
 				process(exchangeWithBody(body));
 			}
 
 			@Override
 			public void stateChanged(AnalogPinValueChangedEvent event) {
-				String body = ALProtoBuilder.alpProtocolMessage(ANALOG_PIN_READ).forPin(event.getPin().pinNum())
+				String body = alpProtocolMessage(ANALOG_PIN_READ).forPin(event.getPin().pinNum())
 						.withValue(event.getValue());
 				process(exchangeWithBody(body));
 			}
