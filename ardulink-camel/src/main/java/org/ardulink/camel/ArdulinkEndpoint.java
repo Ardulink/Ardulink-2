@@ -16,13 +16,9 @@ import org.apache.camel.support.DefaultEndpoint;
 import org.ardulink.core.Link;
 import org.ardulink.core.Pin;
 import org.ardulink.core.convenience.Links;
-import org.ardulink.util.Joiner;
-import org.ardulink.util.Joiner.MapJoiner;
 import org.ardulink.util.Throwables;
 
 public class ArdulinkEndpoint extends DefaultEndpoint implements MultipleConsumersSupport {
-
-	private static final MapJoiner joiner = Joiner.on("&").withKeyValueSeparator("=");
 
 	private final EndpointConfig config;
 	private final Link link;
