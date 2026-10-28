@@ -16,8 +16,11 @@ limitations under the License.
 
 package org.ardulink.core.messages.impl;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceChangeListeningState;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -27,6 +30,7 @@ import org.ardulink.core.messages.api.FromDeviceChangeListeningState;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public class DefaultFromDeviceChangeListeningState implements FromDeviceChangeListeningState {
 
 	public static FromDeviceChangeListeningState fromDeviceChangeListeningState(Pin pin, Mode mode) {
@@ -36,7 +40,7 @@ public class DefaultFromDeviceChangeListeningState implements FromDeviceChangeLi
 	private final Pin pin;
 	private final Mode mode;
 
-	public DefaultFromDeviceChangeListeningState(Pin pin, Mode mode) {
+	private DefaultFromDeviceChangeListeningState(Pin pin, Mode mode) {
 		this.pin = pin;
 		this.mode = mode;
 	}

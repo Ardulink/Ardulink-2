@@ -16,7 +16,10 @@ limitations under the License.
 
 package org.ardulink.core.messages.impl;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
 import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -26,6 +29,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageKeyPress;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public class DefaultToDeviceMessageKeyPress implements ToDeviceMessageKeyPress {
 
 	public static ToDeviceMessageKeyPress toDeviceMessageKeyPress(char keychar, int keycode, int keylocation,
@@ -39,7 +43,7 @@ public class DefaultToDeviceMessageKeyPress implements ToDeviceMessageKeyPress {
 	private final int keymodifiers;
 	private final int keymodifiersex;
 
-	public DefaultToDeviceMessageKeyPress(char keychar, int keycode, int keylocation, int keymodifiers,
+	private DefaultToDeviceMessageKeyPress(char keychar, int keycode, int keylocation, int keymodifiers,
 			int keymodifiersex) {
 		this.keychar = keychar;
 		this.keycode = keycode;

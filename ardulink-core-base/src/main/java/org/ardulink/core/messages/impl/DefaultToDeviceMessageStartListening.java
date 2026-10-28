@@ -16,8 +16,11 @@ limitations under the License.
 
 package org.ardulink.core.messages.impl;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -27,6 +30,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageStartListening;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public class DefaultToDeviceMessageStartListening implements ToDeviceMessageStartListening {
 
 	public static ToDeviceMessageStartListening toDeviceMessageStartListening(Pin pin) {

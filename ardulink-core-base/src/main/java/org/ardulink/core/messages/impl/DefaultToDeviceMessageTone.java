@@ -16,8 +16,11 @@ limitations under the License.
 
 package org.ardulink.core.messages.impl;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
 import org.ardulink.core.Tone;
 import org.ardulink.core.messages.api.ToDeviceMessageTone;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -27,6 +30,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageTone;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public class DefaultToDeviceMessageTone implements ToDeviceMessageTone {
 
 	public static ToDeviceMessageTone toDeviceMessageTone(Tone tone) {
@@ -35,7 +39,7 @@ public class DefaultToDeviceMessageTone implements ToDeviceMessageTone {
 
 	private final Tone tone;
 
-	public DefaultToDeviceMessageTone(Tone tone) {
+	private DefaultToDeviceMessageTone(Tone tone) {
 		this.tone = tone;
 	}
 

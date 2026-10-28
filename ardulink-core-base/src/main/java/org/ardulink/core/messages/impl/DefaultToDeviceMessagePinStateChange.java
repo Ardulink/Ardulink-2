@@ -16,10 +16,13 @@ limitations under the License.
 
 package org.ardulink.core.messages.impl;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
 import org.ardulink.core.Pin;
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.Pin.DigitalPin;
 import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -29,6 +32,7 @@ import org.ardulink.core.messages.api.ToDeviceMessagePinStateChange;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public class DefaultToDeviceMessagePinStateChange implements ToDeviceMessagePinStateChange {
 
 	public static ToDeviceMessagePinStateChange toDeviceMessagePinStateChange(AnalogPin pin, int value) {
@@ -42,7 +46,7 @@ public class DefaultToDeviceMessagePinStateChange implements ToDeviceMessagePinS
 	private final Pin pin;
 	private final Object value;
 
-	public DefaultToDeviceMessagePinStateChange(DigitalPin pin, boolean value) {
+	private DefaultToDeviceMessagePinStateChange(DigitalPin pin, boolean value) {
 		this.pin = pin;
 		this.value = value;
 	}

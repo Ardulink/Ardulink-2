@@ -16,8 +16,10 @@ limitations under the License.
 package org.ardulink.core.messages.impl;
 
 import static java.lang.String.join;
+import static org.ardulink.util.anno.LapsedWith.JDK14;
 
 import org.ardulink.core.messages.api.ToDeviceMessageCustom;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -27,6 +29,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageCustom;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public class DefaultToDeviceMessageCustom implements ToDeviceMessageCustom {
 
 	public static ToDeviceMessageCustom toDeviceMessageCustom(String... messages) {
@@ -35,7 +38,7 @@ public class DefaultToDeviceMessageCustom implements ToDeviceMessageCustom {
 
 	private final String[] messages;
 
-	public DefaultToDeviceMessageCustom(String... messages) {
+	private DefaultToDeviceMessageCustom(String... messages) {
 		this.messages = messages.clone();
 	}
 

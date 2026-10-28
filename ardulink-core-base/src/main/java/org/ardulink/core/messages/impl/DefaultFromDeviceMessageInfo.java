@@ -16,9 +16,12 @@ limitations under the License.
 
 package org.ardulink.core.messages.impl;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
 import java.util.Map;
 
 import org.ardulink.core.messages.api.FromDeviceMessageInfo;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -28,6 +31,7 @@ import org.ardulink.core.messages.api.FromDeviceMessageInfo;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public class DefaultFromDeviceMessageInfo implements FromDeviceMessageInfo {
 
 	public static FromDeviceMessageInfo fromDeviceMessageInfo() {
@@ -40,7 +44,7 @@ public class DefaultFromDeviceMessageInfo implements FromDeviceMessageInfo {
 
 	private final Map<String, Object> parameters;
 
-	public DefaultFromDeviceMessageInfo(Map<String, ?> parameters) {
+	private DefaultFromDeviceMessageInfo(Map<String, ?> parameters) {
 		this.parameters = Map.copyOf(parameters);
 	}
 

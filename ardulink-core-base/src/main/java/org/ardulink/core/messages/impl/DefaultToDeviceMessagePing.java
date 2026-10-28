@@ -16,7 +16,10 @@ limitations under the License.
 
 package org.ardulink.core.messages.impl;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
 import org.ardulink.core.messages.api.ToDeviceMessagePing;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -26,6 +29,7 @@ import org.ardulink.core.messages.api.ToDeviceMessagePing;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public class DefaultToDeviceMessagePing implements ToDeviceMessagePing {
 
 	private static final DefaultToDeviceMessagePing instance = new DefaultToDeviceMessagePing();

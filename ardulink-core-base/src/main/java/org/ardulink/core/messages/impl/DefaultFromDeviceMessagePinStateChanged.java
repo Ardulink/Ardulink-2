@@ -16,8 +16,11 @@ limitations under the License.
 
 package org.ardulink.core.messages.impl;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
 import org.ardulink.core.Pin;
 import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -27,6 +30,7 @@ import org.ardulink.core.messages.api.FromDeviceMessagePinStateChanged;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public class DefaultFromDeviceMessagePinStateChanged implements FromDeviceMessagePinStateChanged {
 
 	public static FromDeviceMessagePinStateChanged fromDeviceMessagePinStateChanged(Pin pin,
@@ -37,7 +41,7 @@ public class DefaultFromDeviceMessagePinStateChanged implements FromDeviceMessag
 	private final Pin pin;
 	private final Object value;
 
-	public DefaultFromDeviceMessagePinStateChanged(Pin pin, Object value) {
+	private DefaultFromDeviceMessagePinStateChanged(Pin pin, Object value) {
 		this.pin = pin;
 		this.value = value;
 	}

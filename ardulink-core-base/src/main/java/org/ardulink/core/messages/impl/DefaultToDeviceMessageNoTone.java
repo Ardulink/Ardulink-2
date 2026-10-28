@@ -16,8 +16,11 @@ limitations under the License.
 
 package org.ardulink.core.messages.impl;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
 import org.ardulink.core.Pin.AnalogPin;
 import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -27,6 +30,7 @@ import org.ardulink.core.messages.api.ToDeviceMessageNoTone;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public class DefaultToDeviceMessageNoTone implements ToDeviceMessageNoTone {
 
 	public static ToDeviceMessageNoTone toDeviceMessageNoTone(AnalogPin analogPin) {
@@ -35,7 +39,7 @@ public class DefaultToDeviceMessageNoTone implements ToDeviceMessageNoTone {
 
 	private final AnalogPin analogPin;
 
-	public DefaultToDeviceMessageNoTone(AnalogPin analogPin) {
+	private DefaultToDeviceMessageNoTone(AnalogPin analogPin) {
 		this.analogPin = analogPin;
 	}
 

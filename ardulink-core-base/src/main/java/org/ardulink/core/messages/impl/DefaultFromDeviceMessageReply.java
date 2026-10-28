@@ -16,9 +16,12 @@ limitations under the License.
 
 package org.ardulink.core.messages.impl;
 
+import static org.ardulink.util.anno.LapsedWith.JDK14;
+
 import java.util.Map;
 
 import org.ardulink.core.messages.api.FromDeviceMessageReply;
+import org.ardulink.util.anno.LapsedWith;
 
 /**
  * [ardulinktitle] [ardulinkversion]
@@ -28,6 +31,7 @@ import org.ardulink.core.messages.api.FromDeviceMessageReply;
  * [adsense]
  *
  */
+@LapsedWith(value = JDK14, module = "records")
 public class DefaultFromDeviceMessageReply implements FromDeviceMessageReply {
 
 	public static FromDeviceMessageReply fromDeviceMessageReply(boolean ok, long id,
@@ -39,7 +43,7 @@ public class DefaultFromDeviceMessageReply implements FromDeviceMessageReply {
 	private final long id;
 	private final Map<String, Object> parameters;
 
-	public DefaultFromDeviceMessageReply(boolean ok, long id, Map<String, ?> parameters) {
+	private DefaultFromDeviceMessageReply(boolean ok, long id, Map<String, ?> parameters) {
 		this.ok = ok;
 		this.id = id;
 		this.parameters = Map.copyOf(parameters);
