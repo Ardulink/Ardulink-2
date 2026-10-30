@@ -69,5 +69,21 @@ check_websocket_message \
     "curl -s -X 'PUT' 'http://localhost:$REST_PORT/pin/digital/$PIN' -H 'accept: application/json' -H 'Content-Type: application/text' -d 'true'" \
     "$json_pattern"
 
+# Step 6: Make the firmware report the unchanged state, then query the pin twice.
+# The reads must return the last known state, so a read neither waits for nor
+# consumes a new pin event.
+curl -s -X 'PATCH' "http://localhost:$REST_PORT/pin/digital/$PIN" -H 'Content-Type: application/text' -d 'listen=true' && echo
+echo '{ "type": "pinState", "pin": "'$PIN'", "state": true }' | docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" run --rm -T websocat-send-once "cat - | websocat ws://localhost:$WS_PORT"
+
+for query in 1 2; do
+    for attempt in $(seq 1 10); do
+        response=$(curl -s -X 'GET' "http://localhost:$REST_PORT/pin/digital/$PIN" -H 'accept: application/json')
+        [ "$response" = "true" ] && break
+        sleep 1
+    done
+    [ "$response" = "true" ] || die "GET $query returned '$response' instead of 'true'."
+done
+echo "Both GET queries returned the unchanged pin state."
+
 # If everything is successful, cleanup will be called automatically when the script exits
 echo "Test completed successfully."
