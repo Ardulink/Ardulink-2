@@ -12,7 +12,11 @@ export COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
 
 TEMP_DIR=$(mktemp -d)
 export ARDULINK_DIR="$TEMP_DIR/firmware"
-PIN="12"
+DIGITAL_PIN="12"
+ANALOG_WRITE_PIN="10"
+ANALOG_WRITE_VALUE="42"
+ANALOG_READ_PIN="2"
+ANALOG_READ_VALUE="456"
 
 resolve_protocol "${1:-ardulink}"
 export FILENAME="$PROTO_FILENAME"
@@ -37,9 +41,14 @@ wait_for_container_healthy virtualavr 120
 docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" up -d websocat
 echo "WebSocket container started"
 
-# Let virtualavr report changes of pin $PIN. Firmata only sends pin reports when asked to,
-# which is what makes the state written below visible on the WebSocket.
-echo '{ "type": "pinMode", "pin": "'$PIN'", "mode": "digital" }' | docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" run --rm -T websocat-send-once "cat - | websocat ws://localhost:$WS_PORT"
+# Let virtualavr report changes of the pins. Firmata only sends pin reports when asked to,
+# which is what makes the states written below visible on the WebSocket.
+for pin_mode in \
+    '{ "type": "pinMode", "pin": "'$DIGITAL_PIN'", "mode": "digital" }' \
+    '{ "type": "pinMode", "pin": "'$ANALOG_WRITE_PIN'", "mode": "analog" }' \
+    '{ "type": "pinMode", "pin": "A'$ANALOG_READ_PIN'", "mode": "analog" }'; do
+    echo "$pin_mode" | docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" run --rm -T websocat-send-once "cat - | websocat ws://localhost:$WS_PORT"
+done
 
 # Step 4: Run the Java application in the background (detached mode)
 start_rest_service() {
@@ -64,26 +73,39 @@ echo "Ardulink-REST server is ready on port $REST_PORT."
 
 # Step 5: Switch the pin via the API endpoint and verify the pin state reached the
 # emulated Arduino by checking the WebSocket container log file with a timeout
-json_pattern=".type == \"pinState\" and .pin == \"$PIN\" and .state == true"
-check_websocket_message \
-    "curl -s -X 'PUT' 'http://localhost:$REST_PORT/pin/digital/$PIN' -H 'accept: application/json' -H 'Content-Type: application/text' -d 'true'" \
-    "$json_pattern"
+check_pin_write() {
+    local type="$1" pin="$2" ws_pin="$3" value="$4"
+    local json_pattern=".type == \"pinState\" and .pin == \"$ws_pin\" and .state == $value"
+    check_websocket_message \
+        "curl -s -X 'PUT' 'http://localhost:$REST_PORT/pin/$type/$pin' -H 'accept: application/json' -H 'Content-Type: application/text' -d '$value'" \
+        "$json_pattern"
+}
 
 # Step 6: Make the firmware report the unchanged state, then query the pin twice.
 # The reads must return the last known state, so a read neither waits for nor
 # consumes a new pin event.
-curl -s -X 'PATCH' "http://localhost:$REST_PORT/pin/digital/$PIN" -H 'Content-Type: application/text' -d 'listen=true' && echo
-echo '{ "type": "pinState", "pin": "'$PIN'", "state": true }' | docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" run --rm -T websocat-send-once "cat - | websocat ws://localhost:$WS_PORT"
+check_pin_read() {
+    local type="$1" pin="$2" ws_pin="$3" value="$4"
+    curl -s -X 'PATCH' "http://localhost:$REST_PORT/pin/$type/$pin" -H 'Content-Type: application/text' -d 'listen=true' && echo
+    echo '{ "type": "pinState", "pin": "'$ws_pin'", "state": '$value' }' | docker compose -p "$STACK_ID" -f "$COMPOSE_FILE" run --rm -T websocat-send-once "cat - | websocat ws://localhost:$WS_PORT"
 
-for query in 1 2; do
-    for attempt in $(seq 1 10); do
-        response=$(curl -s -X 'GET' "http://localhost:$REST_PORT/pin/digital/$PIN" -H 'accept: application/json')
-        [ "$response" = "true" ] && break
-        sleep 1
+    local response
+    for query in 1 2; do
+        for attempt in $(seq 1 10); do
+            response=$(curl -s -X 'GET' "http://localhost:$REST_PORT/pin/$type/$pin" -H 'accept: application/json')
+            [ "$response" = "$value" ] && break
+            sleep 1
+        done
+        [ "$response" = "$value" ] || die "GET $query on $type pin $pin returned '$response' instead of '$value'."
     done
-    [ "$response" = "true" ] || die "GET $query returned '$response' instead of 'true'."
-done
-echo "Both GET queries returned the unchanged pin state."
+    echo "Both GET queries returned the unchanged $type pin state."
+}
+
+check_pin_write digital "$DIGITAL_PIN" "$DIGITAL_PIN" true
+check_pin_read digital "$DIGITAL_PIN" "$DIGITAL_PIN" true
+
+check_pin_write analog "$ANALOG_WRITE_PIN" "$ANALOG_WRITE_PIN" "$ANALOG_WRITE_VALUE"
+check_pin_read analog "$ANALOG_READ_PIN" "A$ANALOG_READ_PIN" "$ANALOG_READ_VALUE"
 
 # If everything is successful, cleanup will be called automatically when the script exits
 echo "Test completed successfully."
