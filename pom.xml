@@ -78,6 +78,7 @@
 		<awaitility.version>4.3.0</awaitility.version>
 		<junit-pioneer.version>2.3.0</junit-pioneer.version>
 		<equalsverifier.version>3.19.4</equalsverifier.version>
+		<approvaltests.version>31.0.0</approvaltests.version>
 		<!-- camel3 is the last version that supports java 11, camel4 needs java 17 -->
 		<camel.version>3.22.4</camel.version>
 		<!-- 0.18.1 is not on Maven Central yet, jar and poms are vendored in local-repo/ -->
@@ -511,6 +512,12 @@
 				<groupId>nl.jqno.equalsverifier</groupId>
 				<artifactId>equalsverifier</artifactId>
 				<version>${equalsverifier.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.approvaltests</groupId>
+				<artifactId>approvaltests</artifactId>
+				<version>${approvaltests.version}</version>
 				<scope>test</scope>
 			</dependency>
 		</dependencies>
