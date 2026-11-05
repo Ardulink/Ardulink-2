@@ -8,6 +8,9 @@ import static org.mockito.Mockito.verify;
 
 import java.util.concurrent.CompletableFuture;
 
+import org.approvaltests.Approvals;
+import org.approvaltests.awt.AwtApprovals;
+import org.approvaltests.core.Options;
 import org.ardulink.core.Link;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -61,6 +64,37 @@ class ConsoleWindowTest {
 			assertThat(page.isConnectEnabled()).isTrue();
 			assertThat(page.isDisconnectEnabled()).isFalse();
 		}
+	}
+
+	@Test
+	@DisabledIf(IS_HEADLESS)
+	void approvalsVerify() throws Exception {
+		try (ConsolePage page = newPage()) {
+			AwtApprovals.verify(page.snapshot(), osSpecific());
+		}
+	}
+
+	@Test
+	@DisabledIf(IS_HEADLESS)
+	void approvalsVerifyConnected() throws Exception {
+		try (ConsolePage page = newPage()) {
+			page.connect();
+			AwtApprovals.verify(page.snapshot(), osSpecific());
+		}
+	}
+
+	@Test
+	@DisabledIf(IS_HEADLESS)
+	void approvalsVerifyDisconnected() throws Exception {
+		try (ConsolePage page = newPage()) {
+			page.connect();
+			page.disconnect();
+			AwtApprovals.verify(page.snapshot(), osSpecific());
+		}
+	}
+
+	private static Options osSpecific() {
+		return new Options().and(Approvals.NAMES::asOsSpecificTest);
 	}
 
 	@Test

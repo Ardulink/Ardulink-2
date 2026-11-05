@@ -2,6 +2,7 @@ package org.ardulink.console.fx;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import java.awt.image.BufferedImage;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -13,6 +14,8 @@ import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.image.PixelFormat;
+import javafx.scene.image.WritableImage;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -37,6 +40,20 @@ class ConsolePage implements AutoCloseable {
 			}
 		});
 		this.stage = stageFuture.get(20, SECONDS);
+	}
+
+	BufferedImage snapshot() throws Exception {
+		return runFx(() -> fxImageToBufferedImage(stage.getScene().snapshot(null)));
+	}
+
+	private static BufferedImage fxImageToBufferedImage(WritableImage img) {
+		int w = (int) img.getWidth();
+		int h = (int) img.getHeight();
+		int[] pixels = new int[w * h];
+		img.getPixelReader().getPixels(0, 0, w, h, PixelFormat.getIntArgbInstance(), pixels, 0, w);
+		BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		out.getRaster().setDataElements(0, 0, w, h, pixels);
+		return out;
 	}
 
 	boolean isConnectEnabled() throws Exception {
