@@ -23,6 +23,7 @@ import org.approvaltests.core.Options;
 import org.ardulink.core.Link;
 import org.ardulink.core.events.EventListener;
 import org.ardulink.util.Throwables;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
@@ -31,10 +32,14 @@ import javafx.application.Platform;
 
 class ConsoleWindowTest {
 
-	private static final String IS_HEADLESS = "java.awt.GraphicsEnvironment#isHeadless";
+	private static final String IS_HEADLESS = "isHeadless";
 
 	private final List<EventListener> eventListeners = new ArrayList<>();
 	private final Link mockLink = createMockLink();
+
+	private static boolean isHeadless() {
+		return java.awt.GraphicsEnvironment.isHeadless();
+	}
 
 	private Link createMockLink() {
 		try {
@@ -51,6 +56,7 @@ class ConsoleWindowTest {
 
 	@BeforeAll
 	static void startJavaFx() throws Exception {
+		Assumptions.assumeFalse(isHeadless());
 		Platform.setImplicitExit(false);
 		CompletableFuture<Void> ready = new CompletableFuture<>();
 		try {
