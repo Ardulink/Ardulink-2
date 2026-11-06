@@ -14,6 +14,8 @@ import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.stage.Stage;
@@ -76,6 +78,32 @@ class ConsolePage implements AutoCloseable {
 	public void close() throws Exception {
 		runFx(() -> {}); // flush any pending Platform.runLater tasks (e.g. connected.set)
 		runFx(() -> stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST)));
+	}
+
+	void selectTab(String title) throws Exception {
+		runFx(() -> {
+			TabPane tabPane = findNode(stage.getScene().getRoot(), TabPane.class, n -> true);
+			tabPane.getTabs().stream().filter(t -> title.equals(t.getText())).findFirst()
+					.ifPresent(tabPane.getSelectionModel()::select);
+		});
+	}
+
+	void clickFirstAnalogSensorToggle() throws Exception {
+		runFx(() -> {
+			AnalogPinStatusPane pane = findNode(stage.getScene().getRoot(), AnalogPinStatusPane.class, n -> true);
+			findNode(pane, ToggleButton.class, n -> true).fire();
+		});
+	}
+
+	void clickFirstDigitalSensorToggle() throws Exception {
+		runFx(() -> {
+			DigitalPinStatusPane pane = findNode(stage.getScene().getRoot(), DigitalPinStatusPane.class, n -> true);
+			findNode(pane, ToggleButton.class, n -> true).fire();
+		});
+	}
+
+	void waitForFxEvents() throws Exception {
+		runFx(() -> {}); // drain pending Platform.runLater tasks
 	}
 
 	private Button findButton(String text) {
