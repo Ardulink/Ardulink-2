@@ -31,3 +31,6 @@ updates:
     - dependency-name: "io.rest-assured:rest-assured"
       versions: [">=6.0.0"]
 
+    - dependency-name: "org.openjfx:*"
+      update-types: ["version-update:semver-major"]
+

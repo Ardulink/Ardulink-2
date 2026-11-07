@@ -15,8 +15,8 @@
 	<url>http://www.ardulink.org</url>
 
 	<properties>
-		<!-- JavaFX 21 needs JDK 17; the jdk profiles below adjust this for 11 and 22+. -->
-		<javafx.version>21.0.13</javafx.version>
+		<!-- JavaFX 28 needs JDK 25; the jdk profiles below pin compatible versions for older JDKs. -->
+		<javafx.version>28-ea+12</javafx.version>
 	</properties>
 
 	<dependencies>
@@ -170,9 +170,18 @@
 			</properties>
 		</profile>
 		<profile>
-			<id>jdk22-plus</id>
+			<id>jdk17-21</id>
 			<activation>
-				<jdk>[22,)</jdk>
+				<jdk>[17,22)</jdk>
+			</activation>
+			<properties>
+				<javafx.version>21.0.13</javafx.version>
+			</properties>
+		</profile>
+		<profile>
+			<id>jdk22-24</id>
+			<activation>
+				<jdk>[22,25)</jdk>
 			</activation>
 			<properties>
 				<javafx.version>24.0.2</javafx.version>

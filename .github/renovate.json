@@ -15,6 +15,11 @@
       "enabled": false
     },
     {
+      "matchPackagePatterns": ["^org\\.openjfx"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
       "matchUpdateTypes": ["minor", "patch"],
       "automerge": false
     },
