@@ -16,7 +16,7 @@
 
 	<properties>
 		<!-- JavaFX 21 needs JDK 17; the jdk profiles below adjust this for 11 and 22+. -->
-		<javafx.version>21.0.13</javafx.version>
+		<javafx.version>28-ea+12</javafx.version>
 	</properties>
 
 	<dependencies>
