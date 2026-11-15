@@ -33,6 +33,7 @@ jobs:
         java-version: ${{ matrix.java-version }}
         distribution: 'temurin'
         cache: maven
+        problem-matcher: true
 
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
