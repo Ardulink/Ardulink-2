@@ -26,6 +26,7 @@ jobs:
           java-version: 17
           distribution: 'temurin'
           cache: maven
+          problem-matcher: true
 
       # Own key with restore-keys: setup-java's maven cache is exact-match only
       # and shared with maven.yml, so the OWASP database never survives there.
