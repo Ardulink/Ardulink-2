@@ -46,7 +46,7 @@ running the real thing. The `release` profile sets
 
 ### 1. Maven
 
-Use the bundled wrapper, `./mvnw` (pins Maven 3.9.16). JDK 11 or newer.
+Use the bundled wrapper, `./mvnw`. JDK 11 or newer.
 
 ### 2. GPG signing key
 
