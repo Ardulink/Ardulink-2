@@ -19,7 +19,6 @@ package org.ardulink.util;
 import static org.ardulink.util.Preconditions.checkArgument;
 import static org.ardulink.util.Preconditions.checkNotNull;
 import static org.ardulink.util.Preconditions.checkState;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
@@ -49,14 +48,14 @@ class PreconditionsTest {
 
 	@Test
 	void testCheckArgumentNotOk() {
-		assertThat(assertThatIllegalArgumentException().isThrownBy(() -> checkArgument(false, MESSAGE))
-				.withMessage(MESSAGE));
+		assertThatIllegalArgumentException().isThrownBy(() -> checkArgument(false, MESSAGE))
+				.withMessage(MESSAGE);
 	}
 
 	@Test
 	void testCheckArgumentNotOkWihArgsToFormat() {
-		assertThat(assertThatIllegalArgumentException().isThrownBy(() -> checkArgument(false, MESSAGE_FORMAT, 42))
-				.withMessage(FORMATTED_MESSAGE));
+		assertThatIllegalArgumentException().isThrownBy(() -> checkArgument(false, MESSAGE_FORMAT, 42))
+				.withMessage(FORMATTED_MESSAGE);
 	}
 
 	@Test
@@ -66,13 +65,13 @@ class PreconditionsTest {
 
 	@Test
 	void testCheckNotNullNotOk() {
-		assertThat(assertThatNullPointerException().isThrownBy(() -> checkNotNull(null, MESSAGE)).withMessage(MESSAGE));
+		assertThatNullPointerException().isThrownBy(() -> checkNotNull(null, MESSAGE)).withMessage(MESSAGE);
 	}
 
 	@Test
 	void testCheckNotNullNotOkWihArgsToFormat() {
-		assertThat(assertThatNullPointerException().isThrownBy(() -> checkNotNull(null, MESSAGE_FORMAT, 42))
-				.withMessage(FORMATTED_MESSAGE));
+		assertThatNullPointerException().isThrownBy(() -> checkNotNull(null, MESSAGE_FORMAT, 42))
+				.withMessage(FORMATTED_MESSAGE);
 	}
 
 	@Test
@@ -82,13 +81,13 @@ class PreconditionsTest {
 
 	@Test
 	void testCheckStateNotOk() {
-		assertThat(assertThatIllegalStateException().isThrownBy(() -> checkState(false, MESSAGE)).withMessage(MESSAGE));
+		assertThatIllegalStateException().isThrownBy(() -> checkState(false, MESSAGE)).withMessage(MESSAGE);
 	}
 
 	@Test
 	void testCheckStateNotOkWihArgsToFormat() {
-		assertThat(assertThatIllegalStateException().isThrownBy(() -> checkState(false, MESSAGE_FORMAT, 42))
-				.withMessage(FORMATTED_MESSAGE));
+		assertThatIllegalStateException().isThrownBy(() -> checkState(false, MESSAGE_FORMAT, 42))
+				.withMessage(FORMATTED_MESSAGE);
 	}
 
 }
