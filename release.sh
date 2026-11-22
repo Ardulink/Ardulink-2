@@ -60,7 +60,7 @@ if [ "$PATCH" -ne 0 ]; then
 	NEXT="${MAJOR}.${MINOR}.$((PATCH + 1))"
 fi
 
-command -v mvn >/dev/null || die "mvn not found on PATH"
+[ -x "./mvnw" ] || die "./mvnw is not executable - run from the repository root (it downloads the configured Maven)"
 command -v gpg >/dev/null || die "gpg not found on PATH - install gnupg (Debian/Ubuntu: apt install gnupg)"
 command -v curl >/dev/null || die "curl not found on PATH"
 
@@ -77,7 +77,7 @@ SETTINGS="${SETTINGS:-${HOME}/.m2/settings.xml}"
 # halfway through the release.
 EFFECTIVE_SETTINGS=$(mktemp)
 trap 'rm -f "$EFFECTIVE_SETTINGS"' EXIT
-mvn -s "$SETTINGS" -q -N help:effective-settings -Doutput="$EFFECTIVE_SETTINGS" >/dev/null 2>&1 || true
+./mvnw -s "$SETTINGS" -q -N help:effective-settings -Doutput="$EFFECTIVE_SETTINGS" >/dev/null 2>&1 || true
 [ -s "$EFFECTIVE_SETTINGS" ] ||
 	die "Maven cannot read ${SETTINGS} - is it valid XML?"
 # only inside <servers>: an <id>central</id> under <mirrors> or <profiles> is
@@ -88,7 +88,7 @@ awk '/<servers>/{f=1} f{print} /<\/servers>/{exit}' "$EFFECTIVE_SETTINGS" |
 
 step "Preflight"
 
-CURRENT=$(mvn -s "$SETTINGS" -q -N help:evaluate -Dexpression=project.version -DforceStdout 2>/dev/null |
+CURRENT=$(./mvnw -s "$SETTINGS" -q -N help:evaluate -Dexpression=project.version -DforceStdout 2>/dev/null |
 	strip_ansi | tr -d '[:space:]')
 [ -n "$CURRENT" ] || die "could not read the current version from pom.xml (is Maven working?)"
 info "current version : ${CURRENT}"
@@ -144,7 +144,7 @@ if [ "$PUSH" = false ]; then
 fi
 
 step "Bumping version to ${VERSION}"
-mvn -s "$SETTINGS" -q versions:set -DnewVersion="${VERSION}" -DgenerateBackupPoms=false
+./mvnw -s "$SETTINGS" -q versions:set -DnewVersion="${VERSION}" -DgenerateBackupPoms=false
 # keep README's dependency snippets in sync with the release
 if grep -qE '<version>[0-9]+\.[0-9]+\.[0-9]+</version>' README.md; then
 	sed -i.bak -E "s|<version>[0-9]+\.[0-9]+\.[0-9]+</version>|<version>${VERSION}</version>|g" README.md
@@ -155,12 +155,12 @@ git --no-pager diff --stat
 
 restore_version() {
 	step "Restoring version ${CURRENT}"
-	mvn -s "$SETTINGS" -q versions:set -DnewVersion="${CURRENT}" -DgenerateBackupPoms=false || true
+	./mvnw -s "$SETTINGS" -q versions:set -DnewVersion="${CURRENT}" -DgenerateBackupPoms=false || true
 	git checkout -- README.md 2>/dev/null || true
 }
 
 step "Building, signing and uploading to Maven Central"
-if ! mvn -s "$SETTINGS" -DskipTests -P"${RELEASE_PROFILE}" clean deploy; then
+if ! ./mvnw -s "$SETTINGS" -DskipTests -P"${RELEASE_PROFILE}" clean deploy; then
 	restore_version
 	die "release build failed - nothing was tagged or pushed, fix and retry"
 fi
@@ -186,7 +186,7 @@ cat <<EOF
 
 pom.xml is now at ${VERSION}. When work continues, move to the next snapshot:
 
-    mvn versions:set -DnewVersion=${NEXT}-SNAPSHOT -DgenerateBackupPoms=false
+    ./mvnw versions:set -DnewVersion=${NEXT}-SNAPSHOT -DgenerateBackupPoms=false
     git commit -am "next development version"
 
 EOF

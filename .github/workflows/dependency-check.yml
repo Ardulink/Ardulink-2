@@ -41,7 +41,7 @@ jobs:
       - name: Run OWASP Dependency-Check
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: mvn -B -Powasp -DskipTests -Dmodernizer.skip -DdataDirectory="$PWD/.dc-data" verify
+        run: ./mvnw -B -Powasp -DskipTests -Dmodernizer.skip -DdataDirectory="$PWD/.dc-data" verify
 
       - name: Upload report
         if: always()

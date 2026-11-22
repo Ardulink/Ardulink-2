@@ -21,7 +21,7 @@ jobs:
         problem-matcher: true
 
     - name: Build with Maven
-      run: mvn -B -Pwith-video org.jacoco:jacoco-maven-plugin:prepare-agent compile jib:dockerBuild verify --file pom.xml
+      run: ./mvnw -B -Pwith-video org.jacoco:jacoco-maven-plugin:prepare-agent compile jib:dockerBuild verify --file pom.xml
 
     - name: Create GitHub Release and Upload Artifact
       uses: ncipollo/release-action@v1
